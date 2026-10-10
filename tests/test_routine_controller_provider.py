@@ -1220,8 +1220,11 @@ def test_active_transition_artifact_fails_closed_on_provider_custody(
         artifact["digest"] = "sha256:" + "0" * 64
     if failure == "expired":
         artifact["expired"] = True
+    filters: list[dict[str, str]] = []
     api = SimpleNamespace(
-        repository_artifacts=lambda _repository: (artifact,),
+        repository_artifacts=lambda _repository, **kwargs: (
+            filters.append(kwargs) or (artifact,)
+        ),
         artifact_bytes=lambda *_args, **_kwargs: raw,
     )
     monkeypatch.setattr(provider, "_is_ancestor", lambda *_args, **_kwargs: True)
@@ -1242,3 +1245,4 @@ def test_active_transition_artifact_fails_closed_on_provider_custody(
             current=MAIN,
             normalization_subject=OLD,
         )
+    assert filters == [{"name_prefix": provider.TRANSITION_ARTIFACT_PREFIX}]

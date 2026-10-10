@@ -197,7 +197,9 @@ def _active_receipts(
 ) -> tuple[dict[str, Any], ...]:
     receipts: list[dict[str, Any]] = []
     pattern = re.compile(rf"^{TRANSITION_ARTIFACT_PREFIX}([a-f0-9]{{64}})$")
-    for artifact in api.repository_artifacts(repository):
+    for artifact in api.repository_artifacts(
+        repository, name_prefix=TRANSITION_ARTIFACT_PREFIX
+    ):
         name = str(artifact.get("name", ""))
         match = pattern.fullmatch(name)
         if match is None:

@@ -31,6 +31,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Scoped provider artifact stabilization to the controller-transition namespace,
+  so unrelated concurrent evidence uploads cannot force an agent-timed routine
+  rotation retry while exact transition receipts remain fully authenticated.
 - Retried one exact immutable Git remote read after a closed transient
   disconnect so candidate submission preserves reusable proof rather than
   requiring an agent-selected restart; authentication and semantic failures

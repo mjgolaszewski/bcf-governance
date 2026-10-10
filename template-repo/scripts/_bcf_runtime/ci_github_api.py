@@ -407,12 +407,14 @@ class GitHubAPI(GitHubCheckObservationMixin, GitHubPRMutationMixin):
         return tuple(artifacts)
 
     def repository_artifacts(
-        self, repository: str, *, name: str | None = None
+        self, repository: str, *, name: str | None = None,
+        name_prefix: str | None = None,
     ) -> tuple[dict[str, Any], ...]:
         endpoint = f"/repos/{self._repository(repository)}/actions/artifacts"
         try:
             return complete_repository_artifacts(
-                self._request, endpoint=endpoint, name=name
+                self._request, endpoint=endpoint, name=name,
+                name_prefix=name_prefix,
             )
         except ArtifactInventoryError as exc:
             raise GitHubAPIError(str(exc)) from exc
