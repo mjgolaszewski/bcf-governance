@@ -9,6 +9,7 @@ import hashlib
 from importlib import metadata
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -38,6 +39,12 @@ from bcf_governance.tooling.runtime_capacity import (  # noqa: E402
     retire_execution_state,
 )
 from bcf_governance.tooling.test_manifests import collect_selector_map  # noqa: E402
+from bcf_governance.tooling.test_splinter_proofs import (  # noqa: E402
+    repository_proof_members,
+    select_applicable_proof,
+    toolchain_sha256,
+    write_successful_proof,
+)
 from bcf_governance.tooling.test_duration_observations import (  # noqa: E402
     TestDurationObservationError,
     load_test_duration_observations,
@@ -146,12 +153,62 @@ def _run_test_splinters(
         identity=identity,
         resources_compatible=resources_compatible,
     )
+    toolchain = toolchain_sha256(REPO_ROOT, Path(sys.executable))
+    current_provider = {
+        "repository": os.environ.get("GITHUB_REPOSITORY", "local"),
+        "repository_id": os.environ.get("GITHUB_REPOSITORY_ID", "local"),
+        "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
+        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+        "job": os.environ.get("GITHUB_JOB", "local"),
+        "shard": os.environ.get("BCF_EVIDENCE_SHARD", "local"),
+        "session": str(identity["session"]),
+    }
+    prior_value = os.environ.get("BCF_PRIOR_SPLINTER_PROOF_ROOT")
+    prior_roots = [Path(prior_value)] if prior_value else []
+    proof_root = report.parent / f"{gate}.splinter-proofs"
+    if proof_root.exists():
+        shutil.rmtree(proof_root)
+    proof_root.mkdir(parents=True)
+    reusable: dict[str, dict[str, object]] = {}
+    recomputation: dict[str, str] = {}
+    for splinter in plan["splinters"]:
+        proof, source_junit, reason = select_applicable_proof(
+            prior_roots,
+            plan=plan,
+            splinter=splinter,
+            toolchain_sha256=toolchain,
+            current=current_provider,
+        )
+        splinter_id = str(splinter["id"])
+        if proof is None or source_junit is None:
+            recomputation[splinter_id] = reason
+            continue
+        target_junit = junit.with_name(f"{junit.stem}.{splinter_id}.xml")
+        shutil.copyfile(source_junit, target_junit)
+        source_manifest = source_junit.with_name(f"{splinter_id}.proof.json")
+        shutil.copyfile(source_manifest, proof_root / source_manifest.name)
+        shutil.copyfile(source_junit, proof_root / source_junit.name)
+        reusable[splinter_id] = {
+            "id": splinter_id,
+            "returncode": 0,
+            "duration_ms": 0,
+            "stdout": "",
+            "stderr": "",
+            "junit": target_junit,
+            "execution_state": proof["result"]["execution_state"],
+            "worktree_removed": True,
+            "proof_status": "reused",
+            "proof_sha256": proof["proof_sha256"],
+            "source": proof["source"],
+        }
     leases = {}
     worktrees: dict[str, Path] = {}
     temporary = tempfile.TemporaryDirectory(prefix="bcf-test-splinters-")
     try:
         for splinter in plan["splinters"]:
             splinter_id = str(splinter["id"])
+            if splinter_id in reusable:
+                continue
             lease = allocate_child_execution_state(
                 os.environ, execution_id=f"test:{splinter_id}"
             )
@@ -229,8 +286,12 @@ def _run_test_splinters(
                 "stderr": result.stderr,
                 "junit": splinter_junit,
             }
-        with ThreadPoolExecutor(max_workers=len(plan["splinters"])) as executor:
-            results = list(executor.map(execute, plan["splinters"]))
+        pending = [
+            splinter for splinter in plan["splinters"]
+            if str(splinter["id"]) not in reusable
+        ]
+        with ThreadPoolExecutor(max_workers=max(1, len(pending))) as executor:
+            results = list(executor.map(execute, pending)) if pending else []
     finally:
         cleanup = {
             splinter_id: retire_execution_state(lease) if lease is not None else None
@@ -251,6 +312,30 @@ def _run_test_splinters(
                 removed.returncode == 0 and not worktree.exists()
             )
         temporary.cleanup()
+    for result in results:
+        result["execution_state"] = cleanup[result["id"]]
+        result["worktree_removed"] = worktree_cleanup[result["id"]]
+        result["proof_status"] = "fresh" if result["returncode"] == 0 else "failed"
+        result["recompute_reason"] = recomputation[result["id"]]
+        if result["returncode"] == 0:
+            splinter = next(
+                value for value in plan["splinters"] if value["id"] == result["id"]
+            )
+            manifest, _ = write_successful_proof(
+                proof_root,
+                plan=plan,
+                splinter=splinter,
+                toolchain_sha256=toolchain,
+                junit=Path(str(result["junit"])),
+                observed_nodes=_junit_nodes(Path(str(result["junit"]))),
+                execution_state=result["execution_state"],
+                worktree_removed=bool(result["worktree_removed"]),
+                source=current_provider,
+            )
+            result["proof_sha256"] = json.loads(
+                manifest.read_text(encoding="utf-8")
+            )["proof_sha256"]
+    results.extend(reusable.values())
     results.sort(key=lambda item: str(item["id"]))
     for result in results:
         sys.stdout.write(str(result["stdout"]))
@@ -267,18 +352,42 @@ def _run_test_splinters(
         _fail(gate, str(exc))
     _merge_junit(junit_paths, junit)
     report.parent.mkdir(parents=True, exist_ok=True)
+    prior_provider = None
+    if prior_roots and (prior_roots[0] / "provider.json").is_file():
+        prior_provider = json.loads(
+            (prior_roots[0] / "provider.json").read_text(encoding="utf-8")
+        )
     report.write_text(
         json.dumps(
             {
                 **plan,
                 "resources": {"observed_cpus": cpu_count, "minimum_cpus": minimum_cpus},
+                "prior_provider": prior_provider,
+                "proofs": [
+                    {
+                        "id": result["id"],
+                        "status": result["proof_status"],
+                        "proof_sha256": result.get("proof_sha256"),
+                        "recompute_reason": result.get("recompute_reason"),
+                        "source": result.get("source"),
+                        **(
+                            repository_proof_members(
+                                REPO_ROOT, proof_root, str(result["id"])
+                            )
+                            if result["returncode"] == 0
+                            else {"manifest": None, "junit": None}
+                        ),
+                    }
+                    for result in results
+                ],
                 "results": [
                     {
                         "id": result["id"],
                         "returncode": result["returncode"],
                         "duration_ms": result["duration_ms"],
-                        "execution_state": cleanup[result["id"]],
-                        "worktree_removed": worktree_cleanup[result["id"]],
+                        "execution_state": result["execution_state"],
+                        "worktree_removed": result["worktree_removed"],
+                        "proof_status": result["proof_status"],
                     }
                     for result in results
                 ],

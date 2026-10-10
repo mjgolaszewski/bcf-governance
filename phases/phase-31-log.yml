@@ -26,7 +26,7 @@ workitems:
   summary: deliver project existing-repository protection through review apply and
     verification
 - id: P31-P0-03
-  status: TODO
+  status: DONE
   summary: deliver classify and migrate evidence storage without changing truth
 - id: P31-P0-04
   status: TODO
@@ -58,6 +58,9 @@ execution_evidence:
   - P31-P0-03 begins from a closed storage topology and migration matrix; the existing durable publisher, cold resolver, retention, reconcile, and upgrade owners remain authoritative while capability and adoption are mechanically distinguished before evidence allocation
   - prospective validation proved that an unadopted Lite capability pack has no CI graph; the matrix and canonical classifier now type exact graph absence as available_not_adopted while an enabled or unknown storage contract without a graph fails closed
   - routine rotation 38072457759 attempt 1 exposed a repository-global artifact stabilization race while unrelated exact-main artifacts were appearing; attempt 2 proved the transition itself, and the matrix-first correction scopes stabilization to authenticated controller-transition artifacts
+  - P31-P0-03 classifies legacy mixed durable unknown and available-but-unadopted storage before evidence allocation, derives immutable publication cold resolution retention and migration through the existing storage owners, and preserves legacy receipt truth without granting migration authority
+  - successful test splinters now persist exact acceleration-only proof and JUnit bytes in the existing attempt artifact before aggregate fan-in; the canonical shard runner alone authenticates same-run earlier-attempt custody and reuses only exact subject partition toolchain policy producer cleanup and node identities while failed or mismatched siblings recompute
+  - focused storage topology cold-resolution retention tamper growth splinter provider-custody graph mirror semantic ownership and pack parity checks passed on the mechanically reconciled candidate; the ordinary aggregate receipt truth finalizer and certification propositions remain unchanged
 closeout_requirements:
   claims:
     workitems_closed:
@@ -90,4 +93,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify workitem_closed:P31-P0-02 and make only P31-P0-03 eligible before implementing evidence-storage topology
+- certify workitem_closed:P31-P0-03 and make only P31-P0-04 eligible before implementing the base-pinned independent evaluator

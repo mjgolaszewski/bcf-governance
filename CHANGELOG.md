@@ -8,6 +8,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Persisted each successful deterministic test splinter inside its existing
+  provider evidence artifact before aggregate fan-in. A later attempt now
+  derives exact same-run reuse from subject, partition, toolchain, policy,
+  producer, provider-attempt, cleanup, and JUnit identities; failed or
+  inapplicable siblings alone recompute, while partial proof remains
+  acceleration-only until ordinary aggregate truth succeeds.
+
 - Added a closed evidence-storage topology classifier and graph-bound,
   non-mutating migration plan. Preflight and canonical reconciliation now
   distinguish capability from adoption, surface legacy/mixed/unknown storage
