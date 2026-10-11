@@ -1375,7 +1375,7 @@
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
-      "sha256": "569d090c4cde5eec8d1e86449ce48ebb20afd4279f1ae08d5a0736341ba9c712"
+      "sha256": "5d1aeb22df28080eca74b2757616561ec5c13efd8204990891a8f2bf92a991d3"
     },
     "scripts/_bcf_runtime/semantic_adoption_dependencies.py": {
       "operation": "copy",
