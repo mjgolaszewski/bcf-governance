@@ -964,7 +964,7 @@
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
-      "sha256": "1a620e291c779df993c9df81004dfb3cbd0173754478d51ce0ad3136ece34671"
+      "sha256": "82677fae95f1ee6ba3c632058d0e2ec16e21056205f31585db5957de598345c9"
     },
     "scripts/_bcf_runtime/governance_cleanup/__init__.py": {
       "operation": "copy",
