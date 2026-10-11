@@ -138,7 +138,7 @@ commands:
     cwd: .
     environment: {}
   exact-main-admit-effective:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, workitem, --evaluation-target, P31-P0-05]
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.trusted-controller-build.outputs.target_commit }}/bin/bcf', ci-github, exact-main, admit, --repository, '${{ github.repository }}', --sha, '${{ github.sha }}', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}', --evaluation-mode, closure]
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
   prior-evidence-effective:
@@ -623,9 +623,8 @@ workflows:
     executor:
       kind: component_sequence
       components: [setup-python, exact-main-admit-effective, protection-inspector-token, prior-evidence-effective, upload-prior-evidence-effective]
-      evaluation_mode: workitem
+      evaluation_mode: closure
       protection_inspection: true
-      evaluation_target: P31-P0-05
     produces: [prior-evidence-transport]
     consumes: []
     required: true
@@ -643,7 +642,7 @@ workflows:
     executor:
       kind: reusable_workflow
       path: .github/workflows/governance.yml
-      inputs: {evaluation_mode: workitem, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}', evaluation_target: P31-P0-05}
+      inputs: {evaluation_mode: closure, use_prior_evidence: true, comparison_base_sha: '${{ github.event.before }}'}
       artifact_bindings: {prior-evidence-transport: use_prior_evidence}
     produces: []
     consumes: [prior-evidence-transport]

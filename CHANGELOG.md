@@ -10,6 +10,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Prepared the completed P31 workitem set for terminal phase certification;
+  release authorization remains unavailable until exact-main authenticates the
+  phase-closure proposition and its same-attempt controller custody.
+
 - Replaced operator-provisioned release credentials and one-shot publication
   with a single idempotent transaction. The trusted no-checkout publisher mints
   one repository-scoped GitHub App token, resumes only exact tags, drafts, and

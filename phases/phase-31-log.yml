@@ -4,13 +4,13 @@ document:
   id: project-phase-31-log
   version: 1.0.0
   generated_at_utc: '2026-10-03T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-31-log.yml
 phase:
   id: P31
   build_block: adopter-assurance-authority-and-publication-2.3.0
 summary:
-  outcome: active
+  outcome: completed
   highlights:
   - P31 is active for project consumer assurance and complete storage evaluator and
     publication authority through immutable BCF 2.3.0 custody
@@ -66,6 +66,9 @@ execution_evidence:
   - fresh-install transaction closure now derives every generated workflow destination from the prospective graph, preventing new evaluator workflows from succeeding in the shadow tree but disappearing during atomic promotion
   - the first live protected-base finalizer exposed an incomplete candidate-materialization edge contract because checkout v7 rejects the graph's former runner-temp destination; the matrix now requires one run-owned workspace-relative path shared mechanically by checkout and evaluator, and graph validation rejects unsafe or divergent paths before evidence allocation
   - P31-P0-05 defines every reachable publication edge before authority, extracts one idempotent publication transaction, resumes only exact tags drafts and asset subsets, rejects conflicting state, and replaces operator-provisioned credentials with one repository-scoped App token whose pinned action owns terminal revocation
+  - protected PR 405 merged the atomic publication implementation as main 522eea6bb3d8a645114f8aa0cccf5b32b4d45946 tree 578cbb5d51f4d97d19470e3947141261795ad6ce
+  - exact-main 38170849100 attempt 2 reused applicable authenticated proof; finalizer 38174765303 and App 15368 bounded certification closed P31-P0-05 without release authority
+  - the terminal candidate now requests phase closure so exact-main mechanically materializes same-attempt controller custody and release authorization remains unreachable until terminal certification succeeds
 closeout_requirements:
   claims:
     workitems_closed:
