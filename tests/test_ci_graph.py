@@ -2495,10 +2495,22 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             (".github/workflows/bcf-trusted-finalizer.yml", "finalize"),
             (".github/workflows/bcf-status-publisher.yml", "publish"),
             (".github/workflows/release.yml", "authorize"),
-            (".github/workflows/bcf-release-verifier.yml", "collect"),
             (".github/workflows/bcf-release-publisher.yml", "publish"),
         ):
             assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
+        verifier = rendered[".github/workflows/bcf-release-verifier.yml"]
+        assert verifier["on"]["workflow_run"]["workflows"] == [
+            "bcf/release-authority-cutover"
+        ]
+        assert verifier["jobs"]["runtime"]["if"] == (
+            "${{ github.event.workflow_run.event == 'workflow_dispatch' && "
+            "github.event.workflow_run.head_branch == 'main' && "
+            "github.event.workflow_run.conclusion == 'success' }}"
+        )
+        assert verifier["jobs"]["collect"]["needs"] == ["runtime"]
+        assert verifier["jobs"]["collect"]["if"] == (
+            "${{ needs.runtime.result == 'success' }}"
+        )
     elif (
         compiled.trusted_controller_lifecycle.state
         is ControllerLifecycleState.ORDINARY_PENDING_ROTATION
