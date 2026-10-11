@@ -123,6 +123,12 @@ provider evidence.
     projections stale, emit a static next command, or require the caller to
     choose evaluation intent or target. If authenticated state cannot derive
     one legal successor, execution stops with a typed result before mutation.
+31. For every structurally reachable producer/consumer pair, the canonical DAG
+    defines and mechanically validates the complete inter-node contract before
+    the consumer can allocate expensive work or exercise authority. Every
+    structurally unreachable pair has one canonical typed exclusion reason.
+    Missing edge custody, identity, schema, applicability, permissions,
+    lifecycle, authority, or failure semantics rejects at graph compilation.
 
 ## State matrix
 
@@ -1666,6 +1672,47 @@ no plan may delete an object reachable from a protected retention root.
 | Storage schema or operator example changes | declared runtime dependencies, packaged schemas, governed documentation, and artifact-reference policy | reject undeclared parser dependencies and mark local report paths explicitly non-authoritative before any evidence execution | portable schema validation and documentation that cannot imply local authority | relying on a transitive package or presenting an unhashed local report as governed evidence |
 | Adopter capability pack has no adopted CI graph | exact absence of `governance/ci-graph.yml` plus an absent or disabled canonical storage contract | classify `available_not_adopted` from a digest-bound empty graph projection; do not invoke graph compilation | typed no-transition plan with no truth, provider-mutation, or cleanup authority | treating capability as adoption, hiding an enabled contract behind graph absence, or requiring minimal valid repositories to manufacture a graph |
 | Implemented storage workitem declares bounded closeout | exact `DONE` P31-P0-03, authenticated implementation/cold-resolution/tamper/retention evidence, active P31, current controller, and canonical successor edge | derive `workitem:P31-P0-03` and preserve it through truth/finalizer/publisher | `workitem_closed:P31-P0-03`; only P31-P0-04 becomes eligible | terminal phase/release authority, hand-selected target, stale evidence, or evaluator work begun early |
+
+### P31-P0-04 independent evaluator state matrix
+
+| State | Required identity | Canonical edge | Result | Rejected shortcut |
+| --- | --- | --- | --- | --- |
+| CI producer/consumer pair is structurally reachable | exact workflow/job semantic roles, event/dependency path, subject, artifacts/schemas, custody scope, permissions, lifecycle conditions, trust/authority class, and terminal behavior | compile one complete edge contract before rendering or execution | consumer may become schedulable only after the edge contract validates | implicit dataflow, renderer-only knowledge, job-name convention, or discovering a missing contract at provider startup/fan-out |
+| CI producer/consumer pair is structurally unreachable | same canonical graph plus the absence of every dependency, event, artifact, reusable-call, and authority path | emit one typed exclusion reason from the graph owner | pair is excluded without authority or execution | generic `inapplicable`, omitted pair, agent judgment, or undocumented negative space |
+| Lite-v1 PR | exact candidate workflow/run/job and declared Lite protection check | keep the explicitly lower-assurance direct candidate terminal observation; no independent-evaluator proposition is implied | Lite result remains profile-scoped and cannot masquerade as Standard-v3 authority | silently publishing independent certification or installing controller ceremony |
+| Standard-v3 PR without managed controller | exact protected base commit/tree, base evaluator runtime digest, protected workflow blob/definition commit, candidate commit/tree, producer run/attempt, evidence inventory/digests, check identity, and protected-path inventory | default-branch `workflow_run` invokes evaluator code materialized from the exact protected base; candidate evidence is input only | one base-pinned evaluation bundle eligible for the canonical status publisher | ambient `bcf`, candidate evaluator/workflow bytes, mutable branch lookup after admission, job conclusion alone, or candidate self-pass |
+| Standard-v3 PR with managed controller | exact installed controller custody plus the same candidate/evidence/check proposition | invoke the installed controller through the canonical evaluator contract | one managed-controller evaluation bundle with no base-runtime substitution | protected-base checkout relabeled as controller authority or candidate-selected controller |
+| Candidate mutates evaluator, finalizer, publisher, graph authority, or protected evaluator path | exact base/candidate path and blob inventories | evaluate only with authenticated protected-base or installed-controller bytes; bind the candidate mutation as untrusted input | mutation cannot change the evaluator conclusion or check owner | executing candidate judge, accepting candidate workflow success, or suppressing the protected-path delta |
+| Candidate evidence is missing, malformed, stale, ambiguous, wrong-subject, wrong-run/attempt, wrong-workflow, wrong-producer, or incomplete | complete expected evidence closure and provider artifact inventory | reject before truth/status authority | failed typed evaluation; no merge eligibility | borrowing another run, accepting aggregate success, or treating omission as empty |
+| Protected base advances after producer admission | admitted base/candidate relationship plus current protected head | classify exact supersession and require the canonical new-base lane | no stale certification; unchanged applicable evidence may be reused only through the proof resolver | rewriting historical identity, silently evaluating against a newer base, or agent-selected rerun |
+| Independent evaluation succeeds | exact evaluator, candidate, evidence, proposition, finalizer workflow/run/attempt, and `bcf/pr-certification` App identity | publisher reauthenticates the complete bundle and current PR head/base before status mutation | exact merge eligibility only | evaluator result authorizes release/controller/protection or publisher erases evaluator scope |
+| P31 self-governance | installed managed controller and exact self workflow authority | preserve the managed-controller lane while proving parity with protected-base Standard-v3 semantics | self remains governed without weakening ordinary adopters | projecting self controller/recovery/release topology into ordinary adopter packs |
+| Implemented evaluator workitem declares bounded closeout | exact `DONE` P31-P0-04, authenticated Lite/Standard-v3/managed-controller adversarial evidence, active P31, current controller, and canonical successor edge | derive `workitem:P31-P0-04` through truth/finalizer/publisher | only P31-P0-05 becomes eligible | phase/release authority or publication before evaluator closure |
+
+```text
+invariants
+  candidate evidence is never candidate merge authority;
+  every reachable edge is complete and every excluded pair is explained
+    -> primitives
+       graph reachability/exclusion result, protected-base identity,
+       evaluator runtime digest, candidate/evidence/check proposition
+      -> contracts
+         compile complete edge closure -> select profile/controller evaluator ->
+         authenticate evaluator source -> verify evidence -> publish exact check
+        -> producers
+           CI graph compiler, candidate shards, protected-base/managed evaluator,
+           finalizer and status publisher
+          -> consumers
+             cheap preflight, provider scheduler, merge protection,
+             installer/upgrader, successor eligibility and release rejection
+```
+
+Every evaluator mutation must traverse Lite direct, Standard-v3 protected-base,
+and managed-controller modes; unchanged and changed protected paths; current and
+advanced base; complete and every invalid evidence class; success/failure/
+pending producer states; publisher replay/wrong-App/wrong-check cases; PR and
+exact-main exclusion; and bounded/release non-escalation. No consumer may start
+expensive work until its reachable incoming edge closure is complete.
 
 ```text
 invariants
