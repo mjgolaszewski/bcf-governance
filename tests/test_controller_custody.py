@@ -247,6 +247,7 @@ def test_controller_artifact_materialization_is_terminal_scope_exact(
 
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
+    graph["conditions"]["exact-main-controller-build-required"] = pending
     (tmp_path / "governance").mkdir()
     (tmp_path / "plans").mkdir()
     (tmp_path / "phases").mkdir()
