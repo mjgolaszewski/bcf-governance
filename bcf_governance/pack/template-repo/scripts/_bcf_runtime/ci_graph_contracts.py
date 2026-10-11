@@ -39,6 +39,7 @@ from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_jo
 from .ci_graph_storage import validate_evidence_storage
 from .ci_graph_routing import validate_candidate_routing
 from .ci_graph_rotation_outputs import validate_rotation_output_directories
+from .ci_graph_edges import EdgeContract, compile_edge_contracts
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
@@ -60,6 +61,7 @@ class CompiledCIGraph:
     trusted_controller_lifecycle: ControllerLifecycle
     trusted_controller_current: bool
     evidence_storage: dict[str, Any] | None
+    edge_contracts: tuple[EdgeContract, ...]
 
 
 def _schema(repo_root: Path, relative: Path) -> dict[str, Any]:
@@ -768,6 +770,7 @@ def validate_ci_graph(
     storage_inputs, storage_contract = validate_evidence_storage(repo_root, composed)
     validate_candidate_routing(composed, storage_contract=storage_contract)
     _validate_workflows(composed)
+    edge_contracts = compile_edge_contracts(composed)
     validate_gate_job_timeouts(repo_root, composed)
     validate_component_job_timeouts(composed)
     validate_graph_authority_policy(repo_root, composed)
@@ -792,4 +795,5 @@ def validate_ci_graph(
         trusted_controller_lifecycle=controller_lifecycle,
         trusted_controller_current=controller_lifecycle.current,
         evidence_storage=storage_contract,
+        edge_contracts=edge_contracts,
     )

@@ -48,6 +48,7 @@ from bcf_governance.tooling.ci_graph_post_merge import (
 from bcf_governance.tooling.ci_graph_yaml import render_yaml
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
 from bcf_governance.tooling.ci_graph_diagnostics import diagnose_ci_graph
+from bcf_governance.tooling.ci_graph_edges import compile_edge_contracts
 from bcf_governance.tooling.ci_graph_import import inventory_github_workflows
 from bcf_governance.tooling.ci_graph_locks import (
     apply_ci_graph_locks,
@@ -148,6 +149,40 @@ def test_exact_main_evaluation_has_one_canonical_admission_and_truth_scope() -> 
             stale_workflow,
         )
     )
+
+
+def test_canonical_graph_closes_or_excludes_every_producer_consumer_pair() -> None:
+    compiled = validate_ci_graph(REPO_ROOT)
+    contracts = compiled.edge_contracts
+    node_count = sum(len(workflow["jobs"]) for workflow in compiled.workflows)
+    assert len(contracts) == node_count * (node_count - 1)
+    assert all(
+        (contract.reachable and contract.exclusion_reason is None)
+        or (not contract.reachable and contract.exclusion_reason)
+        for contract in contracts
+    )
+    finalizer_edges = [
+        contract
+        for contract in contracts
+        if contract.producer.startswith("governance:")
+        and contract.consumer == "pr-finalizer:finalize"
+    ]
+    assert finalizer_edges
+    assert all(contract.mechanism == "workflow_run" for contract in finalizer_edges)
+    assert all(contract.subject_binding == "workflow-run-head-sha" for contract in finalizer_edges)
+
+
+def test_artifact_transport_without_a_structural_edge_rejects_before_execution() -> None:
+    graph = copy.deepcopy(validate_ci_graph(REPO_ROOT).graph)
+    workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
+    truth = next(
+        item
+        for item in workflow["jobs"]
+        if item["semantic_role"] == "terminal-governance-truth"
+    )
+    truth["needs"] = []
+    with pytest.raises(CIGraphError, match="transports artifacts without a structural path"):
+        compile_edge_contracts(graph)
 
 
 @pytest.mark.parametrize(

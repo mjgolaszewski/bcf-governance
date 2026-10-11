@@ -13,7 +13,7 @@ value_sources:
 extension_points: [preflight, evidence-lane, before-truth, after-truth, exact-main-producer, trusted-control, scheduled-lane, release-role]
 extensions:
 - {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
-- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: adde42bee237d4da4a67a72d6d5e8600e63ed010486cea4084391f940b9d1bb0}
+- {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: 9ed8cdaf735aaf7e2222c13b1cb951c5f6877d0673c5f154c6829e4db968e426}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
 - {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: f4071bbe59a46e0ee83976188c6705281b5b1bbef1e3a0f48cd466ed80aab97b}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 750cd322494c26215cb5c5ec5aef9d6745fa8aeba0e67fb359346ee27a8bf5f5}

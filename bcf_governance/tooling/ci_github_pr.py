@@ -4,9 +4,14 @@ from __future__ import annotations
 
 from dataclasses import asdict
 import hashlib
+import io
 import json
 from pathlib import Path, PurePosixPath
+import tempfile
 from typing import Any
+import zipfile
+
+import yaml
 
 from .ci_authority_decisions import (
     StatusConclusion,
@@ -28,12 +33,23 @@ from .ci_github_identity import (
 )
 from .ci_pr_transition import transition_is_applicable, verify_transition_equivalence
 from .github_protection import PROTECTION_PATH, load_protection_bytes
+from .governance_truth import TruthfulnessError, derive_truth
 
 
 FINALIZER_WORKFLOW = ".github/workflows/bcf-pr-finalizer.yml"
 PUBLISHER_WORKFLOW = ".github/workflows/bcf-pr-status-publisher.yml"
 CHECK_CONTEXT = StatusContext.PULL_REQUEST.value
 CHECK_APP_ID = 15368
+EVALUATOR_RUNTIME_PATH = "bcf_governance/tooling/ci_github_pr.py"
+PROTECTED_EVALUATOR_PATHS = (
+    ".github/workflows/bcf-pr-finalizer.yml",
+    ".github/workflows/bcf-pr-status-publisher.yml",
+    EVALUATOR_RUNTIME_PATH,
+    "governance/ci-graph.yml",
+    "governance/github-protection.yml",
+)
+MAX_EVALUATOR_ARTIFACT_BYTES = 104_857_600
+MAX_EVALUATOR_EXPANDED_BYTES = 209_715_200
 
 
 def _trigger(event: dict[str, Any]) -> tuple[str, int]:
@@ -53,7 +69,9 @@ def _pr_number(run: dict[str, Any]) -> int:
     return positive_int(values[0].get("number"), field="pull request number")
 
 
-def _current_head(api: GitHubAPI, repository: str, pr_number: int) -> tuple[str, str]:
+def _current_pr(
+    api: GitHubAPI, repository: str, pr_number: int
+) -> tuple[str, str, str, str]:
     pr = api.pull_request(repository, pr_number)
     head = pr.get("head")
     base = pr.get("base")
@@ -68,7 +86,17 @@ def _current_head(api: GitHubAPI, repository: str, pr_number: int) -> tuple[str,
         raise GitHubControllerError("PR certification requires a same-repository head")
     if positive_int(base_repo.get("id"), field="base repository ID") != repository_id:
         raise GitHubControllerError("PR certification base repository is not exact")
-    return exact_sha(head.get("sha"), field="pull request head SHA"), str(head.get("ref", ""))
+    return (
+        exact_sha(head.get("sha"), field="pull request head SHA"),
+        str(head.get("ref", "")),
+        exact_sha(base.get("sha"), field="pull request base SHA"),
+        str(base.get("ref", "")),
+    )
+
+
+def _current_head(api: GitHubAPI, repository: str, pr_number: int) -> tuple[str, str]:
+    head, branch, _base, _base_branch = _current_pr(api, repository, pr_number)
+    return head, branch
 
 
 def _protection(api: GitHubAPI, repository: str, main: MainIdentity) -> dict[str, Any]:
@@ -77,6 +105,99 @@ def _protection(api: GitHubAPI, repository: str, main: MainIdentity) -> dict[str
         content.content,
         schema_path=packaged_repo_root() / "schemas/github-protection.schema.json",
     )
+
+
+def _evaluator_identity(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    main: MainIdentity,
+    protection: dict[str, Any],
+    base_sha: str,
+    base_branch: str,
+) -> dict[str, Any]:
+    if base_sha != main.checkout_sha or base_branch != main.default_branch:
+        raise GitHubControllerError(
+            "PR evaluator base is not the current protected default branch"
+        )
+    projection = protection.get("projection")
+    profile = projection.get("profile") if isinstance(projection, dict) else None
+    if profile == "lite":
+        raise GitHubControllerError(
+            "Lite direct PR truth cannot invoke independent certification"
+        )
+    if profile not in {None, "standard"}:
+        raise GitHubControllerError("ordinary evaluator profile is unsupported")
+    graph_content = api.content(
+        repository, "governance/ci-graph.yml", ref=base_sha
+    )
+    try:
+        graph = yaml.safe_load(graph_content.content)
+        controller = graph["trusted_controller"]
+        controller_kind = controller["kind"]
+    except (KeyError, TypeError, yaml.YAMLError) as exc:
+        raise GitHubControllerError("protected-base evaluator graph is malformed") from exc
+    if controller_kind == "executable":
+        mode = "protected_base"
+        controller_identity = None
+    elif controller_kind in {"self_governance_policy", "governed_controller_policy"}:
+        mode = "managed_controller"
+        policy_path = controller.get("policy_path")
+        if not isinstance(policy_path, str):
+            raise GitHubControllerError("managed evaluator policy path is missing")
+        policy_content = api.content(repository, policy_path, ref=base_sha)
+        try:
+            policy = yaml.safe_load(policy_content.content)
+            installed = policy["runner_security"]["trusted_controller_installation"]
+            controller_identity = {
+                "commit_sha": exact_sha(
+                    installed["installed_commit_sha"],
+                    field="installed evaluator controller SHA",
+                ),
+                "policy_path": policy_path,
+                "policy_blob_oid": policy_content.blob_oid,
+                "policy_sha256": hashlib.sha256(policy_content.content).hexdigest(),
+            }
+        except (KeyError, TypeError, yaml.YAMLError) as exc:
+            raise GitHubControllerError(
+                "managed evaluator installation identity is malformed"
+            ) from exc
+    else:
+        raise GitHubControllerError("protected-base evaluator source is unsupported")
+    runtime = api.content(repository, EVALUATOR_RUNTIME_PATH, ref=base_sha)
+    finalizer = api.content(repository, FINALIZER_WORKFLOW, ref=base_sha)
+    check = protection.get("pr_certification")
+    if not isinstance(check, dict) or check.get("context") != CHECK_CONTEXT or check.get(
+        "publisher_app_id"
+    ) != CHECK_APP_ID:
+        raise GitHubControllerError("PR evaluator check identity is not exact")
+    return {
+        "mode": mode,
+        "base": {
+            "commit_sha": base_sha,
+            "tree_sha": main.tree_sha,
+            "branch": base_branch,
+        },
+        "runtime": {
+            "path": EVALUATOR_RUNTIME_PATH,
+            "blob_oid": runtime.blob_oid,
+            "sha256": hashlib.sha256(runtime.content).hexdigest(),
+        },
+        "workflow": {
+            "path": FINALIZER_WORKFLOW,
+            "blob_oid": finalizer.blob_oid,
+            "sha256": hashlib.sha256(finalizer.content).hexdigest(),
+            "definition_commit": base_sha,
+        },
+        "graph": {
+            "path": "governance/ci-graph.yml",
+            "blob_oid": graph_content.blob_oid,
+            "sha256": hashlib.sha256(graph_content.content).hexdigest(),
+        },
+        "controller": controller_identity,
+        "protected_paths": list(PROTECTED_EVALUATOR_PATHS),
+        "check": {"context": CHECK_CONTEXT, "publisher_app_id": CHECK_APP_ID},
+    }
 
 
 def _authenticate_candidate_run(
@@ -109,6 +230,116 @@ def _authenticate_candidate_run(
     except GithubReferenceError as exc:
         raise GitHubControllerError(f"PR producer run is not authenticated: {exc}") from exc
     return asdict(identity)
+
+
+def _extract_evidence_archive(raw: bytes, destination: Path) -> None:
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(raw))
+    except zipfile.BadZipFile as exc:
+        raise GitHubControllerError("candidate evidence artifact is not a ZIP archive") from exc
+    members = archive.infolist()
+    if sum(member.file_size for member in members) > MAX_EVALUATOR_EXPANDED_BYTES:
+        raise GitHubControllerError("candidate evidence artifact expands beyond its bound")
+    for member in members:
+        path = PurePosixPath(member.filename)
+        if (
+            path.is_absolute()
+            or ".." in path.parts
+            or member.is_dir()
+            or not path.parts
+        ):
+            if member.is_dir() and not path.is_absolute() and ".." not in path.parts:
+                continue
+            raise GitHubControllerError("candidate evidence artifact contains an unsafe member")
+        target = destination.joinpath(*path.parts)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(archive.read(member))
+
+
+def _independent_truth(
+    api: GitHubAPI,
+    *,
+    repository: str,
+    repository_id: str,
+    run: dict[str, Any],
+    candidate_root: Path,
+    head_sha: str,
+    head_tree: str,
+) -> dict[str, Any]:
+    run_id = str(positive_int(run.get("id"), field="producer run ID"))
+    run_attempt = positive_int(run.get("run_attempt"), field="producer run attempt")
+    artifacts = api.artifacts(repository, run_id)
+    prefix = f"-{run_id}-{run_attempt}"
+    selected = [
+        artifact
+        for artifact in artifacts
+        if isinstance(artifact.get("name"), str)
+        and (
+            artifact["name"] == f"bcf-session{prefix}"
+            or artifact["name"].startswith(f"bcf-evidence{prefix}-")
+        )
+    ]
+    names = [str(artifact["name"]) for artifact in selected]
+    if len(names) != len(set(names)) or f"bcf-session{prefix}" not in names or not any(
+        name.startswith(f"bcf-evidence{prefix}-") for name in names
+    ):
+        raise GitHubControllerError("candidate evidence artifact inventory is incomplete")
+    identities: list[dict[str, Any]] = []
+    with tempfile.TemporaryDirectory(prefix="bcf-pr-evaluator-") as temporary:
+        evidence_root = Path(temporary)
+        for artifact in selected:
+            workflow_run = artifact.get("workflow_run")
+            if not isinstance(workflow_run, dict) or any(
+                (
+                    str(workflow_run.get(field)) != expected
+                    for field, expected in (
+                        ("id", run_id),
+                        ("repository_id", repository_id),
+                        ("head_repository_id", repository_id),
+                        ("head_sha", head_sha),
+                    )
+                )
+            ):
+                raise GitHubControllerError("candidate evidence artifact subject is not exact")
+            artifact_id = str(positive_int(artifact.get("id"), field="evidence artifact ID"))
+            digest = str(artifact.get("digest", ""))
+            if not digest.startswith("sha256:") or len(digest) != 71:
+                raise GitHubControllerError("candidate evidence provider digest is malformed")
+            raw = api.artifact_bytes(
+                repository,
+                artifact_id,
+                maximum_bytes=MAX_EVALUATOR_ARTIFACT_BYTES,
+            )
+            if f"sha256:{hashlib.sha256(raw).hexdigest()}" != digest:
+                raise GitHubControllerError("candidate evidence bytes do not match provider digest")
+            destination = evidence_root / str(artifact["name"])
+            _extract_evidence_archive(raw, destination)
+            identities.append(
+                {"id": artifact_id, "name": artifact["name"], "provider_digest": digest}
+            )
+        try:
+            truth = derive_truth(candidate_root, evidence_root, evaluation_mode="pr")
+        except TruthfulnessError as exc:
+            raise GitHubControllerError(
+                f"protected evaluator rejected candidate evidence: {exc}"
+            ) from exc
+    subject = truth.get("subject")
+    if (
+        truth.get("status") != "pass"
+        or truth.get("merge_eligibility") != "eligible"
+        or not isinstance(subject, dict)
+        or subject.get("commit_sha") != head_sha
+        or subject.get("tree_sha") != head_tree
+    ):
+        raise GitHubControllerError("protected evaluator truth is not exact and eligible")
+    return {
+        "status": "pass",
+        "subject": {"commit_sha": head_sha, "tree_sha": head_tree},
+        "report_sha256": hashlib.sha256(
+            json.dumps(truth, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest(),
+        "artifacts": sorted(identities, key=lambda item: str(item["name"])),
+    }
 
 
 def _producer_state(
@@ -199,6 +430,7 @@ def finalize_pr(
     finalizer_run_id: object,
     finalizer_run_attempt: object,
     output_root: Path,
+    candidate_root: Path | None = None,
 ) -> dict[str, Any]:
     """Reconstruct the latest complete producer set for the current exact PR head."""
 
@@ -218,7 +450,9 @@ def finalize_pr(
     if positive_int(trigger.get("run_attempt"), field="triggering run attempt") != trigger_attempt:
         raise GitHubControllerError("triggering run attempt does not match provider state")
     pr_number = _pr_number(trigger)
-    head_sha, head_branch = _current_head(api, repository, pr_number)
+    head_sha, head_branch, base_sha, base_branch = _current_pr(
+        api, repository, pr_number
+    )
     commit = api.commit(repository, head_sha)
     tree = commit.get("tree")
     if not isinstance(tree, dict):
@@ -231,6 +465,14 @@ def finalize_pr(
         "branch": main.default_branch,
     }:
         raise GitHubControllerError("PR authority declaration does not match provider repository")
+    evaluator = _evaluator_identity(
+        api,
+        repository=repository,
+        main=main,
+        protection=protection,
+        base_sha=base_sha,
+        base_branch=base_branch,
+    )
     producers = [
         _producer_state(
             api,
@@ -243,6 +485,21 @@ def finalize_pr(
         )
         for contract in protection["pr_certification"]["producer_workflows"]
     ]
+    if candidate_root is not None:
+        candidate = candidate_root.resolve()
+        for producer in producers:
+            if producer["state"] != "successful":
+                continue
+            run = api.run(repository, producer["run_id"])
+            producer["independent_truth"] = _independent_truth(
+                api,
+                repository=repository,
+                repository_id=main.repository_id,
+                run=run,
+                candidate_root=candidate,
+                head_sha=head_sha,
+                head_tree=head_tree,
+            )
     by_id = {item["id"]: item for item in producers}
     package = by_id.get("package")
     governance = by_id.get("governance")
@@ -280,6 +537,7 @@ def finalize_pr(
         "pull_request": pr_number,
         "subject": {"commit_sha": head_sha, "tree_sha": head_tree, "branch": head_branch},
         "computed_state": computed,
+        "evaluator": evaluator,
         "producers": producers,
         "finalizer": {"run_id": finalizer.run_id, "run_attempt": finalizer.run_attempt, "workflow": asdict(finalizer.workflow)},
     }
@@ -381,9 +639,21 @@ def publish_pr(
     subject = observation.get("subject")
     if not isinstance(subject, dict):
         raise GitHubControllerError("PR certification subject is missing")
-    head_sha, _ = _current_head(api, repository, positive_int(observation.get("pull_request"), field="pull request number"))
+    pr_number = positive_int(observation.get("pull_request"), field="pull request number")
+    head_sha, _, base_sha, base_branch = _current_pr(api, repository, pr_number)
     if subject.get("commit_sha") != head_sha:
         raise GitHubControllerError("PR certification subject is not the current pull request head")
+    protection = _protection(api, repository, main)
+    expected_evaluator = _evaluator_identity(
+        api,
+        repository=repository,
+        main=main,
+        protection=protection,
+        base_sha=base_sha,
+        base_branch=base_branch,
+    )
+    if observation.get("evaluator") != expected_evaluator:
+        raise GitHubControllerError("PR certification evaluator identity is not exact")
     states = {"pending": StatusConclusion.PENDING, "failed": StatusConclusion.FAILURE, "successful": StatusConclusion.SUCCESS}
     computed = str(observation.get("computed_state"))
     if computed not in states:

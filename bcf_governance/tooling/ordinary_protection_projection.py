@@ -170,7 +170,9 @@ def _rule(detail: dict[str, Any], kind: str) -> dict[str, Any] | None:
     return matches[0] if matches else None
 
 
-def _supported_existing_ruleset(detail: dict[str, Any]) -> dict[str, Any]:
+def _supported_existing_ruleset(
+    detail: dict[str, Any], *, required_check: dict[str, object]
+) -> dict[str, Any]:
     allowed_types = {"pull_request", "required_status_checks", "non_fast_forward", "deletion"}
     rules = detail.get("rules")
     if not isinstance(rules, list) or any(
@@ -226,7 +228,7 @@ def _supported_existing_ruleset(detail: dict[str, Any]) -> dict[str, Any]:
                 ),
             }
         )
-    aggregate = {"context": "bcf/pr-certification", "integration_id": 15368}
+    aggregate = required_check
     if aggregate not in checks:
         checks.append(aggregate)
     checks.sort(key=lambda value: (str(value["context"]), int(value["integration_id"])))
@@ -265,14 +267,12 @@ def _supported_existing_ruleset(detail: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _default_ruleset() -> dict[str, Any]:
+def _default_ruleset(*, required_check: dict[str, object]) -> dict[str, Any]:
     return {
         "name": "main-governance",
         "enforcement": "active",
         "bypass_actors": [],
-        "required_status_checks": [
-            {"context": "bcf/pr-certification", "integration_id": 15368}
-        ],
+        "required_status_checks": [required_check],
         "strict_required_status_checks_policy": True,
         "required_approving_review_count": 0,
         "dismiss_stale_reviews_on_push": True,
@@ -301,10 +301,19 @@ def compile_ordinary_protection_proposal(
     snapshot = provider_protection_snapshot(
         api, repository=repository, branch=branch
     )
+    profile = _profile(root)
+    producers = _producer_workflows(root)
+    terminal = str(producers[0]["required_job_names"][0])
+    required_check: dict[str, object] = {
+        "context": terminal if profile == "lite" else "bcf/pr-certification",
+        "integration_id": 15368,
+    }
     ruleset = (
-        _supported_existing_ruleset(snapshot.detail)
+        _supported_existing_ruleset(
+            snapshot.detail, required_check=required_check
+        )
         if snapshot.detail is not None
-        else _default_ruleset()
+        else _default_ruleset(required_check=required_check)
     )
     return {
         "document": {
@@ -322,14 +331,17 @@ def compile_ordinary_protection_proposal(
             "branch": branch,
         },
         "pr_certification": {
-            "context": "bcf/pr-certification",
+            "context": required_check["context"],
             "publisher_app_id": 15368,
-            "producer_workflows": _producer_workflows(root),
+            "producer_workflows": producers,
+            "evaluator_mode": (
+                "direct_candidate" if profile == "lite" else "protected_base"
+            ),
         },
         "ruleset": ruleset,
         "projection": {
             "kind": "ordinary_adopter",
-            "profile": _profile(root),
+            "profile": profile,
             "provider_prestate": snapshot.declaration_identity(),
         },
     }

@@ -38,7 +38,7 @@ commands:
     cwd: .
     environment: {}
   pr-finalize:
-    argv: ['{controller}', ci-github, pr, finalize, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-pr-finalization']
+    argv: ['{controller}', ci-github, pr, finalize, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-pr-finalization', --candidate-root, '${{ runner.temp }}/bcf-pr-candidate']
     cwd: .
     environment: {}
   pr-publish:
@@ -46,6 +46,14 @@ commands:
     cwd: .
     environment: {}
 step_components:
+  checkout-pr-candidate-material:
+    kind: action
+    name: Materialize the exact candidate without executing its evaluator
+    action: checkout
+    with: {ref: '${{ github.event.workflow_run.head_sha }}', path: '${{ runner.temp }}/bcf-pr-candidate', persist-credentials: false}
+    environment: {}
+    produces: []
+    consumes: []
   automation-admit:
     kind: command
     name: Authenticate the automation producer and bounded changed paths
@@ -157,7 +165,7 @@ workflows:
     permissions: {actions: read, contents: read, pull-requests: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, pr-finalize, upload-pr-finalization]}
+    executor: {kind: component_sequence, evaluator_source: managed_controller, components: [checkout-pr-candidate-material, setup-python, pr-finalize, upload-pr-finalization]}
     produces: [pr-finalization]
     consumes: []
     required: true
@@ -179,7 +187,7 @@ workflows:
     permissions: {actions: read, checks: write, contents: read, pull-requests: read}
     checkout: false
     components: []
-    executor: {kind: component_sequence, components: [setup-python, download-pr-finalization, pr-publish]}
+    executor: {kind: component_sequence, evaluator_source: managed_controller, components: [setup-python, download-pr-finalization, pr-publish]}
     produces: []
     consumes: [pr-finalization]
     required: true

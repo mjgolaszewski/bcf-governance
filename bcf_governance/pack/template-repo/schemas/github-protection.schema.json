@@ -35,7 +35,8 @@
       "additionalProperties": false,
       "required": ["context", "publisher_app_id", "producer_workflows"],
       "properties": {
-        "context": {"const": "bcf/pr-certification"},
+        "context": {"type": "string", "minLength": 1},
+        "evaluator_mode": {"enum": ["direct_candidate", "protected_base", "managed_controller"]},
         "publisher_app_id": {"const": 15368},
         "producer_workflows": {
           "type": "array",
@@ -65,7 +66,7 @@
           "type": "array",
           "minItems": 1,
           "uniqueItems": true,
-          "contains": {"type": "object", "required": ["context", "integration_id"], "properties": {"context": {"const": "bcf/pr-certification"}, "integration_id": {"const": 15368}}},
+          "contains": {"type": "object", "required": ["context", "integration_id"], "properties": {"context": {"type": "string", "minLength": 1}, "integration_id": {"const": 15368}}},
           "minContains": 1,
           "items": {
             "type": "object",
