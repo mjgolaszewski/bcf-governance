@@ -347,12 +347,15 @@ def project_trusted_controller_management(
             raise RuntimeError("managed PR evaluator topology is incomplete")
         graph["commands"]["pr-finalize-managed-controller"] = _command(
             [
+                "/usr/bin/env", "-C", "{env:BCF_PR_CANDIDATE_ROOT}",
                 "{controller}", "ci-github", "pr", "finalize", "--repository",
                 "${{ github.repository }}", "--output",
-                "${{ runner.temp }}/bcf-pr-finalization", "--candidate-root",
-                CANDIDATE_MATERIALIZATION_ROOT,
+                "${{ runner.temp }}/bcf-pr-finalization",
             ],
-            environment={"GITHUB_TOKEN": "${{ github.token }}"},
+            environment={
+                "BCF_PR_CANDIDATE_ROOT": CANDIDATE_MATERIALIZATION_ROOT,
+                "GITHUB_TOKEN": "${{ github.token }}",
+            },
         )
         graph["commands"]["pr-publish-managed-controller"] = _command(
             [

@@ -740,7 +740,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "23955b844b415138bdcfb9eb88fdcb983c3d04316be71180aa4436742140caab"
+      "sha256": "512e76ff7acf063a7a7b267ddd5ad714c705d7a6627cffead8b286970f7bb632"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -1008,7 +1008,7 @@
     },
     "scripts/_bcf_runtime/governance_install/ci_graph.py": {
       "operation": "copy",
-      "sha256": "95fdf5311ad4e467f35109745ddfc171f9ff67dcb8aa6be734e45928d5077030"
+      "sha256": "bd5fcf8000ed6f2ff86f968fafe5633d404a8fda5b52a3abe628f3633ec17ea3"
     },
     "scripts/_bcf_runtime/governance_install/cli.py": {
       "operation": "copy",
