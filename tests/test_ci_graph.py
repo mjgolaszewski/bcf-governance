@@ -2979,6 +2979,33 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
         "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
         "${{ github.event.workflow_run.head_sha }}",
     ]
+    candidate_checkout = next(
+        step for step in rendered_finalizer["jobs"]["finalize"]["steps"]
+        if step.get("with", {}).get("ref")
+        == "${{ github.event.workflow_run.head_sha }}"
+    )
+    assert candidate_checkout["with"]["path"] == (
+        ".bcf-pr-candidate-${{ github.run_id }}-${{ github.run_attempt }}"
+    )
+    finalizer_step = next(
+        step for step in rendered_finalizer["jobs"]["finalize"]["steps"]
+        if step["name"] == "Evaluate the exact candidate with protected-base authority"
+    )
+    assert (
+        "${{ github.workspace }}/.bcf-pr-candidate-"
+        "${{ github.run_id }}-${{ github.run_attempt }}"
+        in finalizer_step["env"].values()
+    )
+
+    graph["step_components"]["checkout-pr-candidate-material"]["with"]["path"] = (
+        "${{ runner.temp }}/bcf-pr-candidate"
+    )
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="run-owned workspace-relative checkout"):
+        validate_ci_graph(tmp_path)
+    graph["step_components"]["checkout-pr-candidate-material"]["with"]["path"] = (
+        ".bcf-pr-candidate-${{ github.run_id }}-${{ github.run_attempt }}"
+    )
 
     managed = copy.deepcopy(graph)
     project_trusted_controller_management(

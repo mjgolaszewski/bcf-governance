@@ -5,6 +5,10 @@ from __future__ import annotations
 from typing import Any
 
 from .ci_graph_builders import component, job
+from .ci_graph_execution import (
+    CANDIDATE_MATERIALIZATION_RELATIVE,
+    CANDIDATE_MATERIALIZATION_ROOT,
+)
 
 
 def apply_standard_pr_evaluator(graph: dict[str, Any]) -> None:
@@ -28,7 +32,7 @@ def apply_standard_pr_evaluator(graph: dict[str, Any]) -> None:
                 "{python}", "-m", "bcf_governance.cli", "ci-github", "pr", "finalize",
                 "--repository", "${{ github.repository }}", "--output",
                 "${{ runner.temp }}/bcf-pr-finalization", "--candidate-root",
-                "${{ runner.temp }}/bcf-pr-candidate",
+                CANDIDATE_MATERIALIZATION_ROOT,
             ], "cwd": ".", "environment": {},
         },
         "pr-publish-protected-base": {
@@ -59,7 +63,7 @@ def apply_standard_pr_evaluator(graph: dict[str, Any]) -> None:
             kind="action", name="Materialize the exact candidate without executing its evaluator",
             action="checkout", **{"with": {
                 "ref": "${{ github.event.workflow_run.head_sha }}",
-                "path": "${{ runner.temp }}/bcf-pr-candidate",
+                "path": CANDIDATE_MATERIALIZATION_RELATIVE,
                 "persist-credentials": False,
             }},
         ),

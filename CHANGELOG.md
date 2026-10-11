@@ -44,6 +44,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Bound protected-base candidate materialization to one run-owned path beneath
+  the GitHub workspace and made graph compilation reject unsafe or divergent
+  checkout-to-evaluator paths before evidence allocation.
 - Derived each local reusable-workflow caller's least permission upper bound
   from its callee graph before rendering, preventing provider startup failures
   while preserving fail-closed candidate write-authority checks.
