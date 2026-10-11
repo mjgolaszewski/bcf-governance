@@ -1168,6 +1168,7 @@ def test_authored_phase_state_rejects_completed_log_while_ledger_active(
     log["document"]["status"] = "completed"
     log_path.write_text(yaml.safe_dump(log, sort_keys=False))
     ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
+    ledger["active_phase"]["lifecycle_status"] = "active"
     assert ledger["active_phase"]["lifecycle_status"] == "active"
     (repo / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump(ledger, sort_keys=False)
