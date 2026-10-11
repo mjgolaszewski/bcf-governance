@@ -45,7 +45,8 @@ execution_evidence:
   - this projection authenticates that exact recovery receipt into the
     temporary recovery-reentry state; ordinary protected certification must
     normalize custody before P31-P0-05 resumes
-  - governance run 38136749177/1 exposed two stale test-only ordinary-state
+  - >-
+    governance run 38136749177/1 exposed two stale test-only ordinary-state
     assumptions: lifecycle authority now explicitly includes authenticated
     recovery re-entry, while the independent release verifier remains closed
     by its exact successful release-authority trigger and runtime dependency
