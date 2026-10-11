@@ -14,6 +14,9 @@ import yaml
 from bcf_governance.tooling import break_glass_recovery as recovery
 from bcf_governance.tooling import break_glass_reentry as reentry
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError, MainIdentity
+from bcf_governance.tooling.ci_graph_controller_lifecycle import (
+    ControllerLifecycleState,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -389,6 +392,108 @@ def test_project_installation_cli_authenticates_provider_receipt_input(
         "--repository", "mjgolaszewski/bcf-governance", "--receipt", str(receipt)
     ])
     assert observed == [(ROOT.resolve(), receipt, artifact, main)]
+
+
+def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    policy_path = tmp_path / "governance/self-governance-policy.yml"
+    policy_path.write_text(
+        yaml.safe_dump({
+            "runner_security": {
+                "trusted_controller_artifact": {"BCF_BOOTSTRAP_COMMIT_SHA": "9" * 40},
+                "trusted_controller_installation": {"installed_commit_sha": "c" * 40},
+                "trusted_controller_recovery_reentry": {"state": "authenticated-recovery-reentry"},
+            }
+        }),
+        encoding="utf-8",
+    )
+    receipt = recovery_receipt()
+    receipt_path = tmp_path / "receipt.json"
+    receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+    main = MainIdentity("1207503211", "main", COMMIT, TREE)
+    monkeypatch.setattr(
+        reentry,
+        "authenticate_projection_receipt",
+        lambda *_args, **_kwargs: (receipt, {}, main),
+    )
+    monkeypatch.setattr(
+        reentry,
+        "resolve_controller_lifecycle",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            state=ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY,
+            installed_commit="c" * 40,
+        ),
+    )
+    ordinary = SimpleNamespace(
+        artifact_id="99",
+        provider_digest="sha256:" + hashlib.sha256(b"archive").hexdigest(),
+    )
+    monkeypatch.setattr(
+        reentry,
+        "resolve_self_controller_artifact",
+        lambda *_args, **_kwargs: (
+            {"repository_id": "1207503211", "commit_sha": COMMIT, "tree_sha": TREE},
+            ordinary,
+        ),
+        raising=False,
+    )
+    monkeypatch.setattr(reentry, "_safe_archive", lambda *_args: None)
+    pin = {
+        "BCF_BOOTSTRAP_ARTIFACT_ID": "99",
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-1",
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": ordinary.provider_digest,
+        "BCF_BOOTSTRAP_RUN_ID": "40",
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": "1",
+        "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+        "BCF_BOOTSTRAP_TREE_SHA": TREE,
+        "BCF_BOOTSTRAP_REPOSITORY_ID": "1207503211",
+        "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
+    }
+    monkeypatch.setattr(
+        reentry,
+        "compile_resolved_self_controller_pin",
+        lambda *_args, **_kwargs: pin,
+    )
+
+    def project(_root, *, pin, confirmation, apply):
+        assert apply is True
+        policy_path.write_text(yaml.safe_dump({
+            "runner_security": {
+                "trusted_controller_artifact": pin,
+                "trusted_controller_installation": confirmation,
+            }
+        }), encoding="utf-8")
+        return SimpleNamespace(changed_paths=("governance/self-governance-policy.yml",))
+
+    monkeypatch.setattr(reentry, "project_self_controller_pin", project)
+
+    class API:
+        def artifact_bytes(self, *_args):
+            return b"archive"
+
+    result = reentry.normalize_recovered_installation(
+        api=API(), root=tmp_path, repository="mjgolaszewski/bcf-governance",
+        receipt_path=receipt_path,
+    )
+    assert result["status"] == "ordinary_current_projected_for_protected_pr"
+    normalized = yaml.safe_load(policy_path.read_text())["runner_security"]
+    assert normalized["trusted_controller_artifact"] == pin
+    assert "trusted_controller_recovery_reentry" not in normalized
+
+    bad = recovery_receipt()
+    bad["artifact"]["wheel_sha256"] = "f" * 64
+    monkeypatch.setattr(
+        reentry,
+        "authenticate_projection_receipt",
+        lambda *_args, **_kwargs: (bad, {}, main),
+    )
+    with pytest.raises(GitHubControllerError, match="bytes differ"):
+        reentry.normalize_recovered_installation(
+            api=API(), root=tmp_path, repository="mjgolaszewski/bcf-governance",
+            receipt_path=receipt_path,
+        )
 
 
 def test_projection_receipt_authenticates_exact_provider_archive(

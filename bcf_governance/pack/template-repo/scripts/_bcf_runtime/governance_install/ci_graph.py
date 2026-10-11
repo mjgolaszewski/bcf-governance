@@ -39,6 +39,111 @@ def exact_main_controller_artifact_condition(
     return condition
 
 
+def _project_exact_main_builder_topology(
+    graph: dict[str, Any], *, recovery_reentry: bool
+) -> None:
+    exact_main = next(
+        item for item in graph["workflows"] if item["id"] == "exact-main"
+    )
+    builder = next(
+        item for item in exact_main["jobs"] if item["id"] == "trusted-controller-build"
+    )
+    builder["executor"]["components"] = [
+        "checkout-candidate",
+        "setup-python",
+        "install-governance",
+        *(["setup-controller-custody-directory"] if recovery_reentry else []),
+        (
+            "resolve-recovery-controller-candidate"
+            if recovery_reentry
+            else "resolve-effective-controller-candidate"
+        ),
+        "classify-exact-main-controller",
+        *(
+            ["upload-controller-custody"]
+            if recovery_reentry
+            else [
+                "setup-controller-custody-directory",
+                "project-controller-custody",
+                "upload-controller-custody",
+            ]
+        ),
+        "build-trusted-controller",
+        "upload-trusted-controller",
+    ]
+    builder["produces"] = ["controller-custody", "trusted-controller-bundle"]
+
+
+def _ensure_recovery_builder_primitives(graph: dict[str, Any]) -> None:
+    graph["commands"]["resolve-recovery-controller-candidate"] = _command(
+        [
+            "{python}",
+            "-m",
+            "bcf_governance.cli",
+            "ci",
+            "controller-recovery-route",
+            "--repo-root",
+            ".",
+            "--github-output",
+            "--format",
+            "json",
+            "--output",
+            "${{ runner.temp }}/bcf-controller-custody/controller-custody.json",
+        ]
+    )
+    graph["step_components"]["resolve-recovery-controller-candidate"] = {
+        "kind": "command",
+        "name": (
+            "Derive authenticated recovery controller for non-authoritative "
+            "builder routing"
+        ),
+        "id": "candidate-effective-controller",
+        "command": "resolve-recovery-controller-candidate",
+        "environment": {},
+        "produces": ["controller-custody"],
+        "consumes": [],
+    }
+
+
+def reconcile_trusted_controller_runtime_topology(
+    repo_root: Path, *, apply: bool
+) -> tuple[str, ...]:
+    """Derive recovery/current builder routing from the authenticated policy state."""
+
+    root = repo_root.resolve()
+    graph_path = root / "governance/ci-graph.yml"
+    graph = load_yaml_path(graph_path)
+    policy_reference = graph.get("trusted_controller")
+    if (
+        isinstance(policy_reference, dict)
+        and policy_reference.get("kind") == "executable"
+    ):
+        return ()
+    if not isinstance(policy_reference, dict) or policy_reference.get("kind") not in {
+        "governed_controller_policy",
+        "self_governance_policy",
+    }:
+        raise RuntimeError("CI graph lacks managed controller policy ownership")
+    policy_path = str(policy_reference.get("policy_path", ""))
+    if not policy_path:
+        raise RuntimeError("CI graph managed controller policy path is missing")
+    policy = load_yaml_path(root / policy_path)
+    runner = policy.get("runner_security") if isinstance(policy, dict) else None
+    if not isinstance(runner, dict):
+        raise RuntimeError("trusted controller policy lacks runner security")
+    projected = load_yaml_path(graph_path)
+    _ensure_recovery_builder_primitives(projected)
+    _project_exact_main_builder_topology(
+        projected,
+        recovery_reentry="trusted_controller_recovery_reentry" in runner,
+    )
+    rendered = render_yaml(projected)
+    changed = graph_path.read_bytes() != rendered
+    if changed and apply:
+        graph_path.write_bytes(rendered)
+    return ("governance/ci-graph.yml",) if changed else ()
+
+
 def apply_trusted_controller_management(
     target_root: Path,
     graph: dict[str, Any],
@@ -68,6 +173,11 @@ def apply_trusted_controller_management(
         trusted_labels,
         policy_sha256=hashlib.sha256(policy_path.read_bytes()).hexdigest(),
         extension_sha256=hashlib.sha256(extension_path.read_bytes()).hexdigest(),
+        recovery_installed_commit=(
+            str(runner["trusted_controller_installation"]["installed_commit_sha"])
+            if "trusted_controller_recovery_reentry" in runner
+            else None
+        ),
     )
 
 
@@ -77,6 +187,7 @@ def project_trusted_controller_management(
     *,
     policy_sha256: str,
     extension_sha256: str,
+    recovery_installed_commit: str | None = None,
 ) -> None:
     """Purely project validated managed-controller inputs into a CI graph."""
 
@@ -150,6 +261,13 @@ def project_trusted_controller_management(
                     "${{ github.repository }}",
                 ],
                 environment={"GITHUB_TOKEN": "${{ github.token }}"},
+            ),
+            "resolve-recovery-controller-candidate": _command(
+                [
+                    "{python}", "-m", "bcf_governance.cli", "ci",
+                    "controller-recovery-route", "--repo-root", ".",
+                    "--github-output", "--format", "json",
+                ]
             ),
             "classify-exact-main-controller": _command(
                 [
@@ -235,6 +353,7 @@ def project_trusted_controller_management(
         {
             "build-trusted-controller": {"kind": "command", "name": "Build the exact-main trusted controller bundle", "condition": "exact-main-controller-build-required", "command": "build-trusted-controller", "environment": {}, "produces": ["trusted-controller-bundle"], "consumes": []},
             "resolve-effective-controller-candidate": {"kind": "command", "name": "Observe provider-effective controller for non-authoritative routing", "id": "candidate-effective-controller", "command": "resolve-effective-controller-candidate", "environment": {}, "produces": [], "consumes": []},
+            "resolve-recovery-controller-candidate": {"kind": "command", "name": "Derive authenticated recovery controller for non-authoritative builder routing", "id": "candidate-effective-controller", "command": "resolve-recovery-controller-candidate", "environment": {}, "produces": [], "consumes": []},
             "classify-exact-main-controller": {"kind": "command", "name": "Classify exact-main semantic evidence applicability", "id": "exact-main-applicability", "command": "classify-exact-main-controller", "environment": {}, "produces": [], "consumes": []},
             "setup-controller-custody-directory": {"kind": "directory_setup", "name": "Allocate the exact-main controller custody directory", "paths": ["${{ runner.temp }}/bcf-controller-custody"], "produces": [], "consumes": []},
             "project-controller-custody": {"kind": "command", "name": "Project provider-authenticated controller custody", "command": "project-controller-custody", "environment": {}, "produces": ["controller-custody"], "consumes": []},
@@ -333,6 +452,10 @@ def project_trusted_controller_management(
             "executor": {"kind": "component_sequence", "components": ["checkout-candidate", "setup-python", "install-governance", "resolve-effective-controller-candidate", "classify-exact-main-controller", "setup-controller-custody-directory", "project-controller-custody", "upload-controller-custody", "build-trusted-controller", "upload-trusted-controller"]},
             "produces": ["controller-custody", "trusted-controller-bundle"], "consumes": [], "required": True,
         }
+    )
+    _ensure_recovery_builder_primitives(graph)
+    _project_exact_main_builder_topology(
+        graph, recovery_reentry=recovery_installed_commit is not None
     )
     finalizer = next(item for item in graph["workflows"] if item["id"] == "exact-main-finalizer")
     finalizer["events"][0]["workflows"] = ["bcf/exact-main-admission"]

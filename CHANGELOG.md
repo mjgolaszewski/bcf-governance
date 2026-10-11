@@ -44,6 +44,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Derived exact-main builder routing and its typed custody exclusion from
+  authenticated recovery state, and added one atomic compiler that restores
+  ordinary target/install custody only when normal and recovered artifacts are
+  exact-subject, byte-identical proofs.
 - Authenticated the exact noncertifying controller-recovery receipt needed to
   restore ordinary protected certification after repairing the protected-base
   PR finalizer; recovery remains unable to certify, publish, merge, or release.

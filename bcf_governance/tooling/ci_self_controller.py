@@ -274,6 +274,21 @@ def compile_self_controller_pin(
         trigger_run_id=trigger_run_id,
         trigger_run_attempt=trigger_run_attempt,
     )
+    return compile_resolved_self_controller_pin(
+        subject=subject, artifact=artifact, artifact_dir=artifact_dir
+    )
+
+
+def compile_resolved_self_controller_pin(
+    *,
+    subject: dict[str, str],
+    artifact: ProviderArtifact,
+    artifact_dir: Path,
+) -> dict[str, str]:
+    """Compile one pin from an already authenticated immutable provider selection."""
+
+    if set(subject) != {"repository_id", "commit_sha", "tree_sha"}:
+        raise GitHubControllerError("self-controller subject inventory is not exact")
     root = artifact_dir.resolve()
     wheel, _ = verify_controller_inventory(root)
     verify_controller_subject_metadata(

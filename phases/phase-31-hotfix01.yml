@@ -67,6 +67,26 @@ execution_evidence:
     cheap PR preflight passed on committed implementation tree
     43109bab2ea89305677edc703fe31b7ed9d98ba8 with pending_rotation and
     release_authority false
+  - >-
+    merged repair f90f3e6141eda80037872dbc0ea7b6abb043f103 exposed a
+    recovery-routing edge: exact-main 38147761035/1 called the ordinary-current
+    provider resolver before its independent builder and rejected the active
+    authenticated recovery state; no evidence or authority executed
+  - >-
+    canonical recovery routing now derives only the installed controller for
+    non-authoritative builder applicability, emits a typed fail-closed custody
+    exclusion for structurally disabled consumers, and builds normal exact-main
+    bytes without enabling finalization, publication, rotation, or release
+  - >-
+    normalization is one deterministic operation over a unique successful
+    ordinary exact-main artifact plus a separate exact-subject Break Glass
+    install/probe receipt; it requires identical commit, tree, and wheel digest,
+    then atomically projects target equals installed and removes recovery re-entry
+  - >-
+    owner-authorized Break Glass build 38148386256/1 proved current main bytes
+    build successfully but was intentionally not installed because the active
+    prior recovery receipt cannot be replaced outside the new atomic
+    normalization contract
 closeout_requirements:
   claims:
     required_suites_green:

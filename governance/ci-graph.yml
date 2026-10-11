@@ -157,6 +157,10 @@ commands:
     argv: ['${{ runner.tool_cache }}/bcf-governance/${{ steps.controller-route.outputs.controller_commit_sha }}/bin/bcf', ci-github, exact-main, publish, --repository, '${{ github.repository }}', --bundle, '${{ runner.temp }}/bcf-exact-main-certification', --target-url, 'https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}', --collector-run-id, '${{ github.event.workflow_run.id }}', --collector-run-attempt, '${{ github.event.workflow_run.run_attempt }}']
     cwd: .
     environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_CONTROLLER_CUSTODY_PATH: '${{ runner.temp }}/bcf-exact-main-certification/controller-custody.json', BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
+  resolve-recovery-controller-candidate:
+    argv: ['{python}', -m, bcf_governance.cli, ci, controller-recovery-route, --repo-root, ., --github-output, --format, json, --output, '${{ runner.temp }}/bcf-controller-custody/controller-custody.json']
+    cwd: .
+    environment: {}
 step_components:
   checkout-candidate:
     kind: action
@@ -506,6 +510,14 @@ step_components:
     environment: {}
     produces: [trusted-controller-bundle]
     consumes: []
+  resolve-recovery-controller-candidate:
+    kind: command
+    name: Derive authenticated recovery controller for non-authoritative builder routing
+    id: candidate-effective-controller
+    command: resolve-recovery-controller-candidate
+    environment: {}
+    produces: [controller-custody]
+    consumes: []
 workflows:
 - id: governance
   path: .github/workflows/governance.yml
@@ -650,7 +662,7 @@ workflows:
     outputs: {controller_state: '${{ steps.exact-main-applicability.outputs.controller_state }}', semantic_evidence_applicable: '${{ steps.exact-main-applicability.outputs.semantic_evidence_applicable }}', target_commit: '${{ steps.exact-main-applicability.outputs.target_commit }}'}
     executor:
       kind: component_sequence
-      components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate, classify-exact-main-controller, setup-controller-custody-directory, project-controller-custody, upload-controller-custody, build-trusted-controller, upload-trusted-controller]
+      components: [checkout-candidate, setup-python, install-governance, setup-controller-custody-directory, resolve-recovery-controller-candidate, classify-exact-main-controller, upload-controller-custody, build-trusted-controller, upload-trusted-controller]
     produces: [controller-custody, trusted-controller-bundle]
     consumes: []
     required: true

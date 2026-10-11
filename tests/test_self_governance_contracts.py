@@ -19,6 +19,9 @@ from bcf_governance.tooling.ci_graph_execution import (
     exact_main_evaluation,
     job_required_environment,
 )
+from bcf_governance.tooling.ci_graph_controller_lifecycle import (
+    ControllerLifecycleState,
+)
 from bcf_governance.tooling.ci_graph_render import (
     check_ci_graph,
     render_ci_graph,
@@ -213,14 +216,32 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
     assert builder["needs"] == []
     assert builder["condition"] == "exact-main-authority-enabled"
     assert builder["semantic_role"] == "exact-main-controller-builder"
+    compiled = validate_ci_graph(REPO_ROOT)
+    recovery = (
+        compiled.trusted_controller_lifecycle.state
+        is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
+    )
+    expected_route = (
+        "resolve-recovery-controller-candidate"
+        if recovery
+        else "resolve-effective-controller-candidate"
+    )
+    expected_custody = (
+        ["setup-controller-custody-directory"]
+        if recovery
+        else [
+            "setup-controller-custody-directory",
+            "project-controller-custody",
+        ]
+    )
     assert builder["executor"]["components"] == [
         "checkout-candidate",
         "setup-python",
         "install-governance",
-        "resolve-effective-controller-candidate",
+        *(["setup-controller-custody-directory"] if recovery else []),
+        expected_route,
         "classify-exact-main-controller",
-        "setup-controller-custody-directory",
-        "project-controller-custody",
+        *([] if recovery else expected_custody),
         "upload-controller-custody",
         "build-trusted-controller",
         "upload-trusted-controller",

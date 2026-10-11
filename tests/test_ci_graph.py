@@ -78,10 +78,27 @@ from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issu
 from bcf_governance.tooling.governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
     project_trusted_controller_management,
+    reconcile_trusted_controller_runtime_topology,
 )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_external_controller_graph_lock_excludes_self_runtime_projection(
+    tmp_path: Path,
+) -> None:
+    graph_path = tmp_path / "governance/ci-graph.yml"
+    graph_path.parent.mkdir(parents=True)
+    original = render_yaml(
+        {"trusted_controller": {"kind": "executable", "executable": "bcf"}}
+    )
+    graph_path.write_bytes(original)
+
+    assert reconcile_trusted_controller_runtime_topology(
+        tmp_path, apply=True
+    ) == ()
+    assert graph_path.read_bytes() == original
 
 
 def test_workflow_run_chain_cannot_exceed_provider_depth_limit() -> None:
@@ -2337,12 +2354,23 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert builder["produces"] == [
         "controller-custody", "trusted-controller-bundle",
     ]
-    assert "project-controller-custody" in builder["executor"]["components"]
+    recovery = (
+        validate_ci_graph(REPO_ROOT).trusted_controller_lifecycle.state
+        is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
+    )
+    assert (
+        "project-controller-custody" in builder["executor"]["components"]
+    ) is not recovery
     assert "upload-controller-custody" in builder["executor"]["components"]
     assert "build-trusted-controller" in builder["executor"]["components"]
     assert "upload-trusted-controller" in builder["executor"]["components"]
+    route_component = (
+        "resolve-recovery-controller-candidate"
+        if recovery
+        else "resolve-effective-controller-candidate"
+    )
     assert builder["executor"]["components"].index(
-        "resolve-effective-controller-candidate"
+        route_component
     ) < builder["executor"]["components"].index("classify-exact-main-controller")
     assert builder["executor"]["components"].index(
         "classify-exact-main-controller"

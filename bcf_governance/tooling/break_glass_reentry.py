@@ -25,6 +25,15 @@ from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError, resolve_main
 from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
+from .ci_graph_controller_lifecycle import (
+    ControllerLifecycleState,
+    resolve_controller_lifecycle,
+)
+from .ci_self_controller import (
+    compile_resolved_self_controller_pin,
+    project_self_controller_pin,
+    resolve_self_controller_artifact,
+)
 
 
 def authenticate_projection_receipt(
@@ -265,4 +274,106 @@ def project_installation(
                 *render.changed_paths,
             }
         ),
+    }
+
+
+def normalize_recovered_installation(
+    *,
+    api: GitHubAPI,
+    root: Path,
+    repository: str,
+    receipt_path: Path,
+) -> dict[str, Any]:
+    """Atomically replace recovery custody with matching ordinary artifact custody."""
+
+    receipt, _, main = authenticate_projection_receipt(
+        api, root=root, repository=repository, receipt_path=receipt_path
+    )
+    policy = yaml.safe_load(
+        (root / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )
+    runner = policy.get("runner_security") if isinstance(policy, dict) else None
+    if not isinstance(runner, dict):
+        raise GitHubControllerError("self-governance runner policy is invalid")
+    lifecycle = resolve_controller_lifecycle(root, runner)
+    if lifecycle.state is not ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY:
+        raise GitHubControllerError(
+            "recovery normalization requires authenticated recovery re-entry"
+        )
+    subject = receipt["subject"]
+    if (
+        receipt["pre_recovery_controller"] != lifecycle.installed_commit
+        or receipt["resulting_installed_controller"] != main.checkout_sha
+        or subject != {"commit": main.checkout_sha, "tree": main.tree_sha}
+    ):
+        raise GitHubControllerError(
+            "recovery normalization receipt does not continue exact installed custody"
+        )
+    raw_artifact = None
+    ordinary_subject, ordinary_artifact = resolve_self_controller_artifact(
+        api, repository=repository
+    )
+    if ordinary_subject != {
+        "repository_id": main.repository_id,
+        "commit_sha": main.checkout_sha,
+        "tree_sha": main.tree_sha,
+    }:
+        raise GitHubControllerError(
+            "ordinary controller artifact subject differs from recovery installation"
+        )
+    raw_artifact = api.artifact_bytes(repository, ordinary_artifact.artifact_id)
+    if ordinary_artifact.provider_digest != (
+        "sha256:" + hashlib.sha256(raw_artifact).hexdigest()
+    ):
+        raise GitHubControllerError(
+            "ordinary controller artifact differs from provider digest"
+        )
+    with tempfile.TemporaryDirectory(prefix="bcf-recovery-normalization-") as name:
+        extracted = Path(name)
+        _safe_archive(raw_artifact, extracted)
+        pin = compile_resolved_self_controller_pin(
+            subject=ordinary_subject,
+            artifact=ordinary_artifact,
+            artifact_dir=extracted,
+        )
+    if (
+        pin["BCF_BOOTSTRAP_COMMIT_SHA"] != receipt["subject"]["commit"]
+        or pin["BCF_BOOTSTRAP_TREE_SHA"] != receipt["subject"]["tree"]
+        or pin["BCF_BOOTSTRAP_WHEEL_SHA256"] != receipt["artifact"]["wheel_sha256"]
+    ):
+        raise GitHubControllerError(
+            "ordinary and recovered controller identities or bytes differ"
+        )
+    confirmation = {
+        key: receipt["controller_confirmation"][key]
+        for key in (
+            "schema_version",
+            "installed_commit_sha",
+            "subject_commit_sha",
+            "subject_tree_sha",
+            "bootstrap_run_id",
+            "bootstrap_run_attempt",
+            "probe_run_id",
+            "probe_run_attempt",
+        )
+    }
+    projection = project_self_controller_pin(
+        root, pin=pin, confirmation=confirmation, apply=True
+    )
+    normalized = yaml.safe_load(
+        (root / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
+    )["runner_security"]
+    if (
+        normalized["trusted_controller_artifact"] != pin
+        or normalized["trusted_controller_installation"] != confirmation
+        or "trusted_controller_recovery_reentry" in normalized
+    ):
+        raise GitHubControllerError("recovery normalization projection is incomplete")
+    return {
+        "status": "ordinary_current_projected_for_protected_pr",
+        "installed_commit_sha": confirmation["installed_commit_sha"],
+        "ordinary_artifact_id": pin["BCF_BOOTSTRAP_ARTIFACT_ID"],
+        "ordinary_artifact_run_id": pin["BCF_BOOTSTRAP_RUN_ID"],
+        "wheel_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
+        "changed_paths": list(projection.changed_paths),
     }
