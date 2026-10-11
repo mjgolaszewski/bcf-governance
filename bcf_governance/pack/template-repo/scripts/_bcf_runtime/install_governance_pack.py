@@ -20,6 +20,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
+from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
@@ -43,10 +44,7 @@ from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
 from .semantic_authority_commands import _apply_config, _load_config  # noqa: E402
 from .ci_graph_locks import apply_ci_graph_locks  # noqa: E402
 from .ci_graph_post_merge import reconcile_post_merge_scope  # noqa: E402
-from .ci_graph_render import (  # noqa: E402
-    apply_ci_graph,
-    managed_generated_paths,
-)
+from .ci_graph_render import apply_ci_graph  # noqa: E402
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -745,8 +743,9 @@ def install(args: argparse.Namespace) -> InstallResult:
         _confirm_force_rescaffold(target_root, args.yes)
     result_box: list[InstallResult] = []
     graph_path = target_root / "governance/ci-graph.yml"
-    transaction_paths = INSTALL_MANAGED_PATHS + (
-        managed_generated_paths(target_root) if graph_path.is_file() else ()
+    transaction_paths = install_transaction_paths(
+        args, contract=args.profile_contract, contract_version=contract_version,
+        target_root=target_root, baseline=INSTALL_MANAGED_PATHS,
     )
 
     def mutate(shadow: Path) -> None:

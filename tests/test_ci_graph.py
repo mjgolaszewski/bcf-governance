@@ -77,6 +77,7 @@ from bcf_governance.tooling.evaluation_scope import (
 from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issues
 from bcf_governance.tooling.governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
+    project_trusted_controller_management,
 )
 
 
@@ -2953,12 +2954,51 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
     _write_graph(tmp_path, graph)
     with pytest.raises(CIGraphError, match="duplicate implicit and explicit checkout ownership"):
         validate_ci_graph(tmp_path)
+    graph["workflows"][0]["jobs"][0]["checkout"] = False
+    _write_graph(tmp_path, graph)
     exact_main = next(item for item in compiled.workflows if item["id"] == "exact-main")
     admit, producer = exact_main["jobs"]
     assert admit["executor"]["operation"] == "admit-with-prior-evidence"
     assert admit["produces"] == ["prior-evidence-transport"]
     assert producer["executor"]["artifact_bindings"] == {
         "prior-evidence-transport": "use_prior_evidence"
+    }
+    finalizer = next(
+        item for item in compiled.workflows if item["id"] == "pr-finalizer"
+    )
+    assert finalizer["jobs"][0]["executor"]["evaluator_source"] == "protected_base"
+    rendered_finalizer = yaml.safe_load(
+        render_ci_graph(tmp_path)[".github/workflows/bcf-pr-finalizer.yml"]
+    )
+    checkout_refs = [
+        step["with"]["ref"]
+        for step in rendered_finalizer["jobs"]["finalize"]["steps"]
+        if str(step.get("uses", "")).startswith("actions/checkout@")
+    ]
+    assert checkout_refs == [
+        "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
+        "${{ github.event.workflow_run.head_sha }}",
+    ]
+
+    managed = copy.deepcopy(graph)
+    project_trusted_controller_management(
+        managed,
+        ["self-hosted", "fixture-trusted"],
+        policy_sha256="a" * 64,
+        extension_sha256="b" * 64,
+    )
+    managed_finalizer = next(
+        item for item in managed["workflows"] if item["id"] == "pr-finalizer"
+    )
+    assert managed_finalizer["jobs"][0]["executor"] == {
+        "kind": "component_sequence",
+        "evaluator_source": "managed_controller",
+        "components": [
+            "checkout-pr-candidate-material",
+            "setup-python",
+            "pr-finalize-managed-controller",
+            "upload-pr-finalization",
+        ],
     }
 
 
@@ -2976,6 +3016,7 @@ def test_lite_reference_graph_has_no_release_or_trusted_control(tmp_path: Path) 
     _write_graph(tmp_path, graph)
     compiled = validate_ci_graph(tmp_path)
     assert [item["id"] for item in compiled.workflows] == ["governance"]
+    assert compiled.graph["policy"].get("reserved_status_contexts", []) == []
     assert compiled.workflows[0]["role"] == "exact-main"
     assert {event["type"] for event in compiled.workflows[0]["events"]} == {
         "pull_request",

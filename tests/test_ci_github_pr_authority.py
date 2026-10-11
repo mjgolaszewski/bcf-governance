@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import io
+import json
 import zipfile
 from pathlib import Path
 
@@ -292,6 +293,41 @@ def test_publisher_rejects_a_moved_pr_head(tmp_path: Path) -> None:
     api.runs["50"].update(status="completed", conclusion="success")
     api.head = "9" * 40
     with pytest.raises(GitHubControllerError, match="current pull request head"):
+        publish_pr(
+            api,
+            repository=REPOSITORY,
+            event={"workflow_run": {"id": 50, "run_attempt": 1}},
+            publisher_run_id=60,
+            publisher_run_attempt=1,
+            bundle_root=bundle,
+            target_url="https://github.com/owner/repo/actions/runs/50",
+        )
+
+
+def test_publisher_rejects_substituted_evaluator_identity(tmp_path: Path) -> None:
+    api = FakePRAuthorityAPI()
+    bundle = tmp_path / "bundle"
+    finalize_pr(
+        api,
+        repository=REPOSITORY,
+        event={"workflow_run": {"id": 30, "run_attempt": 1}},
+        finalizer_run_id=50,
+        finalizer_run_attempt=1,
+        output_root=bundle,
+    )
+    observation_path = bundle / "pr-observation.json"
+    observation = json.loads(observation_path.read_text(encoding="utf-8"))
+    observation["evaluator"]["runtime"]["sha256"] = "0" * 64
+    raw = (json.dumps(observation, indent=2, sort_keys=True) + "\n").encode()
+    observation_path.write_bytes(raw)
+    manifest_path = bundle / "bundle-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"]["pr-observation.json"] = hashlib.sha256(raw).hexdigest()
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    api.runs["50"].update(status="completed", conclusion="success")
+    with pytest.raises(GitHubControllerError, match="evaluator identity is not exact"):
         publish_pr(
             api,
             repository=REPOSITORY,

@@ -457,14 +457,14 @@ def _runner_mapping(
     )
 
 
-def write_reference_ci_graph(
-    args: Any, target_root: Path, contract: dict[str, Any]
-) -> None:
+def reference_ci_graph(args: Any, contract: dict[str, Any]) -> dict[str, Any]:
+    """Derive a fresh-install graph before the install transaction mutates bytes."""
+
     contract_version = str(contract.get("profile_contract_version", "1.0"))
     candidate, trusted, candidate_hosted, trusted_hosted = _runner_mapping(
         args, contract_version=contract_version
     )
-    graph = build_reference_ci_graph(
+    return build_reference_ci_graph(
         project_id=args.project_id,
         profile=args.profile,
         profile_contract_version=contract_version,
@@ -474,6 +474,12 @@ def write_reference_ci_graph(
         candidate_hosted=candidate_hosted,
         trusted_hosted=trusted_hosted,
     )
+
+
+def write_reference_ci_graph(
+    args: Any, target_root: Path, contract: dict[str, Any]
+) -> None:
+    graph = reference_ci_graph(args, contract)
     extension_path = target_root / ROTATION_EXTENSION
     if extension_path.is_symlink():
         raise RuntimeError("canonical controller rotation extension is unsafe")

@@ -171,6 +171,11 @@ def _evaluator_identity(
         "publisher_app_id"
     ) != CHECK_APP_ID:
         raise GitHubControllerError("PR evaluator check identity is not exact")
+    declared_mode = check.get("evaluator_mode")
+    if declared_mode is not None and declared_mode != mode:
+        raise GitHubControllerError(
+            "PR evaluator source differs from the reviewed protection contract"
+        )
     return {
         "mode": mode,
         "base": {

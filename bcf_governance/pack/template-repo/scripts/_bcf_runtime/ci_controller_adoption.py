@@ -14,6 +14,7 @@ from .ci_graph_yaml import load_yaml_path, render_yaml
 from .governance_install.ci_graph import apply_trusted_controller_management
 from .governance_install.transaction import apply_transaction
 from .trusted_controller_compatibility import verify_trusted_controller_compatibility
+from .github_protection import PROTECTION_PATH
 from .ci_controller_policy import (
     POLICY_PATH,
     ROTATION_EXTENSION,
@@ -73,6 +74,17 @@ def _project(root: Path, payload: dict[str, Any]) -> None:
         )
     apply_trusted_controller_management(root, graph, _trusted_labels(graph), payload)
     graph_path.write_bytes(render_yaml(graph))
+    protection_path = root / PROTECTION_PATH
+    if protection_path.is_file() and not protection_path.is_symlink():
+        protection = load_yaml_path(protection_path)
+        if protection.get("schema_version") == "1.1":
+            certification = protection.get("pr_certification")
+            if not isinstance(certification, dict):
+                raise TrustedControllerPolicyError(
+                    "ordinary protection certification contract is malformed"
+                )
+            certification["evaluator_mode"] = "managed_controller"
+            protection_path.write_bytes(render_yaml(protection))
     apply_ci_graph(root)
     validate_ci_graph(root)
 
@@ -109,6 +121,8 @@ def adopt_trusted_controller(
                 for path in (shadow / ".github/workflows").glob("*.y*ml")
             ),
         }
+        if (shadow / PROTECTION_PATH).is_file():
+            candidates.add(PROTECTION_PATH.as_posix())
         changed = tuple(
             sorted(
                 relative

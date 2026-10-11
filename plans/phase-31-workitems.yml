@@ -45,7 +45,7 @@ workitems:
   - contract-test
 - id: P31-P0-04
   priority: P0
-  status: TODO
+  status: DONE
   summary: deliver authenticate a base-pinned independent evaluator
   acceptance:
   - requires-workitem-closure:P31-P0-03
