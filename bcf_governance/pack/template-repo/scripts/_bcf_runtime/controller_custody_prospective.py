@@ -273,10 +273,52 @@ def validate_controller_custody_chain(
         raise GitHubControllerError("exact-main admission target is not builder-routed")
     controller_builder = _job(graph, "exact-main", "trusted-controller-build")
     custody_components = _components(controller_builder)
-    if not _ordered(
+    ordinary_custody = _ordered(
         custody_components, "project-controller-custody", "upload-controller-custody"
-    ) or "controller-custody" not in controller_builder.get("produces", []):
+    )
+    recovery_exclusion = _ordered(
+        custody_components,
+        "resolve-recovery-controller-candidate",
+        "upload-controller-custody",
+    )
+    if ordinary_custody == recovery_exclusion:
+        raise GitHubControllerError(
+            "exact-main route-custody producer lane is ambiguous or missing"
+        )
+    if "controller-custody" not in controller_builder.get("produces", []):
         raise GitHubControllerError("exact-main route-custody producer is not closed")
+    if recovery_exclusion:
+        recovery_component = graph.get("step_components", {}).get(
+            "resolve-recovery-controller-candidate", {}
+        )
+        recovery_command = graph.get("commands", {}).get(
+            "resolve-recovery-controller-candidate", {}
+        )
+        recovery_argv = (
+            recovery_command.get("argv")
+            if isinstance(recovery_command, Mapping)
+            else None
+        )
+        if (
+            "resolve-effective-controller-candidate" in custody_components
+            or "project-controller-custody" in custody_components
+            or recovery_component.get("produces") != ["controller-custody"]
+            or recovery_component.get("consumes") != []
+            or not isinstance(recovery_argv, list)
+            or recovery_argv[:4]
+            != ["{python}", "-m", "bcf_governance.cli", "ci"]
+            or "controller-recovery-route" not in recovery_argv
+            or "--output" not in recovery_argv
+            or exact_admit.get("controller_requirement")
+            != "current-or-recovery-reentry"
+        ):
+            raise GitHubControllerError(
+                "exact-main recovery custody exclusion is not closed"
+            )
+    elif "resolve-recovery-controller-candidate" in custody_components:
+        raise GitHubControllerError(
+            "ordinary exact-main custody includes recovery routing"
+        )
     finalizer = _job(graph, "exact-main-finalizer", "finalize")
     finalizer_components = _components(finalizer)
     if (

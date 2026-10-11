@@ -114,6 +114,51 @@ def test_prospective_chain_executes_every_producer_shape_and_consumer_route() ->
     ]
 
 
+@pytest.mark.parametrize(
+    "mutation, expected",
+    [
+        (
+            lambda components: components.remove(
+                "resolve-recovery-controller-candidate"
+            ),
+            "producer lane is ambiguous or missing",
+        ),
+        (
+            lambda components: components.insert(
+                components.index("upload-controller-custody"),
+                "project-controller-custody",
+            ),
+            "producer lane is ambiguous or missing",
+        ),
+        (
+            lambda components: components.insert(
+                components.index("upload-controller-custody"),
+                "resolve-effective-controller-candidate",
+            ),
+            "recovery custody exclusion is not closed",
+        ),
+    ],
+)
+def test_prospective_chain_rejects_unclosed_recovery_custody_lane(
+    mutation, expected: str
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    builder = next(
+        job
+        for job in next(
+            value for value in graph["workflows"] if value["id"] == "exact-main"
+        )["jobs"]
+        if job["id"] == "trusted-controller-build"
+    )
+    mutation(builder["executor"]["components"])
+    with pytest.raises(GitHubControllerError, match=expected):
+        validate_controller_custody_chain(
+            graph,
+            python_executable=Path(sys.executable),
+        )
+
+
 def test_prospective_chain_rejects_publisher_without_exact_finalizer_custody() -> None:
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
