@@ -354,6 +354,34 @@ def job_execution_issues(
     """Return deterministic interpreter and trusted-input contract violations."""
 
     issues: list[str] = []
+    evaluator_source = executor.get("evaluator_source")
+    if evaluator_source is not None:
+        component_ids = executor.get("components", [])
+        checkouts = [
+            graph["step_components"][component_id]
+            for component_id in component_ids
+            if graph["step_components"][component_id].get("action") == "checkout"
+        ]
+        controller_commands = controller_command_ids(graph, executor)
+        if evaluator_source == "protected_base":
+            refs = [component.get("with", {}).get("ref") for component in checkouts]
+            allowed_sets = {
+                ("${{ github.event.workflow_run.head_sha }}",),
+                (
+                    "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
+                    "${{ github.event.workflow_run.head_sha }}",
+                ),
+            }
+            if tuple(refs) not in allowed_sets or controller_commands:
+                issues.append(
+                    f"protected-base evaluator job {job['id']} has an invalid exact checkout/controller contract"
+                )
+        elif evaluator_source == "managed_controller":
+            refs = [component.get("with", {}).get("ref") for component in checkouts]
+            if refs not in ([], ["${{ github.event.workflow_run.head_sha }}"]) or len(controller_commands) != 1:
+                issues.append(
+                    f"managed-controller evaluator job {job['id']} has an invalid controller/candidate-materialization contract"
+                )
     if job_requires_full_history(graph, executor):
         explicit_checkouts = [
             graph["step_components"][component_id]
@@ -467,7 +495,11 @@ def job_execution_issues(
         issues.append(
             f"CI graph job {job['id']} must provision selected Python before governed commands"
         )
-    if job["trust"] == "trusted" and job["checkout"] is False:
+    if (
+        job["trust"] == "trusted"
+        and job["checkout"] is False
+        and evaluator_source != "protected_base"
+    ):
         execution_inputs: list[Any] = [job.get("environment", {})]
         execution_inputs.extend(
             graph["commands"][command_id]

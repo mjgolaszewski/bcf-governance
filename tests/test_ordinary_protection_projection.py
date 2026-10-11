@@ -21,6 +21,7 @@ from bcf_governance.tooling.ordinary_protection_projection import (
     compile_ordinary_protection_proposal,
     validate_ordinary_protection_submission,
 )
+from bcf_governance.tooling import ordinary_protection_projection
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -144,6 +145,28 @@ def test_existing_provider_policy_compiles_losslessly_and_adds_bcf_context() -> 
             "path": ".github/workflows/governance.yml",
             "required_job_names": ["Verify exact-tree governance evidence"],
         }
+    ]
+    assert declaration["pr_certification"]["evaluator_mode"] == "protected_base"
+
+
+def test_lite_projection_requires_direct_terminal_check_without_fake_independence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(ordinary_protection_projection, "_profile", lambda _root: "lite")
+    declaration = compile_ordinary_protection_proposal(
+        ProjectionAPI(None), repo_root=ROOT, repository=REPOSITORY
+    )
+    terminal = declaration["pr_certification"]["producer_workflows"][0][
+        "required_job_names"
+    ][0]
+    assert declaration["pr_certification"] == {
+        "context": terminal,
+        "publisher_app_id": 15368,
+        "producer_workflows": declaration["pr_certification"]["producer_workflows"],
+        "evaluator_mode": "direct_candidate",
+    }
+    assert declaration["ruleset"]["required_status_checks"] == [
+        {"context": terminal, "integration_id": 15368}
     ]
 
 

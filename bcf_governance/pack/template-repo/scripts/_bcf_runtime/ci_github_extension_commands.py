@@ -68,6 +68,7 @@ def _pr(argv: list[str]) -> dict[str, object]:
     finalize = operations.add_parser("finalize")
     finalize.add_argument("--repository", required=True)
     finalize.add_argument("--output", type=Path, required=True)
+    finalize.add_argument("--candidate-root", type=Path)
     publish = operations.add_parser("publish")
     publish.add_argument("--repository", required=True)
     publish.add_argument("--bundle", type=Path, required=True)
@@ -85,6 +86,7 @@ def _pr(argv: list[str]) -> dict[str, object]:
             finalizer_run_id=required_environment("GITHUB_RUN_ID"),
             finalizer_run_attempt=required_environment("GITHUB_RUN_ATTEMPT"),
             output_root=args.output,
+            candidate_root=args.candidate_root,
         )
     return publish_pr(
         **common,

@@ -339,6 +339,66 @@ def project_trusted_controller_management(
     publisher = next(item for item in graph["workflows"] if item["id"] == "exact-main-publisher")
     publisher["events"][0]["workflows"].append("bcf/controller-rotation")
     publisher["jobs"][0].update({"controller_requirement": "current", "executor": {"kind": "component_sequence", "components": ["setup-python", "download-exact-main-certification-effective", "download-finalizer-controller-custody", "project-finalizer-controller-route", "exact-main-publish-effective"]}, "consumes": ["exact-main-certification", "finalizer-controller-custody"]})
+    pr_finalizers = [item for item in graph["workflows"] if item["id"] == "pr-finalizer"]
+    pr_publishers = [item for item in graph["workflows"] if item["id"] == "pr-status-publisher"]
+    if pr_finalizers or pr_publishers:
+        if len(pr_finalizers) != 1 or len(pr_publishers) != 1:
+            raise RuntimeError("managed PR evaluator topology is incomplete")
+        graph["commands"]["pr-finalize-managed-controller"] = _command(
+            [
+                "{controller}", "ci-github", "pr", "finalize", "--repository",
+                "${{ github.repository }}", "--output",
+                "${{ runner.temp }}/bcf-pr-finalization", "--candidate-root",
+                "${{ runner.temp }}/bcf-pr-candidate",
+            ],
+            environment={"GITHUB_TOKEN": "${{ github.token }}"},
+        )
+        graph["commands"]["pr-publish-managed-controller"] = _command(
+            [
+                "{controller}", "ci-github", "pr", "publish", "--repository",
+                "${{ github.repository }}", "--bundle",
+                "${{ runner.temp }}/bcf-pr-finalization", "--target-url",
+                "https://github.com/${{ github.repository }}/actions/runs/${{ github.event.workflow_run.id }}",
+            ],
+            environment={"GITHUB_TOKEN": "${{ github.token }}"},
+        )
+        components["pr-finalize-managed-controller"] = {
+            "kind": "command", "name": "Evaluate the exact candidate with managed-controller authority",
+            "command": "pr-finalize-managed-controller", "environment": {},
+            "produces": ["pr-finalization"], "consumes": [],
+        }
+        components["pr-publish-managed-controller"] = {
+            "kind": "command", "name": "Publish the exact managed PR certification",
+            "command": "pr-publish-managed-controller", "environment": {},
+            "produces": [], "consumes": [],
+        }
+        pr_finalizers[0]["jobs"][0].update(
+            {
+                "controller_requirement": "current",
+                "executor": {
+                    "kind": "component_sequence",
+                    "evaluator_source": "managed_controller",
+                    "components": [
+                        "checkout-pr-candidate-material", "setup-python",
+                        "pr-finalize-managed-controller",
+                        "upload-pr-finalization",
+                    ],
+                },
+            }
+        )
+        pr_publishers[0]["jobs"][0].update(
+            {
+                "controller_requirement": "current",
+                "executor": {
+                    "kind": "component_sequence",
+                    "evaluator_source": "managed_controller",
+                    "components": [
+                        "setup-python", "download-pr-finalization",
+                        "pr-publish-managed-controller",
+                    ],
+                },
+            }
+        )
 
 
 def _sync_evidence_workflow_contract(
@@ -397,14 +457,14 @@ def _runner_mapping(
     )
 
 
-def write_reference_ci_graph(
-    args: Any, target_root: Path, contract: dict[str, Any]
-) -> None:
+def reference_ci_graph(args: Any, contract: dict[str, Any]) -> dict[str, Any]:
+    """Derive a fresh-install graph before the install transaction mutates bytes."""
+
     contract_version = str(contract.get("profile_contract_version", "1.0"))
     candidate, trusted, candidate_hosted, trusted_hosted = _runner_mapping(
         args, contract_version=contract_version
     )
-    graph = build_reference_ci_graph(
+    return build_reference_ci_graph(
         project_id=args.project_id,
         profile=args.profile,
         profile_contract_version=contract_version,
@@ -414,6 +474,12 @@ def write_reference_ci_graph(
         candidate_hosted=candidate_hosted,
         trusted_hosted=trusted_hosted,
     )
+
+
+def write_reference_ci_graph(
+    args: Any, target_root: Path, contract: dict[str, Any]
+) -> None:
+    graph = reference_ci_graph(args, contract)
     extension_path = target_root / ROTATION_EXTENSION
     if extension_path.is_symlink():
         raise RuntimeError("canonical controller rotation extension is unsafe")

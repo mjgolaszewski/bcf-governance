@@ -75,6 +75,21 @@ def _validate_protection(value: object, *, schema_path: Path) -> dict[str, Any]:
         raise GitHubControllerError(
             f"GitHub protection schema violation at {location}: {error.message}"
         )
+    certification = value["pr_certification"]
+    expected_check = {
+        "context": certification["context"],
+        "integration_id": certification["publisher_app_id"],
+    }
+    context_checks = [
+        check
+        for check in value["ruleset"]["required_status_checks"]
+        if check["context"] == certification["context"]
+    ]
+    if context_checks != [expected_check]:
+        raise GitHubControllerError(
+            "GitHub protection schema violation at ruleset.required_status_checks: "
+            "PR certification context and publisher identity are not exact"
+        )
     return value
 
 

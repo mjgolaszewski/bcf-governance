@@ -7,6 +7,8 @@ from typing import Any
 
 from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
+from .ci_graph_builders import component as _component, job as _job
+from .ci_graph_pr_evaluator import apply_standard_pr_evaluator
 from .repository_comparison_context import (
     comparison_base_input_contract,
     push_comparison_inputs,
@@ -39,50 +41,6 @@ def _resource(
         "hosted": hosted,
         "python_version": "3.12",
         "capabilities": capabilities,
-    }
-
-
-def _job(
-    job_id: str,
-    role: str,
-    *,
-    resource: str = "candidate-python",
-    trust: str = "candidate",
-    needs: list[str] | None = None,
-    condition: str = "success",
-    executor: dict[str, Any],
-    produces: list[str] | None = None,
-    consumes: list[str] | None = None,
-    components: list[str] | None = None,
-    permissions: dict[str, str] | None = None,
-    checkout: bool | None = None,
-) -> dict[str, Any]:
-    return {
-        "id": job_id,
-        "display_name": role.replace("-", " ").title(),
-        "semantic_role": role,
-        "resource_class": resource,
-        "trust": trust,
-        "needs": needs or [],
-        "condition": condition,
-        "timeout_minutes": 45 if trust == "candidate" else 5,
-        "permissions": permissions or {"contents": "read"},
-        "checkout": (
-            trust == "candidate" and executor["kind"] != "reusable_workflow"
-            if checkout is None
-            else checkout
-        ),
-        "components": components
-        if components is not None
-        else (
-            ["checkout", "python", "governance-dependencies"]
-            if trust == "candidate"
-            else (["python"] if executor["kind"] in {"authority", "durable_publish"} else [])
-        ),
-        "executor": executor,
-        "produces": produces or [],
-        "consumes": consumes or [],
-        "required": True,
     }
 
 
@@ -219,20 +177,6 @@ def _apply_legacy_direct_post_merge_scope(graph: dict[str, Any]) -> None:
     truth_argv.extend(["--evaluation-target", "{env:BCF_EVALUATION_TARGET}"])
     truth["environment"]["BCF_EVALUATION_TARGET"] = target
     truth["environment"].pop("BCF_TRUTH_MODE", None)
-
-
-def _component(
-    *, kind: str, name: str, produces: list[str] | None = None,
-    consumes: list[str] | None = None, environment: dict[str, str] | None = None, **values: Any,
-) -> dict[str, Any]:
-    return {
-        "kind": kind,
-        "name": name,
-        **values,
-        "environment": environment or {},
-        "produces": produces or [],
-        "consumes": consumes or [],
-    }
 
 
 def _v3_components() -> dict[str, Any]:
@@ -793,6 +737,8 @@ def build_reference_ci_graph(
     }
     if profile_contract_version == "3.0":
         _apply_v3_proof_composition(graph, gates)
+        if profile != "lite":
+            apply_standard_pr_evaluator(graph)
     elif profile == "lite":
         _apply_legacy_direct_post_merge_scope(graph)
     return graph

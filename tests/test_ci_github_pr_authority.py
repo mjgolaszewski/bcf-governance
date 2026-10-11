@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import copy
+import hashlib
+import io
+import json
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -8,6 +12,7 @@ import pytest
 from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from bcf_governance.tooling.ci_github_pr import finalize_pr, publish_pr
+from bcf_governance.tooling import ci_github_pr
 from bcf_governance.tooling.github_protection import (
     apply_protection,
     desired_ruleset,
@@ -33,6 +38,7 @@ class FakePRAuthorityAPI:
         self.head = HEAD
         self.created_checks: list[dict[str, object]] = []
         self.pack_conclusion = "success"
+        self.candidate_archives: dict[str, bytes] = {}
         self.runs = {
             "30": self._run(30, 201, "pull_request", HEAD, "success", with_pr=True),
             "40": self._run(40, 202, "pull_request", HEAD, "success", with_pr=True),
@@ -90,7 +96,11 @@ class FakePRAuthorityAPI:
 
     def content(self, repository: str, path: str, *, ref: str) -> GitHubContent:
         assert repository == REPOSITORY and ref == MAIN
-        if path == "governance/github-protection.yml":
+        if path in {
+            "governance/github-protection.yml",
+            "governance/ci-graph.yml",
+            "governance/self-governance-policy.yml",
+        }:
             content = (ROOT / path).read_bytes()
         else:
             content = WORKFLOW
@@ -102,7 +112,7 @@ class FakePRAuthorityAPI:
             "number": 7,
             "state": "open",
             "head": {"sha": self.head, "ref": "dependabot/pip/pytest", "repo": {"id": REPOSITORY_ID}},
-            "base": {"ref": "main", "repo": {"id": REPOSITORY_ID}},
+            "base": {"sha": MAIN, "ref": "main", "repo": {"id": REPOSITORY_ID}},
         }
 
     def workflow_runs(
@@ -133,7 +143,24 @@ class FakePRAuthorityAPI:
         )
 
     def artifacts(self, repository: str, run_id: object) -> tuple[dict[str, object], ...]:
-        assert repository == REPOSITORY and str(run_id) == "50"
+        assert repository == REPOSITORY
+        if str(run_id) == "30" and self.candidate_archives:
+            return tuple(
+                {
+                    "id": 910 + index,
+                    "name": name,
+                    "expired": False,
+                    "digest": "sha256:" + hashlib.sha256(raw).hexdigest(),
+                    "workflow_run": {
+                        "id": 30,
+                        "repository_id": REPOSITORY_ID,
+                        "head_repository_id": REPOSITORY_ID,
+                        "head_sha": HEAD,
+                    },
+                }
+                for index, (name, raw) in enumerate(sorted(self.candidate_archives.items()))
+            )
+        assert str(run_id) == "50"
         return (
             {
                 "id": 900,
@@ -149,6 +176,13 @@ class FakePRAuthorityAPI:
                 },
             },
         )
+
+    def artifact_bytes(
+        self, repository: str, artifact_id: object, *, maximum_bytes: int
+    ) -> bytes:
+        assert repository == REPOSITORY and maximum_bytes > 0
+        index = int(str(artifact_id)) - 910
+        return sorted(self.candidate_archives.items())[index][1]
 
     def check_runs(self, repository: str, *, sha: str) -> tuple[dict[str, object], ...]:
         assert repository == REPOSITORY and sha == self.head
@@ -204,6 +238,47 @@ def test_latest_failed_producer_revokes_without_borrowing(tmp_path: Path) -> Non
     }
 
 
+def _zip(name: str, raw: bytes) -> bytes:
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w") as archive:
+        archive.writestr(name, raw)
+    return output.getvalue()
+
+
+def test_protected_evaluator_recomputes_truth_instead_of_accepting_candidate_pass(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    api = FakePRAuthorityAPI()
+    api.candidate_archives = {
+        "bcf-session-30-1": _zip("session/evidence-session.json", b"{}"),
+        "bcf-evidence-30-1-shard-0": _zip("receipt/test.evidence.json", b"{}"),
+    }
+    candidate = tmp_path / "candidate"
+    candidate.mkdir()
+    called: list[Path] = []
+
+    def reject_candidate_truth(repo_root: Path, *_args: object, **_kwargs: object) -> dict[str, object]:
+        called.append(repo_root)
+        return {
+            "status": "fail",
+            "merge_eligibility": "ineligible",
+            "subject": {"commit_sha": HEAD, "tree_sha": HEAD_TREE},
+        }
+
+    monkeypatch.setattr(ci_github_pr, "derive_truth", reject_candidate_truth)
+    with pytest.raises(GitHubControllerError, match="not exact and eligible"):
+        finalize_pr(
+            api,
+            repository=REPOSITORY,
+            event={"workflow_run": {"id": 30, "run_attempt": 1}},
+            finalizer_run_id=50,
+            finalizer_run_attempt=1,
+            output_root=tmp_path / "bundle",
+            candidate_root=candidate,
+        )
+    assert called == [candidate.resolve()]
+
+
 def test_publisher_rejects_a_moved_pr_head(tmp_path: Path) -> None:
     api = FakePRAuthorityAPI()
     bundle = tmp_path / "bundle"
@@ -218,6 +293,41 @@ def test_publisher_rejects_a_moved_pr_head(tmp_path: Path) -> None:
     api.runs["50"].update(status="completed", conclusion="success")
     api.head = "9" * 40
     with pytest.raises(GitHubControllerError, match="current pull request head"):
+        publish_pr(
+            api,
+            repository=REPOSITORY,
+            event={"workflow_run": {"id": 50, "run_attempt": 1}},
+            publisher_run_id=60,
+            publisher_run_attempt=1,
+            bundle_root=bundle,
+            target_url="https://github.com/owner/repo/actions/runs/50",
+        )
+
+
+def test_publisher_rejects_substituted_evaluator_identity(tmp_path: Path) -> None:
+    api = FakePRAuthorityAPI()
+    bundle = tmp_path / "bundle"
+    finalize_pr(
+        api,
+        repository=REPOSITORY,
+        event={"workflow_run": {"id": 30, "run_attempt": 1}},
+        finalizer_run_id=50,
+        finalizer_run_attempt=1,
+        output_root=bundle,
+    )
+    observation_path = bundle / "pr-observation.json"
+    observation = json.loads(observation_path.read_text(encoding="utf-8"))
+    observation["evaluator"]["runtime"]["sha256"] = "0" * 64
+    raw = (json.dumps(observation, indent=2, sort_keys=True) + "\n").encode()
+    observation_path.write_bytes(raw)
+    manifest_path = bundle / "bundle-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["files"]["pr-observation.json"] = hashlib.sha256(raw).hexdigest()
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    api.runs["50"].update(status="completed", conclusion="success")
+    with pytest.raises(GitHubControllerError, match="evaluator identity is not exact"):
         publish_pr(
             api,
             repository=REPOSITORY,

@@ -29,7 +29,7 @@ workitems:
   status: DONE
   summary: deliver classify and migrate evidence storage without changing truth
 - id: P31-P0-04
-  status: TODO
+  status: DONE
   summary: deliver authenticate a base-pinned independent evaluator
 - id: P31-P0-05
   status: TODO
@@ -61,6 +61,9 @@ execution_evidence:
   - P31-P0-03 classifies legacy mixed durable unknown and available-but-unadopted storage before evidence allocation, derives immutable publication cold resolution retention and migration through the existing storage owners, and preserves legacy receipt truth without granting migration authority
   - successful test splinters now persist exact acceleration-only proof and JUnit bytes in the existing attempt artifact before aggregate fan-in; the canonical shard runner alone authenticates same-run earlier-attempt custody and reuses only exact subject partition toolchain policy producer cleanup and node identities while failed or mismatched siblings recompute
   - focused storage topology cold-resolution retention tamper growth splinter provider-custody graph mirror semantic ownership and pack parity checks passed on the mechanically reconciled candidate; the ordinary aggregate receipt truth finalizer and certification propositions remain unchanged
+  - P31-P0-04 compiles a complete contract or typed exclusion for every ordered CI producer-consumer pair before scheduling, then derives Lite direct, Standard-v3 protected-base, and managed-controller evaluator modes without caller selection
+  - Standard-v3 finalization materializes but never executes candidate evaluator bytes, independently recomputes PR truth with authenticated protected-base or installed-controller code, and binds exact base candidate evidence protected paths workflow runtime and check identity through publication
+  - fresh-install transaction closure now derives every generated workflow destination from the prospective graph, preventing new evaluator workflows from succeeding in the shadow tree but disappearing during atomic promotion
 closeout_requirements:
   claims:
     workitems_closed:
@@ -93,4 +96,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify workitem_closed:P31-P0-03 and make only P31-P0-04 eligible before implementing the base-pinned independent evaluator
+- certify workitem_closed:P31-P0-04 and make only P31-P0-05 eligible before implementing atomic publication

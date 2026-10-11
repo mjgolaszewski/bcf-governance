@@ -8,6 +8,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
+- Made Standard-v3 merge eligibility independent of candidate evaluator bytes.
+  The canonical graph now closes every producer/consumer edge before work,
+  executes truth with an exact protected-base or installed-controller runtime,
+  binds candidate evidence and check identity through publication, and keeps
+  Lite's direct candidate check explicitly lower-assurance.
+
 - Persisted each successful deterministic test splinter inside its existing
   provider evidence artifact before aggregate fan-in. A later attempt now
   derives exact same-run reuse from subject, partition, toolchain, policy,

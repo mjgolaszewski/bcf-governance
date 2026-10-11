@@ -89,11 +89,12 @@ class TransitionAPI:
         current_protection = yaml.safe_dump(current_protection_value, sort_keys=False).encode()
         successor_protection = yaml.safe_dump(successor_protection_value, sort_keys=False).encode()
         self.current_files = {
-            "governance/ci-graph.yml": b"current graph",
+            "governance/ci-graph.yml": b"trusted_controller: {kind: executable}\n",
             "governance/github-protection.yml": current_protection,
             ".github/workflows/governance-pack.yml": b"current package workflow",
             ".github/workflows/governance.yml": WORKFLOW,
             ".github/workflows/bcf-pr-finalizer.yml": WORKFLOW,
+            "bcf_governance/tooling/ci_github_pr.py": b"protected evaluator runtime\n",
         }
         self.successor_files = {
             "governance/ci-graph.yml": b"successor graph",
@@ -305,7 +306,11 @@ class TransitionAPI:
             "number": 7,
             "state": "open",
             "head": {"sha": self.head, "ref": self.branch, "repo": {"id": int(REPOSITORY_ID)}},
-            "base": {"ref": "main", "repo": {"id": int(REPOSITORY_ID)}},
+            "base": {
+                "sha": MAIN,
+                "ref": "main",
+                "repo": {"id": int(REPOSITORY_ID)},
+            },
         }
 
     def workflow_runs(self, repository: str, workflow_id: object, *, head_sha: str, event: str) -> tuple[dict[str, object], ...]:
