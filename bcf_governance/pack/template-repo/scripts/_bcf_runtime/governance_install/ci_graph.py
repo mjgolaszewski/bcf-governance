@@ -114,6 +114,11 @@ def reconcile_trusted_controller_runtime_topology(
     graph_path = root / "governance/ci-graph.yml"
     graph = load_yaml_path(graph_path)
     policy_reference = graph.get("trusted_controller")
+    if (
+        isinstance(policy_reference, dict)
+        and policy_reference.get("kind") == "executable"
+    ):
+        return ()
     if not isinstance(policy_reference, dict) or policy_reference.get("kind") not in {
         "governed_controller_policy",
         "self_governance_policy",

@@ -78,10 +78,27 @@ from bcf_governance.tooling.truth_workflow_graph import graph_workflow_gate_issu
 from bcf_governance.tooling.governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
     project_trusted_controller_management,
+    reconcile_trusted_controller_runtime_topology,
 )
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_external_controller_graph_lock_excludes_self_runtime_projection(
+    tmp_path: Path,
+) -> None:
+    graph_path = tmp_path / "governance/ci-graph.yml"
+    graph_path.parent.mkdir(parents=True)
+    original = render_yaml(
+        {"trusted_controller": {"kind": "executable", "executable": "bcf"}}
+    )
+    graph_path.write_bytes(original)
+
+    assert reconcile_trusted_controller_runtime_topology(
+        tmp_path, apply=True
+    ) == ()
+    assert graph_path.read_bytes() == original
 
 
 def test_workflow_run_chain_cannot_exceed_provider_depth_limit() -> None:

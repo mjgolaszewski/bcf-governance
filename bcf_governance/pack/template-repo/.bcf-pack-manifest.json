@@ -1008,7 +1008,7 @@
     },
     "scripts/_bcf_runtime/governance_install/ci_graph.py": {
       "operation": "copy",
-      "sha256": "fbe56bc0c83de41505d142027a1f90edef28e9fb7261b9e483bec65f823db75b"
+      "sha256": "368ae17b935c4f213466d9f37c491faef41416003d90a2cf8c0af82926566373"
     },
     "scripts/_bcf_runtime/governance_install/cli.py": {
       "operation": "copy",
