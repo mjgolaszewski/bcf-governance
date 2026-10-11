@@ -1718,6 +1718,68 @@ pending producer states; publisher replay/wrong-App/wrong-check cases; PR and
 exact-main exclusion; and bounded/release non-escalation. No consumer may start
 expensive work until its reachable incoming edge closure is complete.
 
+### P31-P0-05 atomic publication and custody state matrix
+
+The release publisher consumes one complete graph-derived transaction.  No
+operator or agent provisions a temporary repository secret, selects a provider
+run, enters a tag, chooses assets, or performs cleanup.  The trusted publisher
+mints one repository-scoped installation token from the governed Release App,
+passes the opaque credential to the transaction on standard input, and relies
+on the token action's mandatory post step to revoke it on every terminal path.
+The token format and length are not semantic inputs.  The pinned action runtime
+must remain supported by GitHub's current Actions Node runtime, and hosted
+release runners remain explicitly pinned rather than inheriting
+`ubuntu-latest` migration.
+
+| State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| P31-P0-04 not closed or only bounded certification exists | exact-main certification proposition and P31 lifecycle | reject before build, qualification, credential mint, or publication | no release authority | treating workitem success as phase closure or release readiness |
+| Terminal P31 candidate is ready for release construction | exact current-main phase-closure certification, controller custody, release version/source bindings, newest admission and finalizer artifact | authorize one exact subject and build once on a fresh runner | immutable authorization plus output-only build bundle | caller-selected run/artifact/version, mutable main, stale controller, or rebuild after certification |
+| Build is complete | authorization digest, exact wheel/sdist/checksum inventory, closed wheelhouse/toolchain, builder run/attempt/artifact | independently install and verify the downloaded bytes without provider credentials | verifier result bound to exact build bytes | source rebuild, candidate verifier authority, missing runtime evidence, or borrowed artifact |
+| Verification is complete | exact authorization/build/verifier identities and all provider artifacts | trusted collector recomputes custody and emits the sole release receipt | certified receipt containing the exact publication asset inventory | aggregate job success, missing provider digest, cross-attempt evidence, or collector-selected bytes |
+| Adopter qualification is requested | certified receipt assets plus exact self, Lite, Standard-v3, Racecar and AgentBus qualification contract | execute or authenticate every declared exact-byte qualification and emit one closed receipt | publication-eligible qualification for the same subject/version/assets | repository mutation, unavailable path reported as passing, version drift, or qualification after publication |
+| Publication preconditions are incomplete | exact receipt/qualification plus immutable-release, tag, release, attestation, App-installation and credential-lifecycle observations | compute one typed next state without minting a credential or mutating provider state | blocked or safely resumable transaction | missing setting treated as false/empty, ambiguous existing tag/release, unverified App scope, or agent-selected recovery |
+| Publication ready and tag/release absent | exact subject/version/assets, complete qualification, immutable settings, repository-scoped App identity and transaction digest | mint one opaque installation token, feed it on stdin, attest exact assets, create and reauthenticate the annotated tag, create draft, upload exact bytes, publish, and inspect custody | immutable exact release plus terminal transaction observation | token in argv/log/artifact, candidate/OAuth publication, tag before all read-side checks, rebuilt bytes, or incomplete edge contract |
+| Exact annotated tag exists and release is absent | same transaction digest and exact tag target/policy | resume at release creation without recreating or moving the tag | one exact draft/publication path | lightweight/signed/wrong-target tag or a different transaction claiming it |
+| Exact draft contains an exact subset of assets | exact draft identity, expected inventory and provider digests | retain exact existing assets, upload only missing bytes, then verify complete inventory before publish | idempotent continuation without duplicate assets | unexpected asset, same-name wrong digest, duplicate name, missing attestation, or delete-and-replace recovery |
+| Concurrent tag, draft or asset creation wins the race | exact transaction digest and provider response classified as conflict | reread provider state once and continue only when it is byte-identical to the requested state | idempotent convergence | blind retry, overwrite, moved tag, foreign draft, or conflicting asset |
+| Dispatch, provider read, upload, publish or observation times out | exact last authenticated transaction state and unchanged subject/assets | return one typed resumable frontier; a later invocation derives the next uncommitted edge | no broadened authority and no repeated certified build | unbounded polling, hand-authored stage selection, or retry with changed bytes/identity |
+| Any publisher terminal path | exact token action step and transaction identity | run mandatory post cleanup, revoke only that token, and record revocation outcome without exposing the credential | credential retired; success is claimable only after retirement is observed | skipped cleanup, persistent repository secret, wildcard credential deletion, or success despite revocation failure |
+| Exact immutable release already exists | tag object, release identity, asset/provider digests, attestations, receipt, qualification and transaction identity | perform read-only independent custody verification and return terminal success | idempotent immutable v2.3.0 custody | republish, mutate immutable state, accept a partial match, or rebuild |
+| Terminal release custody exists | independent custody result, terminal P31 truth, phase/release ledgers and closeout issue map | mechanically close P31/release 26 and archive exact custody | two-phase train closed; only declared issue closures become eligible | authored closure before custody, hand-authored provider facts, or stale open workitem |
+
+```text
+invariants
+  only terminal exact-main certification may release;
+  certified bytes are built once and never rebuilt;
+  publication is idempotent and the short-lived credential is retired on every terminal path;
+  every reachable producer/consumer edge is complete before work or authority
+    -> primitives
+       exact subject/version/tag/assets, certification and receipt identities,
+       qualification closure, App installation/token capsule, transaction digest/state,
+       provider tag/draft/asset/attestation observations, cleanup and custody results
+      -> contracts
+         authorize -> build -> independently verify -> collect sole receipt ->
+         qualify exact assets -> derive publication frontier -> mint scoped token ->
+         transact idempotently -> revoke -> independently verify custody -> close phase
+        -> producers
+           exact-main finalizer, release authorizer/builder/verifier/collector,
+           qualification compiler, GitHub App token action, trusted publisher,
+           independent custody verifier and phase truth
+          -> consumers
+             release workflow, publication transaction, immutable release,
+             custody audit, P31/release-26 closeout, issue/milestone closure
+```
+
+Structurally unreachable edges are explicit: candidate code cannot reach the
+publisher; bounded workitem certification cannot reach release authorization;
+the builder cannot reach tag/release mutation; qualification cannot precede a
+certified receipt; the publication token cannot reach candidate, build,
+verification, collector, artifacts, or logs; and release custody cannot close
+P31 until terminal phase truth agrees.  Any newly reachable edge without every
+identity, byte, applicability, lifecycle, permission, cleanup, authority and
+failure field is a graph error before expensive work.
+
 ```text
 invariants
   reconstructability follows authenticated identity and availability;
