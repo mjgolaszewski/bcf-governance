@@ -2495,10 +2495,22 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
             (".github/workflows/bcf-trusted-finalizer.yml", "finalize"),
             (".github/workflows/bcf-status-publisher.yml", "publish"),
             (".github/workflows/release.yml", "authorize"),
-            (".github/workflows/bcf-release-verifier.yml", "collect"),
             (".github/workflows/bcf-release-publisher.yml", "publish"),
         ):
             assert rendered[path]["jobs"][job_id]["if"] == "${{ false }}"
+        verifier = rendered[".github/workflows/bcf-release-verifier.yml"]
+        assert verifier["on"]["workflow_run"]["workflows"] == [
+            "bcf/release-authority-cutover"
+        ]
+        assert verifier["jobs"]["runtime"]["if"] == (
+            "${{ github.event.workflow_run.event == 'workflow_dispatch' && "
+            "github.event.workflow_run.head_branch == 'main' && "
+            "github.event.workflow_run.conclusion == 'success' }}"
+        )
+        assert verifier["jobs"]["collect"]["needs"] == ["runtime"]
+        assert verifier["jobs"]["collect"]["if"] == (
+            "${{ needs.runtime.result == 'success' }}"
+        )
     elif (
         compiled.trusted_controller_lifecycle.state
         is ControllerLifecycleState.ORDINARY_PENDING_ROTATION
@@ -3027,6 +3039,65 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
             "upload-pr-finalization",
         ],
     }
+    managed_command = managed["commands"]["pr-finalize-managed-controller"]
+    assert managed_command["argv"][:4] == [
+        "/usr/bin/env",
+        "-C",
+        "{env:BCF_PR_CANDIDATE_ROOT}",
+        "{controller}",
+    ]
+    assert "--candidate-root" not in managed_command["argv"]
+    assert managed_command["cwd"] == "."
+    assert managed_command["environment"]["BCF_PR_CANDIDATE_ROOT"] == (
+        "${{ github.workspace }}/.bcf-pr-candidate-"
+        "${{ github.run_id }}-${{ github.run_attempt }}"
+    )
+    managed_job = managed_finalizer["jobs"][0]
+    assert job_execution_issues(
+        managed, managed_job, managed_job["executor"], managed_finalizer
+    ) == ()
+
+    incompatible = copy.deepcopy(managed)
+    incompatible["commands"]["pr-finalize-managed-controller"]["argv"].extend(
+        ["--candidate-root", incompatible["commands"]["pr-finalize-managed-controller"]["cwd"]]
+    )
+    incompatible_job = next(
+        item for item in incompatible["workflows"] if item["id"] == "pr-finalizer"
+    )["jobs"][0]
+    assert any(
+        "repository-root contract" in issue
+        for issue in job_execution_issues(
+            incompatible, incompatible_job, incompatible_job["executor"]
+        )
+    )
+
+    ambient = copy.deepcopy(managed)
+    ambient["commands"]["pr-finalize-managed-controller"]["environment"][
+        "BCF_PR_CANDIDATE_ROOT"
+    ] = "${{ github.workspace }}"
+    ambient_job = next(
+        item for item in ambient["workflows"] if item["id"] == "pr-finalizer"
+    )["jobs"][0]
+    assert any(
+        "repository-root contract" in issue
+        for issue in job_execution_issues(ambient, ambient_job, ambient_job["executor"])
+    )
+
+    candidate_authority = copy.deepcopy(managed)
+    candidate_authority["commands"]["pr-finalize-managed-controller"]["argv"][3] = (
+        "python"
+    )
+    candidate_job = next(
+        item
+        for item in candidate_authority["workflows"]
+        if item["id"] == "pr-finalizer"
+    )["jobs"][0]
+    assert any(
+        "repository-root contract" in issue
+        for issue in job_execution_issues(
+            candidate_authority, candidate_job, candidate_job["executor"]
+        )
+    )
 
 
 def test_lite_reference_graph_has_no_release_or_trusted_control(tmp_path: Path) -> None:

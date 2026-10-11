@@ -4,7 +4,7 @@ document:
   id: project-phase-31-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-10-11T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-31-hotfix01.yml
 hotfix:
   id: P31-HF01
@@ -32,6 +32,37 @@ execution_evidence:
     the exact governed protection contract
   - Break Glass remains controller-only and noncertifying; it is not used or
     broadened for repository, status, merge, or protection authority
+  - minimal repair PR 401 merged as
+    94556521b00d0667efd3fa27a4f731a067a43d46 with tree
+    11465722f6d4b7767d63d1e1dcad429c2eafc683; the temporary
+    pull-request-only owner exception was removed immediately and governed
+    ruleset 21862678 was restored byte-for-byte with no bypass actors
+  - ordinary rotation 38134567110/1 rejected the intentionally uncertified
+    exceptional merge before bootstrap; bounded Break Glass operation
+    7cfa723335ea4d5aa69c8845e075acb4 then built 38135014749/1, installed on
+    both trusted runners in 38135069544/1, probed both runners in
+    38135152762/1, and emitted noncertifying receipt artifact 11701135345
+  - this projection authenticates that exact recovery receipt into the
+    temporary recovery-reentry state; ordinary protected certification must
+    normalize custody before P31-P0-05 resumes
+  - >-
+    governance run 38136749177/1 exposed two stale test-only ordinary-state
+    assumptions: lifecycle authority now explicitly includes authenticated
+    recovery re-entry, while the independent release verifier remains closed
+    by its exact successful release-authority trigger and runtime dependency
+    rather than a redundant static false condition on its collector
+  - >-
+    governance run 38138230671/1 verified every required hotfix claim and
+    reconciliation invariant; terminal truth correctly required this record
+    to move from authored active to completed before certification
+  - >-
+    repaired finalizer 38142118570/1 proved candidate checkout succeeds but
+    installed controller N rejects successor-only --candidate-root before
+    evaluation; canonical projection now preserves the isolated managed
+    executable as authority and supplies the same exact run-owned candidate
+    through N's repository-root working-directory contract, with graph
+    validation rejecting the unsupported argument, ambient cwd, or candidate
+    executable substitution
   - four focused graph projection parity and immutable-authority tests passed;
     cheap PR preflight passed on committed implementation tree
     43109bab2ea89305677edc703fe31b7ed9d98ba8 with pending_rotation and

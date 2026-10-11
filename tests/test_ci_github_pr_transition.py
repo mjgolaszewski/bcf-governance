@@ -574,12 +574,19 @@ def test_repaired_controller_and_race_safe_admission_remain_authoritative() -> N
     assert lifecycle.state in {
         ControllerLifecycleState.ORDINARY_CURRENT,
         ControllerLifecycleState.ORDINARY_PENDING_ROTATION,
+        ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY,
     }
     assert lifecycle.target_commit == artifact["BCF_BOOTSTRAP_COMMIT_SHA"]
     assert lifecycle.installed_commit == installation["installed_commit_sha"]
     assert (
         lifecycle.target_commit == lifecycle.installed_commit
     ) is (lifecycle.state is ControllerLifecycleState.ORDINARY_CURRENT)
+    if lifecycle.state is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY:
+        reentry = runner["trusted_controller_recovery_reentry"]
+        assert reentry["state"] == "authenticated-recovery-reentry"
+        assert reentry["recovery_only"] is True
+        assert reentry["governance_certified"] is False
+        assert reentry["authorized_source"]["commit"] == lifecycle.installed_commit
     subject_tree = subprocess.run(
         ["git", "rev-parse", f'{installation["subject_commit_sha"]}^{{tree}}'],
         cwd=ROOT,

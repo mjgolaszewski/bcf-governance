@@ -376,24 +376,45 @@ def job_execution_issues(
         ]
         if materializers:
             finalize_commands = [
-                graph["commands"][command_id]["argv"]
+                graph["commands"][command_id]
                 for command_id in _command_ids(graph, executor)
                 if "ci-github" in graph["commands"][command_id]["argv"]
                 and "pr" in graph["commands"][command_id]["argv"]
                 and "finalize" in graph["commands"][command_id]["argv"]
             ]
-            roots = [
-                _argument(argv, "--candidate-root")
-                for argv in finalize_commands
-            ]
             if (
                 len(materializers) != 1
                 or materializers[0]["with"]["path"]
                 != CANDIDATE_MATERIALIZATION_RELATIVE
-                or roots != [CANDIDATE_MATERIALIZATION_ROOT]
+                or len(finalize_commands) != 1
             ):
                 issues.append(
                     f"evaluator job {job['id']} candidate materialization must bind one run-owned workspace-relative checkout to its consumer"
+                )
+            elif evaluator_source == "protected_base" and (
+                _argument(finalize_commands[0]["argv"], "--candidate-root")
+                != CANDIDATE_MATERIALIZATION_ROOT
+            ):
+                issues.append(
+                    f"evaluator job {job['id']} candidate materialization must bind one run-owned workspace-relative checkout to its consumer"
+                )
+            elif evaluator_source == "managed_controller" and (
+                _argument(finalize_commands[0]["argv"], "--candidate-root")
+                is not None
+                or finalize_commands[0]["cwd"] != "."
+                or finalize_commands[0]["argv"][:4]
+                != [
+                    "/usr/bin/env",
+                    "-C",
+                    "{env:BCF_PR_CANDIDATE_ROOT}",
+                    "{controller}",
+                ]
+                or finalize_commands[0]["environment"].get(
+                    "BCF_PR_CANDIDATE_ROOT"
+                ) != CANDIDATE_MATERIALIZATION_ROOT
+            ):
+                issues.append(
+                    f"evaluator job {job['id']} managed controller must consume the run-owned candidate through its repository-root contract"
                 )
         if evaluator_source == "protected_base":
             refs = [component.get("with", {}).get("ref") for component in checkouts]

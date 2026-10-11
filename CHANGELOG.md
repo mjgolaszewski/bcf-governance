@@ -44,6 +44,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Authenticated the exact noncertifying controller-recovery receipt needed to
+  restore ordinary protected certification after repairing the protected-base
+  PR finalizer; recovery remains unable to certify, publish, merge, or release.
 - Bound protected-base candidate materialization to one run-owned path beneath
   the GitHub workspace and made graph compilation reject unsafe or divergent
   checkout-to-evaluator paths before evidence allocation.
