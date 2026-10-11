@@ -405,25 +405,24 @@ For a release:
    The authorizer independently hashes the downloaded controller wheel as well.
 9. After owner approval, enable immutable releases. The release tag must not
    already identify conflicting provider state.
-10. Run the pre-dispatch provider check once: the immutable-release API must report
-   enabled, no release may already exist for the derived version, and the repository
-   secret inventory must contain exactly the required `BCF_RELEASE_ADMIN_TOKEN`
-   name. This check discovers missing provider inputs before workflow dispatch; it
-   never executes candidate code.
-11. Provision the short-lived `BCF_RELEASE_ADMIN_TOKEN` Actions secret. Its fine-grained
-   repository permissions are Administration read, Attestations read, and Contents write.
-   The ordinary workflow token cannot read immutable-release settings. Do not expose this
-   credential to candidate jobs or store it in repository files.
-12. The no-checkout publisher first requires that secret. Its generated tag comes
+10. Run the pre-dispatch provider check once: immutable releases and the configured
+   repository-scoped Release App must be available. This check discovers missing
+   provider inputs before workflow dispatch; it never executes candidate code.
+11. The no-checkout publisher mints one installation token from the governed App
+   identity with Administration read, Attestations read, and Contents write. The
+   opaque token exists only in the publisher process environment and the pinned
+   token action revokes it on every terminal path.
+12. The publisher's generated tag comes
    from the digest-locked `governance/public-contracts.yml` package version, never
    from a previously installed controller version or an operator-entered value.
    The controller requires that tag to equal the canonical version encoded by both
    closed archives, verifies attestations before provider mutation, mechanically
    creates and reauthenticates the exact annotated unsigned tag when absent, then
-   creates a draft, uploads the pre-certified files, verifies their digests, and
-   publishes without rebuild. An existing wrong, lightweight, signed, or malformed
-   tag fails closed.
-13. Delete `BCF_RELEASE_ADMIN_TOKEN` immediately after the publisher completes.
+   converges an exact existing or absent draft, uploads only missing pre-certified
+   files, verifies the complete inventory, and publishes without rebuild. Concurrent
+   exact operations converge after one provider reread; conflicting tags, releases,
+   or assets fail closed.
+13. Require the token action's post cleanup to revoke the exact minted credential.
 14. Re-fetch provider state and require an immutable, non-draft, exact release
     before recording closeout.
 
@@ -433,9 +432,10 @@ during an authority migration; the old path is not a rollback option. If documen
 changes after certification, repeat exact-main certification and artifact
 construction; supersede the older bytes instead of reusing their receipt. PyPI
 is not used. All GitHub actions are pinned and release permissions are scoped
-to the trusted publication job. Secret presence and exact workflow wiring are checked
-mechanically; GitHub validates the credential's provider permissions when the controller
-reads immutable-release state before creating a draft.
+to the trusted publication job. App configuration, token cleanup, and exact
+workflow wiring are checked mechanically; GitHub validates the credential's
+provider permissions when the controller reads immutable-release state before
+creating or resuming a draft.
 
 The BCF repository is itself standard-governed. Its generated governance
 workflow and gate contracts must pass on the merge commit; a release tag never

@@ -18,7 +18,7 @@ from bcf_governance.tooling.ci_github_artifacts import (
     provider_artifact_reference,
     provider_artifact_reference_keys,
 )
-from bcf_governance.tooling.ci_github_api import GitHubContent
+from bcf_governance.tooling.ci_github_api import GitHubAPIConflictError, GitHubContent
 from bcf_governance.tooling.ci_github_identity import MainIdentity
 from bcf_governance.tooling.ci_github_release import (
     authorize_release,
@@ -1457,8 +1457,14 @@ class _ReleaseAPI:
             "verification": {"verified": False, "reason": "unsigned"},
         }
         self.release = {
+            "id": 70,
+            "tag_name": "v0.7.1",
+            "name": "v0.7.1",
+            "body": "notes",
+            "prerelease": False,
             "immutable": True,
             "draft": False,
+            "upload_url": "https://uploads.github.com/repos/owner/repo/releases/70/assets{?name,label}",
             "assets": [{"name": "asset.whl", "digest": f"sha256:{'d' * 64}"}],
         }
         self.attested = True
@@ -1490,6 +1496,48 @@ class _ReleaseAPI:
         return self.tag
 
     def release_by_tag(self, repository: str, tag: str):
+        assert self.release is not None
+        return self.release
+
+    def optional_release_by_tag(self, repository: str, tag: str):
+        if self.release is None or self.release["draft"] is True:
+            return None
+        return self.release
+
+    def releases(self, repository: str, *, page: int):
+        if page > 1 or self.release is None or self.release["draft"] is False:
+            return ()
+        return (self.release,)
+
+    def create_draft_release(self, repository: str, *, tag: str, name: str, body: str):
+        self.mutations.append("draft")
+        self.release = {
+            "id": 70,
+            "tag_name": tag,
+            "name": name,
+            "body": body,
+            "prerelease": False,
+            "immutable": False,
+            "draft": True,
+            "upload_url": "https://uploads.github.com/repos/owner/repo/releases/70/assets{?name,label}",
+            "assets": [],
+        }
+        return self.release
+
+    def upload_release_asset(self, **kwargs):
+        assert self.release is not None
+        self.mutations.append(f"asset:{kwargs['name']}")
+        digest = hashlib.sha256(kwargs["payload"]).hexdigest()
+        self.release["assets"].append(
+            {"name": kwargs["name"], "digest": f"sha256:{digest}"}
+        )
+        return self.release["assets"][-1]
+
+    def publish_release(self, repository: str, release_id: object):
+        assert self.release is not None
+        self.mutations.append("publish")
+        self.release["draft"] = False
+        self.release["immutable"] = True
         return self.release
 
     def attestations(self, repository: str, digest: str):
@@ -1526,15 +1574,30 @@ def test_release_publication_mechanically_creates_absent_exact_annotated_tag(
     values = _release_inputs(tmp_path)
     api = _ReleaseAPI()
     api.ref = None  # type: ignore[assignment]
-    api.create_draft_release = lambda *args, **kwargs: {  # type: ignore[attr-defined]
-        "id": 70,
-        "draft": True,
-        "upload_url": "https://uploads.github.com/repos/owner/repo/releases/70/assets{?name,label}",
-    }
-    api.upload_release_asset = lambda **kwargs: {  # type: ignore[attr-defined]
-        "digest": f"sha256:{values['assets'][kwargs['name']]}"
-    }
-    api.publish_release = lambda *args, **kwargs: {"draft": False}  # type: ignore[attr-defined]
+    api.release = None  # type: ignore[assignment]
+
+    result = publish_release(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        tag="v0.7.1",
+        expected_commit=COMMIT,
+        release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+        body="notes",
+    )
+
+    assert api.mutations == [
+        "annotated-tag", "tag-reference", "draft",
+        *[f"asset:{path.name}" for path in values["artifacts"]],
+        "publish",
+    ]
+    assert result["status"] == "verified"
+
+
+def test_release_publication_is_read_only_when_exact_release_already_exists(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
     api.release["assets"] = [
         {"name": name, "digest": f"sha256:{digest}"}
         for name, digest in values["assets"].items()
@@ -1549,8 +1612,94 @@ def test_release_publication_mechanically_creates_absent_exact_annotated_tag(
         body="notes",
     )
 
-    assert api.mutations == ["annotated-tag", "tag-reference"]
+    assert result["decision"] == "already_published"
+    assert len(result["transaction_sha256"]) == 64
+    assert api.mutations == []
+
+
+def test_release_publication_resumes_exact_partial_draft_without_rebuild(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    paths = values["artifacts"]
+    first = paths[0]
+    api.release.update(
+        {
+            "immutable": False,
+            "draft": True,
+            "assets": [
+                {
+                    "name": first.name,
+                    "digest": f"sha256:{values['assets'][first.name]}",
+                }
+            ],
+        }
+    )
+
+    result = publish_release(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        tag="v0.7.1",
+        expected_commit=COMMIT,
+        release_artifacts=paths,
+        body="notes",
+    )
+
+    assert result["decision"] == "published"
+    assert f"asset:{first.name}" not in api.mutations
+    assert api.mutations[-1] == "publish"
+
+
+def test_release_publication_rejects_foreign_partial_draft_before_mutation(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    api.release.update(
+        {
+            "immutable": False,
+            "draft": True,
+            "assets": [{"name": "foreign.whl", "digest": f"sha256:{'d' * 64}"}],
+        }
+    )
+
+    with pytest.raises(GitHubControllerError, match="conflict"):
+        publish_release(
+            api,  # type: ignore[arg-type]
+            repository="owner/repo",
+            tag="v0.7.1",
+            expected_commit=COMMIT,
+            release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+            body="notes",
+        )
+    assert api.mutations == []
+
+
+def test_release_creation_conflict_converges_only_through_exact_provider_reread(
+    tmp_path: Path,
+) -> None:
+    values = _release_inputs(tmp_path)
+
+    class RacingAPI(_ReleaseAPI):
+        def create_draft_release(self, repository, *, tag, name, body):
+            super().create_draft_release(repository, tag=tag, name=name, body=body)
+            self.mutations.remove("draft")
+            raise GitHubAPIConflictError("concurrent draft")
+
+    api = RacingAPI()
+    api.ref = None  # type: ignore[assignment]
+    api.release = None  # type: ignore[assignment]
+    result = publish_release(
+        api,  # type: ignore[arg-type]
+        repository="owner/repo",
+        tag="v0.7.1",
+        expected_commit=COMMIT,
+        release_artifacts=values["artifacts"],  # type: ignore[arg-type]
+        body="notes",
+    )
     assert result["status"] == "verified"
+    assert api.mutations[:2] == ["annotated-tag", "tag-reference"]
 
 
 def test_release_publication_rejects_wrong_existing_tag_without_mutation(
@@ -1575,7 +1724,7 @@ def test_release_publication_rejects_wrong_existing_tag_without_mutation(
     ("mutation", "diagnostic"),
     [
         ("lightweight", "annotated tag"),
-        ("signed", "unsigned tag policy"),
+        ("signed", "unsigned policy"),
         ("wrong-name", "does not match certified commit"),
     ],
 )

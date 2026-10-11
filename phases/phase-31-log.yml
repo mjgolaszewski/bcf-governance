@@ -32,7 +32,7 @@ workitems:
   status: DONE
   summary: deliver authenticate a base-pinned independent evaluator
 - id: P31-P0-05
-  status: TODO
+  status: DONE
   summary: deliver execute atomic publication and publish immutable 2.3.0 custody
 execution_evidence:
   planned_commands:
@@ -64,6 +64,7 @@ execution_evidence:
   - P31-P0-04 compiles a complete contract or typed exclusion for every ordered CI producer-consumer pair before scheduling, then derives Lite direct, Standard-v3 protected-base, and managed-controller evaluator modes without caller selection
   - Standard-v3 finalization materializes but never executes candidate evaluator bytes, independently recomputes PR truth with authenticated protected-base or installed-controller code, and binds exact base candidate evidence protected paths workflow runtime and check identity through publication
   - fresh-install transaction closure now derives every generated workflow destination from the prospective graph, preventing new evaluator workflows from succeeding in the shadow tree but disappearing during atomic promotion
+  - P31-P0-05 defines every reachable publication edge before authority, extracts one idempotent publication transaction, resumes only exact tags drafts and asset subsets, rejects conflicting state, and replaces operator-provisioned credentials with one repository-scoped App token whose pinned action owns terminal revocation
 closeout_requirements:
   claims:
     workitems_closed:
@@ -96,4 +97,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify workitem_closed:P31-P0-04 and make only P31-P0-05 eligible before implementing atomic publication
+- certify terminal P31 closure, qualify the exact v2.3.0 assets, publish once through the atomic transaction, independently verify immutable custody, and archive the phase and release train

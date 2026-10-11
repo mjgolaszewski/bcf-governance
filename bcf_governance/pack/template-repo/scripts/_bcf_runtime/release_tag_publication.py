@@ -6,7 +6,7 @@ import re
 from typing import Any
 from urllib.parse import quote
 
-from .ci_github_api import GitHubAPI, GitHubAPIError, _sha
+from .ci_github_api import GitHubAPI, GitHubAPIConflictError, GitHubAPIError, _sha
 from .ci_github_identity import GitHubControllerError
 from .release_versions import ReleaseVersionError, parse_release_tag
 
@@ -65,8 +65,13 @@ def ensure_release_tag(
 
     reference = _optional_reference(api, repository, f"tags/{tag}")
     if reference is None:
-        tag_sha = _create_tag(api, repository, tag, commit_sha)
-        _create_reference(api, repository, tag, tag_sha)
+        try:
+            tag_sha = _create_tag(api, repository, tag, commit_sha)
+            _create_reference(api, repository, tag, tag_sha)
+        except GitHubAPIConflictError:
+            # A concurrent publisher may have completed this exact edge.  The
+            # provider state below, never the conflict itself, decides safety.
+            pass
         reference = api.reference(repository, f"tags/{tag}")
     target = reference.get("object")
     if not isinstance(target, dict) or target.get("type") != "tag":

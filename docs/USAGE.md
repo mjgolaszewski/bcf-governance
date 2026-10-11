@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.2.1/bcf_governance-2.2.1-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.0/bcf_governance-2.3.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -397,10 +397,12 @@ not supply run, attempt, artifact, digest, subject, tag, or asset-list custody.
 Before provider mutation, the controller also requires the wheel and source
 archive to encode one canonical distribution/version equal to that graph-owned
 tag and requires every certified digest to have an attestation.
-BCF's own publisher additionally requires a short-lived `BCF_RELEASE_ADMIN_TOKEN`
-secret because GitHub's workflow token cannot read repository immutable-release
-settings. Provision it only on the trusted no-checkout path with Administration read,
-Attestations read, and Contents write, then remove it after publication.
+BCF's own publisher mechanically mints one repository-scoped GitHub App
+installation token inside its trusted no-checkout job because GitHub's workflow
+token cannot read repository immutable-release settings. The token receives only
+Administration read, Attestations read, and Contents write; the pinned token
+action revokes it in its post step. Operators never provision or remove a release
+token, and token format or length is not part of the contract.
 
 Workflow custody is compiled, not transcribed. Routine reconciliation owns the
 definition-plus-authority commit pair described above. The lower-level compiler
@@ -552,9 +554,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.2.1 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.2.1
+gh release download v2.3.0 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.0
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.2.1 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.0 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF

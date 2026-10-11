@@ -6,7 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-11
+
 ### Changed
+
+- Replaced operator-provisioned release credentials and one-shot publication
+  with a single idempotent transaction. The trusted no-checkout publisher mints
+  one repository-scoped GitHub App token, resumes only exact tags, drafts, and
+  asset subsets, rejects conflicting provider state, publishes certified bytes
+  without rebuild, and delegates terminal revocation to the pinned token action.
 
 - Made Standard-v3 merge eligibility independent of candidate evaluator bytes.
   The canonical graph now closes every producer/consumer edge before work,
