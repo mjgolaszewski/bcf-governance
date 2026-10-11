@@ -1,0 +1,55 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF01 Hotfix Log
+  id: project-phase-31-hotfix01
+  version: 1.0.0
+  generated_at_utc: '2026-10-11T00:00:00Z'
+  status: active
+  path: phases/phase-31-hotfix01.yml
+hotfix:
+  id: P31-HF01
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 1
+  summary: restore protected-base PR finalizer candidate materialization
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_graph.py::test_v3_reference_graph_projects_proof_transport_and_planned_shards
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_ci_graph.py::test_v3_reference_graph_projects_proof_transport_and_planned_shards tests/test_ci_graph.py::test_graph_validates_and_composes_registered_extension tests/test_ci_graph.py::test_renderer_is_deterministic_and_parity_owned tests/test_self_governance_contracts.py::test_self_ci_authority_matches_immutable_workflow_definitions
+  - .venv/bin/python -m bcf_governance.cli preflight --repo-root . --mode pr --evaluation-mode pr --python .venv/bin/python --format json
+  notes:
+  - PR 400 governance runs 38117052778/1 and 38120445703/1 passed exact-tree
+    truth, but trusted base finalizers 38118502507/1 and 38121965776/1 failed
+    before evaluator execution because actions/checkout v7 rejected the
+    runner-temp candidate destination outside GITHUB_WORKSPACE
+  - the matrix-first repair binds checkout and evaluator input to one
+    run-attempt-owned workspace-relative path and rejects unsafe, escaping,
+    shared, or divergent materialization before evidence allocation
+  - current main contains the broken sole finalizer, so ordinary certification
+    cannot certify this repair; recovery requires one owner-authorized audited
+    protection exception for this minimal hotfix and immediate restoration of
+    the exact governed protection contract
+  - Break Glass remains controller-only and noncertifying; it is not used or
+    broadened for repository, status, merge, or protection authority
+  - four focused graph projection parity and immutable-authority tests passed;
+    cheap PR preflight passed on committed implementation tree
+    43109bab2ea89305677edc703fe31b7ed9d98ba8 with pending_rotation and
+    release_authority false
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

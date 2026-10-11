@@ -38,7 +38,7 @@ commands:
     cwd: .
     environment: {}
   pr-finalize:
-    argv: ['{controller}', ci-github, pr, finalize, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-pr-finalization', --candidate-root, '${{ runner.temp }}/bcf-pr-candidate']
+    argv: ['{controller}', ci-github, pr, finalize, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-pr-finalization', --candidate-root, '${{ github.workspace }}/.bcf-pr-candidate-${{ github.run_id }}-${{ github.run_attempt }}']
     cwd: .
     environment: {}
   pr-publish:
@@ -50,7 +50,7 @@ step_components:
     kind: action
     name: Materialize the exact candidate without executing its evaluator
     action: checkout
-    with: {ref: '${{ github.event.workflow_run.head_sha }}', path: '${{ runner.temp }}/bcf-pr-candidate', persist-credentials: false}
+    with: {ref: '${{ github.event.workflow_run.head_sha }}', path: '.bcf-pr-candidate-${{ github.run_id }}-${{ github.run_attempt }}', persist-credentials: false}
     environment: {}
     produces: []
     consumes: []

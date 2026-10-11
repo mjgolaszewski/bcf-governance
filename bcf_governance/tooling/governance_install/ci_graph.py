@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..ci_graph_defaults import build_reference_ci_graph
+from ..ci_graph_execution import CANDIDATE_MATERIALIZATION_ROOT
 from ..ci_graph_render import apply_ci_graph
 from ..ci_graph_yaml import load_yaml_path, render_yaml
 from ..ci_controller_policy import (
@@ -349,7 +350,7 @@ def project_trusted_controller_management(
                 "{controller}", "ci-github", "pr", "finalize", "--repository",
                 "${{ github.repository }}", "--output",
                 "${{ runner.temp }}/bcf-pr-finalization", "--candidate-root",
-                "${{ runner.temp }}/bcf-pr-candidate",
+                CANDIDATE_MATERIALIZATION_ROOT,
             ],
             environment={"GITHUB_TOKEN": "${{ github.token }}"},
         )

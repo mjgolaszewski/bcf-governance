@@ -44,6 +44,13 @@ _DIRECT_POST_MERGE_TARGET = re.compile(
     r"^\$\{\{ inputs\.evaluation_target \|\| "
     r"\(github\.event_name == 'push' && '([^']+)' \|\| ''\) \}\}$"
 )
+CANDIDATE_MATERIALIZATION_RELATIVE = (
+    ".bcf-pr-candidate-${{ github.run_id }}-${{ github.run_attempt }}"
+)
+CANDIDATE_MATERIALIZATION_ROOT = (
+    "${{ github.workspace }}/" + CANDIDATE_MATERIALIZATION_RELATIVE
+)
+
 
 def direct_post_merge_mode(mode: str) -> str:
     """Render one event-safe direct-push evaluation intent."""
@@ -363,6 +370,31 @@ def job_execution_issues(
             if graph["step_components"][component_id].get("action") == "checkout"
         ]
         controller_commands = controller_command_ids(graph, executor)
+        materializers = [
+            component for component in checkouts
+            if "path" in component.get("with", {})
+        ]
+        if materializers:
+            finalize_commands = [
+                graph["commands"][command_id]["argv"]
+                for command_id in _command_ids(graph, executor)
+                if "ci-github" in graph["commands"][command_id]["argv"]
+                and "pr" in graph["commands"][command_id]["argv"]
+                and "finalize" in graph["commands"][command_id]["argv"]
+            ]
+            roots = [
+                _argument(argv, "--candidate-root")
+                for argv in finalize_commands
+            ]
+            if (
+                len(materializers) != 1
+                or materializers[0]["with"]["path"]
+                != CANDIDATE_MATERIALIZATION_RELATIVE
+                or roots != [CANDIDATE_MATERIALIZATION_ROOT]
+            ):
+                issues.append(
+                    f"evaluator job {job['id']} candidate materialization must bind one run-owned workspace-relative checkout to its consumer"
+                )
         if evaluator_source == "protected_base":
             refs = [component.get("with", {}).get("ref") for component in checkouts]
             allowed_sets = {
