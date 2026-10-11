@@ -6,7 +6,7 @@ default_branch: main
 trusted_controller: {kind: self_governance_policy, policy_path: governance/self-governance-policy.yml}
 evidence_storage: {path: governance/evidence-storage.yml, sha256: e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa}
 value_sources:
-  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 7fbd84a4a8c22f08c9979c425c54450d7df6aea759a0b9b33bffecdc0e72c751}
+  self-policy: {kind: yaml, path: governance/self-governance-policy.yml, sha256: 60a63cc8c73c9b0201f5d19c7db80ec1a0fbd836e15e9527eaa3cf99848d7504}
   release-contract: {kind: yaml, path: governance/public-contracts.yml, sha256: 62d3de81c428ab0f407add27fb73d07e1c16614e799512069cddf4c232476aac}
   protection-contract: {kind: yaml, path: governance/github-protection.yml, sha256: 5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a}
   automation-contract: {kind: yaml, path: governance/automation-producers.yml, sha256: 74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce}
@@ -662,7 +662,7 @@ workflows:
     outputs: {controller_state: '${{ steps.exact-main-applicability.outputs.controller_state }}', semantic_evidence_applicable: '${{ steps.exact-main-applicability.outputs.semantic_evidence_applicable }}', target_commit: '${{ steps.exact-main-applicability.outputs.target_commit }}'}
     executor:
       kind: component_sequence
-      components: [checkout-candidate, setup-python, install-governance, setup-controller-custody-directory, resolve-recovery-controller-candidate, classify-exact-main-controller, upload-controller-custody, build-trusted-controller, upload-trusted-controller]
+      components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate, classify-exact-main-controller, setup-controller-custody-directory, project-controller-custody, upload-controller-custody, build-trusted-controller, upload-trusted-controller]
     produces: [controller-custody, trusted-controller-bundle]
     consumes: []
     required: true
