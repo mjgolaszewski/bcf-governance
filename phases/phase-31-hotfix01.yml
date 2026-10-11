@@ -4,7 +4,7 @@ document:
   id: project-phase-31-hotfix01
   version: 1.0.0
   generated_at_utc: '2026-10-11T00:00:00Z'
-  status: active
+  status: completed
   path: phases/phase-31-hotfix01.yml
 hotfix:
   id: P31-HF01
@@ -51,6 +51,10 @@ execution_evidence:
     recovery re-entry, while the independent release verifier remains closed
     by its exact successful release-authority trigger and runtime dependency
     rather than a redundant static false condition on its collector
+  - >-
+    governance run 38138230671/1 verified every required hotfix claim and
+    reconciliation invariant; terminal truth correctly required this record
+    to move from authored active to completed before certification
   - four focused graph projection parity and immutable-authority tests passed;
     cheap PR preflight passed on committed implementation tree
     43109bab2ea89305677edc703fe31b7ed9d98ba8 with pending_rotation and
