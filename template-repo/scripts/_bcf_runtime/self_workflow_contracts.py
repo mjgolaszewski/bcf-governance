@@ -117,6 +117,7 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
         if job["id"] == "publish"
     )
     token = compiled.graph["step_components"].get("create-release-app-token")
+    publish_component = compiled.graph["step_components"].get("publish-release")
     if (
         publisher.get("protected_environment") != credential["protected_environment"]
         or not isinstance(token, dict)
@@ -131,7 +132,8 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
             "permission-contents": "write",
             "skip-token-revoke": "false",
         }
-        or environment.get("GITHUB_TOKEN")
+        or not isinstance(publish_component, dict)
+        or publish_component.get("environment", {}).get("GITHUB_TOKEN")
         != "${{ steps.release-app-token.outputs.token }}"
     ):
         raise SelfWorkflowContractError("release App token capsule is not exact")
