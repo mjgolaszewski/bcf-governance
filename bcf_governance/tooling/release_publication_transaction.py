@@ -163,12 +163,8 @@ def publish_release(
     if api.immutable_releases(repository).get("enabled") is not True:
         raise GitHubControllerError("immutable releases must be enabled before publication")
     expected_assets = exact_assets(paths)
-    _require_attestations(
-        api,
-        repository,
-        expected_assets.values(),
-        "release assets must be attested before provider mutation",
-    )
+    attestation_error = "release assets must be attested before provider mutation"
+    _require_attestations(api, repository, expected_assets.values(), attestation_error)
     transaction = _transaction_digest(
         repository=repository,
         tag=tag,
