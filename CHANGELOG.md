@@ -44,6 +44,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Normalized authenticated recovery into ordinary controller custody only
+  after exact-main and Break Glass artifacts proved the same subject and
+  byte-identical controller, atomically removing temporary recovery authority.
 - Derived exact-main builder routing and its typed custody exclusion from
   authenticated recovery state, and added one atomic compiler that restores
   ordinary target/install custody only when normal and recovered artifacts are
