@@ -55,6 +55,14 @@ execution_evidence:
     governance run 38138230671/1 verified every required hotfix claim and
     reconciliation invariant; terminal truth correctly required this record
     to move from authored active to completed before certification
+  - >-
+    repaired finalizer 38142118570/1 proved candidate checkout succeeds but
+    installed controller N rejects successor-only --candidate-root before
+    evaluation; canonical projection now preserves the isolated managed
+    executable as authority and supplies the same exact run-owned candidate
+    through N's repository-root working-directory contract, with graph
+    validation rejecting the unsupported argument, ambient cwd, or candidate
+    executable substitution
   - four focused graph projection parity and immutable-authority tests passed;
     cheap PR preflight passed on committed implementation tree
     43109bab2ea89305677edc703fe31b7ed9d98ba8 with pending_rotation and
