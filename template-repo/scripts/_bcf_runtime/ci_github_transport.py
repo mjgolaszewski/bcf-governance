@@ -14,6 +14,10 @@ from .provider_read import ProviderReadAttempt, ProviderReadError, open_provider
 class GitHubTransportError(ValueError):
     """A bounded GitHub transport operation failed."""
 
+    def __init__(self, message: str, *, status_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
+
 
 def request_json(
     *,
@@ -54,7 +58,9 @@ def request_json(
     except HTTPError as exc:
         if not_found_none and method == "GET" and exc.code == 404:
             return None
-        raise GitHubTransportError(f"GitHub API {method} {path} returned {exc.code}") from exc
+        raise GitHubTransportError(
+            f"GitHub API {method} {path} returned {exc.code}", status_code=exc.code
+        ) from exc
     except (OSError, URLError, ProviderReadError) as exc:
         raise GitHubTransportError(f"GitHub API {method} {path} failed") from exc
     if not raw:
