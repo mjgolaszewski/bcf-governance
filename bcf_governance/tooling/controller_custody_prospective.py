@@ -18,6 +18,7 @@ from .ci_graph_post_merge import post_merge_evaluation
 from .governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
     project_trusted_controller_management,
+    release_authority_enabled,
 )
 from .ci_controller_policy import validate_installed_controller_policy
 from .self_workflow_contracts import validate_self_workflow_contracts
@@ -354,8 +355,7 @@ def validate_controller_custody_chain(
     try:
         expected_build_condition = exact_main_controller_artifact_condition(
             evaluation_mode,
-            release_enabled={"release-authority", "release-publisher"}
-            <= workflow_ids,
+            release_enabled=release_authority_enabled(dict(graph)),
         )
     except RuntimeError as exc:
         raise GitHubControllerError(str(exc)) from exc

@@ -26,6 +26,7 @@ from bcf_governance.tooling.controller_custody_prospective import (
 from bcf_governance.tooling.governance_install.ci_graph import (
     _project_exact_main_builder_topology,
     exact_main_controller_artifact_condition,
+    release_authority_enabled,
 )
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.ci_graph_post_merge import reconcile_post_merge_scope
@@ -231,8 +232,22 @@ def test_controller_artifact_materialization_is_terminal_scope_exact(
         + " || steps.exact-main-applicability.outputs.controller_state == 'current'"
     )
 
+    assert release_authority_enabled(
+        {"workflows": [], "extensions": [{"id": "bcf-release"}]}
+    ) is True
+    assert release_authority_enabled(
+        {
+            "workflows": [
+                {"id": "release-authority"},
+                {"id": "release-publisher"},
+            ],
+            "extensions": [],
+        }
+    ) is True
+
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
+    graph["conditions"]["exact-main-controller-build-required"] = pending
     (tmp_path / "governance").mkdir()
     (tmp_path / "plans").mkdir()
     (tmp_path / "phases").mkdir()

@@ -20,7 +20,10 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
-from .governance_install.ci_graph import exact_main_controller_artifact_condition
+from .governance_install.ci_graph import (
+    exact_main_controller_artifact_condition,
+    release_authority_enabled,
+)
 from .repository_comparison_context import (
     PUSH_COMPARISON_BASE_EXPRESSION,
     comparison_base_input_contract,
@@ -376,12 +379,10 @@ def reconcile_post_merge_scope(repo_root: Path, *, apply: bool) -> bool:
     else:
         admission["executor"]["evaluation_target"] = target
         producer["executor"]["inputs"]["evaluation_target"] = target
-    workflow_ids = {str(item.get("id")) for item in proposed["workflows"]}
     proposed["conditions"]["exact-main-controller-build-required"] = (
         exact_main_controller_artifact_condition(
             mode,
-            release_enabled={"release-authority", "release-publisher"}
-            <= workflow_ids,
+            release_enabled=release_authority_enabled(proposed),
         )
     )
     command = proposed["commands"].get("exact-main-admit-effective")

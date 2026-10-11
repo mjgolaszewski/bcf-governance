@@ -39,6 +39,16 @@ def exact_main_controller_artifact_condition(
     return condition
 
 
+def release_authority_enabled(graph: dict[str, Any]) -> bool:
+    """Recognize release authority in either raw or extension-composed graph form."""
+
+    workflows = {str(value.get("id")) for value in graph.get("workflows", [])}
+    extensions = {str(value.get("id")) for value in graph.get("extensions", [])}
+    return {"release-authority", "release-publisher"} <= workflows or (
+        "bcf-release" in extensions
+    )
+
+
 def _project_exact_main_builder_topology(
     graph: dict[str, Any], *, recovery_reentry: bool
 ) -> None:
@@ -380,8 +390,7 @@ def project_trusted_controller_management(
     graph["conditions"]["exact-main-controller-build-required"] = (
         exact_main_controller_artifact_condition(
             mode,
-            release_enabled={str(item.get("id")) for item in graph["workflows"]}
-            >= {"release-authority", "release-publisher"},
+            release_enabled=release_authority_enabled(graph),
         )
     )
     graph["commands"]["exact-main-admit-effective"] = _command(
