@@ -24,6 +24,7 @@ from bcf_governance.tooling.controller_custody_prospective import (
     validate_controller_custody_chain,
 )
 from bcf_governance.tooling.governance_install.ci_graph import (
+    _project_exact_main_builder_topology,
     exact_main_controller_artifact_condition,
 )
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
@@ -144,6 +145,7 @@ def test_prospective_chain_rejects_unclosed_recovery_custody_lane(
 ) -> None:
     root = Path(__file__).resolve().parents[1]
     graph = copy.deepcopy(validate_ci_graph(root).graph)
+    _project_exact_main_builder_topology(graph, recovery_reentry=True)
     builder = next(
         job
         for job in next(
