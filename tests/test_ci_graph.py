@@ -2337,12 +2337,23 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert builder["produces"] == [
         "controller-custody", "trusted-controller-bundle",
     ]
-    assert "project-controller-custody" in builder["executor"]["components"]
+    recovery = (
+        validate_ci_graph(REPO_ROOT).trusted_controller_lifecycle.state
+        is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
+    )
+    assert (
+        "project-controller-custody" in builder["executor"]["components"]
+    ) is not recovery
     assert "upload-controller-custody" in builder["executor"]["components"]
     assert "build-trusted-controller" in builder["executor"]["components"]
     assert "upload-trusted-controller" in builder["executor"]["components"]
+    route_component = (
+        "resolve-recovery-controller-candidate"
+        if recovery
+        else "resolve-effective-controller-candidate"
+    )
     assert builder["executor"]["components"].index(
-        "resolve-effective-controller-candidate"
+        route_component
     ) < builder["executor"]["components"].index("classify-exact-main-controller")
     assert builder["executor"]["components"].index(
         "classify-exact-main-controller"

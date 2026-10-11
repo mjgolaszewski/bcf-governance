@@ -12,6 +12,7 @@ from .ci_graph_diagnostics import diagnose_ci_graph
 from .ci_graph_import import check_workflow_inventory, write_workflow_inventory
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
 from .ci_graph_render import apply_ci_graph, check_ci_graph, diff_ci_graph
+from .governance_install.ci_graph import reconcile_trusted_controller_runtime_topology
 
 
 def add_graph_parser(
@@ -116,6 +117,15 @@ def run_graph_command(args: argparse.Namespace) -> None:
             raise SystemExit(1)
         return
     if args.graph_operation == "lock":
+        topology_changes = reconcile_trusted_controller_runtime_topology(
+            repo_root, apply=args.apply
+        )
+        if topology_changes and args.check:
+            _print(
+                {"status": "changed", "changed_inputs": list(topology_changes)},
+                args.format,
+            )
+            raise SystemExit(1)
         result = (
             apply_ci_graph_locks(repo_root)
             if args.apply

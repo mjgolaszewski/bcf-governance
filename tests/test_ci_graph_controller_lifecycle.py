@@ -8,10 +8,12 @@ import shutil
 import subprocess
 
 import pytest
+import yaml
 
 from bcf_governance.tooling.ci_graph_controller_lifecycle import (
     ControllerLifecycleState,
     controller_requirement_condition,
+    recovery_builder_route,
     resolve_controller_lifecycle,
 )
 from bcf_governance.tooling.ci_graph_errors import CIGraphError
@@ -134,6 +136,40 @@ def test_five_state_controller_lifecycle_and_requirement_resolution(tmp_path: Pa
         resolve_controller_lifecycle(
             tmp_path, _runner("e" * 40, "e" * 40, authorization)
         )
+
+
+def test_recovery_builder_route_emits_typed_noncertifying_exclusion(
+    tmp_path: Path,
+) -> None:
+    source_commit, source_tree = _repository(tmp_path)
+    runner = _runner(
+        "b" * 40,
+        "c" * 40,
+        _authorization(source_commit, source_tree),
+    )
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/self-governance-policy.yml").write_text(
+        yaml.safe_dump({"runner_security": runner}), encoding="utf-8"
+    )
+    output = tmp_path / "custody/controller-custody.json"
+
+    route = recovery_builder_route(tmp_path, output=output)
+
+    assert route == {
+        "controller_source": "authenticated_recovery_reentry",
+        "BCF_BOOTSTRAP_COMMIT_SHA": "c" * 40,
+    }
+    exclusion = json.loads(output.read_text(encoding="utf-8"))
+    assert exclusion["kind"] == "controller_custody_exclusion"
+    assert exclusion["reason"] == "authenticated_recovery_reentry"
+    assert exclusion["certification_authority"] is False
+    assert exclusion["controller"] == {"commit_sha": "c" * 40}
+    assert exclusion["subject"] == {
+        "commit_sha": source_commit,
+        "tree_sha": source_tree,
+    }
+    with pytest.raises(CIGraphError, match="already exists"):
+        recovery_builder_route(tmp_path, output=output)
 
 
 @pytest.mark.parametrize(

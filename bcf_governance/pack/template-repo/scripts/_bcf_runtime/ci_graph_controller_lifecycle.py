@@ -12,6 +12,7 @@ import subprocess
 from typing import Any
 
 from jsonschema import Draft202012Validator
+import yaml
 
 from .ci_graph_errors import CIGraphError
 
@@ -163,6 +164,48 @@ def resolve_controller_lifecycle(
         installed,
         condition,
     )
+
+
+def recovery_builder_route(
+    repo_root: Path, *, output: Path | None = None
+) -> dict[str, str]:
+    """Derive the sole non-authoritative builder route during recovery re-entry."""
+
+    policy = yaml.safe_load(
+        (repo_root / "governance/self-governance-policy.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    runner = policy.get("runner_security") if isinstance(policy, dict) else None
+    if not isinstance(runner, dict):
+        raise CIGraphError("self-governance runner policy is invalid")
+    lifecycle = resolve_controller_lifecycle(repo_root, runner)
+    if lifecycle.state is not ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY:
+        raise CIGraphError("recovery builder routing requires authenticated re-entry")
+    result = {
+        "controller_source": "authenticated_recovery_reentry",
+        "BCF_BOOTSTRAP_COMMIT_SHA": lifecycle.installed_commit,
+    }
+    if output is not None:
+        if output.exists():
+            raise CIGraphError("recovery builder exclusion output already exists")
+        output.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+        payload = {
+            "schema_version": "1.0",
+            "kind": "controller_custody_exclusion",
+            "reason": "authenticated_recovery_reentry",
+            "certification_authority": False,
+            "controller": {"commit_sha": lifecycle.installed_commit},
+            "subject": {
+                "commit_sha": _git(repo_root, "rev-parse", "HEAD"),
+                "tree_sha": _git(repo_root, "rev-parse", "HEAD^{tree}"),
+            },
+        }
+        output.write_text(
+            json.dumps(payload, sort_keys=True, separators=(",", ":")) + "\n",
+            encoding="utf-8",
+        )
+    return result
 
 
 def controller_requirement_condition(

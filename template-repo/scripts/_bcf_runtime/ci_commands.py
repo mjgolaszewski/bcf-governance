@@ -23,6 +23,7 @@ from .automation_commands import adopt_dependabot
 from .automation_contracts import AutomationContractError, load_automation_registry
 from .ci_github_api import GitHubAPI
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_controller_lifecycle import recovery_builder_route
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import (
     CIAuthorityPinError,
@@ -215,6 +216,14 @@ def _parser() -> argparse.ArgumentParser:
     applicability.add_argument("--target-commit", required=True)
     applicability.add_argument("--github-output", action="store_true")
     applicability.add_argument("--format", choices=("text", "json"), default="json")
+    recovery_route = subparsers.add_parser(
+        "controller-recovery-route",
+        help="Derive non-authoritative exact-main builder routing from recovery custody.",
+    )
+    recovery_route.add_argument("--repo-root", type=Path, default=Path.cwd())
+    recovery_route.add_argument("--output", type=Path)
+    recovery_route.add_argument("--github-output", action="store_true")
+    recovery_route.add_argument("--format", choices=("text", "json"), default="json")
     pin = subparsers.add_parser(
         "pin-authority", help="Derive exact workflow authority pins from Git."
     )
@@ -446,6 +455,14 @@ def main(argv: list[str] | None = None) -> None:
             result = classify_trusted_controller_applicability(
                 args.repo_root.resolve(), target_commit=args.target_commit
             ).as_dict()
+            if args.github_output:
+                github_output(result, path=github_output_path())
+            _print(result, args.format)
+            return
+        if args.operation == "controller-recovery-route":
+            result = recovery_builder_route(
+                args.repo_root.resolve(), output=args.output
+            )
             if args.github_output:
                 github_output(result, path=github_output_path())
             _print(result, args.format)

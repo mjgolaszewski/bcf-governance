@@ -570,9 +570,15 @@ def project_installation(*args: Any, **kwargs: Any) -> dict[str, Any]:
     return project(*args, **kwargs)
 
 
+def normalize_recovered_installation(*args: Any, **kwargs: Any) -> dict[str, Any]:
+    from .break_glass_reentry import normalize_recovered_installation as normalize
+
+    return normalize(*args, **kwargs)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("operation", choices=["authorize-build", "bind-build", "resolve-build", "install", "probe", "finalize", "project-installation"])
+    parser.add_argument("operation", choices=["authorize-build", "bind-build", "resolve-build", "install", "probe", "finalize", "project-installation", "normalize-installation"])
     parser.add_argument("--repo-root", type=Path, default=Path("."))
     parser.add_argument("--repository")
     parser.add_argument("--operation-id")
@@ -585,8 +591,17 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--receipt", type=Path)
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
-    if args.operation == "project-installation":
+    if args.operation in {"project-installation", "normalize-installation"}:
         api = GitHubAPI(token=_required("GITHUB_TOKEN"))
+        if args.operation == "normalize-installation":
+            result = normalize_recovered_installation(
+                api=api,
+                root=root,
+                repository=args.repository,
+                receipt_path=args.receipt,
+            )
+            print(json.dumps(result, sort_keys=True))
+            return
         receipt, artifact, main = _projection_receipt(
             api,
             root=root,
