@@ -64,7 +64,7 @@ simplicity:
   - {id: protection-inspector, proposition: complete_bypass_actor_observation, provider_boundary: repository_scoped_github_app}
   - {id: candidate-runner, proposition: isolated_untrusted_candidate_execution, provider_boundary: github_hosted_runner}
   - {id: trusted-runner-pair, proposition: independent_controller_custody, provider_boundary: self_hosted_runner_group}
-  - {id: release-credential, proposition: bounded_immutable_publication_mutation, provider_boundary: owner_provisioned_environment}
+  - {id: release-credential, proposition: bounded_immutable_publication_mutation_and_terminal_revocation, provider_boundary: repository_scoped_github_app}
   - {id: bounded-status, proposition: workitem_only_success_publication, provider_boundary: github_commit_status}
 derived_metrics:
   self_feedback_median_seconds: 1565

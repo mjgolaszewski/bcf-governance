@@ -268,6 +268,7 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
     assert compiled.commands["collect-release"]["argv"][0] == "{ephemeral_controller}"
     publisher = _job("release-publisher", "publish")
     assert publisher["needs"] == ["controller-route"]
+    assert publisher["protected_environment"] == "bcf-trusted-automation"
     assert publisher["executor"]["components"][:2] == [
         "setup-python", "setup-publication-directories",
     ]
@@ -283,6 +284,28 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
         if step.get("name") == "Publish only the authenticated pre-certified bytes"
     )
     assert publish_step["env"]["BCF_CONTROLLER_EXECUTION_REQUIRED"] == "true"
+    assert publish_step["env"]["GITHUB_TOKEN"] == (
+        "${{ steps.release-app-token.outputs.token }}"
+    )
+    token_step = next(
+        step
+        for step in rendered_publisher["jobs"]["publish"]["steps"]
+        if step.get("id") == "release-app-token"
+    )
+    assert token_step["uses"].endswith(
+        "@bcd2ba49218906704ab6c1aa796996da409d3eb1"
+    )
+    assert token_step["with"] == {
+        "app-id": "${{ vars.BCF_AUTOMATION_APP_ID }}",
+        "private-key": "${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}",
+        "owner": "${{ github.repository_owner }}",
+        "repositories": "${{ github.event.repository.name }}",
+        "permission-administration": "read",
+        "permission-attestations": "read",
+        "permission-contents": "write",
+        "skip-token-revoke": "false",
+    }
+    assert "BCF_RELEASE_ADMIN_TOKEN" not in str(rendered_publisher)
     assert "steps.resolve.outputs.tag" not in commands["publish-release"]
     assert (
         release_contract_path.relative_to(REPO_ROOT).as_posix(),

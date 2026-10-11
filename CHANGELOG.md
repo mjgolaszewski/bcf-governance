@@ -6,7 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-10-11
+
 ### Changed
+
+- Replaced operator-provisioned release credentials and one-shot publication
+  with a single idempotent transaction. The trusted no-checkout publisher mints
+  one repository-scoped GitHub App token, resumes only exact tags, drafts, and
+  asset subsets, rejects conflicting provider state, publishes certified bytes
+  without rebuild, and delegates terminal revocation to the pinned token action.
 
 - Made Standard-v3 merge eligibility independent of candidate evaluator bytes.
   The canonical graph now closes every producer/consumer edge before work,
@@ -44,9 +52,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
-- Normalized authenticated recovery into ordinary controller custody only
-  after exact-main and Break Glass artifacts proved the same subject and
-  byte-identical controller, atomically removing temporary recovery authority.
+- Made authenticated recovery normalization one closed operation: after
+  exact-main and Break Glass artifacts prove the same subject and byte-identical
+  controller, it removes temporary recovery authority and mechanically commits
+  the complete workflow-definition and authority projection.
 - Derived exact-main builder routing and its typed custody exclusion from
   authenticated recovery state, and added one atomic compiler that restores
   ordinary target/install custody only when normal and recovered artifacts are

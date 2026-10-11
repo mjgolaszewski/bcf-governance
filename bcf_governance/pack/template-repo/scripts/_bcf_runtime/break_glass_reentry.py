@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import re
 import subprocess
+import sys
 import tempfile
 from typing import Any
 
@@ -31,9 +32,51 @@ from .ci_graph_controller_lifecycle import (
 )
 from .ci_self_controller import (
     compile_resolved_self_controller_pin,
-    project_self_controller_pin,
+    project_self_controller_custody,
     resolve_self_controller_artifact,
 )
+
+
+def reconcile_normalized_installation(root: Path) -> dict[str, Any]:
+    """Close every derived normalization edge through the canonical reconciler."""
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "bcf_governance.cli",
+            "reconcile",
+            "--repo-root",
+            str(root),
+            "--python",
+            sys.executable,
+            "--apply",
+        ],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode:
+        detail = (result.stderr or result.stdout).strip()
+        raise GitHubControllerError(
+            "recovery normalization reconciliation failed: "
+            + (detail or str(result.returncode))
+        )
+    try:
+        payload = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise GitHubControllerError(
+            "recovery normalization reconciler returned an invalid result"
+        ) from exc
+    if not isinstance(payload, dict) or payload.get("status") not in {
+        "converged",
+        "committed_workflow_authority_transition",
+    }:
+        raise GitHubControllerError(
+            "recovery normalization reconciler did not close the candidate"
+        )
+    return payload
 
 
 def authenticate_projection_receipt(
@@ -357,9 +400,10 @@ def normalize_recovered_installation(
             "probe_run_attempt",
         )
     }
-    projection = project_self_controller_pin(
+    projection = project_self_controller_custody(
         root, pin=pin, confirmation=confirmation, apply=True
     )
+    reconciliation = reconcile_normalized_installation(root)
     normalized = yaml.safe_load(
         (root / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )["runner_security"]
@@ -376,4 +420,5 @@ def normalize_recovered_installation(
         "ordinary_artifact_run_id": pin["BCF_BOOTSTRAP_RUN_ID"],
         "wheel_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
         "changed_paths": list(projection.changed_paths),
+        "reconciliation": reconciliation,
     }

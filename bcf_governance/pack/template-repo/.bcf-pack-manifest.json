@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "c9e96c814f1f29fd6e0bd43025bef4b93e3bade609c8b2673309efaa3c42fd62"
+      "sha256": "d103b001e3d0665df400324c0574cd24751f7c272e3793a7648b9fe630d9c5fc"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -480,7 +480,7 @@
     "scripts/_bcf_runtime/break_glass_reentry.py": {
       "installation_scope": "self_authority",
       "operation": "copy",
-      "sha256": "87db4218f7ab51b4da2ebdd70be48f297f205a1b58f7e76f92dfdfd413843c93"
+      "sha256": "fbefcd9b22c38afbedb008347d309bff670c805b9d675665ad9905587b186105"
     },
     "scripts/_bcf_runtime/candidate_provider_recovery.py": {
       "operation": "copy",
@@ -572,11 +572,11 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "48cb274adb6b7917a1423e46b6d44c77500186237b082e1ee12951265f332ea3"
+      "sha256": "0e35693c09b6b69de78ae73b3715ab1883a693a2f56b6c3de197261da08e9d8e"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "36d03a5e829ed8450ce4afc6ed5d62049a12a265d408c7e65c24c2f992ec6a02"
+      "sha256": "adb91576b2eba99770ac8546ace5cc66b68a4c880ede35c06d9960b1bead8d45"
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
@@ -630,6 +630,10 @@
       "operation": "copy",
       "sha256": "215afe9c81268eae13e3022af3020f8b7f8b0a839ffe4f5ca4b9186d41990054"
     },
+    "scripts/_bcf_runtime/ci_github_errors.py": {
+      "operation": "copy",
+      "sha256": "b161e0d21973b7c24ac9c86989ea16effa0a460da91378c37b440421b6118897"
+    },
     "scripts/_bcf_runtime/ci_github_exact_main.py": {
       "operation": "copy",
       "sha256": "2acd081f71160b66ab373a7f0feafb9bbcf55719f2c4eeb83f39c1e345a2ef5d"
@@ -656,7 +660,11 @@
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
-      "sha256": "886e1a58e718f04e6ccb4283c1b54ad4dc9238a1094a14724985982fa38fd29a"
+      "sha256": "9720e28583f24dd01a73c7429440de36a129b4fbad231526bd3b0c702e12ef14"
+    },
+    "scripts/_bcf_runtime/ci_github_release_api.py": {
+      "operation": "copy",
+      "sha256": "0f7f968d8d548026e66c8c0b0cc88e15b5856ca5606bfc346bffda1b64614a72"
     },
     "scripts/_bcf_runtime/ci_github_release_collection.py": {
       "operation": "copy",
@@ -680,7 +688,7 @@
     },
     "scripts/_bcf_runtime/ci_github_transport.py": {
       "operation": "copy",
-      "sha256": "242efca657e5d15b805f5b8947c7e9ac367397902a88cfaf82ffbaedd4e9f90d"
+      "sha256": "063c1d76a59fe5bb4f093a327e93479f035aa63b3406a50b9d51bb1343470757"
     },
     "scripts/_bcf_runtime/ci_github_values.py": {
       "operation": "copy",
@@ -816,7 +824,7 @@
     },
     "scripts/_bcf_runtime/ci_self_controller.py": {
       "operation": "copy",
-      "sha256": "cbd0e57d8546dd709e47b1fc146e862b875091eed4a6dca198a392eeb58d863a"
+      "sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
     },
     "scripts/_bcf_runtime/cleanup_ci_resources.py": {
       "operation": "copy",
@@ -1289,6 +1297,10 @@
       "operation": "copy",
       "sha256": "71f3978d7daf3ba388de02c445febdbb755105af3e4b1c2cf8e0d8b3f8a93d9b"
     },
+    "scripts/_bcf_runtime/release_publication_transaction.py": {
+      "operation": "copy",
+      "sha256": "57187c0880bd554436fc2706a850638521f45f7f6f69fd6788bb13c0b689a866"
+    },
     "scripts/_bcf_runtime/release_receipts.py": {
       "operation": "copy",
       "sha256": "3a0d1277009c544730df3b946f6ccf2ceb0de148907f7b3dfe5eee372110e153"
@@ -1303,7 +1315,7 @@
     },
     "scripts/_bcf_runtime/release_tag_publication.py": {
       "operation": "copy",
-      "sha256": "4b844b55c3f39ea903abb9799b0e53e13e017cf6fda4119983329f7beee103eb"
+      "sha256": "03ccb6e28038fdc5e807ce813b31119014b64092f710489a9dfea76f49f4bcbd"
     },
     "scripts/_bcf_runtime/release_version_projection.py": {
       "operation": "copy",
@@ -1363,7 +1375,7 @@
     },
     "scripts/_bcf_runtime/self_workflow_contracts.py": {
       "operation": "copy",
-      "sha256": "9147da0e01e795055172d738b4e65274fd8b52b8c1898071be5275f13012c47d"
+      "sha256": "5d1aeb22df28080eca74b2757616561ec5c13efd8204990891a8f2bf92a991d3"
     },
     "scripts/_bcf_runtime/semantic_adoption_dependencies.py": {
       "operation": "copy",

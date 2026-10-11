@@ -467,7 +467,16 @@ def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
         }), encoding="utf-8")
         return SimpleNamespace(changed_paths=("governance/self-governance-policy.yml",))
 
-    monkeypatch.setattr(reentry, "project_self_controller_pin", project)
+    monkeypatch.setattr(reentry, "project_self_controller_custody", project)
+    monkeypatch.setattr(
+        reentry,
+        "reconcile_normalized_installation",
+        lambda _root: {
+            "status": "committed_workflow_authority_transition",
+            "definition_commit": "1" * 40,
+            "authority_commit": "2" * 40,
+        },
+    )
 
     class API:
         def artifact_bytes(self, *_args):
@@ -478,6 +487,7 @@ def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
         receipt_path=receipt_path,
     )
     assert result["status"] == "ordinary_current_projected_for_protected_pr"
+    assert result["reconciliation"]["authority_commit"] == "2" * 40
     normalized = yaml.safe_load(policy_path.read_text())["runner_security"]
     assert normalized["trusted_controller_artifact"] == pin
     assert "trusted_controller_recovery_reentry" not in normalized
@@ -494,6 +504,52 @@ def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
             api=API(), root=tmp_path, repository="mjgolaszewski/bcf-governance",
             receipt_path=receipt_path,
         )
+
+
+def test_recovery_normalization_invokes_one_closed_canonical_reconcile(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    observed: list[tuple[list[str], Path]] = []
+
+    def run(command, *, cwd, **_kwargs):
+        observed.append((command, cwd))
+        return SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({
+                "status": "committed_workflow_authority_transition",
+                "definition_commit": "1" * 40,
+                "authority_commit": "2" * 40,
+            }),
+            stderr="",
+        )
+
+    monkeypatch.setattr(reentry.subprocess, "run", run)
+
+    result = reentry.reconcile_normalized_installation(tmp_path)
+
+    assert result["authority_commit"] == "2" * 40
+    assert len(observed) == 1
+    command, cwd = observed[0]
+    assert cwd == tmp_path
+    assert command[1:4] == ["-m", "bcf_governance.cli", "reconcile"]
+    assert command[-1] == "--apply"
+
+
+def test_recovery_normalization_fails_closed_when_reconcile_does_not_close(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(
+        reentry.subprocess,
+        "run",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            returncode=0,
+            stdout=json.dumps({"status": "partial"}),
+            stderr="",
+        ),
+    )
+
+    with pytest.raises(GitHubControllerError, match="did not close"):
+        reentry.reconcile_normalized_installation(tmp_path)
 
 
 def test_projection_receipt_authenticates_exact_provider_archive(

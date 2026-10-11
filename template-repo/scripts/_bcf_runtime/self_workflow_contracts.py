@@ -88,17 +88,55 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
         raise SelfWorkflowContractError("trusted runner mapping conflicts with self policy")
 
     credential = runner.get("trusted_release_credential")
-    secret = credential.get("secret_name") if isinstance(credential, dict) else None
+    credential = credential if isinstance(credential, dict) else {}
     publish = compiled.commands.get("publish-release")
     required = publish.get("required_environment") if isinstance(publish, dict) else None
     environment = publish.get("environment") if isinstance(publish, dict) else None
     if (
-        not isinstance(secret, str)
-        or required != [secret, "BCF_CONTROLLER_EXECUTION_REQUIRED"]
+        credential != {
+            "credential_kind": "repository_scoped_github_app_installation_token",
+            "protected_environment": "bcf-trusted-automation",
+            "app_id_variable": "BCF_AUTOMATION_APP_ID",
+            "private_key_secret": "BCF_AUTOMATION_APP_PRIVATE_KEY",
+            "lifecycle": "mint_in_publisher_revoke_in_action_post",
+            "required_permissions": [
+                "administration_read", "attestations_read", "contents_write"
+            ],
+            "required_workflow": ".github/workflows/bcf-release-publisher.yml",
+        }
+        or required != ["BCF_CONTROLLER_EXECUTION_REQUIRED"]
         or not isinstance(environment, dict)
         or environment.get("BCF_CONTROLLER_EXECUTION_REQUIRED") != "true"
     ):
         raise SelfWorkflowContractError("release administration authority is not exact")
+    publisher = next(
+        job
+        for workflow in compiled.workflows
+        if workflow["id"] == "release-publisher"
+        for job in workflow["jobs"]
+        if job["id"] == "publish"
+    )
+    token = compiled.graph["step_components"].get("create-release-app-token")
+    publish_component = compiled.graph["step_components"].get("publish-release")
+    if (
+        publisher.get("protected_environment") != credential["protected_environment"]
+        or not isinstance(token, dict)
+        or token.get("action") != "create-github-app-token"
+        or token.get("with") != {
+            "app-id": "${{ vars.BCF_AUTOMATION_APP_ID }}",
+            "private-key": "${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}",
+            "owner": "${{ github.repository_owner }}",
+            "repositories": "${{ github.event.repository.name }}",
+            "permission-administration": "read",
+            "permission-attestations": "read",
+            "permission-contents": "write",
+            "skip-token-revoke": "false",
+        }
+        or not isinstance(publish_component, dict)
+        or publish_component.get("environment", {}).get("GITHUB_TOKEN")
+        != "${{ steps.release-app-token.outputs.token }}"
+    ):
+        raise SelfWorkflowContractError("release App token capsule is not exact")
 
     return sum(
         job["executor"]["kind"] != "reusable_workflow"

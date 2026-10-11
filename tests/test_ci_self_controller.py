@@ -435,6 +435,37 @@ def test_self_controller_projection_has_one_canonical_pin_owner(
     ).status == "clean"
 
 
+def test_controller_custody_projection_defers_all_generated_workflow_bytes(
+    tmp_path: Path,
+) -> None:
+    policy = _copy_self_controller_fixture(tmp_path)
+    pin = dict(policy["runner_security"]["trusted_controller_artifact"])
+    pin.update({
+        "BCF_BOOTSTRAP_ARTIFACT_ID": "400",
+        "BCF_BOOTSTRAP_ARTIFACT_NAME": f"bcf-trusted-control-{COMMIT}-2",
+        "BCF_BOOTSTRAP_ARTIFACT_DIGEST": f"sha256:{'d' * 64}",
+        "BCF_BOOTSTRAP_RUN_ID": "500",
+        "BCF_BOOTSTRAP_RUN_ATTEMPT": "2",
+        "BCF_BOOTSTRAP_COMMIT_SHA": COMMIT,
+        "BCF_BOOTSTRAP_TREE_SHA": TREE,
+        "BCF_BOOTSTRAP_REPOSITORY_ID": "101",
+        "BCF_BOOTSTRAP_WHEEL_SHA256": "e" * 64,
+    })
+    workflow = tmp_path / AUTOMATION_WORKFLOW
+    before = workflow.read_bytes()
+
+    result = controller.project_self_controller_custody(
+        tmp_path, pin=pin, apply=True
+    )
+
+    assert result.changed_paths == ("governance/self-governance-policy.yml",)
+    assert workflow.read_bytes() == before
+    projected = yaml.safe_load(
+        (tmp_path / "governance/self-governance-policy.yml").read_text()
+    )["runner_security"]
+    assert projected["trusted_controller_artifact"] == pin
+
+
 def test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned(
     tmp_path: Path,
 ) -> None:
