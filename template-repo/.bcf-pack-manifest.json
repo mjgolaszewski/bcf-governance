@@ -1158,7 +1158,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "3213ade7e312b4d3f81db1fed269023548ec2a56a4c8081ed8f0048d365a4183"
+      "sha256": "24d418a9f9d321400efdf7e06f568a6cf8c755002b93adbcf68387780e46a908"
     },
     "scripts/_bcf_runtime/governance_validation/runtime_custody.py": {
       "operation": "copy",
