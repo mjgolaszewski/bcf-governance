@@ -125,8 +125,8 @@ provider evidence.
     one legal successor, execution stops with a typed result before mutation.
 31. A governed hotfix is created and registered as one operation. The
     scaffolder must receive the exact trigger, failure class, root cause, phase,
-    and canonical surfaces once, then atomically project both its execution log
-    and phase-ledger open record. A caller must never remember a second
+    and canonical surfaces once, then idempotently project both its execution
+    log and phase-ledger open record. A caller must never remember a second
     hand-authored registration step, and an unregistered hotfix cannot enter
     reconciliation, evidence, certification, or release custody.
 31. For every structurally reachable producer/consumer pair, the canonical DAG
