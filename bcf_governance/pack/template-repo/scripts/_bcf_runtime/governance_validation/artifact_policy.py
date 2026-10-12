@@ -9,6 +9,7 @@ import subprocess
 from .common import *  # noqa: F403,F405
 from .audit_artifacts import validate_audit_root_policy as _validate_audit_root_policy
 from .context_budgets import _validate_context_budgets
+from .native_adoption import authenticated_native_adoption_files
 from .phase_artifacts import _phase_number
 from .required_artifacts import _validate_required_artifacts
 
@@ -643,6 +644,7 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
     )
     governed_prefixes = ["audits/", "docs/", "governance/", "plans/", "phases/"]
     durable_markers = ("sha256", "ci artifact", "non-authoritative", "uploaded artifact")
+    native_adoption_files = authenticated_native_adoption_files(repo_root)
     violations: list[str] = []
     for path in _iter_repo_files(repo_root):
         relative_path = _repo_relative_path(repo_root, path)
@@ -673,6 +675,8 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
         ):
             continue
         if path.suffix.lower() not in {".md", ".yml", ".yaml"}:
+            continue
+        if relative_path in native_adoption_files:
             continue
         try:
             lines = path.read_text(encoding="utf-8").splitlines()

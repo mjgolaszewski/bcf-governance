@@ -20,6 +20,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
+from .governance_install.existing_adoption import compile_existing_adoption_inventory, extend_existing_adoption_paths, prepare_existing_adoption_shadow, project_existing_adoption_roots  # noqa: E402,E501
 from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
@@ -137,11 +138,7 @@ LITE_DEFERRED_GATES = (
     "runtime-smoke",
 )
 REQUIRED_STANDARD_GATES = ("governance-validate", "governance-exposure-scan", *LITE_DEFERRED_GATES)
-UPGRADE_REFRESH_PATHS = ("schemas",
-    "backend/tests/architecture/test_boundaries_ast.py",
-    "governance/REPO_CLEANUP.md",
-    *RUNTIME_SUPPORT_PATHS,
-)
+UPGRADE_REFRESH_PATHS = ("schemas", "backend/tests/architecture/test_boundaries_ast.py", "governance/REPO_CLEANUP.md", *RUNTIME_SUPPORT_PATHS)
 UPGRADE_PROJECT_OWNED_PATHS = (
     "governance-profile.yml",
     "governance/gate-contracts.yml",
@@ -614,6 +611,7 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
     rescaffold_removed_paths: list[str] = []
     if args.force_rescaffold:
         rescaffold_removed_paths = _force_rescaffold_cleanup(target_root)
+    prepare_existing_adoption_shadow(target_root, inventory=args.existing_adoption_inventory)
 
     copied_files, installed_destinations = _copy_template(
         template_root=template_root,
@@ -626,6 +624,7 @@ def _install_direct(args: argparse.Namespace, target_root: Path) -> InstallResul
     values = _placeholder_values(args, target_root)
     replace_placeholders_in_files(installed_destinations, values)
     _configure_architecture_boundaries(target_root, args.profile)
+    project_existing_adoption_roots(target_root, inventory=args.existing_adoption_inventory)
     contract = args.profile_contract
     contract_version = str(contract.get("profile_contract_version", "1.0"))
     graph_enabled = args.profile == "lite" or contract_version in {"2.0", "3.0"}
@@ -710,6 +709,10 @@ def install(args: argparse.Namespace) -> InstallResult:
     args.profile, contract_version = resolve_install_contract_version(
         target_root, args.profile, args.profile_contract_version, args.upgrade, args.reset_options)
     args.semantic_config_payload = None
+    args.existing_adoption_inventory = (
+        compile_existing_adoption_inventory(target_root, template_root=_template_root())
+        if args.adoption_mode == "existing" and not args.upgrade else None
+    )
     # Ordinary upgrades refresh pack-owned code only. Project-owned profiles,
     # gate contracts, graphs, extensions, workflows, and state change only
     # through their explicit migration, promotion, or reset commands.
@@ -747,6 +750,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         args, contract=args.profile_contract, contract_version=contract_version,
         target_root=target_root, baseline=INSTALL_MANAGED_PATHS,
     )
+    transaction_paths = extend_existing_adoption_paths(transaction_paths, args.existing_adoption_inventory)
 
     def mutate(shadow: Path) -> None:
         result_box.append(
@@ -762,7 +766,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         target_root,
         managed_paths=transaction_paths,
         mutate_shadow=mutate,
-        preserve_git_history=args.semantic_config_payload is not None,
+        preserve_git_history=args.semantic_config_payload is not None or getattr(args.existing_adoption_inventory, "source_commit", None) is not None,
         validate_final=validate_final,
     )
     result = result_box[0]

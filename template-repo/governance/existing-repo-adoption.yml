@@ -14,8 +14,8 @@ adoption_mode:
     - release_check_invokes_required_gates
     - push_ci_lanes_are_declared_when_runner_is_available
 conversion_sequence:
-  - install_pack_with_existing_mode
-  - run_cleanup_plan_when_legacy_governance_or_audit_roots_exist
+  - compile_authenticated_repository_inventory
+  - atomically_install_pack_with_native_custody_and_legacy_audit_normalization
   - review_documentation_currency_against_repo_evidence
   - keep_first_commit_to_governance_artifacts
   - inventory_existing_source_roots_layers_contexts_and_ci
@@ -44,6 +44,7 @@ cleanup_helper:
     - vendored_governance_boundary_decisions
 required_inventory:
   source_roots: []
+  test_roots: []
   generated_or_vendor_exclusions: []
   bounded_context_tokens: []
   layer_tokens: []
@@ -56,6 +57,10 @@ required_inventory:
   ci_runner_capabilities: []
   secrets_sources: []
   cleanup_expectations: []
+native_baseline:
+  transition_class: not_applicable_to_fresh_install
+  source: null
+  files: []
 required_gate_families:
   - governance_validation
   - architecture_module_size
