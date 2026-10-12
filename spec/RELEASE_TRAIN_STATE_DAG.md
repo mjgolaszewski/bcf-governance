@@ -429,7 +429,8 @@ not BCF custody evidence and cannot be laundered into a BCF failure or success.
 | selected Python missing or outside governed range | exact executable path and `--version` bytes | local execution admission | reject before reconcile |
 | controller Python differs from an exact repository-local `.venv/bin/python` | controller executable plus fixed repository-local project-interpreter path | local execution admission selects the repository interpreter for project preflight/evidence while retaining the controller interpreter only for BCF orchestration | accept only after the project interpreter satisfies the governed dependency/version contract |
 | project environment is intentionally outside the checkout | one explicit exact `--python` input on the canonical local entrypoint | validate and propagate that interpreter through admission, preflight, evidence, and truth | no later interpreter selection; missing dependencies reject before evidence |
-| no repository-local project interpreter exists | controller executable plus governed interpreter/dependency contract | validate the controller executable as the project interpreter | accept only when the same executable satisfies the project contract; otherwise reject before reconcile |
+| no repository-local project interpreter exists | controller executable, governed Python-minor contract, canonical projected project requirements, and content-addressed environment identity | mechanically materialize or reuse one isolated project environment from those exact inputs before reconcile; the controller remains orchestration-only | one derived project interpreter with no controller-only distribution/path leakage; no agent-selected setup command or fallback |
+| caller supplies the controller interpreter as project Python for an adopter | controller/project executable identity, installed distribution inventory, repository profile, and canonical project requirement closure | reject before reconcile unless the repository is the BCF self project and the identity is explicitly equivalent under its self contract | private controller distributions cannot enter adopter vulnerability evidence, and an agent cannot select its way around environment separation |
 | repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission | reject before preflight/evidence; never fall back to another ambient Python |
 | controller is loaded through `PYTHONPATH` or another controller-only Python environment | exact controller environment plus selected project interpreter | project-environment projection removes controller import/home/venv state and binds the selected repository environment before spawning project validation | project imports resolve only from the adopter checkout and selected project environment; controller paths cannot shadow adopter modules |
 | ambient Node is declared version | resolved executable path, version, executable digest | locked toolchain owner | accept exact binary |
@@ -551,13 +552,16 @@ in structural preflight.
           authorization explicitly reject the bounded proposition.
 - **Invariant: deterministic local defects fail before expensive work.**
   - **Primitives:** distinct controller and project Python identities, fixed
-    repository-local project-interpreter selection, mechanically resolved Node binary,
+    repository-local project-interpreter selection, content-addressed derived
+    project environments, exact requirement and distribution inventories,
+    mechanically resolved Node binary,
     locked offline TypeScript tree, structural budgets, exclusive execution
     lease, typed `busy/deferred` result.
     - **Contracts:** one local-execution admission result consumed by the one
       canonical prospective/submit entrypoint.
-      - **Producers:** controller entrypoint, project-interpreter selector,
-        toolchain bootstrap/check, structural validator, local lease owner.
+      - **Producers:** controller entrypoint, project-interpreter selector and
+        environment materializer, toolchain bootstrap/check, structural
+        validator, local lease owner.
         - **Consumers:** reconciler and evidence executor; neither performs
           fallback setup or agent-selected recovery.
 - **Invariant: selective reconciliation is byte-equivalent to full reconcile.**
