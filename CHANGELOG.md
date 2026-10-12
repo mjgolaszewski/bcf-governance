@@ -21,6 +21,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made one idempotent hotfix scaffold operation create and register the governed
   execution record, and preserved intrinsic negative-control diagnostics ahead
   of candidate-matrix freshness checks without weakening either validation.
+- Made local prospective and release-qualification execution consume the same
+  topological producer order as provider shards, so a consumer cannot run before
+  every declared prerequisite receipt exists.
 
 ## [2.3.0] - 2026-10-11
 

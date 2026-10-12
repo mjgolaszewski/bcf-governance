@@ -32,6 +32,7 @@ from .evaluation_scope import (
     evaluation_scope,
 )
 from .evidence_execution import EvidenceError
+from .evidence_shards import planned_gate_targets
 from .evidence_sessions import allocate_session, local_producer_identity
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
@@ -473,12 +474,15 @@ def _run_prospective_train(
             return report
 
         verification_plan = preflight["verification_plan"]
-        nodes = verification_plan["execution_dag"]["nodes"]
-        producers = tuple(str(node["producer"]) for node in nodes)
-        if len(producers) != len(set(producers)) or any(not value for value in producers):
-            raise ProspectiveValidationError(
-                "planned local producer topology is incomplete or ambiguous"
-            )
+        execution_dag = verification_plan.get("execution_dag")
+        try:
+            nodes = execution_dag.get("nodes") if isinstance(execution_dag, dict) else ()
+            inventory = [str(node.get("producer", "")) for node in nodes if isinstance(node, dict)]
+            producers = tuple(planned_gate_targets(
+                root, planned_targets=inventory, execution_dag=execution_dag,
+            ))
+        except (TypeError, ValueError) as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
         try:
             producer_environments = local_gate_job_environments(
                 validate_ci_graph(root).graph, producers
