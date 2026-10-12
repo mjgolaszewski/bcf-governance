@@ -37,6 +37,18 @@ execution_evidence:
   - AgentBus exact candidate 71d15ac2bb890bcdde37e27dfabf9fac73ee131f
     tree 467cd84181081f127866f0400d0f1d87cf80e3c0 remains an unmerged
     interpreter-isolation regression fixture
+  - isolated AgentBus qualification proved controller/project separation, then
+    identified ensurepip-inherited pip 25.0.1 as undeclared vulnerable project
+    environment state; environment construction now starts without pip and uses
+    the exact canonical pip 26.2.1 requirement for installation and inventory
+  - Racecar provider run 38203844873 proved that an older preserved adopter graph
+    omitted the canonical GITHUB_TOKEN binding from its evidence-capture
+    component; the exact legacy shape now migrates before graph render while
+    customized or ambiguous shapes fail closed
+  - operation-effect validation exposed the project-environment materializer as
+    a declared but statically unreachable port because its owner was imported
+    inside the caller; module-level dependency ownership now makes the complete
+    CI command effect closure mechanically provable before execution
   - Racecar e2a0924663e78e8e947bcad62f08dec2aa22b44f correctly failed
     its own PyJWT vulnerability policy; corrected Racecar dc8d1bd remains a
     separate adopter fixture and that product finding is not a BCF failure

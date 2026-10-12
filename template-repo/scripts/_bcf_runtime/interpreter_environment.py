@@ -32,6 +32,9 @@ class InterpreterEnvironmentError(ValueError):
     """Raised when the governed interpreter environment cannot be compiled."""
 
 
+PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.1"
+
+
 def validate_runtime_import_dependencies(repo_root: Path) -> None:
     """Fail before evidence if self runtime imports undeclared distributions."""
 
@@ -224,6 +227,17 @@ def derive_interpreter_environment(
         requirements.extend(
             _requirements(values, "interpreter gate requirements must be lists")
         )
+    installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+    installer_requirements = [
+        value for value in requirements if _normalized_name(value) == installer_name
+    ]
+    if not installer_requirements:
+        requirements.append(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+    elif installer_requirements != [PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT]:
+        raise InterpreterEnvironmentError(
+            "project environment installer requirement must equal "
+            + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
+        )
     normalized = [_normalized_name(value) for value in requirements]
     if len(set(normalized)) != len(requirements):
         raise InterpreterEnvironmentError(
@@ -357,7 +371,13 @@ def materialize_interpreter_environment(
             )
         try:
             created = subprocess.run(
-                [str(base_python.resolve(strict=True)), "-m", "venv", str(temporary / "venv")],
+                [
+                    str(base_python.resolve(strict=True)),
+                    "-m",
+                    "venv",
+                    "--without-pip",
+                    str(temporary / "venv"),
+                ],
                 cwd=root,
                 capture_output=True,
                 text=True,
@@ -371,9 +391,11 @@ def materialize_interpreter_environment(
             candidate = temporary / "venv/bin/python"
             installed = subprocess.run(
                 [
-                    str(candidate),
+                    str(base_python.resolve(strict=True)),
                     "-m",
                     "pip",
+                    "--python",
+                    str(candidate),
                     "install",
                     "--disable-pip-version-check",
                     "--requirement",

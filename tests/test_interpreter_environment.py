@@ -30,7 +30,7 @@ def _fixture(repo: Path, *, projected: str = "") -> None:
         "interpreter_contract: {project_dependencies: true, "
         "build_system_requirements: true, requirements_projection: "
         "requirements-governance.txt, optional_dependency_groups: [dev], "
-        "gate_requirements: {test: [pip]}}\n"
+        "gate_requirements: {test: [pip==26.2.1]}}\n"
         "gates: {test: {}}\n",
         encoding="utf-8",
     )
@@ -126,7 +126,7 @@ def test_apply_materializes_the_exact_derived_dependency_plan(tmp_path: Path) ->
     assert plan is not None
     path = apply_interpreter_environment_projection(plan)
     assert path.read_text(encoding="utf-8") == (
-        "pip\n"
+        "pip==26.2.1\n"
         "pytest==9.0.3\n"
         "PyYAML>=6,<7\n"
         "setuptools>=69\n"
@@ -150,11 +150,22 @@ def test_gate_requirement_pin_is_compiled_by_the_same_requirement_primitive(
     tmp_path: Path,
 ) -> None:
     _fixture(tmp_path)
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert "pip==26.2.1" in plan.requirements
+
+
+def test_exact_installer_is_added_when_the_project_declares_no_pip(
+    tmp_path: Path,
+) -> None:
+    _fixture(tmp_path)
     gate_contract = tmp_path / "governance/gate-contracts.yml"
     gate_contract.write_text(
         gate_contract.read_text(encoding="utf-8").replace(
-            "gate_requirements: {test: [pip]}",
             "gate_requirements: {test: [pip==26.2.1]}",
+            "gate_requirements: {}",
         ),
         encoding="utf-8",
     )
@@ -165,6 +176,23 @@ def test_gate_requirement_pin_is_compiled_by_the_same_requirement_primitive(
     assert "pip==26.2.1" in plan.requirements
 
 
+def test_different_project_environment_installer_is_rejected(tmp_path: Path) -> None:
+    _fixture(tmp_path)
+    gate_contract = tmp_path / "governance/gate-contracts.yml"
+    gate_contract.write_text(
+        gate_contract.read_text(encoding="utf-8").replace(
+            "pip==26.2.1", "pip==25.0.1"
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        InterpreterEnvironmentError,
+        match="installer requirement must equal pip==26.2.1",
+    ):
+        derive_interpreter_environment(tmp_path)
+
+
 @pytest.mark.parametrize("requirement", ["pkg[extra]", "pkg; python_version>'3.11'", "pkg @ https://example.invalid/pkg.whl"])
 def test_gate_requirement_rejects_unbounded_alternate_resolution(
     tmp_path: Path, requirement: str
@@ -173,7 +201,7 @@ def test_gate_requirement_rejects_unbounded_alternate_resolution(
     gate_contract = tmp_path / "governance/gate-contracts.yml"
     gate_contract.write_text(
         gate_contract.read_text(encoding="utf-8").replace(
-            "gate_requirements: {test: [pip]}",
+            "gate_requirements: {test: [pip==26.2.1]}",
             f"gate_requirements: {{test: [{requirement!r}]}}",
         ),
         encoding="utf-8",
@@ -235,7 +263,10 @@ def test_missing_project_environment_is_materialized_once_from_exact_plan(
     assert first == second
     assert first.is_file()
     assert len(commands) == 4
-    assert commands[1][1:4] == ["-m", "pip", "install"]
+    assert commands[0][1:4] == ["-m", "venv", "--without-pip"]
+    assert commands[1][1:4] == ["-m", "pip", "--python"]
+    assert Path(commands[1][4]).parts[-3:] == ("venv", "bin", "python")
+    assert commands[1][5] == "install"
     assert commands[2][1:] == ["-m", "pip", "freeze", "--all"]
     assert commands[3][1:] == ["-m", "pip", "freeze", "--all"]
     assert first.is_relative_to(tmp_path / ".artifacts/runtime/execution-state")

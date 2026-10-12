@@ -172,7 +172,7 @@ def test_adopter_without_environment_derives_project_python(
         return derived
 
     monkeypatch.setattr(
-        "bcf_governance.tooling.interpreter_environment.materialize_interpreter_environment",
+        "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
         materialize,
     )
 

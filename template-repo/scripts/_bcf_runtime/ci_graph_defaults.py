@@ -27,6 +27,12 @@ EXTENSION_POINTS = [
 ]
 
 
+def evidence_capture_environment() -> dict[str, str]:
+    """Return the complete provider input contract for one evidence capture."""
+
+    return {"GITHUB_TOKEN": "${{ github.token }}"}
+
+
 def _identifier(value: str) -> str:
     result = re.sub(r"[^a-z0-9._-]+", "-", value.lower()).strip("-")
     return result or "project"
@@ -222,7 +228,7 @@ def _v3_components() -> dict[str, Any]:
             command="v3-restore-session-modes", restores_private_artifacts=["evidence-session"],
         ),
         "capture-shard": _component(
-            kind="command", name="Capture the mechanically derived evidence shard", command="v3-capture-shard", environment={"GITHUB_TOKEN": "${{ github.token }}"},
+            kind="command", name="Capture the mechanically derived evidence shard", command="v3-capture-shard", environment=evidence_capture_environment(),
         ),
         "upload-receipts": _component(
             kind="action", name="Upload this attempt's exact evidence shard", action="upload-artifact",

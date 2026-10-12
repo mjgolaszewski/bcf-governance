@@ -10,6 +10,7 @@ from typing import Any, Callable, Iterable, Mapping
 import yaml  # type: ignore[import-untyped]
 
 from ..ci_graph_yaml import render_yaml
+from ..ci_graph_defaults import evidence_capture_environment
 from ..profile_contract_v2 import current_contract_version
 from ..profile_yaml import render_governance_profile
 from ..profile_v2_surfaces import selective_release_check_lines
@@ -260,6 +261,36 @@ def _upgrade_direct_comparison_input(target_root: Path) -> list[Path]:
     if current is not None:
         raise ValueError("upgrade comparison-base input is malformed")
     calls[0]["inputs"] = {"comparison_base_sha": expected, **inputs}
+    path.write_bytes(render_yaml(payload))
+    return [path]
+
+
+def _upgrade_evidence_capture_environment(target_root: Path) -> list[Path]:
+    """Close the exact legacy capture component's provider-input edge."""
+
+    path = target_root / "governance/ci-graph.yml"
+    if not path.exists():
+        return []
+    payload = _load_yaml_mapping(path)
+    commands = payload.get("commands")
+    components = payload.get("step_components")
+    if not isinstance(commands, dict) or not isinstance(components, dict):
+        return []
+    command = commands.get("v3-capture-shard")
+    component = components.get("capture-shard")
+    if command is None and component is None:
+        return []
+    if not isinstance(command, dict) or not isinstance(component, dict):
+        raise ValueError("upgrade evidence capture edge is incomplete")
+    if component.get("command") != "v3-capture-shard":
+        raise ValueError("upgrade evidence capture edge is ambiguous")
+    expected = evidence_capture_environment()
+    environment = component.get("environment")
+    if environment == expected:
+        return []
+    if environment != {}:
+        raise ValueError("upgrade evidence capture environment is customized")
+    component["environment"] = expected
     path.write_bytes(render_yaml(payload))
     return [path]
 
@@ -636,6 +667,7 @@ def _upgrade_state_files(
     _upgrade_makefile_fragment(target_root)
     created.extend(_upgrade_runtime_contract(target_root))
     created.extend(_upgrade_direct_comparison_input(target_root))
+    created.extend(_upgrade_evidence_capture_environment(target_root))
     return created
 
 

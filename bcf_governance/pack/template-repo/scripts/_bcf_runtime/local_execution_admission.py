@@ -15,6 +15,10 @@ from typing import Any, Iterator, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from .interpreter_environment import (
+    InterpreterEnvironmentError,
+    materialize_interpreter_environment,
+)
 from .runtime_capacity import (
     RuntimeCapacityError,
     authenticated_execution_state_namespace,
@@ -137,11 +141,6 @@ def ensure_local_project_python(
     if local.exists() or local.is_symlink() or local.parent.parent.exists():
         return resolve_local_project_python(repo_root, controller_python)
     validate_local_toolchain(repo_root, controller_python, toolchain_command=None)
-    from .interpreter_environment import (
-        InterpreterEnvironmentError,
-        materialize_interpreter_environment,
-    )
-
     try:
         return materialize_interpreter_environment(repo_root, controller_python)
     except InterpreterEnvironmentError as exc:

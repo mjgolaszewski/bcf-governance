@@ -24,6 +24,7 @@ from bcf_governance.tooling.governance_install.runtime_custody import (
 from bcf_governance.tooling.governance_install import cli as install_cli
 from bcf_governance.tooling.governance_install.upgrade import (
     _upgrade_direct_comparison_input,
+    _upgrade_evidence_capture_environment,
 )
 from bcf_governance.tooling.release_asset_inventory import exact_assets
 
@@ -533,6 +534,60 @@ def test_upgrade_rejects_malformed_existing_comparison_input(tmp_path: Path) -> 
 
     with pytest.raises(ValueError, match="comparison-base input is malformed"):
         _upgrade_direct_comparison_input(tmp_path)
+
+
+def test_upgrade_closes_exact_legacy_evidence_capture_environment(
+    tmp_path: Path,
+) -> None:
+    graph = tmp_path / "governance/ci-graph.yml"
+    graph.parent.mkdir(parents=True)
+    graph.write_text(
+        yaml.safe_dump(
+            {
+                "commands": {"v3-capture-shard": {"environment": {}}},
+                "step_components": {
+                    "capture-shard": {
+                        "command": "v3-capture-shard",
+                        "environment": {},
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    assert _upgrade_evidence_capture_environment(tmp_path) == [graph]
+    migrated = yaml.safe_load(graph.read_text(encoding="utf-8"))
+    assert migrated["step_components"]["capture-shard"]["environment"] == {
+        "GITHUB_TOKEN": "${{ github.token }}"
+    }
+    assert _upgrade_evidence_capture_environment(tmp_path) == []
+
+
+def test_upgrade_rejects_customized_evidence_capture_environment(
+    tmp_path: Path,
+) -> None:
+    graph = tmp_path / "governance/ci-graph.yml"
+    graph.parent.mkdir(parents=True)
+    graph.write_text(
+        yaml.safe_dump(
+            {
+                "commands": {"v3-capture-shard": {"environment": {}}},
+                "step_components": {
+                    "capture-shard": {
+                        "command": "v3-capture-shard",
+                        "environment": {"TOKEN": "caller-authored"},
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="environment is customized"):
+        _upgrade_evidence_capture_environment(tmp_path)
 
 
 def test_authenticated_upgrade_normalizes_exact_legacy_overlap(

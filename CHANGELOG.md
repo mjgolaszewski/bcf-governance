@@ -12,8 +12,12 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 - Derived an isolated, content-addressed project interpreter automatically when
   an adopter has no repository environment, binding its governed requirements,
-  base runtime, realized distribution inventory, and persistent execution-state
-  custody while rejecting controller-environment leakage before evidence.
+  exact installer, base runtime, realized distribution inventory, and persistent
+  execution-state custody while rejecting inherited packaging state and
+  controller-environment leakage before evidence.
+- Migrated the exact legacy evidence-capture edge during ordinary upgrades so
+  provider authentication reaches the generated shard process without replacing
+  adopter-owned graph semantics or relying on operator repair.
 - Made one idempotent hotfix scaffold operation create and register the governed
   execution record, and preserved intrinsic negative-control diagnostics ahead
   of candidate-matrix freshness checks without weakening either validation.
