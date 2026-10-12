@@ -7,6 +7,7 @@ import sys
 import pytest
 
 from bcf_governance.tooling.local_execution_admission import (
+    ensure_local_project_python,
     LocalExecutionAdmissionError,
     local_gate_lease,
     project_python_environment,
@@ -120,8 +121,90 @@ def test_broken_repository_project_python_never_falls_back(tmp_path: Path) -> No
         resolve_local_project_python(tmp_path, Path(sys.executable))
 
 
+def test_adopter_cannot_select_controller_as_project_python(tmp_path: Path) -> None:
+    with pytest.raises(
+        LocalExecutionAdmissionError,
+        match="controller interpreter cannot serve as project Python",
+    ):
+        ensure_local_project_python(
+            tmp_path, Path(sys.executable), requested=Path(sys.executable)
+        )
+
+
+def test_repository_environment_cannot_alias_controller_python(tmp_path: Path) -> None:
+    project = tmp_path / ".venv/bin/python"
+    project.parent.mkdir(parents=True)
+    project.symlink_to(Path(sys.executable).resolve())
+
+    with pytest.raises(
+        LocalExecutionAdmissionError,
+        match="controller interpreter cannot serve as project Python",
+    ):
+        ensure_local_project_python(tmp_path, Path(sys.executable))
+
+
+def test_distinct_virtual_environments_may_share_base_python(tmp_path: Path) -> None:
+    controller = tmp_path / "controller/bin/python"
+    project = tmp_path / "project/.venv/bin/python"
+    for executable in (controller, project):
+        executable.parent.mkdir(parents=True)
+        executable.symlink_to(Path(sys.executable).resolve())
+        (executable.parent.parent / "pyvenv.cfg").write_text(
+            "home = /usr/local/bin\n", encoding="utf-8"
+        )
+
+    assert resolve_local_project_python(
+        tmp_path / "project", controller
+    ) == project
+
+
+def test_adopter_without_environment_derives_project_python(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _public_python_contract(
+        tmp_path, f"{sys.version_info.major}.{sys.version_info.minor}"
+    )
+    derived = tmp_path / ".artifacts/runtime/project-environments/exact/venv/bin/python"
+    calls: list[tuple[Path, Path]] = []
+
+    def materialize(repo_root: Path, base_python: Path) -> Path:
+        calls.append((repo_root, base_python))
+        return derived
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
+        materialize,
+    )
+
+    assert ensure_local_project_python(tmp_path, Path(sys.executable)) == derived
+    assert calls == [(tmp_path, Path(sys.executable))]
+
+
+def test_adopter_environment_is_not_materialized_from_wrong_python_minor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _public_python_contract(tmp_path, "3.99")
+    called = False
+
+    def materialize(_repo_root: Path, _base_python: Path) -> Path:
+        nonlocal called
+        called = True
+        raise AssertionError("must reject before environment materialization")
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.interpreter_environment.materialize_interpreter_environment",
+        materialize,
+    )
+
+    with pytest.raises(LocalExecutionAdmissionError, match="public runtime contract"):
+        ensure_local_project_python(tmp_path, Path(sys.executable))
+    assert called is False
+
+
 def test_project_python_environment_removes_controller_paths(tmp_path: Path) -> None:
     project = tmp_path / ".venv/bin/python"
+    (project.parent.parent / "pyvenv.cfg").parent.mkdir(parents=True)
+    (project.parent.parent / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
     environment = project_python_environment(
         tmp_path,
         project,
@@ -139,6 +222,19 @@ def test_project_python_environment_removes_controller_paths(tmp_path: Path) -> 
         "VIRTUAL_ENV": str(tmp_path / ".venv"),
         "KEPT": "exact",
     }
+
+
+def test_derived_project_python_environment_owns_virtual_environment(
+    tmp_path: Path,
+) -> None:
+    prefix = tmp_path / ".artifacts/runtime/project-environments/exact/venv"
+    project = prefix / "bin/python"
+    prefix.mkdir(parents=True)
+    (prefix / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
+
+    environment = project_python_environment(tmp_path, project, {})
+
+    assert environment == {"PATH": str(project.parent), "VIRTUAL_ENV": str(prefix)}
 
 
 def test_python_only_graph_does_not_invoke_self_toolchain_bootstrap(

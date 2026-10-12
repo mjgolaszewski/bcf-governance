@@ -10,6 +10,7 @@ import pytest
 
 from bcf_governance.tooling.ci_commands import _local_pr_command
 from bcf_governance.tooling.local_execution_admission import (
+    LocalExecutionAdmissionError,
     resolve_local_project_python,
 )
 from bcf_governance.tooling.local_pr import (
@@ -66,18 +67,8 @@ def test_local_pr_cli_defaults_to_canonical_selected_interpreter_preflight(
         "--format",
         "text",
     )
-    assert _local_pr_command((), repo_root=Path("/nonexistent")) == (
-        sys.executable,
-        "scripts/preflight_governance.py",
-        "--repo-root",
-        ".",
-        "--mode",
-        "pr",
-        "--python",
-        sys.executable,
-        "--format",
-        "text",
-    )
+    with pytest.raises(LocalExecutionAdmissionError, match="runtime authority is unavailable"):
+        _local_pr_command((), repo_root=Path("/nonexistent"))
     assert _local_pr_command(
         ("--", "python", "custom.py"), repo_root=tmp_path
     ) == (

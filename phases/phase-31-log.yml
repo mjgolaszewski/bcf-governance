@@ -69,6 +69,9 @@ execution_evidence:
   - protected PR 405 merged the atomic publication implementation as main 522eea6bb3d8a645114f8aa0cccf5b32b4d45946 tree 578cbb5d51f4d97d19470e3947141261795ad6ce
   - exact-main 38170849100 attempt 2 reused applicable authenticated proof; finalizer 38174765303 and App 15368 bounded certification closed P31-P0-05 without release authority
   - the terminal candidate now requests phase closure so exact-main mechanically materializes same-attempt controller custody and release authorization remains unreachable until terminal certification succeeds
+  - PR 406 certified and merged as main 76c953c1f04b50d26df6e5c4162dc671a8eadcd5 tree b042302139a5526d5c91ec3ae468633f3af8e767; exact-main 38184849373 attempt 2 reused authenticated producer evidence and certified phase_closed P31
+  - release authority 38188564890 built exact bytes, independent verifier 38189247674 emitted the authoritative receipt, and exact clean disposable qualification passed TradeFlow Lite Racecar Standard-v3 and AgentBus Standard-v3
+  - publisher 38190623742 created immutable v2.3.0 release 410037097, attested all three exact assets, and revoked its repository-scoped token; audits/v2.3.0-release-custody.yml owns terminal custody
 closeout_requirements:
   claims:
     workitems_closed:
@@ -101,4 +104,4 @@ known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts
   change
 next_work:
-- certify terminal P31 closure, qualify the exact v2.3.0 assets, publish once through the atomic transaction, independently verify immutable custody, and archive the phase and release train
+- archive P31 under exact Git custody before any separately governed successor phase begins

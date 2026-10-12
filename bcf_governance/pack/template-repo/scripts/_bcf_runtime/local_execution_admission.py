@@ -15,6 +15,10 @@ from typing import Any, Iterator, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from .interpreter_environment import (
+    InterpreterEnvironmentError,
+    materialize_interpreter_environment,
+)
 from .runtime_capacity import (
     RuntimeCapacityError,
     authenticated_execution_state_namespace,
@@ -67,6 +71,26 @@ def _supported_python_minors(repo_root: Path) -> set[str]:
     return set(values)
 
 
+def _virtual_environment_root(executable: Path) -> Path | None:
+    absolute = executable.absolute()
+    root = absolute.parent.parent
+    return root if absolute.parent.name == "bin" and (root / "pyvenv.cfg").is_file() else None
+
+
+def _shares_interpreter_custody(project: Path, controller: Path) -> bool:
+    """Distinguish environment custody even when venvs share one base binary."""
+
+    project_absolute = project.absolute()
+    controller_absolute = controller.absolute()
+    if project_absolute == controller_absolute:
+        return True
+    project_root = _virtual_environment_root(project_absolute)
+    controller_root = _virtual_environment_root(controller_absolute)
+    if project_root is not None and controller_root is not None:
+        return project_root == controller_root
+    return project_absolute.resolve() == controller_absolute.resolve()
+
+
 def resolve_local_project_python(
     repo_root: Path,
     controller_python: Path,
@@ -91,15 +115,36 @@ def resolve_local_project_python(
             raise LocalExecutionAdmissionError(
                 "selected project Python cannot be resolved"
             ) from exc
+        if _shares_interpreter_custody(local, controller_python):
+            raise LocalExecutionAdmissionError(
+                "controller interpreter cannot serve as project Python"
+            )
         return local
-    controller = controller_python.absolute()
+    raise LocalExecutionAdmissionError(
+        "repository project Python is absent and must be derived"
+    )
+
+
+def ensure_local_project_python(
+    repo_root: Path,
+    controller_python: Path,
+    *,
+    requested: Path | None = None,
+) -> Path:
+    """Derive the project interpreter without an operator setup procedure."""
+
+    if requested is not None:
+        return resolve_local_project_python(
+            repo_root, controller_python, requested=requested
+        )
+    local = repo_root.resolve() / ".venv/bin/python"
+    if local.exists() or local.is_symlink() or local.parent.parent.exists():
+        return resolve_local_project_python(repo_root, controller_python)
+    validate_local_toolchain(repo_root, controller_python, toolchain_command=None)
     try:
-        resolved_controller = controller.resolve(strict=True)
-    except OSError as exc:
-        raise LocalExecutionAdmissionError("selected project Python is unavailable") from exc
-    if not resolved_controller.is_file() or not os.access(controller, os.X_OK):
-        raise LocalExecutionAdmissionError("selected project Python is unavailable")
-    return controller
+        return materialize_interpreter_environment(repo_root, controller_python)
+    except InterpreterEnvironmentError as exc:
+        raise LocalExecutionAdmissionError(str(exc)) from exc
 
 
 def project_python_environment(
@@ -115,7 +160,7 @@ def project_python_environment(
     executable = project_python.absolute()
     bin_directory = executable.parent
     prefix = bin_directory.parent
-    if bin_directory.name == "bin" and prefix.name == ".venv":
+    if bin_directory.name == "bin" and (prefix / "pyvenv.cfg").is_file():
         environment["VIRTUAL_ENV"] = str(prefix)
     previous_path = environment.get("PATH")
     environment["PATH"] = str(bin_directory) + (

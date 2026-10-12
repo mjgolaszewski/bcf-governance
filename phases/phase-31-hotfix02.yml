@@ -1,0 +1,80 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF02 Hotfix Log
+  id: project-phase-31-hotfix02
+  version: 1.0.0
+  generated_at_utc: '2026-10-12T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix02.yml
+hotfix:
+  id: P31-HF02
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 2
+  summary: restore deterministic adopter interpreter ownership and closeout diagnostics
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_interpreter_environment.py tests/test_local_execution_admission.py
+    tests/test_local_pr.py
+  - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+  - ".venv/bin/python -m pytest -q tests/test_interpreter_environment.py tests/test_install_release_custody.py -k 'interpreter or evidence_capture_environment'"
+  - exact-wheel run_candidate_qualification_train against disposable AgentBus
+    commit 9c21d70
+  - derived-project-python -m pip_audit --format json
+  notes:
+  - immutable v2.3.0 adopter qualification exposed that a checkout without
+    .venv selected the private BCF controller interpreter as project Python;
+    pip-audit therefore observed bcf-governance itself instead of only the
+    adopter dependency closure
+  - the matrix-first correction rejects explicit controller/project identity,
+    derives a project environment from canonical requirements and Python-minor
+    authority, and binds realized inventory inside an existing declared
+    persistent execution-state namespace
+  - the same closeout candidate exposed that negative-control semantic failures
+    could be masked by the matrix freshness meta-check; intrinsic mutation
+    diagnostics now retain precedence while ordinary changed CI contracts still
+    require same-candidate matrix coverage
+  - hotfix scaffolding now idempotently projects its phase-ledger registration
+    from the same invocation and cannot leave registration as an agent-remembered
+    follow-up step
+  - AgentBus exact candidate 71d15ac2bb890bcdde37e27dfabf9fac73ee131f
+    tree 467cd84181081f127866f0400d0f1d87cf80e3c0 remains an unmerged
+    interpreter-isolation regression fixture
+  - isolated AgentBus qualification proved controller/project separation, then
+    identified ensurepip-inherited pip 25.0.1 as undeclared vulnerable project
+    environment state; environment construction now starts without pip and uses
+    the exact canonical pip 26.2.1 requirement for installation and inventory
+  - Racecar provider run 38203844873 proved that an older preserved adopter graph
+    omitted the canonical GITHUB_TOKEN binding from its evidence-capture
+    component; the exact legacy shape now migrates before graph render while
+    customized or ambiguous shapes fail closed
+  - operation-effect validation exposed the project-environment materializer as
+    a declared but statically unreachable port because its owner was imported
+    inside the caller; module-level dependency ownership now makes the complete
+    CI command effect closure mechanically provable before execution
+  - exact disposable AgentBus candidate 9c21d70 completed the canonical isolated
+    prospective train with status prospectively_admissible_provider_proof_required;
+    its derived project environment contained pip 26.2.1, zero known vulnerable
+    packages and no bcf-governance distribution, while the rendered evidence
+    capture step carried the canonical GitHub token binding
+  - Racecar e2a0924663e78e8e947bcad62f08dec2aa22b44f correctly failed
+    its own PyJWT vulnerability policy; corrected Racecar dc8d1bd remains a
+    separate adopter fixture and that product finding is not a BCF failure
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

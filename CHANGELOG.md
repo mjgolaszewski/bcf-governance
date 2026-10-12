@@ -6,114 +6,58 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-10-12
+
+### Fixed
+
+- Derived an isolated, content-addressed project interpreter automatically when
+  an adopter has no repository environment, binding its governed requirements,
+  exact installer, base runtime, realized distribution inventory, and persistent
+  execution-state custody while rejecting inherited packaging state and
+  controller-environment leakage before evidence.
+- Migrated the exact legacy evidence-capture edge during ordinary upgrades so
+  provider authentication reaches the generated shard process without replacing
+  adopter-owned graph semantics or relying on operator repair.
+- Made one idempotent hotfix scaffold operation create and register the governed
+  execution record, and preserved intrinsic negative-control diagnostics ahead
+  of candidate-matrix freshness checks without weakening either validation.
+
 ## [2.3.0] - 2026-10-11
 
 ### Changed
 
-- Prepared the completed P31 workitem set for terminal phase certification;
-  release authorization remains unavailable until exact-main authenticates the
-  phase-closure proposition and its same-attempt controller custody.
-
-- Replaced operator-provisioned release credentials and one-shot publication
-  with a single idempotent transaction. The trusted no-checkout publisher mints
-  one repository-scoped GitHub App token, resumes only exact tags, drafts, and
-  asset subsets, rejects conflicting provider state, publishes certified bytes
-  without rebuild, and delegates terminal revocation to the pinned token action.
-
-- Made Standard-v3 merge eligibility independent of candidate evaluator bytes.
-  The canonical graph now closes every producer/consumer edge before work,
-  executes truth with an exact protected-base or installed-controller runtime,
-  binds candidate evidence and check identity through publication, and keeps
-  Lite's direct candidate check explicitly lower-assurance.
-
-- Persisted each successful deterministic test splinter inside its existing
-  provider evidence artifact before aggregate fan-in. A later attempt now
-  derives exact same-run reuse from subject, partition, toolchain, policy,
-  producer, provider-attempt, cleanup, and JUnit identities; failed or
-  inapplicable siblings alone recompute, while partial proof remains
-  acceleration-only until ordinary aggregate truth succeeds.
-
-- Added a closed evidence-storage topology classifier and graph-bound,
-  non-mutating migration plan. Preflight and canonical reconciliation now
-  distinguish capability from adoption, surface legacy/mixed/unknown storage
-  before evidence allocation, and never authorize cleanup or provider mutation
-  from classification alone.
-
+- Compiled each adopter's claims, dependencies, producers, qualifications,
+  invalidation, reuse, and splintering from one consumer-owned assurance graph.
+  Standard-v3 uses an exact protected-base or installed-controller evaluator;
+  Lite retains its explicitly lower-assurance direct-candidate boundary.
 - Projected existing-repository protection through the ordinary installer and
-  GitHub adoption owners: complete provider state now produces one reviewable
-  source declaration, and only exact protected-main bytes may be applied and
-  verified. Missing or redacted bypass actors, repository drift, stale
-  pre-state, ambiguous rulesets, and self-authority leakage fail closed.
-  Bounded lifecycle truth keeps this adopter capability separate from P31
-  closure and all release authority.
-- Compiled Standard-v3 adopter claims, execution groups, dependencies,
-  producers, qualifications, gates, and catalog metadata from one
-  consumer-owned assurance graph while preserving exact installed and Lite-v1
-  contracts and rejecting ambiguous ownership or cross-claim laundering.
-- Recorded independently verified immutable `v2.2.1` custody after exact-asset
-  Lite and Standard-v3 qualification, then retired its temporary publication
-  credential; published `v2.2.0` remains explicitly noncustodied and superseded.
+  GitHub adoption owners as one reviewable propose/apply/verify contract.
+  Missing or redacted bypass actors, stale provider state, repository drift,
+  ambiguous rulesets, and self-authority leakage fail closed.
+- Classified legacy, durable, mixed, and unknown evidence storage before work,
+  with immutable publication, cold resolution, retention reachability, and
+  non-mutating migration plans that preserve original evidence custody.
+- Preserved each successful deterministic splinter in its existing evidence
+  artifact and authenticated exact same-attempt reuse; partial proof accelerates
+  execution but cannot independently satisfy aggregate truth.
+- Replaced release ceremony with one idempotent transaction from certified
+  receipt to exact tag, assets, attestations, publication, credential retirement,
+  and independent custody verification. Published bytes are never rebuilt.
 
 ### Fixed
 
-- Made authenticated recovery normalization one closed operation: after
-  exact-main and Break Glass artifacts prove the same subject and byte-identical
-  controller, it removes temporary recovery authority and mechanically commits
-  the complete workflow-definition and authority projection.
-- Derived exact-main builder routing and its typed custody exclusion from
-  authenticated recovery state, and added one atomic compiler that restores
-  ordinary target/install custody only when normal and recovered artifacts are
-  exact-subject, byte-identical proofs.
-- Authenticated the exact noncertifying controller-recovery receipt needed to
-  restore ordinary protected certification after repairing the protected-base
-  PR finalizer; recovery remains unable to certify, publish, merge, or release.
-- Bound protected-base candidate materialization to one run-owned path beneath
-  the GitHub workspace and made graph compilation reject unsafe or divergent
-  checkout-to-evaluator paths before evidence allocation.
-- Derived each local reusable-workflow caller's least permission upper bound
-  from its callee graph before rendering, preventing provider startup failures
-  while preserving fail-closed candidate write-authority checks.
-- Scoped provider artifact stabilization to the controller-transition namespace,
-  so unrelated concurrent evidence uploads cannot force an agent-timed routine
-  rotation retry while exact transition receipts remain fully authenticated.
-- Retried one exact immutable Git remote read after a closed transient
-  disconnect so candidate submission preserves reusable proof rather than
-  requiring an agent-selected restart; authentication and semantic failures
-  remain terminal.
-- Made canonical candidate submission authenticate an exact failed provider
-  run and derive the sole bounded retry when semantic truth succeeded but its
-  terminal artifact upload failed with a closed transient transport error;
-  semantic, ambiguous, changed-subject, and repeated failures still stop.
-- Classified response-less TLS EOFs on immutable provider GETs through the
-  existing bounded read retry frontier without retrying mutations, authority
-  failures, or semantic failures.
-- Moved the mandatory pull-request changelog delta check to the first cheap
-  preflight boundary, before structural scans, full governance validation,
-  evidence planning, or provider submission.
-- Made phase-retention cleanup authenticate current schema-3 terminal truth through
-  its typed phase-closure proposition while retaining legacy schema-2 validation,
-  preventing a certified phase from falling back to authored-only history.
-- Derived adopter-qualified archives and the complete publication upload from
-  one checksum-governed asset inventory, preventing trusted publication from
-  broadening or misreading the exact qualification proposition.
-- Made provider controller-routing and successor-dispatch components declare
-  their minimum job timeout, so graph validation rejects every underprovisioned
-  consumer before provider execution.
-- Added deterministic provider-latency margin to exact-main admission and
-  finalization without changing their fail-closed evidence or authority rules.
-- Compiled privileged workflow event authority directly from canonical
-  workflow triggers, rejecting producer/consumer event drift before provider
-  execution and removing obsolete trigger authorization.
-- Made dependency-incomplete legacy adopter lifecycles deterministically select
-  non-authoritative PR progress instead of requesting an impossible bounded
-  certification; stale bounded graph targets still fail before evidence.
-- Preserved the lexical executable of an admitted external virtual environment
-  so adopter gates retain its exact package custody instead of falling through
-  a symlink to an unprovisioned base interpreter.
-- Distinguished isolated, non-authoritative adopter qualification from a real
-  provider pull request so exact release testing retains every prospective
-  proof while the provider-only changelog-delta rule remains mandatory for
-  actual pull requests.
+- Closed controller recovery as one authenticated, noncertifying state machine:
+  exact-subject byte identity governs builder routing, normalization, ordinary
+  custody restoration, and removal of temporary recovery authority; recovery
+  can never certify, publish, merge, or release.
+- Derived workflow permissions, event authority, checkout/evaluator paths,
+  controller artifact selection, timeout sufficiency, and qualified release
+  assets from their canonical graphs before provider work.
+- Added bounded, identity-preserving recovery for immutable provider reads and
+  terminal artifact transport while keeping mutations, semantic failures,
+  changed subjects, ambiguity, and repeated failures terminal.
+- Moved deterministic changelog, lifecycle, interpreter, and phase-retention
+  inconsistencies to preflight while preserving exact evidence and authority.
 
 ## [2.2.1] - 2026-10-08
 
@@ -144,74 +88,26 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Made candidate submission authenticate and mechanically reproject an
-  existing pull request's exact lifecycle title and body, with semantic-effect
-  custody rebound to the current protected base after advancement.
-- Derived deterministic test splinters inside the existing gate producer from
-  the exact governed node inventory and resource contract, with stable
-  partitioning, isolated execution state, exact-union aggregation, safe
-  monolithic fallback, and unchanged receipt and claim authority.
-- Derived candidate titles from the unique governed lifecycle proposition and
-  introduced exact, content-addressed local proof reuse without upgrading local
-  authority; provider proof transport now retains original archives once and
-  materializes members only for verification. Controller transport now stages
-  no-transition byte suppression through an explicit expand-rotate-activate
-  boundary, preserving installed N's exact provider-built input until N+1 is
-  installed rather than consuming successor-only behavior during rotation.
-  Archive-only receipt closure now distinguishes stored archive bytes from
-  their exact verified materialization, preserving compact transport while
-  rejecting missing, undeclared, or digest-mismatched evidence members. Failed
-  exact-main admissions now yield one authenticated noncertifying rotation
-  outcome rather than misclassifying missing authorization as no-transition;
-  callbacks preserve custody, dispatch nothing, and grant no release authority.
-  Current-controller exact-main runs now retain custody references without
-  rebuilding or uploading controller bundles; the graph compiler rejects any
-  ordinary build/upload lane not exactly restricted to pending rotation.
-  Terminal phase closure separately materializes one same-attempt controller
-  bundle required for independent release authorization, preventing a GitHub
-  rerun from leaving release custody dependent on a replaced prior-attempt
-  artifact without broadening controller transition applicability. Rotation now
-  consumes that custody before artifact materialization and downloads target
-  bytes only for pending rotation, so typed current/no-transition callbacks do
-  not require a bundle whose absence is intentional. The authenticated routine
-  authorization owner alone selects and retrieves exact target bytes after it
-  classifies pending rotation; current/no-transition never infers lifecycle
-  state from subject/controller inequality or performs artifact retrieval.
-  Bootstrap, probe, promotion, and activation retain their unconditional exact
-  post-authorization download without leaking job-local route observations.
-  Immutable provider GETs classify HTTP 500 with the existing bounded,
-  identity-preserving transient retry policy; mutation methods remain excluded.
-- Activated the version-dispatched evidence-session contract and canonical
-  affected-proof closure only after installing its compatible controller, so
-  every required proof is deterministically required, demonstrably unaffected,
-  or conservatively executed while truth independently rejects omissions.
-- Derived candidate submission, provider retry, protected auto-merge,
-  controller transition, and scheduled-control recovery from one authenticated
-  frontier; scheduled mutant runtimes now project their version owner and run
-  every declared profile before returning a typed aggregate result, while
-  unchanged authenticated proof is reused across the resulting controller
-  transition instead of being recomputed.
-- Opened the governed P30 and P31 release train for deterministic authored-state
-  fail-fast, bounded recovery, affected-proof pruning, exact proof reuse,
-  critical-path splintering, adopter assurance projection, independent
-  evaluation, and atomic immutable publication targeting BCF 2.2.0 and 2.3.0.
-- Reconciled the governed `build` toolchain dependency from 1.6.0 to 1.6.1
-  while opening the P30 foundation on the current certified base.
-- Derived local Python admission from the public runtime contract and upgraded
-  the existing dependency-audit and SBOM gates to bind an exact installed
-  dependency closure to a pinned, fail-closed advisory observation.
-- Added one exact, non-authoritative candidate-qualification custody state so
-  release-bound adopters can exercise unpublished bytes without weakening or
-  impersonating immutable release custody.
-- Made post-rotation certification consume one authenticated controller-chain
-  resolution, preserving exact callback custody without repeating the complete
-  provider receipt scan before dispatch.
-- Bound scheduled mutation preflight to the exact provider-effective controller
-  identity, so an active provider transition cannot be mistaken for a stale
-  source-policy installation.
-- Recorded immutable `v2.1.8` provider custody and same-byte Lite and
-  Standard-v3 adopter qualification; the temporary publication credential was
-  retired after successful publication.
+- Added an authenticated next-action frontier that derives candidate submission,
+  provider recovery, merge eligibility, controller transitions, and scheduled
+  controls from repository and provider state instead of operator procedure.
+- Added canonical affected-proof closure: every claim is mechanically required,
+  demonstrably unaffected, or conservatively executed, with truth independently
+  rejecting omitted affected assurance.
+- Added content-addressed proof reuse bound to exact command, toolchain, inputs,
+  projections, dependency closure, subject, producer, policy, qualification,
+  freshness, and authority class. Local proof accelerates but never confers
+  provider authority.
+- Added deterministic critical-path splintering from governed node inventories,
+  resource contracts, and historical durations, with exact union, zero overlap,
+  isolated execution state, negative-control applicability, and monolithic
+  fallback.
+- Unified candidate, exact-main, scheduled-control, and controller lifecycle
+  recovery under typed, noncertifying outcomes. Current/no-transition paths do
+  not build or retrieve controller bundles; pending rotation remains exact-bound.
+- Bound local Python admission, dependency audit, SBOM, compact evidence
+  transport, and unpublished adopter qualification to explicit authenticated
+  inputs before expensive work.
 
 ## [2.1.8] - 2026-10-03
 

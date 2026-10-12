@@ -68,7 +68,6 @@ def validate_repo_root(
 ) -> None:
     validate_runtime_custody(repo_root)
     validate_authored_phase_state(repo_root)
-    validate_ci_state_matrix(repo_root)
     schema_cache: dict[str, dict[str, Any]] = {}
     agents = _load_yaml(repo_root / "AGENTS.yml")
     memory = _load_yaml(repo_root / "MEMORY.yml")
@@ -247,6 +246,12 @@ def validate_repo_root(
             raise GovernanceValidationError(
                 "generated CI workflow drift: " + ", ".join(graph_parity.changed_paths)
             )
+    # Candidate matrix freshness remains a mandatory cheap-preflight invariant,
+    # but it must not mask the intrinsic semantic cause of a declared isolated
+    # negative-control mutation whose graph-owned projections are intentionally
+    # dirty.  No caller state exempts a candidate: otherwise-valid candidates
+    # still reach this guard before evidence allocation.
+    validate_ci_state_matrix(repo_root)
     if not allow_placeholders:
         optional_paths = [
             repo_root / relative_path

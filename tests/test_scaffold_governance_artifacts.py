@@ -190,6 +190,11 @@ def test_scaffold_phase_rejects_nonportable_commands_before_writing(
 
 
 def test_scaffold_hotfix_cli_prints_relative_log_path(tmp_path: Path) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        "hotfix_lane:\n  open_records: []\n",
+        encoding="utf-8",
+    )
     result = subprocess.run(
         [
             sys.executable,
@@ -213,9 +218,58 @@ def test_scaffold_hotfix_cli_prints_relative_log_path(tmp_path: Path) -> None:
             "2026-04-24",
             "--validation-command",
             "pytest tests",
+            "--triggered-by-commit",
+            "a" * 40,
+            "--failing-workflow",
+            "release-qualification",
+            "--root-cause",
+            "controller interpreter entered project evidence",
+            "--canonical-artifact",
+            "bcf_governance/tooling/local_execution_admission.py",
         ],
         check=True,
         capture_output=True,
         text=True,
     )
     assert result.stdout.strip() == "hotfix_log: phases/phase-04-hotfix03.yml"
+    ledger = yaml.safe_load(
+        (tmp_path / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+    )
+    assert ledger["hotfix_lane"]["open_records"] == [
+        {
+            "id": "HF-003",
+            "mode": "full",
+            "status": "active",
+            "triggered_by_commits": ["a" * 40],
+            "failing_workflows": ["release-qualification"],
+            "root_cause": "controller interpreter entered project evidence",
+            "remediated_in_phase": "P04",
+            "canonical_artifacts": [
+                "bcf_governance/tooling/local_execution_admission.py"
+            ],
+            "hotfix_log": "phases/phase-04-hotfix03.yml",
+        }
+    ]
+
+    repeated = subprocess.run(
+        result.args,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert repeated.stdout == result.stdout
+
+    extended = subprocess.run(
+        [*result.args, "--canonical-artifact", "spec/state-matrix.md"],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert extended.stdout == result.stdout
+    ledger = yaml.safe_load(
+        (tmp_path / "plans/phase-ledger.yml").read_text(encoding="utf-8")
+    )
+    assert ledger["hotfix_lane"]["open_records"][0]["canonical_artifacts"] == [
+        "bcf_governance/tooling/local_execution_admission.py",
+        "spec/state-matrix.md",
+    ]
