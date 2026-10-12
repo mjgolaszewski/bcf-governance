@@ -17,7 +17,11 @@ execution_evidence:
   - .venv/bin/python -m pytest -q tests/test_interpreter_environment.py tests/test_local_execution_admission.py
     tests/test_local_pr.py
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
-  executed_commands: []
+  executed_commands:
+  - ".venv/bin/python -m pytest -q tests/test_interpreter_environment.py tests/test_install_release_custody.py -k 'interpreter or evidence_capture_environment'"
+  - exact-wheel run_candidate_qualification_train against disposable AgentBus
+    commit 9c21d70
+  - derived-project-python -m pip_audit --format json
   notes:
   - immutable v2.3.0 adopter qualification exposed that a checkout without
     .venv selected the private BCF controller interpreter as project Python;
@@ -49,6 +53,11 @@ execution_evidence:
     a declared but statically unreachable port because its owner was imported
     inside the caller; module-level dependency ownership now makes the complete
     CI command effect closure mechanically provable before execution
+  - exact disposable AgentBus candidate 9c21d70 completed the canonical isolated
+    prospective train with status prospectively_admissible_provider_proof_required;
+    its derived project environment contained pip 26.2.1, zero known vulnerable
+    packages and no bcf-governance distribution, while the rendered evidence
+    capture step carried the canonical GitHub token binding
   - Racecar e2a0924663e78e8e947bcad62f08dec2aa22b44f correctly failed
     its own PyJWT vulnerability policy; corrected Racecar dc8d1bd remains a
     separate adopter fixture and that product finding is not a BCF failure
