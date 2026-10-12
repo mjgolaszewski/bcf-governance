@@ -12,6 +12,16 @@ All notable changes to BCF Governance are recorded here. This file follows
   phase closure, exact-asset adopter qualification, atomic publication, and
   terminal credential revocation.
 
+### Fixed
+
+- Derived an isolated, content-addressed project interpreter automatically when
+  an adopter has no repository environment, binding its governed requirements,
+  base runtime, realized distribution inventory, and persistent execution-state
+  custody while rejecting controller-environment leakage before evidence.
+- Made one idempotent hotfix scaffold operation create and register the governed
+  execution record, and preserved intrinsic negative-control diagnostics ahead
+  of candidate-matrix freshness checks without weakening either validation.
+
 ## [2.3.0] - 2026-10-11
 
 ### Changed

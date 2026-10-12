@@ -45,8 +45,8 @@ from .local_pr import (
     run_prospective_train,
 )
 from .local_execution_admission import (
+    ensure_local_project_python,
     LocalExecutionAdmissionError,
-    resolve_local_project_python,
 )
 from .runtime_capacity import (
     RuntimeCapacityError,
@@ -77,7 +77,7 @@ def _local_pr_command(
         return command
     selected_python = str(
         project_python
-        or resolve_local_project_python(repo_root, Path(sys.executable))
+        or ensure_local_project_python(repo_root, Path(sys.executable))
     )
     return (
         selected_python,
@@ -377,8 +377,8 @@ def main(argv: list[str] | None = None) -> None:
             _print(report.as_dict(), args.format)
             return
         if args.operation == "prospective-train":
-            project_python = args.python or resolve_local_project_python(
-                args.repo_root, Path(sys.executable)
+            project_python = ensure_local_project_python(
+                args.repo_root, Path(sys.executable), requested=args.python
             )
             canonical = canonical_prospective_inputs(
                 args.repo_root, remote=args.remote
@@ -439,8 +439,8 @@ def main(argv: list[str] | None = None) -> None:
         if args.operation == "submit":
             from .ci_github_controller import environment_api
 
-            project_python = args.python or resolve_local_project_python(
-                args.repo_root, Path(sys.executable)
+            project_python = ensure_local_project_python(
+                args.repo_root, Path(sys.executable), requested=args.python
             )
             result = submit_candidate(
                 args.repo_root,
@@ -522,7 +522,7 @@ def main(argv: list[str] | None = None) -> None:
             return
         explicit_command = bool(args.command)
         project_python = (
-            resolve_local_project_python(
+            ensure_local_project_python(
                 args.repo_root, Path(sys.executable), requested=args.python
             )
             if args.python is not None or not explicit_command

@@ -47,9 +47,11 @@ from .interpreter_environment import reconcile_interpreter_environment
 from .test_duration_observations import reconcile_test_duration_observations
 from .editorial_audit_projection import editorial_base
 from .evidence_storage_topology import compile_migration_plan
-
-HOTFIX_MODES = {"lite", "full"}
-
+from .hotfix_scaffolding import (
+    HOTFIX_MODES,
+    register_hotfix_log,
+    scaffold_hotfix_log,
+)
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
     """Reject machine-local command records before any artifact is written."""
@@ -76,30 +78,6 @@ def _phase_number(phase_id: str) -> int:
 
 def _phase_stem(phase_id: str) -> str:
     return f"phase-{_phase_number(phase_id):02d}"
-
-
-def _hotfix_number(hotfix_number: int | str) -> int:
-    try:
-        number = int(hotfix_number)
-    except (TypeError, ValueError) as exc:
-        raise ValueError(
-            f"invalid hotfix number {hotfix_number!r}; expected a positive integer"
-        ) from exc
-    if number <= 0:
-        raise ValueError(
-            f"invalid hotfix number {hotfix_number!r}; expected a positive integer"
-        )
-    return number
-
-
-def _hotfix_stem(related_phase_id: str, hotfix_number: int | str) -> str:
-    return f"{_phase_stem(related_phase_id)}-hotfix{_hotfix_number(hotfix_number):02d}"
-
-
-def _hotfix_mode(mode: str) -> str:
-    if mode not in HOTFIX_MODES:
-        raise ValueError(f"invalid hotfix mode {mode!r}; expected one of {sorted(HOTFIX_MODES)}")
-    return mode
 
 
 def _write_yaml(path: Path, payload: dict[str, Any], *, force: bool) -> None:
@@ -261,62 +239,6 @@ def scaffold_phase_artifacts(
     _write_yaml(workitems_path, workitems_payload, force=force)
     _write_yaml(log_path, log_payload, force=force)
     return {"plan": plan_path, "workitems": workitems_path, "log": log_path}
-
-
-def scaffold_hotfix_log(
-    *,
-    repo_root: Path,
-    project_id: str,
-    hotfix_id: str,
-    mode: str,
-    hotfix_number: int,
-    summary: str,
-    related_phase_id: str,
-    date: str,
-    validation_commands: list[str],
-    force: bool,
-) -> Path:
-    validation_commands = _portable_governed_commands(validation_commands)
-    hotfix_stem = _hotfix_stem(related_phase_id, hotfix_number)
-    log_path = repo_root / "phases" / f"{hotfix_stem}.yml"
-    payload = {
-        "document": {
-            "kind": "hotfix_execution_log",
-            "name": f"{hotfix_id} Hotfix Log",
-            "id": f"{project_id}-{hotfix_stem}",
-            "version": "1.0.0",
-            "generated_at_utc": f"{date}T00:00:00Z",
-            "status": "planned",
-            "path": _repo_relative_path(repo_root, log_path),
-        },
-        "hotfix": {
-            "id": hotfix_id,
-            "mode": _hotfix_mode(mode),
-            "related_phase_id": related_phase_id,
-            "hotfix_number": hotfix_number,
-            "summary": summary,
-        },
-        "execution_evidence": {
-            "planned_commands": validation_commands,
-            "executed_commands": [],
-            "notes": [
-                "record failing workflows, diagnosed root cause, remediation scope, and merge-back status"
-            ],
-        },
-        "closeout_requirements": {
-            "claims": {
-                "required_suites_green": {"required_evidence": ["test", "contract-test"]},
-                "security_review_complete": {"required_evidence": ["governance-validate"]},
-                "health_checks_green": {"required_evidence": ["runtime-smoke"]},
-            },
-            "reconciliation": {
-                "required_evidence": ["governance-validate", "governance-exposure-scan"]
-            },
-            "finding_registry": "governance/findings.yml",
-        },
-    }
-    _write_yaml(log_path, payload, force=force)
-    return log_path
 
 
 Action = Callable[[], None]
@@ -756,6 +678,10 @@ def _parser() -> argparse.ArgumentParser:
     hotfix.add_argument("--related-phase-id", required=True)
     hotfix.add_argument("--date", required=True)
     hotfix.add_argument("--validation-command", action="append", required=True)
+    hotfix.add_argument("--triggered-by-commit", action="append", required=True)
+    hotfix.add_argument("--failing-workflow", action="append", default=[])
+    hotfix.add_argument("--root-cause", required=True)
+    hotfix.add_argument("--canonical-artifact", action="append", default=[])
     return parser
 
 
@@ -792,6 +718,17 @@ def main(argv: list[str] | None = None) -> None:
             date=args.date,
             validation_commands=args.validation_command,
             force=args.force,
+        )
+        register_hotfix_log(
+            repo_root=repo_root,
+            hotfix_log=created_path,
+            hotfix_id=args.hotfix_id,
+            mode=args.mode,
+            related_phase_id=args.related_phase_id,
+            triggered_by_commits=args.triggered_by_commit,
+            failing_workflows=args.failing_workflow,
+            root_cause=args.root_cause,
+            canonical_artifacts=args.canonical_artifact,
         )
         print(f"hotfix_log: {created_path.relative_to(repo_root)}")
 

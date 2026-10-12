@@ -4,7 +4,14 @@ from __future__ import annotations
 
 import argparse
 import ast
+import base64
+import fcntl
+import hashlib
+import json
+import os
 import re
+import shutil
+import subprocess
 import sys
 import tomllib
 from dataclasses import dataclass
@@ -13,6 +20,12 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 from packaging.requirements import InvalidRequirement, Requirement
+
+from .runtime_capacity import (
+    RuntimeCapacityError,
+    allocate_execution_state,
+    load_runtime_contract,
+)
 
 
 class InterpreterEnvironmentError(ValueError):
@@ -75,6 +88,20 @@ class InterpreterEnvironmentPlan:
 
     def rendered_requirements(self) -> str:
         return "".join(f"{value}\n" for value in self.requirements)
+
+    def identity(self, base_python: Path) -> str:
+        """Bind one derived environment to its source plan and base runtime."""
+
+        executable = base_python.resolve(strict=True)
+        digest = hashlib.sha256()
+        digest.update(self.rendered_requirements().encode("utf-8"))
+        digest.update(b"\0")
+        digest.update(self.requires_python.encode("utf-8"))
+        digest.update(b"\0")
+        with executable.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+        return digest.hexdigest()
 
 
 def _dependency_name(value: object) -> str:
@@ -266,6 +293,206 @@ def reconcile_interpreter_environment(
         return apply_interpreter_environment_projection(plan)
     verify_interpreter_environment_projection(plan)
     return plan.projection_path
+
+
+def materialize_interpreter_environment(
+    repo_root: Path, base_python: Path
+) -> Path:
+    """Materialize or reuse one content-addressed project interpreter."""
+
+    root = repo_root.resolve()
+    plan = derive_interpreter_environment(root)
+    if plan is None or plan.projection_path is None:
+        raise InterpreterEnvironmentError(
+            "project interpreter cannot be derived without a requirements projection"
+        )
+    verify_interpreter_environment_projection(plan)
+    try:
+        plan_identity = plan.identity(base_python)
+    except OSError as exc:
+        raise InterpreterEnvironmentError(
+            "project interpreter base runtime is unavailable"
+        ) from exc
+    try:
+        runtime_contract = load_runtime_contract(root / "governance/ci-runtime.yml")
+        namespace = "bcfenv-" + base64.b32encode(
+            bytes.fromhex(plan_identity)
+        ).decode("ascii").lower().rstrip("=")
+        lease = allocate_execution_state(
+            root,
+            runtime_contract,
+            session_id=plan_identity,
+            workload_id="project-environment",
+            execution_id=plan_identity,
+            invocation={
+                "state": {
+                    "lifecycle": "persistent_shared",
+                    "namespace": namespace,
+                }
+            },
+        )
+        parent = lease.root / "project-environments"
+    except RuntimeCapacityError as exc:
+        raise InterpreterEnvironmentError(
+            "project interpreter cache contract is invalid"
+        ) from exc
+    lock_path = parent / ".materialize.lock"
+    parent.mkdir(parents=True, exist_ok=True)
+    with lock_path.open("a+b") as lock:
+        fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        cached = _matching_cached_environment(parent, plan_identity)
+        if cached is not None:
+            target, payload = cached
+            python = target / "venv/bin/python"
+            inventory = _installed_inventory(python, root)
+            if payload["inventory_sha256"] != _sha256_text(inventory):
+                raise InterpreterEnvironmentError(
+                    "derived project interpreter inventory is stale"
+                )
+            return python
+        temporary = parent / f".{plan_identity}.building-{os.getpid()}"
+        if temporary.exists() or temporary.is_symlink():
+            raise InterpreterEnvironmentError(
+                "derived project interpreter has unexplained pre-existing build state"
+            )
+        try:
+            created = subprocess.run(
+                [str(base_python.resolve(strict=True)), "-m", "venv", str(temporary / "venv")],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if created.returncode != 0:
+                detail = created.stderr.strip() or created.stdout.strip() or "venv creation failed"
+                raise InterpreterEnvironmentError(
+                    "derived project interpreter creation failed: " + detail
+                )
+            candidate = temporary / "venv/bin/python"
+            installed = subprocess.run(
+                [
+                    str(candidate),
+                    "-m",
+                    "pip",
+                    "install",
+                    "--disable-pip-version-check",
+                    "--requirement",
+                    str(plan.projection_path),
+                ],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            if installed.returncode != 0:
+                detail = installed.stderr.strip() or installed.stdout.strip() or "dependency installation failed"
+                raise InterpreterEnvironmentError(
+                    "derived project interpreter installation failed: " + detail
+                )
+            inventory = _installed_inventory(candidate, root)
+            inventory_sha256 = _sha256_text(inventory)
+            identity = _sha256_text(plan_identity + "\0" + inventory_sha256)
+            target = parent / identity
+            if target.exists() or target.is_symlink():
+                raise InterpreterEnvironmentError(
+                    "derived project interpreter target has unexplained state"
+                )
+            temporary.mkdir(parents=True, exist_ok=True)
+            (temporary / "environment.json").write_text(
+                json.dumps(
+                    {
+                        "schema_version": "1.0",
+                        "plan_identity": plan_identity,
+                        "identity": identity,
+                        "inventory_sha256": inventory_sha256,
+                    },
+                    sort_keys=True,
+                    separators=(",", ":"),
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            temporary.replace(target)
+        finally:
+            if temporary.exists():
+                shutil.rmtree(temporary)
+    return target / "venv/bin/python"
+
+
+def _matching_cached_environment(
+    parent: Path, plan_identity: str
+) -> tuple[Path, dict[str, str]] | None:
+    matches: list[tuple[Path, dict[str, str]]] = []
+    for target in sorted(parent.iterdir()):
+        if target.name == ".materialize.lock":
+            continue
+        if target.name.startswith(".") or target.is_symlink() or not target.is_dir():
+            raise InterpreterEnvironmentError(
+                "derived project interpreter cache has unexplained state"
+            )
+        python = target / "venv/bin/python"
+        manifest = target / "environment.json"
+        if not python.is_file() or not os.access(python, os.X_OK):
+            raise InterpreterEnvironmentError(
+                "derived project interpreter cache is incomplete or unsafe"
+            )
+        try:
+            payload = json.loads(manifest.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise InterpreterEnvironmentError(
+                "derived project interpreter manifest is unavailable"
+            ) from exc
+        if (
+            not isinstance(payload, dict)
+            or set(payload)
+            != {"schema_version", "plan_identity", "identity", "inventory_sha256"}
+            or payload.get("schema_version") != "1.0"
+            or payload.get("identity") != target.name
+            or not all(
+                isinstance(payload.get(name), str)
+                and re.fullmatch(r"[a-f0-9]{64}", payload[name]) is not None
+                for name in ("plan_identity", "identity", "inventory_sha256")
+            )
+            or payload.get("identity")
+            != _sha256_text(
+                str(payload.get("plan_identity"))
+                + "\0"
+                + str(payload.get("inventory_sha256"))
+            )
+        ):
+            raise InterpreterEnvironmentError(
+                "derived project interpreter identity is stale"
+            )
+        if payload["plan_identity"] != plan_identity:
+            raise InterpreterEnvironmentError(
+                "derived project interpreter namespace identity is stale"
+            )
+        matches.append((target, payload))
+    if len(matches) > 1:
+        raise InterpreterEnvironmentError(
+            "derived project interpreter identity is ambiguous"
+        )
+    return matches[0] if matches else None
+
+
+def _installed_inventory(python: Path, repo_root: Path) -> str:
+    result = subprocess.run(
+        [str(python), "-m", "pip", "freeze", "--all"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.strip() or result.stdout.strip() or "inventory failed"
+        raise InterpreterEnvironmentError(
+            "derived project interpreter inventory failed: " + detail
+        )
+    return "\n".join(sorted(line.strip() for line in result.stdout.splitlines() if line.strip())) + "\n"
+
+
+def _sha256_text(value: str) -> str:
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
 def main(argv: list[str] | None = None) -> None:
