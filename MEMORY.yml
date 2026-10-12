@@ -32,7 +32,7 @@ environment_facts:
   - 'P29 and release_23 repair the direct-main provider-event comparison boundary and deliver issue 341 and 342 low-risk deterministic operations; the persisted state matrix owns every event proposition and downstream permutation before implementation.'
   - P29 and release_24 are closed; immutable v2.1.8 was published from certified commit 030a38ed443ccb5b46f26b68f5ad271a12a2a48d and exact custody is recorded by the P29 log and provider release.
   - P30 and release_25 are closed by exact-main truth and independently verified immutable v2.2.1 custody from commit 7f18153d91b367c05f42a6c32a769fad586543cb tree 239c193e9d4c374668147b30cd4ca671dad1f3b5; exact-asset qualification mechanically preceded publication, the temporary credential was retired, and published v2.2.0 remains explicitly noncustodied and superseded.
-  - P31 and release_26 are active for the consumer-owned assurance graph, existing-repository protection projection, evidence-storage topology, base-pinned evaluator, and atomic immutable v2.3.0 publication.
+  - P31 and release_26 are closed; immutable v2.3.0 was published from certified commit 76c953c1f04b50d26df6e5c4162dc671a8eadcd5 and exact custody is recorded in audits/v2.3.0-release-custody.yml.
   active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-31-plan.yml, active_workitem_ledger: plans/phase-31-workitems.yml, active_phase_log: phases/phase-31-log.yml}
 known_constraints:
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code

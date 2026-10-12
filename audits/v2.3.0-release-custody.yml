@@ -1,0 +1,98 @@
+document:
+  kind: post_release_custody_audit
+  name: BCF v2.3.0 Release Custody
+  id: bcf-v2.3.0-release-custody
+  version: 1.0.0
+  status: completed
+  path: audits/v2.3.0-release-custody.yml
+subject:
+  version: 2.3.0
+  tag: v2.3.0
+  tag_kind: annotated
+  tag_object: fe1fda7e5845c5c8bccf6d37ce9c3712d1cc167f
+  tag_signed: false
+  tag_verification_reason: unsigned
+  commit: 76c953c1f04b50d26df6e5c4162dc671a8eadcd5
+  tree: b042302139a5526d5c91ec3ae468633f3af8e767
+provider_release:
+  id: 410037097
+  immutable: true
+  draft: false
+  prerelease: false
+  published_at: '2026-10-12T01:17:04Z'
+assets:
+- {id: 632278431, name: bcf_governance-2.3.0-py3-none-any.whl, size: 1755194, sha256: e8d85cd649e9cb019aee73944ad3c8660c534fc0dc4895b59688f40bd8a79681}
+- {id: 632278506, name: bcf_governance-2.3.0.tar.gz, size: 7891103, sha256: 2656ef2ce9b3bb9c4ab18a15d8f1028263a860e3ff9273832696711c48df9591}
+- {id: 632278380, name: SHA256SUMS, size: 198, sha256: 26c553dc7f2ccacf71265118c4fd38db78b7bf981e6c579d50625bac9baee5b2}
+authority:
+  exact_main:
+    run_id: '38184849373'
+    run_attempt: 2
+    truth_artifact_id: '11720177887'
+    truth_artifact_name: bcf-governance-truth-38184849373-2
+    truth_provider_digest: sha256:630c9675d1036f320033d5dd42f67c8f7f5086b7317ad9777299db0751f5a816
+    truth_report_sha256: 9f5f1f9b7c713b3f1eafd3362c2717d43df33a1f4ee4dda00e0405964a55ad71
+    evidence_bundle_sha256: 4ce6802588f53b221463f65f51090dd2f4e721c5cc1d1aa012de3263af5682cd
+    certified_proposition: {predicate: phase_closed, target_kind: phase, target_id: P31, conclusion: success}
+  finalizer: {run_id: '38187726866', run_attempt: 1, artifact_id: '11719574468', artifact_name: bcf-exact-main-certification-38187726866-1, provider_digest: 'sha256:77f8c992363cfa562dd296e3038794abbf62fbc2c64734fff061288b44f9ba7c'}
+  controller:
+    commit: 76c953c1f04b50d26df6e5c4162dc671a8eadcd5
+    tree: b042302139a5526d5c91ec3ae468633f3af8e767
+    installed_artifact_id: '11719836003'
+    installed_artifact_name: bcf-trusted-control-76c953c1f04b50d26df6e5c4162dc671a8eadcd5-1
+    installed_provider_digest: sha256:6075400cfb902a2bad1fcc327a9a63dbfc9d4eddb778fad315a90beadaddb724
+    certifying_artifact_id: '11720575126'
+    certifying_artifact_name: bcf-trusted-control-76c953c1f04b50d26df6e5c4162dc671a8eadcd5-2
+    certifying_provider_digest: sha256:71ee65de63dd351f516d6fc89d14c4b69d74a1edca3e02a677779343b2849a7c
+    wheel_sha256: e8d85cd649e9cb019aee73944ad3c8660c534fc0dc4895b59688f40bd8a79681
+    rotation_run_id: '38185648847'
+    rotation_run_attempt: 1
+    rotation_outcome_artifact_id: '11719462473'
+    rotation_outcome_provider_digest: sha256:98b475195f2c85b037cc3c6c0a2de3988190bc9bb48196e8a280a76dec2f5260
+  release_build:
+    run_id: '38188564890'
+    run_attempt: 1
+    authorization_artifact_id: '11721180758'
+    authorization_provider_digest: sha256:c742eab2943f53dd2f3f651f918e249a3072936a11664cb0ebeab802d9f3f3ad
+    build_artifact_id: '11720716190'
+    build_artifact_name: bcf-release-build-76c953c1f04b50d26df6e5c4162dc671a8eadcd5-1
+    build_provider_digest: sha256:c45e74c12d5c61c22636853ff9ffbfb83c61b9298236b293fda7f6580f6eff9a
+  release_verifier:
+    run_id: '38189247674'
+    run_attempt: 1
+    runtime_artifact_id: '11721231089'
+    runtime_provider_digest: sha256:bdd5c3bc711ccd267f27bf52d976404e66e065a0007baa9001dcca47b23b3d16
+    receipt_artifact_id: '11721335842'
+    receipt_artifact_name: bcf-release-receipt-38189247674-1
+    receipt_provider_digest: sha256:26869cf6e41295131f675cc4f8a3e83374c7d53c71ead4f5fc3f390d6b2d31c3
+  publisher: {run_id: '38190623742', run_attempt: 1, conclusion: success}
+verification:
+  canonical_release_inspector: passed
+  exact_asset_inventory: passed
+  sha256sums: passed
+  github_attestations: passed_for_all_three_assets
+  attestation_id: 54894862
+  rekor_log_index: '3218210371'
+  release_target: exact_annotated_tag_commit
+  released_bytes_rebuilt_during_publication: false
+  candidate_authored_receipt_accepted: false
+  temporary_release_token_revoked: true
+qualification:
+  authority: local_non_authoritative
+  exact_release_subject: 76c953c1f04b50d26df6e5c4162dc671a8eadcd5
+  tradeflow_lite: {result: passed, source_commit: f7e9166c40629ef0cfb62fea9529d8b878c40517, source_tree: c6c6b001c765fbd30f12340620ee9eb9a8ff88aa}
+  racecar_standard_v3: {result: passed, source_commit: 38945f5aa3a90e0782cabb006c8c88a5463fcfbd, source_tree: 11b3a874b5c3b18c9a4b8e94a804b68b02790583}
+  agentbus_standard_v3: {result: passed, source_commit: 774ea67d94ff227ae2a8ae1d2829da0b015a389c, source_tree: d7d050ec69bff7813677586611878864ec76cb2b}
+  maintained_repositories_mutated: false
+product_boundary:
+  adopter_semantics: consumer-owned assurance graph protection projection evidence storage independent evaluation and selective proof composition
+  self_authority_excluded: controller recovery publication and repository authority remain self-only and absent from ordinary adopter packs
+  release_authority: provider-authenticated terminal phase closure plus independent exact-byte verification and qualification
+  canonical_proof: spec/RELEASE_TRAIN_STATE_DAG.md
+closeout:
+  phase: P31
+  release_train: release_26
+  phase_state: closed
+  release_state: completed
+  issues: [343, 345, 346, 354]
+  remaining_publication_work: []
