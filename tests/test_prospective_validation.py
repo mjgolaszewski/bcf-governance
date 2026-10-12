@@ -1318,7 +1318,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         manifest_path=tmp_path / "session.json",
         root=tmp_path / "session",
     )
-    required = ["test"]
+    required = ["contract-test", "test", "security-review"]
     selected_python = tmp_path / "venv/bin/python"
     selected_python.parent.mkdir(parents=True)
     selected_python.symlink_to(sys.executable)
@@ -1348,7 +1348,32 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
                 "release_authority": False,
             },
             "verification_plan": {
-                "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
+                "execution_dag": {
+                    "nodes": [
+                        {
+                            "id": "review",
+                            "producer": "security-review",
+                            "assigned_shard": 0,
+                            "depends_on": ["contracts", "quality"],
+                        },
+                        {
+                            "id": "quality",
+                            "producer": "test",
+                            "assigned_shard": 0,
+                            "depends_on": [],
+                        },
+                        {
+                            "id": "contracts",
+                            "producer": "contract-test",
+                            "assigned_shard": 0,
+                            "depends_on": [],
+                        }
+                    ],
+                    "edges": [
+                        {"from": "contracts", "to": "review"},
+                        {"from": "quality", "to": "review"},
+                    ],
+                }
             },
         }
 
@@ -1535,7 +1560,17 @@ def test_full_walk_rejects_wrong_finalizer_truth_subject(
             "status": "pass",
             "self_controller": {"status": "current"},
             "verification_plan": {
-                "execution_dag": {"nodes": [{"producer": "test", "assigned_shard": 0}]}
+                "execution_dag": {
+                    "nodes": [
+                        {
+                            "id": "test",
+                            "producer": "test",
+                            "assigned_shard": 0,
+                            "depends_on": [],
+                        }
+                    ],
+                    "edges": [],
+                }
             },
         },
     )
