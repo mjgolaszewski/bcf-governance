@@ -1815,6 +1815,51 @@ P31 until terminal phase truth agrees.  Any newly reachable edge without every
 identity, byte, applicability, lifecycle, permission, cleanup, authority and
 failure field is a graph error before expensive work.
 
+### Existing-repository atomic adoption state matrix
+
+Existing-repository adoption is one derived transaction, not a checklist. The
+installer inventories authenticated tracked metadata before mutation, preserves
+native instructions byte-for-byte, derives unambiguous source and test roots,
+normalizes fixed legacy audit roots, installs the pack, and validates the final
+tree before committing any filesystem change. An agent never edits generated
+governance merely to make the first validation pass.
+
+| State | Authenticated inputs | Deterministic action | Authoritative result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| Native repository, no BCF custody | clean Git subject/tree, adoption mode, tracked build/test metadata, pack manifest | compile one prospective adoption inventory before mutation | exact source roots, test roots, native-instruction custody, legacy-audit moves and pack collision plan | template roots, filesystem guesses, or agent-selected paths |
+| Tracked Python metadata is unambiguous | `pyproject.toml` build packages and pytest `testpaths`, each resolving to tracked directories | project exact normalized roots into `architecture-boundaries.yml` and `AGENTS.yml` inside the transaction | generated governance describes the repository that was inspected | missing path, overlapping semantic role, unsupported/ambiguous metadata, or post-install hand edit |
+| Native root `AGENTS.md` exists | exact bytes, path and Git blob identity | preserve the file at the canonical native-guidance custody path, then install the BCF compatibility redirect | original instructions remain byte-identical and referenceable; BCF owns root instruction routing | overwrite, deletion, ambiguous pre-existing custody target, or native instructions acquiring BCF authority |
+| Fixed legacy audit root exists | exact tracked paths beneath a canonical legacy root plus reference graph | apply the existing cleanup primitive within the same staged transaction and rewrite only exact tracked references | audit evidence resides under declared `audits/`; unrelated product/docs bytes remain unchanged | agent-performed preparatory move, filename heuristic outside a declared legacy root, collision, or incomplete reference rewrite |
+| Product code is named `audit` or `audits` | derived source/test roots and tracked file classification | retain it as product code | no cleanup action | treating a name token as evidence custody |
+| Prospective adoption inventory is ambiguous | conflicting metadata, unresolved path, unsafe collision or dirty subject | reject before copying pack bytes or allocating tests | typed zero-mutation diagnostic | bootstrap validation, partial installation, force rescaffold, or caller assertion used as truth |
+| Prospective inventory is closed | exact inventory plus pack manifest and transaction path set | stage archive, cleanup, pack projection, derived-root projection and strict validation; atomically commit only after all pass | one valid Lite existing-repository adoption | externally visible partial state or a second remembered cleanup/configuration command |
+| Repository already has authenticated BCF custody | runtime lock and installed profile | route to canonical release-bound upgrade rather than native adoption | existing upgrade semantics unchanged | fresh adoption overwriting governed state |
+
+```text
+invariants
+  existing adoption is atomic and generated governance describes authenticated repository state;
+  native authority is preserved as evidence but cannot silently override BCF authority;
+  ambiguous derivation fails before mutation
+    -> primitives
+       clean Git subject/tree, tracked metadata reader, source/test-root inventory,
+       native-instruction blob custody, legacy-audit cleanup plan, transaction path set
+      -> contracts
+         inspect -> classify -> compile closed adoption inventory -> stage native custody
+         and cleanup -> project pack and roots -> strict validate -> atomic commit
+        -> producers
+           existing-adoption inventory compiler, canonical cleanup planner,
+           pack projector and transactional validator
+          -> consumers
+             installer reporting, architecture/test-root validators, graph/manifests,
+             Lite prospective validation and later release-bound upgrade
+```
+
+The fresh-install path is structurally excluded because it has no native state
+to preserve. Release-bound upgrades are excluded because the installed runtime
+lock and profile already own their project-specific roots. Unsupported language
+metadata is rejected as an unresolved inventory; it never falls back to template
+defaults or an agent-authored generated-file repair.
+
 Matrix freshness and adversarial mutation validity are independent propositions.
 The validator never exempts a candidate from matrix coverage based on caller
 state.  For one declared isolated negative-control execution, intrinsic semantic
