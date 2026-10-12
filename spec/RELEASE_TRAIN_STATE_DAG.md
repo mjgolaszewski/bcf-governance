@@ -123,18 +123,23 @@ provider evidence.
     projections stale, emit a static next command, or require the caller to
     choose evaluation intent or target. If authenticated state cannot derive
     one legal successor, execution stops with a typed result before mutation.
-31. A governed hotfix is created and registered as one operation. The
-    scaffolder must receive the exact trigger, failure class, root cause, phase,
-    and canonical surfaces once, then idempotently project both its execution
-    log and phase-ledger open record. A caller must never remember a second
-    hand-authored registration step, and an unregistered hotfix cannot enter
-    reconciliation, evidence, certification, or release custody.
 31. For every structurally reachable producer/consumer pair, the canonical DAG
     defines and mechanically validates the complete inter-node contract before
     the consumer can allocate expensive work or exercise authority. Every
     structurally unreachable pair has one canonical typed exclusion reason.
     Missing edge custody, identity, schema, applicability, permissions,
     lifecycle, authority, or failure semantics rejects at graph compilation.
+32. A governed hotfix is created and registered as one operation. The
+    scaffolder must receive the exact trigger, failure class, root cause, phase,
+    and canonical surfaces once, then idempotently project both its execution
+    log and phase-ledger open record. A caller must never remember a second
+    hand-authored registration step, and an unregistered hotfix cannot enter
+    reconciliation, evidence, certification, or release custody.
+33. A reusable local project environment is persistent state only through the
+    canonical runtime contract. Its repository-relative root, content-addressed
+    identity inputs, exact inventory verification, corruption policy, and
+    cleanup ownership are declared once and consumed by the materializer. A
+    hard-coded cache path or implicit persistence is invalid.
 
 ## State matrix
 
@@ -436,6 +441,8 @@ not BCF custody evidence and cannot be laundered into a BCF failure or success.
 | controller Python differs from an exact repository-local `.venv/bin/python` | controller executable plus fixed repository-local project-interpreter path | local execution admission selects the repository interpreter for project preflight/evidence while retaining the controller interpreter only for BCF orchestration | accept only after the project interpreter satisfies the governed dependency/version contract |
 | project environment is intentionally outside the checkout | one explicit exact `--python` input on the canonical local entrypoint | validate and propagate that interpreter through admission, preflight, evidence, and truth | no later interpreter selection; missing dependencies reject before evidence |
 | no repository-local project interpreter exists | controller executable, governed Python-minor contract, canonical projected project requirements, and content-addressed environment identity | mechanically materialize or reuse one isolated project environment from those exact inputs before reconcile; the controller remains orchestration-only | one derived project interpreter with no controller-only distribution/path leakage; no agent-selected setup command or fallback |
+| derived project environment cache is absent | exact runtime contract, base interpreter bytes, canonical requirement projection, and realized distribution inventory | create only the contract-declared content-addressed namespace under an exclusive materialization lock, then record its exact identity and inventory digest | persistent reuse is authorized only for the exact declared cache class; partial or unexplained state rejects |
+| derived project environment cache exists | cache identity, executable, manifest, and live distribution inventory | rederive identity and compare every owned field before reuse | exact match reuses; missing, mutated, malformed, symlinked, or differently inventoried state rejects without repair or fallback |
 | caller supplies the controller interpreter as project Python | controller/project executable identity, installed distribution inventory, and canonical project requirement closure | reject before reconcile; when no project environment exists, mechanically derive one instead | private controller distributions cannot enter self or adopter vulnerability evidence, and an agent cannot select its way around environment separation |
 | repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission | reject before preflight/evidence; never fall back to another ambient Python |
 | controller is loaded through `PYTHONPATH` or another controller-only Python environment | exact controller environment plus selected project interpreter | project-environment projection removes controller import/home/venv state and binds the selected repository environment before spawning project validation | project imports resolve only from the adopter checkout and selected project environment; controller paths cannot shadow adopter modules |
