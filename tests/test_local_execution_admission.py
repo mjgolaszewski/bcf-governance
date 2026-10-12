@@ -143,6 +143,21 @@ def test_repository_environment_cannot_alias_controller_python(tmp_path: Path) -
         ensure_local_project_python(tmp_path, Path(sys.executable))
 
 
+def test_distinct_virtual_environments_may_share_base_python(tmp_path: Path) -> None:
+    controller = tmp_path / "controller/bin/python"
+    project = tmp_path / "project/.venv/bin/python"
+    for executable in (controller, project):
+        executable.parent.mkdir(parents=True)
+        executable.symlink_to(Path(sys.executable).resolve())
+        (executable.parent.parent / "pyvenv.cfg").write_text(
+            "home = /usr/local/bin\n", encoding="utf-8"
+        )
+
+    assert resolve_local_project_python(
+        tmp_path / "project", controller
+    ) == project
+
+
 def test_adopter_without_environment_derives_project_python(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

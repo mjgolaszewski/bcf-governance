@@ -67,6 +67,26 @@ def _supported_python_minors(repo_root: Path) -> set[str]:
     return set(values)
 
 
+def _virtual_environment_root(executable: Path) -> Path | None:
+    absolute = executable.absolute()
+    root = absolute.parent.parent
+    return root if absolute.parent.name == "bin" and (root / "pyvenv.cfg").is_file() else None
+
+
+def _shares_interpreter_custody(project: Path, controller: Path) -> bool:
+    """Distinguish environment custody even when venvs share one base binary."""
+
+    project_absolute = project.absolute()
+    controller_absolute = controller.absolute()
+    if project_absolute == controller_absolute:
+        return True
+    project_root = _virtual_environment_root(project_absolute)
+    controller_root = _virtual_environment_root(controller_absolute)
+    if project_root is not None and controller_root is not None:
+        return project_root == controller_root
+    return project_absolute.resolve() == controller_absolute.resolve()
+
+
 def resolve_local_project_python(
     repo_root: Path,
     controller_python: Path,
@@ -91,7 +111,7 @@ def resolve_local_project_python(
             raise LocalExecutionAdmissionError(
                 "selected project Python cannot be resolved"
             ) from exc
-        if local.resolve() == controller_python.resolve():
+        if _shares_interpreter_custody(local, controller_python):
             raise LocalExecutionAdmissionError(
                 "controller interpreter cannot serve as project Python"
             )
