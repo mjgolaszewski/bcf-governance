@@ -6,11 +6,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-### Changed
-
-- Recorded independently verified immutable `v2.3.0` custody after exact-main
-  phase closure, exact-asset adopter qualification, atomic publication, and
-  terminal credential revocation.
+## [2.3.1] - 2026-10-12
 
 ### Fixed
 
