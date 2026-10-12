@@ -14,6 +14,9 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.governance_install import transaction, upgrade
+from bcf_governance.tooling.governance_validation.native_adoption import (
+    authenticated_native_adoption_files,
+)
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -297,6 +300,132 @@ def test_existing_required_repository_artifacts_are_preserved_byte_identically(
     assert {path: (target / path).read_bytes() for path in expected} == expected
 
 
+def test_existing_install_atomically_derives_roots_and_preserves_native_custody(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "existing-derived-inventory"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "installer@example.invalid"], cwd=target, check=True
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Installer Test"], cwd=target, check=True
+    )
+    native_agents = b"# Native agent authority\n\nPreserve this exact guidance.\n"
+    (target / "AGENTS.md").write_bytes(native_agents)
+    (target / "pyproject.toml").write_text(
+        """[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["scripts/tests"]
+""",
+        encoding="utf-8",
+    )
+    (target / "scripts/tests").mkdir(parents=True)
+    (target / "scripts/__init__.py").write_text("", encoding="utf-8")
+    (target / "scripts/tests/test_smoke.py").write_text(
+        "def test_smoke():\n    assert True\n", encoding="utf-8"
+    )
+    (target / "docs/audits").mkdir(parents=True)
+    (target / "docs/audits/security.md").write_text("# Security\n", encoding="utf-8")
+    (target / "NATIVE.md").write_text(
+        "See docs/audits/security.md.\n", encoding="utf-8"
+    )
+    (target / "docs/testing.md").write_text(
+        "# Native testing\n\nLocal output: `.artifacts/tests/report.json`.\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(["git", "commit", "-m", "native repository"], cwd=target, check=True)
+
+    result = _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--require-strict-validation",
+    )
+
+    assert "validation: strict pass" in result.stdout
+    assert (target / "docs/governance/native-agent-guidance.md").read_bytes() == native_agents
+    assert (target / "AGENTS.md").read_text(encoding="utf-8").startswith(
+        "# Agent Instructions"
+    )
+    assert not (target / "docs/audits/security.md").exists()
+    assert (target / "audits/security.md").read_text(encoding="utf-8") == "# Security\n"
+    assert (target / "NATIVE.md").read_text(encoding="utf-8") == (
+        "See audits/security.md.\n"
+    )
+    agents = yaml.safe_load((target / "AGENTS.yml").read_text(encoding="utf-8"))
+    architecture = yaml.safe_load(
+        (target / "architecture-boundaries.yml").read_text(encoding="utf-8")
+    )
+    assert agents["testing_governance"]["test_roots"] == ["scripts/tests"]
+    assert architecture["architecture"]["source_roots"] == ["scripts"]
+    adoption = yaml.safe_load(
+        (target / "governance/existing-repo-adoption.yml").read_text(encoding="utf-8")
+    )
+    baseline = adoption["native_baseline"]
+    assert baseline["transition_class"] == "existing_repository_adoption"
+    assert any(
+        entry["projected_path"] == "docs/testing.md" for entry in baseline["files"]
+    )
+    profile_path = target / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    for selected in ("standard", "regulated"):
+        profile["profile"]["selected"] = selected
+        profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+        assert "docs/testing.md" in authenticated_native_adoption_files(target)
+    profile["profile"]["selected"] = "lite"
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+
+    (target / "docs/testing.md").write_text(
+        "# Native testing\n\nChanged local output: `.artifacts/tests/report.json`.\n",
+        encoding="utf-8",
+    )
+    invalid = _run_installed_validator(target)
+    assert invalid.returncode == 1
+    assert "native baseline file binding is invalid" in invalid.stdout
+
+
+def test_existing_install_rejects_incomplete_root_metadata_before_mutation(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "existing-ambiguous-inventory"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    (target / "pyproject.toml").write_text(
+        "[tool.pytest.ini_options]\ntestpaths = [\"tests\"]\n", encoding="utf-8"
+    )
+    (target / "tests").mkdir()
+    (target / "tests/test_smoke.py").write_text("def test_smoke(): pass\n", encoding="utf-8")
+    before = {
+        path.relative_to(target).as_posix(): path.read_bytes()
+        for path in target.rglob("*")
+        if path.is_file() and ".git" not in path.parts
+    }
+
+    result = _run_installer(
+        target, "--profile", "lite", "--adoption-mode", "existing", check=False
+    )
+
+    assert result.returncode == 1
+    assert "requires both Hatch wheel packages and pytest testpaths" in result.stderr
+    after = {
+        path.relative_to(target).as_posix(): path.read_bytes()
+        for path in target.rglob("*")
+        if path.is_file() and ".git" not in path.parts
+    }
+    assert after == before
+
+
 def test_invalid_existing_required_artifact_rolls_back_install(tmp_path: Path) -> None:
     target = tmp_path / "invalid-existing-artifact"
     target.mkdir()
@@ -306,7 +435,7 @@ def test_invalid_existing_required_artifact_rolls_back_install(tmp_path: Path) -
     result = _run_installer(target, "--profile", "lite", check=False)
 
     assert result.returncode == 1
-    assert "README.md must begin" in result.stderr
+    assert "README.md must contain a non-empty level-one heading" in result.stderr
     assert readme.read_bytes() == b"not a project readme\n"
     assert not (target / "governance").exists()
 

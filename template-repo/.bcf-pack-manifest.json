@@ -124,7 +124,7 @@
     },
     "governance/existing-repo-adoption.yml": {
       "operation": "copy",
-      "sha256": "6c462b743fdf9cfab596704cdd6b1d77f4b500c3169fba33ea59a6aec062a3cd"
+      "sha256": "7e528c3bbb9b5960f7f128ba86aba5edac769844378c72aa2015959a45befba3"
     },
     "governance/findings.yml": {
       "operation": "copy",
@@ -1022,6 +1022,10 @@
       "operation": "copy",
       "sha256": "c8004e4c12cd7b0c5c9cf0190a5b6a429f1750865faf454fd319d4a1c1b3b525"
     },
+    "scripts/_bcf_runtime/governance_install/existing_adoption.py": {
+      "operation": "copy",
+      "sha256": "911019b890f0427893d05538296f4af80c6b608ac1c963a3d9548d459df30920"
+    },
     "scripts/_bcf_runtime/governance_install/phase.py": {
       "operation": "copy",
       "sha256": "04bc68273ffea6b21f38c4a4c49427c9dfdaa5dfadb0ce35c3d14320684214b9"
@@ -1084,7 +1088,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/artifact_policy.py": {
       "operation": "copy",
-      "sha256": "98fee1e673352033065b42aacb9230e31e48bf479c113ec224a37006e8afe6af"
+      "sha256": "fb0ba6b5d8c7cad49436514fa1fbd0f0fc677c5a98f3786e9117516886662d86"
     },
     "scripts/_bcf_runtime/governance_validation/audit_artifacts.py": {
       "operation": "copy",
@@ -1113,6 +1117,10 @@
     "scripts/_bcf_runtime/governance_validation/evidence_contracts.py": {
       "operation": "copy",
       "sha256": "6a2aa8ab38bcf7473e57b4fdbc21629a29ec335e8ed21daee5807b03745cbb50"
+    },
+    "scripts/_bcf_runtime/governance_validation/native_adoption.py": {
+      "operation": "copy",
+      "sha256": "4e545a09959dcac1956c3c8aeb1cce29c71f3e60ae785b503a87c7c9486b97b1"
     },
     "scripts/_bcf_runtime/governance_validation/phase_artifacts.py": {
       "operation": "copy",
@@ -1154,7 +1162,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/required_artifacts.py": {
       "operation": "copy",
-      "sha256": "cb02af948b6611deb34702f6c0a447c633ebd83c38a89e7375279e37e36a8c97"
+      "sha256": "3773c0845783f4cdc6f8d0d99299f76649f4553267eac3e18ecc661ff5866051"
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
@@ -1179,7 +1187,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "e4ddbeb0a7246db0de20aaf7a425379c4d2def96ac921c4eb583a222a4b98e53"
+      "sha256": "0c55894616e8875e951995492ca1a8477c3f61ddcb37dbafa41c306ce50aebbf"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",

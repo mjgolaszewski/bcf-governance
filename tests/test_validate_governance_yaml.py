@@ -288,6 +288,19 @@ def test_validate_repo_root_rejects_malformed_readme_or_license_contract(
         validate_repo_root(repo_root)
 
 
+def test_validate_repo_root_accepts_native_readme_preamble_before_single_title(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    readme = repo_root / "README.md"
+    readme.write_text(
+        "#!/usr/bin/env markdown\n# -*- coding: utf-8 -*-\n\n# Demo Project\n\nBody.\n",
+        encoding="utf-8",
+    )
+
+    validate_repo_root(repo_root)
+
+
 @pytest.mark.parametrize(
     ("content", "message"),
     [

@@ -1,0 +1,47 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF03 Hotfix Log
+  id: project-phase-31-hotfix03
+  version: 1.0.0
+  generated_at_utc: '2026-10-12T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix03.yml
+hotfix:
+  id: P31-HF03
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 3
+  summary: make existing-repository adoption one derived atomic transaction
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest -q tests/test_install_governance_pack.py
+  - .venv/bin/python -m pytest -q tests/test_validate_governance_yaml.py
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_install_governance_pack.py tests/test_validate_governance_yaml.py
+  - isolated BDMCP exact-subject Lite existing-repository strict install
+  - isolated BDMCP-derived Standard-v3 existing-repository strict install
+  - isolated BDMCP-derived Regulated-v3 existing-repository strict install
+  notes:
+  - Existing-repository adoption now compiles native custody, roots, legacy audit
+    normalization, and strict validation as one transaction.
+  - Native-document baseline is exact Git- and byte-bound across Lite, Standard,
+    and Regulated adoption and cannot satisfy evidence claims.
+  - The maintained BDMCP checkout was never mutated; all qualifications used
+    disposable clones of fd3f51b70b8a43ccd44a015321cec3496fa9b3fb.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

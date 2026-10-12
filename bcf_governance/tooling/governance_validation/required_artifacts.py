@@ -76,9 +76,16 @@ def _validate_required_artifacts(repo_root: Path, manifest: dict[str, Any]) -> l
             "required artifacts README.md, LICENSE, and CHANGELOG.md must be UTF-8"
         ) from exc
 
-    readme_first = next((line.strip() for line in readme_text.splitlines() if line.strip()), "")
-    if not re.fullmatch(r"#\s+\S.*", readme_first):
-        raise GovernanceValidationError("README.md must begin with a non-empty level-one heading")
+    readme_titles = [
+        line.strip()
+        for line in readme_text.splitlines()
+        if re.fullmatch(r"#\s+\S.*", line.strip())
+        and not re.fullmatch(r"#\s+-\*-\s+coding:\s*utf-8\s+-\*-", line.strip(), re.IGNORECASE)
+    ]
+    if not readme_titles:
+        raise GovernanceValidationError(
+            "README.md must contain a non-empty level-one heading"
+        )
 
     normalized_license = license_text.strip()
     license_markers = re.compile(
