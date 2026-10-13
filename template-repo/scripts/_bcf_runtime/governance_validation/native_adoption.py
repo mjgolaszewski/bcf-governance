@@ -31,7 +31,11 @@ def authenticated_native_adoption_files(repo_root: Path) -> set[str]:
         _load_yaml(adoption_path).get("native_baseline"),
         context="governance/existing-repo-adoption.yml native_baseline",
     )
-    if baseline.get("transition_class") == "not_applicable_to_fresh_install":
+    if baseline == {
+        "transition_class": "no_authenticated_native_baseline",
+        "source": None,
+        "files": [],
+    }:
         return set()
     if baseline.get("transition_class") != "existing_repository_adoption":
         raise GovernanceValidationError("existing adoption native baseline has invalid transition class")

@@ -58,7 +58,7 @@ required_inventory:
   secrets_sources: []
   cleanup_expectations: []
 native_baseline:
-  transition_class: not_applicable_to_fresh_install
+  transition_class: no_authenticated_native_baseline
   source: null
   files: []
 required_gate_families:

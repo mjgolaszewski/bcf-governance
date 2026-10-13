@@ -558,6 +558,61 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     } == state_before
 
 
+@pytest.mark.parametrize("legacy_baseline", [None, "fresh-marker"])
+def test_upgrade_migrates_legacy_existing_adoption_before_candidate_validation(
+    tmp_path: Path, legacy_baseline: str | None
+) -> None:
+    target = tmp_path / f"legacy-existing-{legacy_baseline or 'absent'}"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    adoption_path = target / "governance/existing-repo-adoption.yml"
+    adoption = yaml.safe_load(
+        (REPO_ROOT / "bcf_governance/pack/template-repo/governance/existing-repo-adoption.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    if legacy_baseline is None:
+        adoption.pop("native_baseline")
+    else:
+        adoption["native_baseline"] = {
+            "transition_class": "not_applicable_to_fresh_install",
+            "source": None,
+            "files": [],
+        }
+    adoption_path.write_text(yaml.safe_dump(adoption, sort_keys=False), encoding="utf-8")
+
+    result = _run_installer(target, "--upgrade", "--require-strict-validation")
+
+    assert "validation: strict pass" in result.stdout
+    migrated = yaml.safe_load(adoption_path.read_text(encoding="utf-8"))
+    assert migrated["native_baseline"] == {
+        "transition_class": "no_authenticated_native_baseline",
+        "source": None,
+        "files": [],
+    }
+
+
+def test_upgrade_rejects_ambiguous_existing_adoption_baseline_without_mutation(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "ambiguous-existing-baseline"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    adoption_path = target / "governance/existing-repo-adoption.yml"
+    adoption = yaml.safe_load(
+        (REPO_ROOT / "bcf_governance/pack/template-repo/governance/existing-repo-adoption.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    adoption["native_baseline"] = ["untrusted"]
+    adoption_path.write_text(yaml.safe_dump(adoption, sort_keys=False), encoding="utf-8")
+    before = adoption_path.read_bytes()
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "existing adoption native_baseline must be a mapping" in result.stderr
+    assert adoption_path.read_bytes() == before
+
+
 def test_upgrade_rejects_ungoverned_repository_before_mutation(tmp_path: Path) -> None:
     target = tmp_path / "ungoverned"
     target.mkdir()
@@ -916,6 +971,14 @@ def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path
     assert "governance/EXISTING_REPO_ADOPTION.md" in result.stdout
     assert (target / "governance/EXISTING_REPO_ADOPTION.md").exists()
     assert (target / "governance/existing-repo-adoption.yml").exists()
+    adoption = yaml.safe_load(
+        (target / "governance/existing-repo-adoption.yml").read_text(encoding="utf-8")
+    )
+    assert adoption["native_baseline"] == {
+        "transition_class": "no_authenticated_native_baseline",
+        "source": None,
+        "files": [],
+    }
 
     plan = yaml.safe_load((target / "plans/phase-01-plan.yml").read_text(encoding="utf-8"))
     assert plan["phase"]["build_block"] == "existing_repo_adoption"

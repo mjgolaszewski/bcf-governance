@@ -27,7 +27,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made existing-repository adoption one atomic derived transaction: tracked
   package/test metadata supplies generated roots, native instructions retain
   byte-identical custody, and canonical legacy-audit moves occur before strict
-  validation without agent-authored preparation.
+  validation without agent-authored preparation. Ordinary upgrades now migrate
+  the exact legacy no-baseline contract before candidate validation without
+  inventing historical native custody or granting an exemption.
 
 ## [2.3.0] - 2026-10-11
 

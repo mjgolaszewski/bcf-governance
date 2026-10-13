@@ -124,7 +124,7 @@
     },
     "governance/existing-repo-adoption.yml": {
       "operation": "copy",
-      "sha256": "7e528c3bbb9b5960f7f128ba86aba5edac769844378c72aa2015959a45befba3"
+      "sha256": "f123bfeac5897f7c47f5e605d5d3c92c77a1644343860d97504abfa6eaf53553"
     },
     "governance/findings.yml": {
       "operation": "copy",
@@ -1024,7 +1024,7 @@
     },
     "scripts/_bcf_runtime/governance_install/existing_adoption.py": {
       "operation": "copy",
-      "sha256": "911019b890f0427893d05538296f4af80c6b608ac1c963a3d9548d459df30920"
+      "sha256": "d3834a2c3be75f80100930efcb02284d5d8cb9743a2d13a37ac125df7af74d7b"
     },
     "scripts/_bcf_runtime/governance_install/phase.py": {
       "operation": "copy",
@@ -1120,7 +1120,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/native_adoption.py": {
       "operation": "copy",
-      "sha256": "4e545a09959dcac1956c3c8aeb1cce29c71f3e60ae785b503a87c7c9486b97b1"
+      "sha256": "85c11e7b9e754579991147346800a77c40fcc2fa4621162e6cc47168b6b29b1f"
     },
     "scripts/_bcf_runtime/governance_validation/phase_artifacts.py": {
       "operation": "copy",
@@ -1187,7 +1187,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "0c55894616e8875e951995492ca1a8477c3f61ddcb37dbafa41c306ce50aebbf"
+      "sha256": "1b5c637a3de81eb27a857f606bf23d04dde41481b679efc71b34dbfe255f3573"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",

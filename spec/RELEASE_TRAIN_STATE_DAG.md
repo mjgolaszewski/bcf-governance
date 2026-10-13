@@ -1837,6 +1837,8 @@ governance merely to make the first validation pass.
 | Prospective adoption inventory is ambiguous | conflicting metadata, unresolved path, unsafe collision or dirty subject | reject before copying pack bytes or allocating tests | typed zero-mutation diagnostic | bootstrap validation, partial installation, force rescaffold, or caller assertion used as truth |
 | Prospective inventory is closed | exact inventory plus pack manifest and transaction path set | stage archive, cleanup, pack projection, derived-root projection and strict validation; atomically commit only after all pass | one valid Lite existing-repository adoption | externally visible partial state or a second remembered cleanup/configuration command |
 | Repository already has authenticated BCF custody | runtime lock and installed profile | route to canonical release-bound upgrade rather than native adoption | existing upgrade semantics unchanged | fresh adoption overwriting governed state |
+| Governed existing-repository adopter predates the mandatory `native_baseline` field | exact clean upgrade subject/tree, installed adoption document shape, runtime lock, profile and candidate pack contract | before candidate validation, the upgrade transaction classifies the legacy absence and projects the typed no-authenticated-native-baseline state; this state carries no path exemption or evidence authority | upgraded validation consumes the complete current contract without inventing historical source custody | validating new mandatory shape before its migration, claiming fresh-install provenance, manufacturing a historical baseline, treating absence as an exemption, or requiring an operator to edit the adopter first |
+| Governed adopter already carries a complete authenticated native baseline | exact baseline source commit/tree, file identities and digests plus candidate contract | preserve and revalidate the baseline unchanged while upgrading the runtime | native custody survives upgrade with identical scope and no new authority | replacing it with the empty state, rebinding it to the upgrade subject, broadening its files, or accepting malformed partial data |
 
 ```text
 invariants
@@ -1845,13 +1847,15 @@ invariants
   ambiguous derivation fails before mutation
     -> primitives
        clean Git subject/tree, tracked metadata reader, source/test-root inventory,
-       native-instruction blob custody, legacy-audit cleanup plan, transaction path set
+       native-instruction blob custody, legacy-audit cleanup plan, transaction path set,
+       installed adoption-contract classifier and typed no-authenticated-baseline projection
       -> contracts
          inspect -> classify -> compile closed adoption inventory -> stage native custody
-         and cleanup -> project pack and roots -> strict validate -> atomic commit
+         and cleanup -> project pack and roots -> migrate installed adoption contract
+         before candidate validation -> strict validate -> atomic commit
         -> producers
            existing-adoption inventory compiler, canonical cleanup planner,
-           pack projector and transactional validator
+           pack projector, installed-contract migrator and transactional validator
           -> consumers
              installer reporting, architecture/test-root validators, graph/manifests,
              Lite prospective validation and later release-bound upgrade

@@ -20,7 +20,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
-from .governance_install.existing_adoption import compile_existing_adoption_inventory, extend_existing_adoption_paths, prepare_existing_adoption_shadow, project_existing_adoption_roots  # noqa: E402,E501
+from .governance_install.existing_adoption import compile_existing_adoption_inventory, extend_existing_adoption_paths, migrate_existing_adoption_contract, prepare_existing_adoption_shadow, project_existing_adoption_roots  # noqa: E402,E501
 from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
@@ -506,6 +506,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
 
     template_root = _template_root()
     entries = _pack_manifest_entries(template_root)
+    migrate_existing_adoption_contract(target_root)
     retired_self_authority = retire_self_authority_pack_surfaces(
         target_root=target_root,
         entries=entries,

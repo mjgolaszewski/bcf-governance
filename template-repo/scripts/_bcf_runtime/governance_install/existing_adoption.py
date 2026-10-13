@@ -15,6 +15,7 @@ from ..governance_profiles import render_profile_surface
 
 
 NATIVE_GUIDANCE_PATH = "docs/governance/native-agent-guidance.md"
+NO_AUTHENTICATED_NATIVE_BASELINE = "no_authenticated_native_baseline"
 
 
 @dataclass(frozen=True)
@@ -253,7 +254,45 @@ def project_existing_adoption_roots(
                 for source, projected, source_sha256 in inventory.native_governed_files
             ],
         }
+    else:
+        adoption["native_baseline"] = {
+            "transition_class": NO_AUTHENTICATED_NATIVE_BASELINE,
+            "source": None,
+            "files": [],
+        }
     adoption_path.write_text(render_profile_surface(adoption, width=120), encoding="utf-8")
+
+
+def migrate_existing_adoption_contract(repo_root: Path) -> None:
+    """Expand a legacy installed adoption contract before candidate validation."""
+
+    path = repo_root / "governance/existing-repo-adoption.yml"
+    if not path.is_file():
+        return
+    adoption = _mapping(
+        yaml.safe_load(path.read_text(encoding="utf-8")),
+        context="governance/existing-repo-adoption.yml",
+    )
+    baseline = adoption.get("native_baseline")
+    legacy_empty = {
+        "transition_class": "not_applicable_to_fresh_install",
+        "source": None,
+        "files": [],
+    }
+    if baseline is None or baseline == legacy_empty:
+        adoption["native_baseline"] = {
+            "transition_class": NO_AUTHENTICATED_NATIVE_BASELINE,
+            "source": None,
+            "files": [],
+        }
+        path.write_text(render_profile_surface(adoption, width=120), encoding="utf-8")
+        return
+    baseline = _mapping(baseline, context="existing adoption native_baseline")
+    if baseline.get("transition_class") not in {
+        NO_AUTHENTICATED_NATIVE_BASELINE,
+        "existing_repository_adoption",
+    }:
+        raise ValueError("existing adoption native_baseline is not an exact migratable shape")
 
 
 def extend_existing_adoption_paths(
