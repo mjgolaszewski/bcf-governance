@@ -68,6 +68,22 @@ def test_placeholder_scan_excludes_only_declared_template_vendors(tmp_path: Path
     ]
 
 
+def test_placeholder_scan_preserves_docker_go_template_fields(tmp_path: Path) -> None:
+    workflow = tmp_path / ".github/workflows/native.yml"
+    workflow.parent.mkdir(parents=True)
+    workflow.write_text(
+        "run: docker images --format '{{.Repository}}:{{ .Tag }} {{.ID}}'\n",
+        encoding="utf-8",
+    )
+    governed = tmp_path / "plans/product-spec.yml"
+    governed.parent.mkdir()
+    governed.write_text("value: {{ PROJECT_NAME }}\n", encoding="utf-8")
+
+    assert doctor._scan_placeholders(tmp_path) == [
+        "plans/product-spec.yml:1: {{ PROJECT_NAME }}"
+    ]
+
+
 def test_doctor_reports_running_version_source_and_public_install(tmp_path: Path) -> None:
     report = doctor.doctor_repo(tmp_path)
 

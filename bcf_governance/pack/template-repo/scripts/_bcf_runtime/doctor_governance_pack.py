@@ -44,6 +44,13 @@ PLACEHOLDER_SCAN_EXCLUDE_PARTS = {
 PLACEHOLDER_SCAN_EXTENSIONS = {".yml", ".yaml", ".json", ".md", ".toml", ".txt"}
 
 
+def _is_foreign_template_literal(value: str) -> bool:
+    """Recognize the disjoint Docker Go-template field grammar."""
+
+    inner = value[2:-2].strip()
+    return bool(inner.startswith(".") and inner[1:].replace("_", "").isalnum())
+
+
 def _placeholder_scan_paths(repo_root: Path) -> list[Path]:
     try:
         result = subprocess.run(
@@ -97,6 +104,8 @@ def _scan_placeholders(repo_root: Path) -> list[str]:
             continue
         for line_number, line in enumerate(text.splitlines(), start=1):
             for match in validator.PLACEHOLDER_PATTERN.finditer(line):
+                if _is_foreign_template_literal(match.group(0)):
+                    continue
                 violations.append(
                     f"{relative.as_posix()}:{line_number}: {match.group(0)}"
                 )

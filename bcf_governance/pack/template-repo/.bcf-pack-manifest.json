@@ -342,7 +342,7 @@
     },
     "schemas/phase-ledger.schema.json": {
       "operation": "copy",
-      "sha256": "e622c083e2b18603d1e0413058abef0def9ae958078340609a2282efa8475eee"
+      "sha256": "f3846bfa8d064a45135789b8ec7f23e801ed3b096bff57cbe6241374339fad4f"
     },
     "schemas/phase-log.schema.json": {
       "operation": "copy",
@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "797269aeac0dbc9c698835845c5973d421ba94b674a9e97fdf87ba522b5dd9a0"
+      "sha256": "675a1f0cdef6a06f1f8821bed3572bcbfb7b9132e53b39d9149c2300337cd536"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -852,7 +852,7 @@
     },
     "scripts/_bcf_runtime/doctor_governance_pack.py": {
       "operation": "copy",
-      "sha256": "11253e611401e27912ee34ce51b33117aa0862e70078aa791d20a3135b24e529"
+      "sha256": "1ab1f6fd9ae1c90486697a310a365a440b604f9d21fae06a0f434e8ba94f6ee5"
     },
     "scripts/_bcf_runtime/editorial_audit_projection.py": {
       "operation": "copy",
@@ -1128,7 +1128,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/phase_catalog.py": {
       "operation": "copy",
-      "sha256": "a4300f9fc4d3b7ac350c8ffc75a37647dc190d9f3ca0b8ef722d0ffed4c4f3dd"
+      "sha256": "0119f11d77c734985099d443aadbc1dba15b939ab127d50c0ea33b24406235f0"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_diagnostics.py": {
       "operation": "copy",
@@ -1179,7 +1179,11 @@
     },
     "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
       "operation": "copy",
-      "sha256": "ce421df53d1338a8669c072699ef08225375276aa3ec5355e0bd4d1fc5836762"
+      "sha256": "d5a92e9055fa689787b41b3ca4a27a977a3f02eb125461a61eac542457e8f08c"
+    },
+    "scripts/_bcf_runtime/governance_validation/supplemental_releases.py": {
+      "operation": "copy",
+      "sha256": "c53ea30da45c6a2cf12eb8c18031c81371f1c7461d5b2527a8b1438242f8ab07"
     },
     "scripts/_bcf_runtime/hotfix_scaffolding.py": {
       "operation": "copy",

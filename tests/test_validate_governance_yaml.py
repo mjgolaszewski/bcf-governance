@@ -1286,6 +1286,71 @@ def test_validate_repo_root_rejects_completed_release_train_with_planned_log(
     assert "cannot reference planned phase log" in str(excinfo.value)
 
 
+def test_validate_repo_root_accepts_authenticated_supplemental_publication(
+    tmp_path: Path,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    ledger_path = repo_root / "plans/phase-ledger.yml"
+    payload = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    payload["release_trains"]["release_1_hotfix"] = {
+        "kind": "supplemental_publication",
+        "parent_release": "release_1",
+        "target_version": "1.0.1",
+        "status": "completed",
+        "focus": ["published_hotfix"],
+        "publication_custody": {
+            "version": "1.0.1",
+            "tag": "v1.0.1",
+            "commit_sha": "a" * 40,
+            "tree_sha": "b" * 40,
+            "archive_sha256": "c" * 64,
+            "provider_receipt": "github-release:example/project:v1.0.1",
+        },
+    }
+    _write_yaml(ledger_path, payload)
+
+    validate_repo_root(repo_root)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "message"),
+    [
+        ({"parent_release": "missing"}, "invalid parent"),
+        ({"parent_release": "release_1_hotfix"}, "invalid parent"),
+        ({"target_version": "1.0.2"}, "custody version must match"),
+    ],
+)
+def test_validate_repo_root_rejects_invalid_supplemental_publication(
+    tmp_path: Path,
+    mutation: dict[str, str],
+    message: str,
+) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    ledger_path = repo_root / "plans/phase-ledger.yml"
+    payload = yaml.safe_load(ledger_path.read_text(encoding="utf-8"))
+    child = {
+        "kind": "supplemental_publication",
+        "parent_release": "release_1",
+        "target_version": "1.0.1",
+        "status": "completed",
+        "focus": ["published_hotfix"],
+        "publication_custody": {
+            "version": "1.0.1",
+            "tag": "v1.0.1",
+            "commit_sha": "a" * 40,
+            "tree_sha": "b" * 40,
+            "archive_sha256": "c" * 64,
+            "provider_receipt": "github-release:example/project:v1.0.1",
+        },
+    }
+    child.update(mutation)
+    payload["release_trains"]["release_1_hotfix"] = child
+    _write_yaml(ledger_path, payload)
+
+    with pytest.raises(GovernanceValidationError, match=message):
+        validate_repo_root(repo_root)
+
+
 def test_validate_repo_root_rejects_stale_memory_active_artifacts(tmp_path: Path) -> None:
     repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
     memory_path = repo_root / "MEMORY.yml"

@@ -10,6 +10,7 @@ from .common import (
     _load_yaml,
     _require_mapping,
     _require_positive_int,
+    _require_string_sequence,
 )
 from .context_budgets import _validate_context_budgets
 from .audit_artifacts import _validated_code_root
@@ -108,11 +109,55 @@ def validate_production_module_size(repo_root: Path) -> int:
             "architecture-boundaries.yml architecture.source_roots is invalid"
         )
     roots = [repo_root / name for name in root_names if (repo_root / name).is_dir()]
+    excluded_tokens = set(
+        _require_string_sequence(
+            policy.get("excluded_path_tokens"),
+            context=(
+                "architecture-boundaries.yml "
+                "architecture.production_module_policy.excluded_path_tokens"
+            ),
+        )
+    )
+    excluded_suffixes = tuple(
+        _require_string_sequence(
+            policy.get("excluded_file_suffixes"),
+            context=(
+                "architecture-boundaries.yml "
+                "architecture.production_module_policy.excluded_file_suffixes"
+            ),
+        )
+    )
+    agents = _require_mapping(_load_yaml(repo_root / "AGENTS.yml"), context="AGENTS.yml")
+    testing = _require_mapping(
+        agents.get("testing_governance"), context="AGENTS.yml testing_governance"
+    )
+    test_roots = tuple(
+        Path(
+            _validated_code_root(
+                repo_root,
+                value,
+                context="AGENTS.yml testing_governance.test_roots",
+            )
+        )
+        for value in _require_string_sequence(
+            testing.get("test_roots"),
+            context="AGENTS.yml testing_governance.test_roots",
+        )
+    )
+
+    def is_production(path: Path) -> bool:
+        relative = path.relative_to(repo_root)
+        return not (
+            any(relative.is_relative_to(root) for root in test_roots)
+            or any(part in excluded_tokens for part in relative.parts)
+            or path.name.endswith(excluded_suffixes)
+        )
+
     modules = sorted(
         path
         for root in roots
         for path in root.rglob("*.py")
-        if "__pycache__" not in path.parts
+        if "__pycache__" not in path.parts and is_production(path)
     )
     violations = [
         f"{path.relative_to(repo_root)}:{len(path.read_text(encoding='utf-8').splitlines())}"

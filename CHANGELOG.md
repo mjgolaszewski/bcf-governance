@@ -6,6 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-10-13
+
+### Fixed
+
+- Closed existing-repository adoption classification at its canonical owners:
+  declared nested test roots and production exclusions now reach structural LOC
+  enforcement, valid native Docker Go-template fields remain distinct from BCF
+  scaffold placeholders, and authenticated supplemental publications retain
+  immutable custody beneath one phase-owning release without inventing phases
+  or acquiring lifecycle authority.
+
 ## [2.3.1] - 2026-10-12
 
 ### Fixed

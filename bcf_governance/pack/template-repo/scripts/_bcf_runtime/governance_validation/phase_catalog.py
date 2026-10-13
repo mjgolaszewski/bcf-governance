@@ -10,6 +10,7 @@ from .phase_artifacts import (
     _phase_number,
     _validate_phase_artifact_triplet,
 )
+from .supplemental_releases import release_phase_ids, validate_supplemental_publication
 from .artifact_policy import (
     _retained_phase_ids,
     _strict_phase_retention_enabled,
@@ -236,6 +237,10 @@ def _validate_declared_phase_catalog(
     release_trains = _require_mapping(
         ledger.get("release_trains"), context="plans/phase-ledger.yml release_trains"
     )
+
+    def phase_ids_for(release_name: str) -> list[str]:
+        return release_phase_ids(release_name, product_phase_map, history_entries)
+
     for release_name, release_payload in release_trains.items():
         release_mapping = _require_mapping(
             release_payload,
@@ -248,17 +253,15 @@ def _validate_declared_phase_catalog(
         if release_status not in COMPLETED_RELEASE_TRAIN_STATUSES:
             continue
 
-        phase_ids = [
-            phase_id
-            for phase_id, phase in product_phase_map.items()
-            if phase.get("release_train") == release_name
-        ]
-        phase_ids.extend(
-            phase_id
-            for phase_id, phase in history_entries.items()
-            if phase_id not in product_phase_map
-            and phase.get("release_train") == release_name
-        )
+        phase_ids = phase_ids_for(release_name)
+        if validate_supplemental_publication(
+            release_name=release_name,
+            release_mapping=release_mapping,
+            release_trains=release_trains,
+            phase_ids_for=phase_ids_for,
+        ):
+            continue
+
         if not phase_ids:
             raise GovernanceValidationError(
                 f"completed release train {release_name} must own at least one declared phase"
