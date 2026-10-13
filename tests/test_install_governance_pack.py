@@ -677,7 +677,10 @@ def test_upgrade_rejects_ambiguous_existing_adoption_baseline_without_mutation(
     result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
 
     assert result.returncode == 1
-    assert "existing adoption native_baseline must be a mapping" in result.stderr
+    assert (
+        "governance/existing-repo-adoption.yml native_baseline must be a mapping"
+        in result.stderr
+    )
     assert adoption_path.read_bytes() == before
 
 

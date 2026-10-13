@@ -36,12 +36,12 @@ execution_evidence:
     parent with exact commit, tree, archive digest, and provider receipt custody.
   - Racecar reported no additional BCF-owned defect; its observed expired Trivy
     preparation cache is project-owned and excluded from this repair.
-  - TradeFlow Lite exposed a profile-v1 compatibility edge: its authenticated
+  - TradeFlow Lite exposed a profile-v1 compatibility edge because its authenticated
     requirements-governance.txt and unique graph Python minor predate the typed
     interpreter contract. The canonical environment owner now derives an
     isolated, content-addressed project interpreter from those exact legacy
     declarations; explicit v2/v3 contracts remain mandatory and fail closed.
-  - BDMCP exposed an atomic-upgrade shadow edge: its authenticated native
+  - BDMCP exposed an atomic-upgrade shadow edge because its authenticated native
     baseline was valid on the maintained subject, but candidate validation ran
     in a shadow without the Git history that the baseline consumer requires.
     The installer now derives Git-shadow custody from the authenticated active
