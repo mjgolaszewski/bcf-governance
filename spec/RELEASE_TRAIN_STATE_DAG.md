@@ -1841,6 +1841,56 @@ governance merely to make the first validation pass.
 | Governed existing-repository adopter predates the mandatory `native_baseline` field | exact clean upgrade subject/tree, installed adoption document shape, runtime lock, profile and candidate pack contract | before candidate validation, the upgrade transaction classifies the legacy absence and projects the typed no-authenticated-native-baseline state; this state carries no path exemption or evidence authority | upgraded validation consumes the complete current contract without inventing historical source custody | validating new mandatory shape before its migration, claiming fresh-install provenance, manufacturing a historical baseline, treating absence as an exemption, or requiring an operator to edit the adopter first |
 | Governed adopter already carries a complete authenticated native baseline | exact baseline source commit/tree, file identities and digests plus candidate contract | preserve and revalidate the baseline unchanged while upgrading the runtime | native custody survives upgrade with identical scope and no new authority | replacing it with the empty state, rebinding it to the upgrade subject, broadening its files, or accepting malformed partial data |
 
+### v2.3.2 adopter-classification and supplemental-publication repair matrix
+
+These edges close adopter defects first observed after immutable v2.3.1
+custody.  They are classification and catalog-model corrections, not adopter
+exemptions.  Every decision is derived from authenticated repository bytes and
+the existing canonical owners before reconciliation, doctor reporting, or
+phase/release authority can proceed.
+
+| State | Authenticated inputs | Canonical producer action | Consumer result | Fail-closed boundary |
+| --- | --- | --- | --- | --- |
+| A declared production source root contains a declared test root | exact architecture boundaries, production exclusion tokens, testing-governance roots and tracked Python paths | the structural-limit owner compiles one path-role projection and excludes only paths classified as tests or explicitly excluded from production | test modules beneath package roots do not consume the production LOC budget; genuine production modules remain capped | basename guessing, a blanket `tests` exemption, moving adopter files, raising the LOC cap, or disagreement between validation consumers |
+| A preserved native file contains double-brace syntax owned by another language | exact file ownership/custody, BCF placeholder grammar and the foreign-language literal grammar | the placeholder owner recognizes only declared BCF scaffold tokens on BCF-owned substitution surfaces and preserves valid native Docker Go-template literals such as `.Repository`, `.Tag`, and `.ID` | doctor reports no unresolved BCF placeholder for valid native literals while real unresolved BCF tokens still block | treating omission as success, globally allowing double braces, rewriting native workflows, or accepting an unknown/ambiguous token |
+| One phase-owning release has later immutable hotfix/follow-up publications | exact parent release/phase identity plus child version, tag, commit/tree, archive digest, provider receipt and publication order | the phase-catalog owner validates typed supplemental-publication children against exactly one real parent and preserves their independent immutable custody | child publications may be completed without owning invented phases; parent phase lifecycle remains the sole closure authority | a child becoming a phase train, multiple/no parents, `abandoned` for a published child, missing custody, ambiguous order, or child completion closing the parent phase |
+| Generated workflow bytes changed during an adopter upgrade | exact generated definitions, current authority projection and clean committed subject/tree | canonical pin-authority/reconcile derives the matching workflow identity before prospective execution | prospective preflight sees one exact workflow/authority pair | caller-authored pin, stale authority, subject assertion typo, or allocating evidence before equality |
+| A caller supplies an optional commit/tree, intent, or target assertion | clean Git subject/tree and graph-derived lifecycle intent | compare the assertion before gates, then use the canonical derived identity; omission remains the normal path | transcription errors fail before expensive work and cannot select authority | accepting the assertion as source authority, retrying expensive work, or changing candidate bytes mid-run |
+
+```text
+invariants
+  production limits apply only to authenticated production paths;
+  BCF placeholder validation owns only BCF substitution grammar and surfaces;
+  supplemental publications preserve custody without inventing lifecycle authority;
+  generated workflow authority and candidate identity are mechanically derived
+    -> primitives
+       path-role projection, source/test/exclusion identities,
+       placeholder token and ownership classification,
+       parent release plus immutable child-publication identity,
+       workflow definition/pin digest and clean Git identity
+      -> contracts
+         classify path role -> enforce production limit;
+         classify owned token -> preserve foreign literal or reject BCF placeholder;
+         validate parent -> authenticate child custody -> record publication without phase closure;
+         render -> pin -> reconcile -> derive prospective identity
+        -> producers
+           architecture/testing compiler and structural-limit validator,
+           installer placeholder compiler and doctor,
+           release catalog/schema/validator/upgrade owner,
+           graph renderer, authority projector and prospective front door
+          -> consumers
+             reconcile and strict install, doctor and adopter reporting,
+             phase ledger/history/truth and successor eligibility,
+             PR evidence allocation and provider certification
+```
+
+Structurally unreachable edges are explicit: a test-path classification cannot
+waive a production module outside its exact path; a foreign-language literal
+cannot satisfy or suppress a BCF placeholder; a supplemental publication cannot
+close, activate, or own a phase; provider publication facts cannot rewrite
+authored lifecycle state; and caller assertions cannot select candidate or
+workflow authority.
+
 ```text
 invariants
   existing adoption is atomic and generated governance describes authenticated repository state;
