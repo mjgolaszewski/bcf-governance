@@ -445,7 +445,7 @@ not BCF custody evidence and cannot be laundered into a BCF failure or success.
 | derived project environment cache exists | persistent workload namespace receipt, cache identity, executable, manifest, and live distribution inventory | reauthenticate namespace ownership, rederive identity, and compare every owned field before reuse | exact match reuses; missing, mutated, malformed, symlinked, or differently inventoried state rejects without repair or fallback |
 | caller supplies the controller interpreter as project Python | controller/project executable identity, installed distribution inventory, and canonical project requirement closure | reject before reconcile; when no project environment exists, mechanically derive one instead | private controller distributions cannot enter self or adopter vulnerability evidence, and an agent cannot select its way around environment separation |
 | controller and project virtual environments have distinct lexical environment roots but resolve their `bin/python` symlinks to the same base executable | exact lexical executable, normalized virtual-environment root, resolved base executable, and installed distribution inventory for each role | compare the owned environment identities rather than treating the shared base binary as shared package custody | distinct controller/project environments remain admissible; an identical lexical environment or environment root rejects before reconcile |
-| repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission | reject before preflight/evidence; never fall back to another ambient Python |
+| repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission probes the complete canonical interpreter plan before fixed-point reconciliation | reject before reconciliation, preflight, or evidence; never fall back to another ambient Python |
 | controller is loaded through `PYTHONPATH` or another controller-only Python environment | exact controller environment plus selected project interpreter | project-environment projection removes controller import/home/venv state and binds the selected repository environment before spawning project validation | project imports resolve only from the adopter checkout and selected project environment; controller paths cannot shadow adopter modules |
 | pytest population collection fails while writing causal detail to both output streams | exact gate selectors, selected project interpreter, sanitized project environment, exit status, stdout and stderr | the manifest owner executes collection in the canonical project environment and projects both bounded nonempty streams into one typed infrastructure diagnostic | the earliest import/collection cause remains visible without rerunning the failed population; no manifest or evidence is emitted | inheriting controller-only import paths, choosing stderr while discarding causal stdout, unbounded log retention, or treating partial collection as a valid population |
 | ambient Node is declared version | resolved executable path, version, executable digest | locked toolchain owner | accept exact binary |
@@ -1918,6 +1918,8 @@ invariants
     never an agent-selected command variant;
   project test discovery inherits only the mechanically projected project
     environment and preserves every bounded causal diagnostic stream;
+  project-interpreter selection proves the complete dependency contract before
+    fixed-point reconciliation or any long-running gate;
   failed local execution retains bounded causal diagnostics without converting
     failure material into reusable proof;
   execution-scoped resources are uniquely named by their authenticated owner
@@ -1932,6 +1934,7 @@ invariants
        lane, direct graph digest, provider repository name/ID and protection applicability,
        candidate-qualification marker plus exact adopter/comparison-base identity,
        selected project interpreter plus controller-free environment projection,
+       canonical interpreter plan plus installed distribution/version inventory,
        exact selector union plus bounded stdout/stderr diagnostic projection,
        subject/session/producer/environment identity and bounded diagnostic projection,
        execution/session/workload namespace identity
@@ -1946,6 +1949,7 @@ invariants
          compile submission authority -> bind lane-scoped protection identity -> prospective proof -> exact idempotent provider mutation;
          inspect custody -> authenticate comparison base -> derive validation lane -> enforce the lane's changelog proposition;
          select project interpreter -> sanitize controller environment -> collect one exact selector union;
+         select or materialize interpreter -> probe complete plan -> admit reconciliation;
          failed collection -> retain bounded stdout and stderr -> reject every dependent manifest;
          capture failure -> retain structured artifacts plus causal head/tail -> reject evidence;
          allocate exact namespace -> derive resources -> exact-owner cleanup
@@ -1959,6 +1963,7 @@ invariants
            candidate submit authority compiler and protected-merge frontier
            local PR context and candidate-qualification custody classifier
            project-environment projector and canonical test-manifest collector
+           local execution admission and canonical interpreter-plan probe
            local proof-bundle producer and failure-custody writer
           -> consumers
              reconcile and strict install, doctor and adopter reporting,
@@ -1969,6 +1974,7 @@ invariants
              prospective train, exact push/PR reuse and provider auto-merge
              cheap preflight and cumulative changelog validation
              preflight population verification, evidence planning and mutation-oracle resolution
+             fixed-point reconciliation and every downstream local gate
              prospective reporting and operator diagnosis only, never truth/certification
 ```
 
