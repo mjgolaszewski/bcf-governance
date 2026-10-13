@@ -11,7 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -30,9 +30,7 @@ from .governance_install.artifacts import (  # noqa: E402
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
 from .governance_install.validation import require_graph_parity, run_validation  # noqa: E402
-from .governance_validation.native_adoption import (  # noqa: E402
-    authenticated_native_adoption_requires_history,
-)
+from .governance_validation.native_adoption import authenticated_native_adoption_requires_history  # noqa: E402,E501
 from .governance_install.upgrade import (  # noqa: E402
     copy_selected_template_paths,
     replace_placeholders_in_files,
@@ -766,9 +764,7 @@ def install(args: argparse.Namespace) -> InstallResult:
             return
         require_graph_parity(target_root)
 
-    native_history_required = authenticated_native_adoption_requires_history(
-        target_root
-    )
+    native_history_required = authenticated_native_adoption_requires_history(target_root)
     apply_transaction(
         target_root,
         managed_paths=transaction_paths,
@@ -788,16 +784,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         else path
         for key, path in result.generated_artifacts.items()
     }
-    return InstallResult(
-        copied_files=result.copied_files,
-        rescaffold_removed_paths=result.rescaffold_removed_paths,
-        removed_template_examples=result.removed_template_examples,
-        generated_artifacts=generated,
-        strict_validation_passed=result.strict_validation_passed,
-        bootstrap_validation_passed=result.bootstrap_validation_passed,
-        strict_validation_output=result.strict_validation_output,
-        bootstrap_validation_output=result.bootstrap_validation_output,
-    )
+    return replace(result, generated_artifacts=generated)
 
 
 def main(argv: list[str] | None = None) -> None:
