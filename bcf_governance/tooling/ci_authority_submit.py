@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 import hashlib
+import json
 import re
 from typing import Any, Callable
 
@@ -36,6 +38,18 @@ Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
 
 
+@dataclass(frozen=True)
+class SubmissionAuthority:
+    """Complete lane-scoped authority required by every submit consumer."""
+
+    mode: str
+    target: str | None
+    lane: str
+    repository: str
+    repository_id: int
+    protection_sha256: str
+
+
 def _command_error(result: Any) -> str:
     return result.stderr.strip() or result.stdout.strip() or "git push failed"
 
@@ -55,7 +69,7 @@ def _provider_repository(
     remote: str,
     provider_api: GitHubAPI,
     runner: Runner,
-) -> str:
+) -> tuple[str, int]:
     result = runner(
         ["git", "remote", "get-url", remote], cwd=repo_root
     )
@@ -75,7 +89,48 @@ def _provider_repository(
         raise ProspectiveValidationError(
             "authenticated provider repository does not match candidate remote"
         )
-    return repository
+    return repository, repository_id
+
+
+def _provider_repository_id(
+    provider_api: GitHubAPI, *, repository: str
+) -> int:
+    observed = provider_api.repository(repository)
+    repository_id = observed.get("id") if isinstance(observed, dict) else None
+    if (
+        not isinstance(repository_id, int)
+        or isinstance(repository_id, bool)
+        or repository_id <= 0
+        or observed.get("full_name") != repository
+    ):
+        raise ProspectiveValidationError(
+            "authenticated provider repository does not match candidate authority"
+        )
+    return repository_id
+
+
+def _direct_protection_identity(
+    repo_root: Path,
+    *,
+    repository: str,
+    repository_id: int,
+    applicability: str,
+) -> str:
+    graph = repo_root / "governance/ci-graph.yml"
+    if not graph.is_file() or graph.is_symlink():
+        raise ProspectiveValidationError(
+            "direct protected-main submission lacks canonical graph identity"
+        )
+    payload = {
+        "applicability": applicability,
+        "graph_sha256": hashlib.sha256(graph.read_bytes()).hexdigest(),
+        "lane": "direct_protected_main",
+        "repository": repository,
+        "repository_id": repository_id,
+    }
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
 
 
 def _canonical_inputs(
@@ -84,10 +139,10 @@ def _canonical_inputs(
     context: LocalPRContext,
     provider_api: GitHubAPI,
     runner: Runner,
-) -> tuple[str, str | None, str]:
+) -> SubmissionAuthority:
     evaluation = post_merge_evaluation(validate_ci_graph(repo_root).graph)
     if evaluation.lane == "direct_protected_main":
-        repository = _provider_repository(
+        repository, repository_id = _provider_repository(
             repo_root,
             remote=context.remote,
             provider_api=provider_api,
@@ -96,8 +151,11 @@ def _canonical_inputs(
     else:
         protection = load_protection(repo_root)
         repository = str(protection["repository"]["full_name"])
+        repository_id = _provider_repository_id(
+            provider_api, repository=repository
+        )
     try:
-        validate_ordinary_protection_submission(
+        applicability = validate_ordinary_protection_submission(
             provider_api,
             repo_root=repo_root,
             repository=repository,
@@ -105,10 +163,24 @@ def _canonical_inputs(
         )
     except GitHubControllerError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
-    return (
-        evaluation.mode,
-        evaluation.target,
-        repository,
+    protection_path = repo_root / "governance/github-protection.yml"
+    protection_sha256 = (
+        _direct_protection_identity(
+            repo_root,
+            repository=repository,
+            repository_id=repository_id,
+            applicability=applicability,
+        )
+        if evaluation.lane == "direct_protected_main"
+        else hashlib.sha256(protection_path.read_bytes()).hexdigest()
+    )
+    return SubmissionAuthority(
+        mode=evaluation.mode,
+        target=evaluation.target,
+        lane=evaluation.lane,
+        repository=repository,
+        repository_id=repository_id,
+        protection_sha256=protection_sha256,
     )
 
 
@@ -133,30 +205,26 @@ def _push_exact_candidate(
 
 
 def _request_protected_auto_merge(
-    repo_root: Path,
     *,
     provider_api: GitHubAPI,
-    repository: str,
+    authority: SubmissionAuthority,
     identity: CandidateIdentity,
     pull_request: dict[str, Any],
     prospective_frontier_sha256: str,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    protection_path = repo_root / "governance/github-protection.yml"
-    if not protection_path.is_file() or protection_path.is_symlink():
+    if pull_request.get("repository_id") != authority.repository_id:
         raise ProspectiveValidationError(
-            "candidate submission lacks canonical protection identity"
+            "candidate pull request repository identity changed after admission"
         )
     frontier = protected_merge_frontier(
         identity={
-            "repository": repository,
+            "repository": authority.repository,
             "repository_id": str(pull_request["repository_id"]),
             "pull_request": str(pull_request["number"]),
             "base_sha": identity.base_sha,
             "head_sha": identity.commit_sha,
             "tree_sha": identity.tree_sha,
-            "protection_sha256": hashlib.sha256(
-                protection_path.read_bytes()
-            ).hexdigest(),
+            "protection_sha256": authority.protection_sha256,
         },
         state="prospective_proved",
         certification_identity=f"prospective:{prospective_frontier_sha256}",
@@ -167,7 +235,7 @@ def _request_protected_auto_merge(
         )
     try:
         result = provider_api.enable_pull_request_auto_merge(
-            repository,
+            authority.repository,
             pull_request["number"],
             node_id=str(pull_request["node_id"]),
             expected_head_sha=identity.commit_sha,
@@ -193,18 +261,20 @@ def submit_candidate(
     root = repo_root.resolve()
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
-    mode, target, repository = _canonical_inputs(
+    authority = _canonical_inputs(
         root,
         context=context,
         provider_api=provider_api,
         runner=runner,
     )
     try:
-        candidate_title = authored_candidate_title(root, mode=mode, target=target)
+        candidate_title = authored_candidate_title(
+            root, mode=authority.mode, target=authority.target
+        )
     except ValueError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     recovery_identity = {
-        "repository": repository,
+        "repository": authority.repository,
         "base_sha": identity.base_sha,
         "head_sha": identity.commit_sha,
         "tree_sha": identity.tree_sha,
@@ -216,19 +286,19 @@ def submit_candidate(
         raise ProspectiveValidationError(
             "candidate recovery frontier did not select canonical submission"
         )
-    if semantic_intent is not None and semantic_intent != mode:
+    if semantic_intent is not None and semantic_intent != authority.mode:
         raise ProspectiveValidationError(
             "submitted semantic intent does not match the canonical exact-main intent"
         )
     proof = run_prospective_train(
         root,
-        semantic_intent=mode,
-        evaluation_target=target,
+        semantic_intent=authority.mode,
+        evaluation_target=authority.target,
         subject_commit=identity.commit_sha,
         subject_tree=identity.tree_sha,
         remote=remote,
         python_executable=python_executable,
-        repository=repository,
+        repository=authority.repository,
         provider_api=provider_api,
         runner=runner,
     )
@@ -255,7 +325,7 @@ def submit_candidate(
     )
     pull_request = ensure_candidate_pull_request(
         provider_api,
-        repository=repository,
+        repository=authority.repository,
         branch=context.head_ref,
         base_ref=context.default_branch,
         base_sha=identity.base_sha,
@@ -266,7 +336,7 @@ def submit_candidate(
     )
     provider_frontier = resolve_candidate_provider_recovery(
         provider_api,
-        repository=repository,
+        repository=authority.repository,
         pull_request=pull_request,
         base_sha=identity.base_sha,
         head_sha=identity.commit_sha,
@@ -278,16 +348,15 @@ def submit_candidate(
             "exact candidate provider execution has a terminal failure"
         )
     auto_merge, merge_frontier = _request_protected_auto_merge(
-        root,
         provider_api=provider_api,
-        repository=repository,
+        authority=authority,
         identity=identity,
         pull_request=pull_request,
         prospective_frontier_sha256=str(proved_frontier["frontier_sha256"]),
     )
     provider_retry_submitted = execute_candidate_provider_recovery(
         provider_api,
-        repository=repository,
+        repository=authority.repository,
         frontier=provider_frontier,
     )
     return {
@@ -295,10 +364,10 @@ def submit_candidate(
             "provider_retry_submitted" if provider_retry_submitted else "submitted"
         ),
         "subject": identity.as_dict(),
-        "repository": repository,
+        "repository": authority.repository,
         "branch": context.head_ref,
-        "semantic_intent": mode,
-        "evaluation_target": target,
+        "semantic_intent": authority.mode,
+        "evaluation_target": authority.target,
         "prospective_status": proof["status"],
         "provider_authority_substituted": False,
         "recovery_frontier": proved_frontier,

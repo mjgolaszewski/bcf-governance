@@ -22,7 +22,14 @@ def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateId
     monkeypatch.setattr(
         submit,
         "_canonical_inputs",
-        lambda *_a, **_k: ("workitem", "P28-P0-04", "owner/repo"),
+        lambda *_a, **_k: submit.SubmissionAuthority(
+            mode="workitem",
+            target="P28-P0-04",
+            lane="direct_protected_main",
+            repository="owner/repo",
+            repository_id=17,
+            protection_sha256="9" * 64,
+        ),
     )
     monkeypatch.setattr(
         submit, "authored_candidate_title", lambda *_a, **_k: "candidate"
@@ -34,6 +41,7 @@ def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateId
             "number": 7,
             "node_id": "PR_exact7",
             "state": "open",
+            "repository_id": 17,
             "base_sha": identity.base_sha,
             "head_sha": identity.commit_sha,
         },
@@ -169,7 +177,14 @@ def test_submit_accepts_derived_pr_progress_without_terminal_target(
     monkeypatch.setattr(
         submit,
         "_canonical_inputs",
-        lambda *_a, **_k: ("pr", None, "owner/repo"),
+        lambda *_a, **_k: submit.SubmissionAuthority(
+            mode="pr",
+            target=None,
+            lane="direct_protected_main",
+            repository="owner/repo",
+            repository_id=17,
+            protection_sha256="9" * 64,
+        ),
     )
     observed: list[tuple[str, object]] = []
     monkeypatch.setattr(
@@ -202,7 +217,14 @@ def test_submit_derives_phase_title_for_parallel_todo_progress(
     monkeypatch.setattr(
         submit,
         "_canonical_inputs",
-        lambda *_a, **_k: ("pr", None, "owner/repo"),
+        lambda *_a, **_k: submit.SubmissionAuthority(
+            mode="pr",
+            target=None,
+            lane="direct_protected_main",
+            repository="owner/repo",
+            repository_id=17,
+            protection_sha256="9" * 64,
+        ),
     )
     monkeypatch.setattr(submit, "authored_candidate_title", authored_candidate_title)
     (tmp_path / "plans").mkdir()
@@ -258,6 +280,10 @@ def test_submit_derives_phase_title_for_parallel_todo_progress(
 def test_direct_main_submit_authenticates_repository_without_self_protection(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/ci-graph.yml").write_text(
+        "document: {id: adopter}\n", encoding="utf-8"
+    )
     context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
     monkeypatch.setattr(
         submit,
@@ -290,12 +316,99 @@ def test_direct_main_submit_authenticates_repository_without_self_protection(
             stderr="",
         )
 
-    assert submit._canonical_inputs(
+    authority = submit._canonical_inputs(
         tmp_path,
         context=context,
         provider_api=Provider(),  # type: ignore[arg-type]
         runner=runner,
-    ) == ("workitem", "P07-P0-03", "owner/adopter")
+    )
+    assert authority.mode == "workitem"
+    assert authority.target == "P07-P0-03"
+    assert authority.lane == "direct_protected_main"
+    assert authority.repository == "owner/adopter"
+    assert authority.repository_id == 17
+    assert len(authority.protection_sha256) == 64
+
+
+def test_direct_main_protection_identity_is_closed_before_provider_mutation(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
+    monkeypatch.setattr(
+        submit,
+        "validate_ci_graph",
+        lambda *_a, **_k: SimpleNamespace(graph={"document": {"id": "adopter"}}),
+    )
+    monkeypatch.setattr(
+        submit,
+        "post_merge_evaluation",
+        lambda *_a, **_k: SimpleNamespace(
+            mode="workitem", target="P07-P0-03", lane="direct_protected_main"
+        ),
+    )
+
+    class Provider:
+        def repository(self, repository: str) -> dict[str, object]:
+            return {"id": 17, "full_name": repository}
+
+    with pytest.raises(ProspectiveValidationError, match="canonical graph identity"):
+        submit._canonical_inputs(
+            tmp_path,
+            context=context,
+            provider_api=Provider(),  # type: ignore[arg-type]
+            runner=lambda *_a, **_k: SimpleNamespace(
+                returncode=0,
+                stdout="git@github.com:owner/adopter.git\n",
+                stderr="",
+            ),
+        )
+
+
+def test_direct_main_auto_merge_consumes_precompiled_authority_without_self_file(
+    tmp_path: Path,
+) -> None:
+    identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
+    authority = submit.SubmissionAuthority(
+        mode="workitem",
+        target="P07-P0-03",
+        lane="direct_protected_main",
+        repository="owner/adopter",
+        repository_id=17,
+        protection_sha256="9" * 64,
+    )
+
+    class Provider:
+        def enable_pull_request_auto_merge(
+            self,
+            repository: str,
+            number: int,
+            *,
+            node_id: str,
+            expected_head_sha: str,
+        ) -> dict[str, object]:
+            assert repository == authority.repository
+            assert (number, node_id, expected_head_sha) == (
+                7,
+                "PR_exact7",
+                identity.commit_sha,
+            )
+            return {"status": "enabled"}
+
+    result, frontier = submit._request_protected_auto_merge(
+        provider_api=Provider(),  # type: ignore[arg-type]
+        authority=authority,
+        identity=identity,
+        pull_request={
+            "number": 7,
+            "node_id": "PR_exact7",
+            "repository_id": 17,
+        },
+        prospective_frontier_sha256="8" * 64,
+    )
+
+    assert result == {"status": "enabled"}
+    assert frontier["identity"]["protection_sha256"] == "9" * 64
+    assert not (tmp_path / "governance/github-protection.yml").exists()
 
 
 def test_direct_main_submit_rejects_remote_provider_disagreement(

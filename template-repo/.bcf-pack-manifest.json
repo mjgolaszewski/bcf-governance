@@ -528,7 +528,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "9169935db770e746277c760cee378b1ae2ad952924eb822b1f068ad0e35f5021"
+      "sha256": "1060cd0c807d8dd16a86d866dd76a5f0da2a311ae066d01dc6513d761fafa72c"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
