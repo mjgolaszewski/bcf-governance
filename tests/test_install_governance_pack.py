@@ -13,7 +13,12 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bcf_governance.tooling.governance_install import transaction, upgrade
+from bcf_governance.tooling.ci_graph_render import apply_ci_graph
+from bcf_governance.tooling.governance_install import (
+    transaction,
+    transaction_paths,
+    upgrade,
+)
 from bcf_governance.tooling.governance_validation.native_adoption import (
     authenticated_native_adoption_files,
     authenticated_native_adoption_requires_history,
@@ -852,6 +857,55 @@ def test_upgrade_reconciles_graph_owned_workflows_before_strict_validation(
         (target / graph["workflows"][0]["path"]).read_text(encoding="utf-8")
     )
     assert workflow["name"] == "Governance adopter projection"
+
+
+def test_upgrade_plans_generated_paths_from_migrated_provider_permissions(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-provider-permission"
+    transaction.copy_repository_shadow(REPO_ROOT, target)
+    graph_path = target / "governance/ci-graph.yml"
+    graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    graph["step_components"]["capture-governance-shard"].pop(
+        "required_permissions"
+    )
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    evidence["permissions"].pop("actions")
+    graph_path.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+    legacy_bytes = graph_path.read_bytes()
+
+    managed = transaction_paths._upgrade_managed_generated_paths(target)
+
+    assert graph_path.read_bytes() == legacy_bytes
+    assert ".github/workflows/governance.yml" in managed
+    upgrade.upgrade_graph_contracts(target)
+    apply_ci_graph(target)
+    migrated = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    assert migrated["step_components"]["capture-governance-shard"][
+        "required_permissions"
+    ] == {"actions": "read"}
+    migrated_evidence = next(
+        job
+        for workflow in migrated["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    assert migrated_evidence["permissions"] == {
+        "actions": "read",
+        "contents": "read",
+    }
+    rendered = yaml.safe_load(
+        (target / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+    )
+    assert rendered["jobs"]["evidence"]["permissions"] == {
+        "actions": "read",
+        "contents": "read",
+    }
 
 
 def test_upgrade_migrates_exact_runtime_v1_without_overwriting_capacity(
