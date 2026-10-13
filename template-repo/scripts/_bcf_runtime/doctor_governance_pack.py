@@ -48,7 +48,16 @@ def _is_foreign_template_literal(value: str) -> bool:
     """Recognize the disjoint Docker Go-template field grammar."""
 
     inner = value[2:-2].strip()
-    return bool(inner.startswith(".") and inner[1:].replace("_", "").isalnum())
+    fields = inner[1:].split(".") if inner.startswith(".") else []
+    return bool(
+        fields
+        and all(
+            field
+            and (field[0].isalpha() or field[0] == "_")
+            and field.replace("_", "").isalnum()
+            for field in fields
+        )
+    )
 
 
 def _placeholder_scan_paths(repo_root: Path) -> list[Path]:

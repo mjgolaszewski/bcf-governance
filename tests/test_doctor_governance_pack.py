@@ -72,7 +72,8 @@ def test_placeholder_scan_preserves_docker_go_template_fields(tmp_path: Path) ->
     workflow = tmp_path / ".github/workflows/native.yml"
     workflow.parent.mkdir(parents=True)
     workflow.write_text(
-        "run: docker images --format '{{.Repository}}:{{ .Tag }} {{.ID}}'\n",
+        "run: docker images --format "
+        "'{{.Repository}}:{{ .Tag }} {{.ID}} {{.Server.Version}}'\n",
         encoding="utf-8",
     )
     governed = tmp_path / "plans/product-spec.yml"
