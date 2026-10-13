@@ -30,6 +30,9 @@ from .governance_install.artifacts import (  # noqa: E402
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
 from .governance_install.validation import require_graph_parity, run_validation  # noqa: E402
+from .governance_validation.native_adoption import (  # noqa: E402
+    authenticated_native_adoption_requires_history,
+)
 from .governance_install.upgrade import (  # noqa: E402
     copy_selected_template_paths,
     replace_placeholders_in_files,
@@ -763,11 +766,19 @@ def install(args: argparse.Namespace) -> InstallResult:
             return
         require_graph_parity(target_root)
 
+    native_history_required = authenticated_native_adoption_requires_history(
+        target_root
+    )
     apply_transaction(
         target_root,
         managed_paths=transaction_paths,
         mutate_shadow=mutate,
-        preserve_git_history=args.semantic_config_payload is not None or getattr(args.existing_adoption_inventory, "source_commit", None) is not None,
+        preserve_git_history=(
+            args.semantic_config_payload is not None
+            or getattr(args.existing_adoption_inventory, "source_commit", None)
+            is not None
+            or native_history_required
+        ),
         validate_final=validate_final,
     )
     result = result_box[0]

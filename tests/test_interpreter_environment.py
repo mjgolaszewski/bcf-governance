@@ -147,6 +147,11 @@ def test_missing_profile_v2_interpreter_contract_remains_fail_closed(
     _legacy_fixture(tmp_path, profile_version="2.0")
 
     assert derive_interpreter_environment(tmp_path) is None
+    with pytest.raises(
+        InterpreterEnvironmentError,
+        match="cannot be derived without an authenticated dependency source",
+    ):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
 
 
 def test_legacy_environment_rejects_ambiguous_graph_python_runtime(

@@ -16,6 +16,7 @@ import yaml
 from bcf_governance.tooling.governance_install import transaction, upgrade
 from bcf_governance.tooling.governance_validation.native_adoption import (
     authenticated_native_adoption_files,
+    authenticated_native_adoption_requires_history,
 )
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
@@ -556,6 +557,73 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
         relative_path: (target / relative_path).read_bytes()
         for relative_path in protected_paths
     } == state_before
+
+
+def test_upgrade_preserves_git_custody_required_by_native_baseline(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-native-baseline"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "installer@example.invalid"],
+        cwd=target,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Installer Test"], cwd=target, check=True
+    )
+    (target / "pyproject.toml").write_text(
+        """[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+""",
+        encoding="utf-8",
+    )
+    (target / "app").mkdir()
+    (target / "app/__init__.py").write_text("", encoding="utf-8")
+    (target / "tests").mkdir()
+    (target / "tests/test_smoke.py").write_text(
+        "def test_smoke():\n    assert True\n", encoding="utf-8"
+    )
+    (target / "docs").mkdir()
+    (target / "docs/testing.md").write_text(
+        "# Native testing\n", encoding="utf-8"
+    )
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", "native repository"],
+        cwd=target,
+        check=True,
+    )
+    _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--require-strict-validation",
+    )
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", "install governance"],
+        cwd=target,
+        check=True,
+    )
+
+    assert authenticated_native_adoption_requires_history(target) is True
+    result = _run_installer(
+        target, "--upgrade", "--require-strict-validation"
+    )
+
+    assert "validation: strict pass" in result.stdout
+    assert authenticated_native_adoption_requires_history(target) is True
 
 
 @pytest.mark.parametrize("legacy_baseline", [None, "fresh-marker"])

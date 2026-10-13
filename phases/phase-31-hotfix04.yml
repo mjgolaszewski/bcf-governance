@@ -23,6 +23,8 @@ execution_evidence:
   - bcf install --target <disposable-agentbus-clone> --upgrade --candidate-qualification-source
     . --require-strict-validation
   - bcf validate --repo-root <disposable-agentbus-clone> --format json --compact
+  - bcf ci prospective-train --repo-root <disposable-tradeflow-clone> --format
+    json
   notes:
   - record failing workflows, diagnosed root cause, remediation scope, and merge-back
     status
@@ -34,6 +36,20 @@ execution_evidence:
     parent with exact commit, tree, archive digest, and provider receipt custody.
   - Racecar reported no additional BCF-owned defect; its observed expired Trivy
     preparation cache is project-owned and excluded from this repair.
+  - TradeFlow Lite exposed a profile-v1 compatibility edge: its authenticated
+    requirements-governance.txt and unique graph Python minor predate the typed
+    interpreter contract. The canonical environment owner now derives an
+    isolated, content-addressed project interpreter from those exact legacy
+    declarations; explicit v2/v3 contracts remain mandatory and fail closed.
+  - BDMCP exposed an atomic-upgrade shadow edge: its authenticated native
+    baseline was valid on the maintained subject, but candidate validation ran
+    in a shadow without the Git history that the baseline consumer requires.
+    The installer now derives Git-shadow custody from the authenticated active
+    baseline and preserves the exact history only for that typed state.
+  - Execution-scoped external resource names remain project-owned consumers of
+    BCF_EXECUTION_STATE_NAMESPACE. Constant Docker tags or containers are not
+    granted implicit shared-state semantics and must fail closed in the owning
+    project gate.
 closeout_requirements:
   claims:
     required_suites_green:
