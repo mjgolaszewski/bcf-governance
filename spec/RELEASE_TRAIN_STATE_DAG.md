@@ -1438,6 +1438,7 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | BCF derives a project environment from governed requirements | exact base interpreter bytes, canonical dependency projection, declared installer requirement and content-addressed environment namespace | create the isolated environment without inherited packaging state, bootstrap only the exact governed installer, install the projection, and bind the complete installed inventory into the environment identity before reuse | every executable distribution, including the installer, is declared, exact, auditable and reproducible | inheriting `ensurepip` state, admitting an undeclared installer, auditing dependencies only after expensive qualification, ambient package visibility, or treating bootstrap tooling as outside the project environment contract |
 | Existing adopter graph predates a newly mandatory command/component edge input | exact installed graph version/shape, canonical reference primitive, preserved adopter-owned gates/runners/semantics, and the closed migration identity for the mandatory edge | migrate only the uniquely matched canonical command/component field from the reference owner before graph lock/render; reject absent, customized or ambiguous source shapes instead of guessing | the upgraded graph and rendered workflow expose the same complete producer-to-consumer input contract while adopter semantics remain unchanged | rerendering stale graph bytes, self-only correction, replacing the adopter graph wholesale, silently overwriting a customization, or discovering the missing input after evidence fan-out |
 | Exact release tooling spawns a governance subprocess that scrubs ambient import variables | exact release interpreter identity, exact wheel distribution/module roots, and mechanically projected admitted dependency roots | execute the entire qualification transaction from one isolated controller interpreter; make that interpreter the inherited `sys.executable` for every governance child while retaining exact-origin and dependency validation | reconcile and every nested governance command consume the same exact wheel without `PYTHONPATH` or current-working-directory authority | using an ambient editable install after environment scrubbing, selecting a second utility, restoring imports by hand, or allowing child processes to change BCF versions |
+| Canonical reconciliation spawns a nested BCF CLI while operating on an adopter checkout | exact parent BCF module root, executable identity, repository subject, reconcile stage and check/apply intent | derive one isolated nested-command bootstrap from the executing reconciler; bind the child import to that exact module root and verify its origin before dispatch while keeping adopter project execution on its separately admitted interpreter | every nested BCF producer uses the same implementation as the parent, so apply and check can report convergence only for bytes accepted by that exact implementation | ambient installed BCF, adopter current-working-directory imports, `PYTHONPATH`, PATH lookup, parent/child version drift, or a converged ledger whose exact-implementation check still reports drift |
 | Exact prepublication wheel upgrades an adopter before an immutable tag exists | verified wheel/sdist/checksum digests, exact clean BCF source commit/tree whose pack manifest equals the executing wheel, exact clean adopter subject, and predecessor runtime-lock digest | route the installer through the existing typed candidate-qualification operation; bind exact candidate and adopter identities while retaining non-authoritative custody until publication | disposable adopter contains the exact candidate runtime and a non-authoritative candidate-qualification projection; immutable release authority remains absent | invoking published-release custody, querying a not-yet-created tag, treating local assets as immutable provider custody, omitting the exact source/pack identity, or requiring an operator-selected fallback |
 | Isolated candidate qualification executes the ordinary prospective proof without a provider PR | exact transaction-owned qualification context, validated candidate marker, adopter base commit/tree, and release subject | derive one observation-only validation context and make only the provider-PR changelog delta inapplicable; retain the complete governance and prospective chain | exact non-authoritative adopter compatibility observation | treating repository marker bytes or a caller-selected flag as authority, weakening provider PR changelog enforcement, manufacturing adopter changelog prose, or skipping any non-editorial proof |
 | Legacy adopter has a completed workitem prefix but no explicit dependency from the first unfinished workitem | exact ordered authored workitems, statuses, acceptance predicates, active phase identity, and generated post-merge scope | derive PR-progress scope; preserve every unfinished workitem and withhold bounded successor certification until the adopter authors an unambiguous dependency | safe upgrade/progress proof only; no workitem, phase, release, or successor authority | inferring a dependency from list position, certifying the completed prefix, mutating adopter semantics during install, or failing only after evidence allocation |
@@ -1469,6 +1470,30 @@ assignments, and fallback reason.  Queue, setup, framework, and product time
 are separate non-authoritative observations.  The canonical receipt remains
 invalid unless the aggregated JUnit population exactly matches the governed
 manifest and every applicable negative control is killed.
+
+#### Nested reconciliation implementation identity
+
+```text
+invariants
+  one submitted reconcile operation has one exact BCF implementation identity;
+  project-tool identity remains independent; convergence is exact-implementation fixed point
+  -> primitives
+     executing module root + executable identity + isolated import bootstrap + origin check
+    -> contracts
+       every nested BCF CLI command is derived by the reconciler; apply and check share it;
+       ambient installation, cwd and import environment confer no selection authority
+      -> producers
+         semantic-lock, test-manifest, graph-lock and graph-render reconcile stages
+        -> consumers
+           reconcile ledger/fixed-point result, prospective train, adopter qualification,
+           PR preflight and exact-main validation
+```
+
+Self and adopter repositories, profile-v1 and profile-v3 graphs, and both apply
+and check intents use this same edge.  Repository-owned scripts may consume the
+exact tool interpreter, while project tests continue to consume only the
+separately admitted project interpreter.  A child-origin mismatch is a typed
+pre-evidence failure; it cannot be reclassified as stale generated output.
 
 ```text
 PRUNE exact affected-proof frontier
