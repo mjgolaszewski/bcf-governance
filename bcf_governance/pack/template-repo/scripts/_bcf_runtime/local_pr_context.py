@@ -13,6 +13,11 @@ import tempfile
 import time
 from typing import Callable, Iterator
 
+from .governance_install.runtime_custody import (
+    RuntimeCustodyError,
+    RuntimeCustodyState,
+    inspect_runtime_custody,
+)
 from .local_execution_admission import project_python_environment
 
 
@@ -61,6 +66,39 @@ class CandidateIdentity:
 
     def as_dict(self) -> dict[str, str]:
         return asdict(self)
+
+
+def derive_local_validation_lane(
+    repo_root: Path,
+    context: LocalPRContext,
+    *,
+    requested: LocalValidationLane | None = None,
+    runner: Runner | None = None,
+) -> LocalValidationLane:
+    """Derive candidate qualification only from exact custody and base identity."""
+
+    if requested is not None:
+        return requested
+    try:
+        snapshot = inspect_runtime_custody(repo_root.resolve())
+    except RuntimeCustodyError as exc:
+        raise LocalPRError(f"local validation custody is invalid: {exc}") from exc
+    if snapshot.state is not RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT:
+        return LocalValidationLane.PROVIDER_PR
+    adopter = snapshot.provenance_claim.get("adopter")
+    if not isinstance(adopter, dict):
+        raise LocalPRError("candidate qualification adopter identity is absent")
+    base_tree = _checked(
+        _run if runner is None else runner,
+        ["git", "rev-parse", f"{context.base_sha}^{{tree}}"],
+        cwd=repo_root.resolve(),
+    )
+    if (
+        adopter.get("commit_sha") == context.base_sha
+        and adopter.get("tree_sha") == base_tree
+    ):
+        return LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
+    return LocalValidationLane.PROVIDER_PR
 
 
 def _run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:

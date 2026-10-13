@@ -13,10 +13,37 @@ import yaml  # type: ignore[import-untyped]
 
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .evidence_execution import _selected_python
+from .local_execution_admission import project_python_environment
 
 
 class TestManifestError(ValueError):
     """Raised when a governed test population cannot be reproduced."""
+
+
+COLLECTION_DIAGNOSTIC_LIMIT = 20_000
+
+
+def _collection_diagnostic(stdout: str, stderr: str) -> str:
+    """Preserve both causal collection streams within one deterministic bound."""
+
+    sections = [
+        f"{name}:\n{value.strip()}"
+        for name, value in (("stdout", stdout), ("stderr", stderr))
+        if value.strip()
+    ]
+    value = "\n\n".join(sections)
+    if not value:
+        return ""
+    if len(value) <= COLLECTION_DIAGNOSTIC_LIMIT:
+        return value
+    head_size = COLLECTION_DIAGNOSTIC_LIMIT // 2
+    tail_size = COLLECTION_DIAGNOSTIC_LIMIT - head_size
+    omitted = len(value) - COLLECTION_DIAGNOSTIC_LIMIT
+    return (
+        value[:head_size]
+        + f"\n...[{omitted} diagnostic characters omitted]...\n"
+        + value[-tail_size:]
+    )
 
 
 @dataclass(frozen=True)
@@ -173,7 +200,7 @@ def _collect_raw_nodes(
     """Collect one deduplicated selector union through one pytest process."""
 
     python = _selected_python(python_executable)
-    environment = dict(os.environ)
+    environment = project_python_environment(repo_root, python, os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     result = subprocess.run(
         [str(python), "-m", "pytest", "--collect-only", "-q", *selectors],
@@ -185,7 +212,10 @@ def _collect_raw_nodes(
         check=False,
     )
     if result.returncode != 0:
-        diagnostic = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+        diagnostic = (
+            _collection_diagnostic(result.stdout, result.stderr)
+            or f"exit {result.returncode}"
+        )
         raise TestManifestError(
             f"pytest collection infrastructure failure: {diagnostic}"
         )

@@ -8,7 +8,12 @@ from types import SimpleNamespace
 
 import pytest
 
+from bcf_governance.tooling import local_pr_context
 from bcf_governance.tooling.ci_commands import _local_pr_command
+from bcf_governance.tooling.governance_install.runtime_custody import (
+    RuntimeCustodySnapshot,
+    RuntimeCustodyState,
+)
 from bcf_governance.tooling.local_execution_admission import (
     LocalExecutionAdmissionError,
     resolve_local_project_python,
@@ -18,6 +23,7 @@ from bcf_governance.tooling.local_pr import (
     resolve_local_pr_context,
     run_local_pr_validation,
 )
+from bcf_governance.tooling.local_pr_context import LocalPRContext, LocalValidationLane
 
 
 def _git(cwd: Path, *args: str) -> str:
@@ -110,6 +116,67 @@ def test_local_pr_context_fetches_default_branch_and_supplies_exact_event(tmp_pa
     )
     result = run_local_pr_validation(repo, command=(sys.executable, "-c", script))
     assert result.returncode == 0, result.stderr
+
+
+def test_candidate_qualification_lane_is_derived_from_exact_custody_and_base(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    context = LocalPRContext("origin", "main", "a" * 40, "c" * 40, "qualification")
+    snapshot = RuntimeCustodySnapshot(
+        state=RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT,
+        version="2.3.2",
+        runtime_owned={},
+        consumer_preserved={},
+        legacy_overlap=(),
+        provenance_claim={
+            "adopter": {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
+        },
+        lock_bytes=b"{}",
+    )
+    monkeypatch.setattr(
+        local_pr_context, "inspect_runtime_custody", lambda _root: snapshot
+    )
+
+    def runner(argv: list[str], **_kwargs: object) -> SimpleNamespace:
+        assert argv == ["git", "rev-parse", f"{'a' * 40}^{{tree}}"]
+        return SimpleNamespace(returncode=0, stdout="b" * 40 + "\n", stderr="")
+
+    assert local_pr_context.derive_local_validation_lane(
+        tmp_path, context, runner=runner
+    ) is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
+
+
+def test_candidate_marker_cannot_suppress_ordinary_pr_changelog_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    context = LocalPRContext("origin", "main", "a" * 40, "c" * 40, "feature")
+    snapshot = RuntimeCustodySnapshot(
+        state=RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT,
+        version="2.3.2",
+        runtime_owned={},
+        consumer_preserved={},
+        legacy_overlap=(),
+        provenance_claim={
+            "adopter": {"commit_sha": "d" * 40, "tree_sha": "e" * 40}
+        },
+        lock_bytes=b"{}",
+    )
+    monkeypatch.setattr(
+        local_pr_context, "inspect_runtime_custody", lambda _root: snapshot
+    )
+    runner = lambda *_a, **_k: SimpleNamespace(
+        returncode=0, stdout="b" * 40 + "\n", stderr=""
+    )
+
+    assert local_pr_context.derive_local_validation_lane(
+        tmp_path, context, runner=runner
+    ) is LocalValidationLane.PROVIDER_PR
+    assert local_pr_context.derive_local_validation_lane(
+        tmp_path,
+        context,
+        requested=LocalValidationLane.PROVIDER_PR,
+        runner=lambda *_a, **_k: pytest.fail("explicit lane consulted custody"),
+    ) is LocalValidationLane.PROVIDER_PR
 
 
 def test_local_pr_context_retries_only_identical_transient_remote_read(

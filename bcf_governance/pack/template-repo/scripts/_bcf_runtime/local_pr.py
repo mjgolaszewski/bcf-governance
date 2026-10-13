@@ -93,6 +93,7 @@ from .local_pr_context import (
     _confirm_unchanged as _confirm_context_unchanged,
     _pr_environment,
     _run,
+    derive_local_validation_lane,
     resolve_local_pr_context,
     run_local_pr_validation,
 )
@@ -168,7 +169,7 @@ def _run_prospective_train(
     repository: str | None = None,
     provider_api: GitHubAPI | None = None,
     toolchain_identity: Mapping[str, Any] | None = None,
-    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
+    validation_lane: LocalValidationLane | None = None,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:
@@ -176,6 +177,12 @@ def _run_prospective_train(
 
     root = repo_root.resolve()
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    effective_validation_lane = derive_local_validation_lane(
+        root,
+        context,
+        requested=validation_lane,
+        runner=runner,
+    )
     identity = _candidate_identity(root, context, runner=runner)
     measurements: list[dict[str, Any]] = []
     progress: list[dict[str, Any]] = []
@@ -315,7 +322,7 @@ def _run_prospective_train(
 
     with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:
         artifact_root = Path(temporary) / "evidence"
-        with _pr_environment(context, validation_lane=validation_lane):
+        with _pr_environment(context, validation_lane=effective_validation_lane):
             try:
                 emit("preflight", "started")
                 preflight_started = time.monotonic_ns()
@@ -712,7 +719,7 @@ def run_prospective_train(
     python_executable: Path,
     repository: str | None = None,
     provider_api: GitHubAPI | None = None,
-    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
+    validation_lane: LocalValidationLane | None = None,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:

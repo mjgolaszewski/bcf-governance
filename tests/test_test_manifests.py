@@ -9,6 +9,7 @@ import yaml
 
 from bcf_governance.tooling.test_manifests import (
     TestManifestError as ManifestError,
+    _collect_raw_nodes,
     _selector_map_from_nodes,
     check_all,
     check_gate,
@@ -110,6 +111,51 @@ def test_manifest_collection_uses_selected_interpreter_not_host_path(
         "tests.test_sample::test_one",
         "tests.test_sample::test_two",
     ]
+
+
+def test_manifest_collection_removes_controller_import_path_from_project(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _repo(tmp_path)
+    (repo / "scripts").mkdir()
+    (repo / "scripts/frontend_toolchain.py").write_text(
+        "VALUE = 'project'\n", encoding="utf-8"
+    )
+    (repo / "tests/test_sample.py").write_text(
+        "from scripts.frontend_toolchain import VALUE\n\n"
+        "def test_project_module():\n    assert VALUE == 'project'\n",
+        encoding="utf-8",
+    )
+    controller = tmp_path / "controller"
+    (controller / "scripts").mkdir(parents=True)
+    (controller / "scripts/__init__.py").write_text("", encoding="utf-8")
+    monkeypatch.setenv("PYTHONPATH", str(controller))
+
+    assert collect_nodes(repo, "test", python_executable=sys.executable) == [
+        "tests.test_sample::test_project_module"
+    ]
+
+
+def test_manifest_collection_failure_preserves_both_bounded_streams(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = _repo(tmp_path)
+
+    def fail(*args: object, **kwargs: object) -> object:
+        del args, kwargs
+        return __import__("subprocess").CompletedProcess(
+            [], 4, stdout="causal import failure", stderr="no collectors"
+        )
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.test_manifests.subprocess.run", fail
+    )
+
+    with pytest.raises(ManifestError) as captured:
+        _collect_raw_nodes(repo, ["tests"], python_executable=sys.executable)
+
+    assert "stdout:\ncausal import failure" in str(captured.value)
+    assert "stderr:\nno collectors" in str(captured.value)
 
 
 def test_manifest_collection_classifies_missing_pytest_as_infrastructure(

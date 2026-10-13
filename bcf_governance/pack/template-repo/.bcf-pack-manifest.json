@@ -1203,11 +1203,11 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "7486990ae645f9d437cd9b5874f352e8f8b724cadac12957e3dfded8dfbea65f"
+      "sha256": "28c00cd73a6c507b3dbf48a4255c300dee2d1715e627b1448b8bac6b25a5657c"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
-      "sha256": "c1ebacb90b5d05a89a1ec45b5879904a36f685b82aebfa0b4a7dd2939adb922c"
+      "sha256": "75a901d3a0dd3c27b2c3d54af874e7a5c5f71ec90427f766c52bfe0960da319e"
     },
     "scripts/_bcf_runtime/local_proof_bundles.py": {
       "operation": "copy",
@@ -1503,7 +1503,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "e517c03e64c28372e4cd1eaa27eefb558a6d03ddaf25f15be2a65bd0a9c82112"
+      "sha256": "71173c9bf3b6b43554267121a4afe7a6b70d71b81c9df46e663d33eed8b883f9"
     },
     "scripts/_bcf_runtime/test_splinter_proofs.py": {
       "operation": "copy",
