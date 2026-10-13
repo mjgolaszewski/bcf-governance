@@ -1856,32 +1856,43 @@ phase/release authority can proceed.
 | One phase-owning release has later immutable hotfix/follow-up publications | exact parent release/phase identity plus child version, tag, commit/tree, archive digest, provider receipt and publication order | the phase-catalog owner validates typed supplemental-publication children against exactly one real parent and preserves their independent immutable custody | child publications may be completed without owning invented phases; parent phase lifecycle remains the sole closure authority | a child becoming a phase train, multiple/no parents, `abandoned` for a published child, missing custody, ambiguous order, or child completion closing the parent phase |
 | Generated workflow bytes changed during an adopter upgrade | exact generated definitions, current authority projection and clean committed subject/tree | canonical pin-authority/reconcile derives the matching workflow identity before prospective execution | prospective preflight sees one exact workflow/authority pair | caller-authored pin, stale authority, subject assertion typo, or allocating evidence before equality |
 | A caller supplies an optional commit/tree, intent, or target assertion | clean Git subject/tree and graph-derived lifecycle intent | compare the assertion before gates, then use the canonical derived identity; omission remains the normal path | transcription errors fail before expensive work and cannot select authority | accepting the assertion as source authority, retrying expensive work, or changing candidate bytes mid-run |
+| A profile-v1 adopter has the canonical governance dependency file but predates `interpreter_contract` and `requirements_projection` | exact profile version, candidate resource-class Python version, tracked `requirements-governance.txt`, gate inventory and selected base interpreter | the interpreter owner compiles a read-only legacy dependency plan from those authenticated inputs and materializes the same isolated content-addressed project environment; it does not require an authored projection that the contract version never declared | Lite prospective execution receives a project environment distinct from the controller and executes only its declared governance gates | using the controller environment as project Python, accepting an absent dependency file or runtime version, silently inventing project dependencies, requiring an adopter-authored migration, or extending this compatibility lane to profile v2/v3 |
+| A gate or mutation control allocates an execution-scoped external resource | exact execution/session namespace, workload contract and gate invocation | the runtime exports the owned namespace; the gate derives every mutable resource identity from it and terminal cleanup removes only that exact namespace | concurrent baseline, mutation, adopter and repository runs cannot observe or overwrite one another | a constant Docker tag/database/cache name, global prune, wildcard ownership, implicit persistence, or treating a project-owned unnamespaced resource as BCF evidence |
 
 ```text
 invariants
   production limits apply only to authenticated production paths;
   BCF placeholder validation owns only BCF substitution grammar and surfaces;
   supplemental publications preserve custody without inventing lifecycle authority;
-  generated workflow authority and candidate identity are mechanically derived
+  generated workflow authority and candidate identity are mechanically derived;
+  every supported legacy profile derives an isolated project interpreter from
+    authenticated inputs without requiring a remembered migration;
+  execution-scoped resources are uniquely named by their authenticated owner
     -> primitives
        path-role projection, source/test/exclusion identities,
        placeholder token and ownership classification,
        parent release plus immutable child-publication identity,
-       workflow definition/pin digest and clean Git identity
+       workflow definition/pin digest and clean Git identity,
+       profile version, graph Python requirement and governance dependency digest,
+       execution/session/workload namespace identity
       -> contracts
          classify path role -> enforce production limit;
          classify owned token -> preserve foreign literal or reject BCF placeholder;
          validate parent -> authenticate child custody -> record publication without phase closure;
-         render -> pin -> reconcile -> derive prospective identity
+         render -> pin -> reconcile -> derive prospective identity;
+         classify interpreter contract -> compile exact dependency plan -> isolate environment;
+         allocate exact namespace -> derive resources -> exact-owner cleanup
         -> producers
            architecture/testing compiler and structural-limit validator,
            installer placeholder compiler and doctor,
            release catalog/schema/validator/upgrade owner,
-           graph renderer, authority projector and prospective front door
+           graph renderer, authority projector and prospective front door,
+           interpreter environment compiler and runtime namespace allocator
           -> consumers
              reconcile and strict install, doctor and adopter reporting,
              phase ledger/history/truth and successor eligibility,
-             PR evidence allocation and provider certification
+             PR evidence allocation and provider certification,
+             Lite prospective execution and project-owned external-resource gates
 ```
 
 Structurally unreachable edges are explicit: a test-path classification cannot
@@ -1889,7 +1900,11 @@ waive a production module outside its exact path; a foreign-language literal
 cannot satisfy or suppress a BCF placeholder; a supplemental publication cannot
 close, activate, or own a phase; provider publication facts cannot rewrite
 authored lifecycle state; and caller assertions cannot select candidate or
-workflow authority.
+workflow authority. A profile-v1 dependency plan cannot activate profile-v2/v3
+compatibility or allow controller-environment reuse. BCF runtime namespace
+export cannot make a project gate authoritative when that gate instead uses a
+constant mutable resource identity; that consumer remains fail-closed until its
+own canonical command derives the supplied namespace.
 
 ```text
 invariants
