@@ -17,16 +17,20 @@ def _native_adoption_relative(value: object, *, context: str) -> str:
     return path.as_posix()
 
 
-def authenticated_native_adoption_files(repo_root: Path) -> set[str]:
+def _authenticated_native_adoption(
+    repo_root: Path,
+) -> tuple[bool, set[str]]:
+    """Return whether validation consumes Git history and its owned files."""
+
     adoption_path = repo_root / "governance/existing-repo-adoption.yml"
     if not adoption_path.is_file():
-        return set()
+        return False, set()
     profile = _load_yaml(repo_root / "governance-profile.yml")
     ledger = _load_yaml(repo_root / "plans/phase-ledger.yml")
     if profile.get("profile", {}).get("selected") not in {"lite", "standard", "regulated"} or ledger.get(
         "active_phase", {}
     ).get("lifecycle_status") == "completed":
-        return set()
+        return False, set()
     baseline = _require_mapping(
         _load_yaml(adoption_path).get("native_baseline"),
         context="governance/existing-repo-adoption.yml native_baseline",
@@ -36,7 +40,7 @@ def authenticated_native_adoption_files(repo_root: Path) -> set[str]:
         "source": None,
         "files": [],
     }:
-        return set()
+        return False, set()
     if baseline.get("transition_class") != "existing_repository_adoption":
         raise GovernanceValidationError("existing adoption native baseline has invalid transition class")
     source = _require_mapping(baseline.get("source"), context="existing adoption native baseline source")
@@ -93,4 +97,16 @@ def authenticated_native_adoption_files(repo_root: Path) -> set[str]:
         ):
             raise GovernanceValidationError("existing adoption native baseline file binding is invalid")
         authenticated.add(projected_path)
-    return authenticated
+    return True, authenticated
+
+
+def authenticated_native_adoption_files(repo_root: Path) -> set[str]:
+    """Authenticate and return byte-bound native documents."""
+
+    return _authenticated_native_adoption(repo_root)[1]
+
+
+def authenticated_native_adoption_requires_history(repo_root: Path) -> bool:
+    """Derive whether a transaction shadow must retain Git custody."""
+
+    return _authenticated_native_adoption(repo_root)[0]

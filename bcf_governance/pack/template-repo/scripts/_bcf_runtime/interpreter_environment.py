@@ -84,6 +84,9 @@ class InterpreterEnvironmentPlan:
     requirements: tuple[str, ...]
     requires_python: str
     projection_path: Path | None
+    source_kind: str = "project_metadata_projection"
+    source_path: Path | None = None
+    source_sha256: str | None = None
 
     @property
     def distribution_names(self) -> frozenset[str]:
@@ -101,10 +104,31 @@ class InterpreterEnvironmentPlan:
         digest.update(b"\0")
         digest.update(self.requires_python.encode("utf-8"))
         digest.update(b"\0")
+        digest.update(self.source_kind.encode("utf-8"))
+        digest.update(b"\0")
+        digest.update((self.source_sha256 or "").encode("ascii"))
+        digest.update(b"\0")
         with executable.open("rb") as stream:
             for chunk in iter(lambda: stream.read(1024 * 1024), b""):
                 digest.update(chunk)
         return digest.hexdigest()
+
+    @property
+    def installation_path(self) -> Path | None:
+        """Return the authenticated dependency input consumed by pip."""
+
+        return self.projection_path or self.source_path
+
+    def pip_arguments(self) -> tuple[str, ...]:
+        """Bind installation to the already-derived dependency proposition."""
+
+        if self.source_kind == "legacy_governance_requirements":
+            return self.requirements
+        if self.projection_path is None:
+            raise InterpreterEnvironmentError(
+                "interpreter dependency projection is unavailable"
+            )
+        return ("--requirement", str(self.projection_path))
 
 
 def _dependency_name(value: object) -> str:
@@ -157,6 +181,90 @@ def _safe_projection(repo_root: Path, value: object) -> Path | None:
     return path
 
 
+def _legacy_interpreter_environment(
+    root: Path, registry: dict[str, Any]
+) -> InterpreterEnvironmentPlan | None:
+    """Compile the closed profile-v1 dependency/runtime contract."""
+
+    if str(registry.get("profile_contract_version", "1.0")) != "1.0":
+        return None
+    requirements_path = root / "requirements-governance.txt"
+    if requirements_path.is_symlink() or not requirements_path.is_file():
+        raise InterpreterEnvironmentError(
+            "legacy interpreter dependency source is missing or unsafe"
+        )
+    try:
+        source_bytes = requirements_path.read_bytes()
+        source_text = source_bytes.decode("utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise InterpreterEnvironmentError(
+            "legacy interpreter dependency source is unreadable"
+        ) from exc
+    requirements = [
+        line.strip()
+        for line in source_text.splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if not requirements:
+        raise InterpreterEnvironmentError(
+            "legacy interpreter dependency source is empty"
+        )
+    normalized = [_normalized_name(value) for value in requirements]
+    if len(set(normalized)) != len(requirements):
+        raise InterpreterEnvironmentError(
+            "interpreter dependency declarations must have unique names"
+        )
+    installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+    installer_requirements = [
+        value
+        for value in requirements
+        if _normalized_name(value) == installer_name
+    ]
+    if not installer_requirements:
+        requirements.append(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+    elif installer_requirements != [PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT]:
+        raise InterpreterEnvironmentError(
+            "project environment installer requirement must equal "
+            + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
+        )
+    graph_path = root / "governance/ci-graph.yml"
+    try:
+        graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+        graph = _mapping(graph, "legacy interpreter graph contract is invalid")
+        if str(graph.get("profile_contract_version", "1.0")) != "1.0":
+            raise InterpreterEnvironmentError(
+                "legacy interpreter graph contract version is invalid"
+            )
+        resources = _mapping(
+            graph.get("resource_classes"),
+            "legacy interpreter graph resources are invalid",
+        )
+        python_minors = {
+            str(resource["python_version"])
+            for resource in resources.values()
+            if isinstance(resource, dict) and "python_version" in resource
+        }
+    except (OSError, UnicodeError, yaml.YAMLError, KeyError, TypeError) as exc:
+        raise InterpreterEnvironmentError(
+            "legacy interpreter graph contract is unavailable"
+        ) from exc
+    if len(python_minors) != 1 or any(
+        re.fullmatch(r"3\.[0-9]+", value) is None for value in python_minors
+    ):
+        raise InterpreterEnvironmentError(
+            "legacy interpreter graph must declare one Python minor"
+        )
+    python_minor = next(iter(python_minors))
+    return InterpreterEnvironmentPlan(
+        requirements=tuple(requirements),
+        requires_python=f"=={python_minor}.*",
+        projection_path=None,
+        source_kind="legacy_governance_requirements",
+        source_path=requirements_path,
+        source_sha256=hashlib.sha256(source_bytes).hexdigest(),
+    )
+
+
 def derive_interpreter_environment(
     repo_root: Path,
 ) -> InterpreterEnvironmentPlan | None:
@@ -170,7 +278,7 @@ def derive_interpreter_environment(
     registry = _mapping(registry, "gate contract registry is invalid")
     contract = registry.get("interpreter_contract")
     if contract is None:
-        return None
+        return _legacy_interpreter_environment(root, registry)
     contract = _mapping(contract, "interpreter contract is invalid")
     if contract.get("project_dependencies") is not True:
         raise InterpreterEnvironmentError("interpreter contract is invalid")
@@ -265,6 +373,28 @@ def verify_interpreter_environment_projection(
 
     path = plan.projection_path
     if path is None:
+        if (
+            plan.source_kind != "legacy_governance_requirements"
+            or plan.source_path is None
+            or plan.source_sha256 is None
+            or plan.source_path.is_symlink()
+            or not plan.source_path.is_file()
+        ):
+            raise InterpreterEnvironmentError(
+                "interpreter dependency source is missing or unsafe"
+            )
+        try:
+            observed_source_sha256 = hashlib.sha256(
+                plan.source_path.read_bytes()
+            ).hexdigest()
+        except OSError as exc:
+            raise InterpreterEnvironmentError(
+                "interpreter dependency source is unreadable"
+            ) from exc
+        if observed_source_sha256 != plan.source_sha256:
+            raise InterpreterEnvironmentError(
+                "interpreter dependency source changed after derivation"
+            )
         return
     if path.is_symlink() or not path.is_file():
         raise InterpreterEnvironmentError(
@@ -316,9 +446,9 @@ def materialize_interpreter_environment(
 
     root = repo_root.resolve()
     plan = derive_interpreter_environment(root)
-    if plan is None or plan.projection_path is None:
+    if plan is None or plan.installation_path is None:
         raise InterpreterEnvironmentError(
-            "project interpreter cannot be derived without a requirements projection"
+            "project interpreter cannot be derived without an authenticated dependency source"
         )
     verify_interpreter_environment_projection(plan)
     try:
@@ -389,18 +519,18 @@ def materialize_interpreter_environment(
                     "derived project interpreter creation failed: " + detail
                 )
             candidate = temporary / "venv/bin/python"
+            install_command = [
+                str(base_python.resolve(strict=True)),
+                "-m",
+                "pip",
+                "--python",
+                str(candidate),
+                "install",
+                "--disable-pip-version-check",
+                *plan.pip_arguments(),
+            ]
             installed = subprocess.run(
-                [
-                    str(base_python.resolve(strict=True)),
-                    "-m",
-                    "pip",
-                    "--python",
-                    str(candidate),
-                    "install",
-                    "--disable-pip-version-check",
-                    "--requirement",
-                    str(plan.projection_path),
-                ],
+                install_command,
                 cwd=root,
                 capture_output=True,
                 text=True,
