@@ -20,7 +20,7 @@ if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
 from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
-from .governance_install.existing_adoption import compile_existing_adoption_inventory, extend_existing_adoption_paths, migrate_existing_adoption_contract, prepare_existing_adoption_shadow, project_existing_adoption_roots  # noqa: E402,E501
+from .governance_install.existing_adoption import compile_existing_adoption_inventory, existing_adoption_requires_history_for_upgrade, extend_existing_adoption_paths, migrate_existing_adoption_contract, prepare_existing_adoption_shadow, project_existing_adoption_roots  # noqa: E402,E501
 from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
@@ -30,7 +30,6 @@ from .governance_install.artifacts import (  # noqa: E402
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
 from .governance_install.validation import require_graph_parity, run_validation  # noqa: E402
-from .governance_validation.native_adoption import authenticated_native_adoption_requires_history  # noqa: E402,E501
 from .governance_install.upgrade import (  # noqa: E402
     copy_selected_template_paths,
     replace_placeholders_in_files,
@@ -764,7 +763,7 @@ def install(args: argparse.Namespace) -> InstallResult:
             return
         require_graph_parity(target_root)
 
-    native_history_required = authenticated_native_adoption_requires_history(target_root)
+    native_history_required = existing_adoption_requires_history_for_upgrade(target_root)
     apply_transaction(
         target_root,
         managed_paths=transaction_paths,

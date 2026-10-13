@@ -1156,6 +1156,15 @@ def _copy_current_authored_phase_state(repo: Path) -> dict:
         target = repo / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((REPO_ROOT / relative).read_bytes())
+    shutil.copytree(REPO_ROOT / "schemas", repo / "schemas")
+    for record in [
+        *ledger["hotfix_lane"]["open_records"],
+        *ledger["hotfix_lane"]["remediation_history"],
+    ]:
+        relative = Path(record["hotfix_log"])
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((REPO_ROOT / relative).read_bytes())
     return active
 
 
@@ -1202,17 +1211,6 @@ def test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work(
 ) -> None:
     repo = tmp_path / "repo"
     _copy_current_authored_phase_state(repo)
-    shutil.copytree(REPO_ROOT / "schemas", repo / "schemas")
-    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
-    records = [
-        *ledger["hotfix_lane"]["open_records"],
-        *ledger["hotfix_lane"]["remediation_history"],
-    ]
-    for record in records:
-        relative = Path(record["hotfix_log"])
-        target = repo / relative
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_bytes((REPO_ROOT / relative).read_bytes())
     malformed = repo / "phases/phase-31-hotfix04.yml"
     payload = yaml.safe_load(malformed.read_text(encoding="utf-8"))
     payload["execution_evidence"]["notes"][0] = {"not": "a string"}

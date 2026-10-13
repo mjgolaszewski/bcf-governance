@@ -16,6 +16,11 @@ from ..governance_profiles import render_profile_surface
 
 NATIVE_GUIDANCE_PATH = "docs/governance/native-agent-guidance.md"
 NO_AUTHENTICATED_NATIVE_BASELINE = "no_authenticated_native_baseline"
+LEGACY_EMPTY_NATIVE_BASELINE = {
+    "transition_class": "not_applicable_to_fresh_install",
+    "source": None,
+    "files": [],
+}
 
 
 @dataclass(frozen=True)
@@ -274,12 +279,7 @@ def migrate_existing_adoption_contract(repo_root: Path) -> None:
         context="governance/existing-repo-adoption.yml",
     )
     baseline = adoption.get("native_baseline")
-    legacy_empty = {
-        "transition_class": "not_applicable_to_fresh_install",
-        "source": None,
-        "files": [],
-    }
-    if baseline is None or baseline == legacy_empty:
+    if baseline is None or baseline == LEGACY_EMPTY_NATIVE_BASELINE:
         adoption["native_baseline"] = {
             "transition_class": NO_AUTHENTICATED_NATIVE_BASELINE,
             "source": None,
@@ -293,6 +293,32 @@ def migrate_existing_adoption_contract(repo_root: Path) -> None:
         "existing_repository_adoption",
     }:
         raise ValueError("existing adoption native_baseline is not an exact migratable shape")
+
+
+def existing_adoption_requires_history_for_upgrade(repo_root: Path) -> bool:
+    """Classify Git custody before the legacy contract is normalized."""
+
+    path = repo_root / "governance/existing-repo-adoption.yml"
+    if not path.is_file():
+        return False
+    adoption = _mapping(
+        yaml.safe_load(path.read_text(encoding="utf-8")),
+        context="governance/existing-repo-adoption.yml",
+    )
+    baseline = adoption.get("native_baseline")
+    if baseline is None or baseline == LEGACY_EMPTY_NATIVE_BASELINE:
+        return False
+    baseline = _mapping(baseline, context="existing adoption native_baseline")
+    transition = baseline.get("transition_class")
+    if transition == NO_AUTHENTICATED_NATIVE_BASELINE:
+        return False
+    if transition != "existing_repository_adoption":
+        raise ValueError("existing adoption native_baseline is not an exact migratable shape")
+    from ..governance_validation.native_adoption import (
+        authenticated_native_adoption_requires_history,
+    )
+
+    return authenticated_native_adoption_requires_history(repo_root)
 
 
 def extend_existing_adoption_paths(

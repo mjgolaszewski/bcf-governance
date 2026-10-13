@@ -1024,7 +1024,7 @@
     },
     "scripts/_bcf_runtime/governance_install/existing_adoption.py": {
       "operation": "copy",
-      "sha256": "d3834a2c3be75f80100930efcb02284d5d8cb9743a2d13a37ac125df7af74d7b"
+      "sha256": "4f74109cc647aff9a949589e769f357e9d8318ea4c05050d319347fea11bfafa"
     },
     "scripts/_bcf_runtime/governance_install/phase.py": {
       "operation": "copy",
@@ -1191,7 +1191,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "f9399051d1da79f4e44e5310dc28b46c5e4fdb8018ff936b6a72f9527c27a367"
+      "sha256": "2ad48bb12787e5d95d311214a962902ac39736af10e111db7a0b79ee4e7ff87c"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",

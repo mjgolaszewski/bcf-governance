@@ -71,6 +71,13 @@ execution_evidence:
     probe for that state, while only authenticated legacy requirements or a
     modern requirements projection may materialize a fresh environment. The
     causal node and all legacy N/N+1 environment regressions pass.
+  - >-
+    Terminal self proof also exercised the exact legacy fresh-install native
+    baseline and authored-state fixture permutations. Upgrade custody now
+    classifies that closed legacy marker before current-state authentication,
+    migrates it transactionally, and preserves Git history only for a fully
+    authenticated existing-repository baseline. Authored-state fixtures and the
+    canonical reconciler consume every ledger-referenced hotfix schema/log.
 closeout_requirements:
   claims:
     required_suites_green:
