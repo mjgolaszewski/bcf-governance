@@ -400,7 +400,7 @@ testpaths = ["scripts/tests"]
     )
     invalid = _run_installed_validator(target)
     assert invalid.returncode == 1
-    assert "ephemeral evidence path without durable reference" in invalid.stdout
+    assert "ephemeral artifact references in governed docs need" in invalid.stdout
 
     (target / "docs/testing.md").unlink()
     (target / "docs/testing.md").symlink_to("../NATIVE.md")
