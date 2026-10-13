@@ -1225,6 +1225,10 @@
       "operation": "copy",
       "sha256": "84c5fc7a8b342fc2a42ecb3978d1501716210abf321224a38f9971e4dfa144a2"
     },
+    "scripts/_bcf_runtime/nested_cli_runtime.py": {
+      "operation": "copy",
+      "sha256": "9b26505dbecbcbcc69adbc6f7e338f2fe5c445c0725858189183f2f23068ea0a"
+    },
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
       "sha256": "f860f8fbeb760096cd5e0f4d8ac2a78e56237b5eb56e1b893bd0405a9086e3cf"
@@ -1379,7 +1383,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "0164ed531fe490de4b2498a85b384d6c24aabd41710d1c000f42d00386aab282"
+      "sha256": "7d36cfe9b38d2add66c88dd6aa778d6d1935a560c3fa3f8175ba662b00ea297f"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

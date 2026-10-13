@@ -52,6 +52,7 @@ from .hotfix_scaffolding import (
     register_hotfix_log,
     scaffold_hotfix_log,
 )
+from .nested_cli_runtime import exact_nested_cli_command
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
     """Reject machine-local command records before any artifact is written."""
@@ -296,7 +297,6 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
 
     project_python = python.absolute()
     tool_python = Path(sys.executable).absolute()
-    cli = [str(tool_python), "-m", "bcf_governance.cli"]
     graph_value_sources = (
         declared_graph_value_source_paths(repo_root)
         if (repo_root / "governance/ci-graph.yml").is_file()
@@ -443,8 +443,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         steps.append(
             ReconcileStep(
                 "semantic-lock",
-                _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
-                _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
+                _reconcile_action(repo_root, "semantic-lock", exact_nested_cli_command("semantic-ownership", "lock", "--repo-root", str(repo_root), "--check")),
+                _reconcile_action(repo_root, "semantic-lock", exact_nested_cli_command("semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply")),
                 apply_verifies=True,
                 watch_paths=(
                     "bcf_governance/tooling/semantic_*",
@@ -462,7 +462,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             + ", ".join(present)
         )
     if declared_test_gates(repo_root):
-        common = [*cli, "test-manifest"]
+        common = exact_nested_cli_command("test-manifest")
         suffix = ["--all", "--repo-root", str(repo_root), "--python", str(project_python)]
         steps.append(
             ReconcileStep(
@@ -496,8 +496,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         steps.append(
             ReconcileStep(
                 f"ci-graph-{operation}",
-                _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--check"]),
-                _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--apply"]),
+                _reconcile_action(repo_root, f"ci-graph-{operation}", exact_nested_cli_command("ci", "graph", operation, "--repo-root", str(repo_root), "--check")),
+                _reconcile_action(repo_root, f"ci-graph-{operation}", exact_nested_cli_command("ci", "graph", operation, "--repo-root", str(repo_root), "--apply")),
                 watch_paths=(
                     "governance/ci-graph.yml",
                     "governance/ci-graph.lock.yml",
