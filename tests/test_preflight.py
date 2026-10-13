@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -1193,6 +1194,31 @@ def test_authored_phase_state_reports_computed_status_before_pair_mismatch(
     log_path.write_text(yaml.safe_dump(log, sort_keys=False))
 
     with pytest.raises(AuthoredPhaseStateError, match="verified and closed are computed"):
+        validate_authored_phase_state(repo)
+
+
+def test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    _copy_current_authored_phase_state(repo)
+    shutil.copytree(REPO_ROOT / "schemas", repo / "schemas")
+    ledger = yaml.safe_load((repo / "plans/phase-ledger.yml").read_text())
+    records = [
+        *ledger["hotfix_lane"]["open_records"],
+        *ledger["hotfix_lane"]["remediation_history"],
+    ]
+    for record in records:
+        relative = Path(record["hotfix_log"])
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((REPO_ROOT / relative).read_bytes())
+    malformed = repo / "phases/phase-31-hotfix04.yml"
+    payload = yaml.safe_load(malformed.read_text(encoding="utf-8"))
+    payload["execution_evidence"]["notes"][0] = {"not": "a string"}
+    malformed.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError, match="is not of type 'string'"):
         validate_authored_phase_state(repo)
 
 

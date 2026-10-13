@@ -217,6 +217,14 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     watched = set(phase_scope.watch_paths or ())
     assert active["workitems"] in watched
     assert active["log"] in watched
+    authored = next(step for step in reconcile_steps(root, Path(sys.executable)) if step.step_id == "authored-phase-state")
+    authored_watched = set(authored.watch_paths or ())
+    ledger = yaml.safe_load((root / "plans/phase-ledger.yml").read_text())
+    assert {
+        record["hotfix_log"]
+        for key in ("open_records", "remediation_history")
+        for record in ledger["hotfix_lane"][key]
+    } <= authored_watched
     assert {
         path
         for path in watched

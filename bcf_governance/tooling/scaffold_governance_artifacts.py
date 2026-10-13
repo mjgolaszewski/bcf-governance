@@ -304,12 +304,14 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     )
     from .governance_validation.authored_phase_state import (
         active_phase_paths,
+        validate_authored_hotfix_state,
         validate_authored_phase_state,
     )
     from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 
     phase_ledger_present = (repo_root / "plans/phase-ledger.yml").is_file()
     active_paths = active_phase_paths(repo_root) if phase_ledger_present else ()
+    hotfix_paths = validate_authored_hotfix_state(repo_root) if phase_ledger_present else ()
     steps: list[ReconcileStep] = []
     if phase_ledger_present:
         active_plan, active_workitems, active_log = active_paths
@@ -325,6 +327,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 active_plan,
                 active_workitems,
                 active_log,
+                *hotfix_paths,
             ),
         ))
         steps.append(ReconcileStep(

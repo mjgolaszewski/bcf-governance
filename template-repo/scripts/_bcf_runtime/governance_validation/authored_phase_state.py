@@ -57,12 +57,26 @@ def active_phase_paths(repo_root: Path) -> tuple[str, str, str]:
     )  # type: ignore[return-value]
 
 
+def validate_authored_hotfix_state(
+    repo_root: Path, ledger: dict[str, Any] | None = None
+) -> tuple[str, ...]:
+    """Delegate referenced hotfix validation to the canonical phase owner."""
+
+    from .phase_catalog import _validate_hotfix_lane
+
+    paths = _validate_hotfix_lane(
+        repo_root, {}, ledger or _load(repo_root / "plans/phase-ledger.yml")
+    )
+    return tuple(path.relative_to(repo_root).as_posix() for path in paths)
+
+
 def validate_authored_phase_state(repo_root: Path) -> dict[str, Any]:
     """Reject contradictory authored phase state before derived reconciliation."""
 
     product = _load(repo_root / "plans/product-spec.yml")
     build = _load(repo_root / "plans/build-plan.yml")
     ledger = _load(repo_root / "plans/phase-ledger.yml")
+    hotfix_paths = validate_authored_hotfix_state(repo_root, ledger)
     memory = _load(repo_root / "MEMORY.yml")
     product_phases = _phase_map(product.get("execution_phases"), context="product-spec execution_phases")
     build_phases = _phase_map(build.get("phase_sequence"), context="build-plan phase_sequence")
@@ -127,4 +141,9 @@ def validate_authored_phase_state(repo_root: Path) -> dict[str, Any]:
     for key, expected in expected_memory.items():
         if artifacts.get(key) != expected:
             raise AuthoredPhaseStateError(f"MEMORY active_artifacts.{key} must be {expected!r}")
-    return {"phase_id": phase_id, "build_block": build_block, "paths": list(paths)}
+    return {
+        "phase_id": phase_id,
+        "build_block": build_block,
+        "paths": list(paths),
+        "hotfix_paths": list(hotfix_paths),
+    }

@@ -1096,7 +1096,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/authored_phase_state.py": {
       "operation": "copy",
-      "sha256": "acbbf0d9bb3737f40758d486f63ec00f2fdc83c796c52510a2a7a60cd935fb46"
+      "sha256": "389d699fdbc52250895237c6aead99b9f37fbb8e924e224f4db69a0384234abd"
     },
     "scripts/_bcf_runtime/governance_validation/ci_state_matrix.py": {
       "operation": "copy",
@@ -1383,7 +1383,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "7d36cfe9b38d2add66c88dd6aa778d6d1935a560c3fa3f8175ba662b00ea297f"
+      "sha256": "eafca27f3a0660a043648d8a4e159f94969c330a83c43d9168795ea47da42fbc"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",
