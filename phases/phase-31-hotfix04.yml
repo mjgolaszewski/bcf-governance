@@ -4,7 +4,7 @@ document:
   id: project-phase-31-hotfix04
   version: 1.0.0
   generated_at_utc: '2026-10-13T00:00:00Z'
-  status: planned
+  status: active
   path: phases/phase-31-hotfix04.yml
 hotfix:
   id: P31-HF04
@@ -15,10 +15,25 @@ hotfix:
 execution_evidence:
   planned_commands:
   - bcf ci submit --repo-root .
-  executed_commands: []
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_doctor_governance_pack.py
+  - .venv/bin/python -m bcf_governance.cli reconcile --repo-root . --check
+  - bcf install --target <disposable-bdmcp-clone> --upgrade --candidate-qualification-source
+    . --require-strict-validation
+  - bcf install --target <disposable-agentbus-clone> --upgrade --candidate-qualification-source
+    . --require-strict-validation
+  - bcf validate --repo-root <disposable-agentbus-clone> --format json --compact
   notes:
   - record failing workflows, diagnosed root cause, remediation scope, and merge-back
     status
+  - BDMCP strict Lite qualification passed; declared nested test paths no longer
+    enter production LOC accounting and dotted Docker Go-template fields remain
+    foreign to BCF placeholder grammar.
+  - AgentBus strict Standard-v3 qualification passed; three authenticated
+    supplemental publications validate as typed children of their phase-owning
+    parent with exact commit, tree, archive digest, and provider receipt custody.
+  - Racecar reported no additional BCF-owned defect; its observed expired Trivy
+    preparation cache is project-owned and excluded from this repair.
 closeout_requirements:
   claims:
     required_suites_green:
