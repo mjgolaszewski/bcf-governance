@@ -43,6 +43,7 @@ from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     derive_interpreter_environment,
+    probe_interpreter_environment,
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
@@ -312,56 +313,10 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
     if plan is None:
         return {}
     identity = _interpreter_identity(python)
-    probe = (
-        "import importlib.metadata as m,json,platform,sys\n"
-        "from packaging.requirements import Requirement\n"
-        "from packaging.specifiers import SpecifierSet\n"
-        "requirements=json.loads(sys.argv[1])\n"
-        "versions={}\n"
-        "for raw in requirements:\n"
-        " req=Requirement(raw)\n"
-        " if req.marker is not None and not req.marker.evaluate(): continue\n"
-        " installed=m.version(req.name)\n"
-        " if req.specifier and not req.specifier.contains(installed,prereleases=True):\n"
-        "  raise SystemExit(f'{req.name} {installed} violates {req.specifier}')\n"
-        " versions[req.name]=installed\n"
-        "if sys.argv[2]:\n"
-        " python_spec=SpecifierSet(sys.argv[2])\n"
-        " python_version=platform.python_version()\n"
-        " if not python_spec.contains(python_version,prereleases=True):\n"
-        "  raise SystemExit(f'Python {python_version} violates {python_spec}')\n"
-        "print(json.dumps(versions,sort_keys=True))\n"
-    )
     try:
-        result = subprocess.run(
-            [
-                str(python),
-                "-I",
-                "-c",
-                probe,
-                json.dumps(list(plan.requirements)),
-                plan.requires_python or "",
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise PreflightError("selected interpreter dependency probe failed") from exc
-    if result.returncode:
-        diagnostic = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown"
-        raise PreflightError(
-            "selected interpreter dependency contract failed: " + diagnostic
-        )
-    try:
-        versions = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise PreflightError("selected interpreter dependency probe was invalid") from exc
-    if not isinstance(versions, dict) or {
-        re.sub(r"[-_.]+", "-", value).lower() for value in versions
-    } != set(plan.distribution_names):
-        raise PreflightError("selected interpreter dependency inventory is incomplete")
+        versions = probe_interpreter_environment(plan, python)
+    except InterpreterEnvironmentError as exc:
+        raise PreflightError(str(exc)) from exc
     return {
         "identity": identity,
         "versions": {str(key): str(value) for key, value in sorted(versions.items())},

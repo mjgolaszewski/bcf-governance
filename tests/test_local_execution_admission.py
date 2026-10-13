@@ -6,6 +6,7 @@ import sys
 
 import pytest
 
+from bcf_governance.tooling.interpreter_environment import InterpreterEnvironmentError
 from bcf_governance.tooling.local_execution_admission import (
     ensure_local_project_python,
     LocalExecutionAdmissionError,
@@ -175,9 +176,91 @@ def test_adopter_without_environment_derives_project_python(
         "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
         materialize,
     )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.derive_interpreter_environment",
+        lambda _root: object(),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.probe_interpreter_environment",
+        lambda _plan, _python: {},
+    )
 
     assert ensure_local_project_python(tmp_path, Path(sys.executable)) == derived
     assert calls == [(tmp_path, Path(sys.executable))]
+
+
+def test_incomplete_implicit_project_environment_is_mechanically_replaced_before_reconcile(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller/bin/python"
+    project = tmp_path / ".venv/bin/python"
+    for executable in (controller, project):
+        executable.parent.mkdir(parents=True)
+        executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        executable.chmod(0o755)
+        (executable.parent.parent / "pyvenv.cfg").write_text(
+            "home = exact\n", encoding="utf-8"
+        )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.derive_interpreter_environment",
+        lambda _root: object(),
+    )
+
+    derived = tmp_path / ".artifacts/project/bin/python"
+    observations: list[Path] = []
+
+    def probe(_plan: object, selected: Path) -> dict[str, str]:
+        observations.append(selected)
+        if selected == project:
+            raise InterpreterEnvironmentError(
+                "selected interpreter dependency contract failed: build missing"
+            )
+        assert selected == derived
+        return {"build": "1.6.1"}
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.probe_interpreter_environment",
+        probe,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.validate_local_toolchain",
+        lambda *_args, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
+        lambda _root, _controller: derived,
+    )
+
+    assert ensure_local_project_python(tmp_path, controller) == derived
+    assert observations == [project, derived]
+
+
+def test_incomplete_explicit_project_environment_rejects_without_replacement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller/bin/python"
+    project = tmp_path / "project/bin/python"
+    for executable in (controller, project):
+        executable.parent.mkdir(parents=True)
+        executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        executable.chmod(0o755)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.derive_interpreter_environment",
+        lambda _root: object(),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.probe_interpreter_environment",
+        lambda _plan, _selected: (_ for _ in ()).throw(
+            InterpreterEnvironmentError("build missing")
+        ),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
+        lambda *_args: pytest.fail("explicit interpreter was silently replaced"),
+    )
+
+    with pytest.raises(LocalExecutionAdmissionError, match="build missing"):
+        ensure_local_project_python(tmp_path, controller, requested=project)
 
 
 def test_adopter_environment_is_not_materialized_from_wrong_python_minor(

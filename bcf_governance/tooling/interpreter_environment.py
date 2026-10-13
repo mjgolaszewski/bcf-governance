@@ -35,6 +35,22 @@ class InterpreterEnvironmentError(ValueError):
 PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.1"
 
 
+def _interpreter_subprocess_environment(python: Path) -> dict[str, str]:
+    """Remove controller-only Python custody from project interpreter work."""
+
+    environment = dict(os.environ)
+    for name in ("PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"):
+        environment.pop(name, None)
+    bin_directory = python.absolute().parent
+    environment["PATH"] = str(bin_directory) + (
+        os.pathsep + environment["PATH"] if environment.get("PATH") else ""
+    )
+    prefix = bin_directory.parent
+    if bin_directory.name == "bin" and (prefix / "pyvenv.cfg").is_file():
+        environment["VIRTUAL_ENV"] = str(prefix)
+    return environment
+
+
 def validate_runtime_import_dependencies(repo_root: Path) -> None:
     """Fail before evidence if self runtime imports undeclared distributions."""
 
@@ -113,6 +129,7 @@ class InterpreterEnvironmentPlan:
                 digest.update(chunk)
         return digest.hexdigest()
 
+
     @property
     def installation_path(self) -> Path | None:
         """Return the authenticated dependency input consumed by pip."""
@@ -129,6 +146,64 @@ class InterpreterEnvironmentPlan:
                 "interpreter dependency projection is unavailable"
             )
         return ("--requirement", str(self.projection_path))
+
+
+def probe_interpreter_environment(
+    plan: InterpreterEnvironmentPlan, python: Path
+) -> dict[str, str]:
+    """Authenticate the complete installed dependency plan for one interpreter."""
+
+    probe = (
+        "import importlib.metadata as m,json,platform,sys\n"
+        "from packaging.requirements import Requirement\n"
+        "from packaging.specifiers import SpecifierSet\n"
+        "requirements=json.loads(sys.argv[1])\n"
+        "versions={}\n"
+        "for raw in requirements:\n"
+        " req=Requirement(raw)\n"
+        " if req.marker is not None and not req.marker.evaluate(): continue\n"
+        " installed=m.version(req.name)\n"
+        " if req.specifier and not req.specifier.contains(installed,prereleases=True):\n"
+        "  raise SystemExit(f'{req.name} {installed} violates {req.specifier}')\n"
+        " versions[req.name]=installed\n"
+        "if sys.argv[2]:\n"
+        " python_spec=SpecifierSet(sys.argv[2])\n"
+        " python_version=platform.python_version()\n"
+        " if not python_spec.contains(python_version,prereleases=True):\n"
+        "  raise SystemExit(f'Python {python_version} violates {python_spec}')\n"
+        "print(json.dumps(versions,sort_keys=True))\n"
+    )
+    try:
+        result = subprocess.run(
+            [str(python), "-I", "-c", probe, json.dumps(list(plan.requirements)), plan.requires_python or ""],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=_interpreter_subprocess_environment(python),
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise InterpreterEnvironmentError(
+            "selected interpreter dependency probe failed"
+        ) from exc
+    if result.returncode:
+        diagnostic = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown"
+        raise InterpreterEnvironmentError(
+            "selected interpreter dependency contract failed: " + diagnostic
+        )
+    try:
+        versions = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise InterpreterEnvironmentError(
+            "selected interpreter dependency probe was invalid"
+        ) from exc
+    if not isinstance(versions, dict) or {
+        re.sub(r"[-_.]+", "-", value).lower() for value in versions
+    } != set(plan.distribution_names):
+        raise InterpreterEnvironmentError(
+            "selected interpreter dependency inventory is incomplete"
+        )
+    return {str(key): str(value) for key, value in sorted(versions.items())}
 
 
 def _dependency_name(value: object) -> str:
@@ -528,6 +603,7 @@ def materialize_interpreter_environment(
                 capture_output=True,
                 text=True,
                 check=False,
+                env=_interpreter_subprocess_environment(base_python),
             )
             if created.returncode != 0:
                 detail = created.stderr.strip() or created.stdout.strip() or "venv creation failed"
@@ -551,6 +627,7 @@ def materialize_interpreter_environment(
                 capture_output=True,
                 text=True,
                 check=False,
+                env=_interpreter_subprocess_environment(candidate),
             )
             if installed.returncode != 0:
                 detail = installed.stderr.strip() or installed.stdout.strip() or "dependency installation failed"
@@ -650,6 +727,7 @@ def _installed_inventory(python: Path, repo_root: Path) -> str:
         capture_output=True,
         text=True,
         check=False,
+        env=_interpreter_subprocess_environment(python),
     )
     if result.returncode != 0:
         detail = result.stderr.strip() or result.stdout.strip() or "inventory failed"
