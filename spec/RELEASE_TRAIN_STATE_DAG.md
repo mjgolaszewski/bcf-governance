@@ -1893,6 +1893,7 @@ phase/release authority can proceed.
 | A governed upgrade retains an authenticated existing-repository native baseline | exact maintained Git commit/tree/ancestry, installed baseline transition and file digests, candidate pack and transaction path set | the installer authenticates the baseline in the maintained repository, derives that Git custody is a required transaction input, and creates the validation shadow with the same reachable history before projecting candidate bytes | candidate strict validation reauthenticates the unchanged baseline inside the atomic shadow; rollback and the maintained repository remain byte-identical on failure | omitting `.git` from a history-dependent shadow, rebinding the baseline to the upgrade candidate, manufacturing ancestry, weakening native-baseline validation, or requiring the adopter to rewrite valid custody |
 | An authenticated native-baseline file is edited or deleted during ordinary governed development | exact historical source commit/tree and source digest, unique safe projected path, recorded projected digest, and current path type/bytes | the native-baseline classifier keeps the immutable historical record but admits only exact unchanged projected bytes into the exemption set; changed or absent files deterministically leave that set and every downstream policy evaluates current bytes as ordinary governed content | unchanged native bytes retain exact custody while evolved content has no inherited exemption or evidence authority | rejecting all ordinary evolution, rewriting historical hashes, treating changed bytes as authenticated, accepting a symlink/non-file replacement, or requiring an operator-authored retirement step |
 | A governed document names a dotfile whose suffix is also a private-hostname TLD | exact lexical token boundaries plus the private-hostname grammar and scanned file/line identity | the exposure scanner classifies hostname tokens only when their first label is not preceded by a dot; dotfile names such as `.env.local` remain ordinary text while actual `service.local`, URLs, and host fields remain findings | security guidance may name local secret-bearing dotfiles without suppressing real private-infrastructure disclosure | path-specific allowlists, inline suppression, globally allowing `.local`, losing real hostname findings, or asking the adopter to rename a valid environment-file contract |
+| A profile-v1 adopter upgrades while preserving its canonical gate registry | exact installed `governance/gate-contracts.yml`, profile contract version, candidate pack identity and transaction subject | the installer invokes the canonical profile-surface renderer exactly once from the preserved gate registry after migrations; no release-catalog or template path independently authors `Makefile.fragment` | strict upgrade exits with `Makefile.fragment` already equal to reconcile `--check`, preserving the exact required gate set and canonical order | a second upgrade-only producer, including deferred gates, catalog-order output, template overwrite, successful strict validation followed by reconcile drift, or an operator repair command |
 | A local producer fails after emitting diagnostics larger than the inline report bound | exact candidate commit/tree, evidence session, producer/group identity, selected environment, exit status, receipt/JUnit paths and complete stdout/stderr | the proof-bundle owner writes one bounded failure bundle outside the disposable execution tree before unwinding; the diagnostic projection preserves a fixed causal head and tail with explicit omitted-byte accounting while exact available structured artifacts are copied and digested | the first causal exception, terminal context and subject/session/environment bindings remain inspectable without rerunning unchanged failed evidence | tail-only truncation, an unbound log fragment, deletion with the temporary worktree, unbounded retained output, treating diagnostic retention as passing evidence, or retrying to recover lost diagnostics |
 | A gate or mutation control allocates an execution-scoped external resource | exact execution/session namespace, workload contract and gate invocation | the runtime exports the owned namespace; the gate derives every mutable resource identity from it and terminal cleanup removes only that exact namespace | concurrent baseline, mutation, adopter and repository runs cannot observe or overwrite one another | a constant Docker tag/database/cache name, global prune, wildcard ownership, implicit persistence, or treating a project-owned unnamespaced resource as BCF evidence |
 
@@ -1906,6 +1907,8 @@ invariants
     authenticated inputs without requiring a remembered migration;
   transaction shadows preserve every authenticated input required by their
     own strict-validation consumers;
+  every generated profile surface has one canonical producer during install,
+    upgrade, reconciliation and validation;
   failed local execution retains bounded causal diagnostics without converting
     failure material into reusable proof;
   execution-scoped resources are uniquely named by their authenticated owner
@@ -1916,6 +1919,7 @@ invariants
        workflow definition/pin digest and clean Git identity,
        profile version, graph Python requirement and governance dependency digest,
        authenticated native-baseline history requirement and transaction shadow,
+       preserved gate-registry identity and canonical profile-surface projection,
        subject/session/producer/environment identity and bounded diagnostic projection,
        execution/session/workload namespace identity
       -> contracts
@@ -1925,6 +1929,7 @@ invariants
          render -> pin -> reconcile -> derive prospective identity;
          classify interpreter contract -> compile exact dependency plan -> isolate environment;
          authenticate native baseline -> derive history requirement -> validate in Git-preserving shadow;
+         authenticate preserved gate registry -> render profile surface once -> require fixed-point equality;
          capture failure -> retain structured artifacts plus causal head/tail -> reject evidence;
          allocate exact namespace -> derive resources -> exact-owner cleanup
         -> producers
@@ -1933,7 +1938,7 @@ invariants
            release catalog/schema/validator/upgrade owner,
            graph renderer, authority projector and prospective front door,
            interpreter environment compiler and runtime namespace allocator
-           installer transaction compiler and native-adoption authenticator
+           installer transaction compiler, native-adoption authenticator and profile-surface renderer
            local proof-bundle producer and failure-custody writer
           -> consumers
              reconcile and strict install, doctor and adopter reporting,
