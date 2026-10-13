@@ -1722,6 +1722,8 @@ no plan may delete an object reachable from a protected retention root.
 | Splinter execution has no authenticated predecessor proof | exact current partition and an empty provider-selected prior-proof inventory | execute every splinter and persist each terminal success independently before aggregate closure | fresh acceleration proofs for successful splinters and no skipped work | caller-selected absence, inferred cache hit, or omission from aggregate accounting |
 | Prior-attempt splinter proof is exactly applicable | provider-authenticated artifact from the exact terminal shard job and a successful embedded splinter result; exact repository, workflow, run, earlier attempt, subject/tree, session, partition, command, toolchain, policy, node inventory and dependency-input digests | materialize the proof through the canonical resolver, reverify every member, and record the splinter as reused without executing its command | one acceleration-only reused result in the current aggregate accounting | artifact name alone, aggregate job success, candidate assertion, partial identity, mutable cache path, or proof authority beyond execution acceleration |
 | Prior-attempt splinter proof is absent, failed, malformed, ambiguous, stale, or identity-mismatched | complete bounded predecessor-attempt inventory plus the exact current splinter identity | record one typed recomputation reason and execute only that splinter; malformed provider custody fails before materialization | fresh proof replaces no historical bytes and aggregate coverage remains exact | silently accepting nearby bytes, deleting originals, broad attempt fallback, or recomputing exact applicable siblings |
+| Retry-capable evidence shard can resolve prior-attempt provider proofs | exact gate-shard executor, capture component, provider API operation and job permission map | derive the component's least read capability (`actions:read`) into every reachable producer job during install/upgrade/reconcile; validate the component-to-job permission edge before rendering or evidence allocation | first attempts remain ordinary execution and later attempts may authenticate exact prior artifacts without acquiring write authority | token presence without provider permission, preserving a legacy `contents:read`-only producer, granting write authority, or discovering HTTP 403 after fan-out |
+| Retry-capable evidence shard lacks its declared provider read capability | same exact graph edge with absent, `none`, malformed or conflicting permission | reject graph compilation/upgrade before workflow projection; a known legacy canonical edge may be migrated only by the canonical upgrade/reconcile owner | typed deterministic permission-contract failure with no provider execution | runtime best effort, silently disabling reuse, agent-authored workflow permission, repository-specific exception, or treating denial as semantic evidence failure |
 | Reused and fresh splinter results reach aggregate fan-in | immutable partition plus one current execution accounting entry for every splinter | require exact union, zero overlap, successful result, clean owned-state retirement and byte-valid JUnit for every entry before emitting the ordinary gate receipt | unchanged aggregate claim proposition and ordinary truth path | partial aggregate truth, duplicated nodes, missing cleanup observation, or a splinter proof emitted as a claim receipt |
 | Splinter proof bytes cross execution-worktree into receipt capture | exact repository root, governed report path and proof/JUnit members projected as repository-relative paths | resolve every declared member beneath the executing repository, reject escape or absence, then copy exact bytes into the existing shard receipt artifact | one path-stable proof inventory consumable by local and provider capture | cwd-relative shorthand, host-absolute path, missing artifact, or accepting a successful command without a capturable proof |
 | Immutable provider comparison is transiently unavailable | exact repository, base/head subjects and the canonical bounded read policy | retry the same read mechanically with bounded backoff inside the owning operation; preserve the original identity throughout | one exact comparison or one typed exhausted-read failure | agent-selected workflow rerun, changing subject/attempt to obtain a response, unbounded polling, or treating transport failure as semantic mismatch |
@@ -2058,6 +2060,33 @@ apply; adopter upgrade; PR and exact-main; bounded truth, finalizer, publisher,
 successor eligibility, and release rejection. Storage accounting reports Actions
 bytes, durable unique-input bytes, run-output bytes, and transfer separately;
 those measurements confer no authority.
+
+For provider-capable execution, the same outward construction is mandatory:
+
+```text
+invariants
+  every provider API operation is declared at its semantic execution owner;
+  every reachable job has the least sufficient provider permission before execution;
+  read capability never broadens into mutation authority
+    -> primitives
+       typed component required-permission map, job permission lattice,
+       executor-to-component reachability and canonical legacy-edge classifier
+      -> contracts
+         component requirements union -> job sufficiency validation ->
+         canonical install/upgrade/reconcile projection -> rendered workflow parity
+        -> producers
+           evidence capture component, CI graph compiler and adopter upgrader
+          -> consumers
+             PR evidence shards, retry proof resolver, workflow renderer,
+             candidate preflight and adopter qualification
+```
+
+First-attempt execution is not structurally excluded from this edge: the same
+job is retry-capable even when the current attempt does not make the provider
+read. Scheduled jobs and jobs without the capture component are structurally
+unreachable and acquire no permission. A legacy canonical capture edge is
+migratable only when its command, component and existing read-only permission
+state are unambiguous; customization or contradiction fails before mutation.
 
 ### P30/P31 outward construction tree
 
