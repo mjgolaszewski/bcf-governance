@@ -65,6 +65,12 @@ execution_evidence:
     apply and check. A fresh disposable Lite clone passed strict install,
     fixed-point reconciliation, direct graph parity, canonical interpreter
     materialization, and observation-only prospective closure.
+  - >-
+    The exact self prospective train exposed a distinct projectionless modern
+    interpreter state. Direct validation now preserves the typed dependency
+    probe for that state, while only authenticated legacy requirements or a
+    modern requirements projection may materialize a fresh environment. The
+    causal node and all legacy N/N+1 environment regressions pass.
 closeout_requirements:
   claims:
     required_suites_green:

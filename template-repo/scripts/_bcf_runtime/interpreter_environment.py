@@ -374,6 +374,12 @@ def verify_interpreter_environment_projection(
     path = plan.projection_path
     if path is None:
         if (
+            plan.source_kind == "project_metadata_projection"
+            and plan.source_path is None
+            and plan.source_sha256 is None
+        ):
+            return
+        if (
             plan.source_kind != "legacy_governance_requirements"
             or plan.source_path is None
             or plan.source_sha256 is None
