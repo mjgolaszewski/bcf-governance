@@ -447,6 +447,7 @@ not BCF custody evidence and cannot be laundered into a BCF failure or success.
 | controller and project virtual environments have distinct lexical environment roots but resolve their `bin/python` symlinks to the same base executable | exact lexical executable, normalized virtual-environment root, resolved base executable, and installed distribution inventory for each role | compare the owned environment identities rather than treating the shared base binary as shared package custody | distinct controller/project environments remain admissible; an identical lexical environment or environment root rejects before reconcile |
 | repository-local project interpreter is missing, non-executable, or fails its dependency contract | exact lexical path, resolved executable, version, and dependency inventory | local execution admission | reject before preflight/evidence; never fall back to another ambient Python |
 | controller is loaded through `PYTHONPATH` or another controller-only Python environment | exact controller environment plus selected project interpreter | project-environment projection removes controller import/home/venv state and binds the selected repository environment before spawning project validation | project imports resolve only from the adopter checkout and selected project environment; controller paths cannot shadow adopter modules |
+| pytest population collection fails while writing causal detail to both output streams | exact gate selectors, selected project interpreter, sanitized project environment, exit status, stdout and stderr | the manifest owner executes collection in the canonical project environment and projects both bounded nonempty streams into one typed infrastructure diagnostic | the earliest import/collection cause remains visible without rerunning the failed population; no manifest or evidence is emitted | inheriting controller-only import paths, choosing stderr while discarding causal stdout, unbounded log retention, or treating partial collection as a valid population |
 | ambient Node is declared version | resolved executable path, version, executable digest | locked toolchain owner | accept exact binary |
 | ambient Node differs but the toolchain manager exposes the declared sibling | resolved manager layout and declared version | locked toolchain owner selects sibling mechanically | prepend selected binary for the whole train; no agent PATH action |
 | declared Node unavailable | exact discovery inventory | local execution admission | reject before reconcile |
@@ -1915,6 +1916,8 @@ invariants
     and ordinary adopter protection authority never implies self-only bytes;
   local validation lane follows exact custody and comparison-base identity,
     never an agent-selected command variant;
+  project test discovery inherits only the mechanically projected project
+    environment and preserves every bounded causal diagnostic stream;
   failed local execution retains bounded causal diagnostics without converting
     failure material into reusable proof;
   execution-scoped resources are uniquely named by their authenticated owner
@@ -1928,6 +1931,8 @@ invariants
        preserved gate-registry identity and canonical profile-surface projection,
        lane, direct graph digest, provider repository name/ID and protection applicability,
        candidate-qualification marker plus exact adopter/comparison-base identity,
+       selected project interpreter plus controller-free environment projection,
+       exact selector union plus bounded stdout/stderr diagnostic projection,
        subject/session/producer/environment identity and bounded diagnostic projection,
        execution/session/workload namespace identity
       -> contracts
@@ -1940,6 +1945,8 @@ invariants
          authenticate preserved gate registry -> render profile surface once -> require fixed-point equality;
          compile submission authority -> bind lane-scoped protection identity -> prospective proof -> exact idempotent provider mutation;
          inspect custody -> authenticate comparison base -> derive validation lane -> enforce the lane's changelog proposition;
+         select project interpreter -> sanitize controller environment -> collect one exact selector union;
+         failed collection -> retain bounded stdout and stderr -> reject every dependent manifest;
          capture failure -> retain structured artifacts plus causal head/tail -> reject evidence;
          allocate exact namespace -> derive resources -> exact-owner cleanup
         -> producers
@@ -1951,6 +1958,7 @@ invariants
            installer transaction compiler, native-adoption authenticator and profile-surface renderer
            candidate submit authority compiler and protected-merge frontier
            local PR context and candidate-qualification custody classifier
+           project-environment projector and canonical test-manifest collector
            local proof-bundle producer and failure-custody writer
           -> consumers
              reconcile and strict install, doctor and adopter reporting,
@@ -1960,6 +1968,7 @@ invariants
              strict upgrade validation and atomic rollback
              prospective train, exact push/PR reuse and provider auto-merge
              cheap preflight and cumulative changelog validation
+             preflight population verification, evidence planning and mutation-oracle resolution
              prospective reporting and operator diagnosis only, never truth/certification
 ```
 
