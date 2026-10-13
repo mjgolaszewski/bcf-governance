@@ -89,6 +89,15 @@ execution_evidence:
     validates the graphless packaged interpreter contract before evidence
     allocation, and the exact failing nodes plus adjacent legacy/current/
     adversarial states pass locally.
+  - >-
+    Adopter work after the first candidate exposed three additional deterministic
+    consumer states before release submission. Independent TODO successors now
+    derive phase-scoped PR-progress metadata from the same canonical proposition
+    at prospective and submit boundaries. Authenticated native-baseline history
+    remains immutable while only byte-identical projected files retain its
+    exemption; edited or deleted files re-enter ordinary governance policy, and
+    unsafe path types still reject. Exposure scanning distinguishes dotfile
+    names such as `.env.local` from real private hostnames without an allowlist.
 closeout_requirements:
   claims:
     required_suites_green:

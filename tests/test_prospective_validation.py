@@ -12,6 +12,7 @@ import pytest
 
 from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
+from bcf_governance.tooling import prospective_candidate_identity as candidate_identity
 from bcf_governance.tooling import local_proof_bundles
 from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
@@ -113,30 +114,37 @@ def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_ch
 ) -> None:
     context = SimpleNamespace()
     monkeypatch.setattr(
-        prospective, "resolve_local_pr_context", lambda *_args, **_kwargs: context
+        candidate_identity, "resolve_local_pr_context", lambda *_args, **_kwargs: context
     )
     monkeypatch.setattr(
-        prospective,
+        candidate_identity,
         "_candidate_identity",
         lambda *_args, **_kwargs: SimpleNamespace(commit_sha=HEAD, tree_sha=TREE),
     )
     monkeypatch.setattr(
-        prospective,
+        candidate_identity,
         "validate_ci_graph",
         lambda *_args: SimpleNamespace(graph={}),
     )
     monkeypatch.setattr(
-        prospective,
+        candidate_identity,
         "post_merge_evaluation",
         lambda *_args: SimpleNamespace(mode="workitem", target="P27-P0-03"),
     )
+    observed: list[tuple[str, str | None]] = []
+    monkeypatch.setattr(
+        candidate_identity,
+        "authored_candidate_title",
+        lambda _root, *, mode, target: observed.append((mode, target)) or "candidate",
+    )
 
-    assert prospective.canonical_prospective_inputs(tmp_path) == {
+    assert candidate_identity.canonical_prospective_inputs(tmp_path) == {
         "semantic_intent": "workitem",
         "evaluation_target": "P27-P0-03",
         "subject_commit": HEAD,
         "subject_tree": TREE,
     }
+    assert observed == [("workitem", "P27-P0-03")]
 
 
 def test_planned_evidence_stops_on_first_failed_producer(

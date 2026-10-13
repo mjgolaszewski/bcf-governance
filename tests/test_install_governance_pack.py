@@ -388,12 +388,25 @@ testpaths = ["scripts/tests"]
     profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
 
     (target / "docs/testing.md").write_text(
+        "# Native testing\n\nPortable governed instructions.\n", encoding="utf-8"
+    )
+    assert "docs/testing.md" not in authenticated_native_adoption_files(target)
+    evolved = _run_installed_validator(target)
+    assert evolved.returncode == 0
+
+    (target / "docs/testing.md").write_text(
         "# Native testing\n\nChanged local output: `.artifacts/tests/report.json`.\n",
         encoding="utf-8",
     )
     invalid = _run_installed_validator(target)
     assert invalid.returncode == 1
-    assert "native baseline file binding is invalid" in invalid.stdout
+    assert "ephemeral evidence path without durable reference" in invalid.stdout
+
+    (target / "docs/testing.md").unlink()
+    (target / "docs/testing.md").symlink_to("../NATIVE.md")
+    unsafe = _run_installed_validator(target)
+    assert unsafe.returncode == 1
+    assert "native baseline file binding is invalid" in unsafe.stdout
 
 
 def test_existing_install_rejects_incomplete_root_metadata_before_mutation(

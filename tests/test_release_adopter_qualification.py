@@ -420,9 +420,11 @@ def test_external_virtual_environment_preserves_lexical_package_custody(
 def test_candidate_qualification_derives_the_closed_observation_lane(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    from bcf_governance.tooling import prospective_candidate_identity
+
     captured: dict[str, object] = {}
     monkeypatch.setattr(
-        local_pr,
+        prospective_candidate_identity,
         "canonical_prospective_inputs",
         lambda _root, **_kwargs: {
             "semantic_intent": "pr",

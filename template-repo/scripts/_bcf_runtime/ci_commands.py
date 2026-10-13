@@ -41,9 +41,9 @@ from .local_pr_context import (
 )
 from .local_pr import (
     ProspectiveValidationError,
-    canonical_prospective_inputs,
     run_prospective_train,
 )
+from .prospective_candidate_identity import canonical_prospective_inputs
 from .local_execution_admission import (
     ensure_local_project_python,
     LocalExecutionAdmissionError,

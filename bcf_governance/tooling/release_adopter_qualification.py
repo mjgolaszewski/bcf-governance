@@ -134,8 +134,9 @@ def run_candidate_qualification_train(
 ) -> dict[str, Any]:
     """Execute one typed, observation-only adopter qualification proof."""
 
-    from .local_pr import canonical_prospective_inputs, run_prospective_train
+    from .local_pr import run_prospective_train
     from .local_pr_context import LocalValidationLane
+    from .prospective_candidate_identity import canonical_prospective_inputs
 
     canonical = canonical_prospective_inputs(
         repo_root, remote=_QUALIFICATION_BASE_REMOTE

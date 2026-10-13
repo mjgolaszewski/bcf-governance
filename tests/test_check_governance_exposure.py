@@ -52,6 +52,25 @@ def test_exposure_scan_does_not_treat_dotted_semantic_ids_as_hostnames(
     assert report.findings == []
 
 
+def test_exposure_scan_distinguishes_dotfile_names_from_private_hostnames(
+    tmp_path: Path,
+) -> None:
+    scanner = _load_scanner_module()
+    repo = tmp_path / "repo"
+    (repo / "plans").mkdir(parents=True)
+    (repo / "plans/security.yml").write_text(
+        "ignored_files: [.env.local, .env.runner]\n"
+        "private_service: api.service.local\n",
+        encoding="utf-8",
+    )
+
+    report = scanner.scan_exposures(repo, paths=["plans"])
+
+    assert [(finding.pattern, finding.match) for finding in report.findings] == [
+        ("private_hostname", "api.service.local")
+    ]
+
+
 def test_exposure_scan_flags_local_paths_and_private_infra(tmp_path: Path) -> None:
     scanner = _load_scanner_module()
     repo = tmp_path / "repo"

@@ -13,16 +13,20 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Closed existing-repository adoption classification at its canonical owners:
   declared nested test roots and production exclusions now reach structural LOC
   enforcement, valid native Docker Go-template fields remain distinct from BCF
-  scaffold placeholders, and authenticated supplemental publications retain
-  immutable custody beneath one phase-owning release without inventing phases
-  or acquiring lifecycle authority.
+  scaffold placeholders, evolved native-baseline files automatically lose their
+  historical exemption, dotfile names remain distinct from private hostnames,
+  and authenticated supplemental publications retain immutable custody beneath
+  one phase-owning release without inventing phases or acquiring lifecycle
+  authority.
 - Made legacy Lite environments, history-dependent native baselines, and nested
   reconciliation derive from authenticated inputs: isolated interpreters bind
   exact governed requirements and graph runtime pins when available, graphless
   v1 repositories retain dependency validation without inventing a Python pin,
   atomic upgrade shadows preserve Git history only when required, and every
   nested BCF projection uses the exact invoking runtime rather than an ambient
-  installation.
+  installation. Parallel unfinished work now derives phase-scoped PR-progress
+  metadata from the same authenticated proposition used by prospective proof
+  and submission, without inventing dependencies or requiring manual activation.
 - Retained bounded diagnostic custody for failed local producers, including
   causal head and terminal tail, omitted-byte accounting, and exact execution
   identity, while keeping all failed material ineligible for reuse or authority.

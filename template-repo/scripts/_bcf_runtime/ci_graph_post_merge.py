@@ -264,6 +264,16 @@ def authored_candidate_title(
             for item in workitems
             if item.get("status") in {"IN_PROGRESS", "BLOCKED"}
         ]
+        if not selected:
+            unfinished = [
+                item for item in workitems if item.get("status") == "TODO"
+            ]
+            if not unfinished:
+                raise CIGraphError("candidate evaluation proposition is not unique")
+            title = f"{phase_id}: advance governed PR progress"
+            if "\n" in title or len(title) > 256:
+                raise CIGraphError("candidate workitem title is invalid")
+            return title
     elif mode == "closure" and target is None:
         return f"{phase_id}: certify terminal phase closure"
     else:

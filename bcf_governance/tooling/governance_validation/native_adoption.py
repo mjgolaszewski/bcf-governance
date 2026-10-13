@@ -65,6 +65,7 @@ def _authenticated_native_adoption(
     if not isinstance(files, list):
         raise GovernanceValidationError("existing adoption native baseline files must be a list")
     authenticated: set[str] = set()
+    projected_paths: set[str] = set()
     for entry_value in files:
         entry = _require_mapping(entry_value, context="existing adoption native baseline file")
         source_path = _native_adoption_relative(
@@ -90,13 +91,14 @@ def _authenticated_native_adoption(
         if (
             original.returncode
             or hashlib.sha256(original.stdout).hexdigest() != source_sha
-            or not projected.is_file()
-            or projected.is_symlink()
-            or hashlib.sha256(projected.read_bytes()).hexdigest() != projected_sha
-            or projected_path in authenticated
+            or projected_path in projected_paths
         ):
             raise GovernanceValidationError("existing adoption native baseline file binding is invalid")
-        authenticated.add(projected_path)
+        projected_paths.add(projected_path)
+        if projected.is_symlink() or (projected.exists() and not projected.is_file()):
+            raise GovernanceValidationError("existing adoption native baseline file binding is invalid")
+        if projected.is_file() and hashlib.sha256(projected.read_bytes()).hexdigest() == projected_sha:
+            authenticated.add(projected_path)
     return True, authenticated
 
 

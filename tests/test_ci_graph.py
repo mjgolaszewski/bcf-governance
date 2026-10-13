@@ -293,6 +293,29 @@ def test_candidate_title_rejects_ambiguous_active_workitems(tmp_path: Path) -> N
         authored_candidate_title(tmp_path, mode="pr", target=None)
 
 
+def test_candidate_title_derives_phase_progress_for_parallel_todo_workitems(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P01",
+            "workitems": "plans/phase-01-workitems.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P01-P0-01", "status": "DONE", "summary": "foundation"},
+            {"id": "P01-P0-02", "status": "TODO", "summary": "parallel alpha"},
+            {"id": "P01-P0-03", "status": "TODO", "summary": "parallel beta"},
+        ]}), encoding="utf-8"
+    )
+
+    assert authored_candidate_title(tmp_path, mode="pr", target=None) == (
+        "P01: advance governed PR progress"
+    )
+
+
 def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_work(
     tmp_path: Path,
 ) -> None:

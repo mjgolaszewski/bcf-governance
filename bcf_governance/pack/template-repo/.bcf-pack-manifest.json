@@ -488,7 +488,7 @@
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
-      "sha256": "1cb6a99dfe62dee3defd3d08b87a9f2e0485d63c0bea5573cd58e7a4ebcc2168"
+      "sha256": "2749adad257f8c7d2ec17dffa4a05a9135db55e83480690042325a605503c7ef"
     },
     "scripts/_bcf_runtime/ci_adopt_github.py": {
       "operation": "copy",
@@ -536,7 +536,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "e769a5c9b4d61303d25e712ff6f001879037a05f0d03330851b9dd277b5893c7"
+      "sha256": "021f83892263b562c0ed4733d3a6b6867c12e82aaa22df01341d8f33a09979d0"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -760,7 +760,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "6f3777e4e0ec5122e8a2a2f7287d287bbb74355e2da5052435a08832c0229a8b"
+      "sha256": "33b4a852020f973da61e8ef8a2af0ce7a5aee9400d5d729879eddd0ad300e06b"
     },
     "scripts/_bcf_runtime/ci_graph_pr_evaluator.py": {
       "operation": "copy",
@@ -1120,7 +1120,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/native_adoption.py": {
       "operation": "copy",
-      "sha256": "83d886a0ee93fc04d3a6cfc3ededa1ed776d472c5151d95a56aa7c00fe5fe2fb"
+      "sha256": "b5fbe918e0efa886dfe847f949005e94dd19c878fcb75edc915ccd0a69df52cc"
     },
     "scripts/_bcf_runtime/governance_validation/phase_artifacts.py": {
       "operation": "copy",
@@ -1203,7 +1203,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "be84139d445d16343dcc528e08608e419cec740d501ea151f3c3fc4f826df5a3"
+      "sha256": "7486990ae645f9d437cd9b5874f352e8f8b724cadac12957e3dfded8dfbea65f"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1273,6 +1273,10 @@
       "operation": "copy",
       "sha256": "9d2db288cd4b1eb266b6d91db8b44b318dc816b5f9fc321ba576f588200bd0f1"
     },
+    "scripts/_bcf_runtime/prospective_candidate_identity.py": {
+      "operation": "copy",
+      "sha256": "7e430b669add47129aaac419db0618284c7f0f3bcc9dac084860a4cf95a2b31a"
+    },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
       "sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
@@ -1307,7 +1311,7 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "50950d23b2e27f34f7f9004f4a4f1975ad8c023c6131cc9f5cb3c11813176397"
+      "sha256": "01c9978f5632be3e4925a6968ab355d3e470922fe61f2caf01a301fcde5440c3"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",

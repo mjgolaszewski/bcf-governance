@@ -6,6 +6,7 @@ from types import SimpleNamespace
 import pytest
 
 from bcf_governance.tooling import ci_authority_submit as submit
+from bcf_governance.tooling.ci_graph_post_merge import authored_candidate_title
 from bcf_governance.tooling.local_pr import (
     CandidateIdentity,
     LocalPRContext,
@@ -192,6 +193,66 @@ def test_submit_accepts_derived_pr_progress_without_terminal_target(
     assert observed == [("pr", None)]
     assert result["subject"] == identity.as_dict()
     assert result["branch"] == context.head_ref
+
+
+def test_submit_derives_phase_title_for_parallel_todo_progress(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    _state(monkeypatch)
+    monkeypatch.setattr(
+        submit,
+        "_canonical_inputs",
+        lambda *_a, **_k: ("pr", None, "owner/repo"),
+    )
+    monkeypatch.setattr(submit, "authored_candidate_title", authored_candidate_title)
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        "active_phase:\n"
+        "  id: P01\n"
+        "  workitems: plans/phase-01-workitems.yml\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        "workitems:\n"
+        "- {id: P01-P0-01, status: DONE, summary: foundation}\n"
+        "- {id: P01-P0-02, status: TODO, summary: parallel alpha}\n"
+        "- {id: P01-P0-03, status: TODO, summary: parallel beta}\n",
+        encoding="utf-8",
+    )
+    observed: list[str] = []
+    monkeypatch.setattr(
+        submit,
+        "ensure_candidate_pull_request",
+        lambda *_a, **kwargs: observed.append(kwargs["title"])
+        or {
+            "number": 7,
+            "node_id": "PR_exact7",
+            "state": "open",
+            "base_sha": "1" * 40,
+            "head_sha": "2" * 40,
+            "repository_id": 17,
+        },
+    )
+    monkeypatch.setattr(
+        submit,
+        "run_prospective_train",
+        lambda *_a, **_k: {
+            "status": "prospectively_admissible_provider_proof_required"
+        },
+    )
+    monkeypatch.setattr(submit, "_confirm_unchanged", lambda *_a, **_k: None)
+
+    submit.submit_candidate(
+        tmp_path,
+        semantic_intent="pr",
+        python_executable=Path("/python"),
+        provider_api=object(),  # type: ignore[arg-type]
+        runner=lambda *_a, **_k: SimpleNamespace(
+            returncode=0, stdout="", stderr=""
+        ),
+    )
+
+    assert observed == ["P01: advance governed PR progress"]
 
 
 def test_direct_main_submit_authenticates_repository_without_self_protection(
