@@ -56,6 +56,14 @@ execution_evidence:
     head and terminal tail with omitted-byte accounting, and binds exact
     subject, session, producer, environment, exit status and receipt digest.
     Failed material remains explicitly ineligible for proof reuse or authority.
+  - TradeFlow exposed a parent/child reconciliation identity split: the parent
+    candidate runtime could invoke a nested graph command that selected an
+    ambient installed BCF after import-environment scrubbing. The reconciler now
+    derives one isolated child bootstrap from its exact executing module root
+    and interpreter, verifies child origin, and uses that identity for both
+    apply and check. A fresh disposable Lite clone passed strict install,
+    fixed-point reconciliation, direct graph parity, canonical interpreter
+    materialization, and observation-only prospective closure.
 closeout_requirements:
   claims:
     required_suites_green:

@@ -16,6 +16,14 @@ All notable changes to BCF Governance are recorded here. This file follows
   scaffold placeholders, and authenticated supplemental publications retain
   immutable custody beneath one phase-owning release without inventing phases
   or acquiring lifecycle authority.
+- Made legacy Lite environments, history-dependent native baselines, and nested
+  reconciliation derive from authenticated inputs: isolated interpreters bind
+  exact governed requirements, atomic upgrade shadows preserve Git history only
+  when required, and every nested BCF projection uses the exact invoking runtime
+  rather than an ambient installation.
+- Retained bounded diagnostic custody for failed local producers, including
+  causal head and terminal tail, omitted-byte accounting, and exact execution
+  identity, while keeping all failed material ineligible for reuse or authority.
 
 ## [2.3.1] - 2026-10-12
 
