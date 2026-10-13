@@ -65,6 +65,142 @@ def _fixture(repo: Path, *, projected: str = "") -> None:
     (repo / "requirements-governance.txt").write_text(projected, encoding="utf-8")
 
 
+def _legacy_fixture(repo: Path, *, profile_version: str = "1.0") -> None:
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/gate-contracts.yml").write_text(
+        f"profile_contract_version: '{profile_version}'\n"
+        "gates: {governance-validate: {}}\n",
+        encoding="utf-8",
+    )
+    (repo / "governance/ci-graph.yml").write_text(
+        f"profile_contract_version: '{profile_version}'\n"
+        "resource_classes:\n"
+        "  candidate-python: {python_version: '3.12'}\n"
+        "  trusted-control: {python_version: '3.12'}\n",
+        encoding="utf-8",
+    )
+    (repo / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\npytest==9.0.3\n", encoding="utf-8"
+    )
+    runtime_contract = {
+        "schema_version": "1.1",
+        "runtime_root": ".artifacts/runtime",
+        "minimum_free_bytes": 1,
+        "maximum_owned_containers": 1,
+        "database": {
+            "storage": "repository_bind_mount",
+            "relative_path": ".artifacts/runtime/database",
+        },
+        "cleanup": {
+            "caller_globs": False,
+            "daemon_global_prune": False,
+            "exact_owner_revalidation": True,
+            "remove_anonymous_volumes": True,
+        },
+        "execution_state": EXECUTION_STATE_POLICY,
+    }
+    (repo / "governance/ci-runtime.yml").write_text(
+        yaml.safe_dump(runtime_contract, sort_keys=False), encoding="utf-8"
+    )
+
+
+def test_profile_v1_derives_isolated_environment_from_authenticated_legacy_inputs(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path)
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert plan.source_kind == "legacy_governance_requirements"
+    assert plan.requirements == (
+        "PyYAML>=6,<7",
+        "pytest==9.0.3",
+        "pip==26.2.1",
+    )
+    assert plan.requires_python == "==3.12.*"
+    assert plan.projection_path is None
+    assert plan.installation_path == tmp_path / "requirements-governance.txt"
+    assert plan.pip_arguments() == (
+        "PyYAML>=6,<7",
+        "pytest==9.0.3",
+        "pip==26.2.1",
+    )
+    verify_interpreter_environment_projection(plan)
+
+
+def test_legacy_environment_rejects_changed_dependency_source(tmp_path: Path) -> None:
+    _legacy_fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    (tmp_path / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\npytest==9.1.1\n", encoding="utf-8"
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
+        verify_interpreter_environment_projection(plan)
+
+
+def test_missing_profile_v2_interpreter_contract_remains_fail_closed(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path, profile_version="2.0")
+
+    assert derive_interpreter_environment(tmp_path) is None
+
+
+def test_legacy_environment_rejects_ambiguous_graph_python_runtime(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path)
+    graph = tmp_path / "governance/ci-graph.yml"
+    graph.write_text(
+        graph.read_text(encoding="utf-8").replace(
+            "trusted-control: {python_version: '3.12'}",
+            "trusted-control: {python_version: '3.13'}",
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="one Python minor"):
+        derive_interpreter_environment(tmp_path)
+
+
+def test_legacy_environment_materialization_installs_only_derived_requirements(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _legacy_fixture(tmp_path)
+    commands: list[list[str]] = []
+
+    def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        commands.append(argv)
+        if argv[1:3] == ["-m", "venv"]:
+            environment = Path(argv[-1])
+            (environment / "bin").mkdir(parents=True)
+            (environment / "bin/python").symlink_to(sys.executable)
+            (environment / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
+        stdout = (
+            "pip==26.2.1\npytest==9.0.3\nPyYAML==6.0.3\n"
+            if argv[-2:] == ["freeze", "--all"]
+            else ""
+        )
+        return subprocess.CompletedProcess(argv, 0, stdout, "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+
+    python = materialize_interpreter_environment(tmp_path, Path(sys.executable))
+
+    assert python.is_file()
+    assert commands[1][5:] == [
+        "install",
+        "--disable-pip-version-check",
+        "PyYAML>=6,<7",
+        "pytest==9.0.3",
+        "pip==26.2.1",
+    ]
+    assert "requirements-governance.txt" not in commands[1]
+
+
 def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None:
     plan = derive_interpreter_environment(REPO_ROOT)
 
