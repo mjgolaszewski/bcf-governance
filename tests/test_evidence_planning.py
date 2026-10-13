@@ -27,6 +27,7 @@ from bcf_governance.tooling.evidence_sessions import (
     allocate_session,
     local_producer_identity,
 )
+from bcf_governance.tooling.evidence_shards import planned_gate_targets
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +40,37 @@ def test_preflight_claims_are_not_receipt_producing_workitem_evidence() -> None:
     assert "governance-validate" not in receipt_gates
     assert model["execution_groups"]["preflight-structural"]["captured_by_preflight"] is True
     assert {"test", "contract-test", "runtime-smoke"}.issubset(receipt_gates)
+
+
+@pytest.mark.parametrize("contract_version", ["1.0", "2.0"])
+def test_legacy_exact_subject_plan_projects_complete_shard_contract(
+    tmp_path: Path, contract_version: str
+) -> None:
+    root = tmp_path / "legacy"
+    root.mkdir()
+    gates = ["contract-test", "runtime-smoke", "test"]
+    _write(
+        root / "governance-profile.yml",
+        yaml.safe_dump({
+            "profile_contract_version": contract_version,
+            "release_gate_profile": {
+                "gates": {
+                    gate: {"target": gate, "status": "required"} for gate in gates
+                }
+            },
+        }),
+    )
+
+    plan = verification_plan(
+        root, {"commit_sha": "a" * 40, "tree_sha": "b" * 40}, []
+    )
+    nodes = plan["execution_dag"]["nodes"]
+
+    assert [node["producer"] for node in nodes] == gates
+    assert all(type(node["assigned_shard"]) is int for node in nodes)
+    assert planned_gate_targets(
+        root, planned_targets=gates, execution_dag=plan["execution_dag"]
+    ) == gates
 
 
 def _write(path: Path, value: str) -> None:

@@ -748,11 +748,11 @@ def verification_plan(
         and value.get("status") == "required"
         and isinstance(value.get("target"), str)
     )
-    nodes = [
+    nodes = assign_duration_aware_shards([
         {"id": gate, "producer": gate, "claims": [gate], "depends_on": [],
          "reason": "legacy profile requires exact-subject execution"}
         for gate in gates
-    ]
+    ], {})
     return {
         "current_subject": {"commit_sha": subject.get("commit_sha"), "tree_sha": subject.get("tree_sha")},
         "prior_subject": None, "changed_paths": [], "changed_domains": [],
