@@ -1858,6 +1858,7 @@ phase/release authority can proceed.
 | A caller supplies an optional commit/tree, intent, or target assertion | clean Git subject/tree and graph-derived lifecycle intent | compare the assertion before gates, then use the canonical derived identity; omission remains the normal path | transcription errors fail before expensive work and cannot select authority | accepting the assertion as source authority, retrying expensive work, or changing candidate bytes mid-run |
 | A profile-v1 adopter has the canonical governance dependency file but predates `interpreter_contract` and `requirements_projection` | exact profile version, candidate resource-class Python version, tracked `requirements-governance.txt`, gate inventory and selected base interpreter | the interpreter owner compiles a read-only legacy dependency plan from those authenticated inputs and materializes the same isolated content-addressed project environment; it does not require an authored projection that the contract version never declared | Lite prospective execution receives a project environment distinct from the controller and executes only its declared governance gates | using the controller environment as project Python, accepting an absent dependency file or runtime version, silently inventing project dependencies, requiring an adopter-authored migration, or extending this compatibility lane to profile v2/v3 |
 | A governed upgrade retains an authenticated existing-repository native baseline | exact maintained Git commit/tree/ancestry, installed baseline transition and file digests, candidate pack and transaction path set | the installer authenticates the baseline in the maintained repository, derives that Git custody is a required transaction input, and creates the validation shadow with the same reachable history before projecting candidate bytes | candidate strict validation reauthenticates the unchanged baseline inside the atomic shadow; rollback and the maintained repository remain byte-identical on failure | omitting `.git` from a history-dependent shadow, rebinding the baseline to the upgrade candidate, manufacturing ancestry, weakening native-baseline validation, or requiring the adopter to rewrite valid custody |
+| A local producer fails after emitting diagnostics larger than the inline report bound | exact candidate commit/tree, evidence session, producer/group identity, selected environment, exit status, receipt/JUnit paths and complete stdout/stderr | the proof-bundle owner writes one bounded failure bundle outside the disposable execution tree before unwinding; the diagnostic projection preserves a fixed causal head and tail with explicit omitted-byte accounting while exact available structured artifacts are copied and digested | the first causal exception, terminal context and subject/session/environment bindings remain inspectable without rerunning unchanged failed evidence | tail-only truncation, an unbound log fragment, deletion with the temporary worktree, unbounded retained output, treating diagnostic retention as passing evidence, or retrying to recover lost diagnostics |
 | A gate or mutation control allocates an execution-scoped external resource | exact execution/session namespace, workload contract and gate invocation | the runtime exports the owned namespace; the gate derives every mutable resource identity from it and terminal cleanup removes only that exact namespace | concurrent baseline, mutation, adopter and repository runs cannot observe or overwrite one another | a constant Docker tag/database/cache name, global prune, wildcard ownership, implicit persistence, or treating a project-owned unnamespaced resource as BCF evidence |
 
 ```text
@@ -1870,6 +1871,8 @@ invariants
     authenticated inputs without requiring a remembered migration;
   transaction shadows preserve every authenticated input required by their
     own strict-validation consumers;
+  failed local execution retains bounded causal diagnostics without converting
+    failure material into reusable proof;
   execution-scoped resources are uniquely named by their authenticated owner
     -> primitives
        path-role projection, source/test/exclusion identities,
@@ -1878,6 +1881,7 @@ invariants
        workflow definition/pin digest and clean Git identity,
        profile version, graph Python requirement and governance dependency digest,
        authenticated native-baseline history requirement and transaction shadow,
+       subject/session/producer/environment identity and bounded diagnostic projection,
        execution/session/workload namespace identity
       -> contracts
          classify path role -> enforce production limit;
@@ -1886,6 +1890,7 @@ invariants
          render -> pin -> reconcile -> derive prospective identity;
          classify interpreter contract -> compile exact dependency plan -> isolate environment;
          authenticate native baseline -> derive history requirement -> validate in Git-preserving shadow;
+         capture failure -> retain structured artifacts plus causal head/tail -> reject evidence;
          allocate exact namespace -> derive resources -> exact-owner cleanup
         -> producers
            architecture/testing compiler and structural-limit validator,
@@ -1894,12 +1899,14 @@ invariants
            graph renderer, authority projector and prospective front door,
            interpreter environment compiler and runtime namespace allocator
            installer transaction compiler and native-adoption authenticator
+           local proof-bundle producer and failure-custody writer
           -> consumers
              reconcile and strict install, doctor and adopter reporting,
              phase ledger/history/truth and successor eligibility,
              PR evidence allocation and provider certification,
              Lite prospective execution and project-owned external-resource gates
              strict upgrade validation and atomic rollback
+             prospective reporting and operator diagnosis only, never truth/certification
 ```
 
 Structurally unreachable edges are explicit: a test-path classification cannot
@@ -1915,6 +1922,9 @@ own canonical command derives the supplied namespace. A transaction that has no
 active authenticated native baseline remains structurally independent of Git
 history; it does not pay for or acquire native-adoption authority merely because
 the target happens to be a Git repository.
+Failure custody is structurally excluded from proof reuse, truth, certification,
+publisher and release-authority inputs: its typed conclusion is failure and its
+only consumers are deterministic diagnosis and a later changed-input run.
 
 ```text
 invariants
