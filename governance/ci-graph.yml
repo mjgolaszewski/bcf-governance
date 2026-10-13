@@ -224,6 +224,7 @@ step_components:
     environment: {}
     produces: []
     consumes: []
+    required_permissions: {actions: read}
   upload-governance-receipts:
     kind: action
     name: Upload this attempt's exact evidence shard

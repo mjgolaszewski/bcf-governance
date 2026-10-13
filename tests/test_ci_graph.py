@@ -562,6 +562,68 @@ def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
     assert workflow_input_issues(graph, workflow) == ()
 
 
+def test_retry_capable_capture_declares_and_receives_actions_read(
+) -> None:
+    graph = build_reference_ci_graph(
+        project_id="permission-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["test"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    capture = graph["step_components"]["capture-shard"]
+    assert capture["required_permissions"] == {"actions": "read"}
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    assert evidence["permissions"] == {"actions": "read", "contents": "read"}
+    workflow = next(
+        workflow for workflow in graph["workflows"] if evidence in workflow["jobs"]
+    )
+    assert job_execution_issues(
+        graph, evidence, evidence["executor"], workflow
+    ) == ()
+
+
+@pytest.mark.parametrize("mutation", ["component-contract", "job-permission"])
+def test_retry_capable_capture_permission_edge_fails_before_execution(
+    mutation: str,
+) -> None:
+    graph = build_reference_ci_graph(
+        project_id="permission-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["test"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    if mutation == "component-contract":
+        graph["step_components"]["capture-shard"].pop("required_permissions")
+        expected = "provider permission contract differs from its command"
+    else:
+        evidence["permissions"].pop("actions")
+        expected = "lacks actions:read required by component capture-shard"
+    workflow = next(
+        workflow for workflow in graph["workflows"] if evidence in workflow["jobs"]
+    )
+    issues = job_execution_issues(graph, evidence, evidence["executor"], workflow)
+    assert any(expected in issue for issue in issues)
+
+
 def test_direct_workflow_declares_event_owned_comparison_context() -> None:
     graph = build_reference_ci_graph(
         project_id="direct-adopter",

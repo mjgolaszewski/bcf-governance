@@ -8,6 +8,10 @@ import re
 from typing import Any
 
 from .ci_graph_errors import CIGraphError
+from .ci_graph_provider_permissions import (
+    component_required_permissions,
+    permission_satisfies,
+)
 
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
@@ -519,6 +523,19 @@ def job_execution_issues(
         )
         issues.extend(environment_issues)
     if executor["kind"] in _EXPLICIT_EXECUTORS:
+        for component_id in executor["components"]:
+            component = graph["step_components"][component_id]
+            required_permissions = component_required_permissions(graph, component)
+            declared_permissions = component.get("required_permissions", {})
+            if declared_permissions != required_permissions:
+                issues.append(
+                    f"CI graph component {component_id} provider permission contract differs from its command"
+                )
+            for name, level in required_permissions.items():
+                if not permission_satisfies(job["permissions"].get(name), level):
+                    issues.append(
+                        f"CI graph job {job['id']} lacks {name}:{level} required by component {component_id}"
+                    )
         python_ready = False
         for component_id in executor["components"]:
             component = graph["step_components"][component_id]

@@ -246,7 +246,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "3e9c75e99dd7e1499e6b343c57016371f72437eea02e476886080c502acca5b8"
+      "sha256": "c8a8df2aa6615aecd07bdb767dacb1edf6efc10ff6822be10121def0b00a2fb2"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -732,7 +732,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
-      "sha256": "038c007fb283919dcb161131f8e2bdc18258154d72a4274918b7fc3387751ea6"
+      "sha256": "5d566b7f2f81499332cb903199ae5873c92f4d348ef8eb6e36e7b5a16b51e05e"
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
@@ -748,7 +748,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_execution.py": {
       "operation": "copy",
-      "sha256": "512e76ff7acf063a7a7b267ddd5ad714c705d7a6627cffead8b286970f7bb632"
+      "sha256": "0beb45e190974bd8d74b217d635a958f7bfb7d8a784cbb9ea68c3385e415ebe6"
     },
     "scripts/_bcf_runtime/ci_graph_import.py": {
       "operation": "copy",
@@ -765,6 +765,10 @@
     "scripts/_bcf_runtime/ci_graph_pr_evaluator.py": {
       "operation": "copy",
       "sha256": "6d15e51eec9144f13196bc162f0086c9f1d6f1fad2e54ddb475d6f4d0c42b5b8"
+    },
+    "scripts/_bcf_runtime/ci_graph_provider_permissions.py": {
+      "operation": "copy",
+      "sha256": "abb71edbe24ad8317aa8a6da89430fad913dcbfe0a1a244851f3adf0d66767f8"
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
@@ -1060,7 +1064,7 @@
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
-      "sha256": "15e60871c69d6f073728d80e0910a71d8c4a02bf976464c8c43e818b1f1c801a"
+      "sha256": "92767e9cac0d3ef0e207d731c8241cf6640be6b2d128d42425ccfe5fa2983cbb"
     },
     "scripts/_bcf_runtime/governance_install/validation.py": {
       "operation": "copy",
@@ -1387,7 +1391,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "eafca27f3a0660a043648d8a4e159f94969c330a83c43d9168795ea47da42fbc"
+      "sha256": "a3d22b4340eb0a71571c0f49268da57bbd3c63674adee522ce09770ad6f0d206"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

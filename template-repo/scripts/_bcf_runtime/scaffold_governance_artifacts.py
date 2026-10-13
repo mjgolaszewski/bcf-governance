@@ -308,6 +308,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         validate_authored_phase_state,
     )
     from .governance_validation.ci_state_matrix import validate_ci_state_matrix
+    from .ci_graph_provider_permissions import reconcile_provider_permission_edges
 
     phase_ledger_present = (repo_root / "plans/phase-ledger.yml").is_file()
     active_paths = active_phase_paths(repo_root) if phase_ledger_present else ()
@@ -342,6 +343,17 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             ),
         ))
     steps.extend([
+        ReconcileStep(
+            "ci-provider-permissions",
+            lambda: reconcile_provider_permission_edges(repo_root, apply=False),
+            lambda: reconcile_provider_permission_edges(repo_root, apply=True),
+            apply_verifies=True,
+            watch_paths=(
+                "governance/ci-graph.yml",
+                "bcf_governance/tooling/ci_graph_provider_permissions.py",
+                "bcf_governance/tooling/evidence_shards.py",
+            ),
+        ),
         ReconcileStep(
             "interpreter-environment",
             lambda: reconcile_interpreter_environment(repo_root, apply=False),

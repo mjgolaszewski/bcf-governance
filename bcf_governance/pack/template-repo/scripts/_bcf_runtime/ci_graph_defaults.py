@@ -229,6 +229,7 @@ def _v3_components() -> dict[str, Any]:
         ),
         "capture-shard": _component(
             kind="command", name="Capture the mechanically derived evidence shard", command="v3-capture-shard", environment=evidence_capture_environment(),
+            required_permissions={"actions": "read"},
         ),
         "upload-receipts": _component(
             kind="action", name="Upload this attempt's exact evidence shard", action="upload-artifact",
