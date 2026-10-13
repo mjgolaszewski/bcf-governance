@@ -1060,7 +1060,7 @@
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
-      "sha256": "cb27dd2fb530cf8972adf23884215c4ff47ee75ddca04bcd2408c3403c29049b"
+      "sha256": "15e60871c69d6f073728d80e0910a71d8c4a02bf976464c8c43e818b1f1c801a"
     },
     "scripts/_bcf_runtime/governance_install/validation.py": {
       "operation": "copy",

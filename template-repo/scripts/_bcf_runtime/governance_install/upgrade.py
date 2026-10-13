@@ -11,9 +11,8 @@ import yaml  # type: ignore[import-untyped]
 
 from ..ci_graph_yaml import render_yaml
 from ..ci_graph_defaults import evidence_capture_environment
-from ..profile_contract_v2 import current_contract_version
+from ..profile_surface_generation import reconcile_makefile
 from ..profile_yaml import render_governance_profile
-from ..profile_v2_surfaces import selective_release_check_lines
 from ..runtime_capacity import EXECUTION_STATE_POLICY
 from ..repository_comparison_context import comparison_base_input_contract
 
@@ -87,20 +86,6 @@ def copy_selected_template_paths(
             destinations.append(destination_file)
     return len(destinations), destinations
 
-
-def _find_target_span(lines: list[str], target: str) -> tuple[int, int] | None:
-    start: int | None = None
-    for index, line in enumerate(lines):
-        if not line or line.startswith("\t") or line.startswith(" "):
-            continue
-        if not line.startswith(f"{target}:"):
-            if start is not None and ":" in line:
-                return start, index
-            continue
-        start = index
-    if start is None:
-        return None
-    return start, len(lines)
 
 def _replace_placeholders_in_files(paths: list[Path], values: dict[str, str]) -> None:
     for path in sorted(set(paths)):
@@ -534,63 +519,9 @@ def _upgrade_governance_profile(template_root: Path, target_root: Path) -> None:
 
 
 def _upgrade_makefile_fragment(target_root: Path) -> None:
-    path = target_root / "Makefile.fragment"
-    if not path.exists():
-        return
-    text = path.read_text(encoding="utf-8")
-    lines = text.splitlines()
-    for index, line in enumerate(lines):
-        if line.startswith(".PHONY:"):
-            for target in ("governance-exposure-scan", "governance-truthfulness"):
-                if target not in line.split():
-                    line += f" {target}"
-            lines[index] = line
-            break
-    text = "\n".join(lines) + "\n"
-    if "BCF_EVIDENCE_DIR ?=" not in text:
-        marker = ".PHONY:"
-        text = text.replace(marker, "BCF_EVIDENCE_DIR ?= .artifacts/bcf\n\n" + marker, 1)
-    if "\ngovernance-exposure-scan:" not in text:
-        marker = "\ngovernance-scaffold-help:"
-        block = "\ngovernance-exposure-scan:\n\t$(PYTHON) scripts/check_governance_exposure.py --repo-root .\n"
-        text = text.replace(marker, f"{block}{marker}", 1) if marker in text else text + block
-    if "\ngovernance-truthfulness:" not in text:
-        marker = "\ngovernance-scaffold-help:"
-        block = (
-            "\ngovernance-truthfulness:\n"
-            "\t$(PYTHON) scripts/governance_truth.py --repo-root . "
-            "--evidence-dir $(BCF_EVIDENCE_DIR)\n"
-        )
-        text = text.replace(marker, f"{block}{marker}", 1) if marker in text else text + block
-    profile = _load_yaml_mapping(target_root / "governance-profile.yml")
-    release_profile = profile.get("release_gate_profile")
-    gates = release_profile.get("gates") if isinstance(release_profile, dict) else {}
-    gate_targets = [
-        str(gate["target"])
-        for gate in gates.values()
-        if isinstance(gate, dict)
-        and gate.get("status") != "not_applicable"
-        and isinstance(gate.get("target"), str)
-    ] if isinstance(gates, dict) else []
-    release_span = _find_target_span(text.splitlines(), "release-check")
-    if release_span is not None and gate_targets:
-        lines = text.splitlines()
-        start, end = release_span
-        if current_contract_version(target_root) in {"2.0", "3.0"}:
-            replacement = selective_release_check_lines()
-            if replacement[-1] == "":
-                replacement.pop()
-        else:
-            replacement = [
-                lines[start],
-                "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-                f"\t@for gate in {' '.join(gate_targets)}; do \\",
-                "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
-                "\tdone",
-                "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
-            ]
-        text = "\n".join([*lines[:start], *replacement, *lines[end:]]) + "\n"
-    path.write_text(text, encoding="utf-8")
+    """Project the sole profile-owned Makefile from the preserved gate registry."""
+
+    reconcile_makefile(target_root, apply=True)
 
 
 def _ensure_gitignore_pattern(target_root: Path, pattern: str) -> None:

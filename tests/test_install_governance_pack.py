@@ -18,6 +18,7 @@ from bcf_governance.tooling.governance_validation.native_adoption import (
     authenticated_native_adoption_files,
     authenticated_native_adoption_requires_history,
 )
+from bcf_governance.tooling.profile_surface_generation import render_makefile
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -999,6 +1000,12 @@ def test_upgrade_refreshes_code_without_implicitly_migrating_legacy_state(
         target / "scripts/validate_governance_yaml.py"
     ).read_text(encoding="utf-8")
     assert {path: (target / path).read_bytes() for path in governed} == before
+    contract = yaml.safe_load(
+        (target / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert (target / "Makefile.fragment").read_text(encoding="utf-8") == (
+        render_makefile(contract)
+    )
     assert not (target / "governance/migrations/evidence-integrity-v1.yml").exists()
 
 
@@ -1030,7 +1037,29 @@ def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path
 
 def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -> None:
     target = tmp_path / "upgrade-v3-release-check"
-    target.mkdir()
+    (target / "governance").mkdir(parents=True)
+    contract = {
+        "profile_contract_version": "3.0",
+        "gates": {
+            "governance-validate": {
+                "invocation": {
+                    "argv": ["python", "scripts/validate_governance_yaml.py"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            },
+            "test": {
+                "invocation": {
+                    "argv": ["python", "-m", "pytest"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            },
+        },
+    }
+    (target / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(contract, sort_keys=False), encoding="utf-8"
+    )
     (target / "governance-profile.yml").write_text(
         yaml.safe_dump(
             {
@@ -1071,6 +1100,66 @@ def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -
     assert "scripts/capture_governance_shard.py" in release_check
     assert "--all-planned" in release_check
     assert "for gate in" not in release_check
+
+
+def test_upgrade_projects_v1_makefile_only_from_preserved_gate_registry(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-v1-gate-registry"
+    (target / "governance").mkdir(parents=True)
+    contract = {
+        "profile_contract_version": "1.0",
+        "gates": {
+            "test": {
+                "invocation": {
+                    "argv": ["python", "-m", "pytest"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            }
+        },
+    }
+    (target / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(contract, sort_keys=False), encoding="utf-8"
+    )
+    (target / "governance-profile.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile": {"selected": "standard"},
+                "profile_contract_version": "1.0",
+                "release_gate_profile": {
+                    "gates": {
+                        "test": {"target": "test", "status": "required"},
+                        "semantic_ownership": {
+                            "target": "semantic-ownership",
+                            "status": "deferred",
+                        },
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (target / "Makefile.fragment").write_text(
+        "release-check:\n\t@for gate in test semantic-ownership; do echo $$gate; done\n",
+        encoding="utf-8",
+    )
+
+    template = tmp_path / "template"
+    template.mkdir()
+    upgrade.upgrade_state_files(
+        template_root=template,
+        target_root=target,
+        values={},
+    )
+
+    assert (target / "Makefile.fragment").read_text(encoding="utf-8") == (
+        render_makefile(contract)
+    )
+    assert "semantic-ownership" not in (
+        target / "Makefile.fragment"
+    ).read_text(encoding="utf-8")
 
 
 def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path) -> None:
