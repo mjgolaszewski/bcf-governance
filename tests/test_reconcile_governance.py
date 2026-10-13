@@ -26,6 +26,7 @@ from bcf_governance.tooling.profile_surface_generation import (
     reconcile_makefile,
     reconcile_template_workflow,
 )
+from bcf_governance.tooling.nested_cli_runtime import exact_nested_cli_command
 from bcf_governance.tooling.reconcile_authority_transition import (
     ReconcileAuthorityTransitionError,
     apply_workflow_authority_transition,
@@ -435,9 +436,35 @@ def test_reconcile_separates_tool_runtime_from_selected_project_python(
 
     assert observed[0][0] == str(Path(sys.executable).absolute())
     assert observed[0][0] != str(selected.absolute())
+    assert observed[0][1:3] == ["-I", "-c"]
     assert observed[1][0] == str(Path(sys.executable).absolute())
+    assert observed[1][1:3] == ["-I", "-c"]
     assert "--all" in observed[1]
     assert observed[1][observed[1].index("--python") + 1] == str(selected.absolute())
+
+
+def test_nested_cli_rejects_ambient_adopter_and_pythonpath_implementations(
+    tmp_path: Path,
+) -> None:
+    fake = tmp_path / "bcf_governance"
+    fake.mkdir()
+    (fake / "__init__.py").write_text("\n", encoding="utf-8")
+    (fake / "cli.py").write_text(
+        "raise SystemExit('ambient adopter implementation executed')\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        exact_nested_cli_command("--version"),
+        cwd=tmp_path,
+        env={"PYTHONPATH": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().startswith("bcf ")
+    assert "ambient adopter implementation" not in result.stderr
 
 
 def test_reconcile_runs_declared_order_to_a_fixed_point(tmp_path: Path) -> None:
