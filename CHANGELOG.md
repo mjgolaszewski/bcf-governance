@@ -24,6 +24,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made local prospective and release-qualification execution consume the same
   topological producer order as provider shards, so a consumer cannot run before
   every declared prerequisite receipt exists.
+- Completed the legacy-profile execution DAG with deterministic shard ownership,
+  so Lite and Standard-v2 exact-subject qualification cannot reach a consumer
+  with an incomplete planner contract.
 - Made existing-repository adoption one atomic derived transaction: tracked
   package/test metadata supplies generated roots, native instructions retain
   byte-identical custody, and canonical legacy-audit moves occur before strict

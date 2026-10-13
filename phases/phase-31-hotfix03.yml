@@ -32,6 +32,10 @@ execution_evidence:
     upgrade transaction now projects the typed no-authenticated-baseline state
     before candidate validation, grants no path exemption, preserves complete
     authenticated baselines unchanged, and rejects ambiguous legacy shapes.
+  - Exact-asset qualification exposed a reachable Standard-v2 planner edge whose
+    legacy exact-subject nodes omitted deterministic shard ownership. The shared
+    planner now emits the same complete execution-node contract for profile-v1,
+    profile-v2, and profile-v3 consumers before evidence allocation.
   - The maintained BDMCP checkout was never mutated; all qualifications used
     disposable clones of fd3f51b70b8a43ccd44a015321cec3496fa9b3fb.
 closeout_requirements:
