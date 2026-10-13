@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -141,6 +142,7 @@ def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_ch
 def test_planned_evidence_stops_on_first_failed_producer(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    subprocess.run(["git", "init", "--quiet"], cwd=tmp_path, check=True)
     seen: list[str] = []
     def capture(_root: Path, gate: str, output: Path, **_kwargs: object) -> Path:
         seen.append(gate)
@@ -153,12 +155,28 @@ def test_planned_evidence_stops_on_first_failed_producer(
         }))
         return receipt
     monkeypatch.setattr(local_proof_bundles, "capture_gate", capture)
-    (tmp_path / "session.json").write_text("{}")
+    (tmp_path / "session.json").write_text(
+        json.dumps(
+            {
+                "session_id": "a" * 32,
+                "subject": {"commit_sha": HEAD, "tree_sha": TREE},
+                "producer": {
+                    "kind": "local",
+                    "provider": "local",
+                    "repository": "fixture",
+                    "repository_id": "local",
+                    "run_id": "prospective-local",
+                    "run_attempt": "1",
+                    "producer_id": "prospective-local",
+                },
+            }
+        )
+    )
     bindings = {gate: {} for gate in ("first", "second")}
     with pytest.raises(
         local_proof_bundles.LocalProofBundleError,
         match="first failed with exit 3.*causal diagnostic",
-    ):
+    ) as raised:
         prospective._capture_planned_evidence(
             tmp_path,
             python_executable=Path("/python"),
@@ -168,6 +186,9 @@ def test_planned_evidence_stops_on_first_failed_producer(
             producer_environments=bindings,
         )
     assert seen == ["first"]
+    assert "retained failure bundle" in str(raised.value)
+    retained = list((tmp_path / ".git/bcf/failure-bundles").glob("*/failure-bundle.json"))
+    assert len(retained) == 1
 
 
 def test_planned_evidence_reports_failed_control_when_command_passed(

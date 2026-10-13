@@ -21,10 +21,30 @@ from .governance_evidence import capture_gate
 
 MANIFEST_NAME = "proof-bundle.json"
 PAYLOAD_ROOT = "evidence"
+FAILURE_MANIFEST_NAME = "failure-bundle.json"
+FAILURE_PAYLOAD_ROOT = "diagnostics"
+FAILURE_FILE_LIMIT = 64
+FAILURE_FILE_BYTE_LIMIT = 256 * 1024
+INLINE_DIAGNOSTIC_LIMIT = 20_000
 
 
 class LocalProofBundleError(ValueError):
     """Raised when local proof custody is unsafe or internally inconsistent."""
+
+
+def _bounded_diagnostic(value: str, *, limit: int = INLINE_DIAGNOSTIC_LIMIT) -> str:
+    """Preserve causal head and terminal tail within one deterministic bound."""
+
+    if len(value) <= limit:
+        return value
+    head_size = limit // 2
+    tail_size = limit - head_size
+    omitted = len(value) - limit
+    return (
+        value[:head_size]
+        + f"\n...[{omitted} diagnostic characters omitted]...\n"
+        + value[-tail_size:]
+    )
 
 
 def capture_producers(
@@ -69,7 +89,9 @@ def capture_producers(
                 if path.is_file():
                     value = path.read_text(encoding="utf-8", errors="replace").strip()
                     if value:
-                        diagnostics.append(f"{suffix}: {value[-20000:]}")
+                        diagnostics.append(
+                            f"{suffix}: {_bounded_diagnostic(value)}"
+                        )
             for probe in payload.get("behavioral_probes") or ():
                 if not isinstance(probe, dict):
                     continue
@@ -101,10 +123,28 @@ def capture_producers(
                     ).strip()
                     if value:
                         diagnostics.append(
-                            f"behavioral_probe {control_id} {stream}: {value[-20000:]}"
+                            f"behavioral_probe {control_id} {stream}: "
+                            f"{_bounded_diagnostic(value)}"
                         )
+            failure_bundle = None
+            try:
+                failure_bundle = store_failure_bundle(
+                    repo_root,
+                    producer=producer,
+                    producer_environment=environment,
+                    session_manifest=session_manifest,
+                    receipt=receipt,
+                    exit_code=exit_code,
+                )
+            except LocalProofBundleError as exc:
+                diagnostics.append(f"failure_custody_error: {exc}")
             raise LocalProofBundleError(
                 f"local evidence producer {producer} failed with exit {exit_code}"
+                + (
+                    f"; retained failure bundle: {failure_bundle}"
+                    if failure_bundle is not None
+                    else ""
+                )
                 + (": " + " | ".join(diagnostics) if diagnostics else "")
             )
         duration = receipt_duration_ms(payload)
@@ -248,6 +288,131 @@ def _cache_root(repo_root: Path) -> Path:
     if root.is_symlink() or not root.is_dir():
         raise LocalProofBundleError("proof cache root is unsafe")
     return root
+
+
+def _failure_cache_root(repo_root: Path) -> Path:
+    root = _cache_root(repo_root).parent / "failure-bundles"
+    root.mkdir(parents=True, exist_ok=True, mode=0o700)
+    if root.is_symlink() or not root.is_dir():
+        raise LocalProofBundleError("failure bundle root is unsafe")
+    return root
+
+
+def _project_failure_file(source: Path, destination: Path) -> dict[str, Any]:
+    metadata = source.lstat()
+    if not stat.S_ISREG(metadata.st_mode):
+        raise LocalProofBundleError("failure bundle input is not a regular file")
+    source_size = metadata.st_size
+    source_sha256 = _sha256_file(source)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if source_size <= FAILURE_FILE_BYTE_LIMIT:
+        shutil.copyfile(source, destination)
+        projection = "exact"
+        omitted_bytes = 0
+    else:
+        head_size = FAILURE_FILE_BYTE_LIMIT // 2
+        tail_size = FAILURE_FILE_BYTE_LIMIT - head_size
+        with source.open("rb") as stream:
+            head = stream.read(head_size)
+            stream.seek(-tail_size, os.SEEK_END)
+            tail = stream.read(tail_size)
+        destination.write_bytes(head + tail)
+        projection = "head_tail"
+        omitted_bytes = source_size - FAILURE_FILE_BYTE_LIMIT
+    return {
+        "source_size": source_size,
+        "source_sha256": source_sha256,
+        "retained_size": destination.stat().st_size,
+        "retained_sha256": _sha256_file(destination),
+        "projection": projection,
+        "omitted_bytes": omitted_bytes,
+    }
+
+
+def store_failure_bundle(
+    repo_root: Path,
+    *,
+    producer: str,
+    producer_environment: Mapping[str, str],
+    session_manifest: Path,
+    receipt: Path,
+    exit_code: object,
+) -> Path:
+    """Retain bounded non-authoritative diagnostics outside disposable work."""
+
+    try:
+        session = json.loads(session_manifest.read_text(encoding="utf-8"))
+        receipt_payload = json.loads(receipt.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise LocalProofBundleError("failure identity inputs are unreadable") from exc
+    subject = session.get("subject")
+    session_id = session.get("session_id")
+    session_producer = session.get("producer")
+    if (
+        not isinstance(subject, dict)
+        or set(subject) != {"commit_sha", "tree_sha"}
+        or not isinstance(session_id, str)
+        or not session_id
+        or not isinstance(session_producer, dict)
+    ):
+        raise LocalProofBundleError("failure session identity is invalid")
+    identity = {
+        "subject": subject,
+        "session_id": session_id,
+        "session_producer": session_producer,
+        "evidence_producer": producer,
+        "producer_environment": dict(sorted(producer_environment.items())),
+        "exit_code": exit_code,
+        "receipt_sha256": _sha256_file(receipt),
+    }
+    failure_root = _failure_cache_root(repo_root)
+    destination = failure_root / identity_digest(identity)
+    if destination.exists():
+        return destination
+    sources = [session_manifest, receipt]
+    sources.extend(
+        path
+        for path in _regular_files(receipt.parent)
+        if path != receipt
+    )
+    unique_sources = list(dict.fromkeys(path.resolve() for path in sources))
+    selected = unique_sources[:FAILURE_FILE_LIMIT]
+    with tempfile.TemporaryDirectory(prefix=".failure-", dir=failure_root) as temporary:
+        staged = Path(temporary) / "bundle"
+        payload_root = staged / FAILURE_PAYLOAD_ROOT
+        inventory: list[dict[str, Any]] = []
+        for index, source in enumerate(selected):
+            name = (
+                "evidence-session.json"
+                if source == session_manifest.resolve()
+                else f"{index:02d}-{source.name}"
+            )
+            retained = payload_root / name
+            projection = _project_failure_file(source, retained)
+            inventory.append({"path": retained.relative_to(staged).as_posix(), **projection})
+        manifest = {
+            "schema_version": "1.0",
+            "kind": "governance.local-failure-bundle.v1",
+            "lifecycle": "diagnostic_only_non_authoritative",
+            "result": "failed",
+            "identity": identity,
+            "identity_sha256": identity_digest(identity),
+            "receipt_result": receipt_payload.get("result"),
+            "files": inventory,
+            "omitted_file_count": len(unique_sources) - len(selected),
+            "authority": {
+                "class": "local_diagnostic_only",
+                "proof_reuse_allowed": False,
+                "provider_authority_substituted": False,
+            },
+        }
+        staged.mkdir(parents=True, exist_ok=True)
+        (staged / FAILURE_MANIFEST_NAME).write_bytes(_canonical(manifest))
+        try:
+            staged.replace(destination)
+        except FileExistsError:
+            pass
+    return destination
 
 
 def _manifest(repo_root: Path, bundle: Path) -> dict[str, Any]:

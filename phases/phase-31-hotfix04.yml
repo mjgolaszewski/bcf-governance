@@ -50,6 +50,12 @@ execution_evidence:
     BCF_EXECUTION_STATE_NAMESPACE. Constant Docker tags or containers are not
     granted implicit shared-state semantics and must fail closed in the owning
     project gate.
+  - Racecar exposed lost local-failure custody after a long producer diagnostic.
+    The local proof owner now retains a content-addressed, diagnostic-only
+    failure bundle outside disposable execution state, preserves bounded causal
+    head and terminal tail with omitted-byte accounting, and binds exact
+    subject, session, producer, environment, exit status and receipt digest.
+    Failed material remains explicitly ineligible for proof reuse or authority.
 closeout_requirements:
   claims:
     required_suites_green:
