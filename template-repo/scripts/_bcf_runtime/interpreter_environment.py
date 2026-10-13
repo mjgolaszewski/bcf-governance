@@ -82,7 +82,7 @@ class InterpreterEnvironmentPlan:
     """One canonical projection of every selected-interpreter requirement."""
 
     requirements: tuple[str, ...]
-    requires_python: str
+    requires_python: str | None
     projection_path: Path | None
     source_kind: str = "project_metadata_projection"
     source_path: Path | None = None
@@ -102,7 +102,7 @@ class InterpreterEnvironmentPlan:
         digest = hashlib.sha256()
         digest.update(self.rendered_requirements().encode("utf-8"))
         digest.update(b"\0")
-        digest.update(self.requires_python.encode("utf-8"))
+        digest.update((self.requires_python or "").encode("utf-8"))
         digest.update(b"\0")
         digest.update(self.source_kind.encode("utf-8"))
         digest.update(b"\0")
@@ -228,36 +228,42 @@ def _legacy_interpreter_environment(
             + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
         )
     graph_path = root / "governance/ci-graph.yml"
-    try:
-        graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
-        graph = _mapping(graph, "legacy interpreter graph contract is invalid")
-        if str(graph.get("profile_contract_version", "1.0")) != "1.0":
-            raise InterpreterEnvironmentError(
-                "legacy interpreter graph contract version is invalid"
-            )
-        resources = _mapping(
-            graph.get("resource_classes"),
-            "legacy interpreter graph resources are invalid",
-        )
-        python_minors = {
-            str(resource["python_version"])
-            for resource in resources.values()
-            if isinstance(resource, dict) and "python_version" in resource
-        }
-    except (OSError, UnicodeError, yaml.YAMLError, KeyError, TypeError) as exc:
+    python_minor: str | None = None
+    if graph_path.is_symlink():
         raise InterpreterEnvironmentError(
             "legacy interpreter graph contract is unavailable"
-        ) from exc
-    if len(python_minors) != 1 or any(
-        re.fullmatch(r"3\.[0-9]+", value) is None for value in python_minors
-    ):
-        raise InterpreterEnvironmentError(
-            "legacy interpreter graph must declare one Python minor"
         )
-    python_minor = next(iter(python_minors))
+    if graph_path.exists():
+        try:
+            graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+            graph = _mapping(graph, "legacy interpreter graph contract is invalid")
+            if str(graph.get("profile_contract_version", "1.0")) != "1.0":
+                raise InterpreterEnvironmentError(
+                    "legacy interpreter graph contract version is invalid"
+                )
+            resources = _mapping(
+                graph.get("resource_classes"),
+                "legacy interpreter graph resources are invalid",
+            )
+            python_minors = {
+                str(resource["python_version"])
+                for resource in resources.values()
+                if isinstance(resource, dict) and "python_version" in resource
+            }
+        except (OSError, UnicodeError, yaml.YAMLError, KeyError, TypeError) as exc:
+            raise InterpreterEnvironmentError(
+                "legacy interpreter graph contract is unavailable"
+            ) from exc
+        if len(python_minors) != 1 or any(
+            re.fullmatch(r"3\.[0-9]+", value) is None for value in python_minors
+        ):
+            raise InterpreterEnvironmentError(
+                "legacy interpreter graph must declare one Python minor"
+            )
+        python_minor = next(iter(python_minors))
     return InterpreterEnvironmentPlan(
         requirements=tuple(requirements),
-        requires_python=f"=={python_minor}.*",
+        requires_python=f"=={python_minor}.*" if python_minor is not None else None,
         projection_path=None,
         source_kind="legacy_governance_requirements",
         source_path=requirements_path,
@@ -455,6 +461,10 @@ def materialize_interpreter_environment(
     if plan is None or plan.installation_path is None:
         raise InterpreterEnvironmentError(
             "project interpreter cannot be derived without an authenticated dependency source"
+        )
+    if plan.requires_python is None:
+        raise InterpreterEnvironmentError(
+            "project interpreter cannot be materialized without an authenticated Python runtime source"
         )
     verify_interpreter_environment_projection(plan)
     try:

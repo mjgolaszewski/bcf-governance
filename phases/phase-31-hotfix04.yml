@@ -78,6 +78,17 @@ execution_evidence:
     migrates it transactionally, and preserves Git history only for a fully
     authenticated existing-repository baseline. Authored-state fixtures and the
     canonical reconciler consume every ledger-referenced hotfix schema/log.
+  - >-
+    The final affected-proof shard exposed two pre-existing consumer
+    permutations omitted from focused validation. Graphless profile-v1 packs
+    now validate exact dependency bytes without inventing a Python runtime pin,
+    while fresh materialization remains unavailable until a graph supplies one;
+    present malformed or ambiguous graphs fail closed. Existing-adoption
+    migration preserves its path-qualified rejection diagnostic and leaves
+    malformed or unknown baseline state byte-identical. Pack preflight now
+    validates the graphless packaged interpreter contract before evidence
+    allocation, and the exact failing nodes plus adjacent legacy/current/
+    adversarial states pass locally.
 closeout_requirements:
   claims:
     required_suites_green:

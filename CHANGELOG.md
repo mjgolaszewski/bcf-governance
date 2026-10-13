@@ -18,9 +18,11 @@ All notable changes to BCF Governance are recorded here. This file follows
   or acquiring lifecycle authority.
 - Made legacy Lite environments, history-dependent native baselines, and nested
   reconciliation derive from authenticated inputs: isolated interpreters bind
-  exact governed requirements, atomic upgrade shadows preserve Git history only
-  when required, and every nested BCF projection uses the exact invoking runtime
-  rather than an ambient installation.
+  exact governed requirements and graph runtime pins when available, graphless
+  v1 repositories retain dependency validation without inventing a Python pin,
+  atomic upgrade shadows preserve Git history only when required, and every
+  nested BCF projection uses the exact invoking runtime rather than an ambient
+  installation.
 - Retained bounded diagnostic custody for failed local producers, including
   causal head and terminal tail, omitted-byte accounting, and exact execution
   identity, while keeping all failed material ineligible for reuse or authority.

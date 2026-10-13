@@ -129,6 +129,25 @@ def test_profile_v1_derives_isolated_environment_from_authenticated_legacy_input
     verify_interpreter_environment_projection(plan)
 
 
+def test_graphless_profile_v1_validates_dependencies_without_inventing_python_pin(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path)
+    (tmp_path / "governance/ci-graph.yml").unlink()
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert plan.source_kind == "legacy_governance_requirements"
+    assert plan.requires_python is None
+    verify_interpreter_environment_projection(plan)
+    with pytest.raises(
+        InterpreterEnvironmentError,
+        match="without an authenticated Python runtime source",
+    ):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
+
+
 def test_legacy_environment_rejects_changed_dependency_source(tmp_path: Path) -> None:
     _legacy_fixture(tmp_path)
     plan = derive_interpreter_environment(tmp_path)
@@ -168,6 +187,59 @@ def test_legacy_environment_rejects_ambiguous_graph_python_runtime(
     )
 
     with pytest.raises(InterpreterEnvironmentError, match="one Python minor"):
+        derive_interpreter_environment(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("graph_bytes", "message"),
+    [
+        ("[\n", "graph contract is unavailable"),
+        (
+            "profile_contract_version: '2.0'\nresource_classes: {}\n",
+            "graph contract version is invalid",
+        ),
+        ("profile_contract_version: '1.0'\n", "graph resources are invalid"),
+    ],
+)
+def test_legacy_environment_rejects_malformed_present_graph(
+    tmp_path: Path, graph_bytes: str, message: str
+) -> None:
+    _legacy_fixture(tmp_path)
+    (tmp_path / "governance/ci-graph.yml").write_text(graph_bytes, encoding="utf-8")
+
+    with pytest.raises(InterpreterEnvironmentError, match=message):
+        derive_interpreter_environment(tmp_path)
+
+
+def test_legacy_environment_rejects_symlinked_present_graph(tmp_path: Path) -> None:
+    _legacy_fixture(tmp_path)
+    graph = tmp_path / "governance/ci-graph.yml"
+    outside = tmp_path / "outside.yml"
+    outside.write_bytes(graph.read_bytes())
+    graph.unlink()
+    graph.symlink_to(outside)
+
+    with pytest.raises(
+        InterpreterEnvironmentError, match="graph contract is unavailable"
+    ):
+        derive_interpreter_environment(tmp_path)
+
+
+@pytest.mark.parametrize("unsafe", ["missing", "symlink"])
+def test_legacy_environment_requires_safe_dependency_source(
+    tmp_path: Path, unsafe: str
+) -> None:
+    _legacy_fixture(tmp_path)
+    requirements = tmp_path / "requirements-governance.txt"
+    requirements.unlink()
+    if unsafe == "symlink":
+        outside = tmp_path / "outside-requirements.txt"
+        outside.write_text("PyYAML>=6,<7\n", encoding="utf-8")
+        requirements.symlink_to(outside)
+
+    with pytest.raises(
+        InterpreterEnvironmentError, match="dependency source is missing or unsafe"
+    ):
         derive_interpreter_environment(tmp_path)
 
 

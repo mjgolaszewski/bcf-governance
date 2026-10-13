@@ -325,10 +325,11 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
         " if req.specifier and not req.specifier.contains(installed,prereleases=True):\n"
         "  raise SystemExit(f'{req.name} {installed} violates {req.specifier}')\n"
         " versions[req.name]=installed\n"
-        "python_spec=SpecifierSet(sys.argv[2])\n"
-        "python_version=platform.python_version()\n"
-        "if not python_spec.contains(python_version,prereleases=True):\n"
-        " raise SystemExit(f'Python {python_version} violates {python_spec}')\n"
+        "if sys.argv[2]:\n"
+        " python_spec=SpecifierSet(sys.argv[2])\n"
+        " python_version=platform.python_version()\n"
+        " if not python_spec.contains(python_version,prereleases=True):\n"
+        "  raise SystemExit(f'Python {python_version} violates {python_spec}')\n"
         "print(json.dumps(versions,sort_keys=True))\n"
     )
     try:
@@ -339,7 +340,7 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
                 "-c",
                 probe,
                 json.dumps(list(plan.requirements)),
-                plan.requires_python,
+                plan.requires_python or "",
             ],
             capture_output=True,
             text=True,
@@ -491,9 +492,22 @@ def _pack_manifest(repo_root: Path) -> dict[str, Any]:
         return {"applicable": False}
     try:
         entries = _pack_manifest_entries(template_root)
-    except ValueError as exc:
+        interpreter = derive_interpreter_environment(template_root)
+        if interpreter is not None:
+            verify_interpreter_environment_projection(interpreter)
+    except (InterpreterEnvironmentError, ValueError) as exc:
         raise PreflightError(str(exc)) from exc
-    return {"applicable": True, "file_count": len(entries)}
+    return {
+        "applicable": True,
+        "file_count": len(entries),
+        "template_interpreter": (
+            "not_declared"
+            if interpreter is None
+            else "dependencies_and_python"
+            if interpreter.requires_python is not None
+            else "dependencies_only"
+        ),
+    }
 
 
 def run_preflight(

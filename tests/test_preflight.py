@@ -832,6 +832,13 @@ def test_stale_pack_manifest_fails_before_evidence(
         )
 
 
+def test_pack_preflight_closes_graphless_legacy_interpreter_state() -> None:
+    report = preflight._pack_manifest(REPO_ROOT)
+
+    assert report["applicable"] is True
+    assert report["template_interpreter"] == "dependencies_only"
+
+
 def test_workflow_authority_failure_prevents_session_allocation(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

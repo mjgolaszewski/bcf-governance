@@ -287,7 +287,10 @@ def migrate_existing_adoption_contract(repo_root: Path) -> None:
         }
         path.write_text(render_profile_surface(adoption, width=120), encoding="utf-8")
         return
-    baseline = _mapping(baseline, context="existing adoption native_baseline")
+    baseline = _mapping(
+        baseline,
+        context="governance/existing-repo-adoption.yml native_baseline",
+    )
     if baseline.get("transition_class") not in {
         NO_AUTHENTICATED_NATIVE_BASELINE,
         "existing_repository_adoption",
@@ -308,7 +311,10 @@ def existing_adoption_requires_history_for_upgrade(repo_root: Path) -> bool:
     baseline = adoption.get("native_baseline")
     if baseline is None or baseline == LEGACY_EMPTY_NATIVE_BASELINE:
         return False
-    baseline = _mapping(baseline, context="existing adoption native_baseline")
+    baseline = _mapping(
+        baseline,
+        context="governance/existing-repo-adoption.yml native_baseline",
+    )
     transition = baseline.get("transition_class")
     if transition == NO_AUTHENTICATED_NATIVE_BASELINE:
         return False

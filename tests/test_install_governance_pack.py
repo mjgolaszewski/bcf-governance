@@ -684,6 +684,32 @@ def test_upgrade_rejects_ambiguous_existing_adoption_baseline_without_mutation(
     assert adoption_path.read_bytes() == before
 
 
+def test_upgrade_rejects_unknown_existing_adoption_transition_without_mutation(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "unknown-existing-baseline-transition"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    adoption_path = target / "governance/existing-repo-adoption.yml"
+    adoption = yaml.safe_load(
+        (REPO_ROOT / "bcf_governance/pack/template-repo/governance/existing-repo-adoption.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    adoption["native_baseline"] = {
+        "transition_class": "unknown",
+        "source": None,
+        "files": [],
+    }
+    adoption_path.write_text(yaml.safe_dump(adoption, sort_keys=False), encoding="utf-8")
+    before = adoption_path.read_bytes()
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "native_baseline is not an exact migratable shape" in result.stderr
+    assert adoption_path.read_bytes() == before
+
+
 def test_upgrade_rejects_ungoverned_repository_before_mutation(tmp_path: Path) -> None:
     target = tmp_path / "ungoverned"
     target.mkdir()
