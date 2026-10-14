@@ -1,0 +1,138 @@
+document:
+  kind: release_train_phase0_backtrace
+  id: bcf.release-train.phase0-backtrace.v1
+  schema_version: 1
+  status: speculative_non_authoritative
+  issue: 394
+  source:
+    repository: mjgolaszewski/bcf-governance
+    commit_sha: c0365beefb058f097b6fe884540c480020bb44af
+    tree_sha: dc25b16e4f462a9b3bdb34e8170ca3eb819e7fbd
+    installed_controller_commit_sha: 5665e3f533028a12da7468ffe057fed0ff8c475f
+    ci_graph_sha256: 8f3f2f5d73c9b97caeca85beb4dc7ea3df8d2c982d0b618d2c2ee51991a79cba
+construction_rule:
+  order: [invariant, canonical_domain_owner, primitive, contract, producer, consumer, evidence]
+  dependency_direction: outward_only
+  no_parallel_ontology: true
+invariants:
+- {id: INV-RT-001, statement: exact subject identity survives every proof and authority transition, basis: audits/bcf-2.1-p26-invariant-ownership.yml}
+- {id: INV-RT-002, statement: required claims resolve only through canonical execution-group producers or authenticated equivalent proof, basis: governance/gate-contracts.yml}
+- {id: INV-RT-003, statement: every reachable producer-consumer pair is complete before allocation or authority and every unreachable pair has one typed exclusion, basis: spec/RELEASE_TRAIN_STATE_DAG.md#rule-31}
+- {id: INV-RT-004, statement: candidate-controlled bytes cannot confer trusted finalizer merge exact-main controller release or custody authority, basis: audits/bcf-2.1-p26-invariant-ownership.yml}
+- {id: INV-RT-005, statement: missing stale ambiguous wrong-subject wrong-attempt wrong-producer or partial evidence fails closed, basis: audits/bcf-2.1-p26-invariant-ownership.yml}
+- {id: INV-RT-006, statement: cheap deterministic rejection precedes expensive evidence or provider allocation, basis: docs/RELIABILITY_MODEL.md}
+- {id: INV-RT-007, statement: lifecycle intent and legal successor are mechanically derived and never caller-selected, basis: bcf_governance/tooling/ci_graph_post_merge.py}
+- {id: INV-RT-008, statement: release authority requires exact terminal certification plus independent exact-byte verification, basis: audits/v2.3.0-release-custody.yml}
+- {id: INV-RT-009, statement: controller mutation rotation recovery and publication remain separate authenticated self-authority, basis: audits/v2.3.0-release-custody.yml}
+- {id: INV-RT-010, statement: generated and human representations are projections of singular executable owners, basis: governance/canonical-representations.yml}
+- {id: INV-RT-011, statement: reuse changes execution only and cannot broaden proposition qualification freshness dependency or authority, basis: audits/bcf-2.1-p26-invariant-ownership.yml}
+- {id: INV-RT-012, statement: recovery is bounded and cannot bypass the failed invariant or broaden authority, basis: schemas/recovery-reentry-authorization.schema.json}
+- {id: INV-RT-013, statement: every required adopter source is resolved from authenticated provider state as one immutable all-or-none inventory before qualification work and caller resources never select a subject, basis: spec/RELEASE_TRAIN_STATE_DAG.md#exact-adopter-source-transaction-backtrace}
+primitives:
+- {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
+- {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002]}
+- {id: PRIM-EXEC-GROUP, canonical_name: ExecutionGroupIdentity, owner: governance/gate-contracts.yml#claim_model/execution_groups, invariants: [INV-RT-002]}
+- {id: PRIM-DEPENDENCY, canonical_name: DependencyClosure, owner: bcf_governance/tooling/evidence_planning.py, invariants: [INV-RT-002, INV-RT-011]}
+- {id: PRIM-RECEIPT, canonical_name: EvidenceReceipt, owner: bcf_governance/tooling/truth_receipts.py, invariants: [INV-RT-001, INV-RT-005]}
+- {id: PRIM-REUSE, canonical_name: ApplicabilityDecision, owner: bcf_governance/tooling/evidence_reuse_attestations.py, invariants: [INV-RT-011]}
+- {id: PRIM-AUTHORITY, canonical_name: AuthorityIdentity, owner: bcf_governance/tooling/ci_authority_contracts.py, invariants: [INV-RT-004, INV-RT-008, INV-RT-009]}
+- {id: PRIM-LIFECYCLE, canonical_name: LifecycleState, owner: bcf_governance/tooling/governance_truth.py, invariants: [INV-RT-007]}
+- {id: PRIM-RECOVERY, canonical_name: RecoveryAuthority, owner: bcf_governance/tooling/ci_graph_controller_lifecycle.py, invariants: [INV-RT-012]}
+- {id: PRIM-CI-GRAPH, canonical_name: governance.ci-graph-compilation.v1, owner: bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph, invariants: [INV-RT-003, INV-RT-010]}
+- {id: PRIM-CI-EDGE, canonical_name: EdgeContract, owner: bcf_governance/tooling/ci_graph_edges.py::compile_edge_contracts, invariants: [INV-RT-003, INV-RT-006]}
+- {id: PRIM-ADOPTER-REPOSITORY, canonical_name: AdopterRepositoryIdentity, owner: governance/release-qualification.yml, invariants: [INV-RT-001, INV-RT-005, INV-RT-013]}
+- {id: PRIM-ADOPTER-SOURCE, canonical_name: AdopterSourceIdentity, owner: schemas/release-qualification.schema.json, invariants: [INV-RT-001, INV-RT-005, INV-RT-013]}
+- {id: PRIM-ADOPTER-SOURCE-INVENTORY, canonical_name: AdopterSourceInventory, owner: bcf_governance/tooling/release_adopter_qualification.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-013]}
+states:
+- {id: ST-INTENT, owner: ci_graph_post_merge, authority: none}
+- {id: ST-PREFLIGHT, owner: governance_validation.runner, authority: structural}
+- {id: ST-PLAN, owner: evidence_planning, authority: scheduling}
+- {id: ST-EVIDENCE, owner: execution_groups, authority: evidence}
+- {id: ST-TRUTH, owner: governance_truth, authority: proposition}
+- {id: ST-PR-CERT, owner: trusted_finalizer, authority: pr_certification}
+- {id: ST-MERGED, owner: provider_protection, authority: repository_merge}
+- {id: ST-MAIN-ADMIT, owner: ci_github_automation, authority: exact_main_admission}
+- {id: ST-MAIN-TRUTH, owner: governance_truth, authority: exact_main_proposition}
+- {id: ST-LIFECYCLE-CERT, owner: trusted_finalizer, authority: bounded_or_terminal_certification}
+- {id: ST-CONTROLLER, owner: ci_graph_controller_lifecycle, authority: self_controller}
+- {id: ST-RELEASE-AUTH, owner: ci_github_release, authority: release_authorization}
+- {id: ST-ASSET-VERIFY, owner: release_verifier, authority: exact_byte_release}
+- {id: ST-PUBLISHED, owner: provider_release, authority: publication}
+- {id: ST-ADOPTER-QUAL, owner: adopter_qualification, authority: qualification}
+- {id: ST-CUSTODY, owner: release_custody_audit, authority: terminal_record}
+transitions:
+- {id: TR-001, from: ST-INTENT, to: ST-PREFLIGHT, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-010], producer: governance_validation.runner, consumer: evidence_planning, cost: cheap_pre_allocation, rejection: structural_or_semantic_failure}
+- {id: TR-002, from: ST-PREFLIGHT, to: ST-PLAN, invariants: [INV-RT-001, INV-RT-002, INV-RT-005, INV-RT-011], producer: evidence_planning, consumer: execution_groups, cost: pre_fanout, rejection: ambiguous_plan_expands_or_rejects}
+- {id: TR-003, from: ST-PLAN, to: ST-EVIDENCE, invariants: [INV-RT-001, INV-RT-002, INV-RT-005], producer: execution_groups, consumer: governance_truth, cost: expensive_execution, rejection: producer_failure_timeout_or_receipt_mismatch}
+- {id: TR-004, from: ST-EVIDENCE, to: ST-TRUTH, invariants: [INV-RT-001, INV-RT-002, INV-RT-004, INV-RT-005, INV-RT-011], producer: governance_truth, consumer: finalizer, cost: post_execution, rejection: unresolved_or_ineligible_claim}
+- {id: TR-005, from: ST-TRUTH, to: ST-PR-CERT, invariants: [INV-RT-001, INV-RT-003, INV-RT-004, INV-RT-005], producer: protected_base_or_installed_controller_finalizer, consumer: provider_required_status, cost: trusted_provider, rejection: wrong_subject_attempt_runtime_protection_or_truth}
+- {id: TR-006, from: ST-PR-CERT, to: ST-MERGED, invariants: [INV-RT-004], producer: provider_protection, consumer: exact_main, cost: provider_mutation, rejection: required_status_not_success}
+- {id: TR-007, from: ST-MERGED, to: ST-MAIN-ADMIT, invariants: [INV-RT-001, INV-RT-004, INV-RT-006, INV-RT-007, INV-RT-009], producer: ci_github_automation, consumer: exact_main_governance, cost: cheap_provider_preflight, rejection: moved_ambiguous_or_unauthorized_main}
+- {id: TR-008, from: ST-MAIN-ADMIT, to: ST-MAIN-TRUTH, invariants: [INV-RT-001, INV-RT-002, INV-RT-005, INV-RT-011], producer: exact_main_governance_truth, consumer: trusted_finalizer, cost: exact_main_execution, rejection: unresolved_claim_or_inapplicable_reuse}
+- {id: TR-009, from: ST-MAIN-TRUTH, to: ST-LIFECYCLE-CERT, invariants: [INV-RT-001, INV-RT-004, INV-RT-005, INV-RT-007], producer: trusted_finalizer_publisher, consumer: lifecycle_or_release, cost: trusted_provider, rejection: same_admission_or_scope_failure}
+- {id: TR-010, from: ST-LIFECYCLE-CERT, to: ST-CONTROLLER, invariants: [INV-RT-004, INV-RT-009, INV-RT-012], producer: controller_lifecycle, consumer: subsequent_exact_main, cost: provider_controller_mutation, rejection: custody_or_rotation_failure, applicability: only_when_controller_transition_required}
+- {id: TR-011, from: ST-LIFECYCLE-CERT, to: ST-RELEASE-AUTH, invariants: [INV-RT-004, INV-RT-008], producer: ci_github_release, consumer: release_verifier, cost: provider_release_preflight, rejection: bounded_or_nonterminal_certification}
+- {id: TR-012, from: ST-RELEASE-AUTH, to: ST-ASSET-VERIFY, invariants: [INV-RT-001, INV-RT-005, INV-RT-008], producer: release_collector_verifier, consumer: publication, cost: build_and_verify_assets, rejection: asset_digest_or_inventory_mismatch}
+- {id: TR-013, from: ST-ASSET-VERIFY, to: ST-ADOPTER-QUAL, invariants: [INV-RT-005, INV-RT-008, INV-RT-010], producer: adopter_qualification_harness, consumer: publication_eligibility, cost: adopter_execution, rejection: missing_profile_or_failed_fixed_point}
+- {id: TR-014, from: ST-ADOPTER-QUAL, to: ST-PUBLISHED, invariants: [INV-RT-004, INV-RT-008], producer: provider_release_publication, consumer: custody, cost: provider_publication, rejection: qualification_or_upload_identity_mismatch}
+- {id: TR-015, from: ST-PUBLISHED, to: ST-CUSTODY, invariants: [INV-RT-001, INV-RT-008, INV-RT-010], producer: release_custody_audit, consumer: future_release_and_human_review, cost: verification_only, rejection: immutable_custody_incomplete}
+adopter_source_transaction:
+  invariant: INV-RT-013
+  all_or_none: true
+  freeze_before: [cache_admission, clone, profile_admission, environment_admission, reconciliation, evidence_allocation, dispatch, publication]
+  canonical_order: qualification_contract_order
+  primitives: [PRIM-ADOPTER-REPOSITORY, PRIM-ADOPTER-SOURCE, PRIM-ADOPTER-SOURCE-INVENTORY]
+  edges:
+  - {id: AS-000, from: authenticated_release_receipt, to: release_transaction, producer: release_receipt_resolver, consumer: release_qualification_contract_parser, required: [current_exact_main, collector_workflow, verifier_run_attempt_artifact, release_commit_tree, version, asset_digests], reject: [caller_selected_release_subject, self_declared_checksums, stale_receipt, nonterminal_receipt, wrong_artifact, wrong_run_attempt, current_main_drift, rebuilt_asset], cost: cheap_provider_read}
+  - {id: AS-001, from: qualification_contract, to: provider_credential_admission, producer: release_qualification_contract_parser, consumer: provider_source_resolver, required: [release_subject, asset_inventory, contract_digest, ordered_required_repository_profiles], reject: [missing_adopter, duplicate_adopter, unexpected_adopter, malformed_profile, ambiguous_contract], cost: cheap}
+  - {id: AS-002, from: provider_credential_admission, to: repository_identity, producer: restricted_provider_reader, consumer: provider_source_resolver, required: [repository_scoped_credential, exact_read_operations], reject: [missing_access, wrong_installation, wrong_repository, redacted_response, mutation_capability], cost: cheap}
+  - {id: AS-003, from: repository_identity, to: default_branch_identity, producer: provider_repository_api, consumer: provider_source_resolver, required: [repository_name, repository_id, profile, provider_default_branch], reject: [renamed_repository, transferred_repository, deleted_repository, inaccessible_repository, wrong_repository_id, unsafe_default_branch], cost: provider_read}
+  - {id: AS-004, from: default_branch_identity, to: immutable_source_identity, producer: provider_commit_api, consumer: source_inventory_compiler, required: [repository_id, exact_default_branch_ref, direct_commit, tree], reject: [missing_ref, tag_object, annotated_object, non_commit_object, malformed_commit, malformed_tree, repository_mismatch], cost: provider_read}
+  - {id: AS-005, from: immutable_source_identity, to: frozen_source_inventory, producer: source_inventory_compiler, consumer: every_qualification_consumer, required: [all_required_sources, canonical_order, one_resolution_transaction, provider_observations, inventory_digest], reject: [partial_inventory, source_resolved_outside_transaction, iterative_reresolution, caller_order], cost: cheap}
+  - {id: AS-006, from: frozen_source_inventory, to: admitted_cache, producer: cache_admission, consumer: exact_source_materializer, required: [source_identity, caller_path, exact_remote_repository, object_membership, cache_hygiene], reject: [wrong_remote, wrong_repository, unsafe_object, source_shadowing, concurrent_cache_mutation], exclusion: [caller_head_not_authority, local_only_commit_not_provider_visible], cost: cheap}
+  - {id: AS-007, from: admitted_cache, to: disposable_exact_checkout, producer: exact_source_materializer, consumer: environment_admission, required: [frozen_repository, commit, tree, cache], reject: [stale_remote_tracking_ref, branch_checkout, cache_head_fallback, wrong_tree, exact_object_unavailable], cost: source_materialization}
+  - {id: AS-007A, from: disposable_exact_checkout, to: admitted_profile, producer: canonical_profile_parser, consumer: environment_admission, required: [exact_source, contract_profile, supported_profile_contract], reject: [missing_profile, malformed_profile, mismatched_profile, caller_inferred_profile, post_execution_profile_check], cost: cheap}
+  - {id: AS-008, from: admitted_profile, to: admitted_environment, producer: environment_owner, consumer: release_installer, required: [exact_source, interpreter_contract, dependency_inventory, isolated_paths], reject: [wrong_repository_environment, source_leak, ambient_interpreter, ambient_package, extra_workspace_path, incomplete_dependencies], cost: environment_admission}
+  - {id: AS-009, from: admitted_environment, to: synthetic_candidate, producer: exact_release_installer_and_reconciler, consumer: qualification_producers, required: [release_asset_digests, exact_source, contract, profile, environment, execution_namespace, deterministic_commit_metadata], reject: [same_version_skip, ambient_bcf, editable_bcf, rebuilt_asset, source_mutation, unbound_install, ambient_author_time, nondeterministic_candidate_commit, dirty_projection], cost: qualification_execution}
+  - {id: AS-009A, from: synthetic_candidate, to: qualified_execution, producer: governed_qualification_job, consumer: qualification_receipt_compiler, required: [protected_workflow_definition, installed_controller, provider_run_attempt_job, exact_release_transaction, frozen_source_inventory], reject: [local_execution_claim, caller_json, missing_job, wrong_job, candidate_runtime, mutable_workflow, failed_run, skipped_run, unbound_artifact], cost: provider_execution}
+  - {id: AS-010, from: qualified_execution, to: qualification_receipt, producer: qualification_receipt_compiler, consumer: trusted_publisher, required: [complete_results, ordered_source_inventory, source_inventory_digest, release_identity, contract_identity, asset_identity, provider_run_attempt_job_artifact], reject: [partial_inventory, missing_source, duplicate_source, reordered_source, missing_repository_id, missing_provenance, wrong_commit, wrong_tree, caller_assembled_receipt], cost: cheap}
+  - {id: AS-011, from: release_transaction, to: qualification_continuation, producer: release_dispatcher, consumer: governed_qualification_job, required: [exact_release_transaction, canonical_workflow_event], reject: [caller_supplied_pass_result, oversized_payload, reconstructed_payload, stale_release, wrong_workflow, wrong_ref, wrong_actor, alternate_route], cost: provider_dispatch}
+  - {id: AS-012, from: qualification_receipt, to: authenticated_qualification, producer: trusted_publisher, consumer: release_publication, required: [qualification_workflow_run_attempt_job_artifact, receipt, release_assets_contract, provider_repository_identities, exact_commit_tree_identity, freshness_rule], reject: [syntax_only_trust, caller_identity_only, wrong_producer, wrong_workflow, wrong_run_attempt, wrong_artifact, wrong_repository_id, wrong_tree, stale_source, inaccessible_commit, incomplete_inventory], cost: provider_authentication}
+  - {id: AS-013, from: authenticated_qualification, to: immutable_publication, producer: release_publication, consumer: independent_custody, required: [source_inventory_digest, release_receipt, immutable_assets, tag, publication_observation], reject: [rebuilt_bytes, dropped_source_identity, duplicate_publication, conflicting_publication, wrong_release_transaction], cost: provider_mutation}
+  - {id: AS-014, from: immutable_publication, to: terminal_custody, producer: independent_custody_verifier, consumer: future_release, required: [publication, release_receipt, qualification_receipt, provider_source_inventory], reject: [missing_source, reordered_source, replayed_source_inventory, wrong_version, wrong_assets, wrong_contract, unresolvable_provider_identity, hand_authored_custody], cost: verification_only}
+  alternate_states:
+  - {id: ASA-001, state: provider_head_advances_after_capture, action: retain_frozen_inventory_for_current_transaction, next: complete_or_fail_current_transaction, reject: [silent_single_adopter_update, evidence_relabel, mixed_heads]}
+  - {id: ASA-002, state: provider_source_unavailable_after_capture, action: fail_current_transaction, next: new_transaction_only_after_fresh_complete_resolution, reject: [predecessor_fallback, prior_success_fallback, unmerged_repair, caller_selected_ref]}
+  - {id: ASA-003, state: adopter_product_failure, action: retain_exact_source_and_first_causal_failure, next: publication_unavailable, reject: [source_switch, version_switch, older_pass, local_repair_substitution]}
+  - {id: ASA-004, state: retry_before_publication, action: retry_only_contract_permitted_failed_transport_edge_against_same_inventory, next: existing_transaction, reject: [silent_reresolution, evidence_relabel, attempt_copy, mixed_transactions]}
+  - {id: ASA-005, state: fresh_resolution_after_failure, action: create_distinct_transaction_and_invalidate_prior_source_bound_results, next: AS-001, reject: [partial_reuse_without_applicability, transaction_identity_reuse]}
+  - {id: ASA-006, state: cleanup, action: retire_only_exact_transaction_session_namespaces_and_disposable_paths, next: terminal, reject: [global_prune, wildcard_ownership, maintained_repository_mutation, implicit_persistence]}
+  - {id: ASA-007, state: main_or_adopter_head_advances_before_authority_consumption, action: emit_typed_stale_noncertifying_and_derive_same_transaction_retry_or_new_complete_transaction, next: retry_or_AS-000, reject: [spurious_authority_failure, pass_under_changed_freshness, partial_adopter_rerun, silent_subject_change]}
+  - {id: ASA-008, state: transport_failure_after_successful_qualification, action: reuse_only_authenticated_unchanged_artifact_for_bounded_continuation, next: AS-012, reject: [recompute_unchanged_evidence, unauthenticated_cross_attempt_copy, new_source_inventory]}
+  exclusions:
+  - {id: ASX-001, reason: caller_head_not_authority}
+  - {id: ASX-002, reason: local_only_commit_not_provider_visible}
+  - {id: ASX-003, reason: prior_success_not_current_source}
+  - {id: ASX-004, reason: unmerged_repair_not_provider_source}
+  - {id: ASX-005, reason: tag_not_default_branch_commit}
+  - {id: ASX-006, reason: partial_inventory_not_qualification}
+  downstream_consumers: [release_transaction_resolver, cli_cache_arguments, cache_admission, checkout_materialization, profile_admission, interpreter_admission, release_installation, synthetic_candidate, reconciliation, prospective_execution, governed_qualification_job, receipt_emission, dispatch, trusted_publisher, release_receipt, immutable_assets, tag, independent_custody]
+composition:
+  ci_job_edges:
+    canonical_owner: bcf_governance/tooling/ci_graph_edges.py::compile_edge_contracts
+    closure_test: tests/test_ci_graph.py::test_canonical_graph_closes_or_excludes_every_producer_consumer_pair
+    rule: import_existing_edge_contract_semantics_do_not_duplicate
+  release_train_edges:
+    rule: each transition above must bind to one or more canonical CI EdgeContract instances or a separately typed provider/lifecycle edge
+    unresolved_binding_is_blocking: true
+exclusions:
+- {id: EX-001, reason: profile_lane_disconnected, existing_owner: ci_graph_edges}
+- {id: EX-002, reason: no_dependency_or_event_path, existing_owner: ci_graph_edges}
+- {id: EX-003, reason: reverse_dependency, existing_owner: ci_graph_edges}
+- {id: EX-004, reason: bounded_certification_has_no_release_authority, invariant: INV-RT-008}
+- {id: EX-005, reason: candidate_authority_cannot_mutate_controller_or_release, invariant: INV-RT-004}
+- {id: EX-006, reason: recovery_cannot_bypass_failed_authority, invariant: INV-RT-012}
+validation_status:
+  mechanically_proven_existing: [PRIM-CI-EDGE]
+  reconstructed_requires_agent_validation: [invariants, states, transitions, release_train_edges, exclusions]
+  adoption_blocker: no transition may become normative until implementation owner positive test cause-specific negative test terminal consumer and recovery are independently traced
