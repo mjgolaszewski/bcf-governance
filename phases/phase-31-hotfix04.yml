@@ -109,6 +109,14 @@ execution_evidence:
     Racecar's bounded-workitem rejection remains intentionally fail-closed: its
     proposed successor relationships exist only in prose, so BCF diagnoses the
     missing typed edges but does not invent lifecycle authority.
+  - >-
+    Disposable TradeFlow qualification then exercised the cross-minor state:
+    the BCF controller runs on Python 3.14 while the adopter graph authenticates
+    Python 3.12. The same canonical environment owner now keeps a compatible
+    controller runtime or, only for one exact graph minor, resolves and probes
+    the corresponding versioned executable before binding its bytes into the
+    environment identity. Ranges, missing runtimes, mismatches, downloads, and
+    agent-selected paths fail before materialization.
 closeout_requirements:
   claims:
     required_suites_green:

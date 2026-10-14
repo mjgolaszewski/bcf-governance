@@ -7,9 +7,11 @@ import sys
 
 import pytest
 import yaml
+from packaging.version import Version
 
 from bcf_governance.tooling.interpreter_environment import (
     InterpreterEnvironmentError,
+    InterpreterEnvironmentPlan,
     apply_interpreter_environment_projection,
     derive_interpreter_environment,
     main,
@@ -17,6 +19,10 @@ from bcf_governance.tooling.interpreter_environment import (
     reconcile_interpreter_environment,
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
+)
+from bcf_governance.tooling.python_runtime_selection import (
+    PythonRuntimeSelectionError,
+    select_materialization_base,
 )
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
@@ -491,6 +497,88 @@ def test_missing_project_environment_is_materialized_once_from_exact_plan(
     assert plan is not None
     assert manifest["plan_identity"] == plan.identity(Path(sys.executable))
     assert manifest["identity"] == cache_entry.name
+
+
+def test_materialization_base_uses_compatible_controller(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    controller.write_text("runtime", encoding="utf-8")
+    controller.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), "==3.12.*", None)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda _python: Version("3.12.14"),
+    )
+
+    assert select_materialization_base(plan.requires_python, controller) == controller.resolve()
+
+
+def test_materialization_base_derives_exact_versioned_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    selected = tmp_path / "python3.12"
+    for executable in (controller, selected):
+        executable.write_text("runtime", encoding="utf-8")
+        executable.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), "==3.12.*", None)
+    versions = {
+        controller.resolve(): Version("3.14.0"),
+        selected.resolve(): Version("3.12.14"),
+    }
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda python: versions[python.resolve()],
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection.shutil.which",
+        lambda command: str(selected) if command == "python3.12" else None,
+    )
+
+    assert select_materialization_base(plan.requires_python, controller) == selected.resolve()
+
+
+def test_materialization_base_rejects_wrong_versioned_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    selected = tmp_path / "python3.12"
+    for executable in (controller, selected):
+        executable.write_text("runtime", encoding="utf-8")
+        executable.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), "==3.12.*", None)
+    versions = {
+        controller.resolve(): Version("3.14.0"),
+        selected.resolve(): Version("3.13.9"),
+    }
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda python: versions[python.resolve()],
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection.shutil.which",
+        lambda _command: str(selected),
+    )
+
+    with pytest.raises(PythonRuntimeSelectionError, match="does not match"):
+        select_materialization_base(plan.requires_python, controller)
+
+
+def test_materialization_base_rejects_implicit_fallback_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    controller.write_text("runtime", encoding="utf-8")
+    controller.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), ">=3.12,<3.13", None)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda _python: Version("3.14.0"),
+    )
+
+    with pytest.raises(PythonRuntimeSelectionError, match="one exact fallback minor"):
+        select_materialization_base(plan.requires_python, controller)
 
 
 def test_failed_project_environment_materialization_leaves_no_cache(

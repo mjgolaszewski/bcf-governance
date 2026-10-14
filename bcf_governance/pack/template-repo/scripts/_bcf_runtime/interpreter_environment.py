@@ -26,6 +26,11 @@ from .runtime_capacity import (
     allocate_execution_state,
     load_runtime_contract,
 )
+from .python_runtime_selection import (
+    PythonRuntimeSelectionError,
+    interpreter_subprocess_environment as _interpreter_subprocess_environment,
+    select_materialization_base,
+)
 
 
 class InterpreterEnvironmentError(ValueError):
@@ -33,22 +38,6 @@ class InterpreterEnvironmentError(ValueError):
 
 
 PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.1"
-
-
-def _interpreter_subprocess_environment(python: Path) -> dict[str, str]:
-    """Remove controller-only Python custody from project interpreter work."""
-
-    environment = dict(os.environ)
-    for name in ("PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"):
-        environment.pop(name, None)
-    bin_directory = python.absolute().parent
-    environment["PATH"] = str(bin_directory) + (
-        os.pathsep + environment["PATH"] if environment.get("PATH") else ""
-    )
-    prefix = bin_directory.parent
-    if bin_directory.name == "bin" and (prefix / "pyvenv.cfg").is_file():
-        environment["VIRTUAL_ENV"] = str(prefix)
-    return environment
 
 
 def validate_runtime_import_dependencies(repo_root: Path) -> None:
@@ -542,6 +531,10 @@ def materialize_interpreter_environment(
             "project interpreter cannot be materialized without an authenticated Python runtime source"
         )
     verify_interpreter_environment_projection(plan)
+    try:
+        base_python = select_materialization_base(plan.requires_python, base_python)
+    except PythonRuntimeSelectionError as exc:
+        raise InterpreterEnvironmentError(str(exc)) from exc
     try:
         plan_identity = plan.identity(base_python)
     except OSError as exc:

@@ -263,25 +263,32 @@ def test_incomplete_explicit_project_environment_rejects_without_replacement(
         ensure_local_project_python(tmp_path, controller, requested=project)
 
 
-def test_adopter_environment_is_not_materialized_from_wrong_python_minor(
+def test_adopter_environment_derives_graph_python_when_controller_minor_differs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     _public_python_contract(tmp_path, "3.99")
-    called = False
+    derived = tmp_path / ".artifacts/project/bin/python"
+    calls: list[tuple[Path, Path]] = []
 
-    def materialize(_repo_root: Path, _base_python: Path) -> Path:
-        nonlocal called
-        called = True
-        raise AssertionError("must reject before environment materialization")
+    def materialize(repo_root: Path, base_python: Path) -> Path:
+        calls.append((repo_root, base_python))
+        return derived
 
     monkeypatch.setattr(
-        "bcf_governance.tooling.interpreter_environment.materialize_interpreter_environment",
+        "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
         materialize,
     )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.derive_interpreter_environment",
+        lambda _root: object(),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.probe_interpreter_environment",
+        lambda _plan, _python: {},
+    )
 
-    with pytest.raises(LocalExecutionAdmissionError, match="public runtime contract"):
-        ensure_local_project_python(tmp_path, Path(sys.executable))
-    assert called is False
+    assert ensure_local_project_python(tmp_path, Path(sys.executable)) == derived
+    assert calls == [(tmp_path, Path(sys.executable))]
 
 
 def test_project_python_environment_removes_controller_paths(tmp_path: Path) -> None:

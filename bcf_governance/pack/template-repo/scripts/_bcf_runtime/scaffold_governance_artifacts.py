@@ -364,6 +364,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "governance/gate-contracts.yml",
                 "requirements-governance.txt",
                 "bcf_governance/tooling/interpreter_environment.py",
+                "bcf_governance/tooling/python_runtime_selection.py",
             ),
         ),
         ReconcileStep(

@@ -166,7 +166,6 @@ def ensure_local_project_python(
             return project_python
         except InterpreterEnvironmentError:
             pass
-    validate_local_toolchain(repo_root, controller_python, toolchain_command=None)
     plan = dependency_plan()
     try:
         project_python = materialize_interpreter_environment(

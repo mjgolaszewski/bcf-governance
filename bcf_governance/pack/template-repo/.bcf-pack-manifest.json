@@ -1199,11 +1199,11 @@
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "3e890883671c0388eb28aacc65861350d5175434489e402ca182e6a2fa29e8cd"
+      "sha256": "d66e0f71cdaaaefab4187330f6bafb73ce5cd81f3ca70ee3fe743b624fd13559"
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "ab12301b36c06c6f9569f18fc5a29e3458c73f8d13e19dc4f44f0f5d88aae3e3"
+      "sha256": "367abd0653e55285ceb16ab814700fe60ebd04f50cc2693d3d77aaa2cc4ab993"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
@@ -1305,6 +1305,10 @@
       "operation": "copy",
       "sha256": "63abb8dfd3f2acae183bc0b6b8b315aad401c20e32a3bc9ed8955a7a4359dc5e"
     },
+    "scripts/_bcf_runtime/python_runtime_selection.py": {
+      "operation": "copy",
+      "sha256": "e9f34a1cf79f6fda8a08de015224cf78d9c50577a5576b323419fc550d67266c"
+    },
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
       "sha256": "1ab41e1c61b6cbe0559ee4c4c6d92d0d1c31938a8f12581bbe08b8308e55747f"
@@ -1391,7 +1395,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "a3d22b4340eb0a71571c0f49268da57bbd3c63674adee522ce09770ad6f0d206"
+      "sha256": "f0370ebddcc235080458575b39e9479f6d2cdaba451a8b4750e7ddb2b4e05a4e"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",
