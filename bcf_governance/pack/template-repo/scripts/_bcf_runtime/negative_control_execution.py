@@ -148,7 +148,7 @@ def resolve_negative_control_oracle(
         )
     try:
         owning_test_contract = owning_contract.get("test_contract")
-        if isinstance(owning_test_contract, dict):
+        if isinstance(owning_test_contract, dict) and owning_test_contract:
             lane = test_node_oracle_lane(owning_test_contract)
             if lane == "legacy_full_gate":
                 return NegativeControlOracleExecution(

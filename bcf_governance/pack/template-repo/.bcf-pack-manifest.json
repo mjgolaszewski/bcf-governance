@@ -1247,7 +1247,7 @@
     },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
-      "sha256": "166ffa071a3e17c977ed8d448c332e43211ff8f145b4461c99b3aaff98ff5195"
+      "sha256": "0d5bd39b0f5a76208c4e8a8098f5d4344b2238acfbbf1236f8667ccb103f1a2f"
     },
     "scripts/_bcf_runtime/nested_cli_runtime.py": {
       "operation": "copy",
