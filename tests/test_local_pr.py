@@ -55,12 +55,24 @@ def _repository(tmp_path: Path) -> tuple[Path, str]:
 
 
 def test_local_pr_cli_defaults_to_canonical_selected_interpreter_preflight(
-    tmp_path: Path,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     project_python = tmp_path / ".venv/bin/python"
     project_python.parent.mkdir(parents=True)
     project_python.write_text("#!/bin/sh\n", encoding="utf-8")
     project_python.chmod(0o755)
+
+    def select_project_python(
+        repo_root: Path, _controller_python: Path
+    ) -> Path:
+        if repo_root == tmp_path:
+            return project_python
+        raise LocalExecutionAdmissionError("runtime authority is unavailable")
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_commands.ensure_local_project_python",
+        select_project_python,
+    )
     assert _local_pr_command((), repo_root=tmp_path) == (
         str(project_python),
         "scripts/preflight_governance.py",

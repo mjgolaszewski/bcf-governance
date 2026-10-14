@@ -227,9 +227,10 @@ def test_new_release_editorial_base_rejects_untracked_branch(tmp_path: Path) -> 
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:10] == [
+    assert ids[:11] == [
         "authored-phase-state",
         "ci-state-matrix",
+        "ci-provider-permissions",
         "interpreter-environment",
         "structural-limits",
         "release-version-surfaces",
