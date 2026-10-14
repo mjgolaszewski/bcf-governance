@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import reconcile_authority_transition as authority_transition
+from bcf_governance.tooling import scaffold_governance_artifacts as scaffold
 from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.scaffold_governance_artifacts import (
     ReconcileError,
@@ -66,6 +67,34 @@ def test_reconcile_ledger_skips_only_exact_clean_stage(tmp_path: Path) -> None:
     assert first["stages"][0]["state"] == "checked"
     assert second["stages"][0]["state"] == "skipped_clean"
     assert third["stages"][0]["state"] == "checked"
+
+
+def test_reconcile_derives_project_python_before_compiling_test_stages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    selected = tmp_path / ".artifacts/project/bin/python"
+    observed: list[Path] = []
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(
+        scaffold,
+        "ensure_local_project_python",
+        lambda root, controller, requested=None: selected,
+    )
+    monkeypatch.setattr(
+        scaffold,
+        "reconcile_steps",
+        lambda _root, python: observed.append(python) or (),
+    )
+    monkeypatch.setattr(
+        scaffold,
+        "check_reconcile_steps",
+        lambda _root, _steps, force=False: {"stages": []},
+    )
+
+    scaffold.reconcile_main(["--repo-root", str(tmp_path), "--check"])
+
+    assert observed == [selected]
+    assert '"status": "clean"' in capsys.readouterr().out
 
 
 def test_reconcile_forced_check_proves_cached_equivalence(tmp_path: Path) -> None:

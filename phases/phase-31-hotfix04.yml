@@ -124,6 +124,13 @@ execution_evidence:
     exact leading BCF token to the same admitted CLI identity for v1, v2 and v3;
     non-BCF commands and gate arguments remain unchanged. An unprepared adopter
     shell therefore requires neither PATH mutation nor another operator step.
+  - >-
+    Isolated AgentBus qualification exposed the same ownership split inside
+    canonical reconciliation: test-manifest collection inherited the controller
+    interpreter and failed when pytest existed only in the governed project
+    environment. Reconcile now derives or authenticates one project interpreter
+    before compiling its stage DAG and passes it unchanged to every manifest
+    collector; explicit wrong identities reject before any stage executes.
 closeout_requirements:
   claims:
     required_suites_green:

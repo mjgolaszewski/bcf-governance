@@ -44,6 +44,7 @@ from .reconcile_authority_transition import (
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 from .interpreter_environment import reconcile_interpreter_environment
+from .local_execution_admission import ensure_local_project_python
 from .test_duration_observations import reconcile_test_duration_observations
 from .editorial_audit_projection import editorial_base
 from .evidence_storage_topology import compile_migration_plan
@@ -623,7 +624,7 @@ def converge(
 def reconcile_main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Converge all mechanically derived governance surfaces.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--python", type=Path, default=Path(sys.executable))
+    parser.add_argument("--python", type=Path)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
@@ -635,7 +636,16 @@ def reconcile_main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
     try:
-        steps = reconcile_steps(root, args.python)
+        project_python = (
+            ensure_local_project_python(
+                root,
+                Path(sys.executable),
+                requested=args.python,
+            )
+            if declared_test_gates(root)
+            else args.python or Path(sys.executable)
+        )
+        steps = reconcile_steps(root, project_python)
         ledger = None
         if args.force and not args.check:
             raise ReconcileError("--force is valid only with --check")
@@ -647,12 +657,12 @@ def reconcile_main(argv: list[str] | None = None) -> None:
             if any(step.step_id == "workflow-authority" for step in steps):
                 transition = apply_workflow_authority_transition(
                     root,
-                    step_factory=lambda candidate: reconcile_steps(candidate, args.python),
+                    step_factory=lambda candidate: reconcile_steps(candidate, project_python),
                     converge=converge,
                     snapshot=_reconcile_snapshot,
                 )
             if transition is not None:
-                record_reconcile_steps(root, reconcile_steps(root, args.python))
+                record_reconcile_steps(root, reconcile_steps(root, project_python))
                 print(authority_transition_json(transition))
                 return
             rounds = converge(steps, lambda: _reconcile_snapshot(root))

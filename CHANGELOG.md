@@ -41,6 +41,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   graph. Legacy-profile direct gates and mutation oracles retain their exact
   fail-closed propositions without an operator-authored environment step, and
   BCF-backed gates reuse the same admitted CLI instead of an ambient `PATH`.
+  Canonical reconciliation likewise derives that project interpreter before
+  pytest-manifest collection rather than borrowing controller dependencies.
 
 ## [2.3.1] - 2026-10-12
 

@@ -1207,7 +1207,7 @@
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "367abd0653e55285ceb16ab814700fe60ebd04f50cc2693d3d77aaa2cc4ab993"
+      "sha256": "6421195488edca77e555e89571d86f2aadcaf0559d810fdc4a48253e51025b73"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
@@ -1399,7 +1399,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "f0370ebddcc235080458575b39e9479f6d2cdaba451a8b4750e7ddb2b4e05a4e"
+      "sha256": "a00f7494797dfa01337acbfbaa67fad8416711bc3bc7f7fbfb7d6c8f1b22fbd2"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

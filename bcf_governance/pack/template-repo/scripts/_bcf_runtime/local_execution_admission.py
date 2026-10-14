@@ -159,12 +159,12 @@ def ensure_local_project_python(
         return project_python
     local = repo_root.resolve() / ".venv/bin/python"
     if local.exists() or local.is_symlink() or local.parent.parent.exists():
-        project_python = resolve_local_project_python(repo_root, controller_python)
-        plan = dependency_plan()
         try:
+            project_python = resolve_local_project_python(repo_root, controller_python)
+            plan = dependency_plan()
             probe_interpreter_environment(plan, project_python)
             return project_python
-        except InterpreterEnvironmentError:
+        except (InterpreterEnvironmentError, LocalExecutionAdmissionError):
             pass
     plan = dependency_plan()
     try:

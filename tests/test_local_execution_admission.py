@@ -172,16 +172,27 @@ def test_local_cli_receipt_rejects_ambiguous_or_unsafe_paths(value: str) -> None
         resolve_local_cli(value)
 
 
-def test_repository_environment_cannot_alias_controller_python(tmp_path: Path) -> None:
+def test_implicit_repository_alias_is_replaced_not_used_as_project_python(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     project = tmp_path / ".venv/bin/python"
     project.parent.mkdir(parents=True)
     project.symlink_to(Path(sys.executable).resolve())
+    derived = tmp_path / ".artifacts/project/bin/python"
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.derive_interpreter_environment",
+        lambda _root: object(),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment",
+        lambda _root, _controller: derived,
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.local_execution_admission.probe_interpreter_environment",
+        lambda _plan, selected: {} if selected == derived else pytest.fail("alias used"),
+    )
 
-    with pytest.raises(
-        LocalExecutionAdmissionError,
-        match="controller interpreter cannot serve as project Python",
-    ):
-        ensure_local_project_python(tmp_path, Path(sys.executable))
+    assert ensure_local_project_python(tmp_path, Path(sys.executable)) == derived
 
 
 def test_distinct_virtual_environments_may_share_base_python(tmp_path: Path) -> None:
