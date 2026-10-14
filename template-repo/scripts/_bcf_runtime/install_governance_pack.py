@@ -24,6 +24,7 @@ from .governance_install.existing_adoption import compile_existing_adoption_inve
 from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
+from .local_cli_receipt import project_local_cli_receipt, resolve_local_cli  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
     merge_gitignore as _merge_gitignore,
@@ -697,6 +698,7 @@ def install(args: argparse.Namespace) -> InstallResult:
     )
     if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != target_root:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
+    local_cli = resolve_local_cli(sys.executable)
     args.release_custody = prepare_upgrade_release_custody(
         target_root,
         getattr(args, "release_assets", None),
@@ -777,6 +779,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         ),
         validate_final=validate_final,
     )
+    project_local_cli_receipt(target_root, local_cli)
     result = result_box[0]
     generated = {
         key: target_root / path.relative_to(path.parents[1])

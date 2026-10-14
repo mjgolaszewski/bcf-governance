@@ -1195,11 +1195,15 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "c9e70111d4d945e02c4326d4573da9a97ee729fe01320dfe170347575e38b0ad"
+      "sha256": "d52b886cece319dd5be5c7b316e3435b8fa2ccb28e7de0c283fbf5d90417b761"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
       "sha256": "d66e0f71cdaaaefab4187330f6bafb73ce5cd81f3ca70ee3fe743b624fd13559"
+    },
+    "scripts/_bcf_runtime/local_cli_receipt.py": {
+      "operation": "copy",
+      "sha256": "b3526e89af5d33eef38ab71629fb0c7990de62e491845087fb8388f6fd71e611"
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
@@ -1267,11 +1271,11 @@
     },
     "scripts/_bcf_runtime/profile_surface_generation.py": {
       "operation": "copy",
-      "sha256": "333758baf417858a40d39d29890dc2a2c3632ba2f78a6b5a3e67e016a1235ac3"
+      "sha256": "f6d555e5b5c97cf10286c890e876828df397b3ee0ae8fd8a3e609059eed0b54d"
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
-      "sha256": "9bd8b9b086ac8fcde358182b3ddf0ce6fd187ebe7dd586681e0090e5e1e90b76"
+      "sha256": "a1d6b395acea4778da7d7e5b62236dcabfbb6551af360770acb259f1dd727907"
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",

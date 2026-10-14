@@ -16,6 +16,11 @@ from bcf_governance.tooling.local_execution_admission import (
     selected_toolchain_environment,
     validate_local_toolchain,
 )
+from bcf_governance.tooling.local_cli_receipt import (
+    LocalCLIReceiptError,
+    project_local_cli_receipt,
+    resolve_local_cli,
+)
 from bcf_governance.tooling.runtime_capacity import (
     EXECUTION_STATE_ENVIRONMENT,
     EXECUTION_STATE_POLICY,
@@ -130,6 +135,25 @@ def test_adopter_cannot_select_controller_as_project_python(tmp_path: Path) -> N
         ensure_local_project_python(
             tmp_path, Path(sys.executable), requested=Path(sys.executable)
         )
+
+
+def test_local_cli_receipt_binds_one_safe_executable_after_install(tmp_path: Path) -> None:
+    executable = tmp_path / "candidate/bin/bcf"
+    executable.parent.mkdir(parents=True)
+    executable.write_text("#!/bin/sh\n", encoding="utf-8")
+    executable.chmod(0o755)
+
+    receipt = project_local_cli_receipt(tmp_path, executable)
+
+    assert receipt.read_text(encoding="utf-8") == (
+        f"BCF := {executable.resolve()} -m bcf_governance.cli\n"
+    )
+
+
+@pytest.mark.parametrize("value", ["bcf", "/tmp/bcf path", "/tmp/bcf#unsafe"])
+def test_local_cli_receipt_rejects_ambiguous_or_unsafe_paths(value: str) -> None:
+    with pytest.raises(LocalCLIReceiptError):
+        resolve_local_cli(value)
 
 
 def test_repository_environment_cannot_alias_controller_python(tmp_path: Path) -> None:

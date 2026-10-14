@@ -23,7 +23,7 @@ def render_makefile(contract: dict[str, Any]) -> str:
     targets = " ".join(gates)
     lines = [
         "SHELL := /bin/bash",
-        "BCF ?= bcf",
+        "include .artifacts/bcf/local-cli.mk",
         "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .",
         "BCF_EVIDENCE_DIR ?= .artifacts/bcf",
         "",

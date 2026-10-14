@@ -19,7 +19,7 @@ def render_make_argv(command: list[str]) -> str:
             " " + shlex.join(command[1:]) if len(command) > 1 else ""
         )
     if command[0] == "bcf":
-        return '"$(BCF)"' + (
+        return "$(BCF)" + (
             " " + shlex.join(command[1:]) if len(command) > 1 else ""
         )
     return shlex.join(command)
@@ -48,7 +48,7 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
     targets = " ".join(gates)
     lines = [
         "SHELL := /bin/bash",
-        "BCF ?= bcf",
+        "include .artifacts/bcf/local-cli.mk",
         "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .",
         "BCF_EVIDENCE_DIR ?= .artifacts/bcf",
         "",

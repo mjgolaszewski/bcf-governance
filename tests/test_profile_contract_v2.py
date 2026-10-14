@@ -268,6 +268,7 @@ def test_v1_generated_gate_derives_its_project_interpreter() -> None:
 
     makefile = render_makefile(contract)
 
+    assert "include .artifacts/bcf/local-cli.mk" in makefile
     assert "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root ." in makefile
     assert 'python="$$($(BCF_PROJECT_PYTHON))" || exit $$?' in makefile
     assert 'cd . && "$$python" scripts/validate_governance_yaml.py' in makefile
@@ -297,7 +298,7 @@ def test_generated_bcf_gate_uses_the_admitted_cli_identity(
         else render_v2_makefile(contract)
     )
 
-    assert '"$(BCF)" validate --repo-root .' in makefile
+    assert "$(BCF) validate --repo-root ." in makefile
     assert "cd . && bcf validate" not in makefile
 
 
