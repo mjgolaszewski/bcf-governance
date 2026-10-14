@@ -1203,7 +1203,7 @@
     },
     "scripts/_bcf_runtime/local_cli_receipt.py": {
       "operation": "copy",
-      "sha256": "b3526e89af5d33eef38ab71629fb0c7990de62e491845087fb8388f6fd71e611"
+      "sha256": "10a976e295704f8ebfacc01c42df1a6807438b85e037e462843071e891dece92"
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",

@@ -146,7 +146,23 @@ def test_local_cli_receipt_binds_one_safe_executable_after_install(tmp_path: Pat
     receipt = project_local_cli_receipt(tmp_path, executable)
 
     assert receipt.read_text(encoding="utf-8") == (
-        f"BCF := {executable.resolve()} -m bcf_governance.cli\n"
+        f"BCF := {executable.absolute()} -m bcf_governance.cli\n"
+    )
+
+
+def test_local_cli_receipt_preserves_virtual_environment_entrypoint(tmp_path: Path) -> None:
+    base = tmp_path / "runtime/python"
+    base.parent.mkdir(parents=True)
+    base.write_text("runtime", encoding="utf-8")
+    base.chmod(0o755)
+    executable = tmp_path / "candidate/bin/python"
+    executable.parent.mkdir(parents=True)
+    executable.symlink_to(base)
+
+    receipt = project_local_cli_receipt(tmp_path, executable)
+
+    assert receipt.read_text(encoding="utf-8") == (
+        f"BCF := {executable.absolute()} -m bcf_governance.cli\n"
     )
 
 

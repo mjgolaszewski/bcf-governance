@@ -28,7 +28,7 @@ def resolve_local_cli(executable: str) -> Path:
         raise LocalCLIReceiptError("local BCF executable is unavailable") from exc
     if not resolved.is_file() or not os.access(resolved, os.X_OK):
         raise LocalCLIReceiptError("local BCF executable is unavailable")
-    return resolved
+    return candidate.absolute()
 
 
 def project_local_cli_receipt(repo_root: Path, executable: Path) -> Path:
