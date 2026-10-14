@@ -40,9 +40,7 @@ from bcf_governance.tooling.routine_controller_rotation import (
     transition_id,
     validate_transition,
 )
-from bcf_governance.tooling.semantic_authority_commands import (
-    reconcile_semantic_lock,
-)
+from bcf_governance.tooling.semantic_authority_commands import _lock
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
 
@@ -2033,7 +2031,7 @@ def test_standard_upgrade_reconciles_semantic_source_inventory_before_success(
         runtime.read_text(encoding="utf-8") + "\n# prior runtime\n",
         encoding="utf-8",
     )
-    reconcile_semantic_lock(repo, apply=True)
+    _lock(repo, apply=True)
     git(repo, "add", str(runtime), "governance/semantic-lock.yml")
     git(repo, "commit", "--quiet", "-m", "prior runtime custody")
 
@@ -2054,4 +2052,4 @@ def test_standard_upgrade_reconciles_semantic_source_inventory_before_success(
     assert "validation: strict pass" in result.stdout
     expected_runtime = REPO_ROOT / "template-repo" / runtime.relative_to(repo)
     assert runtime.read_bytes() == expected_runtime.read_bytes()
-    reconcile_semantic_lock(repo, apply=False)
+    _lock(repo, apply=False)
