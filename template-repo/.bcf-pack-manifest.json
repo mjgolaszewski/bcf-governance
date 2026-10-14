@@ -1004,7 +1004,7 @@
     },
     "scripts/_bcf_runtime/governance_evidence.py": {
       "operation": "copy",
-      "sha256": "2273db26c1b3ab4264d5dde0e9e6fa1a49e6b6249d4858ebe07d7100667c5894"
+      "sha256": "a3a31cefa34529a8a7a6e1ad0f7b2bd0672ffb3a9250db18ff736a6d7340ef31"
     },
     "scripts/_bcf_runtime/governance_install/__init__.py": {
       "operation": "copy",
@@ -1227,7 +1227,7 @@
     },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
-      "sha256": "bad0160dd75b4a45ef4fef74ad797d1db587b2a0a124079002e5c137b79ddaf7"
+      "sha256": "166ffa071a3e17c977ed8d448c332e43211ff8f145b4461c99b3aaff98ff5195"
     },
     "scripts/_bcf_runtime/nested_cli_runtime.py": {
       "operation": "copy",
@@ -1507,7 +1507,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "71173c9bf3b6b43554267121a4afe7a6b70d71b81c9df46e663d33eed8b883f9"
+      "sha256": "7d49af1865771afe1dbd5fab536ed195db30c2c5a903c4591a9ae2b4928d7769"
     },
     "scripts/_bcf_runtime/test_splinter_proofs.py": {
       "operation": "copy",

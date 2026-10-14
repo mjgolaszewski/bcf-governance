@@ -9,7 +9,12 @@ from typing import Any, Callable
 import xml.etree.ElementTree as ET
 
 from .evidence_gate_contracts import _gate_contract
-from .test_manifests import OracleManifestIndex, PytestSelectorMap, TestManifestError
+from .test_manifests import (
+    OracleManifestIndex,
+    PytestSelectorMap,
+    TestManifestError,
+    junit_node_id,
+)
 from .test_manifests import check_gate_selectors, oracle_manifest_index
 
 
@@ -183,6 +188,18 @@ def junit_nodes(path: Path) -> tuple[set[str], set[str]]:
     return observed, failed
 
 
+def oracle_junit_node_ids(control: dict[str, Any]) -> set[str]:
+    """Project declared pytest oracle selectors into comparable JUnit IDs."""
+
+    oracle = control.get("oracle")
+    nodes = oracle.get("node_ids", []) if isinstance(oracle, dict) else []
+    return {
+        junit_node_id(str(node))
+        for node in nodes
+        if isinstance(node, str) and node
+    }
+
+
 def execute_cross_gate_baseline(
     repo_root: Path,
     worktree: Path,
@@ -226,9 +243,5 @@ def execute_cross_gate_baseline(
         if isinstance(junit_value, str)
         else (set(), set())
     )
-    required = {
-        str(node)
-        for node in control.get("oracle", {}).get("node_ids", [])
-        if isinstance(node, str)
-    }
+    required = oracle_junit_node_ids(control)
     return result.returncode == 0 and bool(required) and required <= observed and not failed

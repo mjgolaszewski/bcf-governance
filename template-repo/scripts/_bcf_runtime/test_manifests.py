@@ -130,7 +130,9 @@ def _selectors(repo_root: Path, values: object) -> list[str]:
     return resolved
 
 
-def _junit_node_id(pytest_node_id: str) -> str:
+def junit_node_id(pytest_node_id: str) -> str:
+    """Project one pytest selector into its canonical JUnit identity."""
+
     if "::" not in pytest_node_id:
         module = Path(pytest_node_id).with_suffix("").as_posix().replace("/", ".")
         return module
@@ -139,7 +141,11 @@ def _junit_node_id(pytest_node_id: str) -> str:
     structural = remainder if parameter_at < 0 else remainder[:parameter_at]
     parameter = "" if parameter_at < 0 else remainder[parameter_at:]
     names = structural.split("::")
-    module = Path(source).with_suffix("").as_posix().replace("/", ".")
+    module = (
+        Path(source).with_suffix("").as_posix().replace("/", ".")
+        if source.endswith(".py") or "/" in source or "\\" in source
+        else source
+    )
     if len(names) > 1:
         module = ".".join([module, *names[:-1]])
     return f"{module}::{names[-1]}{parameter}"
@@ -178,7 +184,7 @@ def _selector_map_from_nodes(
     by_identity: dict[str, str] = {}
     for raw_node in raw_nodes:
         selector = _safe_pytest_node(raw_node)
-        identity = _junit_node_id(selector)
+        identity = junit_node_id(selector)
         previous = by_identity.get(identity)
         if previous is not None and previous != selector:
             raise TestManifestError(
