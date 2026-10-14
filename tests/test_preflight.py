@@ -490,6 +490,60 @@ def test_negative_control_preflight_reports_every_stale_oracle_node(tmp_path: Pa
     assert "another-stale-oracle-must-fail" in str(captured.value)
 
 
+def test_negative_control_preflight_accepts_typed_legacy_full_gate_oracle(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.parent.mkdir(parents=True, exist_ok=True)
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    evidence:\n"
+        "      test_contract:\n"
+        "        junit_xml: .artifacts/junit/contract-test.xml\n"
+        "    negative_controls:\n"
+        "    - id: legacy-full-gate-oracle\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_current]\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add legacy control")
+
+    assert preflight.stale_negative_control_oracles(repo) == []
+    assert preflight._negative_control_targets(repo) == 1
+
+
+def test_negative_control_preflight_rejects_partial_modern_oracle_contract(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.parent.mkdir(parents=True, exist_ok=True)
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    evidence:\n"
+        "      test_contract:\n"
+        "        selectors: [tests/test_owner.py]\n"
+        "        junit_xml: .artifacts/junit/contract-test.xml\n"
+        "    negative_controls:\n"
+        "    - id: partial-modern-oracle\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_current]\n",
+        encoding="utf-8",
+    )
+
+    assert preflight.stale_negative_control_oracles(repo) == [
+        "partial-modern-oracle"
+    ]
+
+
 def test_negative_control_preflight_resolves_cross_gate_oracle_owner(
     tmp_path: Path,
 ) -> None:
