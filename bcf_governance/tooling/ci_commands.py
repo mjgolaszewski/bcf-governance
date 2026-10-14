@@ -143,6 +143,11 @@ def _parser() -> argparse.ArgumentParser:
     _adopt_parser(subparsers)
     _automation_parser(subparsers)
     add_graph_parser(subparsers)
+    project_python = subparsers.add_parser(
+        "project-python",
+        help="Derive the authenticated project interpreter for generated local surfaces.",
+    )
+    project_python.add_argument("--repo-root", type=Path, default=Path.cwd())
     local = subparsers.add_parser("local-pr", help="Run exact local PR validation.")
     local.add_argument("--repo-root", type=Path, default=Path.cwd())
     local.add_argument("--remote", default="origin")
@@ -375,6 +380,13 @@ def main(argv: list[str] | None = None) -> None:
                 owned_containers=args.owned_containers,
             )
             _print(report.as_dict(), args.format)
+            return
+        if args.operation == "project-python":
+            print(
+                ensure_local_project_python(
+                    args.repo_root, Path(sys.executable)
+                ).absolute()
+            )
             return
         if args.operation == "prospective-train":
             project_python = ensure_local_project_python(

@@ -48,6 +48,7 @@ def test_cli_exposes_transactional_github_ci_adopter() -> None:
 def test_cli_exposes_local_pr_and_runtime_contracts() -> None:
     local = _run_bcf("ci", "local-pr", "--help")
     prospective = _run_bcf("ci", "prospective-train", "--help")
+    project_python = _run_bcf("ci", "project-python", "--help")
     qualification = _run_bcf("ci", "qualify-release", "--help")
     runtime = _run_bcf("ci", "runtime-check", "--help")
 
@@ -58,6 +59,8 @@ def test_cli_exposes_local_pr_and_runtime_contracts() -> None:
     assert "--intent" in prospective.stdout
     assert "--subject-commit" in prospective.stdout
     assert "deterministic-only" not in prospective.stdout
+    assert project_python.returncode == 0
+    assert "--repo-root" in project_python.stdout
     assert qualification.returncode == 0
     assert "--release-assets" in qualification.stdout
     assert "--adopter-python" in qualification.stdout

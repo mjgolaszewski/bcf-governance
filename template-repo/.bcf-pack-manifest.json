@@ -536,7 +536,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "021f83892263b562c0ed4733d3a6b6867c12e82aaa22df01341d8f33a09979d0"
+      "sha256": "a7acce64c6f649df8409edce44cd05df380133bc478bfa05423e0a10889cb256"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -1267,11 +1267,11 @@
     },
     "scripts/_bcf_runtime/profile_surface_generation.py": {
       "operation": "copy",
-      "sha256": "562c1fa5983fb303fdd43add85d5b6a6e83b6b224a6e31b9136673f1d58532b1"
+      "sha256": "8b3a81b1e01b71d882b154dba04a731198bbc91826f5ebb8a04f0c982b336297"
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
-      "sha256": "430020d2de2c619f398630e898ec86effb4c92c35145c5368789c53a737ed177"
+      "sha256": "2e9c08ba1a42cb6fb07ba16abb09e5df7236cb5171f705cf33ddd936d7b812e6"
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",

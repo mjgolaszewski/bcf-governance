@@ -98,6 +98,17 @@ execution_evidence:
     exemption; edited or deleted files re-enter ordinary governance policy, and
     unsafe path types still reject. Exposure scanning distinguishes dotfile
     names such as `.env.local` from real private hostnames without an allowlist.
+  - >-
+    The final Lite maintained-work check exposed an ambient-interpreter split in
+    the generated profile-v1 Make surface. Every generated Python gate now asks
+    the canonical BCF environment owner to derive or materialize the exact
+    project interpreter before execution; no venv activation, PYTHON override,
+    or dependency-install recipe remains an operator decision. The related
+    version-contract mutant was rebound from its obsolete preflight owner to the
+    canonical interpreter compiler while preserving the same causal oracle.
+    Racecar's bounded-workitem rejection remains intentionally fail-closed: its
+    proposed successor relationships exist only in prose, so BCF diagnoses the
+    missing typed edges but does not invent lifecycle authority.
 closeout_requirements:
   claims:
     required_suites_green:

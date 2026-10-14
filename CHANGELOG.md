@@ -34,6 +34,10 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Retained bounded diagnostic custody for failed local producers, including
   causal head and terminal tail, omitted-byte accounting, and exact execution
   identity, while keeping all failed material ineligible for reuse or authority.
+- Made generated local gate surfaces derive the authenticated project
+  interpreter and dependency environment through BCF instead of ambient
+  `python3`; legacy-profile direct gates and mutation oracles retain their exact
+  fail-closed propositions without an operator-authored environment step.
 
 ## [2.3.1] - 2026-10-12
 

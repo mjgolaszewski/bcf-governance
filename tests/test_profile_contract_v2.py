@@ -10,19 +10,20 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling.ci_adopt_github import render_github_adoption
+from bcf_governance.tooling.evidence_shards import planned_gate_targets
 from bcf_governance.tooling.profile_contract_v2 import (
     ProfileV2Error,
     resolve_install_contract_version,
     validate_profile_v2_readiness,
 )
-from bcf_governance.tooling.release_runtime_verification import (
-    is_release_sdist_test_context,
-)
-from bcf_governance.tooling.ci_adopt_github import render_github_adoption
-from bcf_governance.tooling.evidence_shards import planned_gate_targets
+from bcf_governance.tooling.profile_surface_generation import render_makefile
 from bcf_governance.tooling.profile_v2_surfaces import (
     render_v2_makefile,
     render_v2_workflow,
+)
+from bcf_governance.tooling.release_runtime_verification import (
+    is_release_sdist_test_context,
 )
 
 
@@ -228,10 +229,11 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     workflow = yaml.safe_load(workflow_text)
 
     assert "scripts/preflight_governance.py" in makefile
-    assert 'preflight_output="$$($(PYTHON) scripts/preflight_governance.py' in makefile
+    assert 'python="$$($(BCF_PROJECT_PYTHON))" || exit $$?' in makefile
+    assert 'preflight_output="$$("$$python" scripts/preflight_governance.py' in makefile
     assert '--format text)" || exit $$?' in makefile
     assert 'test -n "$$session" && test -f "$$session"' in makefile
-    assert "@cd . && $(PYTHON) scripts/validate_governance_yaml.py" in makefile
+    assert 'cd . && "$$python" scripts/validate_governance_yaml.py' in makefile
     assert "@cd . && python3 scripts/validate_governance_yaml.py" not in makefile
     assert 'session_dir="$${session%/evidence-session.json}"' in makefile
     assert "scripts/capture_governance_shard.py" in makefile
@@ -248,6 +250,28 @@ def test_v2_surfaces_bind_one_session_and_do_not_wait() -> None:
     assert "persist-credentials: false" in workflow_text
     assert "merge-multiple: true" not in workflow_text
     assert not any(value in workflow_text for value in ("sleep ", "poll", "while "))
+
+
+def test_v1_generated_gate_derives_its_project_interpreter() -> None:
+    contract = {
+        "profile_contract_version": "1.0",
+        "gates": {
+            "governance-validate": {
+                "invocation": {
+                    "argv": ["python3", "scripts/validate_governance_yaml.py"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            }
+        },
+    }
+
+    makefile = render_makefile(contract)
+
+    assert "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root ." in makefile
+    assert 'python="$$($(BCF_PROJECT_PYTHON))" || exit $$?' in makefile
+    assert 'cd . && "$$python" scripts/validate_governance_yaml.py' in makefile
+    assert "@cd . && python3 scripts/validate_governance_yaml.py" not in makefile
 
 
 def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
@@ -277,6 +301,12 @@ def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     fake_python.chmod(0o755)
+    fake_bcf = tmp_path / "fake-bcf"
+    fake_bcf.write_text(
+        f"#!/bin/sh\nprintf '%s\\n' '{fake_python}'\n",
+        encoding="utf-8",
+    )
+    fake_bcf.chmod(0o755)
     marker = tmp_path / "evidence-started"
     environment = dict(os.environ)
     environment["BCF_TEST_MARKER"] = str(marker)
@@ -286,7 +316,7 @@ def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
             "-f",
             "Makefile.fragment",
             "release-check",
-            f"PYTHON={fake_python}",
+            f"BCF={fake_bcf}",
             f"BCF_EVIDENCE_DIR={tmp_path / 'evidence'}",
         ],
         cwd=tmp_path,

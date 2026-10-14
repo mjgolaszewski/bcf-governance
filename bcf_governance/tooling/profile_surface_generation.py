@@ -23,32 +23,45 @@ def render_makefile(contract: dict[str, Any]) -> str:
     targets = " ".join(gates)
     lines = [
         "SHELL := /bin/bash",
-        "PYTHON ?= python3",
+        "BCF ?= bcf",
+        "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .",
         "BCF_EVIDENCE_DIR ?= .artifacts/bcf",
         "",
         f".PHONY: governance-truthfulness release-check {targets}",
         "",
         "governance-truthfulness:",
-        "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
+        "\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; \"$$python\" scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
         "",
     ]
     for target, gate in gates.items():
-        argv = shlex.join(gate["invocation"]["argv"])
+        command = list(gate["invocation"]["argv"])
+        argv = (
+            '"$$python"' + (" " + shlex.join(command[1:]) if len(command) > 1 else "")
+            if command[0] in {"python", "python3"}
+            else shlex.join(command)
+        )
         env = " ".join(
             f"{key}={shlex.quote(value)}"
             for key, value in gate["invocation"]["env"].items()
         )
         cwd = shlex.quote(gate["invocation"]["cwd"])
         command = f"cd {cwd} && {env + ' ' if env else ''}{argv}"
-        lines.extend([f"{target}:", f"\t@{command}", ""])
+        lines.extend(
+            [
+                f"{target}:",
+                f"\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; {command}",
+                "",
+            ]
+        )
     lines.extend(
         [
             "release-check:",
-            "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-            f"\t@for gate in {targets}; do \\",
-            "\t\t$(PYTHON) scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate || exit $$?; \\",
-            "\tdone",
-            "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
+            "\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; \\",
+            "\tmkdir -p $(BCF_EVIDENCE_DIR); \\",
+            f"\tfor gate in {targets}; do \\",
+            "\t\t\"$$python\" scripts/governance_evidence.py --repo-root . run --gate $$gate --output $(BCF_EVIDENCE_DIR)/$$gate --python \"$$python\" || exit $$?; \\",
+            "\tdone; \\",
+            "\t\"$$python\" scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
             "",
         ]
     )
