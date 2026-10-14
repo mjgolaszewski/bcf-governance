@@ -1247,7 +1247,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "89cbe9515719c958bae55fd8555ec6091f1983d698308634b05c2f8b9a1e9e7a"
+      "sha256": "61a9bc808adcfda94c1701d7e5ae1a82211cc6bab1ca114bbe036ba95ad8496c"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
