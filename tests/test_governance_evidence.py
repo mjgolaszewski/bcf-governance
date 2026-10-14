@@ -384,7 +384,7 @@ if prepared != pathlib.Path(%r):
 failure = '' if PASS else '<failure>mutated</failure>'
 path = pathlib.Path('.artifacts/test.junit.xml')
 path.parent.mkdir(parents=True, exist_ok=True)
-path.write_text(f'<testsuite tests="1" failures="{int(not PASS)}"><testcase classname="tests/test_gate.py" name="test_gate">{failure}</testcase></testsuite>')
+path.write_text(f'<testsuite tests="1" failures="{int(not PASS)}"><testcase classname="tests.test_gate" name="test_gate">{failure}</testcase></testsuite>')
 print('collected 1 item')
 print('1 passed' if PASS else '1 failed')
 sys.exit(0 if PASS else 1)
@@ -503,6 +503,13 @@ sys.exit(0 if PASS else 1)
     assert receipt["observations"]["test_counts"]["skipped"] == 0
     assert receipt["behavioral_probes"][0]["mutation_applied"] is True
     assert receipt["behavioral_probes"][0]["observed_exit_code"] != 0
+    assert receipt["behavioral_probes"][0]["baseline_test_nodes_passed"] is True
+    assert receipt["behavioral_probes"][0]["oracle_observation"] == {
+        "satisfied": True,
+        "kind": "test_node_failure",
+        "failed_node_ids": ["tests.test_gate::test_gate"],
+    }
+    assert receipt["result"] == "passed"
     assert all(len(artifact["sha256"]) == 64 for artifact in receipt["artifacts"])
 
 
