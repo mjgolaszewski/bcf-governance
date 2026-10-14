@@ -240,6 +240,7 @@
             "condition": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "minimum_job_timeout_minutes": {"type": "integer", "minimum": 1},
             "action": {"enum": ["checkout", "setup-python", "setup-node", "upload-artifact", "download-artifact", "attest-build-provenance", "create-github-app-token"]},
+            "precedes_exactly_one_of": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "with": {"type": "object", "additionalProperties": {"$ref": "#/$defs/scalar"}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
             "required_permissions": {"$ref": "#/$defs/permissionMap"},

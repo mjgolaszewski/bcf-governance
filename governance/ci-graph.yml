@@ -15,7 +15,7 @@ extensions:
 - {id: bcf-break-glass-recovery, path: governance/ci-extensions/bcf-break-glass-recovery.yml, sha256: 831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874}
 - {id: bcf-automation, path: governance/ci-extensions/bcf-automation.yml, sha256: 6b24745f6af1398569df189dd2183f0ecf3dcdb4b8bee3cb42970432add60900}
 - {id: bcf-evidence-storage, path: governance/ci-extensions/bcf-evidence-storage.yml, sha256: 41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea}
-- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: 3d7f3377b9797371102ef6258b407eba15f30164229cb6b7ca94467ce2fd70fb}
+- {id: bcf-release, path: governance/ci-extensions/bcf-release.yml, sha256: a4b371acd1baca0e919eaf07aad6522f787fbe6b2c720da439b71b84dcfbced7}
 - {id: bcf-trusted-control, path: governance/ci-extensions/bcf-trusted-control.yml, sha256: 750cd322494c26215cb5c5ec5aef9d6745fa8aeba0e67fb359346ee27a8bf5f5}
 resource_classes:
   hosted-python:
@@ -443,6 +443,7 @@ step_components:
     name: Select the exact real-compiler test Node runtime
     action: setup-node
     with: {node-version: 22.23.2, package-manager-cache: false}
+    precedes_exactly_one_of: [bootstrap-test-toolchain, build-release-bundle, verify-release-runtime, qualify-release]
     environment: {}
     produces: []
     consumes: []

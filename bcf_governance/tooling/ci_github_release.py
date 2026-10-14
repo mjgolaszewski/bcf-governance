@@ -21,6 +21,7 @@ from .ci_github_artifacts import (
     resolve_role_artifact,
 )
 from .ci_github_authority import (
+    authenticate_active_role_job_inventory,
     authenticate_role_job_inventory,
     load_authority,
     packaged_repo_root,
@@ -39,7 +40,7 @@ from .release_asset_inventory import (
 from .release_closure import verify_archive, verify_release_lock, verify_wheelhouse
 from .release_receipts import build_trusted_release_receipt, emit_release_receipt
 from .release_runtime_verification import verify_runtime_evidence
-from .ci_github_release_qualification import require_provider_publication_qualification
+from .ci_github_release_qualification import authenticate_release_qualification
 from .release_source_bindings import (
     release_source_bindings,
     verify_release_source_bindings,
@@ -459,6 +460,7 @@ def collect_release(
     collector_run_attempt: object,
     runtime_report_path: Path,
     runtime_evidence: Iterable[Path],
+    qualification_path: Path,
     output_path: Path,
 ) -> dict[str, Any]:
     """Authenticate all release roles and emit the sole authoritative receipt."""
@@ -523,6 +525,20 @@ def collect_release(
     sdists = [path for path in release_paths if path.name.endswith(".tar.gz")]
     if len(wheels) != 1 or len(sdists) != 1:
         raise GitHubControllerError("release collection requires one wheel and one sdist")
+    qualification, qualification_artifact = authenticate_release_qualification(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        qualification_path=qualification_path,
+        release_assets=checksum_declared_assets(release_paths),
+        version=release_asset_version(release_paths).value,
+        run_id=collector.run_id,
+        run_attempt=collector.run_attempt,
+        artifact_name=(
+            f"bcf-release-qualification-{collector.run_id}-{collector.run_attempt}"
+        ),
+    )
     runtime = verify_runtime_evidence(
         runtime_report_path, runtime_evidence, wheel=wheels[0], sdist=sdists[0]
     )
@@ -578,6 +594,9 @@ def collect_release(
         },
         build_provider_artifact=build_artifact.as_dict(),
         certification_provider_artifact=certification_artifact.as_dict(),
+        qualification=qualification,
+        qualification_path=qualification_path,
+        qualification_provider_artifact=qualification_artifact.as_dict(),
         output_path=output_path,
     )
     emit_release_receipt(output_path, receipt)
@@ -596,7 +615,6 @@ def publish_certified_release(
     receipt_artifact_id: object,
     receipt_artifact_name: object,
     receipt_provider_digest: object,
-    qualification_path: Path,
     publisher_run_id: object,
     publisher_run_attempt: object,
 ) -> dict[str, Any]:
@@ -631,7 +649,7 @@ def publish_certified_release(
         )
     require_controller_execution(custody)
     authority = load_authority(api, repository, main, required_version="1.1")
-    authenticate_role_job_inventory(
+    authenticate_active_role_job_inventory(
         api,
         repository=repository,
         main=main,
@@ -639,8 +657,6 @@ def publish_certified_release(
         role="release_publisher",
         run_id=publisher_run_id,
         run_attempt=publisher_run_attempt,
-        require_success=False,
-        require_terminal=False,
     )
     workflow = receipt.get("invocation", {}).get("workflow")
     if not isinstance(workflow, dict):
@@ -660,14 +676,17 @@ def publish_certified_release(
     )
     paths = tuple(release_artifacts)
     expected_assets = exact_assets(paths)
-    require_provider_publication_qualification(
-        api,
-        path=qualification_path,
-        main=main,
-        repository=repository,
-        version=release_asset_version(paths).value,
-        assets=checksum_declared_assets(paths),
-    )
+    qualification = receipt.get("observations", {}).get("adopter_qualification")
+    if (
+        not isinstance(qualification, dict)
+        or set(qualification)
+        != {"receipt", "receipt_sha256", "provider_artifact"}
+        or not isinstance(qualification.get("receipt"), dict)
+        or not isinstance(qualification.get("provider_artifact"), dict)
+    ):
+        raise GitHubControllerError(
+            "release receipt does not bind authenticated adopter qualification"
+        )
     receipt_assets = receipt.get("observations", {}).get("release_artifacts")
     if not isinstance(receipt_assets, list) or any(
         not isinstance(value, dict) for value in receipt_assets

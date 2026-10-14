@@ -5,7 +5,7 @@ extension:
   owner: bcf-governance
   rationale: preserve authorization, isolated build, independent verification, trusted collection, and immutable publication roles
   attachment_point: release-role
-  applicability: [workflow_dispatch, workflow_run, repository_dispatch]
+  applicability: [workflow_dispatch, workflow_run]
   required_controls:
     positive: [bcf-release-authority-positive]
     negative: [bcf-release-custody-negative]
@@ -15,13 +15,15 @@ artifacts:
   release-authorization: {path: .artifacts/release-authorization, kind: control, scope: run-attempt, retention_days: 30}
   release-build-bundle: {path: .artifacts/release-build, kind: release, scope: run-attempt, retention_days: 30}
   release-runtime-evidence: {path: .artifacts/release-runtime, kind: lane-input, scope: run-attempt, retention_days: 30, storage_semantics: compact-run-output}
+  release-qualification: {path: .artifacts/release-qualification, kind: lane-input, scope: run-attempt, retention_days: 90, storage_semantics: compact-run-output}
   release-receipt-bundle: {path: .artifacts/release-receipt, kind: release, scope: run-attempt, retention_days: 90}
 conditions:
   release-owner-main: github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
-  release-qualified-owner-main: github.event.action == 'bcf_release_qualified' && github.actor == 'mjgolaszewski' && github.ref == 'refs/heads/main'
   release-authorized: needs.authorize.result == 'success'
   release-trigger-success: github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
   release-runtime-green: needs.runtime.result == 'success'
+  release-runtime-and-qualification-green: needs.runtime.result == 'success' && needs.qualify.result == 'success'
+  release-verifier-trigger-success: github.event.workflow_run.event == 'workflow_run' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.conclusion == 'success'
 commands:
   resolve-release-inputs:
     argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, resolve, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-release/release-inputs.json']
@@ -44,19 +46,19 @@ commands:
     cwd: .
     environment: {}
   collect-release:
-    argv: ['{ephemeral_controller}', ci-github, release, collect, --repository, '${{ github.repository }}', --bundle, '${{ runner.temp }}/bcf-release-collection/build/release-input/certification', --authorization, '${{ runner.temp }}/bcf-release-collection/build/release-input/release-authorization.json', --build-manifest, '${{ runner.temp }}/bcf-release-collection/build/release-build-manifest.json', --verification, '${{ runner.temp }}/bcf-release-collection/verification/release-verification.json', --runtime-report, '${{ runner.temp }}/bcf-release-collection/runtime/runtime-verification.json', --runtime-evidence-dir, '${{ runner.temp }}/bcf-release-collection/runtime', --release-artifact-dir, '${{ runner.temp }}/bcf-release-collection/build/assets', --output, '${{ runner.temp }}/bcf-release-collection/release-receipt.json', --bundle-output, '${{ runner.temp }}/bcf-certified-release']
+    argv: ['{ephemeral_controller}', ci-github, release, collect, --repository, '${{ github.repository }}', --bundle, '${{ runner.temp }}/bcf-release-collection/build/release-input/certification', --authorization, '${{ runner.temp }}/bcf-release-collection/build/release-input/release-authorization.json', --build-manifest, '${{ runner.temp }}/bcf-release-collection/build/release-build-manifest.json', --verification, '${{ runner.temp }}/bcf-release-collection/verification/release-verification.json', --runtime-report, '${{ runner.temp }}/bcf-release-collection/runtime/runtime-verification.json', --runtime-evidence-dir, '${{ runner.temp }}/bcf-release-collection/runtime', --qualification, '${{ runner.temp }}/bcf-release-qualification/release-qualification.json', --release-artifact-dir, '${{ runner.temp }}/bcf-release-collection/build/assets', --output, '${{ runner.temp }}/bcf-release-collection/release-receipt.json', --bundle-output, '${{ runner.temp }}/bcf-certified-release']
     cwd: .
     environment: {}
   resolve-release-publication:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, resolve-publication, --repository, '${{ github.repository }}', --output, '${{ runner.temp }}/bcf-publication/publication-inputs.json']
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, resolve-publication, --repository, '${{ github.repository }}', --trigger-run-id, '${{ github.event.workflow_run.id }}', --trigger-run-attempt, '${{ github.event.workflow_run.run_attempt }}', --output, '${{ runner.temp }}/bcf-publication/publication-inputs.json']
     cwd: .
     environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
-  authenticate-release-qualification:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, authenticate-qualification, --repository, '${{ github.repository }}', --event, '${{ github.event_path }}', --output, '${{ runner.temp }}/bcf-publication/qualification.json']
+  qualify-release:
+    argv: ['{ephemeral_controller}', ci, qualify-release, --repo-root, ., --repository, '${{ github.repository }}', --release-assets, '${{ runner.temp }}/bcf-release-build/assets', --release-build-manifest, '${{ runner.temp }}/bcf-release-build/release-build-manifest.json', --output, '${{ runner.temp }}/bcf-release-qualification/release-qualification.json']
     cwd: .
-    environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
+    environment: {}
   publish-release:
-    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, publish, --repository, '${{ github.repository }}', --tag, 'v{source:release-contract:package.version}', --commit, '${{ steps.resolve.outputs.subject_commit }}', --release-artifact-dir, '${{ runner.temp }}/bcf-publication/receipt/assets', --release-notes-text, 'The attached wheel, source archive, and checksums are the exact mechanically certified BCF Governance release bytes.', --receipt, '${{ runner.temp }}/bcf-publication/receipt/release-receipt.json', --receipt-artifact-id, '${{ steps.resolve.outputs.receipt_artifact_id }}', --receipt-artifact-name, '${{ steps.resolve.outputs.receipt_artifact_name }}', --receipt-provider-digest, '${{ steps.resolve.outputs.receipt_provider_digest }}', --qualification, '${{ runner.temp }}/bcf-publication/qualification.json']
+    argv: ['${{ runner.tool_cache }}/bcf-governance/${{ needs.controller-route.outputs.target_commit }}/bin/bcf', ci-github, release, publish, --repository, '${{ github.repository }}', --tag, 'v{source:release-contract:package.version}', --commit, '${{ steps.resolve.outputs.subject_commit }}', --release-artifact-dir, '${{ runner.temp }}/bcf-publication/receipt/assets', --release-notes-text, 'The attached wheel, source archive, and checksums are the exact mechanically certified BCF Governance release bytes.', --receipt, '${{ runner.temp }}/bcf-publication/receipt/release-receipt.json', --receipt-artifact-id, '${{ steps.resolve.outputs.receipt_artifact_id }}', --receipt-artifact-name, '${{ steps.resolve.outputs.receipt_artifact_name }}', --receipt-provider-digest, '${{ steps.resolve.outputs.receipt_provider_digest }}']
     cwd: .
     environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
     required_environment: [BCF_CONTROLLER_EXECUTION_REQUIRED]
@@ -114,6 +116,14 @@ step_components:
     name: Select the closed release interpreter
     action: setup-python
     with: {python-version: 3.12.14}
+    environment: {}
+    produces: []
+    consumes: []
+  checkout-triggering-release-subject:
+    kind: action
+    name: Check out only the triggering authorized release subject
+    action: checkout
+    with: {ref: '${{ github.event.workflow_run.head_sha }}', fetch-depth: 0, persist-credentials: false}
     environment: {}
     produces: []
     consumes: []
@@ -182,6 +192,31 @@ step_components:
     environment: {}
     produces: [release-runtime-evidence]
     consumes: []
+  setup-release-qualification-directory: {kind: directory_setup, name: Allocate private adopter qualification directory, paths: ['${{ runner.temp }}/bcf-release-qualification'], produces: [], consumes: []}
+  qualify-release:
+    kind: command
+    name: Qualify exact release bytes against provider-resolved adopters
+    command: qualify-release
+    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    produces: [release-qualification]
+    consumes: [release-authorization, release-build-bundle]
+  upload-release-qualification:
+    kind: action
+    name: Upload the provider-bound adopter qualification receipt
+    condition: always-step
+    action: upload-artifact
+    with: {name: 'bcf-release-qualification-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-release-qualification', if-no-files-found: error, retention-days: 90}
+    environment: {}
+    produces: [release-qualification]
+    consumes: []
+  download-release-qualification:
+    kind: action
+    name: Download only this verifier attempt's adopter qualification
+    action: download-artifact
+    with: {name: 'bcf-release-qualification-${{ github.run_id }}-${{ github.run_attempt }}', path: '${{ runner.temp }}/bcf-release-qualification'}
+    environment: {}
+    produces: []
+    consumes: [release-qualification]
   download-release-runtime:
     kind: action
     name: Download only this verifier attempt's runtime evidence
@@ -219,13 +254,6 @@ step_components:
     name: Resolve the newest exact-main release receipt mechanically
     id: resolve
     command: resolve-release-publication
-    environment: {GITHUB_TOKEN: '${{ github.token }}'}
-    produces: []
-    consumes: []
-  authenticate-release-qualification:
-    kind: command
-    name: Authenticate exact pre-publication adopter qualification
-    command: authenticate-release-qualification
     environment: {GITHUB_TOKEN: '${{ github.token }}'}
     produces: []
     consumes: []
@@ -288,14 +316,15 @@ workflows:
   permissions: {}
   jobs:
   - {id: runtime, display_name: Execute token-free offline wheel and sdist verification, semantic_role: release-runtime-verifier, resource_class: hosted-release, trust: candidate, needs: [], condition: release-trigger-success, timeout_minutes: 30, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, setup-test-node, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, verify-release-runtime, upload-release-runtime]}, produces: [release-runtime-evidence], consumes: [release-authorization, release-build-bundle], required: true}
-  - {id: collect, display_name: Authenticate runtime and emit the sole trusted receipt, semantic_role: release-trusted-collector, resource_class: trusted-control, trust: trusted, needs: [runtime], condition: release-runtime-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, setup-verification-directories, authenticate-release-verification, collect-release, upload-release-receipt]}, produces: [release-receipt-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence], required: true}
+  - {id: qualify, display_name: Qualify provider-resolved adopter sources against exact release bytes, semantic_role: release-adopter-qualifier, resource_class: hosted-release, trust: candidate, needs: [runtime], condition: release-runtime-green, timeout_minutes: 90, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, setup-test-node, checkout-triggering-release-subject, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, setup-release-qualification-directory, qualify-release, upload-release-qualification]}, produces: [release-qualification], consumes: [release-authorization, release-build-bundle], required: true}
+  - {id: collect, display_name: Authenticate runtime and adopter qualification then emit the sole trusted receipt, semantic_role: release-trusted-collector, resource_class: trusted-control, trust: trusted, needs: [runtime, qualify], condition: release-runtime-and-qualification-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, download-release-qualification, setup-verification-directories, authenticate-release-verification, collect-release, upload-release-receipt]}, produces: [release-receipt-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence, release-qualification], required: true}
 - id: release-publisher
   path: .github/workflows/bcf-release-publisher.yml
   display_name: bcf/immutable-release-publisher
   role: release
-  events: [{type: repository_dispatch, types: [bcf_release_qualified]}]
+  events: [{type: workflow_run, workflows: [bcf/release-byte-verifier], types: [completed]}]
   permissions: {}
   jobs:
-  - {id: controller-route, display_name: Observe provider-effective controller for non-authoritative publication routing, semantic_role: release-publication-controller-routing, resource_class: hosted-python-latest, trust: candidate, needs: [], condition: release-qualified-owner-main, controller_requirement: null, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], outputs: {target_commit: '${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}'}, executor: {kind: component_sequence, components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate]}, produces: [], consumes: [], required: true}
-  - {id: publish, display_name: Publish one exact idempotent transaction after qualification, semantic_role: release-publisher, resource_class: trusted-control, trust: trusted, needs: [controller-route], condition: release-qualified-owner-main, controller_requirement: current, timeout_minutes: 10, permissions: {actions: read, attestations: write, contents: read, id-token: write}, checkout: false, protected_environment: bcf-trusted-automation, components: [], executor: {kind: component_sequence, components: [setup-python, setup-publication-directories, resolve-release-publication, authenticate-release-qualification, download-release-receipt, attest-release-assets, create-release-app-token, publish-release]}, produces: [], consumes: [], required: true}
+  - {id: controller-route, display_name: Observe provider-effective controller for non-authoritative publication routing, semantic_role: release-publication-controller-routing, resource_class: hosted-python-latest, trust: candidate, needs: [], condition: release-verifier-trigger-success, controller_requirement: null, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], outputs: {target_commit: '${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}'}, executor: {kind: component_sequence, components: [checkout-triggering-release-subject, setup-python, install-governance, resolve-effective-controller-candidate]}, produces: [], consumes: [], required: true}
+  - {id: publish, display_name: Publish one exact idempotent transaction after governed qualification, semantic_role: release-publisher, resource_class: trusted-control, trust: trusted, needs: [controller-route], condition: release-verifier-trigger-success, controller_requirement: current, timeout_minutes: 10, permissions: {actions: read, attestations: write, contents: read, id-token: write}, checkout: false, protected_environment: bcf-trusted-automation, components: [], executor: {kind: component_sequence, components: [setup-python, setup-publication-directories, resolve-release-publication, download-release-receipt, attest-release-assets, create-release-app-token, publish-release]}, produces: [], consumes: [], required: true}
 jobs: []

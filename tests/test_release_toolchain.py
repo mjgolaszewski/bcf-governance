@@ -207,16 +207,21 @@ def test_graph_installs_test_node_only_in_existing_candidate_execution_jobs() ->
     release = yaml.safe_load((ROOT / "governance/ci-extensions/bcf-release.yml").read_text())
     setup = graph["step_components"]["setup-test-node"]
     assert setup["action"] == "setup-node" and setup["with"] == {"node-version": "22.23.2", "package-manager-cache": False}
+    execution_components = set(setup["precedes_exactly_one_of"])
     jobs = [job for owner in (graph, release) for workflow in owner["workflows"] for job in workflow["jobs"]]
     admitted = []
+    observed_execution_components = set()
     for job in jobs:
         components = job.get("executor", {}).get("components", [])
-        if "setup-test-node" not in components: continue
+        present = execution_components & set(components)
+        if "setup-test-node" not in components:
+            assert not present
+            continue
         admitted.append(job)
         assert job["trust"] == "candidate"
-        if "bootstrap-test-toolchain" in components:
-            assert components.index("setup-test-node") < components.index("bootstrap-test-toolchain")
-        else:
-            execution = "build-release-bundle" if "build-release-bundle" in components else "verify-release-runtime"
-            assert components.index("setup-test-node") < components.index(execution)
-    assert len(admitted) == 5
+        assert len(present) == 1
+        execution = present.pop()
+        observed_execution_components.add(execution)
+        assert components.index("setup-test-node") < components.index(execution)
+    assert observed_execution_components == execution_components
+    assert len(admitted) == 6

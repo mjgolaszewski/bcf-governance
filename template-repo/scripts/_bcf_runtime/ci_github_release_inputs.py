@@ -22,7 +22,12 @@ from .ci_github_artifacts import (
 )
 from .ci_github_authority import authenticate_role_job_inventory, load_authority
 from .ci_github_bundle import write_exclusive
-from .ci_github_identity import GitHubControllerError, MainIdentity, resolve_main
+from .ci_github_identity import (
+    GitHubControllerError,
+    MainIdentity,
+    positive_int,
+    resolve_main,
+)
 from .ci_github_membership import select_latest_admission
 from .ci_self_controller import resolve_self_controller_artifact
 from .controller_custody import compile_controller_custody, require_controller_execution
@@ -282,6 +287,8 @@ def resolve_release_publication_inputs(
     api: GitHubAPI,
     *,
     repository: str,
+    trigger_run_id: object,
+    trigger_run_attempt: object,
     output_path: Path,
 ) -> dict[str, Any]:
     """Resolve the newest exact-main release receipt without operator coordinates."""
@@ -300,6 +307,17 @@ def resolve_release_publication_inputs(
     collector_run_id, collector_attempt = _exact_collector_run(
         api, repository=repository, main=main, authority=authority
     )
+    if (
+        str(positive_int(trigger_run_id, field="release publication trigger run ID"))
+        != collector_run_id
+        or positive_int(
+            trigger_run_attempt, field="release publication trigger attempt"
+        )
+        != collector_attempt
+    ):
+        raise GitHubControllerError(
+            "release publication trigger is not the exact collector run"
+        )
     receipt = resolve_role_artifact(
         api,
         repository=repository,

@@ -22,10 +22,13 @@ def _git(repo: Path, *args: str) -> str:
 
 def _repo(tmp_path: Path) -> Path:
     repo = tmp_path / "repo"
-    (repo / "spec").mkdir(parents=True)
+    (repo / "spec/phase0").mkdir(parents=True)
     (repo / "bcf_governance/tooling").mkdir(parents=True)
     (repo / "spec/RELEASE_TRAIN_STATE_DAG.md").write_bytes(
         (ROOT / "spec/RELEASE_TRAIN_STATE_DAG.md").read_bytes()
+    )
+    (repo / "spec/phase0/release-train-backtrace.yml").write_bytes(
+        (ROOT / "spec/phase0/release-train-backtrace.yml").read_bytes()
     )
     (repo / "bcf_governance/tooling/preflight.py").write_text("VALUE = 1\n")
     _git(repo, "init", "--initial-branch=main")
@@ -47,6 +50,22 @@ def test_changed_ci_contract_requires_same_candidate_matrix_update(tmp_path: Pat
         stream.write("\nCandidate-specific transition coverage.\n")
     report = validate_ci_state_matrix(repo)
     assert report["changed_contracts"] == ["bcf_governance/tooling/preflight.py", "spec/RELEASE_TRAIN_STATE_DAG.md"]
+    assert report["machine_backtrace"] == {"edges": 18, "transitions": 15}
+
+
+def test_machine_backtrace_rejects_an_incomplete_edge_before_ci_allocation(
+    tmp_path: Path,
+) -> None:
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    path.write_text(
+        path.read_text(encoding="utf-8").replace(
+            "authority_effect: release_transaction_identity_only, ", "", 1
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(CIStateMatrixError, match="AS-000 lacks: authority_effect"):
+        validate_ci_state_matrix(repo)
 
 
 def test_matrix_guard_is_self_required_and_adopter_inapplicable(tmp_path: Path) -> None:

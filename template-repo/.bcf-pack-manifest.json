@@ -246,7 +246,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "c8a8df2aa6615aecd07bdb767dacb1edf6efc10ff6822be10121def0b00a2fb2"
+      "sha256": "f31b97e7645722a1865399603b24b4e955ad34382ea6c56e54d01f3cacea0399"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -401,7 +401,7 @@
     },
     "schemas/release-qualification.schema.json": {
       "operation": "copy",
-      "sha256": "fba07051aa9daa9b5241a05b7f663f37a607d6e60fd8617ce0b9fbc11870001b"
+      "sha256": "f684c0fe1f83c437dcfafd2b2466e6681aedffcc5fe94678e5dc48f017da8a91"
     },
     "schemas/repo-cleanup-contract.schema.json": {
       "operation": "copy",
@@ -536,7 +536,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "a7acce64c6f649df8409edce44cd05df380133bc478bfa05423e0a10889cb256"
+      "sha256": "3ccc54aef9155421ee936d0c8a4608f3db0e0a524931b0a007ab50213ea52fc2"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -620,7 +620,7 @@
     },
     "scripts/_bcf_runtime/ci_github_commands.py": {
       "operation": "copy",
-      "sha256": "3ca60c3a946ca46f1abe1285c95cda435f435a56cbe2914dae789b55469d9f14"
+      "sha256": "e6b61e83a2e36a46a2960d597d5b11d7d478c1edef3e370c5c6ced68a2b88f34"
     },
     "scripts/_bcf_runtime/ci_github_controller.py": {
       "operation": "copy",
@@ -660,7 +660,7 @@
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
-      "sha256": "9720e28583f24dd01a73c7429440de36a129b4fbad231526bd3b0c702e12ef14"
+      "sha256": "b4b0bcac6a2f058cb5890a6fe96dcc6dc53a0e79ee200e68d25a6372e0ee74b0"
     },
     "scripts/_bcf_runtime/ci_github_release_api.py": {
       "operation": "copy",
@@ -672,15 +672,15 @@
     },
     "scripts/_bcf_runtime/ci_github_release_inputs.py": {
       "operation": "copy",
-      "sha256": "a50dfbcf2b8f8f442079ba3635e4246f10ed46eee18bb9c46a5321e24536ebe0"
+      "sha256": "b8a25da09465b301fbb549eeb4907e4af3a7b8b84bf6a7916e03f00c420aaf9c"
     },
     "scripts/_bcf_runtime/ci_github_release_qualification.py": {
       "operation": "copy",
-      "sha256": "7dff42728249979f34b887fe3e71174049d4937f7931ed0bb3d5c04ba4538a38"
+      "sha256": "d4669009ed0b064989919642c0c2d5d20959c979bf16e54e21d7fba1109ac1ae"
     },
     "scripts/_bcf_runtime/ci_github_release_staging.py": {
       "operation": "copy",
-      "sha256": "8b9fad9ab7eb5cba34aeba69796554375ee5ea2c73feec89b42b5e47c3f404e7"
+      "sha256": "61878c833b17f7376fa2f9bb61148a31f0af5181b4cd7137b9791183d6f96fa6"
     },
     "scripts/_bcf_runtime/ci_github_status.py": {
       "operation": "copy",
@@ -740,7 +740,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_edges.py": {
       "operation": "copy",
-      "sha256": "d3e26c4c17e1e7e99f09d1ccbaaffc2a8f91f57f4d41bb6108899eec524bba06"
+      "sha256": "7aede78594d2adc96f5e6c2bab05a8e1647594d67889d9b90a77edeba25ddc5b"
     },
     "scripts/_bcf_runtime/ci_graph_errors.py": {
       "operation": "copy",
@@ -1112,7 +1112,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/ci_state_matrix.py": {
       "operation": "copy",
-      "sha256": "2b543347a63296dedd06a7551948511718b5d3783b3130ae3fe08ae2d9f6aeed"
+      "sha256": "d4bb2d138d0375dabcf874e67378d70a817192c4e43c3f3840312db8412875ab"
     },
     "scripts/_bcf_runtime/governance_validation/common.py": {
       "operation": "copy",
@@ -1339,7 +1339,11 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "2142bfb3623dd8adbb1b42bc03ed1d6df5456d3349f24ab144fdfb65f1d28214"
+      "sha256": "a8b63f5514743d9c6350ebf96a114dc1de5dccafec438a832951ea302dbf0325"
+    },
+    "scripts/_bcf_runtime/release_adopter_sources.py": {
+      "operation": "copy",
+      "sha256": "69e5e0a7366630c1e6a400f3813852d88413106e8962f95ee526f76a95c79554"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",
@@ -1355,7 +1359,7 @@
     },
     "scripts/_bcf_runtime/release_receipts.py": {
       "operation": "copy",
-      "sha256": "3a0d1277009c544730df3b946f6ccf2ceb0de148907f7b3dfe5eee372110e153"
+      "sha256": "3e374a17b0be84e21bcd9c30a69322b03635bf9a1b30fbe3f56125938d0bb271"
     },
     "scripts/_bcf_runtime/release_runtime_verification.py": {
       "operation": "copy",

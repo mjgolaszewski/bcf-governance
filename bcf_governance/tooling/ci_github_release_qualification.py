@@ -8,13 +8,18 @@ from pathlib import Path
 from typing import Any, Mapping
 
 from .ci_github_api import GitHubAPI
-from .ci_github_bundle import write_exclusive
-from .ci_github_identity import GitHubControllerError, resolve_main
+from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
+from .ci_github_identity import GitHubControllerError
 from .ci_github_identity import MainIdentity
+from .ci_authority_contracts import authority_role_workflow
 from .release_adopter_qualification import (
     ReleaseQualificationError,
     parse_contract,
     validate_qualification_receipt,
+)
+from .release_adopter_sources import (
+    AdopterSourceError,
+    authenticate_adopter_sources,
 )
 
 
@@ -34,26 +39,17 @@ def authenticate_release_qualification(
     api: GitHubAPI,
     *,
     repository: str,
-    event_path: Path,
-    output_path: Path,
-) -> dict[str, Any]:
-    """Authenticate one exact local observation carried by repository dispatch."""
+    main: MainIdentity,
+    authority: dict[str, Any],
+    qualification_path: Path,
+    release_assets: Mapping[str, str],
+    version: str,
+    run_id: object,
+    run_attempt: object,
+    artifact_name: str,
+) -> tuple[dict[str, Any], ProviderArtifact]:
+    """Authenticate one provider-produced exact adopter qualification artifact."""
 
-    event = _json_object(event_path, "release qualification event")
-    event_repository = event.get("repository")
-    payload = event.get("client_payload")
-    if event.get("action") != "bcf_release_qualified":
-        raise GitHubControllerError("release qualification event type is not exact")
-    if (
-        not isinstance(event_repository, dict)
-        or event_repository.get("full_name") != repository
-        or not isinstance(payload, dict)
-        or set(payload) != {"qualification"}
-    ):
-        raise GitHubControllerError("release qualification event custody is not exact")
-    main = resolve_main(api, repository)
-    if str(event_repository.get("id")) != main.repository_id:
-        raise GitHubControllerError("release qualification repository identity differs")
     contract_content = api.content(
         repository, "governance/release-qualification.yml", ref=main.checkout_sha
     )
@@ -61,9 +57,18 @@ def authenticate_release_qualification(
         repository, "schemas/release-qualification.schema.json", ref=main.checkout_sha
     )
     contract = parse_contract(contract_content.content, schema_content.content)
-    qualification = payload["qualification"]
+    qualification = _json_object(
+        qualification_path, "release qualification receipt"
+    )
+    workflow = authority_role_workflow(authority, "release_verifier")
+    producer = {
+        "repository_id": main.repository_id,
+        "workflow": workflow["active_path"],
+        "job": "qualify",
+        "run_id": str(run_id),
+        "run_attempt": str(run_attempt),
+    }
     try:
-        release = qualification["release"]
         validated = validate_qualification_receipt(
             qualification,
             contract=contract,
@@ -71,13 +76,25 @@ def authenticate_release_qualification(
             repository=repository,
             commit_sha=main.checkout_sha,
             tree_sha=main.tree_sha,
-            version=release["version"],
-            assets=release["assets"],
+            version=version,
+            assets=release_assets,
+            producer=producer,
         )
-    except (KeyError, TypeError, ReleaseQualificationError) as exc:
+        authenticate_adopter_sources(api, validated)
+    except (KeyError, TypeError, AdopterSourceError, ReleaseQualificationError) as exc:
         raise GitHubControllerError("release qualification receipt is invalid") from exc
-    write_exclusive(output_path, validated)
-    return validated
+    artifact = resolve_role_artifact(
+        api,
+        repository=repository,
+        main=main,
+        authority=authority,
+        role="release_verifier",
+        run_id=run_id,
+        run_attempt=run_attempt,
+        artifact_name=artifact_name,
+        require_success=False,
+    )
+    return validated, artifact
 
 
 def require_publication_qualification(
@@ -90,6 +107,7 @@ def require_publication_qualification(
     tree_sha: str,
     version: str,
     assets: Mapping[str, str],
+    producer: Mapping[str, Any],
 ) -> None:
     """Fail closed unless publication consumes the exact packaged contract result."""
 
@@ -104,6 +122,7 @@ def require_publication_qualification(
             tree_sha=tree_sha,
             version=version,
             assets=assets,
+            producer=producer,
         )
     except ReleaseQualificationError as exc:
         raise GitHubControllerError(
@@ -119,6 +138,7 @@ def require_provider_publication_qualification(
     path: Path,
     version: str,
     assets: Mapping[str, str],
+    producer: Mapping[str, Any],
 ) -> None:
     """Resolve exact-main contract bytes before checking publication eligibility."""
 
@@ -135,4 +155,5 @@ def require_provider_publication_qualification(
         tree_sha=main.tree_sha,
         version=version,
         assets=assets,
+        producer=producer,
     )

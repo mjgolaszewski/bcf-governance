@@ -13,12 +13,12 @@
         "kind": {"const": "release_qualification_contract"},
         "name": {"type": "string", "minLength": 1},
         "id": {"type": "string", "minLength": 1},
-        "version": {"const": "1.0.0"},
+        "version": {"const": "1.1.0"},
         "status": {"const": "active"},
         "path": {"const": "governance/release-qualification.yml"}
       }
     },
-    "schema_version": {"const": "1.0"},
+    "schema_version": {"const": "1.1"},
     "required_adopters": {
       "type": "array",
       "minItems": 1,
@@ -36,13 +36,17 @@
     "qualification": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["source", "mutation_scope", "fixed_point", "evaluation_scope", "authority", "product_failure", "release_asset_identity"],
+      "required": ["source", "caller_checkout_role", "mutation_scope", "fixed_point", "evaluation_scope", "authority", "execution_provenance", "continuation", "source_freshness", "product_failure", "release_asset_identity"],
       "properties": {
-        "source": {"const": "exact_clean_local_checkout"},
+        "source": {"const": "provider_default_branch_transaction"},
+        "caller_checkout_role": {"const": "environment_and_object_cache_only"},
         "mutation_scope": {"const": "disposable_clone_only"},
         "fixed_point": {"const": "required"},
         "evaluation_scope": {"const": "canonical_graph_derived"},
         "authority": {"const": "local_non_authoritative"},
+        "execution_provenance": {"const": "provider_workflow_run_attempt_job_artifact"},
+        "continuation": {"const": "automatic_release_verifier_dag"},
+        "source_freshness": {"const": "current_at_trusted_collection"},
         "product_failure": {"const": "blocks_custody_until_attributed"},
         "release_asset_identity": {"const": "exact_sha256sums"}
       }
