@@ -680,6 +680,34 @@ def test_upgrade_migrates_legacy_existing_adoption_before_candidate_validation(
     }
 
 
+def test_upgrade_projects_missing_v3_interpreter_contract_before_strict_success(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "missing-v3-interpreter-contract"
+    (target / "governance").mkdir(parents=True)
+    registry_path = target / "governance/gate-contracts.yml"
+    registry_path.write_text(
+        "document: {kind: gate_contract_registry}\n"
+        "profile_contract_version: '3.0'\n"
+        "target_profile: standard\n"
+        "gates:\n"
+        "  test:\n"
+        "    invocation: {argv: [python3, scripts/run_tests.py], cwd: .}\n",
+        encoding="utf-8",
+    )
+    (target / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\npytest==9.1.1\n", encoding="utf-8"
+    )
+
+    changed = upgrade._upgrade_interpreter_contract(target)
+
+    assert changed == [registry_path]
+    migrated = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    assert migrated["interpreter_contract"] == {
+        "dependency_source": "requirements-governance.txt"
+    }
+
+
 def test_upgrade_rejects_ambiguous_existing_adoption_baseline_without_mutation(
     tmp_path: Path,
 ) -> None:

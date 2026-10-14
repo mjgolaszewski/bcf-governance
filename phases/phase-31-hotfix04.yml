@@ -131,6 +131,14 @@ execution_evidence:
     environment. Reconcile now derives or authenticates one project interpreter
     before compiling its stage DAG and passes it unchanged to every manifest
     collector; explicit wrong identities reject before any stage executes.
+  - >-
+    Exact Racecar qualification exposed a preserved profile-v3 registry with
+    Python-backed gates but no interpreter contract. Strict upgrade had
+    accepted that incomplete state and reconciliation failed later. The atomic
+    upgrade owner now derives a typed contract only from the exact governed
+    requirements source (including hash-bound recursive inputs), while strict
+    validation independently rejects every v2/v3 Python consumer without that
+    contract. No operator-authored migration or adopter mutation is required.
 closeout_requirements:
   claims:
     required_suites_green:

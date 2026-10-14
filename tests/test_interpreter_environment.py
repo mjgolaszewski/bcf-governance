@@ -110,6 +110,66 @@ def _legacy_fixture(repo: Path, *, profile_version: str = "1.0") -> None:
     )
 
 
+def test_governed_dependency_source_closes_recursive_requirements(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/gate-contracts.yml").write_text(
+        "profile_contract_version: '3.0'\n"
+        "interpreter_contract: {dependency_source: requirements-governance.txt}\n"
+        "gates: {test: {}}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "runtime").mkdir()
+    (tmp_path / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\n-r runtime/requirements.txt\npytest==9.1.1\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "runtime/requirements.txt").write_text(
+        "httpx==0.28.1\n", encoding="utf-8"
+    )
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert plan.source_kind == "governed_requirements_source"
+    assert plan.requirements == (
+        "PyYAML>=6,<7",
+        "httpx==0.28.1",
+        "pytest==9.1.1",
+        "pip==26.2.1",
+    )
+    assert plan.pip_arguments() == (
+        "--requirement",
+        str(tmp_path / "requirements-governance.txt"),
+    )
+    verify_interpreter_environment_projection(plan)
+
+    (tmp_path / "runtime/requirements.txt").write_text(
+        "httpx==0.28.2\n", encoding="utf-8"
+    )
+    with pytest.raises(
+        InterpreterEnvironmentError, match="changed after derivation"
+    ):
+        verify_interpreter_environment_projection(plan)
+
+
+def test_governed_dependency_source_rejects_unsafe_include(tmp_path: Path) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/gate-contracts.yml").write_text(
+        "profile_contract_version: '3.0'\n"
+        "interpreter_contract: {dependency_source: requirements-governance.txt}\n"
+        "gates: {test: {}}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "requirements-governance.txt").write_text(
+        "-r ../outside.txt\n", encoding="utf-8"
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="include is unsafe"):
+        derive_interpreter_environment(tmp_path)
+
+
 def test_profile_v1_derives_isolated_environment_from_authenticated_legacy_inputs(
     tmp_path: Path,
 ) -> None:

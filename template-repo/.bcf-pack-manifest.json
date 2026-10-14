@@ -306,7 +306,7 @@
     },
     "schemas/gate-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "7d9e17be6ff714ac2df72d74aa624b7da1c55e87d3de095b2b473d18685834f9"
+      "sha256": "398d5b7b1e1bc3ac80a3c57385433f2cefb1b12f19eadb929a5d69ee356bb21d"
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
@@ -1064,7 +1064,7 @@
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
-      "sha256": "b739a20766da52cbdef36ed5dfa643c916daaa25f9084632d9ca7cba92484a48"
+      "sha256": "03921a280158ac0c1439885c0dcf465fcfdf66b3b743760e274a836e216b052d"
     },
     "scripts/_bcf_runtime/governance_install/validation.py": {
       "operation": "copy",
@@ -1120,7 +1120,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/evidence_contracts.py": {
       "operation": "copy",
-      "sha256": "6a2aa8ab38bcf7473e57b4fdbc21629a29ec335e8ed21daee5807b03745cbb50"
+      "sha256": "c0a432457e39c6b976e66f2a7a43935478d74be2c90d50b417006266367a9244"
     },
     "scripts/_bcf_runtime/governance_validation/native_adoption.py": {
       "operation": "copy",
@@ -1197,9 +1197,13 @@
       "operation": "copy",
       "sha256": "d52b886cece319dd5be5c7b316e3435b8fa2ccb28e7de0c283fbf5d90417b761"
     },
+    "scripts/_bcf_runtime/interpreter_dependency_sources.py": {
+      "operation": "copy",
+      "sha256": "0853cf410f2a3306650f77d856e25a7eb9b725eb9a987b6be7fbb2590bdf3d35"
+    },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "d66e0f71cdaaaefab4187330f6bafb73ce5cd81f3ca70ee3fe743b624fd13559"
+      "sha256": "cb59889ad3a1726e63c6eafd5aa435ab09c9b8cdf6db27a14d65c923c76cb170"
     },
     "scripts/_bcf_runtime/local_cli_receipt.py": {
       "operation": "copy",

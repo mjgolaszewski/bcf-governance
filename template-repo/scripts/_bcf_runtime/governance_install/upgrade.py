@@ -305,6 +305,65 @@ def upgrade_graph_contracts(target_root: Path) -> list[Path]:
     return list(dict.fromkeys(changed))
 
 
+def _upgrade_interpreter_contract(target_root: Path) -> list[Path]:
+    """Close the exact v2/v3 Python-gate state before strict validation."""
+
+    path = target_root / "governance/gate-contracts.yml"
+    if not path.is_file() or path.is_symlink():
+        return []
+    payload = _load_yaml_mapping(path)
+    if str(payload.get("profile_contract_version", "1.0")) not in {"2.0", "3.0"}:
+        return []
+    if payload.get("interpreter_contract") is not None:
+        return []
+    gates = payload.get("gates")
+    if not isinstance(gates, dict):
+        raise ValueError("upgrade gate registry is invalid")
+    python_consumers = []
+    for gate_id, raw in gates.items():
+        invocation = raw.get("invocation") if isinstance(raw, dict) else None
+        argv = invocation.get("argv") if isinstance(invocation, dict) else None
+        if (
+            isinstance(argv, list)
+            and argv
+            and isinstance(argv[0], str)
+            and Path(argv[0]).name.lower().startswith("python")
+        ):
+            python_consumers.append(str(gate_id))
+    if not python_consumers:
+        return []
+    dependency_source = target_root / "requirements-governance.txt"
+    if dependency_source.is_symlink() or not dependency_source.is_file():
+        raise ValueError(
+            "profile-v2/v3 Python gates lack an authenticated interpreter dependency source"
+        )
+    raw = path.read_text(encoding="utf-8")
+    lines = raw.splitlines(keepends=True)
+    anchors = [
+        index
+        for index, line in enumerate(lines)
+        if line.startswith("target_profile:")
+    ]
+    if len(anchors) != 1:
+        raise ValueError("upgrade interpreter contract insertion point is ambiguous")
+    insertion = (
+        "interpreter_contract:\n"
+        "  dependency_source: requirements-governance.txt\n"
+    )
+    lines.insert(anchors[0] + 1, insertion)
+    path.write_text("".join(lines), encoding="utf-8")
+    from ..interpreter_environment import (
+        derive_interpreter_environment,
+        verify_interpreter_environment_projection,
+    )
+
+    plan = derive_interpreter_environment(target_root)
+    if plan is None:
+        raise ValueError("upgrade interpreter dependency contract was not derivable")
+    verify_interpreter_environment_projection(plan)
+    return [path]
+
+
 
 def _upgrade_agents_yaml(template_root: Path, target_root: Path) -> None:
     path = target_root / "AGENTS.yml"
@@ -621,6 +680,7 @@ def _upgrade_state_files(
         )
     )
     _upgrade_makefile_fragment(target_root)
+    created.extend(_upgrade_interpreter_contract(target_root))
     created.extend(_upgrade_runtime_contract(target_root))
     created.extend(upgrade_graph_contracts(target_root))
     return created

@@ -43,6 +43,10 @@ All notable changes to BCF Governance are recorded here. This file follows
   BCF-backed gates reuse the same admitted CLI instead of an ambient `PATH`.
   Canonical reconciliation likewise derives that project interpreter before
   pytest-manifest collection rather than borrowing controller dependencies.
+- Closed the preserved v2/v3 adopter upgrade edge by deriving a typed
+  interpreter contract from an exact governed requirements source before
+  strict success; recursive sources are hash-bound and unsafe, ambiguous, or
+  incomplete dependency graphs reject before atomic installation commits.
 
 ## [2.3.1] - 2026-10-12
 

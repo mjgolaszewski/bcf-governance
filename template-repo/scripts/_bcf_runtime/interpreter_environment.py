@@ -31,6 +31,10 @@ from .python_runtime_selection import (
     interpreter_subprocess_environment as _interpreter_subprocess_environment,
     select_materialization_base,
 )
+from .interpreter_dependency_sources import (
+    InterpreterDependencySourceError,
+    compile_governed_dependency_source,
+)
 
 
 class InterpreterEnvironmentError(ValueError):
@@ -130,6 +134,12 @@ class InterpreterEnvironmentPlan:
 
         if self.source_kind == "legacy_governance_requirements":
             return self.requirements
+        if self.source_kind == "governed_requirements_source":
+            if self.source_path is None:
+                raise InterpreterEnvironmentError(
+                    "interpreter dependency source is unavailable"
+                )
+            return ("--requirement", str(self.source_path))
         if self.projection_path is None:
             raise InterpreterEnvironmentError(
                 "interpreter dependency projection is unavailable"
@@ -350,6 +360,25 @@ def derive_interpreter_environment(
     if contract is None:
         return _legacy_interpreter_environment(root, registry)
     contract = _mapping(contract, "interpreter contract is invalid")
+    if "dependency_source" in contract:
+        if set(contract) != {"dependency_source"}:
+            raise InterpreterEnvironmentError("interpreter contract is ambiguous")
+        try:
+            source = compile_governed_dependency_source(
+                root,
+                contract["dependency_source"],
+                installer_requirement=PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
+            )
+        except InterpreterDependencySourceError as exc:
+            raise InterpreterEnvironmentError(str(exc)) from exc
+        return InterpreterEnvironmentPlan(
+            requirements=source.requirements,
+            requires_python=None,
+            projection_path=None,
+            source_kind="governed_requirements_source",
+            source_path=source.path,
+            source_sha256=source.sha256,
+        )
     if contract.get("project_dependencies") is not True:
         raise InterpreterEnvironmentError("interpreter contract is invalid")
     try:
@@ -450,7 +479,7 @@ def verify_interpreter_environment_projection(
         ):
             return
         if (
-            plan.source_kind != "legacy_governance_requirements"
+            plan.source_kind not in {"legacy_governance_requirements", "governed_requirements_source"}
             or plan.source_path is None
             or plan.source_sha256 is None
             or plan.source_path.is_symlink()
@@ -459,14 +488,24 @@ def verify_interpreter_environment_projection(
             raise InterpreterEnvironmentError(
                 "interpreter dependency source is missing or unsafe"
             )
-        try:
-            observed_source_sha256 = hashlib.sha256(
-                plan.source_path.read_bytes()
-            ).hexdigest()
-        except OSError as exc:
-            raise InterpreterEnvironmentError(
-                "interpreter dependency source is unreadable"
-            ) from exc
+        if plan.source_kind == "governed_requirements_source":
+            try:
+                observed_source_sha256 = compile_governed_dependency_source(
+                    plan.source_path.parent,
+                    plan.source_path.name,
+                    installer_requirement=PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
+                ).sha256
+            except InterpreterDependencySourceError as exc:
+                raise InterpreterEnvironmentError(str(exc)) from exc
+        else:
+            try:
+                observed_source_sha256 = hashlib.sha256(
+                    plan.source_path.read_bytes()
+                ).hexdigest()
+            except OSError as exc:
+                raise InterpreterEnvironmentError(
+                    "interpreter dependency source is unreadable"
+                ) from exc
         if observed_source_sha256 != plan.source_sha256:
             raise InterpreterEnvironmentError(
                 "interpreter dependency source changed after derivation"

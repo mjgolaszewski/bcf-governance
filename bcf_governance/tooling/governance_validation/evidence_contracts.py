@@ -48,7 +48,51 @@ def _validate_gate_contract_registry(
         contracts.get("gates"), context="governance/gate-contracts.yml gates"
     )
     interpreter = contracts.get("interpreter_contract")
+    python_consumers = []
+    for target, raw in gates.items():
+        gate = raw if isinstance(raw, dict) else {}
+        invocation = gate.get("invocation")
+        argv = invocation.get("argv") if isinstance(invocation, dict) else None
+        if (
+            isinstance(argv, list)
+            and argv
+            and isinstance(argv[0], str)
+            and Path(argv[0]).name.lower().startswith("python")
+        ):
+            python_consumers.append(str(target))
+    if (
+        str(contracts.get("profile_contract_version", "1.0")) in {"2.0", "3.0"}
+        and python_consumers
+        and not isinstance(interpreter, dict)
+    ):
+        raise GovernanceValidationError(
+            "profile-v2/v3 Python gates require interpreter_contract: "
+            + ", ".join(sorted(python_consumers))
+        )
     if isinstance(interpreter, dict):
+        source = interpreter.get("dependency_source")
+        if source is not None:
+            _validate_portable_relative_path(
+                _require_string(
+                    source,
+                    context=(
+                        "governance/gate-contracts.yml "
+                        "interpreter_contract.dependency_source"
+                    ),
+                ),
+                context=(
+                    "governance/gate-contracts.yml "
+                    "interpreter_contract.dependency_source"
+                ),
+            )
+            _require_path(
+                repo_root,
+                source,
+                context=(
+                    "governance/gate-contracts.yml "
+                    "interpreter_contract.dependency_source"
+                ),
+            )
         projection = interpreter.get("requirements_projection")
         if projection is not None:
             _validate_portable_relative_path(
@@ -72,15 +116,16 @@ def _validate_gate_contract_registry(
                     "interpreter_contract.requirements_projection"
                 ),
             )
-        requirements = _require_mapping(
-            interpreter.get("gate_requirements"),
-            context="governance/gate-contracts.yml interpreter_contract.gate_requirements",
-        )
-        unknown = sorted(set(requirements) - set(gates))
-        if unknown:
-            raise GovernanceValidationError(
-                "interpreter requirements name unknown gates: " + ", ".join(unknown)
+        if source is None:
+            requirements = _require_mapping(
+                interpreter.get("gate_requirements"),
+                context="governance/gate-contracts.yml interpreter_contract.gate_requirements",
             )
+            unknown = sorted(set(requirements) - set(gates))
+            if unknown:
+                raise GovernanceValidationError(
+                    "interpreter requirements name unknown gates: " + ", ".join(unknown)
+                )
     mutation_issues: list[str] = []
     for target, raw in gates.items():
         gate = _require_mapping(raw, context=f"gate contract {target}")
