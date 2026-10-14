@@ -10,6 +10,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Made release qualification one closed provider-derived transaction: required
+  adopter default branches resolve to an exact all-or-none source inventory,
+  the release verifier produces and the trusted collector authenticates its
+  qualification receipt, and publication follows that receipt automatically.
+  Caller checkouts remain caches only; caller-authored subjects, pass receipts,
+  dispatches, partial inventories, and stale provider identities fail before
+  publication authority.
 - Closed existing-repository adoption classification at its canonical owners:
   declared nested test roots and production exclusions now reach structural LOC
   enforcement, valid native Docker Go-template fields remain distinct from BCF

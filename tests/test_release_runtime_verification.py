@@ -235,10 +235,6 @@ def _release_cli_argv(operation: str, root: Path) -> list[str]:
         "resolve-publication": [
             "--repository", "owner/repo", "--output", str(root / "publication.json")
         ],
-        "authenticate-qualification": [
-            "--repository", "owner/repo", "--event", str(root / "event.json"),
-            "--output", str(root / "qualification.json"),
-        ],
         "authorize": [
             "--repository", "owner/repo", "--bundle", str(root / "certification"),
             "--controller-wheel", str(root / "controller.whl"),
@@ -386,7 +382,6 @@ def test_every_release_cli_operation_has_a_complete_owned_namespace(
 
     for name in (
         "resolve_release_authorization_inputs", "resolve_release_publication_inputs",
-        "authenticate_release_qualification",
         "verify_release_build_provider", "record_release_build", "authorize_release",
         "collect_release", "inspect_release", "publish_certified_release",
     ):
@@ -425,12 +420,7 @@ def test_every_release_cli_operation_has_a_complete_owned_namespace(
     argv = _canonical_release_cli_argv(operation, tmp_path)
     ci_github_commands._release(argv or _release_cli_argv(operation, tmp_path))
 
-    if operation == "authenticate-qualification":
-        assert json.loads(capsys.readouterr().out)["status"] == "passed"
-        qualification = tmp_path / "bcf-publication/qualification.json"
-        assert json.loads(qualification.read_text(encoding="utf-8"))["status"] == "passed"
-    else:
-        assert "status=passed" in github_output.read_text(encoding="utf-8")
+    assert "status=passed" in github_output.read_text(encoding="utf-8")
     expected_staging = {
         "verify-evidence": ["verifier"],
         "collect": ["receipt"],

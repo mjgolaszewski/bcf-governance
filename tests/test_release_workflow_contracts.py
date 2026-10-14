@@ -165,12 +165,15 @@ def test_release_builder_uploads_partial_attempt_evidence_on_failure() -> None:
 def test_verifier_separates_token_free_runtime_from_provider_authentication() -> None:
     compiled = validate_ci_graph(REPO_ROOT)
     workflow = _workflow("release-verifier")
-    assert [job["id"] for job in workflow["jobs"]] == ["runtime", "collect"]
+    assert [job["id"] for job in workflow["jobs"]] == ["runtime", "qualify", "collect"]
     runtime = _job("release-verifier", "runtime")
+    qualify = _job("release-verifier", "qualify")
     authenticate = _job("release-verifier", "collect")
-    assert authenticate["needs"] == ["runtime"]
-    assert runtime["trust"] == "candidate" and authenticate["trust"] == "trusted"
-    assert runtime["checkout"] is authenticate["checkout"] is False
+    assert qualify["needs"] == ["runtime"]
+    assert authenticate["needs"] == ["runtime", "qualify"]
+    assert runtime["trust"] == qualify["trust"] == "candidate"
+    assert authenticate["trust"] == "trusted"
+    assert runtime["checkout"] is qualify["checkout"] is authenticate["checkout"] is False
     assert compiled.commands["verify-release-runtime"]["environment"] == {
         "GITHUB_TOKEN": "",
         "ACTIONS_ID_TOKEN_REQUEST_TOKEN": "",
@@ -181,8 +184,13 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
     assert runtime["consumes"] == [
         "release-authorization", "release-build-bundle"
     ]
+    assert qualify["consumes"] == [
+        "release-authorization", "release-build-bundle"
+    ]
+    assert qualify["produces"] == ["release-qualification"]
     assert authenticate["consumes"] == [
-        "release-authorization", "release-build-bundle", "release-runtime-evidence"
+        "release-authorization", "release-build-bundle", "release-runtime-evidence",
+        "release-qualification",
     ]
     upload = compiled.graph["step_components"]["upload-release-runtime"]
     assert upload["condition"] == "always-step"
@@ -224,7 +232,7 @@ def test_verifier_controller_is_bound_to_the_triggering_authorization_attempt() 
     assert install["artifact_dir"].endswith("/bcf-release-authorization/controller")
     assert install["wheel_sha256_file"].endswith("/release-authorization.json")
     assert install["wheel_sha256_keys"] == ["controller", "wheel_sha256"]
-    for job_id in ("runtime", "collect"):
+    for job_id in ("runtime", "qualify", "collect"):
         components = _job("release-verifier", job_id)["executor"]["components"]
         assert components.index("download-triggering-release-authorization") < (
             components.index("install-triggering-release-controller")
@@ -248,12 +256,14 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
         for name, command in compiled.commands.items()
         if name in {
             "resolve-release-inputs", "authorize-release", "verify-release-runtime",
-            "authenticate-release-verification", "collect-release",
+            "qualify-release", "authenticate-release-verification", "collect-release",
             "resolve-release-publication", "publish-release",
         }
     }
     assert all("jq " not in value and "gh api" not in value for value in commands.values())
     assert "--runtime-evidence-dir" in commands["authenticate-release-verification"]
+    assert "--release-build-manifest" in commands["qualify-release"]
+    assert "--repository" in commands["qualify-release"]
     assert "--release-artifact-dir" in commands["collect-release"]
     assert "resolve-publication" in commands["resolve-release-publication"]
     routed = (
@@ -318,8 +328,24 @@ def test_release_file_selection_and_attempt_fan_in_are_controller_owned() -> Non
     attest = compiled.graph["step_components"]["attest-release-assets"]
     assert attest["with"]["subject-path"].endswith("/receipt/assets/*")
     assert _job("release-verifier", "collect")["consumes"] == [
-        "release-authorization", "release-build-bundle", "release-runtime-evidence"
+        "release-authorization", "release-build-bundle", "release-runtime-evidence",
+        "release-qualification",
     ]
+
+
+def test_release_publication_is_automatic_and_caller_receipts_cannot_authorize_it() -> None:
+    workflow = _workflow("release-publisher")
+    assert workflow["events"] == [{
+        "type": "workflow_run",
+        "workflows": ["bcf/release-byte-verifier"],
+        "types": ["completed"],
+    }]
+    rendered = render_ci_graph(REPO_ROOT)[
+        ".github/workflows/bcf-release-publisher.yml"
+    ].decode()
+    assert "repository_dispatch" not in rendered
+    assert "client_payload" not in rendered
+    assert "github.event.workflow_run.id" in rendered
 
 
 def test_collector_is_no_checkout_trusted_recomputation_and_sole_receipt_owner() -> None:

@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 3f606301e60b9d7507258ae8131fdf11ef3772ad1a3c8724cb8b3715aae25ae2
-  after_sha256: 8717debb2f559a6bfc84eba63118e27602e9fd8f6a126c0dfc52ee646e11e7ec
+  after_sha256: 262ac0e2d21729e74b543c91d0602b4dec04f21af1fccb4358a8f31b42867d45
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -141,7 +141,16 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: 466ab14092d833a7039376e9564be2a66adc55bf4f6c0884942af6a42420cf5e
-  after_sha256: 9fff6b7bc337a5e9fa5b801fe175e5a2dfde151851798a7e1f15cc43d491ad67
+  after_sha256: 661a5a05a41636c723764b3e81b56de0780637047f6a53dabcb18ba371c2554d
+  findings:
+  - reviewed; no currency, consolidation, or pruning change required
+  disposition: revised
+- path: spec/phase0/README.md
+  audience: BCF evaluators and adopters
+  canonical_topic_owner: spec/phase0/README.md
+  topic_role: canonical
+  before_sha256: null
+  after_sha256: f3dff56f11905cc0df62ba33a8bf3757c6fd1dfc9335ab82c7eb2e1f42d30fe3
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

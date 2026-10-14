@@ -161,6 +161,14 @@ execution_evidence:
     failed. The installer now invokes the existing semantic-lock projection
     owner inside the same validated transaction whenever semantic custody is
     present; no second operator command or post-success repair remains.
+  - >-
+    Prepublication custody review exposed that adopter subjects and the passing
+    qualification observation could still be supplied by a caller. The release
+    verifier now resolves every required provider default branch as one frozen
+    commit/tree inventory, executes exact-source qualification as a governed
+    job, and hands its provider-bound artifact to the trusted collector. The
+    publisher is an automatic consumer of that exact verifier attempt; caller
+    JSON and repository dispatch no longer participate in release authority.
 closeout_requirements:
   claims:
     required_suites_green:

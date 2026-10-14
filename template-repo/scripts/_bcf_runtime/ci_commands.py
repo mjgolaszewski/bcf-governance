@@ -55,7 +55,6 @@ from .runtime_capacity import (
 )
 from .release_adopter_qualification import (
     ReleaseQualificationError,
-    dispatch_release_qualification,
     qualify_release,
 )
 from .trusted_controller_compatibility import (
@@ -184,12 +183,14 @@ def _parser() -> argparse.ArgumentParser:
         help="qualify exact release assets across the canonical adopter matrix",
     )
     qualify.add_argument("--repo-root", type=Path, default=Path.cwd())
+    qualify.add_argument("--repository", required=True)
     qualify.add_argument("--release-assets", type=Path, required=True)
-    qualify.add_argument("--adopter-root", type=Path, action="append", required=True)
+    qualify.add_argument("--release-build-manifest", type=Path, required=True)
+    qualify.add_argument("--adopter-root", type=Path, action="append", default=[])
     qualify.add_argument(
         "--adopter-python",
         action="append",
-        required=True,
+        default=[],
         metavar="OWNER/REPO=PATH",
         help="environmental interpreter provisioning; repository semantics remain canonical",
     )
@@ -436,16 +437,34 @@ def main(argv: list[str] | None = None) -> None:
                         "--adopter-python requires unique OWNER/REPO=PATH values"
                     )
                 interpreters[repository] = Path(path)
-            result = qualify_release(
-                args.repo_root,
-                release_assets=args.release_assets,
-                adopter_roots=tuple(args.adopter_root),
-                adopter_pythons=interpreters,
-                output=args.output,
-            )
+            workflow_ref = os.environ.get("GITHUB_WORKFLOW_REF", "")
+            workflow_prefix = f"{args.repository}/"
+            workflow_path, separator, _workflow_ref = workflow_ref.partition("@")
+            if not separator or not workflow_path.startswith(workflow_prefix):
+                raise ReleaseQualificationError(
+                    "qualification workflow identity is unavailable"
+                )
+            producer = {
+                "repository_id": os.environ.get("GITHUB_REPOSITORY_ID", ""),
+                "workflow": workflow_path.removeprefix(workflow_prefix),
+                "job": os.environ.get("GITHUB_JOB", ""),
+                "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+                "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+            }
             from .ci_github_controller import environment_api
 
-            dispatch_release_qualification(environment_api(), result)
+            provider_api = environment_api()
+            result = qualify_release(
+                args.repo_root,
+                provider_api=provider_api,
+                repository=args.repository,
+                release_assets=args.release_assets,
+                release_build_manifest=args.release_build_manifest,
+                adopter_roots=tuple(args.adopter_root),
+                adopter_pythons=interpreters,
+                producer=producer,
+                output=args.output,
+            )
             _print(result, args.format)
             return
         if args.operation == "submit":
