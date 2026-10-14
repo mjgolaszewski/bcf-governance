@@ -1058,6 +1058,10 @@
       "operation": "copy",
       "sha256": "8be902e9fca664605275978c5742d8717411efe6a02a81de79fda589b7b0ae8a"
     },
+    "scripts/_bcf_runtime/governance_install/semantic_upgrade.py": {
+      "operation": "copy",
+      "sha256": "65011512ff50940fe6a0e313d160ee2a098b0fcecd58ba97816ea7d1f9c41ffc"
+    },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
       "sha256": "1aa8a1c4982699721b55afd57794795192bde9bdf23c3ab4a930f80ca354720c"
@@ -1199,7 +1203,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "d52b886cece319dd5be5c7b316e3435b8fa2ccb28e7de0c283fbf5d90417b761"
+      "sha256": "7e9e8e59cc860a7631283a98be167566d381b73640b763de18abf4e0c7720fb8"
     },
     "scripts/_bcf_runtime/interpreter_contract_projection.py": {
       "operation": "copy",
@@ -1435,7 +1439,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_commands.py": {
       "operation": "copy",
-      "sha256": "c7c7d3d5dae1eb0dc8c6200e8f9340ab0815a4327c234b424160d144aad7c72c"
+      "sha256": "36914f70588b67443f5ccae4aecad5ed5ed6e9025102c39f38c06c893f7a1681"
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
