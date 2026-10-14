@@ -21,6 +21,7 @@ from .ci_github_artifacts import (
     resolve_role_artifact,
 )
 from .ci_github_authority import (
+    authenticate_active_role_job_inventory,
     authenticate_role_job_inventory,
     load_authority,
     packaged_repo_root,
@@ -648,7 +649,7 @@ def publish_certified_release(
         )
     require_controller_execution(custody)
     authority = load_authority(api, repository, main, required_version="1.1")
-    authenticate_role_job_inventory(
+    authenticate_active_role_job_inventory(
         api,
         repository=repository,
         main=main,
@@ -656,8 +657,6 @@ def publish_certified_release(
         role="release_publisher",
         run_id=publisher_run_id,
         run_attempt=publisher_run_attempt,
-        require_success=False,
-        require_terminal=False,
     )
     workflow = receipt.get("invocation", {}).get("workflow")
     if not isinstance(workflow, dict):

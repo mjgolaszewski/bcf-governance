@@ -1370,9 +1370,16 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         "bcf_governance.tooling.ci_github_release.load_authority",
         lambda *args, **kwargs: {},
     )
+    publisher_identity: dict[str, object] = {}
+
+    def authenticate_publisher(*args: object, **kwargs: object):
+        del args
+        publisher_identity.update(kwargs)
+        return object(), ()
+
     monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release.authenticate_role_job_inventory",
-        lambda *args, **kwargs: (object(), ()),
+        "bcf_governance.tooling.ci_github_release.authenticate_active_role_job_inventory",
+        authenticate_publisher,
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.authenticate_role_artifact",
@@ -1408,6 +1415,9 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
         publisher_run_attempt="1",
     )
     assert result == {"status": "published"}
+    assert publisher_identity["role"] == "release_publisher"
+    assert publisher_identity["run_id"] == "80"
+    assert publisher_identity["run_attempt"] == "1"
     receipt = json.loads(receipt_path.read_text())
     receipt["observations"]["release_artifacts"][0]["sha256"] = "0" * 64
     _json(receipt_path, receipt)

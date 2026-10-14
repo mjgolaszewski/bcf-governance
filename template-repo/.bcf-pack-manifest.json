@@ -660,7 +660,7 @@
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
-      "sha256": "0b69b0bebf8f85265b3f065ba173895cb8a79736ed74e4cedd492301115d2e90"
+      "sha256": "b4b0bcac6a2f058cb5890a6fe96dcc6dc53a0e79ee200e68d25a6372e0ee74b0"
     },
     "scripts/_bcf_runtime/ci_github_release_api.py": {
       "operation": "copy",

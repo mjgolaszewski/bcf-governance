@@ -11,6 +11,7 @@ import venv
 import pytest
 
 from bcf_governance.tooling import local_pr
+from bcf_governance.tooling import ci_commands
 from bcf_governance.tooling import release_adopter_qualification as qualification
 from bcf_governance.tooling.ci_github_values import GitHubValueError, remote_repository
 from bcf_governance.tooling.ci_github_identity import MainIdentity
@@ -38,6 +39,57 @@ PRODUCER = {
     "run_id": "80",
     "run_attempt": "1",
 }
+
+
+def test_qualification_cli_derives_provider_producer_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed: dict[str, object] = {}
+    monkeypatch.setenv(
+        "GITHUB_WORKFLOW_REF",
+        "owner/repo/.github/workflows/bcf-release-verifier.yml@refs/heads/main",
+    )
+    monkeypatch.setenv("GITHUB_REPOSITORY_ID", "101")
+    monkeypatch.setenv("GITHUB_JOB", "qualify")
+    monkeypatch.setenv("GITHUB_RUN_ID", "80")
+    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_controller.environment_api", lambda: object()
+    )
+
+    def qualify(*_args: object, **kwargs: object) -> dict[str, str]:
+        observed.update(kwargs)
+        return {"status": "pass"}
+
+    monkeypatch.setattr(ci_commands, "qualify_release", qualify)
+    ci_commands.main([
+        "qualify-release", "--repo-root", str(tmp_path),
+        "--repository", "owner/repo",
+        "--release-assets", str(tmp_path / "assets"),
+        "--release-build-manifest", str(tmp_path / "build.json"),
+        "--output", str(tmp_path / "receipt.json"),
+    ])
+    assert observed["producer"] == {
+        "repository_id": "101",
+        "workflow": ".github/workflows/bcf-release-verifier.yml",
+        "job": "qualify",
+        "run_id": "80",
+        "run_attempt": "2",
+    }
+
+
+def test_qualification_cli_rejects_unbound_workflow_identity(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv("GITHUB_WORKFLOW_REF", raising=False)
+    with pytest.raises(SystemExit, match="workflow identity"):
+        ci_commands.main([
+            "qualify-release", "--repo-root", str(tmp_path),
+            "--repository", "owner/repo",
+            "--release-assets", str(tmp_path / "assets"),
+            "--release-build-manifest", str(tmp_path / "build.json"),
+            "--output", str(tmp_path / "receipt.json"),
+        ])
 
 
 def _assets(root: Path) -> dict[str, str]:
