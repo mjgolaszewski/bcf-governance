@@ -531,7 +531,7 @@ def _enable_v2_session(repo: Path) -> Path:
 def _enable_v3_grouped_session(
     repo: Path, *, second_test_receipt: bool = False, hotfix: bool = False,
     open_workitem: bool = False, bounded_workitems: bool = False,
-    session_version: str = "2.0",
+    session_version: str = "2.0", session_target: str | None = None,
 ) -> Path:
     profile_path = repo / "governance-profile.yml"
     profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
@@ -724,6 +724,18 @@ def _enable_v3_grouped_session(
         "reconcile": ["reconcile-claim"],
         **({"runtime-smoke": ["runtime-smoke-claim"]} if bounded_workitems else {}),
     }
+    if session_target is not None:
+        admitted = {"test", "runtime-smoke"}
+        for receipt_path in list(receipt_paths):
+            receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+            if receipt.get("gate_id") not in admitted:
+                receipt_path.unlink()
+                receipt_paths.remove(receipt_path)
+        session_claims = sorted({
+            claim_id for gate_id in admitted for claim_id in claim_sets.get(gate_id, [])
+        })
+    else:
+        session_claims = sorted(claims)
     for receipt_path in receipt_paths:
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
         receipt_claims = claim_sets[receipt["gate_id"]]
@@ -745,6 +757,22 @@ def _enable_v3_grouped_session(
             json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
 
+    session_model = load_claim_model(repo)
+    grouped_claims: dict[str, list[str]] = {}
+    for claim_id in session_claims:
+        group_id = str(session_model["claims"][claim_id]["execution_group"])
+        grouped_claims.setdefault(group_id, []).append(claim_id)
+    session_nodes = [
+        {
+            "id": group_id,
+            "producer": session_model["execution_groups"][group_id]["producer"],
+            "claims": sorted(grouped_claims[group_id]),
+            "depends_on": list(
+                session_model["execution_groups"][group_id].get("depends_on", [])
+            ),
+        }
+        for group_id in sorted(grouped_claims)
+    ]
     session_id = "b" * 32
     manifest = {
         "schema_version": session_version,
@@ -764,12 +792,7 @@ def _enable_v3_grouped_session(
             "run_attempt": "1",
             "producer_id": "evidence",
         },
-        "expected_gate_inventory": [
-            "reconcile",
-            "security-review",
-            "test",
-            *(["runtime-smoke"] if bounded_workitems else []),
-        ],
+        "expected_gate_inventory": sorted({node["producer"] for node in session_nodes}),
         "expected_producer_inventory": [
             "evidence",
             *(["evidence-2"] if second_test_receipt else []),
@@ -777,21 +800,17 @@ def _enable_v3_grouped_session(
         "prior_subject": None,
         "changed_paths": [],
         "changed_domains": [],
-        "required_claims": sorted(claims),
+        "required_claims": session_claims,
         "preflight_satisfied_claims": [],
         "reused_evidence": [],
         "invalidated_evidence": [],
         "execution_dag": {
-            "nodes": [
-                {"id": gate, "producer": gate}
-                for gate in (
-                    "reconcile",
-                    "security-review",
-                    "test",
-                    *(["runtime-smoke"] if bounded_workitems else []),
-                )
+            "nodes": session_nodes,
+            "edges": [
+                {"from": dependency, "to": node["id"]}
+                for node in session_nodes
+                for dependency in node["depends_on"]
             ],
-            "edges": [],
         },
         "decision_explanations": ["focused grouped-v3 fixture"],
         "created_at": datetime.now(UTC).isoformat().replace("+00:00", "Z"),
@@ -806,7 +825,7 @@ def _enable_v3_grouped_session(
         manifest["affected_proof_set"] = derive_affected_proof_set(
             repo,
             load_claim_model(repo),
-            sorted(claims),
+            session_claims,
             current_subject=subject,
             prior_subjects=[],
         )
@@ -900,7 +919,9 @@ def test_bounded_workitem_certification_does_not_claim_parent_closure(
     repo = _make_repo(tmp_path)
     report = derive_truth(
         repo,
-        _enable_v3_grouped_session(repo, bounded_workitems=True),
+        _enable_v3_grouped_session(
+            repo, bounded_workitems=True, session_target="P01-W01"
+        ),
         evaluation_mode="workitem",
         evaluation_target="P01-W01",
     )
@@ -919,11 +940,29 @@ def test_bounded_workitem_certification_does_not_claim_parent_closure(
     assert report["release_readiness"]["effective_state"] == "completed"
 
 
+def test_bounded_truth_rejects_parent_profile_plan_for_exact_target(
+    tmp_path: Path,
+) -> None:
+    repo = _make_repo(tmp_path)
+    report = derive_truth(
+        repo,
+        _enable_v3_grouped_session(repo, bounded_workitems=True),
+        evaluation_mode="workitem",
+        evaluation_target="P01-W01",
+    )
+
+    assert report["status"] == "fail"
+    assert "verification_scope_required_claims_mismatch" in report["issues"]
+    assert report["certified_proposition"]["conclusion"] == "failure"
+
+
 def test_integrated_dependency_prefix_closes_under_one_exact_bounded_truth(
     tmp_path: Path,
 ) -> None:
     repo = _make_repo(tmp_path)
-    evidence = _enable_v3_grouped_session(repo, bounded_workitems=True)
+    evidence = _enable_v3_grouped_session(
+        repo, bounded_workitems=True, session_target="P01-W04"
+    )
     path = repo / "plans/phase-01-workitems.yml"
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
     first = payload["workitems"][0]
@@ -964,7 +1003,9 @@ def test_bounded_workitem_certification_requires_exact_closed_target(
     tmp_path: Path, target: str | None
 ) -> None:
     repo = _make_repo(tmp_path)
-    evidence = _enable_v3_grouped_session(repo, bounded_workitems=True)
+    evidence = _enable_v3_grouped_session(
+        repo, bounded_workitems=True, session_target="P01-W01"
+    )
     if target is None:
         with pytest.raises(ValueError, match="requires one exact target"):
             derive_truth(repo, evidence, evaluation_mode="workitem")
@@ -1004,7 +1045,9 @@ def test_bounded_workitem_and_successor_fail_closed_without_applicable_evidence(
     tmp_path: Path, mutation: str
 ) -> None:
     repo = _make_repo(tmp_path)
-    evidence = _enable_v3_grouped_session(repo, bounded_workitems=True)
+    evidence = _enable_v3_grouped_session(
+        repo, bounded_workitems=True, session_target="P01-W01"
+    )
     receipt_path = evidence / "test.evidence.json"
     if mutation in {"missing", "preflight-only"}:
         receipt_path.unlink()

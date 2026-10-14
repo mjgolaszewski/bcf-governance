@@ -47,6 +47,12 @@ All notable changes to BCF Governance are recorded here. This file follows
   interpreter contract from an exact governed requirements source before
   strict success; recursive sources are hash-bound and unsafe, ambiguous, or
   incomplete dependency graphs reject before atomic installation commits.
+- Made bounded workitem execution derive its exact claim and producer closure
+  from the authenticated target instead of allocating the parent profile, and
+  made fresh v2/v3 install and promotion persist the same interpreter custody
+  contract already enforced for upgrades. Target substitution, unrelated-claim
+  laundering, incomplete producer dependencies, and ambiguous interpreter
+  inputs reject before evidence allocation or repository mutation.
 
 ## [2.3.1] - 2026-10-12
 

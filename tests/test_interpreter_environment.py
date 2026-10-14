@@ -317,6 +317,13 @@ def test_legacy_environment_materialization_installs_only_derived_requirements(
     commands: list[list[str]] = []
 
     def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if argv[1:3] == ["-I", "-c"]:
+            version = (
+                "3.12.14"
+                if Path(argv[0]).name.startswith("python3.12")
+                else ".".join(str(value) for value in sys.version_info[:3])
+            )
+            return subprocess.CompletedProcess(argv, 0, version + "\n", "")
         commands.append(argv)
         if argv[1:3] == ["-m", "venv"]:
             environment = Path(argv[-1])

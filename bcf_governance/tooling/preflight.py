@@ -654,7 +654,14 @@ def run_preflight(
     )
     verification_plan = step(
         "verification-plan",
-        lambda: build_verification_plan(repo_root, subject, prior_receipts or []),
+        lambda: build_verification_plan(
+            repo_root, subject, prior_receipts or [], evaluation_mode=selected_mode,
+            evaluation_target=(
+                scope.target_id
+                if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
+                else None
+            ),
+        ),
     )
     session: EvidenceSession | None = None
     if artifact_root is not None:

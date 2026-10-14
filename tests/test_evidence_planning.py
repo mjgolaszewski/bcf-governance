@@ -21,6 +21,7 @@ from bcf_governance.tooling.evidence_planning import (
     verification_plan,
 )
 from bcf_governance.tooling.evidence_execution import EvidenceError
+from bcf_governance.tooling.evidence_plan_scope import verification_scope_issues
 from bcf_governance.tooling.ci_github_bundle import canonical_json
 from bcf_governance.tooling.evidence_claims import qualification_equivalence
 from bcf_governance.tooling.evidence_sessions import (
@@ -169,6 +170,17 @@ def _repo(tmp_path: Path, *, scope: str = "normal") -> Path:
         }
     }
     _write(root / "governance/gate-contracts.yml", yaml.safe_dump(registry, sort_keys=False))
+    _write(
+        root / "plans/phase-ledger.yml",
+        yaml.safe_dump({"active_phase": {"workitems": "plans/workitems.yml"}}),
+    )
+    _write(
+        root / "plans/workitems.yml",
+        yaml.safe_dump({"workitems": [{
+            "id": "P01-W01", "status": "DONE", "acceptance": [],
+            "acceptance_evidence": ["test"],
+        }]}),
+    )
     subprocess.run(["git", "init", "-q"], cwd=root, check=True)
     subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
     subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
@@ -226,6 +238,171 @@ def test_active_session_contract_selects_dormant_affected_planner(
     )
     assert session.payload["schema_version"] == "3.0"
     assert session.payload["affected_proof_set"] == plan["affected_proof_set"]
+
+
+def test_bounded_plan_uses_exact_target_claims_and_real_group_dependencies(
+    tmp_path: Path,
+) -> None:
+    root = _repo(tmp_path)
+    registry_path = root / "governance/gate-contracts.yml"
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry["claim_model"]["execution_groups"]["app-tests"]["depends_on"] = [
+        "other-tests"
+    ]
+    registry_path.write_text(yaml.safe_dump(registry, sort_keys=False), encoding="utf-8")
+    subprocess.run(["git", "commit", "-qam", "bind group dependency"], cwd=root, check=True)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+
+    plan = verification_plan(
+        root, subject, [], evaluation_mode="workitem",
+        evaluation_target="P01-W01",
+    )
+
+    assert plan["evaluation_scope"] == {
+        "mode": "workitem", "target": "P01-W01", "required_gates": ["test"]
+    }
+    assert plan["required_claims"] == ["app-valid"]
+    assert {node["id"] for node in plan["execution_dag"]["nodes"]} == {
+        "app-tests", "other-tests"
+    }
+    assert {tuple(edge.values()) for edge in plan["execution_dag"]["edges"]} == {
+        ("other-tests", "app-tests")
+    }
+
+
+def test_bounded_plan_rejects_unmapped_target_evidence_gate(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    path = root / "plans/workitems.yml"
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["workitems"][0]["acceptance_evidence"] = ["not-a-gate"]
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    subprocess.run(["git", "commit", "-qam", "declare unmapped gate"], cwd=root, check=True)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+
+    with pytest.raises(EvidenceError, match="not receipt-producing"):
+        verification_plan(
+            root, subject, [], evaluation_mode="workitem",
+            evaluation_target="P01-W01",
+        )
+
+
+def test_bounded_plan_includes_predecessor_evidence_closure(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    path = root / "plans/workitems.yml"
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["workitems"] = [
+        {
+            "id": "P01-W00", "status": "DONE", "acceptance": [],
+            "acceptance_evidence": ["other-test"],
+        },
+        {
+            "id": "P01-W01", "status": "DONE",
+            "acceptance": ["requires-workitem-closure:P01-W00"],
+            "acceptance_evidence": ["test"],
+        },
+    ]
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    subprocess.run(["git", "commit", "-qam", "bind predecessor proof"], cwd=root, check=True)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+
+    plan = verification_plan(
+        root, subject, [], evaluation_mode="workitem", evaluation_target="P01-W01"
+    )
+
+    assert plan["evaluation_scope"]["required_gates"] == ["other-test", "test"]
+    assert plan["required_claims"] == ["app-valid", "other-valid"]
+    assert {node["id"] for node in plan["execution_dag"]["nodes"]} == {
+        "app-tests", "other-tests"
+    }
+
+
+def test_bounded_plan_scope_rejects_broadening_target_substitution_and_dag_gap(
+    tmp_path: Path,
+) -> None:
+    root = _repo(tmp_path)
+    registry_path = root / "governance/gate-contracts.yml"
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry["claim_model"]["execution_groups"]["app-tests"]["depends_on"] = [
+        "other-tests"
+    ]
+    registry_path.write_text(yaml.safe_dump(registry, sort_keys=False), encoding="utf-8")
+    subprocess.run(["git", "commit", "-qam", "bind dependency"], cwd=root, check=True)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+    plan = verification_plan(
+        root, subject, [], evaluation_mode="workitem", evaluation_target="P01-W01"
+    )
+
+    assert verification_scope_issues(
+        root, plan, evaluation_mode="workitem", evaluation_target="P01-W01"
+    ) == []
+    broadened = json.loads(json.dumps(plan))
+    broadened["required_claims"].append("other-valid")
+    assert verification_scope_issues(
+        root, broadened, evaluation_mode="workitem", evaluation_target="P01-W01"
+    ) == ["verification_scope_required_claims_mismatch"]
+    assert verification_scope_issues(
+        root, plan, evaluation_mode="workitem", evaluation_target="P01-W99"
+    )[0].startswith("verification_scope_unresolvable:")
+    incomplete = json.loads(json.dumps(plan))
+    incomplete["execution_dag"]["nodes"] = [
+        node for node in incomplete["execution_dag"]["nodes"]
+        if node["id"] != "other-tests"
+    ]
+    incomplete["execution_dag"]["edges"] = []
+    assert verification_scope_issues(
+        root, incomplete, evaluation_mode="workitem", evaluation_target="P01-W01"
+    ) == ["verification_scope_execution_dag_invalid"]
+
+
+def test_bounded_plan_rejects_preflight_only_acceptance_gate(tmp_path: Path) -> None:
+    root = _repo(tmp_path)
+    path = root / "plans/workitems.yml"
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["workitems"][0]["acceptance_evidence"] = ["governance-validate"]
+    path.write_text(yaml.safe_dump(payload), encoding="utf-8")
+    subprocess.run(["git", "commit", "-qam", "declare preflight gate"], cwd=root, check=True)
+    subject = {
+        "commit_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=root, text=True
+        ).strip(),
+        "tree_sha": subprocess.check_output(
+            ["git", "rev-parse", "HEAD^{tree}"], cwd=root, text=True
+        ).strip(),
+    }
+
+    with pytest.raises(EvidenceError, match="not receipt-producing"):
+        verification_plan(
+            root, subject, [], evaluation_mode="workitem",
+            evaluation_target="P01-W01",
+        )
 
 
 def _receipt(root: Path, claims: list[str], *, freshness: int | None = None) -> dict:

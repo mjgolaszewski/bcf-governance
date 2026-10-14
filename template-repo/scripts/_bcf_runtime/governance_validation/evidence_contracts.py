@@ -10,6 +10,10 @@ from ..yaml_mutations import (
     replace_yaml_value_bytes,
     typed_mutation_value,
 )
+from ..interpreter_contract_projection import (
+    InterpreterContractProjectionError,
+    project_interpreter_contract,
+)
 
 TEST_COMMAND_POLICIES = {
     "automated_tests",
@@ -48,27 +52,17 @@ def _validate_gate_contract_registry(
         contracts.get("gates"), context="governance/gate-contracts.yml gates"
     )
     interpreter = contracts.get("interpreter_contract")
-    python_consumers = []
-    for target, raw in gates.items():
-        gate = raw if isinstance(raw, dict) else {}
-        invocation = gate.get("invocation")
-        argv = invocation.get("argv") if isinstance(invocation, dict) else None
-        if (
-            isinstance(argv, list)
-            and argv
-            and isinstance(argv[0], str)
-            and Path(argv[0]).name.lower().startswith("python")
-        ):
-            python_consumers.append(str(target))
-    if (
-        str(contracts.get("profile_contract_version", "1.0")) in {"2.0", "3.0"}
-        and python_consumers
-        and not isinstance(interpreter, dict)
-    ):
-        raise GovernanceValidationError(
-            "profile-v2/v3 Python gates require interpreter_contract: "
-            + ", ".join(sorted(python_consumers))
-        )
+    try:
+        if str(contracts.get("profile_contract_version", "1.0")) in {"2.0", "3.0"}:
+            interpreter = project_interpreter_contract(
+                gates, interpreter, default_if_required=False
+            )
+        elif interpreter is not None:
+            interpreter = project_interpreter_contract(
+                gates, interpreter, default_if_required=False
+            )
+    except InterpreterContractProjectionError as exc:
+        raise GovernanceValidationError(str(exc)) from exc
     if isinstance(interpreter, dict):
         source = interpreter.get("dependency_source")
         if source is not None:
@@ -116,16 +110,6 @@ def _validate_gate_contract_registry(
                     "interpreter_contract.requirements_projection"
                 ),
             )
-        if source is None:
-            requirements = _require_mapping(
-                interpreter.get("gate_requirements"),
-                context="governance/gate-contracts.yml interpreter_contract.gate_requirements",
-            )
-            unknown = sorted(set(requirements) - set(gates))
-            if unknown:
-                raise GovernanceValidationError(
-                    "interpreter requirements name unknown gates: " + ", ".join(unknown)
-                )
     mutation_issues: list[str] = []
     for target, raw in gates.items():
         gate = _require_mapping(raw, context=f"gate contract {target}")

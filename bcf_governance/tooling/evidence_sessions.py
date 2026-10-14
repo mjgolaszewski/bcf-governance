@@ -250,6 +250,21 @@ def _manifest_payload(
             raise EvidenceError("verification plan is incomplete")
         if verification_plan["current_subject"] != payload["subject"]:
             raise EvidenceError("verification plan subject differs from session subject")
+        from .evidence_plan_scope import verification_scope_issues
+
+        scope = verification_plan.get("evaluation_scope")
+        if not isinstance(scope, dict):
+            raise EvidenceError("verification plan lacks canonical evaluation scope")
+        issues = verification_scope_issues(
+            repo_root,
+            verification_plan,
+            evaluation_mode=str(scope.get("mode", "")),
+            evaluation_target=(
+                str(scope["target"]) if isinstance(scope.get("target"), str) else None
+            ),
+        )
+        if issues:
+            raise EvidenceError("verification plan scope is invalid: " + "; ".join(issues))
         payload.update(
             {key: verification_plan[key] for key in expected if key != "current_subject"}
         )

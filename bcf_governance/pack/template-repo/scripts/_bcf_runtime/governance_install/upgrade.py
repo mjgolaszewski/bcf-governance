@@ -323,18 +323,12 @@ def _upgrade_interpreter_contract(target_root: Path) -> list[Path]:
     gates = payload.get("gates")
     if not isinstance(gates, dict):
         raise ValueError("upgrade gate registry is invalid")
-    python_consumers = []
-    for gate_id, raw in gates.items():
-        invocation = raw.get("invocation") if isinstance(raw, dict) else None
-        argv = invocation.get("argv") if isinstance(invocation, dict) else None
-        if (
-            isinstance(argv, list)
-            and argv
-            and isinstance(argv[0], str)
-            and Path(argv[0]).name.lower().startswith("python")
-        ):
-            python_consumers.append(str(gate_id))
-    if not python_consumers:
+    from ..interpreter_contract_projection import project_interpreter_contract
+
+    projected = project_interpreter_contract(
+        gates, None, default_if_required=True
+    )
+    if projected is None:
         return []
     dependency_source = target_root / "requirements-governance.txt"
     if dependency_source.is_symlink() or not dependency_source.is_file():
@@ -346,15 +340,14 @@ def _upgrade_interpreter_contract(target_root: Path) -> list[Path]:
     anchors = [
         index
         for index, line in enumerate(lines)
-        if line.startswith("target_profile:")
+        if line.startswith("gates:")
     ]
     if len(anchors) != 1:
         raise ValueError("upgrade interpreter contract insertion point is ambiguous")
-    insertion = (
-        "interpreter_contract:\n"
-        "  dependency_source: requirements-governance.txt\n"
+    insertion = yaml.safe_dump(
+        {"interpreter_contract": projected}, sort_keys=False
     )
-    lines.insert(anchors[0] + 1, insertion)
+    lines.insert(anchors[0], insertion)
     path.write_text("".join(lines), encoding="utf-8")
     from ..interpreter_environment import (
         derive_interpreter_environment,

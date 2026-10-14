@@ -139,6 +139,21 @@ execution_evidence:
     requirements source (including hash-bound recursive inputs), while strict
     validation independently rejects every v2/v3 Python consumer without that
     contract. No operator-authored migration or adopter mutation is required.
+  - >-
+    Racecar's next bounded-workitem attempt exposed a planner scope loss: the
+    authenticated target reached truth but not evidence planning, so all parent
+    profile producers were allocated. The canonical scope owner now maps the
+    exact target acceptance contract to claims, expands only declared producer
+    dependencies, binds the projection into the immutable session plan, and
+    independently re-derives it at truth. Unknown, preflight-only, broadened,
+    substituted, or structurally incomplete scopes reject before fan-out.
+  - >-
+    Clean baseline replay also proved fresh v2/v3 installation and promotion
+    omitted the interpreter contract that strict validation already required.
+    The profile compiler now projects the sole pack-owned requirements default
+    or preserves and validates an explicit project contract before mutation;
+    legacy upgrade continues to require complete authenticated dependency and
+    runtime inputs rather than inventing custody.
 closeout_requirements:
   claims:
     required_suites_green:

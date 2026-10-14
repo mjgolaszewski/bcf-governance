@@ -723,6 +723,9 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
     )
 
     assert "release-smoke" in contract["claim_model"]["claims"]
+    assert contract["interpreter_contract"] == {
+        "dependency_source": "requirements-governance.txt"
+    }
     existing = tmp_path / "existing-contract"
     shutil.copytree(REPO_ROOT / "template-repo", existing)
     apply_profile_contract(existing, contract, write_workflow=False)
@@ -757,6 +760,51 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
             config,
             asset_root=repo,
             contract_version="3.0",
+        )
+
+
+def test_fresh_v3_profile_preserves_explicit_interpreter_contract(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "explicit-interpreter-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    (repo / "project-requirements.txt").write_text("pytest==9.1.1\n", encoding="utf-8")
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    payload["interpreter_contract"] = {
+        "dependency_source": "project-requirements.txt"
+    }
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    contract = load_contract(
+        REPO_ROOT / "template-repo", "standard", config, asset_root=repo,
+        contract_version="3.0", fresh_install=True,
+    )
+
+    assert contract["interpreter_contract"] == {
+        "dependency_source": "project-requirements.txt"
+    }
+
+
+def test_fresh_v3_profile_rejects_ambiguous_interpreter_contract(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "ambiguous-interpreter-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    payload["interpreter_contract"] = {
+        "dependency_source": "requirements-governance.txt",
+        "project_dependencies": True,
+    }
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(ProfileContractError, match="ambiguous fields"):
+        load_contract(
+            REPO_ROOT / "template-repo", "standard", config, asset_root=repo,
+            contract_version="3.0", fresh_install=True,
         )
 
 
@@ -1328,6 +1376,9 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     assert contracts["gates"]["architecture-test"]["evidence"]["test_contract"][
         "selectors"
     ] == ["tests/test_architecture.py"]
+    assert contracts["interpreter_contract"] == {
+        "dependency_source": "requirements-governance.txt"
+    }
     evidence_policy = yaml.safe_load(
         (repo / "governance/evidence-policy.yml").read_text(encoding="utf-8")
     )
@@ -1569,9 +1620,15 @@ def test_full_profile_install_evidence_truth_flow(
     assert len(governed_gates) == len(set(governed_gates))
     assert set(governed_gates) == set(contracts["gates"])
     subject = {"commit_sha": git(repo, "rev-parse", "HEAD"), "tree_sha": git(repo, "rev-parse", "HEAD^{tree}")}
-    plan = verification_plan(repo, subject, [])
+    plan = verification_plan(
+        repo,
+        subject,
+        [],
+        evaluation_mode="workitem",
+        evaluation_target="P01-P0-01",
+    )
     planned_targets = [str(node["producer"]) for node in plan["execution_dag"]["nodes"]]
-    assert "release-smoke" in planned_targets
+    assert planned_targets == ["contract-test", "test", "typecheck"]
     session = allocate_session(
         repo,
         evidence,
@@ -1608,8 +1665,11 @@ def test_full_profile_install_evidence_truth_flow(
         evaluation_target="P01-P0-01",
     )
     assert report["status"] == "pass", report
-    assert report["effective_state"] == "closed"
-    assert report["release_readiness"]["effective_state"] == "closed"
+    assert report["effective_state"] == "active"
+    assert report["certified_proposition"]["conclusion"] == "success"
+    workitems = report["claims"]["workitems_closed"]["repository_observation"]
+    assert workitems["closed_ids"] == ["P01-P0-01"]
+    assert report["release_readiness"]["effective_state"] == "completed"
     assert report["certified_proposition"]["predicate"] == "workitem_closed"
     if profile == "regulated":
         assert (repo / "governance/MODEL_RISK_AND_PROVENANCE.md").is_file()

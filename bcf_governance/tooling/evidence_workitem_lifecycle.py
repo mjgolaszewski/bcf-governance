@@ -80,10 +80,8 @@ def validate_workitem_dependencies(entries: Iterable[dict[str, Any]]) -> list[st
     return ids
 
 
-def validate_bounded_target_successor(
-    repo_root: Path, target_id: str
-) -> None:
-    """Reject a bounded target that would strand later authored workitems."""
+def active_workitem_entries(repo_root: Path) -> tuple[str, list[dict[str, Any]]]:
+    """Load the one active workitem ledger through the canonical lifecycle owner."""
 
     ledger = _authored_yaml(repo_root / "plans/phase-ledger.yml")
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
@@ -94,7 +92,17 @@ def validate_bounded_target_successor(
     entries = payload.get("workitems") if isinstance(payload, dict) else None
     if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
         raise WorkitemContractError("active workitem entries are invalid")
-    ids = validate_workitem_dependencies(entries)
+    validate_workitem_dependencies(entries)
+    return workitems_path, entries
+
+
+def validate_bounded_target_successor(
+    repo_root: Path, target_id: str
+) -> None:
+    """Reject a bounded target that would strand later authored workitems."""
+
+    _, entries = active_workitem_entries(repo_root)
+    ids = [str(item["id"]) for item in entries]
     if target_id not in ids:
         raise WorkitemContractError(f"bounded workitem target {target_id} is unknown")
     unfinished = [
@@ -117,21 +125,44 @@ def validate_bounded_target_successor(
         )
 
 
+def bounded_target_acceptance_evidence(repo_root: Path, target_id: str) -> list[str]:
+    """Return exact gates for a target and its declared predecessor closure."""
+
+    _, entries = active_workitem_entries(repo_root)
+    by_id = {str(item["id"]): item for item in entries}
+    target = by_id.get(target_id)
+    if target is None:
+        raise WorkitemContractError(f"bounded workitem target {target_id} is unknown")
+    required: set[str] = set()
+    pending = [target_id]
+    visited: set[str] = set()
+    while pending:
+        item_id = pending.pop(0)
+        if item_id in visited:
+            continue
+        visited.add(item_id)
+        entry = by_id[item_id]
+        raw = entry.get("acceptance_evidence")
+        if (
+            not isinstance(raw, list)
+            or not raw
+            or any(not isinstance(value, str) or not value for value in raw)
+            or len(raw) != len(set(raw))
+        ):
+            raise WorkitemContractError(
+                f"bounded workitem target {item_id} acceptance evidence is invalid"
+            )
+        required.update(raw)
+        pending.extend(workitem_predecessors(entry))
+    return sorted(required)
+
+
 def validate_bounded_target_authored_ready(
     repo_root: Path, target_id: str
 ) -> None:
     """Reject a prospectively impossible bounded target before evidence allocation."""
 
-    ledger = _authored_yaml(repo_root / "plans/phase-ledger.yml")
-    active = ledger.get("active_phase") if isinstance(ledger, dict) else None
-    workitems_path = active.get("workitems") if isinstance(active, dict) else None
-    if not isinstance(workitems_path, str):
-        raise WorkitemContractError("active workitem ledger is missing")
-    payload = _authored_yaml(repo_root / workitems_path)
-    entries = payload.get("workitems") if isinstance(payload, dict) else None
-    if not isinstance(entries, list) or not all(isinstance(item, dict) for item in entries):
-        raise WorkitemContractError("active workitem entries are invalid")
-    validate_workitem_dependencies(entries)
+    _, entries = active_workitem_entries(repo_root)
     target = next((item for item in entries if item.get("id") == target_id), None)
     if target is None:
         raise WorkitemContractError(f"bounded workitem target {target_id} is unknown")

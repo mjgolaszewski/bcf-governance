@@ -582,6 +582,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[str] = []
+    planning: list[dict[str, object]] = []
     authority = {
         "controller_commit_sha": "c" * 40,
         "controller_bundle_sha256": "d" * 64,
@@ -631,8 +632,17 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
     monkeypatch.setattr(
         preflight,
+        "validate_bounded_target_successor",
+        lambda *_: calls.append("target-valid"),
+    )
+    monkeypatch.setattr(
+        preflight,
         "build_verification_plan",
-        lambda *_: {"execution_dag": {"nodes": [{"producer": "test"}]}, "required_claims": ["test"]},
+        lambda *_, **kwargs: (
+            planning.append(kwargs)
+            or {"execution_dag": {"nodes": [{"producer": "test"}]},
+                "required_claims": ["test"]}
+        ),
     )
 
     class Session:
@@ -650,6 +660,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         python_executable=sys.executable,
         artifact_root=tmp_path / "evidence",
         transported_authority=authority,
+        evaluation_mode="workitem",
+        evaluation_target="P01-W01",
         trace=calls.append,
     )
 
@@ -658,6 +670,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "authored-phase-state",
         "ci-state-matrix",
         "structural-limits",
+        "bounded-target",
+        "target-valid",
         "syntax",
         "exposure",
         "interpreter",
@@ -682,6 +696,10 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["workflow_authority"] == 12
     assert report["self_controller"] == 6
     assert observed_authority == [authority]
+    assert planning == [{
+        "evaluation_mode": "workitem",
+        "evaluation_target": "P01-W01",
+    }]
 
 
 def test_context_budget_failure_precedes_evidence_session_allocation(

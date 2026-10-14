@@ -1165,6 +1165,14 @@ def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -
     (target / "governance/gate-contracts.yml").write_text(
         yaml.safe_dump(contract, sort_keys=False), encoding="utf-8"
     )
+    (target / "requirements-governance.txt").write_text(
+        "pytest==9.0.3\n", encoding="utf-8"
+    )
+    (target / "governance/ci-graph.yml").write_text(
+        "resource_classes:\n  candidate-python: {python_version: '3.12'}\n"
+        "workflows: []\n",
+        encoding="utf-8",
+    )
     (target / "governance-profile.yml").write_text(
         yaml.safe_dump(
             {
