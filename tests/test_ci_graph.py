@@ -204,6 +204,21 @@ def test_artifact_transport_without_a_structural_edge_rejects_before_execution()
         compile_edge_contracts(graph)
 
 
+@pytest.mark.parametrize("mutation", ["missing", "late"])
+def test_component_order_contract_rejects_incomplete_toolchain_edges(
+    mutation: str,
+) -> None:
+    graph = copy.deepcopy(validate_ci_graph(REPO_ROOT).graph)
+    workflow = next(item for item in graph["workflows"] if item["id"] == "release-verifier")
+    qualify = next(item for item in workflow["jobs"] if item["id"] == "qualify")
+    components = qualify["executor"]["components"]
+    components.remove("setup-test-node")
+    if mutation == "late":
+        components.insert(components.index("qualify-release") + 1, "setup-test-node")
+    with pytest.raises(CIGraphError, match="without setup-test-node|violates component ordering"):
+        compile_edge_contracts(graph)
+
+
 @pytest.mark.parametrize(
     ("phase_status", "statuses", "expected"),
     [

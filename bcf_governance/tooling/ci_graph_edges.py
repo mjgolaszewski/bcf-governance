@@ -105,9 +105,46 @@ def _reachable_contract(
     )
 
 
+def _validate_component_order_contracts(graph: dict[str, Any]) -> None:
+    components = graph["step_components"]
+    for owner_id, component in components.items():
+        targets = component.get("precedes_exactly_one_of")
+        if targets is None:
+            continue
+        if (
+            not isinstance(targets, list)
+            or not targets
+            or len(set(targets)) != len(targets)
+            or set(targets) - set(components)
+        ):
+            raise CIGraphError(
+                f"CI graph component {owner_id} has an invalid ordering contract"
+            )
+        occurrences = 0
+        for workflow in graph["workflows"]:
+            for job in workflow["jobs"]:
+                sequence = job["executor"].get("components", [])
+                present = [target for target in targets if target in sequence]
+                if owner_id in sequence:
+                    if len(present) != 1 or sequence.index(owner_id) >= sequence.index(present[0]):
+                        raise CIGraphError(
+                            f"CI graph job {job['id']} violates component ordering for {owner_id}"
+                        )
+                    occurrences += 1
+                elif present:
+                    raise CIGraphError(
+                        f"CI graph job {job['id']} executes {present[0]} without {owner_id}"
+                    )
+        if occurrences == 0:
+            raise CIGraphError(
+                f"CI graph component {owner_id} ordering contract is unused"
+            )
+
+
 def compile_edge_contracts(graph: dict[str, Any]) -> tuple[EdgeContract, ...]:
     """Close every ordered producer/consumer pair or explain its exclusion."""
 
+    _validate_component_order_contracts(graph)
     workflows = graph["workflows"]
     workflow_run_sources = {
         workflow["id"]: _workflow_run_sources(workflows, workflow)
