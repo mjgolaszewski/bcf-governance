@@ -628,7 +628,6 @@ def materialize_interpreter_environment(
                     str(base_python.resolve(strict=True)),
                     "-m",
                     "venv",
-                    "--without-pip",
                     str(temporary / "venv"),
                 ],
                 cwd=root,
@@ -644,11 +643,9 @@ def materialize_interpreter_environment(
                 )
             candidate = temporary / "venv/bin/python"
             install_command = [
-                str(base_python.resolve(strict=True)),
+                str(candidate),
                 "-m",
                 "pip",
-                "--python",
-                str(candidate),
                 "install",
                 "--disable-pip-version-check",
                 *plan.pip_arguments(),

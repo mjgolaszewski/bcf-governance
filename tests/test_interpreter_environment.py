@@ -338,7 +338,7 @@ def test_legacy_environment_materialization_installs_only_derived_requirements(
     python = materialize_interpreter_environment(tmp_path, Path(sys.executable))
 
     assert python.is_file()
-    assert commands[1][5:] == [
+    assert commands[1][3:] == [
         "install",
         "--disable-pip-version-check",
         "PyYAML>=6,<7",
@@ -546,10 +546,9 @@ def test_missing_project_environment_is_materialized_once_from_exact_plan(
     assert first == second
     assert first.is_file()
     assert len(commands) == 4
-    assert commands[0][1:4] == ["-m", "venv", "--without-pip"]
-    assert commands[1][1:4] == ["-m", "pip", "--python"]
-    assert Path(commands[1][4]).parts[-3:] == ("venv", "bin", "python")
-    assert commands[1][5] == "install"
+    assert commands[0][1:3] == ["-m", "venv"]
+    assert commands[1][1:4] == ["-m", "pip", "install"]
+    assert Path(commands[1][0]).parts[-3:] == ("venv", "bin", "python")
     assert commands[2][1:] == ["-m", "pip", "freeze", "--all"]
     assert commands[3][1:] == ["-m", "pip", "freeze", "--all"]
     assert first.is_relative_to(tmp_path / ".artifacts/runtime/execution-state")
