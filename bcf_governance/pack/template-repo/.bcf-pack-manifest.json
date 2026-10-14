@@ -1415,7 +1415,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "a00f7494797dfa01337acbfbaa67fad8416711bc3bc7f7fbfb7d6c8f1b22fbd2"
+      "sha256": "da8f38be882f4928bf6129d371ccef2b70266b302e48fe953b2922112baf6021"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",
