@@ -12,6 +12,7 @@ import yaml
 
 from bcf_governance.tooling.ci_adopt_github import render_github_adoption
 from bcf_governance.tooling.evidence_shards import planned_gate_targets
+from bcf_governance.tooling.local_cli_receipt import project_local_cli_receipt
 from bcf_governance.tooling.profile_contract_v2 import (
     ProfileV2Error,
     resolve_install_contract_version,
@@ -335,6 +336,7 @@ def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     fake_bcf.chmod(0o755)
+    project_local_cli_receipt(tmp_path, fake_bcf)
     marker = tmp_path / "evidence-started"
     environment = dict(os.environ)
     environment["BCF_TEST_MARKER"] = str(marker)
