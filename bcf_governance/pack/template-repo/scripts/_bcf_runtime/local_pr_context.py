@@ -16,6 +16,7 @@ from typing import Callable, Iterator
 from .governance_install.runtime_custody import (
     RuntimeCustodyError,
     RuntimeCustodyState,
+    candidate_qualification_matches,
     inspect_runtime_custody,
 )
 from .local_execution_admission import project_python_environment
@@ -85,17 +86,15 @@ def derive_local_validation_lane(
         raise LocalPRError(f"local validation custody is invalid: {exc}") from exc
     if snapshot.state is not RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT:
         return LocalValidationLane.PROVIDER_PR
-    adopter = snapshot.provenance_claim.get("adopter")
-    if not isinstance(adopter, dict):
-        raise LocalPRError("candidate qualification adopter identity is absent")
     base_tree = _checked(
         _run if runner is None else runner,
         ["git", "rev-parse", f"{context.base_sha}^{{tree}}"],
         cwd=repo_root.resolve(),
     )
     if (
-        adopter.get("commit_sha") == context.base_sha
-        and adopter.get("tree_sha") == base_tree
+        candidate_qualification_matches(
+            snapshot, commit_sha=context.base_sha, tree_sha=base_tree
+        )
     ):
         return LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
     return LocalValidationLane.PROVIDER_PR
