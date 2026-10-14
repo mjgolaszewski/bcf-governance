@@ -1140,7 +1140,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
-      "sha256": "3f9e87e1fac28fb80229154bea8571e5fd56c1a39cb6462d6d28c9aec196bf33"
+      "sha256": "c325d9ab10f77aaae7c694a60a3849230afd57fa9f14aedfb9717840be5ffc83"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
@@ -1227,7 +1227,7 @@
     },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
-      "sha256": "84c5fc7a8b342fc2a42ecb3978d1501716210abf321224a38f9971e4dfa144a2"
+      "sha256": "bad0160dd75b4a45ef4fef74ad797d1db587b2a0a124079002e5c137b79ddaf7"
     },
     "scripts/_bcf_runtime/nested_cli_runtime.py": {
       "operation": "copy",

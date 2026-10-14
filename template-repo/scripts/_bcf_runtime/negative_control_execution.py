@@ -17,6 +17,35 @@ class NegativeControlCommandError(ValueError):
     """Raised when a declared test-node oracle cannot be executed exactly."""
 
 
+def test_node_oracle_lane(test_contract: object) -> str:
+    """Classify the closed modern or legacy execution lane for a test oracle."""
+
+    if not isinstance(test_contract, dict):
+        raise NegativeControlCommandError("test-node oracle has no test contract")
+    selectors = test_contract.get("selectors")
+    manifest = test_contract.get("expected_node_manifest")
+    junit = test_contract.get("junit_xml")
+    has_modern_field = selectors is not None or manifest is not None
+    if has_modern_field:
+        if (
+            isinstance(selectors, list)
+            and bool(selectors)
+            and isinstance(manifest, str)
+            and bool(manifest)
+            and isinstance(junit, str)
+            and bool(junit)
+        ):
+            return "manifest_node"
+        raise NegativeControlCommandError(
+            "test-node oracle has an incomplete selector/manifest contract"
+        )
+    if isinstance(junit, str) and junit:
+        return "legacy_full_gate"
+    raise NegativeControlCommandError(
+        "test-node oracle has neither a modern manifest nor a legacy JUnit contract"
+    )
+
+
 def selected_oracle_manifest_index(
     repo_root: Path, controls: list[object]
 ) -> OracleManifestIndex | None:
@@ -113,16 +142,14 @@ def resolve_negative_control_oracle(
             str(owning_contract["target"]), owning_contract, None
         )
     try:
-        index = manifest_index or oracle_manifest_index(repo_root)
         owning_test_contract = owning_contract.get("test_contract")
-        if (
-            not index.manifests
-            and isinstance(owning_test_contract, dict)
-            and isinstance(owning_test_contract.get("junit_xml"), str)
-        ):
-            return NegativeControlOracleExecution(
-                str(owning_contract["target"]), owning_contract, None
-            )
+        if isinstance(owning_test_contract, dict):
+            lane = test_node_oracle_lane(owning_test_contract)
+            if lane == "legacy_full_gate":
+                return NegativeControlOracleExecution(
+                    str(owning_contract["target"]), owning_contract, None
+                )
+        index = manifest_index or oracle_manifest_index(repo_root)
         gate_id = index.resolve(
             oracle.get("node_ids"),
             preferred_gate=str(owning_contract["target"]),
