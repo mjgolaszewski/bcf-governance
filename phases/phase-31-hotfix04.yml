@@ -117,6 +117,13 @@ execution_evidence:
     the corresponding versioned executable before binding its bytes into the
     environment identity. Ranges, missing runtimes, mismatches, downloads, and
     agent-selected paths fail before materialization.
+  - >-
+    Maintained TradeFlow qualification exposed the adjacent executable edge:
+    after deriving the project interpreter, a BCF-backed gate still invoked a
+    bare ambient `bcf`. The shared profile invocation projector now maps an
+    exact leading BCF token to the same admitted CLI identity for v1, v2 and v3;
+    non-BCF commands and gate arguments remain unchanged. An unprepared adopter
+    shell therefore requires neither PATH mutation nor another operator step.
 closeout_requirements:
   claims:
     required_suites_green:

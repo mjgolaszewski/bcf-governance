@@ -11,6 +11,20 @@ from .ci_github_actions import action_pin
 from .repository_comparison_context import direct_comparison_environment
 
 
+def render_make_argv(command: list[str]) -> str:
+    """Project one gate argv through its canonical executable identities."""
+
+    if command[0] in {"python", "python3"}:
+        return '"$$python"' + (
+            " " + shlex.join(command[1:]) if len(command) > 1 else ""
+        )
+    if command[0] == "bcf":
+        return '"$(BCF)"' + (
+            " " + shlex.join(command[1:]) if len(command) > 1 else ""
+        )
+    return shlex.join(command)
+
+
 def selective_release_check_lines() -> list[str]:
     """Render the sole local selective-plan execution boundary."""
 
@@ -46,11 +60,7 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
     ]
     for target, gate in gates.items():
         command = list(gate["invocation"]["argv"])
-        argv = (
-            '"$$python"' + (" " + shlex.join(command[1:]) if len(command) > 1 else "")
-            if command[0] in {"python", "python3"}
-            else shlex.join(command)
-        )
+        argv = render_make_argv(command)
         env = " ".join(
             f"{key}={shlex.quote(value)}"
             for key, value in gate["invocation"]["env"].items()

@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 3f606301e60b9d7507258ae8131fdf11ef3772ad1a3c8724cb8b3715aae25ae2
-  after_sha256: daa459b67b6432a7881c3c4882818cc5efeaa9ebf1bc03309b7aaac295373862
+  after_sha256: 831ea4417bae386d54877582fd5d697e3ca17caf7590254d7c5c089bf00a6066
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: 466ab14092d833a7039376e9564be2a66adc55bf4f6c0884942af6a42420cf5e
-  after_sha256: 3a857ffd1d9ca770ec548f322e61495e0c9932f0eccf7f29b76705874f53c33c
+  after_sha256: 9e641b05f1bcf1833b4da046916d58f2ef40c9bbb856e48548d84566030e5934
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

@@ -1267,11 +1267,11 @@
     },
     "scripts/_bcf_runtime/profile_surface_generation.py": {
       "operation": "copy",
-      "sha256": "8b3a81b1e01b71d882b154dba04a731198bbc91826f5ebb8a04f0c982b336297"
+      "sha256": "333758baf417858a40d39d29890dc2a2c3632ba2f78a6b5a3e67e016a1235ac3"
     },
     "scripts/_bcf_runtime/profile_v2_surfaces.py": {
       "operation": "copy",
-      "sha256": "2e9c08ba1a42cb6fb07ba16abb09e5df7236cb5171f705cf33ddd936d7b812e6"
+      "sha256": "9bd8b9b086ac8fcde358182b3ddf0ce6fd187ebe7dd586681e0090e5e1e90b76"
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",

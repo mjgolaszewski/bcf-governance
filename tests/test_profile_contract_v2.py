@@ -274,6 +274,33 @@ def test_v1_generated_gate_derives_its_project_interpreter() -> None:
     assert "@cd . && python3 scripts/validate_governance_yaml.py" not in makefile
 
 
+@pytest.mark.parametrize("profile_version", ["1.0", "2.0", "3.0"])
+def test_generated_bcf_gate_uses_the_admitted_cli_identity(
+    profile_version: str,
+) -> None:
+    contract = {
+        "profile_contract_version": profile_version,
+        "gates": {
+            "governance-validate": {
+                "invocation": {
+                    "argv": ["bcf", "validate", "--repo-root", "."],
+                    "cwd": ".",
+                    "env": {},
+                }
+            }
+        },
+    }
+
+    makefile = (
+        render_makefile(contract)
+        if profile_version == "1.0"
+        else render_v2_makefile(contract)
+    )
+
+    assert '"$(BCF)" validate --repo-root .' in makefile
+    assert "cd . && bcf validate" not in makefile
+
+
 def test_v2_release_check_stops_at_a_failed_preflight(tmp_path: Path) -> None:
     contract = {
         "profile_contract_version": "2.0",

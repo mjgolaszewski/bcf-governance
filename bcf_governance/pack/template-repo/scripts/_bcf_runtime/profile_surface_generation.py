@@ -34,12 +34,10 @@ def render_makefile(contract: dict[str, Any]) -> str:
         "",
     ]
     for target, gate in gates.items():
+        from .profile_v2_surfaces import render_make_argv
+
         command = list(gate["invocation"]["argv"])
-        argv = (
-            '"$$python"' + (" " + shlex.join(command[1:]) if len(command) > 1 else "")
-            if command[0] in {"python", "python3"}
-            else shlex.join(command)
-        )
+        argv = render_make_argv(command)
         env = " ".join(
             f"{key}={shlex.quote(value)}"
             for key, value in gate["invocation"]["env"].items()

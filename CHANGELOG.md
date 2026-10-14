@@ -39,7 +39,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   `python3`; when controller and adopter Python minors differ, the environment
   owner selects only the exact versioned runtime named by the authenticated
   graph. Legacy-profile direct gates and mutation oracles retain their exact
-  fail-closed propositions without an operator-authored environment step.
+  fail-closed propositions without an operator-authored environment step, and
+  BCF-backed gates reuse the same admitted CLI instead of an ambient `PATH`.
 
 ## [2.3.1] - 2026-10-12
 
