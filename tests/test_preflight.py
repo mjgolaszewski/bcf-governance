@@ -239,6 +239,52 @@ def test_syntax_preflight_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
         preflight._syntax_checks(repo)
 
 
+def test_syntax_preflight_accepts_bounded_docker_compose_directives(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "docker-compose.bespoke.yml",
+        "services:\n  app:\n    ports: !override\n      - '8080:80'\n"
+        "    environment: !reset {}\n",
+    )
+
+    assert preflight._syntax_checks(repo)["yaml"] == 1
+
+
+def test_syntax_preflight_rejects_unowned_yaml_tags(tmp_path: Path) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "docker-compose.bespoke.yml",
+        "services:\n  app:\n    ports: !execute ['8080:80']\n",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="syntax validation failed"):
+        preflight._syntax_checks(repo)
+
+
+def test_syntax_preflight_rejects_compose_directives_outside_compose(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "policy.yml", "ports: !override []\n")
+
+    with pytest.raises(preflight.PreflightError, match="syntax validation failed"):
+        preflight._syntax_checks(repo)
+
+
+def test_syntax_preflight_rejects_duplicate_keys_inside_compose_directive(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "compose.override.yml",
+        "services: !override\n  app: first\n  app: second\n",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="duplicate YAML key"):
+        preflight._syntax_checks(repo)
+
+
 def test_source_preflight_wrapper_runs_without_an_installed_package(
     tmp_path: Path,
 ) -> None:

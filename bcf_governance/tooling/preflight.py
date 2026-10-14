@@ -86,6 +86,10 @@ class _UniqueKeyLoader(yaml.SafeLoader):
     pass
 
 
+class _ComposeUniqueKeyLoader(_UniqueKeyLoader):
+    pass
+
+
 def _construct_unique_mapping(
     loader: _UniqueKeyLoader, node: yaml.MappingNode, deep: bool = False
 ) -> dict[Any, Any]:
@@ -101,6 +105,37 @@ def _construct_unique_mapping(
 _UniqueKeyLoader.add_constructor(
     yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_unique_mapping
 )
+
+
+def _construct_compose_directive(
+    loader: _ComposeUniqueKeyLoader, node: yaml.Node
+) -> Any:
+    """Decode only Compose's non-executable merge directives."""
+
+    if isinstance(node, yaml.ScalarNode):
+        return loader.construct_scalar(node)
+    if isinstance(node, yaml.SequenceNode):
+        return loader.construct_sequence(node, deep=True)
+    if isinstance(node, yaml.MappingNode):
+        return _construct_unique_mapping(loader, node, deep=True)
+    raise yaml.constructor.ConstructorError(
+        None, None, "unsupported Docker Compose directive node", node.start_mark
+    )
+
+
+for _compose_tag in ("!reset", "!override"):
+    _ComposeUniqueKeyLoader.add_constructor(
+        _compose_tag, _construct_compose_directive
+    )
+
+
+def _yaml_syntax_loader(relative: str) -> type[_UniqueKeyLoader]:
+    name = Path(relative).name
+    if name in {"compose.yml", "compose.yaml", "docker-compose.yml", "docker-compose.yaml"}:
+        return _ComposeUniqueKeyLoader
+    if name.startswith(("compose.", "docker-compose.")):
+        return _ComposeUniqueKeyLoader
+    return _UniqueKeyLoader
 
 
 def _git_state(repo_root: Path) -> dict[str, Any]:
@@ -119,7 +154,10 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
                 ast.parse(path.read_text(encoding="utf-8"), filename=relative)
                 counts["python"] += 1
             elif path.suffix in {".yml", ".yaml"}:
-                yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
+                yaml.load(
+                    path.read_text(encoding="utf-8"),
+                    Loader=_yaml_syntax_loader(relative),
+                )
                 counts["yaml"] += 1
             elif path.suffix == ".json":
                 json.loads(path.read_text(encoding="utf-8"))
