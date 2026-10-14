@@ -13,6 +13,8 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_errors import CIGraphError
 from bcf_governance.tooling.ci_graph_render import apply_ci_graph
 from bcf_governance.tooling.governance_install import (
     transaction,
@@ -878,11 +880,28 @@ def test_upgrade_plans_generated_paths_from_migrated_provider_permissions(
     evidence["permissions"].pop("actions")
     graph_path.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
     legacy_bytes = graph_path.read_bytes()
+    schema_path = target / "schemas/ci-graph.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    for branch in schema["$defs"]["stepComponent"]["oneOf"]:
+        branch.get("properties", {}).pop("required_permissions", None)
+    schema_path.write_text(json.dumps(schema), encoding="utf-8")
+    legacy_schema_bytes = schema_path.read_bytes()
 
-    managed = transaction_paths._upgrade_managed_generated_paths(target)
+    upgrade.upgrade_graph_contracts(target)
+    with pytest.raises(CIGraphError, match="schema violation"):
+        validate_ci_graph(target)
+    graph_path.write_bytes(legacy_bytes)
+
+    managed = transaction_paths._upgrade_managed_generated_paths(
+        target, REPO_ROOT / "template-repo"
+    )
 
     assert graph_path.read_bytes() == legacy_bytes
+    assert schema_path.read_bytes() == legacy_schema_bytes
     assert ".github/workflows/governance.yml" in managed
+    transaction_paths._project_successor_schemas(
+        REPO_ROOT / "template-repo", target
+    )
     upgrade.upgrade_graph_contracts(target)
     apply_ci_graph(target)
     migrated = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
