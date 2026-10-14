@@ -16,6 +16,10 @@ from ..profile_surface_generation import reconcile_makefile
 from ..profile_yaml import render_governance_profile
 from ..runtime_capacity import EXECUTION_STATE_POLICY
 from ..repository_comparison_context import comparison_base_input_contract
+from ..test_duration_observations import (
+    OBSERVATIONS_PATH,
+    reconcile_test_duration_observations,
+)
 
 
 def retire_self_authority_pack_surfaces(
@@ -680,7 +684,11 @@ def _upgrade_state_files(
         )
     )
     _upgrade_makefile_fragment(target_root)
-    created.extend(_upgrade_interpreter_contract(target_root))
+    interpreter_paths = _upgrade_interpreter_contract(target_root)
+    created.extend(interpreter_paths)
+    if interpreter_paths and (target_root / OBSERVATIONS_PATH).is_file():
+        reconcile_test_duration_observations(target_root, apply=True)
+        created.append(target_root / OBSERVATIONS_PATH)
     created.extend(_upgrade_runtime_contract(target_root))
     created.extend(upgrade_graph_contracts(target_root))
     return created
