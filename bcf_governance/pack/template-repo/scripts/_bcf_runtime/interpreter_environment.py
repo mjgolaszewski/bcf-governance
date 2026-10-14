@@ -373,7 +373,7 @@ def derive_interpreter_environment(
             raise InterpreterEnvironmentError(str(exc)) from exc
         return InterpreterEnvironmentPlan(
             requirements=source.requirements,
-            requires_python=None,
+            requires_python=source.requires_python,
             projection_path=None,
             source_kind="governed_requirements_source",
             source_path=source.path,

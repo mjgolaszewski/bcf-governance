@@ -1199,11 +1199,11 @@
     },
     "scripts/_bcf_runtime/interpreter_dependency_sources.py": {
       "operation": "copy",
-      "sha256": "0853cf410f2a3306650f77d856e25a7eb9b725eb9a987b6be7fbb2590bdf3d35"
+      "sha256": "2dfeea0182d8449f97cf2ea3d4afd789a2947e3bde4300f9b1398d5bf54d3214"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "cb59889ad3a1726e63c6eafd5aa435ab09c9b8cdf6db27a14d65c923c76cb170"
+      "sha256": "5065bec66d99c6bb999859c4a35813e5b70dfb8f7f161dd2196b2881ab6460c1"
     },
     "scripts/_bcf_runtime/local_cli_receipt.py": {
       "operation": "copy",

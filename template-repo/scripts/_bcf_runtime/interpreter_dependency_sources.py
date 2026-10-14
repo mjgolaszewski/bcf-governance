@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 
 from packaging.requirements import InvalidRequirement, Requirement
+import yaml  # type: ignore[import-untyped]
 
 
 class InterpreterDependencySourceError(ValueError):
@@ -17,6 +18,7 @@ class InterpreterDependencySourceError(ValueError):
 @dataclass(frozen=True)
 class GovernedDependencySource:
     requirements: tuple[str, ...]
+    requires_python: str
     path: Path
     sha256: str
 
@@ -136,8 +138,33 @@ def compile_governed_dependency_source(
             "project environment installer requirement must equal "
             + installer_requirement
         )
+    graph_path = repo_root.resolve() / "governance/ci-graph.yml"
+    if graph_path.is_symlink() or not graph_path.is_file():
+        raise InterpreterDependencySourceError(
+            "interpreter graph runtime contract is unavailable"
+        )
+    try:
+        graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+        resources = graph["resource_classes"]
+        python_minors = {
+            str(resource["python_version"])
+            for resource in resources.values()
+            if isinstance(resource, dict) and "python_version" in resource
+        }
+    except (OSError, UnicodeError, yaml.YAMLError, KeyError, TypeError) as exc:
+        raise InterpreterDependencySourceError(
+            "interpreter graph runtime contract is unavailable"
+        ) from exc
+    if len(python_minors) != 1 or any(
+        re.fullmatch(r"3\.[0-9]+", value) is None for value in python_minors
+    ):
+        raise InterpreterDependencySourceError(
+            "interpreter graph must declare one Python minor"
+        )
+    python_minor = next(iter(python_minors))
     return GovernedDependencySource(
         requirements=tuple(requirements),
+        requires_python=f"=={python_minor}.*",
         path=source,
         sha256=digest.hexdigest(),
     )

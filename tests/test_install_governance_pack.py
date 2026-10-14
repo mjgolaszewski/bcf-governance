@@ -698,6 +698,10 @@ def test_upgrade_projects_missing_v3_interpreter_contract_before_strict_success(
     (target / "requirements-governance.txt").write_text(
         "PyYAML>=6,<7\npytest==9.1.1\n", encoding="utf-8"
     )
+    (target / "governance/ci-graph.yml").write_text(
+        "resource_classes:\n  candidate-python: {python_version: '3.12'}\n",
+        encoding="utf-8",
+    )
 
     changed = upgrade._upgrade_interpreter_contract(target)
 

@@ -128,6 +128,10 @@ def test_governed_dependency_source_closes_recursive_requirements(
     (tmp_path / "runtime/requirements.txt").write_text(
         "httpx==0.28.1\n", encoding="utf-8"
     )
+    (tmp_path / "governance/ci-graph.yml").write_text(
+        "resource_classes:\n  candidate-python: {python_version: '3.12'}\n",
+        encoding="utf-8",
+    )
 
     plan = derive_interpreter_environment(tmp_path)
 
