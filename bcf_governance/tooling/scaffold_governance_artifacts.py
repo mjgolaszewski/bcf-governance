@@ -33,6 +33,7 @@ from .semantic_authority_contracts import (
     capability_states,
 )
 from .ci_graph_post_merge import reconcile_post_merge_scope
+from .ci_graph_provider_permissions import reconcile_provider_permission_edges
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_values import declared_graph_value_source_paths
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
@@ -309,8 +310,6 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         validate_authored_phase_state,
     )
     from .governance_validation.ci_state_matrix import validate_ci_state_matrix
-    from .ci_graph_provider_permissions import reconcile_provider_permission_edges
-
     phase_ledger_present = (repo_root / "plans/phase-ledger.yml").is_file()
     active_paths = active_phase_paths(repo_root) if phase_ledger_present else ()
     hotfix_paths = validate_authored_hotfix_state(repo_root) if phase_ledger_present else ()
