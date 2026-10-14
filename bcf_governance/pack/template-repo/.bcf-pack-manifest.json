@@ -1060,7 +1060,7 @@
     },
     "scripts/_bcf_runtime/governance_install/semantic_upgrade.py": {
       "operation": "copy",
-      "sha256": "65011512ff50940fe6a0e313d160ee2a098b0fcecd58ba97816ea7d1f9c41ffc"
+      "sha256": "a62ad3e5339f3d607af464055bbe3e6eadc460d14c8370648b56242c6ec6731b"
     },
     "scripts/_bcf_runtime/governance_install/transaction.py": {
       "operation": "copy",
@@ -1439,7 +1439,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_commands.py": {
       "operation": "copy",
-      "sha256": "36914f70588b67443f5ccae4aecad5ed5ed6e9025102c39f38c06c893f7a1681"
+      "sha256": "c7c7d3d5dae1eb0dc8c6200e8f9340ab0815a4327c234b424160d144aad7c72c"
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",

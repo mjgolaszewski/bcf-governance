@@ -73,7 +73,7 @@ def _contract_bytes(payload: dict[str, Any], key: str) -> bytes:
     return render_compact_semantic_yaml(payload["contracts"][key])
 
 
-def reconcile_semantic_lock(repo_root: Path, *, apply: bool) -> dict[str, Any]:
+def _lock(repo_root: Path, *, apply: bool) -> dict[str, Any]:
     inventory, _, _, registry = discover_source(repo_root)
     evaluation = validate_semantic_authority(repo_root, inventory, registry, require_lock=False)
     expected = build_semantic_lock(repo_root, inventory, evaluation.projection_outputs)
@@ -220,7 +220,7 @@ def main(argv: list[str] | None = None) -> None:
         elif args.command == "lock":
             if args.check == args.apply:
                 raise SemanticAuthorityError("lock requires exactly one of --check or --apply")
-            lock = reconcile_semantic_lock(repo_root, apply=args.apply)
+            lock = _lock(repo_root, apply=args.apply)
             result = {
                 "status": "lock_applied" if args.apply else "lock_check_passed",
                 "projection_outputs": len(lock["projection_outputs"]),

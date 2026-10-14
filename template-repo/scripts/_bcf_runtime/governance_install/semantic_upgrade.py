@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol
 
-from ..semantic_authority_commands import reconcile_semantic_lock
+from ..semantic_authority_commands import _lock
 from .existing_adoption import existing_adoption_requires_history_for_upgrade
 
 
@@ -34,7 +34,7 @@ def reconcile_upgrade_semantic_custody(
     """Converge semantic source custody before an upgrade reports success."""
 
     if semantic_upgrade_requires_history(repo_root, skip_validation=skip_validation):
-        reconcile_semantic_lock(repo_root, apply=True)
+        _lock(repo_root, apply=True)
 
 
 def install_transaction_requires_history(
