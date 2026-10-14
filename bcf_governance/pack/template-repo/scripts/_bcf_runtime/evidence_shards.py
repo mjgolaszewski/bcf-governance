@@ -61,6 +61,43 @@ def required_gate_targets(repo_root: Path) -> list[str]:
     return targets
 
 
+def local_gate_execution_environments(
+    repo_root: Path,
+    graph: dict[str, Any],
+    producers: tuple[str, ...],
+) -> dict[str, dict[str, str]]:
+    """Bind local gates to graph jobs or the closed profile-v1 direct lane."""
+
+    profile = _mapping(repo_root / "governance-profile.yml", repo_root)
+    allowed_unmapped: frozenset[str] = frozenset()
+    if str(profile.get("profile_contract_version", "1.0")) == "1.0":
+        ci_profile = profile.get("ci_profile")
+        required_push_jobs = (
+            ci_profile.get("required_push_jobs")
+            if isinstance(ci_profile, dict)
+            else None
+        )
+        if (
+            not isinstance(required_push_jobs, list)
+            or not all(isinstance(value, str) and value for value in required_push_jobs)
+            or len(required_push_jobs) != len(set(required_push_jobs))
+        ):
+            raise ValueError(
+                "profile-v1 local execution requires exact unique required_push_jobs"
+            )
+        required = set(required_gate_targets(repo_root))
+        invalid = sorted(set(required_push_jobs) - required)
+        if invalid:
+            raise ValueError(
+                "profile-v1 required_push_jobs are not required executable gates: "
+                + ", ".join(invalid)
+            )
+        allowed_unmapped = frozenset(required_push_jobs)
+    return local_gate_job_environments(
+        graph, producers, allowed_unmapped=allowed_unmapped
+    )
+
+
 def partition_required_gates(
     repo_root: Path,
     *,
@@ -228,8 +265,8 @@ def main(argv: list[str] | None = None) -> None:
         gates = planned_gate_targets(
             repo_root, planned_targets=planned, execution_dag=execution_dag
         )
-        graph_environments = local_gate_job_environments(
-            validate_ci_graph(repo_root).graph, tuple(gates)
+        graph_environments = local_gate_execution_environments(
+            repo_root, validate_ci_graph(repo_root).graph, tuple(gates)
         )
     else:
         if args.shard_index is None or args.shard_count is None:

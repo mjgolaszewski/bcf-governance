@@ -319,9 +319,17 @@ def job_required_environment(
 
 
 def local_gate_job_environments(
-    graph: dict[str, Any], producers: tuple[str, ...]
+    graph: dict[str, Any],
+    producers: tuple[str, ...],
+    *,
+    allowed_unmapped: frozenset[str] = frozenset(),
 ) -> dict[str, dict[str, str]]:
-    """Project each gate from its one exact pull-request producer job."""
+    """Project each gate from its one exact pull-request producer job.
+
+    A caller may admit an empty overlay only for a separately authenticated
+    legacy direct-producer identity.  Duplicate graph ownership is never
+    admitted by that compatibility lane.
+    """
 
     matches: dict[str, list[dict[str, str]]] = {producer: [] for producer in producers}
     for workflow in graph["workflows"]:
@@ -335,13 +343,20 @@ def local_gate_job_environments(
             environment = {**inherited, **job.get("environment", {})}
             for producer in set(executor.get("gates", ())).intersection(matches):
                 matches[producer].append(dict(sorted(environment.items())))
-    invalid = sorted(producer for producer, values in matches.items() if len(values) != 1)
+    invalid = sorted(
+        producer
+        for producer, values in matches.items()
+        if len(values) != 1 and not (not values and producer in allowed_unmapped)
+    )
     if invalid:
         raise CIGraphError(
             "local evidence gate does not have one exact pull-request producer job: "
             + ", ".join(invalid)
         )
-    return {producer: values[0] for producer, values in sorted(matches.items())}
+    return {
+        producer: values[0] if values else {}
+        for producer, values in sorted(matches.items())
+    }
 
 
 def resolve_local_job_environment(

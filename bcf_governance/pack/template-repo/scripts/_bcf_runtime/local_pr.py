@@ -24,7 +24,6 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
-from .ci_graph_execution import local_gate_job_environments
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -32,7 +31,7 @@ from .evaluation_scope import (
     evaluation_scope,
 )
 from .evidence_execution import EvidenceError
-from .evidence_shards import planned_gate_targets
+from .evidence_shards import local_gate_execution_environments, planned_gate_targets
 from .evidence_sessions import allocate_session, local_producer_identity
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
@@ -468,10 +467,10 @@ def _run_prospective_train(
         except (TypeError, ValueError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         try:
-            producer_environments = local_gate_job_environments(
-                validate_ci_graph(root).graph, producers
+            producer_environments = local_gate_execution_environments(
+                root, validate_ci_graph(root).graph, producers
             )
-        except CIGraphError as exc:
+        except (CIGraphError, ValueError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         bundle_identity = None
         bundle_manifest = None
