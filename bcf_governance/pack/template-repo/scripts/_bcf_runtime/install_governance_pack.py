@@ -749,7 +749,8 @@ def install(args: argparse.Namespace) -> InstallResult:
     graph_path = target_root / "governance/ci-graph.yml"
     transaction_paths = install_transaction_paths(
         args, contract=args.profile_contract, contract_version=contract_version,
-        target_root=target_root, baseline=INSTALL_MANAGED_PATHS,
+        target_root=target_root, template_root=_template_root(),
+        baseline=INSTALL_MANAGED_PATHS,
     )
     transaction_paths = extend_existing_adoption_paths(transaction_paths, args.existing_adoption_inventory)
 

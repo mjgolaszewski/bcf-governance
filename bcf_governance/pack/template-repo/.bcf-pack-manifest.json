@@ -1060,7 +1060,7 @@
     },
     "scripts/_bcf_runtime/governance_install/transaction_paths.py": {
       "operation": "copy",
-      "sha256": "ba3b6cb3444b9ad7dc0ec68675a6da9b5d4858cf54ece88ca656d472562a0606"
+      "sha256": "323093b210d905778a81c7756498626ff233ff51a7fae50646c748f23b7a0a44"
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
@@ -1195,7 +1195,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "2ad48bb12787e5d95d311214a962902ac39736af10e111db7a0b79ee4e7ff87c"
+      "sha256": "c9e70111d4d945e02c4326d4573da9a97ee729fe01320dfe170347575e38b0ad"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
