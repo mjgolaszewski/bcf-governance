@@ -242,6 +242,7 @@
             "action": {"enum": ["checkout", "setup-python", "setup-node", "upload-artifact", "download-artifact", "attest-build-provenance", "create-github-app-token"]},
             "with": {"type": "object", "additionalProperties": {"$ref": "#/$defs/scalar"}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
+            "required_permissions": {"$ref": "#/$defs/permissionMap"},
             "produces": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "consumes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
           }
@@ -259,6 +260,7 @@
             "command": {"$ref": "#/$defs/identifier"},
             "restores_private_artifacts": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
+            "required_permissions": {"$ref": "#/$defs/permissionMap"},
             "produces": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "consumes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
           }

@@ -1,78 +1,80 @@
 SHELL := /bin/bash
-PYTHON ?= python3
+include .artifacts/bcf/local-cli.mk
+BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .
 BCF_EVIDENCE_DIR ?= .artifacts/bcf
 
 .PHONY: governance-truthfulness release-check architecture-context-membership architecture-cqrs-side architecture-duplication architecture-import-boundaries architecture-layer-membership architecture-module-size architecture-router-thinness architecture-test contract-test governance-exposure-scan governance-validate lint runtime-smoke security-dependency-audit security-sbom security-secret-scan security-vulnerability-scan semantic-ownership test typecheck
 
 governance-truthfulness:
-	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; "$$python" scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)
 
 architecture-context-membership:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-context-membership
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-context-membership
 
 architecture-cqrs-side:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-cqrs-side
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-cqrs-side
 
 architecture-duplication:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-duplication
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-duplication
 
 architecture-import-boundaries:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-import-boundaries
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-import-boundaries
 
 architecture-layer-membership:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-layer-membership
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-layer-membership
 
 architecture-module-size:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-module-size
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-module-size
 
 architecture-router-thinness:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-router-thinness
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-router-thinness
 
 architecture-test:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py architecture-test
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py architecture-test
 
 contract-test:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py contract-test
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py contract-test
 
 governance-exposure-scan:
-	@cd . && $(PYTHON) scripts/check_governance_exposure.py --repo-root .
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" scripts/check_governance_exposure.py --repo-root .
 
 governance-validate:
-	@cd . && $(PYTHON) scripts/validate_governance_yaml.py --repo-root .
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" scripts/validate_governance_yaml.py --repo-root .
 
 lint:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py lint
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py lint
 
 runtime-smoke:
-	@cd . && BCF_EXECUTION_PROFILE=production $(PYTHON) .github/scripts/run_self_governance_gate.py runtime-smoke
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && BCF_EXECUTION_PROFILE=production "$$python" .github/scripts/run_self_governance_gate.py runtime-smoke
 
 security-dependency-audit:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-dependency-audit
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py security-dependency-audit
 
 security-sbom:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-sbom
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py security-sbom
 
 security-secret-scan:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-secret-scan
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py security-secret-scan
 
 security-vulnerability-scan:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py security-vulnerability-scan
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py security-vulnerability-scan
 
 semantic-ownership:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py semantic-ownership
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py semantic-ownership
 
 test:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py test
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py test
 
 typecheck:
-	@cd . && $(PYTHON) .github/scripts/run_self_governance_gate.py typecheck
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; cd . && "$$python" .github/scripts/run_self_governance_gate.py typecheck
 
 release-check:
-	@mkdir -p $(BCF_EVIDENCE_DIR)
-	@preflight_output="$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text)" || exit $$?; \
+	@python="$$($(BCF_PROJECT_PYTHON))" || exit $$?; \
+	mkdir -p $(BCF_EVIDENCE_DIR); \
+	preflight_output="$$("$$python" scripts/preflight_governance.py --repo-root . --mode release --python "$$python" --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text)" || exit $$?; \
 	printf '%s\n' "$$preflight_output"; \
 	session="$$(printf '%s\n' "$$preflight_output" | tail -n 1)"; \
 	test -n "$$session" && test -f "$$session" || { echo 'preflight did not produce an evidence session' >&2; exit 1; }; \
 	session_dir="$${session%/evidence-session.json}"; \
-	$(PYTHON) scripts/capture_governance_shard.py --repo-root . --all-planned --output-root "$$session_dir" --session-manifest "$$session" || exit $$?; \
-	$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir "$$session_dir"
+	"$$python" scripts/capture_governance_shard.py --repo-root . --all-planned --output-root "$$session_dir" --session-manifest "$$session" || exit $$?; \
+	"$$python" scripts/governance_truth.py --repo-root . --evidence-dir "$$session_dir"

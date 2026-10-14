@@ -9,12 +9,46 @@ from typing import Any, Callable
 import xml.etree.ElementTree as ET
 
 from .evidence_gate_contracts import _gate_contract
-from .test_manifests import OracleManifestIndex, PytestSelectorMap, TestManifestError
+from .test_manifests import (
+    OracleManifestIndex,
+    PytestSelectorMap,
+    TestManifestError,
+    junit_node_id,
+)
 from .test_manifests import check_gate_selectors, oracle_manifest_index
 
 
 class NegativeControlCommandError(ValueError):
     """Raised when a declared test-node oracle cannot be executed exactly."""
+
+
+def test_node_oracle_lane(test_contract: object) -> str:
+    """Classify the closed modern or legacy execution lane for a test oracle."""
+
+    if not isinstance(test_contract, dict):
+        raise NegativeControlCommandError("test-node oracle has no test contract")
+    selectors = test_contract.get("selectors")
+    manifest = test_contract.get("expected_node_manifest")
+    junit = test_contract.get("junit_xml")
+    has_modern_field = selectors is not None or manifest is not None
+    if has_modern_field:
+        if (
+            isinstance(selectors, list)
+            and bool(selectors)
+            and isinstance(manifest, str)
+            and bool(manifest)
+            and isinstance(junit, str)
+            and bool(junit)
+        ):
+            return "manifest_node"
+        raise NegativeControlCommandError(
+            "test-node oracle has an incomplete selector/manifest contract"
+        )
+    if isinstance(junit, str) and junit:
+        return "legacy_full_gate"
+    raise NegativeControlCommandError(
+        "test-node oracle has neither a modern manifest nor a legacy JUnit contract"
+    )
 
 
 def selected_oracle_manifest_index(
@@ -113,16 +147,14 @@ def resolve_negative_control_oracle(
             str(owning_contract["target"]), owning_contract, None
         )
     try:
-        index = manifest_index or oracle_manifest_index(repo_root)
         owning_test_contract = owning_contract.get("test_contract")
-        if (
-            not index.manifests
-            and isinstance(owning_test_contract, dict)
-            and isinstance(owning_test_contract.get("junit_xml"), str)
-        ):
-            return NegativeControlOracleExecution(
-                str(owning_contract["target"]), owning_contract, None
-            )
+        if isinstance(owning_test_contract, dict) and owning_test_contract:
+            lane = test_node_oracle_lane(owning_test_contract)
+            if lane == "legacy_full_gate":
+                return NegativeControlOracleExecution(
+                    str(owning_contract["target"]), owning_contract, None
+                )
+        index = manifest_index or oracle_manifest_index(repo_root)
         gate_id = index.resolve(
             oracle.get("node_ids"),
             preferred_gate=str(owning_contract["target"]),
@@ -154,6 +186,18 @@ def junit_nodes(path: Path) -> tuple[set[str], set[str]]:
         if case.find("failure") is not None or case.find("error") is not None:
             failed.add(identity)
     return observed, failed
+
+
+def oracle_junit_node_ids(control: dict[str, Any]) -> set[str]:
+    """Project declared pytest oracle selectors into comparable JUnit IDs."""
+
+    oracle = control.get("oracle")
+    nodes = oracle.get("node_ids", []) if isinstance(oracle, dict) else []
+    return {
+        junit_node_id(str(node))
+        for node in nodes
+        if isinstance(node, str) and node
+    }
 
 
 def execute_cross_gate_baseline(
@@ -199,9 +243,5 @@ def execute_cross_gate_baseline(
         if isinstance(junit_value, str)
         else (set(), set())
     )
-    required = {
-        str(node)
-        for node in control.get("oracle", {}).get("node_ids", [])
-        if isinstance(node, str)
-    }
+    required = oracle_junit_node_ids(control)
     return result.returncode == 0 and bool(required) and required <= observed and not failed

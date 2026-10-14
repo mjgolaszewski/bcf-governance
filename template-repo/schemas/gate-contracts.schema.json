@@ -26,9 +26,13 @@
     "interpreter_contract": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["project_dependencies", "optional_dependency_groups", "gate_requirements"],
+      "oneOf": [
+        {"required": ["project_dependencies", "optional_dependency_groups", "gate_requirements"]},
+        {"required": ["dependency_source"]}
+      ],
       "properties": {
         "project_dependencies": {"const": true},
+        "dependency_source": {"type": "string", "minLength": 1},
         "build_system_requirements": {"const": true},
         "requirements_projection": {"type": "string", "minLength": 1},
         "optional_dependency_groups": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},

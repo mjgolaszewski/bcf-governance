@@ -56,6 +56,7 @@ from .negative_control_execution import (
     execute_cross_gate_baseline,
     junit_nodes,
     negative_control_command,
+    oracle_junit_node_ids,
     resolve_negative_control_oracle, selected_oracle_manifest_index,
 )
 from .test_manifests import TestManifestError
@@ -268,7 +269,7 @@ def _oracle_observation(
             if isinstance(junit_value, str)
             else set()
         )
-        expected = {str(value) for value in oracle.get("node_ids", [])}
+        expected = oracle_junit_node_ids(control)
         return {
             "satisfied": bool(expected) and expected.issubset(failed_nodes),
             "kind": "test_node_failure",
@@ -320,11 +321,7 @@ def _negative_control_results(
             raise EvidenceError(f"negative-control oracle is invalid: {control_id}")
         oracle_contract = oracle_execution.contract
         oracle = control.get("oracle")
-        required_baseline_nodes = {
-            str(value)
-            for value in oracle.get("node_ids", [])
-            if isinstance(oracle, dict) and isinstance(value, str)
-        }
+        required_baseline_nodes = oracle_junit_node_ids(control)
         baseline_nodes = {
             str(value)
             for value in baseline_observations.get("test_node_ids", [])

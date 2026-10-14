@@ -22,7 +22,6 @@ from .affected_proof_closure import (
     matches as _matches,
     patterns_for_claims as _patterns_for_claims,
 )
-from .evidence_session_schema import active_planned_session_version
 from .evidence_scheduling import (
     assign_duration_aware_shards,
     duration_estimates,
@@ -469,9 +468,21 @@ def plan_verification(
     *,
     preflight_claims: Iterable[str] = (),
     affected_proof: bool = False,
+    required_claim_ids: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     model = load_claim_model(repo_root)
-    required = required_claims(repo_root)
+    profile_required = required_claims(repo_root)
+    required = (
+        profile_required
+        if required_claim_ids is None
+        else sorted(set(str(value) for value in required_claim_ids))
+    )
+    invalid_required = sorted(set(required) - set(profile_required))
+    if not required or invalid_required:
+        raise EvidenceError(
+            "scoped verification claims are empty or outside the active profile: "
+            + ", ".join(invalid_required)
+        )
     current = {
         "commit_sha": _git(repo_root, "rev-parse", "HEAD"),
         "tree_sha": _git(repo_root, "rev-parse", "HEAD^{tree}"),
@@ -721,46 +732,14 @@ def verification_plan(
     repo_root: Path,
     subject: Mapping[str, Any],
     prior_receipts: list[Mapping[str, Any]],
+    *,
+    evaluation_mode: str = "pr",
+    evaluation_target: str | None = None,
 ) -> dict[str, Any]:
     """Select dependency planning for v3 and strict exact-subject planning otherwise."""
-    profile = yaml.safe_load(
-        (repo_root / "governance-profile.yml").read_text(encoding="utf-8")
+    from .evidence_plan_scope import scoped_verification_plan
+
+    return scoped_verification_plan(
+        repo_root, subject, prior_receipts, evaluation_mode=evaluation_mode,
+        evaluation_target=evaluation_target,
     )
-    if isinstance(profile, dict) and profile.get("profile_contract_version") == "3.0":
-        return plan_verification(
-            repo_root,
-            prior_receipts,
-            preflight_claims=(
-                "governance-contracts-valid",
-                "governance-exposure-clean",
-                "source-syntax-format",
-                "semantic-ownership-valid",
-            ),
-            affected_proof=active_planned_session_version(repo_root) == "3.0",
-        )
-    release = profile.get("release_gate_profile") if isinstance(profile, dict) else None
-    raw_gates = release.get("gates") if isinstance(release, dict) else None
-    gate_values = raw_gates.values() if isinstance(raw_gates, dict) else ()
-    gates = sorted(
-        str(value["target"])
-        for value in gate_values
-        if isinstance(value, dict)
-        and value.get("status") == "required"
-        and isinstance(value.get("target"), str)
-    )
-    nodes = assign_duration_aware_shards([
-        {"id": gate, "producer": gate, "claims": [gate], "depends_on": [],
-         "reason": "legacy profile requires exact-subject execution"}
-        for gate in gates
-    ], {})
-    return {
-        "current_subject": {"commit_sha": subject.get("commit_sha"), "tree_sha": subject.get("tree_sha")},
-        "prior_subject": None, "changed_paths": [], "changed_domains": [],
-        "required_claims": gates, "preflight_satisfied_claims": [], "reused_evidence": [],
-        "invalidated_evidence": [
-            {"claim_id": gate, "evidence_ids": [], "reasons": ["legacy_evidence_exact_subject_only"]}
-            for gate in gates
-        ],
-        "execution_dag": {"nodes": nodes, "edges": []},
-        "decision_explanations": [f"executed because legacy claim {gate} is exact-subject only" for gate in gates],
-    }

@@ -10,6 +10,10 @@ from ..yaml_mutations import (
     replace_yaml_value_bytes,
     typed_mutation_value,
 )
+from ..interpreter_contract_projection import (
+    InterpreterContractProjectionError,
+    project_interpreter_contract,
+)
 
 TEST_COMMAND_POLICIES = {
     "automated_tests",
@@ -48,7 +52,41 @@ def _validate_gate_contract_registry(
         contracts.get("gates"), context="governance/gate-contracts.yml gates"
     )
     interpreter = contracts.get("interpreter_contract")
+    try:
+        if str(contracts.get("profile_contract_version", "1.0")) in {"2.0", "3.0"}:
+            interpreter = project_interpreter_contract(
+                gates, interpreter, default_if_required=False
+            )
+        elif interpreter is not None:
+            interpreter = project_interpreter_contract(
+                gates, interpreter, default_if_required=False
+            )
+    except InterpreterContractProjectionError as exc:
+        raise GovernanceValidationError(str(exc)) from exc
     if isinstance(interpreter, dict):
+        source = interpreter.get("dependency_source")
+        if source is not None:
+            _validate_portable_relative_path(
+                _require_string(
+                    source,
+                    context=(
+                        "governance/gate-contracts.yml "
+                        "interpreter_contract.dependency_source"
+                    ),
+                ),
+                context=(
+                    "governance/gate-contracts.yml "
+                    "interpreter_contract.dependency_source"
+                ),
+            )
+            _require_path(
+                repo_root,
+                source,
+                context=(
+                    "governance/gate-contracts.yml "
+                    "interpreter_contract.dependency_source"
+                ),
+            )
         projection = interpreter.get("requirements_projection")
         if projection is not None:
             _validate_portable_relative_path(
@@ -71,15 +109,6 @@ def _validate_gate_contract_registry(
                     "governance/gate-contracts.yml "
                     "interpreter_contract.requirements_projection"
                 ),
-            )
-        requirements = _require_mapping(
-            interpreter.get("gate_requirements"),
-            context="governance/gate-contracts.yml interpreter_contract.gate_requirements",
-        )
-        unknown = sorted(set(requirements) - set(gates))
-        if unknown:
-            raise GovernanceValidationError(
-                "interpreter requirements name unknown gates: " + ", ".join(unknown)
             )
     mutation_issues: list[str] = []
     for target, raw in gates.items():

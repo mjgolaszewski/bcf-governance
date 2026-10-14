@@ -11,7 +11,7 @@ import re
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +24,7 @@ from .governance_install.existing_adoption import compile_existing_adoption_inve
 from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
+from .local_cli_receipt import project_local_cli_receipt, resolve_local_cli  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
     merge_gitignore as _merge_gitignore,
@@ -43,6 +44,7 @@ from .governance_profiles import (  # noqa: E402
 )
 from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
 from .semantic_authority_commands import _apply_config, _load_config  # noqa: E402
+from .governance_install.semantic_upgrade import install_transaction_requires_history, reconcile_upgrade_semantic_custody  # noqa: E402,E501
 from .ci_graph_locks import apply_ci_graph_locks  # noqa: E402
 from .ci_graph_post_merge import reconcile_post_merge_scope  # noqa: E402
 from .ci_graph_render import apply_ci_graph  # noqa: E402
@@ -558,6 +560,7 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         reconcile_post_merge_scope(target_root, apply=True)
         apply_ci_graph_locks(target_root)
         apply_ci_graph(target_root)
+    reconcile_upgrade_semantic_custody(target_root, skip_validation=args.skip_validation)
 
     strict_validation_passed = False
     bootstrap_validation_passed = False
@@ -697,6 +700,7 @@ def install(args: argparse.Namespace) -> InstallResult:
     )
     if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != target_root:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
+    local_cli = resolve_local_cli(sys.executable)
     args.release_custody = prepare_upgrade_release_custody(
         target_root,
         getattr(args, "release_assets", None),
@@ -749,7 +753,8 @@ def install(args: argparse.Namespace) -> InstallResult:
     graph_path = target_root / "governance/ci-graph.yml"
     transaction_paths = install_transaction_paths(
         args, contract=args.profile_contract, contract_version=contract_version,
-        target_root=target_root, baseline=INSTALL_MANAGED_PATHS,
+        target_root=target_root, template_root=_template_root(),
+        baseline=INSTALL_MANAGED_PATHS,
     )
     transaction_paths = extend_existing_adoption_paths(transaction_paths, args.existing_adoption_inventory)
 
@@ -767,9 +772,10 @@ def install(args: argparse.Namespace) -> InstallResult:
         target_root,
         managed_paths=transaction_paths,
         mutate_shadow=mutate,
-        preserve_git_history=args.semantic_config_payload is not None or getattr(args.existing_adoption_inventory, "source_commit", None) is not None,
+        preserve_git_history=install_transaction_requires_history(target_root, args),
         validate_final=validate_final,
     )
+    project_local_cli_receipt(target_root, local_cli)
     result = result_box[0]
     generated = {
         key: target_root / path.relative_to(path.parents[1])
@@ -777,16 +783,7 @@ def install(args: argparse.Namespace) -> InstallResult:
         else path
         for key, path in result.generated_artifacts.items()
     }
-    return InstallResult(
-        copied_files=result.copied_files,
-        rescaffold_removed_paths=result.rescaffold_removed_paths,
-        removed_template_examples=result.removed_template_examples,
-        generated_artifacts=generated,
-        strict_validation_passed=result.strict_validation_passed,
-        bootstrap_validation_passed=result.bootstrap_validation_passed,
-        strict_validation_output=result.strict_validation_output,
-        bootstrap_validation_output=result.bootstrap_validation_output,
-    )
+    return replace(result, generated_artifacts=generated)
 
 
 def main(argv: list[str] | None = None) -> None:

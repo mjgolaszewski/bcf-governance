@@ -7,7 +7,7 @@ import subprocess
 
 from ..governance_install.runtime_custody import (
     RuntimeCustodyError,
-    RuntimeCustodyState,
+    candidate_qualification_matches,
     inspect_runtime_custody,
 )
 from ..local_pr_context import LocalValidationLane
@@ -212,13 +212,11 @@ def _validate_pull_request_changelog_update(repo_root: Path) -> None:
             text=True,
             check=False,
         )
-        adopter = snapshot.provenance_claim.get("adopter")
         if (
-            snapshot.state is not RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT
-            or base_tree.returncode != 0
-            or not isinstance(adopter, dict)
-            or adopter.get("commit_sha") != base_sha
-            or adopter.get("tree_sha") != base_tree.stdout.strip()
+            base_tree.returncode != 0
+            or not candidate_qualification_matches(
+                snapshot, commit_sha=base_sha, tree_sha=base_tree.stdout.strip()
+            )
         ):
             raise GovernanceValidationError(
                 "candidate qualification validation lane does not bind the exact adopter base"

@@ -13,6 +13,10 @@ from ..yaml_mutations import (
     typed_mutation_value,
 )
 from ..test_manifests import TestManifestError, oracle_manifest_index
+from ..negative_control_execution import (
+    NegativeControlCommandError,
+    test_node_oracle_lane,
+)
 
 
 class NegativeControlPreflightError(ValueError):
@@ -39,8 +43,17 @@ def stale_negative_control_oracles(repo_root: Path) -> list[str]:
             nodes = oracle.get("node_ids") if isinstance(oracle, dict) else None
             if oracle and oracle.get("kind") == "test_node_failure":
                 try:
+                    evidence = gate.get("evidence")
+                    test_contract = (
+                        evidence.get("test_contract")
+                        if isinstance(evidence, dict)
+                        else None
+                    )
+                    if isinstance(test_contract, dict):
+                        if test_node_oracle_lane(test_contract) == "legacy_full_gate":
+                            continue
                     manifest_index.resolve(nodes, preferred_gate=str(gate_id))
-                except TestManifestError:
+                except (NegativeControlCommandError, TestManifestError):
                     stale_oracles.append(str(control.get("id", gate_id)))
     return sorted(stale_oracles)
 

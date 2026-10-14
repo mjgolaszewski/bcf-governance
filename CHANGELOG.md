@@ -6,6 +6,57 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-10-13
+
+### Fixed
+
+- Closed existing-repository adoption classification at its canonical owners:
+  declared nested test roots and production exclusions now reach structural LOC
+  enforcement, valid native Docker Go-template fields remain distinct from BCF
+  scaffold placeholders, evolved native-baseline files automatically lose their
+  historical exemption, dotfile names remain distinct from private hostnames,
+  and authenticated supplemental publications retain immutable custody beneath
+  one phase-owning release without inventing phases or acquiring lifecycle
+  authority.
+- Made legacy Lite environments, history-dependent native baselines, and nested
+  reconciliation derive from authenticated inputs: isolated interpreters bind
+  exact governed requirements and graph runtime pins when available, graphless
+  v1 repositories retain dependency validation without inventing a Python pin,
+  atomic upgrade shadows preserve Git history only when required, and every
+  nested BCF projection uses the exact invoking runtime rather than an ambient
+  installation. Retry-capable proof capture derives its least provider-read
+  capability, while existing-repository upgrades derive generated-workflow
+  transaction closure from an isolated, canonically migrated successor state
+  before touching maintained bytes. Parallel unfinished work now derives
+  phase-scoped PR-progress metadata from the same authenticated proposition used
+  by prospective proof and submission, without inventing dependencies or
+  requiring manual activation.
+- Retained bounded diagnostic custody for failed local producers, including
+  causal head and terminal tail, omitted-byte accounting, and exact execution
+  identity, while keeping all failed material ineligible for reuse or authority.
+- Made generated local gate surfaces derive the authenticated project
+  interpreter and dependency environment through BCF instead of ambient
+  `python3`; when controller and adopter Python minors differ, the environment
+  owner selects only the exact versioned runtime named by the authenticated
+  graph. Legacy-profile direct gates and mutation oracles retain their exact
+  fail-closed propositions without an operator-authored environment step, and
+  BCF-backed gates reuse the same admitted CLI instead of an ambient `PATH`.
+  Canonical reconciliation likewise derives that project interpreter before
+  pytest-manifest collection rather than borrowing controller dependencies.
+- Closed the preserved v2/v3 adopter upgrade edge by deriving a typed
+  interpreter contract from an exact governed requirements source before
+  strict success; recursive sources are hash-bound and unsafe, ambiguous, or
+  incomplete dependency graphs reject before atomic installation commits.
+  Upgrades also refresh semantic source-inventory custody through its canonical
+  owner before strict success, so installed runtime changes cannot leave the
+  first post-install fixed-point check stale.
+- Made bounded workitem execution derive its exact claim and producer closure
+  from the authenticated target instead of allocating the parent profile, and
+  made fresh v2/v3 install and promotion persist the same interpreter custody
+  contract already enforced for upgrades. Target substitution, unrelated-claim
+  laundering, incomplete producer dependencies, and ambiguous interpreter
+  inputs reject before evidence allocation or repository mutation.
+
 ## [2.3.1] - 2026-10-12
 
 ### Fixed
@@ -38,38 +89,24 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Compiled each adopter's claims, dependencies, producers, qualifications,
-  invalidation, reuse, and splintering from one consumer-owned assurance graph.
-  Standard-v3 uses an exact protected-base or installed-controller evaluator;
-  Lite retains its explicitly lower-assurance direct-candidate boundary.
-- Projected existing-repository protection through the ordinary installer and
-  GitHub adoption owners as one reviewable propose/apply/verify contract.
-  Missing or redacted bypass actors, stale provider state, repository drift,
-  ambiguous rulesets, and self-authority leakage fail closed.
-- Classified legacy, durable, mixed, and unknown evidence storage before work,
-  with immutable publication, cold resolution, retention reachability, and
-  non-mutating migration plans that preserve original evidence custody.
-- Preserved each successful deterministic splinter in its existing evidence
-  artifact and authenticated exact same-attempt reuse; partial proof accelerates
-  execution but cannot independently satisfy aggregate truth.
-- Replaced release ceremony with one idempotent transaction from certified
-  receipt to exact tag, assets, attestations, publication, credential retirement,
-  and independent custody verification. Published bytes are never rebuilt.
-
-### Fixed
-
-- Closed controller recovery as one authenticated, noncertifying state machine:
-  exact-subject byte identity governs builder routing, normalization, ordinary
-  custody restoration, and removal of temporary recovery authority; recovery
-  can never certify, publish, merge, or release.
-- Derived workflow permissions, event authority, checkout/evaluator paths,
-  controller artifact selection, timeout sufficiency, and qualified release
-  assets from their canonical graphs before provider work.
-- Added bounded, identity-preserving recovery for immutable provider reads and
-  terminal artifact transport while keeping mutations, semantic failures,
-  changed subjects, ambiguity, and repeated failures terminal.
-- Moved deterministic changelog, lifecycle, interpreter, and phase-retention
-  inconsistencies to preflight while preserving exact evidence and authority.
+- Compiled adopter claims, dependencies, producers, qualifications,
+  invalidation, proof reuse, and deterministic splintering from one
+  consumer-owned assurance graph. Standard-v3 evaluates from protected base or
+  installed-controller authority; Lite retains its declared direct-candidate
+  boundary, and partial proof may accelerate but never satisfy aggregate truth.
+- Made workflow permissions, event authority, protection projection,
+  checkout/evaluator paths, controller selection, and release inputs canonical
+  graph products. Existing-repository protection follows one reviewable
+  propose/apply/verify contract and rejects redaction, drift, ambiguity, or
+  self-authority leakage before provider work.
+- Defined evidence storage and recovery as typed custody contracts: legacy,
+  mixed, durable, and unknown storage retain immutable cold resolution and
+  reachability, while controller and provider recovery remain exact-subject,
+  bounded, identity-preserving, and noncertifying.
+- Reduced release to one idempotent transaction from certified receipt through
+  exact tag, assets, attestations, credential retirement, and independent
+  custody verification. Published bytes are never rebuilt, and deterministic
+  lifecycle, interpreter, changelog, or retention defects fail in preflight.
 
 ## [2.2.1] - 2026-10-08
 
@@ -100,26 +137,23 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Added an authenticated next-action frontier that derives candidate submission,
-  provider recovery, merge eligibility, controller transitions, and scheduled
-  controls from repository and provider state instead of operator procedure.
-- Added canonical affected-proof closure: every claim is mechanically required,
-  demonstrably unaffected, or conservatively executed, with truth independently
-  rejecting omitted affected assurance.
-- Added content-addressed proof reuse bound to exact command, toolchain, inputs,
-  projections, dependency closure, subject, producer, policy, qualification,
-  freshness, and authority class. Local proof accelerates but never confers
-  provider authority.
+- Added an authenticated next-action frontier that derives submission, recovery,
+  merge eligibility, controller transitions, scheduled controls, and
+  no-transition behavior from repository and provider state rather than
+  operator procedure. Every alternate outcome is typed, exact-bound, and
+  noncertifying.
+- Added canonical affected-proof closure and content-addressed reuse. Each claim
+  is required, demonstrably unaffected, or conservatively executed; reusable
+  proof binds exact command, toolchain, inputs, projections, dependency closure,
+  subject, producer, policy, qualification, freshness, and authority class.
+  Local proof accelerates execution but never confers provider authority.
 - Added deterministic critical-path splintering from governed node inventories,
   resource contracts, and historical durations, with exact union, zero overlap,
-  isolated execution state, negative-control applicability, and monolithic
-  fallback.
-- Unified candidate, exact-main, scheduled-control, and controller lifecycle
-  recovery under typed, noncertifying outcomes. Current/no-transition paths do
-  not build or retrieve controller bundles; pending rotation remains exact-bound.
-- Bound local Python admission, dependency audit, SBOM, compact evidence
-  transport, and unpublished adopter qualification to explicit authenticated
-  inputs before expensive work.
+  isolated state, negative-control applicability, and monolithic fallback.
+- Bound Python admission, dependency audit, SBOM, compact evidence transport,
+  controller lifecycle, and unpublished adopter qualification to authenticated
+  inputs before expensive work. Current/no-transition paths allocate no
+  controller bundle, while pending rotation remains exact-bound.
 
 ## [2.1.8] - 2026-10-03
 

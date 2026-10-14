@@ -3,6 +3,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import json
+import shutil
 from pathlib import Path
 
 import pytest
@@ -238,6 +239,52 @@ def test_syntax_preflight_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
         preflight._syntax_checks(repo)
 
 
+def test_syntax_preflight_accepts_bounded_docker_compose_directives(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "docker-compose.bespoke.yml",
+        "services:\n  app:\n    ports: !override\n      - '8080:80'\n"
+        "    environment: !reset {}\n",
+    )
+
+    assert preflight._syntax_checks(repo)["yaml"] == 1
+
+
+def test_syntax_preflight_rejects_unowned_yaml_tags(tmp_path: Path) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "docker-compose.bespoke.yml",
+        "services:\n  app:\n    ports: !execute ['8080:80']\n",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="syntax validation failed"):
+        preflight._syntax_checks(repo)
+
+
+def test_syntax_preflight_rejects_compose_directives_outside_compose(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "policy.yml", "ports: !override []\n")
+
+    with pytest.raises(preflight.PreflightError, match="syntax validation failed"):
+        preflight._syntax_checks(repo)
+
+
+def test_syntax_preflight_rejects_duplicate_keys_inside_compose_directive(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(
+        tmp_path,
+        "compose.override.yml",
+        "services: !override\n  app: first\n  app: second\n",
+    )
+
+    with pytest.raises(preflight.PreflightError, match="duplicate YAML key"):
+        preflight._syntax_checks(repo)
+
+
 def test_source_preflight_wrapper_runs_without_an_installed_package(
     tmp_path: Path,
 ) -> None:
@@ -443,6 +490,60 @@ def test_negative_control_preflight_reports_every_stale_oracle_node(tmp_path: Pa
     assert "another-stale-oracle-must-fail" in str(captured.value)
 
 
+def test_negative_control_preflight_accepts_typed_legacy_full_gate_oracle(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.parent.mkdir(parents=True, exist_ok=True)
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    evidence:\n"
+        "      test_contract:\n"
+        "        junit_xml: .artifacts/junit/contract-test.xml\n"
+        "    negative_controls:\n"
+        "    - id: legacy-full-gate-oracle\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_current]\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "add legacy control")
+
+    assert preflight.stale_negative_control_oracles(repo) == []
+    assert preflight._negative_control_targets(repo) == 1
+
+
+def test_negative_control_preflight_rejects_partial_modern_oracle_contract(
+    tmp_path: Path,
+) -> None:
+    repo = _committed_repo(tmp_path, "owner.py", "AUTHORITY = 'new'\n")
+    contracts = repo / "governance/gate-contracts.yml"
+    contracts.parent.mkdir(parents=True, exist_ok=True)
+    contracts.write_text(
+        "gates:\n"
+        "  contract-test:\n"
+        "    evidence:\n"
+        "      test_contract:\n"
+        "        selectors: [tests/test_owner.py]\n"
+        "        junit_xml: .artifacts/junit/contract-test.xml\n"
+        "    negative_controls:\n"
+        "    - id: partial-modern-oracle\n"
+        "      mutation: {path: owner.py, search: new, replace: mutant}\n"
+        "      oracle:\n"
+        "        kind: test_node_failure\n"
+        "        node_ids: [tests.test_owner::test_current]\n",
+        encoding="utf-8",
+    )
+
+    assert preflight.stale_negative_control_oracles(repo) == [
+        "partial-modern-oracle"
+    ]
+
+
 def test_negative_control_preflight_resolves_cross_gate_oracle_owner(
     tmp_path: Path,
 ) -> None:
@@ -481,6 +582,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     calls: list[str] = []
+    planning: list[dict[str, object]] = []
     authority = {
         "controller_commit_sha": "c" * 40,
         "controller_bundle_sha256": "d" * 64,
@@ -530,8 +632,17 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
     monkeypatch.setattr(
         preflight,
+        "validate_bounded_target_successor",
+        lambda *_: calls.append("target-valid"),
+    )
+    monkeypatch.setattr(
+        preflight,
         "build_verification_plan",
-        lambda *_: {"execution_dag": {"nodes": [{"producer": "test"}]}, "required_claims": ["test"]},
+        lambda *_, **kwargs: (
+            planning.append(kwargs)
+            or {"execution_dag": {"nodes": [{"producer": "test"}]},
+                "required_claims": ["test"]}
+        ),
     )
 
     class Session:
@@ -549,6 +660,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         python_executable=sys.executable,
         artifact_root=tmp_path / "evidence",
         transported_authority=authority,
+        evaluation_mode="workitem",
+        evaluation_target="P01-W01",
         trace=calls.append,
     )
 
@@ -557,6 +670,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "authored-phase-state",
         "ci-state-matrix",
         "structural-limits",
+        "bounded-target",
+        "target-valid",
         "syntax",
         "exposure",
         "interpreter",
@@ -581,6 +696,10 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     assert report["workflow_authority"] == 12
     assert report["self_controller"] == 6
     assert observed_authority == [authority]
+    assert planning == [{
+        "evaluation_mode": "workitem",
+        "evaluation_target": "P01-W01",
+    }]
 
 
 def test_context_budget_failure_precedes_evidence_session_allocation(
@@ -829,6 +948,13 @@ def test_stale_pack_manifest_fails_before_evidence(
             python_executable=sys.executable,
             artifact_root=tmp_path / ".artifacts",
         )
+
+
+def test_pack_preflight_closes_graphless_legacy_interpreter_state() -> None:
+    report = preflight._pack_manifest(REPO_ROOT)
+
+    assert report["applicable"] is True
+    assert report["template_interpreter"] == "dependencies_only"
 
 
 def test_workflow_authority_failure_prevents_session_allocation(
@@ -1155,6 +1281,15 @@ def _copy_current_authored_phase_state(repo: Path) -> dict:
         target = repo / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes((REPO_ROOT / relative).read_bytes())
+    shutil.copytree(REPO_ROOT / "schemas", repo / "schemas")
+    for record in [
+        *ledger["hotfix_lane"]["open_records"],
+        *ledger["hotfix_lane"]["remediation_history"],
+    ]:
+        relative = Path(record["hotfix_log"])
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((REPO_ROOT / relative).read_bytes())
     return active
 
 
@@ -1193,6 +1328,20 @@ def test_authored_phase_state_reports_computed_status_before_pair_mismatch(
     log_path.write_text(yaml.safe_dump(log, sort_keys=False))
 
     with pytest.raises(AuthoredPhaseStateError, match="verified and closed are computed"):
+        validate_authored_phase_state(repo)
+
+
+def test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    _copy_current_authored_phase_state(repo)
+    malformed = repo / "phases/phase-31-hotfix04.yml"
+    payload = yaml.safe_load(malformed.read_text(encoding="utf-8"))
+    payload["execution_evidence"]["notes"][0] = {"not": "a string"}
+    malformed.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(GovernanceValidationError, match="is not of type 'string'"):
         validate_authored_phase_state(repo)
 
 

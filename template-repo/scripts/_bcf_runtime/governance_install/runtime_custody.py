@@ -77,6 +77,25 @@ class RuntimeCustodySnapshot:
         return False
 
 
+def candidate_qualification_matches(
+    snapshot: RuntimeCustodySnapshot, *, commit_sha: str, tree_sha: str,
+) -> bool:
+    """Compare one already-decoded qualification identity without re-decoding it."""
+
+    if snapshot.state is not RuntimeCustodyState.CANDIDATE_QUALIFICATION_EXACT:
+        return False
+    try:
+        adopter = snapshot.provenance_claim["adopter"]
+        return (
+            isinstance(adopter, dict)
+            and set(adopter) == {"commit_sha", "tree_sha"}
+            and adopter["commit_sha"] == commit_sha
+            and adopter["tree_sha"] == tree_sha
+        )
+    except (KeyError, TypeError):
+        return False
+
+
 def _read_mapping(path: Path, *, label: str) -> tuple[dict[str, Any], bytes]:
     if not path.is_file() or path.is_symlink():
         raise RuntimeCustodyError(

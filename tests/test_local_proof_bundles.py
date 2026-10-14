@@ -5,11 +5,15 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import tempfile
 
 from bcf_governance.tooling.local_proof_bundles import (
+    FAILURE_MANIFEST_NAME,
+    _bounded_diagnostic,
     identity_digest,
     proof_identity,
     restore_proof_bundle,
+    store_failure_bundle,
     store_proof_bundle,
 )
 
@@ -107,3 +111,74 @@ def test_different_identity_cannot_reuse_proof(tmp_path: Path) -> None:
     assert restore_proof_bundle(
         root, identity=changed, destination=tmp_path / "unused"
     ) is None
+
+
+def test_failed_local_producer_retains_bounded_causal_bundle(
+    tmp_path: Path,
+) -> None:
+    root = _repository(tmp_path)
+    causal = "FIRST-CAUSAL-EXCEPTION\n" + "x" * 400_000 + "\nTERMINAL-CONTEXT"
+    with tempfile.TemporaryDirectory() as temporary:
+        session_root = Path(temporary)
+        session = session_root / "evidence-session.json"
+        session.write_text(
+            json.dumps(
+                {
+                    "session_id": "a" * 32,
+                    "subject": {"commit_sha": "1" * 40, "tree_sha": "2" * 40},
+                    "producer": {
+                        "kind": "local",
+                        "provider": "local",
+                        "repository": "repo",
+                        "repository_id": "local",
+                        "run_id": "prospective-local",
+                        "run_attempt": "1",
+                        "producer_id": "prospective-local",
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+        producer_root = session_root / "test"
+        producer_root.mkdir()
+        receipt = producer_root / "test.evidence.json"
+        receipt.write_text(
+            json.dumps({"result": "failed", "observations": {"exit_code": 1}}),
+            encoding="utf-8",
+        )
+        (producer_root / "test.stderr.txt").write_text(causal, encoding="utf-8")
+
+        bundle = store_failure_bundle(
+            root,
+            producer="test",
+            producer_environment={"BCF_EXECUTION_STATE_NAMESPACE": "exact-owned"},
+            session_manifest=session,
+            receipt=receipt,
+            exit_code=1,
+        )
+
+    manifest = json.loads(
+        (bundle / FAILURE_MANIFEST_NAME).read_text(encoding="utf-8")
+    )
+    assert manifest["result"] == "failed"
+    assert manifest["authority"] == {
+        "class": "local_diagnostic_only",
+        "proof_reuse_allowed": False,
+        "provider_authority_substituted": False,
+    }
+    assert manifest["identity"]["subject"] == {
+        "commit_sha": "1" * 40,
+        "tree_sha": "2" * 40,
+    }
+    stderr = next(
+        (bundle / item["path"])
+        for item in manifest["files"]
+        if item["path"].endswith("test.stderr.txt")
+    ).read_text(encoding="utf-8")
+    assert stderr.startswith("FIRST-CAUSAL-EXCEPTION")
+    assert stderr.endswith("TERMINAL-CONTEXT")
+    assert len(stderr.encode()) <= 256 * 1024
+    inline = _bounded_diagnostic(causal)
+    assert inline.startswith("FIRST-CAUSAL-EXCEPTION")
+    assert inline.endswith("TERMINAL-CONTEXT")
+    assert "diagnostic characters omitted" in inline

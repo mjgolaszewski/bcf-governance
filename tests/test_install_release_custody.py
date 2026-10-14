@@ -25,7 +25,10 @@ from bcf_governance.tooling.governance_install import cli as install_cli
 from bcf_governance.tooling.governance_install.upgrade import (
     _upgrade_direct_comparison_input,
     _upgrade_evidence_capture_environment,
+    _upgrade_provider_permission_edges,
 )
+from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
+from bcf_governance.tooling.ci_graph_yaml import render_yaml
 from bcf_governance.tooling.release_asset_inventory import exact_assets
 
 
@@ -588,6 +591,64 @@ def test_upgrade_rejects_customized_evidence_capture_environment(
 
     with pytest.raises(ValueError, match="environment is customized"):
         _upgrade_evidence_capture_environment(tmp_path)
+
+
+def test_upgrade_projects_retry_provider_permission_without_broadening_other_jobs(
+    tmp_path: Path,
+) -> None:
+    graph_path = tmp_path / "governance/ci-graph.yml"
+    graph_path.parent.mkdir(parents=True)
+    graph = build_reference_ci_graph(
+        project_id="legacy-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["test"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    graph["step_components"]["capture-shard"].pop("required_permissions")
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    evidence["permissions"].pop("actions")
+    preflight = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "cheap-preflight"
+    )
+    graph_path.write_bytes(render_yaml(graph))
+
+    assert _upgrade_provider_permission_edges(tmp_path) == [graph_path]
+    migrated = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    assert migrated["step_components"]["capture-shard"]["required_permissions"] == {
+        "actions": "read"
+    }
+    migrated_evidence = next(
+        job
+        for workflow in migrated["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    migrated_preflight = next(
+        job
+        for workflow in migrated["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "cheap-preflight"
+    )
+    assert migrated_evidence["permissions"] == {
+        "actions": "read",
+        "contents": "read",
+    }
+    assert migrated_preflight["permissions"] == preflight["permissions"] == {
+        "contents": "read"
+    }
+    assert _upgrade_provider_permission_edges(tmp_path) == []
 
 
 def test_authenticated_upgrade_normalizes_exact_legacy_overlap(

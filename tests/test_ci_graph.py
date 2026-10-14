@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling import evidence_shards
 from bcf_governance.tooling.ci_graph_contracts import (
     CIGraphError,
     _validate_workflows,
@@ -275,7 +276,9 @@ def test_candidate_title_is_derived_from_unique_active_workitem(tmp_path: Path) 
     )
 
 
-def test_candidate_title_rejects_ambiguous_active_workitems(tmp_path: Path) -> None:
+def test_candidate_title_derives_phase_progress_for_parallel_active_workitems(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "plans").mkdir()
     (tmp_path / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump({"active_phase": {
@@ -289,8 +292,32 @@ def test_candidate_title_rejects_ambiguous_active_workitems(tmp_path: Path) -> N
             {"id": "P30-P0-04", "status": "IN_PROGRESS", "summary": "reuse proof"},
         ]}), encoding="utf-8"
     )
-    with pytest.raises(CIGraphError, match="not unique"):
-        authored_candidate_title(tmp_path, mode="pr", target=None)
+    assert authored_candidate_title(tmp_path, mode="pr", target=None) == (
+        "P30: advance governed PR progress"
+    )
+
+
+def test_candidate_title_derives_phase_progress_for_parallel_todo_workitems(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P01",
+            "workitems": "plans/phase-01-workitems.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-01-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P01-P0-01", "status": "DONE", "summary": "foundation"},
+            {"id": "P01-P0-02", "status": "TODO", "summary": "parallel alpha"},
+            {"id": "P01-P0-03", "status": "TODO", "summary": "parallel beta"},
+        ]}), encoding="utf-8"
+    )
+
+    assert authored_candidate_title(tmp_path, mode="pr", target=None) == (
+        "P01: advance governed PR progress"
+    )
 
 
 def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_work(
@@ -537,6 +564,68 @@ def test_v3_lite_starts_with_typed_direct_pr_progress() -> None:
     )
     workflow = next(item for item in graph["workflows"] if item["id"] == "governance")
     assert workflow_input_issues(graph, workflow) == ()
+
+
+def test_retry_capable_capture_declares_and_receives_actions_read(
+) -> None:
+    graph = build_reference_ci_graph(
+        project_id="permission-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["test"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    capture = graph["step_components"]["capture-shard"]
+    assert capture["required_permissions"] == {"actions": "read"}
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    assert evidence["permissions"] == {"actions": "read", "contents": "read"}
+    workflow = next(
+        workflow for workflow in graph["workflows"] if evidence in workflow["jobs"]
+    )
+    assert job_execution_issues(
+        graph, evidence, evidence["executor"], workflow
+    ) == ()
+
+
+@pytest.mark.parametrize("mutation", ["component-contract", "job-permission"])
+def test_retry_capable_capture_permission_edge_fails_before_execution(
+    mutation: str,
+) -> None:
+    graph = build_reference_ci_graph(
+        project_id="permission-adopter",
+        profile="lite",
+        profile_contract_version="3.0",
+        gates=["test"],
+        candidate_labels=["ubuntu-24.04"],
+        trusted_labels=["ubuntu-24.04"],
+        candidate_hosted=True,
+        trusted_hosted=True,
+    )
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    if mutation == "component-contract":
+        graph["step_components"]["capture-shard"].pop("required_permissions")
+        expected = "provider permission contract differs from its command"
+    else:
+        evidence["permissions"].pop("actions")
+        expected = "lacks actions:read required by component capture-shard"
+    workflow = next(
+        workflow for workflow in graph["workflows"] if evidence in workflow["jobs"]
+    )
+    issues = job_execution_issues(graph, evidence, evidence["executor"], workflow)
+    assert any(expected in issue for issue in issues)
 
 
 def test_direct_workflow_declares_event_owned_comparison_context() -> None:
@@ -1903,6 +1992,68 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
     with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
         local_gate_job_environments(graph, ("test",))
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        local_gate_job_environments(
+            graph, ("test",), allowed_unmapped=frozenset({"test"})
+        )
+
+
+def test_profile_v1_local_gate_environment_admits_only_declared_direct_producer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    graph = {
+        "workflows": [
+            {
+                "id": "governance",
+                "events": [{"type": "pull_request"}],
+                "environment": {"SHARED": "literal"},
+                "jobs": [
+                    {
+                        "id": "evidence",
+                        "executor": {"kind": "gate_group", "gates": ["test"]},
+                    }
+                ],
+            }
+        ]
+    }
+    profile = {
+        "profile_contract_version": "1.0",
+        "ci_profile": {"required_push_jobs": ["lint", "test"]},
+    }
+    monkeypatch.setattr(evidence_shards, "_mapping", lambda *_: profile)
+    monkeypatch.setattr(
+        evidence_shards, "required_gate_targets", lambda _: ["lint", "test"]
+    )
+
+    assert evidence_shards.local_gate_execution_environments(
+        tmp_path, graph, ("lint", "test")
+    ) == {"lint": {}, "test": {"SHARED": "literal"}}
+
+    profile["ci_profile"]["required_push_jobs"] = ["test"]
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        evidence_shards.local_gate_execution_environments(
+            tmp_path, graph, ("lint", "test")
+        )
+
+
+def test_modern_profile_cannot_use_legacy_direct_producer_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    graph = {
+        "workflows": [
+            {"id": "governance", "events": [{"type": "pull_request"}], "jobs": []}
+        ]
+    }
+    monkeypatch.setattr(
+        evidence_shards,
+        "_mapping",
+        lambda *_: {"profile_contract_version": "3.0"},
+    )
+
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        evidence_shards.local_gate_execution_environments(
+            tmp_path, graph, ("test",)
+        )
 
 
 def test_local_graph_environment_resolves_only_exact_workspace_binding(

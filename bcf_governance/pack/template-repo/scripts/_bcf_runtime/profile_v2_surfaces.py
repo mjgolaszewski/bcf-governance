@@ -11,19 +11,34 @@ from .ci_github_actions import action_pin
 from .repository_comparison_context import direct_comparison_environment
 
 
+def render_make_argv(command: list[str]) -> str:
+    """Project one gate argv through its canonical executable identities."""
+
+    if command[0] in {"python", "python3"}:
+        return '"$$python"' + (
+            " " + shlex.join(command[1:]) if len(command) > 1 else ""
+        )
+    if command[0] == "bcf":
+        return "$(BCF)" + (
+            " " + shlex.join(command[1:]) if len(command) > 1 else ""
+        )
+    return shlex.join(command)
+
+
 def selective_release_check_lines() -> list[str]:
     """Render the sole local selective-plan execution boundary."""
 
     return [
         "release-check:",
-        "\t@mkdir -p $(BCF_EVIDENCE_DIR)",
-        "\t@preflight_output=\"$$($(PYTHON) scripts/preflight_governance.py --repo-root . --mode release --python $(PYTHON) --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text)\" || exit $$?; \\",
+        "\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; \\",
+        "\tmkdir -p $(BCF_EVIDENCE_DIR); \\",
+        "\tpreflight_output=\"$$(\"$$python\" scripts/preflight_governance.py --repo-root . --mode release --python \"$$python\" --artifact-root $(BCF_EVIDENCE_DIR) --expected-producer local --local-producer-id local --format text)\" || exit $$?; \\",
         "\tprintf '%s\\n' \"$$preflight_output\"; \\",
         "\tsession=\"$$(printf '%s\\n' \"$$preflight_output\" | tail -n 1)\"; \\",
         "\ttest -n \"$$session\" && test -f \"$$session\" || { echo 'preflight did not produce an evidence session' >&2; exit 1; }; \\",
         "\tsession_dir=\"$${session%/evidence-session.json}\"; \\",
-        "\t$(PYTHON) scripts/capture_governance_shard.py --repo-root . --all-planned --output-root \"$$session_dir\" --session-manifest \"$$session\" || exit $$?; \\",
-        "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir \"$$session_dir\"",
+        "\t\"$$python\" scripts/capture_governance_shard.py --repo-root . --all-planned --output-root \"$$session_dir\" --session-manifest \"$$session\" || exit $$?; \\",
+        "\t\"$$python\" scripts/governance_truth.py --repo-root . --evidence-dir \"$$session_dir\"",
         "",
     ]
 
@@ -33,29 +48,30 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
     targets = " ".join(gates)
     lines = [
         "SHELL := /bin/bash",
-        "PYTHON ?= python3",
+        "include .artifacts/bcf/local-cli.mk",
+        "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .",
         "BCF_EVIDENCE_DIR ?= .artifacts/bcf",
         "",
         f".PHONY: governance-truthfulness release-check {targets}",
         "",
         "governance-truthfulness:",
-        "\t$(PYTHON) scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
+        "\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; \"$$python\" scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
         "",
     ]
     for target, gate in gates.items():
         command = list(gate["invocation"]["argv"])
-        argv = (
-            "$(PYTHON)" + (" " + shlex.join(command[1:]) if len(command) > 1 else "")
-            if command[0] in {"python", "python3"}
-            else shlex.join(command)
-        )
+        argv = render_make_argv(command)
         env = " ".join(
             f"{key}={shlex.quote(value)}"
             for key, value in gate["invocation"]["env"].items()
         )
         cwd = shlex.quote(gate["invocation"]["cwd"])
         lines.extend(
-            [f"{target}:", f"\t@cd {cwd} && {env + ' ' if env else ''}{argv}", ""]
+            [
+                f"{target}:",
+                f"\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; cd {cwd} && {env + ' ' if env else ''}{argv}",
+                "",
+            ]
         )
     lines.extend(selective_release_check_lines())
     return "\n".join(lines)

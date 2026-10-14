@@ -40,6 +40,7 @@ from bcf_governance.tooling.routine_controller_rotation import (
     transition_id,
     validate_transition,
 )
+from bcf_governance.tooling.semantic_authority_commands import _lock
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
 
@@ -723,6 +724,9 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
     )
 
     assert "release-smoke" in contract["claim_model"]["claims"]
+    assert contract["interpreter_contract"] == {
+        "dependency_source": "requirements-governance.txt"
+    }
     existing = tmp_path / "existing-contract"
     shutil.copytree(REPO_ROOT / "template-repo", existing)
     apply_profile_contract(existing, contract, write_workflow=False)
@@ -757,6 +761,51 @@ def test_fresh_v3_profile_uses_declared_custom_gate_claim_model_only_on_install(
             config,
             asset_root=repo,
             contract_version="3.0",
+        )
+
+
+def test_fresh_v3_profile_preserves_explicit_interpreter_contract(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "explicit-interpreter-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    (repo / "project-requirements.txt").write_text("pytest==9.1.1\n", encoding="utf-8")
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    payload["interpreter_contract"] = {
+        "dependency_source": "project-requirements.txt"
+    }
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    contract = load_contract(
+        REPO_ROOT / "template-repo", "standard", config, asset_root=repo,
+        contract_version="3.0", fresh_install=True,
+    )
+
+    assert contract["interpreter_contract"] == {
+        "dependency_source": "project-requirements.txt"
+    }
+
+
+def test_fresh_v3_profile_rejects_ambiguous_interpreter_contract(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "ambiguous-interpreter-adopter"
+    repo.mkdir()
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None, contract_version="3.0")
+    payload = yaml.safe_load(config.read_text(encoding="utf-8"))
+    payload["interpreter_contract"] = {
+        "dependency_source": "requirements-governance.txt",
+        "project_dependencies": True,
+    }
+    config.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(ProfileContractError, match="ambiguous fields"):
+        load_contract(
+            REPO_ROOT / "template-repo", "standard", config, asset_root=repo,
+            contract_version="3.0", fresh_install=True,
         )
 
 
@@ -1328,6 +1377,9 @@ def test_standard_v1_to_v2_promotion_is_explicit_and_preserves_workflow(
     assert contracts["gates"]["architecture-test"]["evidence"]["test_contract"][
         "selectors"
     ] == ["tests/test_architecture.py"]
+    assert contracts["interpreter_contract"] == {
+        "dependency_source": "requirements-governance.txt"
+    }
     evidence_policy = yaml.safe_load(
         (repo / "governance/evidence-policy.yml").read_text(encoding="utf-8")
     )
@@ -1569,9 +1621,15 @@ def test_full_profile_install_evidence_truth_flow(
     assert len(governed_gates) == len(set(governed_gates))
     assert set(governed_gates) == set(contracts["gates"])
     subject = {"commit_sha": git(repo, "rev-parse", "HEAD"), "tree_sha": git(repo, "rev-parse", "HEAD^{tree}")}
-    plan = verification_plan(repo, subject, [])
+    plan = verification_plan(
+        repo,
+        subject,
+        [],
+        evaluation_mode="workitem",
+        evaluation_target="P01-P0-01",
+    )
     planned_targets = [str(node["producer"]) for node in plan["execution_dag"]["nodes"]]
-    assert "release-smoke" in planned_targets
+    assert planned_targets == ["contract-test", "test", "typecheck"]
     session = allocate_session(
         repo,
         evidence,
@@ -1608,8 +1666,11 @@ def test_full_profile_install_evidence_truth_flow(
         evaluation_target="P01-P0-01",
     )
     assert report["status"] == "pass", report
-    assert report["effective_state"] == "closed"
-    assert report["release_readiness"]["effective_state"] == "closed"
+    assert report["effective_state"] == "active"
+    assert report["certified_proposition"]["conclusion"] == "success"
+    workitems = report["claims"]["workitems_closed"]["repository_observation"]
+    assert workitems["closed_ids"] == ["P01-P0-01"]
+    assert report["release_readiness"]["effective_state"] == "completed"
     assert report["certified_proposition"]["predicate"] == "workitem_closed"
     if profile == "regulated":
         assert (repo / "governance/MODEL_RISK_AND_PROVENANCE.md").is_file()
@@ -1924,3 +1985,71 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
     apply_ci_graph(repo)
     assert check_ci_graph(repo).status == "clean"
     assert unrelated.read_bytes() == unrelated_bytes
+
+
+def test_standard_upgrade_reconciles_semantic_source_inventory_before_success(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "standard-semantic-upgrade"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "semantic-upgrade@example.invalid")
+    git(repo, "config", "user.name", "Semantic Upgrade")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    semantic = semantic_config(repo)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "fixture contracts")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-config",
+            str(config),
+            "--semantic-config",
+            str(semantic),
+            "--project-id",
+            "semantic-upgrade-fixture",
+            "--project-name",
+            "Semantic Upgrade Fixture",
+            "--product-name",
+            "Semantic Upgrade Fixture",
+            *EXPLICIT_HOSTED_RUNNERS,
+            "--require-strict-validation",
+        ],
+        check=True,
+    )
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "installed governance")
+
+    runtime = repo / "scripts/validate_governance_yaml.py"
+    runtime.write_text(
+        runtime.read_text(encoding="utf-8") + "\n# prior runtime\n",
+        encoding="utf-8",
+    )
+    _lock(repo, apply=True)
+    git(repo, "add", str(runtime), "governance/semantic-lock.yml")
+    git(repo, "commit", "--quiet", "-m", "prior runtime custody")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--upgrade",
+            "--require-strict-validation",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    assert "validation: strict pass" in result.stdout
+    expected_runtime = REPO_ROOT / "template-repo" / runtime.relative_to(repo)
+    assert runtime.read_bytes() == expected_runtime.read_bytes()
+    _lock(repo, apply=False)

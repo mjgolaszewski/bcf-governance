@@ -9,6 +9,7 @@ import pytest
 import yaml
 
 from bcf_governance.tooling import reconcile_authority_transition as authority_transition
+from bcf_governance.tooling import scaffold_governance_artifacts as scaffold
 from bcf_governance.cli import COMMANDS
 from bcf_governance.tooling.scaffold_governance_artifacts import (
     ReconcileError,
@@ -26,6 +27,7 @@ from bcf_governance.tooling.profile_surface_generation import (
     reconcile_makefile,
     reconcile_template_workflow,
 )
+from bcf_governance.tooling.nested_cli_runtime import exact_nested_cli_command
 from bcf_governance.tooling.reconcile_authority_transition import (
     ReconcileAuthorityTransitionError,
     apply_workflow_authority_transition,
@@ -65,6 +67,34 @@ def test_reconcile_ledger_skips_only_exact_clean_stage(tmp_path: Path) -> None:
     assert first["stages"][0]["state"] == "checked"
     assert second["stages"][0]["state"] == "skipped_clean"
     assert third["stages"][0]["state"] == "checked"
+
+
+def test_reconcile_derives_project_python_before_compiling_test_stages(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    selected = tmp_path / ".artifacts/project/bin/python"
+    observed: list[Path] = []
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(
+        scaffold,
+        "ensure_local_project_python",
+        lambda root, controller, requested=None: selected,
+    )
+    monkeypatch.setattr(
+        scaffold,
+        "reconcile_steps",
+        lambda _root, python: observed.append(python) or (),
+    )
+    monkeypatch.setattr(
+        scaffold,
+        "check_reconcile_steps",
+        lambda _root, _steps, force=False: {"stages": []},
+    )
+
+    scaffold.reconcile_main(["--repo-root", str(tmp_path), "--check"])
+
+    assert observed == [selected]
+    assert '"status": "clean"' in capsys.readouterr().out
 
 
 def test_reconcile_forced_check_proves_cached_equivalence(tmp_path: Path) -> None:
@@ -197,9 +227,10 @@ def test_new_release_editorial_base_rejects_untracked_branch(tmp_path: Path) -> 
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:10] == [
+    assert ids[:11] == [
         "authored-phase-state",
         "ci-state-matrix",
+        "ci-provider-permissions",
         "interpreter-environment",
         "structural-limits",
         "release-version-surfaces",
@@ -216,6 +247,14 @@ def test_reconcile_declares_one_closed_dependency_order() -> None:
     watched = set(phase_scope.watch_paths or ())
     assert active["workitems"] in watched
     assert active["log"] in watched
+    authored = next(step for step in reconcile_steps(root, Path(sys.executable)) if step.step_id == "authored-phase-state")
+    authored_watched = set(authored.watch_paths or ())
+    ledger = yaml.safe_load((root / "plans/phase-ledger.yml").read_text())
+    assert {
+        record["hotfix_log"]
+        for key in ("open_records", "remediation_history")
+        for record in ledger["hotfix_lane"][key]
+    } <= authored_watched
     assert {
         path
         for path in watched
@@ -435,9 +474,35 @@ def test_reconcile_separates_tool_runtime_from_selected_project_python(
 
     assert observed[0][0] == str(Path(sys.executable).absolute())
     assert observed[0][0] != str(selected.absolute())
+    assert observed[0][1:3] == ["-I", "-c"]
     assert observed[1][0] == str(Path(sys.executable).absolute())
+    assert observed[1][1:3] == ["-I", "-c"]
     assert "--all" in observed[1]
     assert observed[1][observed[1].index("--python") + 1] == str(selected.absolute())
+
+
+def test_nested_cli_rejects_ambient_adopter_and_pythonpath_implementations(
+    tmp_path: Path,
+) -> None:
+    fake = tmp_path / "bcf_governance"
+    fake.mkdir()
+    (fake / "__init__.py").write_text("\n", encoding="utf-8")
+    (fake / "cli.py").write_text(
+        "raise SystemExit('ambient adopter implementation executed')\n",
+        encoding="utf-8",
+    )
+    result = subprocess.run(
+        exact_nested_cli_command("--version"),
+        cwd=tmp_path,
+        env={"PYTHONPATH": str(tmp_path)},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().startswith("bcf ")
+    assert "ambient adopter implementation" not in result.stderr
 
 
 def test_reconcile_runs_declared_order_to_a_fixed_point(tmp_path: Path) -> None:

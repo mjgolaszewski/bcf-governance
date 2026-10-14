@@ -33,6 +33,7 @@ from .semantic_authority_contracts import (
     capability_states,
 )
 from .ci_graph_post_merge import reconcile_post_merge_scope
+from .ci_graph_provider_permissions import reconcile_provider_permission_edges
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_values import declared_graph_value_source_paths
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
@@ -44,6 +45,7 @@ from .reconcile_authority_transition import (
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
 from .interpreter_environment import reconcile_interpreter_environment
+from .local_execution_admission import ensure_local_project_python
 from .test_duration_observations import reconcile_test_duration_observations
 from .editorial_audit_projection import editorial_base
 from .evidence_storage_topology import compile_migration_plan
@@ -52,6 +54,7 @@ from .hotfix_scaffolding import (
     register_hotfix_log,
     scaffold_hotfix_log,
 )
+from .nested_cli_runtime import exact_nested_cli_command
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
     """Reject machine-local command records before any artifact is written."""
@@ -296,7 +299,6 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
 
     project_python = python.absolute()
     tool_python = Path(sys.executable).absolute()
-    cli = [str(tool_python), "-m", "bcf_governance.cli"]
     graph_value_sources = (
         declared_graph_value_source_paths(repo_root)
         if (repo_root / "governance/ci-graph.yml").is_file()
@@ -304,12 +306,13 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     )
     from .governance_validation.authored_phase_state import (
         active_phase_paths,
+        validate_authored_hotfix_state,
         validate_authored_phase_state,
     )
     from .governance_validation.ci_state_matrix import validate_ci_state_matrix
-
     phase_ledger_present = (repo_root / "plans/phase-ledger.yml").is_file()
     active_paths = active_phase_paths(repo_root) if phase_ledger_present else ()
+    hotfix_paths = validate_authored_hotfix_state(repo_root) if phase_ledger_present else ()
     steps: list[ReconcileStep] = []
     if phase_ledger_present:
         active_plan, active_workitems, active_log = active_paths
@@ -325,6 +328,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 active_plan,
                 active_workitems,
                 active_log,
+                *hotfix_paths,
             ),
         ))
         steps.append(ReconcileStep(
@@ -340,6 +344,17 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         ))
     steps.extend([
         ReconcileStep(
+            "ci-provider-permissions",
+            lambda: reconcile_provider_permission_edges(repo_root, apply=False),
+            lambda: reconcile_provider_permission_edges(repo_root, apply=True),
+            apply_verifies=True,
+            watch_paths=(
+                "governance/ci-graph.yml",
+                "bcf_governance/tooling/ci_graph_provider_permissions.py",
+                "bcf_governance/tooling/evidence_shards.py",
+            ),
+        ),
+        ReconcileStep(
             "interpreter-environment",
             lambda: reconcile_interpreter_environment(repo_root, apply=False),
             lambda: reconcile_interpreter_environment(repo_root, apply=True),
@@ -349,6 +364,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 "governance/gate-contracts.yml",
                 "requirements-governance.txt",
                 "bcf_governance/tooling/interpreter_environment.py",
+                "bcf_governance/tooling/python_runtime_selection.py",
             ),
         ),
         ReconcileStep(
@@ -443,8 +459,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         steps.append(
             ReconcileStep(
                 "semantic-lock",
-                _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--check"]),
-                _reconcile_action(repo_root, "semantic-lock", [*cli, "semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply"]),
+                _reconcile_action(repo_root, "semantic-lock", exact_nested_cli_command("semantic-ownership", "lock", "--repo-root", str(repo_root), "--check")),
+                _reconcile_action(repo_root, "semantic-lock", exact_nested_cli_command("semantic-ownership", "lock", "--repo-root", str(repo_root), "--apply")),
                 apply_verifies=True,
                 watch_paths=(
                     "bcf_governance/tooling/semantic_*",
@@ -462,7 +478,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             + ", ".join(present)
         )
     if declared_test_gates(repo_root):
-        common = [*cli, "test-manifest"]
+        common = exact_nested_cli_command("test-manifest")
         suffix = ["--all", "--repo-root", str(repo_root), "--python", str(project_python)]
         steps.append(
             ReconcileStep(
@@ -496,8 +512,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         steps.append(
             ReconcileStep(
                 f"ci-graph-{operation}",
-                _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--check"]),
-                _reconcile_action(repo_root, f"ci-graph-{operation}", [*cli, "ci", "graph", operation, "--repo-root", str(repo_root), "--apply"]),
+                _reconcile_action(repo_root, f"ci-graph-{operation}", exact_nested_cli_command("ci", "graph", operation, "--repo-root", str(repo_root), "--check")),
+                _reconcile_action(repo_root, f"ci-graph-{operation}", exact_nested_cli_command("ci", "graph", operation, "--repo-root", str(repo_root), "--apply")),
                 watch_paths=(
                     "governance/ci-graph.yml",
                     "governance/ci-graph.lock.yml",
@@ -607,7 +623,7 @@ def converge(
 def reconcile_main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Converge all mechanically derived governance surfaces.")
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
-    parser.add_argument("--python", type=Path, default=Path(sys.executable))
+    parser.add_argument("--python", type=Path)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--check", action="store_true")
     mode.add_argument("--apply", action="store_true")
@@ -619,7 +635,16 @@ def reconcile_main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     root = args.repo_root.resolve()
     try:
-        steps = reconcile_steps(root, args.python)
+        project_python = (
+            ensure_local_project_python(
+                root,
+                Path(sys.executable),
+                requested=args.python,
+            )
+            if declared_test_gates(root)
+            else args.python or Path(sys.executable)
+        )
+        steps = reconcile_steps(root, project_python)
         ledger = None
         if args.force and not args.check:
             raise ReconcileError("--force is valid only with --check")
@@ -631,12 +656,12 @@ def reconcile_main(argv: list[str] | None = None) -> None:
             if any(step.step_id == "workflow-authority" for step in steps):
                 transition = apply_workflow_authority_transition(
                     root,
-                    step_factory=lambda candidate: reconcile_steps(candidate, args.python),
+                    step_factory=lambda candidate: reconcile_steps(candidate, project_python),
                     converge=converge,
                     snapshot=_reconcile_snapshot,
                 )
             if transition is not None:
-                record_reconcile_steps(root, reconcile_steps(root, args.python))
+                record_reconcile_steps(root, reconcile_steps(root, project_python))
                 print(authority_transition_json(transition))
                 return
             rounds = converge(steps, lambda: _reconcile_snapshot(root))

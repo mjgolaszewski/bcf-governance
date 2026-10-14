@@ -24,7 +24,6 @@ from .ci_authority_prospective_lanes import (
 )
 from .ci_exact_main_truth import validate_exact_main_truth_payload
 from .ci_github_identity import GitHubControllerError
-from .ci_graph_execution import local_gate_job_environments
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -32,7 +31,7 @@ from .evaluation_scope import (
     evaluation_scope,
 )
 from .evidence_execution import EvidenceError
-from .evidence_shards import planned_gate_targets
+from .evidence_shards import local_gate_execution_environments, planned_gate_targets
 from .evidence_sessions import allocate_session, local_producer_identity
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
@@ -93,6 +92,7 @@ from .local_pr_context import (
     _confirm_unchanged as _confirm_context_unchanged,
     _pr_environment,
     _run,
+    derive_local_validation_lane,
     resolve_local_pr_context,
     run_local_pr_validation,
 )
@@ -154,29 +154,6 @@ def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> Non
         raise ProspectiveValidationError(str(exc)) from exc
 
 
-def canonical_prospective_inputs(
-    repo_root: Path,
-    *,
-    remote: str = "origin",
-    runner: Runner = _run,
-) -> dict[str, str | None]:
-    """Derive the immutable subject and proposition for a local train."""
-
-    root = repo_root.resolve()
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
-    identity = _candidate_identity(root, context, runner=runner)
-    try:
-        evaluation = post_merge_evaluation(validate_ci_graph(root).graph)
-    except CIGraphError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
-    return {
-        "semantic_intent": evaluation.mode,
-        "evaluation_target": evaluation.target,
-        "subject_commit": identity.commit_sha,
-        "subject_tree": identity.tree_sha,
-    }
-
-
 def _run_prospective_train(
     repo_root: Path,
     *,
@@ -191,7 +168,7 @@ def _run_prospective_train(
     repository: str | None = None,
     provider_api: GitHubAPI | None = None,
     toolchain_identity: Mapping[str, Any] | None = None,
-    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
+    validation_lane: LocalValidationLane | None = None,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:
@@ -199,6 +176,12 @@ def _run_prospective_train(
 
     root = repo_root.resolve()
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    effective_validation_lane = derive_local_validation_lane(
+        root,
+        context,
+        requested=validation_lane,
+        runner=runner,
+    )
     identity = _candidate_identity(root, context, runner=runner)
     measurements: list[dict[str, Any]] = []
     progress: list[dict[str, Any]] = []
@@ -338,7 +321,7 @@ def _run_prospective_train(
 
     with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:
         artifact_root = Path(temporary) / "evidence"
-        with _pr_environment(context, validation_lane=validation_lane):
+        with _pr_environment(context, validation_lane=effective_validation_lane):
             try:
                 emit("preflight", "started")
                 preflight_started = time.monotonic_ns()
@@ -484,10 +467,10 @@ def _run_prospective_train(
         except (TypeError, ValueError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         try:
-            producer_environments = local_gate_job_environments(
-                validate_ci_graph(root).graph, producers
+            producer_environments = local_gate_execution_environments(
+                root, validate_ci_graph(root).graph, producers
             )
-        except CIGraphError as exc:
+        except (CIGraphError, ValueError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         bundle_identity = None
         bundle_manifest = None
@@ -735,7 +718,7 @@ def run_prospective_train(
     python_executable: Path,
     repository: str | None = None,
     provider_api: GitHubAPI | None = None,
-    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
+    validation_lane: LocalValidationLane | None = None,
     runner: Runner = _run,
     progress_sink: ProgressSink | None = None,
 ) -> dict[str, Any]:

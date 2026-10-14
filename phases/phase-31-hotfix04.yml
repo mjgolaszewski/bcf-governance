@@ -1,0 +1,180 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF04 Hotfix Log
+  id: project-phase-31-hotfix04
+  version: 1.0.0
+  generated_at_utc: '2026-10-13T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix04.yml
+hotfix:
+  id: P31-HF04
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 4
+  summary: close adopter classification and supplemental publication contracts
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_doctor_governance_pack.py
+  - .venv/bin/python -m bcf_governance.cli reconcile --repo-root . --check
+  - bcf install --target <disposable-bdmcp-clone> --upgrade --candidate-qualification-source
+    . --require-strict-validation
+  - bcf install --target <disposable-agentbus-clone> --upgrade --candidate-qualification-source
+    . --require-strict-validation
+  - bcf validate --repo-root <disposable-agentbus-clone> --format json --compact
+  - bcf ci prospective-train --repo-root <disposable-tradeflow-clone> --format
+    json
+  notes:
+  - record failing workflows, diagnosed root cause, remediation scope, and merge-back
+    status
+  - BDMCP strict Lite qualification passed; declared nested test paths no longer
+    enter production LOC accounting and dotted Docker Go-template fields remain
+    foreign to BCF placeholder grammar.
+  - AgentBus strict Standard-v3 qualification passed; three authenticated
+    supplemental publications validate as typed children of their phase-owning
+    parent with exact commit, tree, archive digest, and provider receipt custody.
+  - Racecar reported no additional BCF-owned defect; its observed expired Trivy
+    preparation cache is project-owned and excluded from this repair.
+  - TradeFlow Lite exposed a profile-v1 compatibility edge because its authenticated
+    requirements-governance.txt and unique graph Python minor predate the typed
+    interpreter contract. The canonical environment owner now derives an
+    isolated, content-addressed project interpreter from those exact legacy
+    declarations; explicit v2/v3 contracts remain mandatory and fail closed.
+  - BDMCP exposed an atomic-upgrade shadow edge because its authenticated native
+    baseline was valid on the maintained subject, but candidate validation ran
+    in a shadow without the Git history that the baseline consumer requires.
+    The installer now derives Git-shadow custody from the authenticated active
+    baseline and preserves the exact history only for that typed state.
+  - Execution-scoped external resource names remain project-owned consumers of
+    BCF_EXECUTION_STATE_NAMESPACE. Constant Docker tags or containers are not
+    granted implicit shared-state semantics and must fail closed in the owning
+    project gate.
+  - Racecar exposed lost local-failure custody after a long producer diagnostic.
+    The local proof owner now retains a content-addressed, diagnostic-only
+    failure bundle outside disposable execution state, preserves bounded causal
+    head and terminal tail with omitted-byte accounting, and binds exact
+    subject, session, producer, environment, exit status and receipt digest.
+    Failed material remains explicitly ineligible for proof reuse or authority.
+  - >-
+    TradeFlow exposed a parent/child reconciliation identity split: the parent
+    candidate runtime could invoke a nested graph command that selected an
+    ambient installed BCF after import-environment scrubbing. The reconciler now
+    derives one isolated child bootstrap from its exact executing module root
+    and interpreter, verifies child origin, and uses that identity for both
+    apply and check. A fresh disposable Lite clone passed strict install,
+    fixed-point reconciliation, direct graph parity, canonical interpreter
+    materialization, and observation-only prospective closure.
+  - >-
+    The exact self prospective train exposed a distinct projectionless modern
+    interpreter state. Direct validation now preserves the typed dependency
+    probe for that state, while only authenticated legacy requirements or a
+    modern requirements projection may materialize a fresh environment. The
+    causal node and all legacy N/N+1 environment regressions pass.
+  - >-
+    Terminal self proof also exercised the exact legacy fresh-install native
+    baseline and authored-state fixture permutations. Upgrade custody now
+    classifies that closed legacy marker before current-state authentication,
+    migrates it transactionally, and preserves Git history only for a fully
+    authenticated existing-repository baseline. Authored-state fixtures and the
+    canonical reconciler consume every ledger-referenced hotfix schema/log.
+  - >-
+    The final affected-proof shard exposed two pre-existing consumer
+    permutations omitted from focused validation. Graphless profile-v1 packs
+    now validate exact dependency bytes without inventing a Python runtime pin,
+    while fresh materialization remains unavailable until a graph supplies one;
+    present malformed or ambiguous graphs fail closed. Existing-adoption
+    migration preserves its path-qualified rejection diagnostic and leaves
+    malformed or unknown baseline state byte-identical. Pack preflight now
+    validates the graphless packaged interpreter contract before evidence
+    allocation, and the exact failing nodes plus adjacent legacy/current/
+    adversarial states pass locally.
+  - >-
+    Adopter work after the first candidate exposed three additional deterministic
+    consumer states before release submission. Independent TODO successors now
+    derive phase-scoped PR-progress metadata from the same canonical proposition
+    at prospective and submit boundaries. Authenticated native-baseline history
+    remains immutable while only byte-identical projected files retain its
+    exemption; edited or deleted files re-enter ordinary governance policy, and
+    unsafe path types still reject. Exposure scanning distinguishes dotfile
+    names such as `.env.local` from real private hostnames without an allowlist.
+  - >-
+    The final Lite maintained-work check exposed an ambient-interpreter split in
+    the generated profile-v1 Make surface. Every generated Python gate now asks
+    the canonical BCF environment owner to derive or materialize the exact
+    project interpreter before execution; no venv activation, PYTHON override,
+    or dependency-install recipe remains an operator decision. The related
+    version-contract mutant was rebound from its obsolete preflight owner to the
+    canonical interpreter compiler while preserving the same causal oracle.
+    Racecar's bounded-workitem rejection remains intentionally fail-closed: its
+    proposed successor relationships exist only in prose, so BCF diagnoses the
+    missing typed edges but does not invent lifecycle authority.
+  - >-
+    Disposable TradeFlow qualification then exercised the cross-minor state:
+    the BCF controller runs on Python 3.14 while the adopter graph authenticates
+    Python 3.12. The same canonical environment owner now keeps a compatible
+    controller runtime or, only for one exact graph minor, resolves and probes
+    the corresponding versioned executable before binding its bytes into the
+    environment identity. Ranges, missing runtimes, mismatches, downloads, and
+    agent-selected paths fail before materialization.
+  - >-
+    Maintained TradeFlow qualification exposed the adjacent executable edge:
+    after deriving the project interpreter, a BCF-backed gate still invoked a
+    bare ambient `bcf`. The shared profile invocation projector now maps an
+    exact leading BCF token to the same admitted CLI identity for v1, v2 and v3;
+    non-BCF commands and gate arguments remain unchanged. An unprepared adopter
+    shell therefore requires neither PATH mutation nor another operator step.
+  - >-
+    Isolated AgentBus qualification exposed the same ownership split inside
+    canonical reconciliation: test-manifest collection inherited the controller
+    interpreter and failed when pytest existed only in the governed project
+    environment. Reconcile now derives or authenticates one project interpreter
+    before compiling its stage DAG and passes it unchanged to every manifest
+    collector; explicit wrong identities reject before any stage executes.
+  - >-
+    Exact Racecar qualification exposed a preserved profile-v3 registry with
+    Python-backed gates but no interpreter contract. Strict upgrade had
+    accepted that incomplete state and reconciliation failed later. The atomic
+    upgrade owner now derives a typed contract only from the exact governed
+    requirements source (including hash-bound recursive inputs), while strict
+    validation independently rejects every v2/v3 Python consumer without that
+    contract. No operator-authored migration or adopter mutation is required.
+  - >-
+    Racecar's next bounded-workitem attempt exposed a planner scope loss: the
+    authenticated target reached truth but not evidence planning, so all parent
+    profile producers were allocated. The canonical scope owner now maps the
+    exact target acceptance contract to claims, expands only declared producer
+    dependencies, binds the projection into the immutable session plan, and
+    independently re-derives it at truth. Unknown, preflight-only, broadened,
+    substituted, or structurally incomplete scopes reject before fan-out.
+  - >-
+    Clean baseline replay also proved fresh v2/v3 installation and promotion
+    omitted the interpreter contract that strict validation already required.
+    The profile compiler now projects the sole pack-owned requirements default
+    or preserves and validates an explicit project contract before mutation;
+    legacy upgrade continues to require complete authenticated dependency and
+    runtime inputs rather than inventing custody.
+  - >-
+    Isolated AgentBus qualification exposed an adjacent atomic-upgrade edge:
+    strict install accepted refreshed runtime sources while preserving the old
+    semantic source-inventory digest, so the immediate canonical reconcile
+    failed. The installer now invokes the existing semantic-lock projection
+    owner inside the same validated transaction whenever semantic custody is
+    present; no second operator command or post-success repair remains.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

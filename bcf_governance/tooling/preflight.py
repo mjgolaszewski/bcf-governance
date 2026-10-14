@@ -43,6 +43,7 @@ from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     derive_interpreter_environment,
+    probe_interpreter_environment,
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
@@ -85,6 +86,10 @@ class _UniqueKeyLoader(yaml.SafeLoader):
     pass
 
 
+class _ComposeUniqueKeyLoader(_UniqueKeyLoader):
+    pass
+
+
 def _construct_unique_mapping(
     loader: _UniqueKeyLoader, node: yaml.MappingNode, deep: bool = False
 ) -> dict[Any, Any]:
@@ -100,6 +105,37 @@ def _construct_unique_mapping(
 _UniqueKeyLoader.add_constructor(
     yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_unique_mapping
 )
+
+
+def _construct_compose_directive(
+    loader: _ComposeUniqueKeyLoader, node: yaml.Node
+) -> Any:
+    """Decode only Compose's non-executable merge directives."""
+
+    if isinstance(node, yaml.ScalarNode):
+        return loader.construct_scalar(node)
+    if isinstance(node, yaml.SequenceNode):
+        return loader.construct_sequence(node, deep=True)
+    if isinstance(node, yaml.MappingNode):
+        return _construct_unique_mapping(loader, node, deep=True)
+    raise yaml.constructor.ConstructorError(
+        None, None, "unsupported Docker Compose directive node", node.start_mark
+    )
+
+
+for _compose_tag in ("!reset", "!override"):
+    _ComposeUniqueKeyLoader.add_constructor(
+        _compose_tag, _construct_compose_directive
+    )
+
+
+def _yaml_syntax_loader(relative: str) -> type[_UniqueKeyLoader]:
+    name = Path(relative).name
+    if name in {"compose.yml", "compose.yaml", "docker-compose.yml", "docker-compose.yaml"}:
+        return _ComposeUniqueKeyLoader
+    if name.startswith(("compose.", "docker-compose.")):
+        return _ComposeUniqueKeyLoader
+    return _UniqueKeyLoader
 
 
 def _git_state(repo_root: Path) -> dict[str, Any]:
@@ -118,7 +154,10 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
                 ast.parse(path.read_text(encoding="utf-8"), filename=relative)
                 counts["python"] += 1
             elif path.suffix in {".yml", ".yaml"}:
-                yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
+                yaml.load(
+                    path.read_text(encoding="utf-8"),
+                    Loader=_yaml_syntax_loader(relative),
+                )
                 counts["yaml"] += 1
             elif path.suffix == ".json":
                 json.loads(path.read_text(encoding="utf-8"))
@@ -312,55 +351,10 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
     if plan is None:
         return {}
     identity = _interpreter_identity(python)
-    probe = (
-        "import importlib.metadata as m,json,platform,sys\n"
-        "from packaging.requirements import Requirement\n"
-        "from packaging.specifiers import SpecifierSet\n"
-        "requirements=json.loads(sys.argv[1])\n"
-        "versions={}\n"
-        "for raw in requirements:\n"
-        " req=Requirement(raw)\n"
-        " if req.marker is not None and not req.marker.evaluate(): continue\n"
-        " installed=m.version(req.name)\n"
-        " if req.specifier and not req.specifier.contains(installed,prereleases=True):\n"
-        "  raise SystemExit(f'{req.name} {installed} violates {req.specifier}')\n"
-        " versions[req.name]=installed\n"
-        "python_spec=SpecifierSet(sys.argv[2])\n"
-        "python_version=platform.python_version()\n"
-        "if not python_spec.contains(python_version,prereleases=True):\n"
-        " raise SystemExit(f'Python {python_version} violates {python_spec}')\n"
-        "print(json.dumps(versions,sort_keys=True))\n"
-    )
     try:
-        result = subprocess.run(
-            [
-                str(python),
-                "-I",
-                "-c",
-                probe,
-                json.dumps(list(plan.requirements)),
-                plan.requires_python,
-            ],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise PreflightError("selected interpreter dependency probe failed") from exc
-    if result.returncode:
-        diagnostic = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown"
-        raise PreflightError(
-            "selected interpreter dependency contract failed: " + diagnostic
-        )
-    try:
-        versions = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise PreflightError("selected interpreter dependency probe was invalid") from exc
-    if not isinstance(versions, dict) or {
-        re.sub(r"[-_.]+", "-", value).lower() for value in versions
-    } != set(plan.distribution_names):
-        raise PreflightError("selected interpreter dependency inventory is incomplete")
+        versions = probe_interpreter_environment(plan, python)
+    except InterpreterEnvironmentError as exc:
+        raise PreflightError(str(exc)) from exc
     return {
         "identity": identity,
         "versions": {str(key): str(value) for key, value in sorted(versions.items())},
@@ -491,9 +485,22 @@ def _pack_manifest(repo_root: Path) -> dict[str, Any]:
         return {"applicable": False}
     try:
         entries = _pack_manifest_entries(template_root)
-    except ValueError as exc:
+        interpreter = derive_interpreter_environment(template_root)
+        if interpreter is not None:
+            verify_interpreter_environment_projection(interpreter)
+    except (InterpreterEnvironmentError, ValueError) as exc:
         raise PreflightError(str(exc)) from exc
-    return {"applicable": True, "file_count": len(entries)}
+    return {
+        "applicable": True,
+        "file_count": len(entries),
+        "template_interpreter": (
+            "not_declared"
+            if interpreter is None
+            else "dependencies_and_python"
+            if interpreter.requires_python is not None
+            else "dependencies_only"
+        ),
+    }
 
 
 def run_preflight(
@@ -647,7 +654,14 @@ def run_preflight(
     )
     verification_plan = step(
         "verification-plan",
-        lambda: build_verification_plan(repo_root, subject, prior_receipts or []),
+        lambda: build_verification_plan(
+            repo_root, subject, prior_receipts or [], evaluation_mode=selected_mode,
+            evaluation_target=(
+                scope.target_id
+                if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
+                else None
+            ),
+        ),
     )
     session: EvidenceSession | None = None
     if artifact_root is not None:

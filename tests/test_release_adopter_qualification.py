@@ -390,6 +390,36 @@ def test_repository_environment_is_copied_and_own_editable_path_is_rebound(
     assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"
 
 
+def test_nested_repository_environment_is_copied_from_its_interpreter_root(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "source"
+    destination = tmp_path / "candidate"
+    source.mkdir()
+    destination.mkdir()
+    environment = source / ".artifacts/runtime/execution-state/session/project-environments/exact/venv"
+    venv.EnvBuilder(with_pip=False).create(environment)
+    version = f"python{sys.version_info.major}.{sys.version_info.minor}"
+    hook = environment / "lib" / version / "site-packages" / "project.pth"
+    hook.write_text(str(source / "src") + "\n", encoding="utf-8")
+
+    projected = _isolated_project_python(
+        source,
+        environment / "bin/python",
+        destination,
+        tmp_path / "qualification-environment",
+    )
+
+    assert projected == tmp_path / "qualification-environment/bin/python"
+    assert projected.is_file()
+    projected_hook = (
+        tmp_path / "qualification-environment/lib" / version
+        / "site-packages/project.pth"
+    )
+    assert projected_hook.read_text(encoding="utf-8") == str(destination / "src") + "\n"
+    assert not (tmp_path / "qualification-environment/runtime").exists()
+
+
 def test_external_virtual_environment_preserves_lexical_package_custody(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -420,9 +450,11 @@ def test_external_virtual_environment_preserves_lexical_package_custody(
 def test_candidate_qualification_derives_the_closed_observation_lane(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    from bcf_governance.tooling import prospective_candidate_identity
+
     captured: dict[str, object] = {}
     monkeypatch.setattr(
-        local_pr,
+        prospective_candidate_identity,
         "canonical_prospective_inputs",
         lambda _root, **_kwargs: {
             "semantic_intent": "pr",
@@ -447,6 +479,8 @@ def test_candidate_qualification_derives_the_closed_observation_lane(
         captured["validation_lane"]
         is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
     )
+    assert captured["semantic_intent"] == "pr"
+    assert captured["evaluation_target"] is None
     assert captured["remote"] == "bcf-qualification-base"
 
 

@@ -124,6 +124,35 @@ def test_production_modules_respect_self_governance_loc_cap() -> None:
     assert validate_production_module_size(REPO_ROOT) > 0
 
 
+def test_production_module_cap_uses_declared_test_roots_and_exclusions(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "package/tests").mkdir(parents=True)
+    (tmp_path / "package/generated").mkdir()
+    (tmp_path / "package/live.py").write_text("one = 1\ntwo = 2\n", encoding="utf-8")
+    (tmp_path / "package/tests/test_large.py").write_text("1\n2\n3\n", encoding="utf-8")
+    (tmp_path / "package/generated/model.py").write_text("1\n2\n3\n", encoding="utf-8")
+    (tmp_path / "package/messages_pb2.py").write_text("1\n2\n3\n", encoding="utf-8")
+    (tmp_path / "architecture-boundaries.yml").write_text(
+        "architecture:\n"
+        "  source_roots: [package]\n"
+        "  production_module_policy:\n"
+        "    max_loc: 2\n"
+        "    excluded_path_tokens: [generated]\n"
+        "    excluded_file_suffixes: [_pb2.py]\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "AGENTS.yml").write_text(
+        "testing_governance:\n  test_roots: [package/tests]\n",
+        encoding="utf-8",
+    )
+
+    assert validate_production_module_size(tmp_path) == 1
+    (tmp_path / "package/live.py").write_text("1\n2\n3\n", encoding="utf-8")
+    with pytest.raises(GovernanceValidationError, match="package/live.py:3"):
+        validate_production_module_size(tmp_path)
+
+
 def test_tooling_modules_map_to_exactly_one_context(tmp_path: Path) -> None:
     validate_tooling_context_membership(REPO_ROOT)
     policy_path = tmp_path / "governance/self-governance-policy.yml"
@@ -761,7 +790,7 @@ def test_all_planned_shards_project_exact_graph_environment(
     )
     monkeypatch.setattr(
         module,
-        "local_gate_job_environments",
+        "local_gate_execution_environments",
         lambda *_: {
             "test": {
                 "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"

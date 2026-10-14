@@ -14,6 +14,10 @@ from .application_assurance_graph import (
     compile_legacy_gate_catalog,
 )
 from .evidence_planning import parse_claim_model, receipt_producing_legacy_gates
+from .interpreter_contract_projection import (
+    InterpreterContractProjectionError,
+    project_profile_interpreter_contract,
+)
 from .profile_surface_generation import (
     write_makefile as render_makefile,
     write_workflow as render_workflow,
@@ -375,6 +379,7 @@ def load_contract(
     raw_gates: dict[str, Any] = {}
     provenance: dict[str, Any] = {}
     configured_claim_model: dict[str, Any] | None = None
+    configured_interpreter_contract: object = None
     if config_path is not None or config_payload is not None:
         payload = _load_yaml(config_path.resolve()) if config_path is not None else config_payload
         if not isinstance(payload, dict):
@@ -388,6 +393,7 @@ def load_contract(
             raise ProfileContractError(
                 "profile config profile_contract_version does not match requested version"
             )
+        configured_interpreter_contract = payload.get("interpreter_contract")
         assurance_graph = payload.get("application_assurance")
         candidate = payload.get("gates")
         if assurance_graph is not None:
@@ -471,6 +477,12 @@ def load_contract(
         )
         for target in sorted(targets)
     }
+    try:
+        interpreter_contract = project_profile_interpreter_contract(
+            gates, configured_interpreter_contract, contract_version
+        )
+    except InterpreterContractProjectionError as exc:
+        raise ProfileContractError(str(exc)) from exc
     if profile == "regulated":
         keys = provenance.get("trusted_verifier_keys")
         authorities = provenance.get("permitted_risk_authorities")
@@ -524,6 +536,7 @@ def load_contract(
         "profile_contract_version": contract_version,
         "target_profile": profile,
         "execution_policy": {"default_timeout_seconds": 1800},
+        **({"interpreter_contract": interpreter_contract} if interpreter_contract else {}),
         **({"claim_model": persisted_claim_model} if persisted_claim_model else {}),
         "gates": gates,
         "gate_catalog": gate_catalog,
@@ -774,6 +787,7 @@ def promote(
                 if key not in BUILTIN_TARGETS
             },
             "provenance": persisted.get("provenance", {}),
+            "interpreter_contract": persisted.get("interpreter_contract"),
         }
     return load_contract(
         repo_root,

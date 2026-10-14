@@ -134,8 +134,9 @@ def run_candidate_qualification_train(
 ) -> dict[str, Any]:
     """Execute one typed, observation-only adopter qualification proof."""
 
-    from .local_pr import canonical_prospective_inputs, run_prospective_train
+    from .local_pr import run_prospective_train
     from .local_pr_context import LocalValidationLane
+    from .prospective_candidate_identity import canonical_prospective_inputs
 
     canonical = canonical_prospective_inputs(
         repo_root, remote=_QUALIFICATION_BASE_REMOTE
@@ -345,7 +346,7 @@ def _isolated_project_python(
         raise ReleaseQualificationError(
             "repository-owned adopter interpreter must be ENV/bin/python"
         )
-    environment_root = source_root / relative.parts[0]
+    environment_root = source_python.absolute().parent.parent
     shutil.copytree(environment_root, projected_root, symlinks=True)
     projected_python = projected_root / "bin/python"
     source_text = str(source_root.resolve())

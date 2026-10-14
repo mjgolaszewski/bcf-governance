@@ -13,10 +13,19 @@ from pathlib import Path
 import pytest
 import yaml
 
-from bcf_governance.tooling.governance_install import transaction, upgrade
+from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+from bcf_governance.tooling.ci_graph_errors import CIGraphError
+from bcf_governance.tooling.ci_graph_render import apply_ci_graph
+from bcf_governance.tooling.governance_install import (
+    transaction,
+    transaction_paths,
+    upgrade,
+)
 from bcf_governance.tooling.governance_validation.native_adoption import (
     authenticated_native_adoption_files,
+    authenticated_native_adoption_requires_history,
 )
+from bcf_governance.tooling.profile_surface_generation import render_makefile
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -387,12 +396,25 @@ testpaths = ["scripts/tests"]
     profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
 
     (target / "docs/testing.md").write_text(
+        "# Native testing\n\nPortable governed instructions.\n", encoding="utf-8"
+    )
+    assert "docs/testing.md" not in authenticated_native_adoption_files(target)
+    evolved = _run_installed_validator(target)
+    assert evolved.returncode == 0
+
+    (target / "docs/testing.md").write_text(
         "# Native testing\n\nChanged local output: `.artifacts/tests/report.json`.\n",
         encoding="utf-8",
     )
     invalid = _run_installed_validator(target)
     assert invalid.returncode == 1
-    assert "native baseline file binding is invalid" in invalid.stdout
+    assert "ephemeral artifact references in governed docs need" in invalid.stdout
+
+    (target / "docs/testing.md").unlink()
+    (target / "docs/testing.md").symlink_to("../NATIVE.md")
+    unsafe = _run_installed_validator(target)
+    assert unsafe.returncode == 1
+    assert "native baseline file binding is invalid" in unsafe.stdout
 
 
 def test_existing_install_rejects_incomplete_root_metadata_before_mutation(
@@ -558,6 +580,73 @@ def test_installer_upgrade_refreshes_pack_support_files_without_state_reset(
     } == state_before
 
 
+def test_upgrade_preserves_git_custody_required_by_native_baseline(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-native-baseline"
+    target.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=target, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "installer@example.invalid"],
+        cwd=target,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Installer Test"], cwd=target, check=True
+    )
+    (target / "pyproject.toml").write_text(
+        """[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+""",
+        encoding="utf-8",
+    )
+    (target / "app").mkdir()
+    (target / "app/__init__.py").write_text("", encoding="utf-8")
+    (target / "tests").mkdir()
+    (target / "tests/test_smoke.py").write_text(
+        "def test_smoke():\n    assert True\n", encoding="utf-8"
+    )
+    (target / "docs").mkdir()
+    (target / "docs/testing.md").write_text(
+        "# Native testing\n", encoding="utf-8"
+    )
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", "native repository"],
+        cwd=target,
+        check=True,
+    )
+    _run_installer(
+        target,
+        "--profile",
+        "lite",
+        "--adoption-mode",
+        "existing",
+        "--require-strict-validation",
+    )
+    subprocess.run(["git", "add", "."], cwd=target, check=True)
+    subprocess.run(
+        ["git", "commit", "--quiet", "-m", "install governance"],
+        cwd=target,
+        check=True,
+    )
+
+    assert authenticated_native_adoption_requires_history(target) is True
+    result = _run_installer(
+        target, "--upgrade", "--require-strict-validation"
+    )
+
+    assert "validation: strict pass" in result.stdout
+    assert authenticated_native_adoption_requires_history(target) is True
+
+
 @pytest.mark.parametrize("legacy_baseline", [None, "fresh-marker"])
 def test_upgrade_migrates_legacy_existing_adoption_before_candidate_validation(
     tmp_path: Path, legacy_baseline: str | None
@@ -591,6 +680,38 @@ def test_upgrade_migrates_legacy_existing_adoption_before_candidate_validation(
     }
 
 
+def test_upgrade_projects_missing_v3_interpreter_contract_before_strict_success(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "missing-v3-interpreter-contract"
+    (target / "governance").mkdir(parents=True)
+    registry_path = target / "governance/gate-contracts.yml"
+    registry_path.write_text(
+        "document: {kind: gate_contract_registry}\n"
+        "profile_contract_version: '3.0'\n"
+        "target_profile: standard\n"
+        "gates:\n"
+        "  test:\n"
+        "    invocation: {argv: [python3, scripts/run_tests.py], cwd: .}\n",
+        encoding="utf-8",
+    )
+    (target / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\npytest==9.1.1\n", encoding="utf-8"
+    )
+    (target / "governance/ci-graph.yml").write_text(
+        "resource_classes:\n  candidate-python: {python_version: '3.12'}\n",
+        encoding="utf-8",
+    )
+
+    changed = upgrade._upgrade_interpreter_contract(target)
+
+    assert changed == [registry_path]
+    migrated = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    assert migrated["interpreter_contract"] == {
+        "dependency_source": "requirements-governance.txt"
+    }
+
+
 def test_upgrade_rejects_ambiguous_existing_adoption_baseline_without_mutation(
     tmp_path: Path,
 ) -> None:
@@ -609,7 +730,36 @@ def test_upgrade_rejects_ambiguous_existing_adoption_baseline_without_mutation(
     result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
 
     assert result.returncode == 1
-    assert "existing adoption native_baseline must be a mapping" in result.stderr
+    assert (
+        "governance/existing-repo-adoption.yml native_baseline must be a mapping"
+        in result.stderr
+    )
+    assert adoption_path.read_bytes() == before
+
+
+def test_upgrade_rejects_unknown_existing_adoption_transition_without_mutation(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "unknown-existing-baseline-transition"
+    _run_installer(target, "--profile", "lite", "--require-strict-validation")
+    adoption_path = target / "governance/existing-repo-adoption.yml"
+    adoption = yaml.safe_load(
+        (REPO_ROOT / "bcf_governance/pack/template-repo/governance/existing-repo-adoption.yml").read_text(
+            encoding="utf-8"
+        )
+    )
+    adoption["native_baseline"] = {
+        "transition_class": "unknown",
+        "source": None,
+        "files": [],
+    }
+    adoption_path.write_text(yaml.safe_dump(adoption, sort_keys=False), encoding="utf-8")
+    before = adoption_path.read_bytes()
+
+    result = _run_installer(target, "--upgrade", "--skip-validation", check=False)
+
+    assert result.returncode == 1
+    assert "native_baseline is not an exact migratable shape" in result.stderr
     assert adoption_path.read_bytes() == before
 
 
@@ -741,6 +891,72 @@ def test_upgrade_reconciles_graph_owned_workflows_before_strict_validation(
         (target / graph["workflows"][0]["path"]).read_text(encoding="utf-8")
     )
     assert workflow["name"] == "Governance adopter projection"
+
+
+def test_upgrade_plans_generated_paths_from_migrated_provider_permissions(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-provider-permission"
+    transaction.copy_repository_shadow(REPO_ROOT, target)
+    graph_path = target / "governance/ci-graph.yml"
+    graph = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    graph["step_components"]["capture-governance-shard"].pop(
+        "required_permissions"
+    )
+    evidence = next(
+        job
+        for workflow in graph["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    evidence["permissions"].pop("actions")
+    graph_path.write_text(yaml.safe_dump(graph, sort_keys=False), encoding="utf-8")
+    legacy_bytes = graph_path.read_bytes()
+    schema_path = target / "schemas/ci-graph.schema.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+    for branch in schema["$defs"]["stepComponent"]["oneOf"]:
+        branch.get("properties", {}).pop("required_permissions", None)
+    schema_path.write_text(json.dumps(schema), encoding="utf-8")
+    legacy_schema_bytes = schema_path.read_bytes()
+
+    upgrade.upgrade_graph_contracts(target)
+    with pytest.raises(CIGraphError, match="schema violation"):
+        validate_ci_graph(target)
+    graph_path.write_bytes(legacy_bytes)
+
+    managed = transaction_paths._upgrade_managed_generated_paths(
+        target, REPO_ROOT / "template-repo"
+    )
+
+    assert graph_path.read_bytes() == legacy_bytes
+    assert schema_path.read_bytes() == legacy_schema_bytes
+    assert ".github/workflows/governance.yml" in managed
+    transaction_paths._project_successor_schemas(
+        REPO_ROOT / "template-repo", target
+    )
+    upgrade.upgrade_graph_contracts(target)
+    apply_ci_graph(target)
+    migrated = yaml.safe_load(graph_path.read_text(encoding="utf-8"))
+    assert migrated["step_components"]["capture-governance-shard"][
+        "required_permissions"
+    ] == {"actions": "read"}
+    migrated_evidence = next(
+        job
+        for workflow in migrated["workflows"]
+        for job in workflow["jobs"]
+        if job["semantic_role"] == "required-evidence-shards"
+    )
+    assert migrated_evidence["permissions"] == {
+        "actions": "read",
+        "contents": "read",
+    }
+    rendered = yaml.safe_load(
+        (target / ".github/workflows/governance.yml").read_text(encoding="utf-8")
+    )
+    assert rendered["jobs"]["evidence"]["permissions"] == {
+        "actions": "read",
+        "contents": "read",
+    }
 
 
 def test_upgrade_migrates_exact_runtime_v1_without_overwriting_capacity(
@@ -889,6 +1105,12 @@ def test_upgrade_refreshes_code_without_implicitly_migrating_legacy_state(
         target / "scripts/validate_governance_yaml.py"
     ).read_text(encoding="utf-8")
     assert {path: (target / path).read_bytes() for path in governed} == before
+    contract = yaml.safe_load(
+        (target / "governance/gate-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert (target / "Makefile.fragment").read_text(encoding="utf-8") == (
+        render_makefile(contract)
+    )
     assert not (target / "governance/migrations/evidence-integrity-v1.yml").exists()
 
 
@@ -920,7 +1142,37 @@ def test_installer_upgrade_can_reset_profile_and_makefile_options(tmp_path: Path
 
 def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -> None:
     target = tmp_path / "upgrade-v3-release-check"
-    target.mkdir()
+    (target / "governance").mkdir(parents=True)
+    contract = {
+        "profile_contract_version": "3.0",
+        "gates": {
+            "governance-validate": {
+                "invocation": {
+                    "argv": ["python", "scripts/validate_governance_yaml.py"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            },
+            "test": {
+                "invocation": {
+                    "argv": ["python", "-m", "pytest"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            },
+        },
+    }
+    (target / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(contract, sort_keys=False), encoding="utf-8"
+    )
+    (target / "requirements-governance.txt").write_text(
+        "pytest==9.0.3\n", encoding="utf-8"
+    )
+    (target / "governance/ci-graph.yml").write_text(
+        "resource_classes:\n  candidate-python: {python_version: '3.12'}\n"
+        "workflows: []\n",
+        encoding="utf-8",
+    )
     (target / "governance-profile.yml").write_text(
         yaml.safe_dump(
             {
@@ -961,6 +1213,66 @@ def test_upgrade_projects_v3_release_check_from_selective_plan(tmp_path: Path) -
     assert "scripts/capture_governance_shard.py" in release_check
     assert "--all-planned" in release_check
     assert "for gate in" not in release_check
+
+
+def test_upgrade_projects_v1_makefile_only_from_preserved_gate_registry(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "upgrade-v1-gate-registry"
+    (target / "governance").mkdir(parents=True)
+    contract = {
+        "profile_contract_version": "1.0",
+        "gates": {
+            "test": {
+                "invocation": {
+                    "argv": ["python", "-m", "pytest"],
+                    "cwd": ".",
+                    "env": {},
+                }
+            }
+        },
+    }
+    (target / "governance/gate-contracts.yml").write_text(
+        yaml.safe_dump(contract, sort_keys=False), encoding="utf-8"
+    )
+    (target / "governance-profile.yml").write_text(
+        yaml.safe_dump(
+            {
+                "profile": {"selected": "standard"},
+                "profile_contract_version": "1.0",
+                "release_gate_profile": {
+                    "gates": {
+                        "test": {"target": "test", "status": "required"},
+                        "semantic_ownership": {
+                            "target": "semantic-ownership",
+                            "status": "deferred",
+                        },
+                    }
+                },
+            },
+            sort_keys=False,
+        ),
+        encoding="utf-8",
+    )
+    (target / "Makefile.fragment").write_text(
+        "release-check:\n\t@for gate in test semantic-ownership; do echo $$gate; done\n",
+        encoding="utf-8",
+    )
+
+    template = tmp_path / "template"
+    template.mkdir()
+    upgrade.upgrade_state_files(
+        template_root=template,
+        target_root=target,
+        values={},
+    )
+
+    assert (target / "Makefile.fragment").read_text(encoding="utf-8") == (
+        render_makefile(contract)
+    )
+    assert "semantic-ownership" not in (
+        target / "Makefile.fragment"
+    ).read_text(encoding="utf-8")
 
 
 def test_installer_existing_adoption_mode_labels_conversion_phase(tmp_path: Path) -> None:

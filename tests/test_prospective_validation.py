@@ -4,6 +4,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 from types import SimpleNamespace
 
@@ -11,6 +12,7 @@ import pytest
 
 from bcf_governance.tooling.local_pr import LocalPRContext
 from bcf_governance.tooling import local_pr as prospective
+from bcf_governance.tooling import prospective_candidate_identity as candidate_identity
 from bcf_governance.tooling import local_proof_bundles
 from bcf_governance.tooling import controller_custody_prospective as custody
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
@@ -112,35 +114,43 @@ def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_ch
 ) -> None:
     context = SimpleNamespace()
     monkeypatch.setattr(
-        prospective, "resolve_local_pr_context", lambda *_args, **_kwargs: context
+        candidate_identity, "resolve_local_pr_context", lambda *_args, **_kwargs: context
     )
     monkeypatch.setattr(
-        prospective,
+        candidate_identity,
         "_candidate_identity",
         lambda *_args, **_kwargs: SimpleNamespace(commit_sha=HEAD, tree_sha=TREE),
     )
     monkeypatch.setattr(
-        prospective,
+        candidate_identity,
         "validate_ci_graph",
         lambda *_args: SimpleNamespace(graph={}),
     )
     monkeypatch.setattr(
-        prospective,
+        candidate_identity,
         "post_merge_evaluation",
         lambda *_args: SimpleNamespace(mode="workitem", target="P27-P0-03"),
     )
+    observed: list[tuple[str, str | None]] = []
+    monkeypatch.setattr(
+        candidate_identity,
+        "authored_candidate_title",
+        lambda _root, *, mode, target: observed.append((mode, target)) or "candidate",
+    )
 
-    assert prospective.canonical_prospective_inputs(tmp_path) == {
+    assert candidate_identity.canonical_prospective_inputs(tmp_path) == {
         "semantic_intent": "workitem",
         "evaluation_target": "P27-P0-03",
         "subject_commit": HEAD,
         "subject_tree": TREE,
     }
+    assert observed == [("workitem", "P27-P0-03")]
 
 
 def test_planned_evidence_stops_on_first_failed_producer(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    subprocess.run(["git", "init", "--quiet"], cwd=tmp_path, check=True)
     seen: list[str] = []
     def capture(_root: Path, gate: str, output: Path, **_kwargs: object) -> Path:
         seen.append(gate)
@@ -153,12 +163,28 @@ def test_planned_evidence_stops_on_first_failed_producer(
         }))
         return receipt
     monkeypatch.setattr(local_proof_bundles, "capture_gate", capture)
-    (tmp_path / "session.json").write_text("{}")
+    (tmp_path / "session.json").write_text(
+        json.dumps(
+            {
+                "session_id": "a" * 32,
+                "subject": {"commit_sha": HEAD, "tree_sha": TREE},
+                "producer": {
+                    "kind": "local",
+                    "provider": "local",
+                    "repository": "fixture",
+                    "repository_id": "local",
+                    "run_id": "prospective-local",
+                    "run_attempt": "1",
+                    "producer_id": "prospective-local",
+                },
+            }
+        )
+    )
     bindings = {gate: {} for gate in ("first", "second")}
     with pytest.raises(
         local_proof_bundles.LocalProofBundleError,
         match="first failed with exit 3.*causal diagnostic",
-    ):
+    ) as raised:
         prospective._capture_planned_evidence(
             tmp_path,
             python_executable=Path("/python"),
@@ -168,6 +194,9 @@ def test_planned_evidence_stops_on_first_failed_producer(
             producer_environments=bindings,
         )
     assert seen == ["first"]
+    assert "retained failure bundle" in str(raised.value)
+    retained = list((tmp_path / ".git/bcf/failure-bundles").glob("*/failure-bundle.json"))
+    assert len(retained) == 1
 
 
 def test_planned_evidence_reports_failed_control_when_command_passed(
@@ -354,8 +383,8 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     )
     monkeypatch.setattr(
         prospective,
-        "local_gate_job_environments",
-        lambda _graph, producers: {producer: {} for producer in producers},
+        "local_gate_execution_environments",
+        lambda _root, _graph, producers: {producer: {} for producer in producers},
     )
 
 

@@ -18,6 +18,10 @@ from bcf_governance.tooling.release_runtime_verification import (
 from bcf_governance.tooling.evidence_planning import verification_plan
 from bcf_governance.tooling.truth_reporting import current_subject
 from bcf_governance.tooling.test_manifests import _selector_map_from_nodes
+from bcf_governance.tooling.test_manifests import OracleManifestIndex
+from bcf_governance.tooling.negative_control_execution import (
+    resolve_negative_control_oracle,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_MODULE_PATH = Path(
@@ -287,6 +291,35 @@ def test_diagnostic_control_preserves_canonical_command(tmp_path: Path) -> None:
     ) is canonical
 
 
+def test_legacy_full_gate_oracle_does_not_borrow_a_modern_peer_manifest(
+    tmp_path: Path,
+) -> None:
+    owning = {
+        "target": "contract-test",
+        "test_contract": {"junit_xml": ".artifacts/junit/contract-test.xml"},
+    }
+    control = {
+        "oracle": {
+            "kind": "test_node_failure",
+            "node_ids": ["tests.test_owner::test_current"],
+        }
+    }
+
+    execution = resolve_negative_control_oracle(
+        tmp_path,
+        owning,
+        control,
+        python_executable=Path(sys.executable),
+        manifest_index=OracleManifestIndex(
+            (("test", frozenset({"tests.test_other::test_peer"})),)
+        ),
+    )
+
+    assert execution.gate_id == "contract-test"
+    assert execution.contract is owning
+    assert execution.selector_map is None
+
+
 def test_registered_graph_mutant_refreshes_locks_and_generated_bytes(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -351,7 +384,7 @@ if prepared != pathlib.Path(%r):
 failure = '' if PASS else '<failure>mutated</failure>'
 path = pathlib.Path('.artifacts/test.junit.xml')
 path.parent.mkdir(parents=True, exist_ok=True)
-path.write_text(f'<testsuite tests="1" failures="{int(not PASS)}"><testcase classname="tests/test_gate.py" name="test_gate">{failure}</testcase></testsuite>')
+path.write_text(f'<testsuite tests="1" failures="{int(not PASS)}"><testcase classname="tests.test_gate" name="test_gate">{failure}</testcase></testsuite>')
 print('collected 1 item')
 print('1 passed' if PASS else '1 failed')
 sys.exit(0 if PASS else 1)
@@ -470,6 +503,13 @@ sys.exit(0 if PASS else 1)
     assert receipt["observations"]["test_counts"]["skipped"] == 0
     assert receipt["behavioral_probes"][0]["mutation_applied"] is True
     assert receipt["behavioral_probes"][0]["observed_exit_code"] != 0
+    assert receipt["behavioral_probes"][0]["baseline_test_nodes_passed"] is True
+    assert receipt["behavioral_probes"][0]["oracle_observation"] == {
+        "satisfied": True,
+        "kind": "test_node_failure",
+        "failed_node_ids": ["tests.test_gate::test_gate"],
+    }
+    assert receipt["result"] == "passed"
     assert all(len(artifact["sha256"]) == 64 for artifact in receipt["artifacts"])
 
 

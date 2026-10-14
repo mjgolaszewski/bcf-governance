@@ -7,9 +7,11 @@ import sys
 
 import pytest
 import yaml
+from packaging.version import Version
 
 from bcf_governance.tooling.interpreter_environment import (
     InterpreterEnvironmentError,
+    InterpreterEnvironmentPlan,
     apply_interpreter_environment_projection,
     derive_interpreter_environment,
     main,
@@ -17,6 +19,10 @@ from bcf_governance.tooling.interpreter_environment import (
     reconcile_interpreter_environment,
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
+)
+from bcf_governance.tooling.python_runtime_selection import (
+    PythonRuntimeSelectionError,
+    select_materialization_base,
 )
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 
@@ -63,6 +69,287 @@ def _fixture(repo: Path, *, projected: str = "") -> None:
         encoding="utf-8",
     )
     (repo / "requirements-governance.txt").write_text(projected, encoding="utf-8")
+
+
+def _legacy_fixture(repo: Path, *, profile_version: str = "1.0") -> None:
+    (repo / "governance").mkdir(parents=True)
+    (repo / "governance/gate-contracts.yml").write_text(
+        f"profile_contract_version: '{profile_version}'\n"
+        "gates: {governance-validate: {}}\n",
+        encoding="utf-8",
+    )
+    (repo / "governance/ci-graph.yml").write_text(
+        f"profile_contract_version: '{profile_version}'\n"
+        "resource_classes:\n"
+        "  candidate-python: {python_version: '3.12'}\n"
+        "  trusted-control: {python_version: '3.12'}\n",
+        encoding="utf-8",
+    )
+    (repo / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\npytest==9.0.3\n", encoding="utf-8"
+    )
+    runtime_contract = {
+        "schema_version": "1.1",
+        "runtime_root": ".artifacts/runtime",
+        "minimum_free_bytes": 1,
+        "maximum_owned_containers": 1,
+        "database": {
+            "storage": "repository_bind_mount",
+            "relative_path": ".artifacts/runtime/database",
+        },
+        "cleanup": {
+            "caller_globs": False,
+            "daemon_global_prune": False,
+            "exact_owner_revalidation": True,
+            "remove_anonymous_volumes": True,
+        },
+        "execution_state": EXECUTION_STATE_POLICY,
+    }
+    (repo / "governance/ci-runtime.yml").write_text(
+        yaml.safe_dump(runtime_contract, sort_keys=False), encoding="utf-8"
+    )
+
+
+def test_governed_dependency_source_closes_recursive_requirements(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/gate-contracts.yml").write_text(
+        "profile_contract_version: '3.0'\n"
+        "interpreter_contract: {dependency_source: requirements-governance.txt}\n"
+        "gates: {test: {}}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "runtime").mkdir()
+    (tmp_path / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\n-r runtime/requirements.txt\npytest==9.1.1\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "runtime/requirements.txt").write_text(
+        "httpx==0.28.1\n", encoding="utf-8"
+    )
+    (tmp_path / "governance/ci-graph.yml").write_text(
+        "resource_classes:\n  candidate-python: {python_version: '3.12'}\n",
+        encoding="utf-8",
+    )
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert plan.source_kind == "governed_requirements_source"
+    assert plan.requirements == (
+        "PyYAML>=6,<7",
+        "httpx==0.28.1",
+        "pytest==9.1.1",
+        "pip==26.2.1",
+    )
+    assert plan.pip_arguments() == plan.requirements
+    verify_interpreter_environment_projection(plan)
+
+    (tmp_path / "runtime/requirements.txt").write_text(
+        "httpx==0.28.2\n", encoding="utf-8"
+    )
+    with pytest.raises(
+        InterpreterEnvironmentError, match="changed after derivation"
+    ):
+        verify_interpreter_environment_projection(plan)
+
+
+def test_governed_dependency_source_rejects_unsafe_include(tmp_path: Path) -> None:
+    (tmp_path / "governance").mkdir()
+    (tmp_path / "governance/gate-contracts.yml").write_text(
+        "profile_contract_version: '3.0'\n"
+        "interpreter_contract: {dependency_source: requirements-governance.txt}\n"
+        "gates: {test: {}}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "requirements-governance.txt").write_text(
+        "-r ../outside.txt\n", encoding="utf-8"
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="include is unsafe"):
+        derive_interpreter_environment(tmp_path)
+
+
+def test_profile_v1_derives_isolated_environment_from_authenticated_legacy_inputs(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path)
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert plan.source_kind == "legacy_governance_requirements"
+    assert plan.requirements == (
+        "PyYAML>=6,<7",
+        "pytest==9.0.3",
+        "pip==26.2.1",
+    )
+    assert plan.requires_python == "==3.12.*"
+    assert plan.projection_path is None
+    assert plan.installation_path == tmp_path / "requirements-governance.txt"
+    assert plan.pip_arguments() == (
+        "PyYAML>=6,<7",
+        "pytest==9.0.3",
+        "pip==26.2.1",
+    )
+    verify_interpreter_environment_projection(plan)
+
+
+def test_graphless_profile_v1_validates_dependencies_without_inventing_python_pin(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path)
+    (tmp_path / "governance/ci-graph.yml").unlink()
+
+    plan = derive_interpreter_environment(tmp_path)
+
+    assert plan is not None
+    assert plan.source_kind == "legacy_governance_requirements"
+    assert plan.requires_python is None
+    verify_interpreter_environment_projection(plan)
+    with pytest.raises(
+        InterpreterEnvironmentError,
+        match="without an authenticated Python runtime source",
+    ):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
+
+
+def test_legacy_environment_rejects_changed_dependency_source(tmp_path: Path) -> None:
+    _legacy_fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    (tmp_path / "requirements-governance.txt").write_text(
+        "PyYAML>=6,<7\npytest==9.1.1\n", encoding="utf-8"
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
+        verify_interpreter_environment_projection(plan)
+
+
+def test_missing_profile_v2_interpreter_contract_remains_fail_closed(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path, profile_version="2.0")
+
+    assert derive_interpreter_environment(tmp_path) is None
+    with pytest.raises(
+        InterpreterEnvironmentError,
+        match="cannot be derived without an authenticated dependency source",
+    ):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
+
+
+def test_legacy_environment_rejects_ambiguous_graph_python_runtime(
+    tmp_path: Path,
+) -> None:
+    _legacy_fixture(tmp_path)
+    graph = tmp_path / "governance/ci-graph.yml"
+    graph.write_text(
+        graph.read_text(encoding="utf-8").replace(
+            "trusted-control: {python_version: '3.12'}",
+            "trusted-control: {python_version: '3.13'}",
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(InterpreterEnvironmentError, match="one Python minor"):
+        derive_interpreter_environment(tmp_path)
+
+
+@pytest.mark.parametrize(
+    ("graph_bytes", "message"),
+    [
+        ("[\n", "graph contract is unavailable"),
+        (
+            "profile_contract_version: '2.0'\nresource_classes: {}\n",
+            "graph contract version is invalid",
+        ),
+        ("profile_contract_version: '1.0'\n", "graph resources are invalid"),
+    ],
+)
+def test_legacy_environment_rejects_malformed_present_graph(
+    tmp_path: Path, graph_bytes: str, message: str
+) -> None:
+    _legacy_fixture(tmp_path)
+    (tmp_path / "governance/ci-graph.yml").write_text(graph_bytes, encoding="utf-8")
+
+    with pytest.raises(InterpreterEnvironmentError, match=message):
+        derive_interpreter_environment(tmp_path)
+
+
+def test_legacy_environment_rejects_symlinked_present_graph(tmp_path: Path) -> None:
+    _legacy_fixture(tmp_path)
+    graph = tmp_path / "governance/ci-graph.yml"
+    outside = tmp_path / "outside.yml"
+    outside.write_bytes(graph.read_bytes())
+    graph.unlink()
+    graph.symlink_to(outside)
+
+    with pytest.raises(
+        InterpreterEnvironmentError, match="graph contract is unavailable"
+    ):
+        derive_interpreter_environment(tmp_path)
+
+
+@pytest.mark.parametrize("unsafe", ["missing", "symlink"])
+def test_legacy_environment_requires_safe_dependency_source(
+    tmp_path: Path, unsafe: str
+) -> None:
+    _legacy_fixture(tmp_path)
+    requirements = tmp_path / "requirements-governance.txt"
+    requirements.unlink()
+    if unsafe == "symlink":
+        outside = tmp_path / "outside-requirements.txt"
+        outside.write_text("PyYAML>=6,<7\n", encoding="utf-8")
+        requirements.symlink_to(outside)
+
+    with pytest.raises(
+        InterpreterEnvironmentError, match="dependency source is missing or unsafe"
+    ):
+        derive_interpreter_environment(tmp_path)
+
+
+def test_legacy_environment_materialization_installs_only_derived_requirements(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _legacy_fixture(tmp_path)
+    commands: list[list[str]] = []
+
+    def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if argv[1:3] == ["-I", "-c"]:
+            version = (
+                "3.12.14"
+                if Path(argv[0]).name.startswith("python3.12")
+                else ".".join(str(value) for value in sys.version_info[:3])
+            )
+            return subprocess.CompletedProcess(argv, 0, version + "\n", "")
+        commands.append(argv)
+        if argv[1:3] == ["-m", "venv"]:
+            environment = Path(argv[-1])
+            (environment / "bin").mkdir(parents=True)
+            (environment / "bin/python").symlink_to(sys.executable)
+            (environment / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
+        stdout = (
+            "pip==26.2.1\npytest==9.0.3\nPyYAML==6.0.3\n"
+            if argv[-2:] == ["freeze", "--all"]
+            else ""
+        )
+        return subprocess.CompletedProcess(argv, 0, stdout, "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+
+    python = materialize_interpreter_environment(tmp_path, Path(sys.executable))
+
+    assert python.is_file()
+    assert commands[1][3:] == [
+        "install",
+        "--disable-pip-version-check",
+        "PyYAML>=6,<7",
+        "pytest==9.0.3",
+        "pip==26.2.1",
+    ]
+    assert "requirements-governance.txt" not in commands[1]
 
 
 def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None:
@@ -263,10 +550,9 @@ def test_missing_project_environment_is_materialized_once_from_exact_plan(
     assert first == second
     assert first.is_file()
     assert len(commands) == 4
-    assert commands[0][1:4] == ["-m", "venv", "--without-pip"]
-    assert commands[1][1:4] == ["-m", "pip", "--python"]
-    assert Path(commands[1][4]).parts[-3:] == ("venv", "bin", "python")
-    assert commands[1][5] == "install"
+    assert commands[0][1:3] == ["-m", "venv"]
+    assert commands[1][1:4] == ["-m", "pip", "install"]
+    assert Path(commands[1][0]).parts[-3:] == ("venv", "bin", "python")
     assert commands[2][1:] == ["-m", "pip", "freeze", "--all"]
     assert commands[3][1:] == ["-m", "pip", "freeze", "--all"]
     assert first.is_relative_to(tmp_path / ".artifacts/runtime/execution-state")
@@ -278,6 +564,88 @@ def test_missing_project_environment_is_materialized_once_from_exact_plan(
     assert plan is not None
     assert manifest["plan_identity"] == plan.identity(Path(sys.executable))
     assert manifest["identity"] == cache_entry.name
+
+
+def test_materialization_base_uses_compatible_controller(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    controller.write_text("runtime", encoding="utf-8")
+    controller.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), "==3.12.*", None)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda _python: Version("3.12.14"),
+    )
+
+    assert select_materialization_base(plan.requires_python, controller) == controller.resolve()
+
+
+def test_materialization_base_derives_exact_versioned_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    selected = tmp_path / "python3.12"
+    for executable in (controller, selected):
+        executable.write_text("runtime", encoding="utf-8")
+        executable.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), "==3.12.*", None)
+    versions = {
+        controller.resolve(): Version("3.14.0"),
+        selected.resolve(): Version("3.12.14"),
+    }
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda python: versions[python.resolve()],
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection.shutil.which",
+        lambda command: str(selected) if command == "python3.12" else None,
+    )
+
+    assert select_materialization_base(plan.requires_python, controller) == selected.resolve()
+
+
+def test_materialization_base_rejects_wrong_versioned_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    selected = tmp_path / "python3.12"
+    for executable in (controller, selected):
+        executable.write_text("runtime", encoding="utf-8")
+        executable.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), "==3.12.*", None)
+    versions = {
+        controller.resolve(): Version("3.14.0"),
+        selected.resolve(): Version("3.13.9"),
+    }
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda python: versions[python.resolve()],
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection.shutil.which",
+        lambda _command: str(selected),
+    )
+
+    with pytest.raises(PythonRuntimeSelectionError, match="does not match"):
+        select_materialization_base(plan.requires_python, controller)
+
+
+def test_materialization_base_rejects_implicit_fallback_runtime(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    controller = tmp_path / "controller-python"
+    controller.write_text("runtime", encoding="utf-8")
+    controller.chmod(0o755)
+    plan = InterpreterEnvironmentPlan((), ">=3.12,<3.13", None)
+    monkeypatch.setattr(
+        "bcf_governance.tooling.python_runtime_selection._python_runtime_version",
+        lambda _python: Version("3.14.0"),
+    )
+
+    with pytest.raises(PythonRuntimeSelectionError, match="one exact fallback minor"):
+        select_materialization_base(plan.requires_python, controller)
 
 
 def test_failed_project_environment_materialization_leaves_no_cache(

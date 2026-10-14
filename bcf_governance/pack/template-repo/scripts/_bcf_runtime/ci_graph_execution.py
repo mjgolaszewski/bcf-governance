@@ -8,6 +8,10 @@ import re
 from typing import Any
 
 from .ci_graph_errors import CIGraphError
+from .ci_graph_provider_permissions import (
+    component_required_permissions,
+    permission_satisfies,
+)
 
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
@@ -315,9 +319,17 @@ def job_required_environment(
 
 
 def local_gate_job_environments(
-    graph: dict[str, Any], producers: tuple[str, ...]
+    graph: dict[str, Any],
+    producers: tuple[str, ...],
+    *,
+    allowed_unmapped: frozenset[str] = frozenset(),
 ) -> dict[str, dict[str, str]]:
-    """Project each gate from its one exact pull-request producer job."""
+    """Project each gate from its one exact pull-request producer job.
+
+    A caller may admit an empty overlay only for a separately authenticated
+    legacy direct-producer identity.  Duplicate graph ownership is never
+    admitted by that compatibility lane.
+    """
 
     matches: dict[str, list[dict[str, str]]] = {producer: [] for producer in producers}
     for workflow in graph["workflows"]:
@@ -331,13 +343,20 @@ def local_gate_job_environments(
             environment = {**inherited, **job.get("environment", {})}
             for producer in set(executor.get("gates", ())).intersection(matches):
                 matches[producer].append(dict(sorted(environment.items())))
-    invalid = sorted(producer for producer, values in matches.items() if len(values) != 1)
+    invalid = sorted(
+        producer
+        for producer, values in matches.items()
+        if len(values) != 1 and not (not values and producer in allowed_unmapped)
+    )
     if invalid:
         raise CIGraphError(
             "local evidence gate does not have one exact pull-request producer job: "
             + ", ".join(invalid)
         )
-    return {producer: values[0] for producer, values in sorted(matches.items())}
+    return {
+        producer: values[0] if values else {}
+        for producer, values in sorted(matches.items())
+    }
 
 
 def resolve_local_job_environment(
@@ -519,6 +538,19 @@ def job_execution_issues(
         )
         issues.extend(environment_issues)
     if executor["kind"] in _EXPLICIT_EXECUTORS:
+        for component_id in executor["components"]:
+            component = graph["step_components"][component_id]
+            required_permissions = component_required_permissions(graph, component)
+            declared_permissions = component.get("required_permissions", {})
+            if declared_permissions != required_permissions:
+                issues.append(
+                    f"CI graph component {component_id} provider permission contract differs from its command"
+                )
+            for name, level in required_permissions.items():
+                if not permission_satisfies(job["permissions"].get(name), level):
+                    issues.append(
+                        f"CI graph job {job['id']} lacks {name}:{level} required by component {component_id}"
+                    )
         python_ready = False
         for component_id in executor["components"]:
             component = graph["step_components"][component_id]
