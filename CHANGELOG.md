@@ -24,9 +24,13 @@ All notable changes to BCF Governance are recorded here. This file follows
   v1 repositories retain dependency validation without inventing a Python pin,
   atomic upgrade shadows preserve Git history only when required, and every
   nested BCF projection uses the exact invoking runtime rather than an ambient
-  installation. Parallel unfinished work now derives phase-scoped PR-progress
-  metadata from the same authenticated proposition used by prospective proof
-  and submission, without inventing dependencies or requiring manual activation.
+  installation. Retry-capable proof capture derives its least provider-read
+  capability, while existing-repository upgrades derive generated-workflow
+  transaction closure from an isolated, canonically migrated successor state
+  before touching maintained bytes. Parallel unfinished work now derives
+  phase-scoped PR-progress metadata from the same authenticated proposition used
+  by prospective proof and submission, without inventing dependencies or
+  requiring manual activation.
 - Retained bounded diagnostic custody for failed local producers, including
   causal head and terminal tail, omitted-byte accounting, and exact execution
   identity, while keeping all failed material ineligible for reuse or authority.
