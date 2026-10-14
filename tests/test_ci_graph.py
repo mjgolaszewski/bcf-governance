@@ -12,6 +12,7 @@ from pathlib import Path
 import pytest
 import yaml
 
+from bcf_governance.tooling import evidence_shards
 from bcf_governance.tooling.ci_graph_contracts import (
     CIGraphError,
     _validate_workflows,
@@ -1991,6 +1992,68 @@ def test_local_gate_environment_comes_from_exact_pr_producer_job(
     graph["workflows"][0]["jobs"][1]["id"] = "duplicate"
     with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
         local_gate_job_environments(graph, ("test",))
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        local_gate_job_environments(
+            graph, ("test",), allowed_unmapped=frozenset({"test"})
+        )
+
+
+def test_profile_v1_local_gate_environment_admits_only_declared_direct_producer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    graph = {
+        "workflows": [
+            {
+                "id": "governance",
+                "events": [{"type": "pull_request"}],
+                "environment": {"SHARED": "literal"},
+                "jobs": [
+                    {
+                        "id": "evidence",
+                        "executor": {"kind": "gate_group", "gates": ["test"]},
+                    }
+                ],
+            }
+        ]
+    }
+    profile = {
+        "profile_contract_version": "1.0",
+        "ci_profile": {"required_push_jobs": ["lint", "test"]},
+    }
+    monkeypatch.setattr(evidence_shards, "_mapping", lambda *_: profile)
+    monkeypatch.setattr(
+        evidence_shards, "required_gate_targets", lambda _: ["lint", "test"]
+    )
+
+    assert evidence_shards.local_gate_execution_environments(
+        tmp_path, graph, ("lint", "test")
+    ) == {"lint": {}, "test": {"SHARED": "literal"}}
+
+    profile["ci_profile"]["required_push_jobs"] = ["test"]
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        evidence_shards.local_gate_execution_environments(
+            tmp_path, graph, ("lint", "test")
+        )
+
+
+def test_modern_profile_cannot_use_legacy_direct_producer_lane(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    graph = {
+        "workflows": [
+            {"id": "governance", "events": [{"type": "pull_request"}], "jobs": []}
+        ]
+    }
+    monkeypatch.setattr(
+        evidence_shards,
+        "_mapping",
+        lambda *_: {"profile_contract_version": "3.0"},
+    )
+
+    with pytest.raises(CIGraphError, match="does not have one exact pull-request producer job"):
+        evidence_shards.local_gate_execution_environments(
+            tmp_path, graph, ("test",)
+        )
 
 
 def test_local_graph_environment_resolves_only_exact_workspace_binding(

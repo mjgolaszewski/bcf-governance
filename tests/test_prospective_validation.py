@@ -383,8 +383,8 @@ def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     )
     monkeypatch.setattr(
         prospective,
-        "local_gate_job_environments",
-        lambda _graph, producers: {producer: {} for producer in producers},
+        "local_gate_execution_environments",
+        lambda _root, _graph, producers: {producer: {} for producer in producers},
     )
 
 

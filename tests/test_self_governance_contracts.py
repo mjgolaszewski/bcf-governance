@@ -790,7 +790,7 @@ def test_all_planned_shards_project_exact_graph_environment(
     )
     monkeypatch.setattr(
         module,
-        "local_gate_job_environments",
+        "local_gate_execution_environments",
         lambda *_: {
             "test": {
                 "PREPARED_ROOT": "${{ github.workspace }}/.artifacts/prepared"
