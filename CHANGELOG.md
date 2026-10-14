@@ -80,38 +80,24 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Compiled each adopter's claims, dependencies, producers, qualifications,
-  invalidation, reuse, and splintering from one consumer-owned assurance graph.
-  Standard-v3 uses an exact protected-base or installed-controller evaluator;
-  Lite retains its explicitly lower-assurance direct-candidate boundary.
-- Projected existing-repository protection through the ordinary installer and
-  GitHub adoption owners as one reviewable propose/apply/verify contract.
-  Missing or redacted bypass actors, stale provider state, repository drift,
-  ambiguous rulesets, and self-authority leakage fail closed.
-- Classified legacy, durable, mixed, and unknown evidence storage before work,
-  with immutable publication, cold resolution, retention reachability, and
-  non-mutating migration plans that preserve original evidence custody.
-- Preserved each successful deterministic splinter in its existing evidence
-  artifact and authenticated exact same-attempt reuse; partial proof accelerates
-  execution but cannot independently satisfy aggregate truth.
-- Replaced release ceremony with one idempotent transaction from certified
-  receipt to exact tag, assets, attestations, publication, credential retirement,
-  and independent custody verification. Published bytes are never rebuilt.
-
-### Fixed
-
-- Closed controller recovery as one authenticated, noncertifying state machine:
-  exact-subject byte identity governs builder routing, normalization, ordinary
-  custody restoration, and removal of temporary recovery authority; recovery
-  can never certify, publish, merge, or release.
-- Derived workflow permissions, event authority, checkout/evaluator paths,
-  controller artifact selection, timeout sufficiency, and qualified release
-  assets from their canonical graphs before provider work.
-- Added bounded, identity-preserving recovery for immutable provider reads and
-  terminal artifact transport while keeping mutations, semantic failures,
-  changed subjects, ambiguity, and repeated failures terminal.
-- Moved deterministic changelog, lifecycle, interpreter, and phase-retention
-  inconsistencies to preflight while preserving exact evidence and authority.
+- Compiled adopter claims, dependencies, producers, qualifications,
+  invalidation, proof reuse, and deterministic splintering from one
+  consumer-owned assurance graph. Standard-v3 evaluates from protected base or
+  installed-controller authority; Lite retains its declared direct-candidate
+  boundary, and partial proof may accelerate but never satisfy aggregate truth.
+- Made workflow permissions, event authority, protection projection,
+  checkout/evaluator paths, controller selection, and release inputs canonical
+  graph products. Existing-repository protection follows one reviewable
+  propose/apply/verify contract and rejects redaction, drift, ambiguity, or
+  self-authority leakage before provider work.
+- Defined evidence storage and recovery as typed custody contracts: legacy,
+  mixed, durable, and unknown storage retain immutable cold resolution and
+  reachability, while controller and provider recovery remain exact-subject,
+  bounded, identity-preserving, and noncertifying.
+- Reduced release to one idempotent transaction from certified receipt through
+  exact tag, assets, attestations, credential retirement, and independent
+  custody verification. Published bytes are never rebuilt, and deterministic
+  lifecycle, interpreter, changelog, or retention defects fail in preflight.
 
 ## [2.2.1] - 2026-10-08
 
@@ -142,26 +128,23 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Changed
 
-- Added an authenticated next-action frontier that derives candidate submission,
-  provider recovery, merge eligibility, controller transitions, and scheduled
-  controls from repository and provider state instead of operator procedure.
-- Added canonical affected-proof closure: every claim is mechanically required,
-  demonstrably unaffected, or conservatively executed, with truth independently
-  rejecting omitted affected assurance.
-- Added content-addressed proof reuse bound to exact command, toolchain, inputs,
-  projections, dependency closure, subject, producer, policy, qualification,
-  freshness, and authority class. Local proof accelerates but never confers
-  provider authority.
+- Added an authenticated next-action frontier that derives submission, recovery,
+  merge eligibility, controller transitions, scheduled controls, and
+  no-transition behavior from repository and provider state rather than
+  operator procedure. Every alternate outcome is typed, exact-bound, and
+  noncertifying.
+- Added canonical affected-proof closure and content-addressed reuse. Each claim
+  is required, demonstrably unaffected, or conservatively executed; reusable
+  proof binds exact command, toolchain, inputs, projections, dependency closure,
+  subject, producer, policy, qualification, freshness, and authority class.
+  Local proof accelerates execution but never confers provider authority.
 - Added deterministic critical-path splintering from governed node inventories,
   resource contracts, and historical durations, with exact union, zero overlap,
-  isolated execution state, negative-control applicability, and monolithic
-  fallback.
-- Unified candidate, exact-main, scheduled-control, and controller lifecycle
-  recovery under typed, noncertifying outcomes. Current/no-transition paths do
-  not build or retrieve controller bundles; pending rotation remains exact-bound.
-- Bound local Python admission, dependency audit, SBOM, compact evidence
-  transport, and unpublished adopter qualification to explicit authenticated
-  inputs before expensive work.
+  isolated state, negative-control applicability, and monolithic fallback.
+- Bound Python admission, dependency audit, SBOM, compact evidence transport,
+  controller lifecycle, and unpublished adopter qualification to authenticated
+  inputs before expensive work. Current/no-transition paths allocate no
+  controller bundle, while pending rotation remains exact-bound.
 
 ## [2.1.8] - 2026-10-03
 
