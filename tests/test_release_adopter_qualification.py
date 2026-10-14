@@ -449,6 +449,8 @@ def test_candidate_qualification_derives_the_closed_observation_lane(
         captured["validation_lane"]
         is LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION
     )
+    assert captured["semantic_intent"] == "pr"
+    assert captured["evaluation_target"] is None
     assert captured["remote"] == "bcf-qualification-base"
 
 

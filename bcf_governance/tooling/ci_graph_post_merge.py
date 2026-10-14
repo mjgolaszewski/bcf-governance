@@ -264,9 +264,11 @@ def authored_candidate_title(
             for item in workitems
             if item.get("status") in {"IN_PROGRESS", "BLOCKED"}
         ]
-        if not selected:
+        if len(selected) != 1:
             unfinished = [
-                item for item in workitems if item.get("status") == "TODO"
+                item
+                for item in workitems
+                if item.get("status") in {"IN_PROGRESS", "BLOCKED", "TODO"}
             ]
             if not unfinished:
                 raise CIGraphError("candidate evaluation proposition is not unique")

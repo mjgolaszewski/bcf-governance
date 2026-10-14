@@ -275,7 +275,9 @@ def test_candidate_title_is_derived_from_unique_active_workitem(tmp_path: Path) 
     )
 
 
-def test_candidate_title_rejects_ambiguous_active_workitems(tmp_path: Path) -> None:
+def test_candidate_title_derives_phase_progress_for_parallel_active_workitems(
+    tmp_path: Path,
+) -> None:
     (tmp_path / "plans").mkdir()
     (tmp_path / "plans/phase-ledger.yml").write_text(
         yaml.safe_dump({"active_phase": {
@@ -289,8 +291,9 @@ def test_candidate_title_rejects_ambiguous_active_workitems(tmp_path: Path) -> N
             {"id": "P30-P0-04", "status": "IN_PROGRESS", "summary": "reuse proof"},
         ]}), encoding="utf-8"
     )
-    with pytest.raises(CIGraphError, match="not unique"):
-        authored_candidate_title(tmp_path, mode="pr", target=None)
+    assert authored_candidate_title(tmp_path, mode="pr", target=None) == (
+        "P30: advance governed PR progress"
+    )
 
 
 def test_candidate_title_derives_phase_progress_for_parallel_todo_workitems(
