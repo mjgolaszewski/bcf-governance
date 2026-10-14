@@ -862,6 +862,21 @@ def test_validate_repo_root_rejects_placeholder_release_gates(tmp_path: Path) ->
     assert "uses a no-op" in str(excinfo.value)
 
 
+def test_profile_v3_python_gates_require_interpreter_contract(tmp_path: Path) -> None:
+    repo_root = _instantiate_fixture_repo(tmp_path, "valid_repo")
+    contracts_path = repo_root / "governance/gate-contracts.yml"
+    contracts = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    contracts["profile_contract_version"] = "2.0"
+    contracts.pop("interpreter_contract", None)
+    _write_yaml(contracts_path, contracts)
+
+    with pytest.raises(
+        GovernanceValidationError,
+        match="profile-v2/v3 Python gates require interpreter_contract",
+    ):
+        validate_repo_root(repo_root)
+
+
 def test_profile_v2_rejects_duplicated_evidence_semantic_ownership(
     tmp_path: Path,
 ) -> None:
