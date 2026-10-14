@@ -143,10 +143,7 @@ def test_governed_dependency_source_closes_recursive_requirements(
         "pytest==9.1.1",
         "pip==26.2.1",
     )
-    assert plan.pip_arguments() == (
-        "--requirement",
-        str(tmp_path / "requirements-governance.txt"),
-    )
+    assert plan.pip_arguments() == plan.requirements
     verify_interpreter_environment_projection(plan)
 
     (tmp_path / "runtime/requirements.txt").write_text(

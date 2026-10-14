@@ -132,14 +132,8 @@ class InterpreterEnvironmentPlan:
     def pip_arguments(self) -> tuple[str, ...]:
         """Bind installation to the already-derived dependency proposition."""
 
-        if self.source_kind == "legacy_governance_requirements":
+        if self.source_kind in {"legacy_governance_requirements", "governed_requirements_source"}:
             return self.requirements
-        if self.source_kind == "governed_requirements_source":
-            if self.source_path is None:
-                raise InterpreterEnvironmentError(
-                    "interpreter dependency source is unavailable"
-                )
-            return ("--requirement", str(self.source_path))
         if self.projection_path is None:
             raise InterpreterEnvironmentError(
                 "interpreter dependency projection is unavailable"
