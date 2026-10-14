@@ -346,7 +346,7 @@ def _isolated_project_python(
         raise ReleaseQualificationError(
             "repository-owned adopter interpreter must be ENV/bin/python"
         )
-    environment_root = source_root / relative.parts[0]
+    environment_root = source_python.absolute().parent.parent
     shutil.copytree(environment_root, projected_root, symlinks=True)
     projected_python = projected_root / "bin/python"
     source_text = str(source_root.resolve())
