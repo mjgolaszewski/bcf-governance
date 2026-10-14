@@ -40,6 +40,9 @@ from bcf_governance.tooling.routine_controller_rotation import (
     transition_id,
     validate_transition,
 )
+from bcf_governance.tooling.semantic_authority_commands import (
+    reconcile_semantic_lock,
+)
 from scripts.governance_evidence import attest_bundle, capture_gate
 from scripts.governance_truth import derive_truth
 
@@ -1984,3 +1987,71 @@ def test_clean_standard_v2_fixture_installs_upgrades_customizes_and_rolls_back(
     apply_ci_graph(repo)
     assert check_ci_graph(repo).status == "clean"
     assert unrelated.read_bytes() == unrelated_bytes
+
+
+def test_standard_upgrade_reconciles_semantic_source_inventory_before_success(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "standard-semantic-upgrade"
+    repo.mkdir()
+    git(repo, "init", "--quiet")
+    git(repo, "config", "user.email", "semantic-upgrade@example.invalid")
+    git(repo, "config", "user.name", "Semantic Upgrade")
+    write_gate_runner(repo)
+    config = gate_config(repo, "standard", None)
+    semantic = semantic_config(repo)
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "fixture contracts")
+    subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--profile",
+            "standard",
+            "--profile-config",
+            str(config),
+            "--semantic-config",
+            str(semantic),
+            "--project-id",
+            "semantic-upgrade-fixture",
+            "--project-name",
+            "Semantic Upgrade Fixture",
+            "--product-name",
+            "Semantic Upgrade Fixture",
+            *EXPLICIT_HOSTED_RUNNERS,
+            "--require-strict-validation",
+        ],
+        check=True,
+    )
+    git(repo, "add", ".")
+    git(repo, "commit", "--quiet", "-m", "installed governance")
+
+    runtime = repo / "scripts/validate_governance_yaml.py"
+    runtime.write_text(
+        runtime.read_text(encoding="utf-8") + "\n# prior runtime\n",
+        encoding="utf-8",
+    )
+    reconcile_semantic_lock(repo, apply=True)
+    git(repo, "add", str(runtime), "governance/semantic-lock.yml")
+    git(repo, "commit", "--quiet", "-m", "prior runtime custody")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(INSTALLER),
+            "--target",
+            str(repo),
+            "--upgrade",
+            "--require-strict-validation",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    assert "validation: strict pass" in result.stdout
+    expected_runtime = REPO_ROOT / "template-repo" / runtime.relative_to(repo)
+    assert runtime.read_bytes() == expected_runtime.read_bytes()
+    reconcile_semantic_lock(repo, apply=False)

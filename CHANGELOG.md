@@ -47,6 +47,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   interpreter contract from an exact governed requirements source before
   strict success; recursive sources are hash-bound and unsafe, ambiguous, or
   incomplete dependency graphs reject before atomic installation commits.
+  Upgrades also refresh semantic source-inventory custody through its canonical
+  owner before strict success, so installed runtime changes cannot leave the
+  first post-install fixed-point check stale.
 - Made bounded workitem execution derive its exact claim and producer closure
   from the authenticated target instead of allocating the parent profile, and
   made fresh v2/v3 install and promotion persist the same interpreter custody

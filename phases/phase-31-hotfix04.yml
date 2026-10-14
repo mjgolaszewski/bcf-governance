@@ -154,6 +154,13 @@ execution_evidence:
     or preserves and validates an explicit project contract before mutation;
     legacy upgrade continues to require complete authenticated dependency and
     runtime inputs rather than inventing custody.
+  - >-
+    Isolated AgentBus qualification exposed an adjacent atomic-upgrade edge:
+    strict install accepted refreshed runtime sources while preserving the old
+    semantic source-inventory digest, so the immediate canonical reconcile
+    failed. The installer now invokes the existing semantic-lock projection
+    owner inside the same validated transaction whenever semantic custody is
+    present; no second operator command or post-success repair remains.
 closeout_requirements:
   claims:
     required_suites_green:
