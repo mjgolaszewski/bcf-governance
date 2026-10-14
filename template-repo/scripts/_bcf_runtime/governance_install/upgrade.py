@@ -294,6 +294,17 @@ def _upgrade_provider_permission_edges(target_root: Path) -> list[Path]:
     return [path]
 
 
+def upgrade_graph_contracts(target_root: Path) -> list[Path]:
+    """Project every closed legacy graph migration in canonical order."""
+
+    changed = [
+        *_upgrade_direct_comparison_input(target_root),
+        *_upgrade_evidence_capture_environment(target_root),
+        *_upgrade_provider_permission_edges(target_root),
+    ]
+    return list(dict.fromkeys(changed))
+
+
 
 def _upgrade_agents_yaml(template_root: Path, target_root: Path) -> None:
     path = target_root / "AGENTS.yml"
@@ -611,9 +622,7 @@ def _upgrade_state_files(
     )
     _upgrade_makefile_fragment(target_root)
     created.extend(_upgrade_runtime_contract(target_root))
-    created.extend(_upgrade_direct_comparison_input(target_root))
-    created.extend(_upgrade_evidence_capture_environment(target_root))
-    created.extend(_upgrade_provider_permission_edges(target_root))
+    created.extend(upgrade_graph_contracts(target_root))
     return created
 
 
