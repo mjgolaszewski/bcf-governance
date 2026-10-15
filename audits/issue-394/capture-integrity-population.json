@@ -1,0 +1,79 @@
+{
+  "authority": false,
+  "kind": "capture_integrity_population_observation",
+  "source_checkpoint": "a2fd9205",
+  "policy": "Check source digest/subject/clock and retained stream digests before accepting any observation into a baseline cohort. Schema-valid timing alone is insufficient.",
+  "population": [
+    {
+      "path": "audits/issue-394/observations/pr-421-attempt-1.json",
+      "capture_binding": "passed",
+      "causes": [],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-0e99bece-attempt-1.json",
+      "capture_binding": "passed",
+      "causes": [],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-42536402-attempt-1.json",
+      "capture_binding": "rejected",
+      "causes": [
+        "source_snapshot_digest_mismatch",
+        "source_subject_mismatch",
+        "source_clock_mismatch"
+      ],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-42536402-attempt-2.json",
+      "capture_binding": "rejected",
+      "causes": [
+        "source_snapshot_digest_mismatch",
+        "source_subject_mismatch",
+        "source_clock_mismatch"
+      ],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-43c1763b-attempt-1.json",
+      "capture_binding": "passed",
+      "causes": [],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-6f0ecc1d-attempt-1.json",
+      "capture_binding": "rejected",
+      "causes": [
+        "source_snapshot_digest_mismatch",
+        "source_subject_mismatch",
+        "source_clock_mismatch"
+      ],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-b976db49-attempt-1.json",
+      "capture_binding": "passed",
+      "causes": [],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    },
+    {
+      "path": "audits/issue-394/observations/reconcile-ef142427-attempt-1.json",
+      "capture_binding": "passed",
+      "causes": [],
+      "timing_shape": "passed",
+      "scope": "Retained bytes and derived timing only; no independent provider custody or matched-cohort certification."
+    }
+  ],
+  "passed": 5,
+  "rejected": 3,
+  "historical_bytes_modified": false
+}
