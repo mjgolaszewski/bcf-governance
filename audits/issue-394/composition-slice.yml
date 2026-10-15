@@ -204,3 +204,13 @@ tracked_machine_contract_slice:
   - Current graph/edge identity mismatch and missing relationship/effect still reject in authored mode.
   forbidden_surfaces: [active suppression, provider mutation, caller-authorized facts, generated workflows, frozen distribution]
   remaining: Populate and independently qualify the complete actual lifecycle model before normative adoption or prose retirement.
+
+source_inventory_deconstruction_stage:
+  workitem: P32-P0-03
+  phase: P32
+  bounded_context: semantic_ownership
+  architectural_layer: tooling
+  operation_side: query
+  contract: audits/issue-394/source-inventory-deconstruction.yml
+  single_capacity_limited_module: bcf_governance/tooling/semantic_ownership_inventory.py
+  rule: Characterize then extract the existing call-fact collector before adding source-effect facts; preserve public inventory behavior and entrypoints.
