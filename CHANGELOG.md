@@ -10,6 +10,9 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
+- Read each required private adopter through its exact repository-scoped,
+  contents-read GitHub App credential, and remove that credential before any
+  adopter-controlled execution.
 - Made release qualification one closed provider-derived transaction: required
   adopter default branches resolve to an exact all-or-none source inventory,
   the release verifier produces and the trusted collector authenticates its

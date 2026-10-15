@@ -1464,6 +1464,8 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
 def test_provider_qualification_artifact_binds_exact_run_and_main(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    for index in range(3):
+        monkeypatch.setenv(f"BCF_ADOPTER_PROVIDER_TOKEN_{index}", f"token-{index}")
     values = _release_inputs(tmp_path / "release")
     receipt_path = _qualification(
         tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
