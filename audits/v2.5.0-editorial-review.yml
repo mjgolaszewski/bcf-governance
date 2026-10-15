@@ -33,9 +33,9 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: b20ecce0d46a714823236e19517fdafd2ac9d722dfe9a520d5498633510d607d
-  after_sha256: b20ecce0d46a714823236e19517fdafd2ac9d722dfe9a520d5498633510d607d
+  after_sha256: bb3c0dbfc021d4b4988ca822d3ac16143a52b2109b92c4f627bd4fa7207be1fd
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
+  - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
 - path: CLAUDE.md
   audience: repository agents
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 60e4bceffc2dd0f595178a59311e13bf07a5a5421e6e68d3ca274840d6b4a674
-  after_sha256: f394b1a2e4a4f1ae12415d466adc1ca73b959f578cf9903d239df9a90b97eacc
+  after_sha256: a6f2f48025f39b9c6dc5e7647c38dee7171b104029719d2f76a81f6458ad30bf
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -141,10 +141,10 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: aa9884b88902649dd5ba48b258ccf8a744d8d466ce55fe5bf1a06e04fb71286f
-  after_sha256: aa9884b88902649dd5ba48b258ccf8a744d8d466ce55fe5bf1a06e04fb71286f
+  after_sha256: f67af1cdeef5cd7d0826968680d3cd66362067039014bce7c43e803bca295438
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  disposition: revised
 - path: spec/phase0/README.md
   audience: BCF evaluators and adopters
   canonical_topic_owner: spec/phase0/README.md
