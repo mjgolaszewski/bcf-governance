@@ -213,7 +213,7 @@ workitems:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
     status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
-    bounded_context: evidence
+    bounded_context: operations
     architectural_layer: tooling
     operation_side: query
     target_modules:

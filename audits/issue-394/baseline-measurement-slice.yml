@@ -4,7 +4,7 @@ document:
   status: planned
   authority: false
 workitem: P32-P0-06
-bounded_context: evidence
+bounded_context: operations
 architectural_layer: tooling
 operation_side: query
 canonical_owner: bcf_governance/tooling/operational_observations.py
@@ -31,3 +31,5 @@ forbidden: [new broker, new proof receipt family, performance certification from
 remaining:
 - Adequate matched self and isolated-adopter cohorts and separately reviewed frozen targets and budgets.
 - Authenticated independent end-to-end custody and developer-interruption measurements.
+
+ownership_correction: Existing canonical source membership places operational_observations.py in operations; evidence is its measurement consumer, not a second source owner.

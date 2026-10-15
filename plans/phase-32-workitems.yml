@@ -98,7 +98,7 @@ workitems:
   - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
   - Prove source package template and applicable profile parity
   - Require independent scoped BCF closure rather than authored DONE
-  - Bounded context evidence; layer tooling; side query; affected surfaces and tests in audits/issue-394/workplan.yml workitems.foundation.baseline
+  - Bounded context operations; layer tooling; side query; affected surfaces and tests in audits/issue-394/workplan.yml workitems.foundation.baseline
   - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
   acceptance_evidence:
   - test
