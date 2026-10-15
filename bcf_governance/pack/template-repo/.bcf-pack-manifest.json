@@ -532,7 +532,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "43835205aec4385bee1b261224e8babb61ab916523fdefdde8ddb0d1297aa84b"
+      "sha256": "c1ce3a3c4f10d73dc62f4cbdbe785fd95c57ac84cae8e16df03cb61e8589c798"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -540,7 +540,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "79187e9187bf2b2466e8a1d0d671daa7dd4e674142a0f3ca399f0eabc7bfcaad"
+      "sha256": "288206a9179d6dd291729e26f54ecc465c5ae563ac56e1018c01c9cd69633899"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",

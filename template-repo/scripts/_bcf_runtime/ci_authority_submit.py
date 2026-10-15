@@ -25,6 +25,7 @@ from .local_pr import (
     CandidateIdentity,
     LocalPRContext,
     ProspectiveValidationError,
+    ProgressSink,
     _candidate_identity,
     _confirm_unchanged,
     _run,
@@ -300,6 +301,7 @@ def submit_candidate(
     provider_api: GitHubAPI,
     remote: str = "origin",
     runner: Runner = _run,
+    progress_sink: ProgressSink | None = None,
 ) -> dict[str, object]:
     """Prove and push only the exact immutable candidate that passed the train."""
 
@@ -355,6 +357,7 @@ def submit_candidate(
         repository=authority.repository,
         provider_api=provider_api,
         runner=runner,
+        progress_sink=progress_sink,
     )
     if proof.get("status") != "prospectively_admissible_provider_proof_required":
         raise ProspectiveValidationError(

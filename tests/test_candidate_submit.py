@@ -596,3 +596,39 @@ def test_partial_canonical_apply_requires_a_verified_fixed_point(monkeypatch, tm
     with pytest.raises(ProspectiveValidationError, match='did not converge'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
     assert trace == ['--check', '--apply', '--check']
+
+
+def test_submit_forwards_existing_progress_without_conferring_authority(monkeypatch, tmp_path):
+    from bcf_governance.tooling.operational_observations import progress_event
+
+    _, identity = _state(monkeypatch)
+    event = progress_event(execution_id=identity.commit_sha, sequence=1, stage='evidence', state='started', monotonic_ms=0)
+    received = []
+    def incomplete_proof(*_args, **kwargs):
+        kwargs['progress_sink'](event)
+        return {'status': 'incomplete'}
+    monkeypatch.setattr(submit, 'run_prospective_train', incomplete_proof)
+    with pytest.raises(ProspectiveValidationError, match='complete prospective proof'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), progress_sink=received.append,
+                                runner=lambda *_a, **_k: pytest.fail('incomplete progress must not push'))
+    assert received == [event]
+    assert received[0]['authority'] is False
+
+
+def test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout(monkeypatch, tmp_path, capsys):
+    import json
+    from bcf_governance.tooling import ci_commands, ci_github_controller
+    from bcf_governance.tooling.operational_observations import progress_event
+
+    event = progress_event(execution_id='a' * 40, sequence=1, stage='evidence', state='started', monotonic_ms=0)
+    result = {'status': 'submitted', 'subject': {'commit_sha': 'a' * 40}}
+    monkeypatch.setattr(ci_commands, 'ensure_local_project_python', lambda *_a, **_k: Path('/python'))
+    monkeypatch.setattr(ci_github_controller, 'environment_api', lambda: object())
+    def observed_submit(*_args, **kwargs):
+        kwargs['progress_sink'](event)
+        return result
+    monkeypatch.setattr(ci_commands, 'submit_candidate', observed_submit)
+    ci_commands.main(['submit', '--repo-root', str(tmp_path), '--format', 'json'])
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == result
+    assert json.loads(captured.err) == event

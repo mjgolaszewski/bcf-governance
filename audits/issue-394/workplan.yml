@@ -2358,7 +2358,8 @@ implementation_slices:
   canonical-submit-normalization:
     id: canonical-submit-normalization
     workitem: P32-P0-07
-    scope: Authored phase and release-target rejection, existing local lease and canonical normalization before exact scope/subject capture only
+    scope: Authored phase and release-target rejection, existing local lease and canonical normalization before exact scope/subject capture only; forwards
+      existing prospective progress without conferring proof
     contract: audits/issue-394/submit-normalization-slice.yml
     producer: bcf_governance/tooling/ci_authority_submit.py::_normalize_submission
     consumer: bcf_governance/tooling/ci_authority_submit.py::submit_candidate
@@ -2367,6 +2368,7 @@ implementation_slices:
     positive_tests:
     - tests.test_candidate_submit::test_submit_normalizes_before_capturing_the_proved_subject
     - tests.test_candidate_submit::test_fixed_point_submit_normalization_does_not_generate
+    - tests.test_candidate_submit::test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout
     negative_controls:
     - cause: authored-phase-contradiction
       test: tests.test_candidate_submit::test_authored_contradiction_rejects_before_any_normalization
@@ -2378,6 +2380,8 @@ implementation_slices:
       test: tests.test_candidate_submit::test_partial_canonical_apply_requires_a_verified_fixed_point
     - cause: authored-release-target
       test: tests.test_reconcile_governance::test_authored_release_target_precedes_every_projection_mutation
+    - cause: progress-is-not-proof
+      test: tests.test_candidate_submit::test_submit_forwards_existing_progress_without_conferring_authority
     remaining:
     - Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.
     - Provider PR/exact-main authority and full terminal custody are not certified by these local tests.
