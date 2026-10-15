@@ -32,6 +32,7 @@ invariants:
 - {id: INV-RT-015, statement: adopter compatibility is a non-authoritative observation whose unavailable or failing state is typed and retained without becoming publication success denial or bypass, basis: spec/RELEASE_TRAIN_STATE_DAG.md#release-authority-and-adopter-compatibility-separation}
 - {id: INV-RT-016, statement: every self-only CI value source is owned by exactly one declared self-authority overlay before preflight can allocate provider or evidence work, basis: governance/self-overlays.yml}
 - {id: INV-RT-017, statement: topology tests derive exact current job and component membership from canonical graph ownership and never preserve a hand-maintained cardinality after a governed node is added or removed, basis: spec/RELEASE_TRAIN_STATE_DAG.md#rule-34}
+- {id: INV-RT-018, statement: bounded workitem intent derives only from the validated dependency DAG and cannot be suppressed or broadened by unrelated list order or lifecycle state, basis: spec/RELEASE_TRAIN_STATE_DAG.md#integrated-workitem-dependency-frontier-state-machine}
 primitives:
 - {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
 - {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002]}
@@ -49,6 +50,7 @@ primitives:
 - {id: PRIM-ADOPTER-SOURCE-INVENTORY, canonical_name: AdopterSourceInventory, owner: bcf_governance/tooling/release_adopter_sources.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-013]}
 - {id: PRIM-RELEASE-ASSET-INVENTORY, canonical_name: ReleaseAssetInventory, owner: bcf_governance/tooling/release_asset_inventory.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-014]}
 - {id: PRIM-ADOPTER-COMPATIBILITY-OBSERVATION, canonical_name: AdopterCompatibilityObservation, owner: governance/release-qualification.yml, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015]}
+- {id: PRIM-WORKITEM-FRONTIER, canonical_name: BoundedWorkitemFrontier, owner: bcf_governance/tooling/ci_graph_post_merge.py::authored_post_merge_scope, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-018]}
 states:
 - {id: ST-INTENT, owner: ci_graph_post_merge, authority: none}
 - {id: ST-PREFLIGHT, owner: governance_validation.runner, authority: structural}
@@ -82,6 +84,23 @@ transitions:
 - {id: TR-013, from: ST-ASSET-VERIFY, to: ST-ADOPTER-COMPAT, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015], producer: adopter_compatibility_harness, consumer: compatibility_report_and_remediation, cost: adopter_execution, rejection: typed_unavailable_or_failed_observation_without_publication_effect}
 - {id: TR-014, from: ST-ASSET-VERIFY, to: ST-PUBLISHED, invariants: [INV-RT-001, INV-RT-004, INV-RT-005, INV-RT-008], producer: provider_release_publication, consumer: custody, cost: provider_publication, rejection: exact_runtime_asset_receipt_or_upload_identity_mismatch}
 - {id: TR-015, from: ST-PUBLISHED, to: ST-CUSTODY, invariants: [INV-RT-001, INV-RT-008, INV-RT-010], producer: release_custody_audit, consumer: future_release_and_human_review, cost: verification_only, rejection: immutable_custody_incomplete}
+bounded_workitem_frontier_contract:
+  normative: true
+  primitive: PRIM-WORKITEM-FRONTIER
+  canonical_owner: bcf_governance/tooling/ci_graph_post_merge.py::authored_post_merge_scope
+  inputs: [active_phase_identity, workitem_identity, authored_status, validated_predecessor_edges]
+  output: [evaluation_mode, exact_workitem_target]
+  states:
+  - {id: BWF-001, state: unique_done_to_todo_edge, result: exact_workitem_target, authority: bounded_successor_eligibility_only}
+  - {id: BWF-002, state: unique_terminal_done_sink_with_all_workitems_done, result: exact_workitem_target, authority: bounded_only}
+  - {id: BWF-003, state: active_or_blocked_direct_successor, result: pr_progress, authority: none}
+  - {id: BWF-004, state: unrelated_open_or_closed_islands, result: preserve_unique_frontier_if_one_exists, authority: islands_unchanged}
+  - {id: BWF-005, state: multiple_frontiers_fan_in_fan_out_or_ambiguous_ownership, result: pr_progress, authority: none}
+  - {id: BWF-006, state: phase_completed_and_all_workitems_done, result: phase_closure, authority: terminal_truth_may_evaluate_separately}
+  exclusions:
+  - {id: BWFX-001, reason: yaml_list_position_is_not_dependency_authority}
+  - {id: BWFX-002, reason: unrelated_lifecycle_state_cannot_suppress_or_acquire_bounded_authority}
+  - {id: BWFX-003, reason: ambiguous_frontier_cannot_be_caller_selected}
 adopter_source_transaction:
   normative: false
   status: rejected_provider_coupled_design
