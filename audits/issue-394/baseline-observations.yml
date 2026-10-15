@@ -431,6 +431,8 @@ local_command_observations:
   context: failed context-budget admission; original source remained unchanged
 - path: audits/issue-394/observations/reconcile-6f0ecc1d-attempt-1.json
   context: successful post-deconstruction canonical projection and authority transaction; single opaque local command window
+- path: audits/issue-394/observations/reconcile-42536402-attempt-2.json
+  context: canonical file-only candidate projection transaction committed 53e4f0ca from exact clean source 42536402
 local_command_limitations:
 - These are separate command windows, not matched eligible PR cohorts or complete developer-interruption clocks.
 - Preserve failed and successful observations; neither establishes p50/p95 or an approved resource/performance target.
