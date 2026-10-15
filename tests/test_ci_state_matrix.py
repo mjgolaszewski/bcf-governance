@@ -50,7 +50,7 @@ def test_changed_ci_contract_requires_same_candidate_matrix_update(tmp_path: Pat
         stream.write("\nCandidate-specific transition coverage.\n")
     report = validate_ci_state_matrix(repo)
     assert report["changed_contracts"] == ["bcf_governance/tooling/preflight.py", "spec/RELEASE_TRAIN_STATE_DAG.md"]
-    assert report["machine_backtrace"] == {"edges": 18, "transitions": 15}
+    assert report["machine_backtrace"] == {"edges": 19, "transitions": 15}
 
 
 def test_machine_backtrace_rejects_an_incomplete_edge_before_ci_allocation(

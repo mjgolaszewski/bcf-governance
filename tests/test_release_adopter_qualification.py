@@ -107,6 +107,13 @@ def _assets(root: Path) -> dict[str, str]:
     return digests
 
 
+def _build_assets(root: Path, archives: dict[str, str]) -> dict[str, str]:
+    return {
+        **archives,
+        "SHA256SUMS": hashlib.sha256((root / "SHA256SUMS").read_bytes()).hexdigest(),
+    }
+
+
 def _build_manifest(
     path: Path, assets: dict[str, str], *, commit: str, tree: str
 ) -> Path:
@@ -220,10 +227,62 @@ def test_non_github_or_ambiguous_remote_is_rejected() -> None:
 def test_release_assets_require_exact_wheel_sdist_and_digests(tmp_path: Path) -> None:
     expected = _assets(tmp_path)
 
-    assert _release_assets(tmp_path) == ("2.2.1", dict(sorted(expected.items())))
+    assert _release_assets(tmp_path) == (
+        "2.2.1",
+        dict(sorted(_build_assets(tmp_path, expected).items())),
+        dict(sorted(expected.items())),
+    )
     (tmp_path / "bcf_governance-2.2.1.tar.gz").write_bytes(b"changed")
     with pytest.raises(ReleaseQualificationError, match="checksum inventory is not exact"):
         _release_assets(tmp_path)
+
+
+def test_archive_projection_cannot_replace_complete_build_inventory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    assets = tmp_path / "assets"
+    assets.mkdir()
+    archive_digests = _assets(assets)
+    release_commit = "a" * 40
+    release_tree = "b" * 40
+    manifest = _build_manifest(
+        tmp_path / "release-build-manifest.json",
+        archive_digests,
+        commit=release_commit,
+        tree=release_tree,
+    )
+    monkeypatch.setattr(
+        qualification,
+        "resolve_main",
+        lambda *_args: MainIdentity("101", "main", release_commit, release_tree),
+    )
+    source_resolution_called = False
+
+    def unexpected_source_resolution(*_args: object) -> object:
+        nonlocal source_resolution_called
+        source_resolution_called = True
+        raise AssertionError("adopter source resolution must not start")
+
+    monkeypatch.setattr(
+        qualification, "resolve_adopter_sources", unexpected_source_resolution
+    )
+
+    with pytest.raises(
+        ReleaseQualificationError,
+        match="release assets are not bound to the current exact build manifest",
+    ):
+        qualify_release(
+            REPO_ROOT,
+            provider_api=object(),  # type: ignore[arg-type]
+            repository="mjgolaszewski/bcf-governance",
+            release_assets=assets,
+            release_build_manifest=manifest,
+            adopter_roots=(),
+            adopter_pythons={},
+            producer=PRODUCER,
+            output=tmp_path / "receipt.json",
+        )
+    assert source_resolution_called is False
 
 
 def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
@@ -339,7 +398,7 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
     release_tree = "b" * 40
     manifest = _build_manifest(
         tmp_path / "release-build-manifest.json",
-        digests,
+        _build_assets(assets, digests),
         commit=release_commit,
         tree=release_tree,
     )
@@ -390,7 +449,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     release_identity = ("mjgolaszewski/bcf-governance", "a" * 40, "b" * 40)
     manifest = _build_manifest(
         tmp_path / "release-build-manifest.json",
-        digests,
+        _build_assets(assets, digests),
         commit=release_identity[1],
         tree=release_identity[2],
     )

@@ -14,6 +14,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   adopter default branches resolve to an exact all-or-none source inventory,
   the release verifier produces and the trusted collector authenticates its
   qualification receipt, and publication follows that receipt automatically.
+  Qualification derives complete build and checksum-declared archive views from
+  one closed asset inventory, so each consumer authenticates its exact
+  proposition without conflating the checksum manifest with archive content.
   Caller checkouts remain caches only; caller-authored subjects, pass receipts,
   dispatches, partial inventories, and stale provider identities fail before
   publication authority.
