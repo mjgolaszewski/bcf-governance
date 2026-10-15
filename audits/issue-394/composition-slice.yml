@@ -121,3 +121,24 @@ tracked_projection_fixed_point_slice:
   - Byte-identical contract semantics regenerate identically across runtime subjects; semantic policy edge or contract changes still alter the contract view.
   - Unknown view selection and tampered bound snapshots reject.
   remaining: Wire the adopted complete machine model into canonical generation after full population and runtime conformance.
+
+existing_effect_inventory_projection_slice:
+  workitem: P32-P0-03
+  bounded_context: semantic_ownership
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/semantic_operation_effects.py, bcf_governance/tooling/semantic_authority_contracts.py, tests/test_semantic_operation_inventory.py, tests/test_semantic_authority.py, tests/test_semantic_typescript_effects.py]
+  shared_kernel_decision: Reuse the existing source-effect traversal as a read-only fact interface owned by semantic_ownership; ci_authority consumes its immutable classified port facts without introducing another detector or evaluator.
+  contract:
+  - Expose a deterministic immutable inventory of reached mutation authority and non-authoritative observation ports from the existing validated effect traversal.
+  - Preserve the legacy validator tuple counts and every existing rejection message and rule.
+  - Discover source call paths before consulting proposed lifecycle edges; an undeclared source effect must still reject even if its proposed edge/control is removed.
+  - Reject unreachable declared ports and unresolved dynamic call paths before returning an inventory.
+  - Extend existing operation observations with classified exact port identities without a second source scan or changing semantic-lock shape.
+  - Keep source-family ownership and source/package/template parity intact.
+  expected_tests:
+  - exact stable inventory and legacy counts for valid source paths
+  - source-only undeclared write and authority effects reject
+  - unknown dynamic path and unreachable declared port reject
+  - existing Python and TypeScript semantic conformance remains unchanged
+  remaining: Bind the full protected runtime effect population into adopted lifecycle contexts and independent terminal consumers.
