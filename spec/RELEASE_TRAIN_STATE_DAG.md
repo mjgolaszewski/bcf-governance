@@ -1866,6 +1866,38 @@ no plan may delete an object reachable from a protected retention root.
 | Retry-capable evidence shard can resolve prior-attempt provider proofs | exact gate-shard executor, capture component, provider API operation and job permission map | derive the component's least read capability (`actions:read`) into every reachable producer job during install/upgrade/reconcile; validate the component-to-job permission edge before rendering or evidence allocation | first attempts remain ordinary execution and later attempts may authenticate exact prior artifacts without acquiring write authority | token presence without provider permission, preserving a legacy `contents:read`-only producer, granting write authority, or discovering HTTP 403 after fan-out |
 | Retry-capable evidence shard lacks its declared provider read capability | same exact graph edge with absent, `none`, malformed or conflicting permission | reject graph compilation/upgrade before workflow projection; a known legacy canonical edge may be migrated only by the canonical upgrade/reconcile owner | typed deterministic permission-contract failure with no provider execution | runtime best effort, silently disabling reuse, agent-authored workflow permission, repository-specific exception, or treating denial as semantic evidence failure |
 | Existing adopter upgrade needs its generated-workflow transaction closure while successor validation adds a migratable graph requirement | exact preserved graph/extensions/workflows, successor runtime/schema, and the closed canonical migration set | project migrations into an isolated transaction-planning shadow, validate the successor graph there, and derive current plus retired generated paths from that same projected state before opening the real atomic transaction | complete destination closure followed by one atomic upgrade; maintained adopter bytes remain untouched until successor validation passes | validating N state directly with N+1 before migration, weakening the successor validator, omitting generated paths, mutating the maintained checkout during planning, or an agent ordering migration manually |
+| Existing adopter contains a runtime path retired from the successor pack | authenticated successor pack manifest, active successor inventory, mechanically derived historical path/digest retirements, exact installed custody, observed nonsymlink path bytes, and complete transaction destination closure | before mutation derive one closed retirement plan; remove only absent or exact declared historical bytes inside the atomic install shadow; validate that no retired residue survives and that active and consumer-preserved inventories remain exact before promotion | successor runtime lock and installed tree agree exactly; legacy pack residue is absent without granting generic pruning authority | treating lock omission, directory membership, filename, wildcard, or caller instruction as ownership; deleting unknown drift or consumer bytes; discovering the orphan during expensive adopter proof; or promoting a shadow-only deletion |
+
+### Adopter runtime retirement state machine
+
+The pack manifest is the sole successor owner of both active runtime files and
+content-addressed retirements. Its generator derives retirements from prior
+pack-manifest history; neither an agent nor an adopter authors tombstones. A
+retirement binds one safe repository-relative path to every authenticated
+historical digest that BCF previously installed at that path. Active and
+retired paths are disjoint.
+
+| Installed state | Mechanical decision | Result | Rejected alternative |
+| --- | --- | --- | --- |
+| Retired path absent | no-op | idempotent upgrade | manufacturing a file or requiring cleanup |
+| Retired path is a regular file with a declared historical digest | include its exact path/digest in the atomic transaction plan | remove in shadow, promote only after strict successor validation | generic prune, manual deletion, or path-only ownership |
+| Retired path has an unknown digest | reject before shadow mutation and proof allocation | adopter bytes preserved for explicit diagnosis | deleting drift because the name once belonged to BCF |
+| Retired path is a symlink, directory, or traverses an unsafe component | reject before mutation | no filesystem traversal or ambiguous ownership | following links or recursive removal |
+| Path remains active in the successor inventory | active entry wins; retirement overlap is a malformed manifest | normal copy/preserve/generate semantics | delete-then-copy ambiguity |
+| Path is authenticated consumer-preserved custody | preserve it and reject a conflicting retirement | consumer ownership remains exact | BCF reclaiming adopter-owned bytes |
+| Predecessor runtime lock owns a path absent from the successor | require the successor retirement inventory to contain that exact path/digest | exact atomic retirement | interpreting lock omission as deletion authority |
+| Promotion or final validation fails | restore every exact pre-transaction byte | no partial install or deletion | shadow-only success or incomplete rollback |
+| Fresh install has no retired residue | no retirement action | normal fresh install | scanning unrelated files |
+| Fresh-install destination already contains retired residue | reject destination conflict | no implicit upgrade or cleanup | silently converting fresh install into mutation authority |
+
+The complete edge chain is `historical pack manifests → successor retirement
+inventory → authenticated upgrade plan → atomic installer shadow → successor
+runtime lock → strict provenance validation → adopter proof`. Every edge binds
+the successor manifest digest; upgrade edges additionally bind predecessor lock
+digest, observed path digest, and transaction identity. Candidate qualification
+and immutable release upgrade consume the same plan. Local upgrades may use the
+same exact pack contract but confer no release custody. Qualification reports
+remain observations and never authorize deletion.
 | A successor graph migration emits a field absent from the adopter's installed schema | exact candidate pack manifest, complete successor schema directory, legacy graph and closed graph migrations | project the candidate-owned schema set into the same isolated planning shadow before applying graph migrations or invoking successor validation; the real atomic upgrade preserves the identical schema-before-graph order | one schema/graph-compatible successor state used for destination closure and final promotion | validating migrated graph bytes with the legacy schema, copying one schema ad hoc, weakening either schema, or discovering ordering only during adopter qualification |
 | Reused and fresh splinter results reach aggregate fan-in | immutable partition plus one current execution accounting entry for every splinter | require exact union, zero overlap, successful result, clean owned-state retirement and byte-valid JUnit for every entry before emitting the ordinary gate receipt | unchanged aggregate claim proposition and ordinary truth path | partial aggregate truth, duplicated nodes, missing cleanup observation, or a splinter proof emitted as a claim receipt |
 | Splinter proof bytes cross execution-worktree into receipt capture | exact repository root, governed report path and proof/JUnit members projected as repository-relative paths | resolve every declared member beneath the executing repository, reject escape or absence, then copy exact bytes into the existing shard receipt artifact | one path-stable proof inventory consumable by local and provider capture | cwd-relative shorthand, host-absolute path, missing artifact, or accepting a successful command without a capturable proof |
