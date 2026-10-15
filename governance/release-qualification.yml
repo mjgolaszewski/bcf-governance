@@ -2,20 +2,36 @@ document:
   kind: release_qualification_contract
   name: BCF release adopter qualification
   id: bcf-release-adopter-qualification
-  version: 1.1.0
+  version: 1.2.0
   status: active
   path: governance/release-qualification.yml
-schema_version: '1.1'
+schema_version: '1.2'
+provider_credentials:
+- id: tradeflow-read
+  owner: moranwm
+  repository: tradeflow
+  token_environment: BCF_ADOPTER_PROVIDER_TOKEN_0
+- id: racecar-read
+  owner: mjgolaszewski
+  repository: racecar
+  token_environment: BCF_ADOPTER_PROVIDER_TOKEN_1
+- id: agentbus-read
+  owner: mjgolaszewski
+  repository: AgentBus
+  token_environment: BCF_ADOPTER_PROVIDER_TOKEN_2
 required_adopters:
 - id: tradeflow-lite
   repository: moranwm/tradeflow
   profile: lite
+  provider_credential: tradeflow-read
 - id: racecar-standard-v3
   repository: mjgolaszewski/racecar
   profile: standard
+  provider_credential: racecar-read
 - id: agentbus-standard-v3
   repository: mjgolaszewski/AgentBus
   profile: standard
+  provider_credential: agentbus-read
 qualification:
   source: provider_default_branch_transaction
   caller_checkout_role: environment_and_object_cache_only

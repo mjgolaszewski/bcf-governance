@@ -452,11 +452,11 @@ def main(argv: list[str] | None = None) -> None:
                 "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
             }
             from .ci_github_controller import environment_api
-
             provider_api = environment_api()
             result = qualify_release(
                 args.repo_root,
                 provider_api=provider_api,
+                adopter_provider_environment=os.environ,
                 repository=args.repository,
                 release_assets=args.release_assets,
                 release_build_manifest=args.release_build_manifest,

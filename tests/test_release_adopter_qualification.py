@@ -190,6 +190,12 @@ def test_release_qualification_contract_is_closed_and_unique() -> None:
         "racecar-standard-v3",
         "agentbus-standard-v3",
     ]
+    assert [item["repository"] for item in contract["provider_credentials"]] == [
+        "tradeflow", "racecar", "AgentBus",
+    ]
+    assert [item["provider_credential"] for item in contract["required_adopters"]] == [
+        "tradeflow-read", "racecar-read", "agentbus-read",
+    ]
     assert contract["qualification"] == {
         "source": "provider_default_branch_transaction",
         "caller_checkout_role": "environment_and_object_cache_only",
