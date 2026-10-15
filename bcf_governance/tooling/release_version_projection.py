@@ -69,10 +69,26 @@ def _replace_nested_scalar(path: Path, parent: str, key: str, value: str) -> Non
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _release_surfaces_present(repo_root: Path) -> bool:
+    present = tuple((repo_root / relative).exists() for relative, _, _ in SURFACES)
+    if not any(present):
+        return False
+    if not all(present):
+        names = ", ".join(
+            relative.as_posix()
+            for (relative, _, _), exists in zip(SURFACES, present, strict=True)
+            if not exists
+        )
+        raise ReleaseVersionProjectionError(
+            f"release version ownership is partial; missing: {names}"
+        )
+    return True
+
+
 def validate_authored_release_target(repo_root: Path, version: str) -> None:
     """Reject authored release contradictions before changing derived bytes."""
 
-    if not all((repo_root / relative).exists() for relative, _, _ in SURFACES):
+    if not _release_surfaces_present(repo_root):
         return
     path = repo_root / "CHANGELOG.md"
     if not path.exists():
@@ -102,18 +118,8 @@ def reconcile_release_version_surfaces(
 ) -> tuple[str, ...]:
     """Check or project the package version through every mechanical owner."""
 
-    present = tuple((repo_root / relative).exists() for relative, _, _ in SURFACES)
-    if not any(present):
+    if not _release_surfaces_present(repo_root):
         return ()
-    if not all(present):
-        names = ", ".join(
-            relative.as_posix()
-            for (relative, _, _), exists in zip(SURFACES, present, strict=True)
-            if not exists
-        )
-        raise ReleaseVersionProjectionError(
-            f"release version ownership is partial; missing: {names}"
-        )
     validate_authored_release_target(repo_root, version)
     stale: list[tuple[Path, str, str]] = []
     for relative, parent, key in SURFACES:

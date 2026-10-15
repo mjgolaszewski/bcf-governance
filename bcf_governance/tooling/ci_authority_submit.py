@@ -35,6 +35,8 @@ from .local_pr import (
 from .ordinary_protection_projection import validate_ordinary_protection_submission
 from .local_execution_admission import local_gate_lease
 from .nested_cli_runtime import exact_nested_cli_command
+from .release_version_projection import validate_authored_release_target
+from .runtime_capacity import executing_runtime_version
 from .governance_validation.authored_phase_state import validate_authored_phase_state
 
 
@@ -55,6 +57,11 @@ def _normalize_submission(
     try:
         if (root / "plans/phase-ledger.yml").is_file():
             validate_authored_phase_state(root)
+        try:
+            version = executing_runtime_version()
+        except RuntimeError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        validate_authored_release_target(root, version)
         if semantic_intent is not None and semantic_intent != authored_post_merge_scope(root)[0]:
             raise ProspectiveValidationError(
                 "submitted semantic intent does not match the authored lifecycle intent"

@@ -945,3 +945,13 @@ def test_authored_release_target_precedes_every_projection_mutation(tmp_path, mo
     with pytest.raises(ReleaseVersionProjectionError, match='changelog'):
         steps[0].apply()
     assert yaml.safe_load((tmp_path / 'manifest.yml').read_text())['document']['version'] == '2.3.2'
+
+
+def test_partial_release_ownership_rejects_in_first_authored_stage(tmp_path, monkeypatch):
+    (tmp_path / 'manifest.yml').write_text('document:\n  version: 2.5.0\n')
+    monkeypatch.setattr(scaffold, 'capability_states', lambda *_a: {})
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *_a: [])
+    steps = reconcile_steps(tmp_path, Path(sys.executable))
+    assert steps[0].step_id == 'authored-release-target'
+    with pytest.raises(ReleaseVersionProjectionError, match='ownership is partial'):
+        steps[0].apply()
