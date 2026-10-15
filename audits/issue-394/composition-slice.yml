@@ -158,3 +158,23 @@ operation_effect_composition_bridge:
   - An omitted proposed effect or edge cannot erase the independently discovered source port.
   - No source authentication or runtime execution qualification is inferred from a static observation; protected consumers still reconstruct full actual populations.
   remaining: Full graph/context mapping and protected installed consumer wiring remain required before normative adoption.
+
+independent_fact_binding_slice:
+  workitem: P32-P0-03
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_graph_composition.py, tests/test_ci_graph_composition.py]
+  contract:
+  - Require a protected complete per-relationship fact catalogue independently of proposed contracts.
+  - Compare every fact identity producer verifier subject proposition authority and freshness to that catalogue.
+  - Resolve each producer and verifier to the existing independently discovered source function population.
+  - Reject missing duplicate substituted or orphaned fact bindings even when the candidate retains valid tests and call paths.
+  - Keep source authentication and execution qualification with existing protected consumers; static correspondence grants no authority.
+  expected_tests:
+  - Complete source-bound fact catalogue passes without mutating inputs or qualifying execution.
+  - Missing relationship fact population and missing or duplicate required facts reject.
+  - Wrong producer verifier subject proposition authority and freshness each reject independently.
+  - Deleted producer or verifier rejects despite retained edge tests and implementation functions.
+  forbidden_surfaces: [provider mutation, active suppression, workflow authority, maintained adopters, frozen distribution]
+  remaining: Authenticate actual canonical fact owners and full consumer populations before normative adoption.
