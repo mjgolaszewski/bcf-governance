@@ -61,3 +61,18 @@ coordination_effect:
   rejection: Invalid execution identity or busy lease blocks before normalization
   cleanup: Existing finally block unlocks and closes its descriptor
   authority_effect: none; no provider or truth effect
+
+release_surface_completeness:
+  target_module: bcf_governance/tooling/release_version_projection.py
+  bounded_context: operations
+  architectural_layer: tooling
+  operation_side: query_before_existing_projection_command
+  trigger: Package parity found a missing current-version changelog target after normalization had accepted the tree.
+  contract:
+  - Validate an authored unreleased target or existing exact release heading before any projection mutation.
+  - Reject absent stale duplicate or misplaced unreleased target when no compatible exact released entry permits it.
+  - Never fabricate release history or automatically author a release target.
+  - Preserve graphless and fixture roots without package surfaces or an optional changelog.
+  - Include every inspected README usage and changelog surface in release-version cache applicability.
+  expected_tests: [tests/test_reconcile_governance.py, tests/test_pack_sync.py]
+  forbidden: [release publication, phase activation, workflow edits, authority relaxation]
