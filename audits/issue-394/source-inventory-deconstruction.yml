@@ -41,3 +41,11 @@ expected_tests:
 - tests/test_self_governance_contracts.py
 forbidden_surfaces: [CLI contract changes, altered inventory semantics, weakened unknown/dynamic handling, workflow pins, frozen maintenance bytes, maintained adopters]
 remaining: Independently enumerate actual authority-effect boundaries and populate the complete adopted lifecycle model after this behavior-preserving split is proved.
+
+local_execution:
+  characterization: Two full-inventory/source-mutation controls passed before and after extraction without changing the retained snapshot.
+  sizes: {semantic_ownership_inventory: 574, semantic_python_calls: 241, semantic_python_annotation_identity: 120}
+  focused_components: 54 characterization/method/import/effect/parity/context cases passed.
+  architecture: Six structural/CLI-effect/copy cases passed; the new file initially had no context mapping, then its exact semantic_ownership registration passed.
+  framework_self_conformance: The intermediate run rejected the stale semantic lock; it was interrupted after 6 passes and 1 lock failure. No complete self-conformance pass is claimed.
+  next: Integrate the extracted source and refresh projections only through canonical reconciliation, then rerun framework self-conformance and governance before feature additions.
