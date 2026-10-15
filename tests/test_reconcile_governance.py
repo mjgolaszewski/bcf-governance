@@ -1171,3 +1171,32 @@ def test_reconcile_force_apply_rejects_before_runtime_allocation(monkeypatch, tm
     monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for contradictory force/apply'))
     with pytest.raises(SystemExit, match='--force is valid only with --check'):
         scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply', '--force'])
+
+
+def test_reconcile_authored_phase_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation import authored_phase_state
+
+    (tmp_path / 'plans').mkdir()
+    (tmp_path / 'plans/phase-ledger.yml').write_text('{}')
+
+    def reject(_root):
+        raise authored_phase_state.AuthoredPhaseStateError('authored phase contradiction')
+
+    monkeypatch.setattr(authored_phase_state, 'validate_authored_phase_state', reject)
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ('test',))
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime before authored phase rejection'))
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', lambda *_a, **_k: pytest.fail('created shadow before authored phase rejection'))
+    with pytest.raises(SystemExit, match='authored phase contradiction'):
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply'])
+
+
+def test_reconcile_authored_release_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
+    def reject(_root, _version):
+        raise ReleaseVersionProjectionError('authored release contradiction')
+
+    monkeypatch.setattr(scaffold, 'validate_authored_release_target', reject)
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ('test',))
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime before authored release rejection'))
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', lambda *_a, **_k: pytest.fail('created shadow before authored release rejection'))
+    with pytest.raises(SystemExit, match='authored release contradiction'):
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply'])

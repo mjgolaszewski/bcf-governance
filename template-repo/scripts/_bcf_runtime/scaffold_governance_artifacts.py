@@ -644,6 +644,10 @@ def reconcile_main(argv: list[str] | None = None) -> None:
     try:
         if args.force and not args.check:
             raise ReconcileError("--force is valid only with --check")
+        if (root / "plans/phase-ledger.yml").is_file():
+            from .governance_validation.authored_phase_state import validate_authored_phase_state
+            validate_authored_phase_state(root)
+        validate_authored_release_target(root, __version__)
         if args.commit_derived:
             candidate_projection_source(root)
         project_python = (
