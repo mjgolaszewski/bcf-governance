@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: b20ecce0d46a714823236e19517fdafd2ac9d722dfe9a520d5498633510d607d
-  after_sha256: 5d556eee139d97e47cc081e097a385e4602f4c94c7a710c37abe79d0f5180426
+  after_sha256: a6629e02064cbdc92824d9075c91da28fbe39de5efe8330904e6ccc7bae5e997
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -96,10 +96,10 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: 50b618c97306fae3c9a784988370bbfced59501a3498f6e5e63b4a40722740d4
-  after_sha256: 50b618c97306fae3c9a784988370bbfced59501a3498f6e5e63b4a40722740d4
+  after_sha256: 99d451546249d6b198abedbf27e1e47db41e63a58e6a31f725613fffdecdc98d
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - removed superseded controller runbooks and retained only routine transition and dormant self-recovery boundaries
+  disposition: revised
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 60e4bceffc2dd0f595178a59311e13bf07a5a5421e6e68d3ca274840d6b4a674
-  after_sha256: a6f2f48025f39b9c6dc5e7647c38dee7171b104029719d2f76a81f6458ad30bf
+  after_sha256: 45177f7086b8c966c229b2b1458b71299692b06a14fdfef2c6eddaf7a0c8f60c
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
