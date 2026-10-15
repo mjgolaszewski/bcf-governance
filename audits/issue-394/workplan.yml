@@ -2346,6 +2346,7 @@ implementation_slices:
     - tests.test_ci_graph_composition::test_valid_composition_has_no_authority_and_is_byte_stable
     - tests.test_ci_graph_composition::test_binding_conformance_uses_existing_source_and_pytest_collection_owners
     - tests.test_ci_graph_composition::test_binding_conformance_traces_actual_compiler_and_projection_calls
+    - tests.test_ci_graph_composition::test_contract_view_is_stable_across_bound_subjects
     negative_controls:
     - cause: deleted-edge-and-test
       test: tests.test_ci_graph_composition::test_removed_relationship_and_its_tests_cannot_hide_population
@@ -2363,6 +2364,8 @@ implementation_slices:
       test: tests.test_ci_graph_composition::test_binding_conformance_rejects_removed_call_with_both_functions_present
     - cause: unresolved-source-call
       test: tests.test_ci_graph_composition::test_binding_conformance_rejects_unresolved_required_call
+    - cause: tracked-view-bound-snapshot-tamper
+      test: tests.test_ci_graph_composition::test_contract_view_still_rejects_tampered_bound_identity
     remaining:
     - Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.
     - Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required.

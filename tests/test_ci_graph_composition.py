@@ -463,3 +463,53 @@ def test_binding_conformance_rejects_call_outside_contract_functions(binding_inp
     })}
     with pytest.raises(CIGraphError, match='source call endpoints are unbound'):
         _validate_bindings(binding_inputs)
+
+
+def test_contract_view_is_stable_across_bound_subjects(composition):
+    first = compile_lifecycle_composition(**composition)
+    identity = dict(composition['expected_source'])
+    identity.update(commit_sha='1' * 40, tree_sha='2' * 40, controller_commit_sha='3' * 40, repository_id='17')
+    composition['expected_source'] = identity
+    composition['payload']['source'] = dict(identity)
+    second = compile_lifecycle_composition(**composition)
+    assert first['composition_sha256'] != second['composition_sha256']
+    assert render_lifecycle_composition(first) != render_lifecycle_composition(second)
+    assert render_lifecycle_composition(first, view='contract') == render_lifecycle_composition(second, view='contract')
+    assert identity['commit_sha'] not in render_lifecycle_composition(second, view='contract')
+
+
+@pytest.mark.parametrize('field', ['policy', 'contract', 'graph', 'ci_edges'])
+def test_contract_view_changes_for_semantic_changes(composition, field):
+    before = render_lifecycle_composition(compile_lifecycle_composition(**composition), view='contract')
+    if field == 'policy':
+        identity = dict(composition['expected_source'], policy_sha256='f' * 64)
+        composition['expected_source'] = identity
+        composition['payload']['source'] = dict(identity)
+    elif field == 'contract':
+        composition['payload']['relationships'][0]['contract']['recovery'] = 'different-bounded-recovery'
+    else:
+        graph = composition['compiled_graph']
+        if field == 'graph':
+            graph.graph_sha256 = 'f' * 64
+            identity = dict(composition['expected_source'], graph_sha256=graph.graph_sha256)
+        else:
+            values = asdict(graph.edge_contracts[0])
+            values['custody'] = 'changed-custody'
+            graph.edge_contracts = (EdgeContract(**values),)
+            identity = dict(composition['expected_source'], ci_edges_sha256=edge_population_sha256(graph))
+        composition['expected_source'] = identity
+        composition['payload']['source'] = dict(identity)
+    after = render_lifecycle_composition(compile_lifecycle_composition(**composition), view='contract')
+    assert before != after
+
+
+def test_contract_view_still_rejects_tampered_bound_identity(composition):
+    compiled = compile_lifecycle_composition(**composition)
+    compiled['source']['commit_sha'] = '0' * 40
+    with pytest.raises(CIGraphError, match='projection identity'):
+        render_lifecycle_composition(compiled, view='contract')
+
+
+def test_renderer_rejects_unknown_view(composition):
+    with pytest.raises(CIGraphError, match='view'):
+        render_lifecycle_composition(compile_lifecycle_composition(**composition), view='invented')

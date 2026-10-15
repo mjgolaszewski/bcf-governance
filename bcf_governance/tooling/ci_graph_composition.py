@@ -225,14 +225,28 @@ def validate_lifecycle_bindings(
     }
 
 
-def render_lifecycle_composition(compiled: dict[str, Any]) -> str:
+def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound") -> str:
     """Project all compiled relationships and contract fields into a human view.
 
     This returns bytes-to-save as text; reconciliation retains ownership of writes.
     Diagram node IDs are derived from context-qualified states, never caller code.
+    The contract view is stable tracked material; exact subject and installed
+    controller custody remain in the separately validated bound runtime envelope.
     """
 
     _validate_compiled_identity(compiled)
+    if view not in {"bound", "contract"}:
+        raise CIGraphError("lifecycle composition projection view is invalid")
+    source = compiled["source"]
+    identity = f"Composition: `{compiled['composition_sha256']}`"
+    if view == "contract":
+        source = {key: source[key] for key in ("graph_sha256", "ci_edges_sha256", "policy_sha256")}
+        digest = hashlib.sha256(_bytes({
+            "schema_version": compiled["schema_version"],
+            "source": source,
+            "relationships": compiled["relationships"],
+        })).hexdigest()
+        identity = f"Contract: `{digest}`; exact attempt custody remains in the bound runtime envelope."
 
     def display(value: Any) -> str:
         text = value if isinstance(value, str) else _bytes(value).decode()
@@ -244,9 +258,9 @@ def render_lifecycle_composition(compiled: dict[str, Any]) -> str:
     lines = [
         "# Lifecycle composition", "",
         "Generated from the compiled machine contract; this view grants no authority.", "",
-        f"Composition: `{compiled['composition_sha256']}`", "",
+        identity, "",
         "| Source identity | Value |", "| --- | --- |",
-        *[f"| {display(key)} | {display(value)} |" for key, value in sorted(compiled["source"].items())],
+        *[f"| {display(key)} | {display(value)} |" for key, value in sorted(source.items())],
         "", "```mermaid", "flowchart TD",
     ]
     for state in states:
