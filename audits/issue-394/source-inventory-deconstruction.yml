@@ -47,8 +47,8 @@ local_execution:
   sizes: {semantic_ownership_inventory: 574, semantic_python_calls: 241, semantic_python_annotation_identity: 120}
   focused_components: 54 characterization/method/import/effect/parity/context cases passed.
   architecture: Six structural/CLI-effect/copy cases passed; the new file initially had no context mapping, then its exact semantic_ownership registration passed.
-  framework_self_conformance: After canonical regeneration the actual framework registry conformance case passed on 6d252aca; the broader semantic suite is still running. The intermediate stale-lock failure and interrupted run remain historical observations.
-  next: Finish the broader semantic regression run; governance validation passed after canonical normalization. The normalized self-conformance prerequisite for opt-in call facts is satisfied.
+  framework_self_conformance: After canonical regeneration all 64 framework conformance characterization method operation import and parity regressions passed in 411.76 seconds on the normalized deconstruction. The intermediate stale-lock failure and interrupted run remain historical observations.
+  next: The behavior-preserving prerequisite is satisfied; normalize and independently qualify subsequent source features through the same canonical owners.
 
 context_budget_correction:
   surface: governance/canonical-representations.yml
