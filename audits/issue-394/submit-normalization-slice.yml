@@ -76,3 +76,16 @@ release_surface_completeness:
   - Include every inspected README usage and changelog surface in release-version cache applicability.
   expected_tests: [tests/test_reconcile_governance.py, tests/test_pack_sync.py]
   forbidden: [release publication, phase activation, workflow edits, authority relaxation]
+
+submission_progress_projection:
+  targets: [bcf_governance/tooling/ci_authority_submit.py, bcf_governance/tooling/ci_commands.py, tests/test_candidate_submit.py, docs/USAGE.md]
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: existing_command_with_non_authoritative_observation
+  contract:
+  - Forward the existing prospective progress sink through canonical submit; use the unchanged operational-observation schema.
+  - CLI progress is flushed JSON on stderr; stdout retains its single terminal result.
+  - No event grants proof or provider authority; incomplete proof still prevents push.
+  - Keep the optional callback additive and preserve behavior for callers without a sink.
+  expected_tests: [test_submit_forwards_existing_progress_without_conferring_authority, test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout]
+  forbidden: [new progress authority, second execution path, provider polling loop, fabricated progress on silent stages]
