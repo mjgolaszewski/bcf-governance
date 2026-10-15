@@ -200,9 +200,12 @@ def _endpoint_facts(tree: ast.Module, path: str) -> list[dict[str, Any]]:
 
 
 def discover_python_source(
-    repo_root: Path, files: list[Path] | None = None
+    repo_root: Path, files: list[Path] | None = None,
+    *, call_contracts_version: str | None = None,
 ) -> dict[str, Any]:
     """Parse the tracked population without consulting semantic declarations."""
+    if call_contracts_version is not None and call_contracts_version != "1.0":
+        raise SemanticInventoryError("unsupported Python call contract version")
     repo_root = repo_root.resolve()
     paths = files if files is not None else tracked_python_files(repo_root)
     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
@@ -258,10 +261,11 @@ def discover_python_source(
                     local_types=local_types,
                     class_name=class_name,
                     function=member,
+                    call_contracts=call_contracts_version is not None,
                 )
                 visitor.visit(member)
                 functions.append(visitor.facts())
-    return {
+    inventory = {
         "language": "python",
         "files": file_rows,
         "imports": import_rows,
@@ -280,6 +284,10 @@ def discover_python_source(
             key=lambda value: (value["path"], value["method"], value["symbol"]),
         ),
     }
+
+    if call_contracts_version is not None:
+        inventory.update(call_contracts_version=call_contracts_version, authority=False)
+    return inventory
 
 
 def _root_contains(root: str, path: str) -> str | None:

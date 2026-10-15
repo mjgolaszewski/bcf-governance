@@ -35,3 +35,12 @@ expected_tests:
 - Unsupported versions reject before a missing source file is read.
 - Dynamic calls remain visible and unknown; metadata does not claim an authority effect.
 completion: Focused controls plus source/package parity architecture checks and canonical semantic self-conformance; full lifecycle completeness remains separately blocked.
+
+local_execution:
+  prerequisite: Canonically normalized deconstruction passed test_current_bcf_registry_is_conformant_and_report_is_compact on primary 6d252aca before this production feature mutation.
+  red_controls: Ten initial feature cases rejected the absent API before implementation.
+  focused: Sixty call-fact characterization method effect import and operation cases passed after implementation.
+  default_compatibility: Retained pre-deconstruction inventory snapshot unchanged.
+  qualification_limit: Same-parser source observations only; no independently complete effect interpretation installed-consumer or provider authority claim.
+  architecture: Ten pack-parity module-cap context-mapping CLI-effect and private-copy checks passed.
+  static_gates: Existing self-governance lint and typecheck gates passed; no third-party lint dependency was added.

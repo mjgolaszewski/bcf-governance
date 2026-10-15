@@ -1430,6 +1430,7 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - opt-in-python-call-facts
   F07:
     requirement: scope adoption to all transitions consumed/changed by this train and their necessary closure, not an unrelated historical rewrite.
     owner: ci_authority
@@ -1962,6 +1963,7 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - opt-in-python-call-facts
   AC17:
     requirement: Historical ledger/log mismatch rejects before reconciliation worktree/commit/adopter mutation; merely stale derived projections proceed through the
       one canonical generator.
@@ -2558,3 +2560,28 @@ implementation_slices:
     remaining:
     - Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.
     - These local transport controls confer no provider certification or custody authority.
+  opt-in-python-call-facts:
+    id: opt-in-python-call-facts
+    workitem: P32-P0-04
+    scope: Versioned source syntax identities and argument digests only; no effect classifier or protected runtime consumer.
+    contract: audits/issue-394/python-call-facts-contract.yml
+    producer: bcf_governance/tooling/semantic_python_calls.py::_FunctionVisitor._source_call_contract
+    consumer: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_semantic_python_call_contracts::test_call_contracts_cover_all_calls_and_retain_unknowns
+    - tests.test_semantic_python_call_contracts::test_call_contracts_retain_slots_without_plaintext_literals
+    - tests.test_semantic_python_call_contracts::test_identical_call_occurrences_are_distinct_per_function
+    - tests.test_semantic_python_call_contracts::test_explicit_none_preserves_default_inventory
+    - tests.test_semantic_python_call_contracts::test_nested_calls_each_receive_facts_without_source_mutation
+    negative_controls:
+    - cause: argument-source-mutation
+      test: tests.test_semantic_python_call_contracts::test_call_contracts_are_stable_under_line_movement_and_observe_mutation
+    - cause: unsupported-version-before-source-read
+      test: tests.test_semantic_python_call_contracts::test_unknown_call_contract_version_rejects_before_source_reads[2.0]
+    - cause: authority-claim-or-missing-call-facts
+      test: tests.test_semantic_python_call_contracts::test_call_contracts_validate_and_reject_authority_and_missing_calls
+    remaining:
+    - Independent actual effect interpretation and complete protected runtime populations remain unimplemented.
+    - Same-parser determinism is not a cross-Python AST compatibility or installed-consumer qualification claim.
