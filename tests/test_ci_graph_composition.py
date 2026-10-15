@@ -370,3 +370,31 @@ def test_binding_conformance_uses_existing_source_and_pytest_collection_owners(b
     binding_inputs['collected_selectors'] = frozenset(selector for _, selector in mapping.entries)
     with pytest.raises(CIGraphError, match='collected test'):
         _validate_bindings(binding_inputs)
+
+
+def test_requirement_slice_bindings_resolve_through_canonical_oracle_owner():
+    from bcf_governance.tooling.test_manifests import oracle_manifest_index
+
+    plan = load_yaml_path(ROOT / 'audits/issue-394/workplan.yml')
+    index = oracle_manifest_index(ROOT)
+    for requirement in plan['requirements'].values():
+        for slice_id in requirement.get('implementation_slices', []):
+            binding = plan['implementation_slices'][slice_id]
+            assert binding['id'] == slice_id
+            assert binding['workitem'] in plan['canonical_workitem_mapping'].values()
+            assert binding['authority'] is False
+            assert binding['remaining']
+            assert len({control['cause'] for control in binding['negative_controls']}) == len(binding['negative_controls'])
+            nodes = binding['positive_tests'] + [control['test'] for control in binding['negative_controls']]
+            assert index.resolve(nodes, preferred_gate='test') == 'test'
+        assert requirement['evidence_status'] == 'not_executed'
+
+
+@pytest.mark.parametrize('field', ['negative_controls', 'producer', 'consumer', 'remaining'])
+def test_requirement_slice_rejects_missing_qualification_binding(field):
+    plan = load_yaml_path(ROOT / 'audits/issue-394/workplan.yml')
+    schema = json.loads((ROOT / 'audits/issue-394/workplan.schema.json').read_text())
+    slice_id = plan['requirements']['I23']['implementation_slices'][0]
+    del plan['implementation_slices'][slice_id][field]
+    with pytest.raises(ValidationError):
+        Draft202012Validator(schema).validate(plan)

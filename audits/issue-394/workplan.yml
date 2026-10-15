@@ -734,6 +734,8 @@ requirements:
       scenario: Cause-specific I04 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   I05:
     requirement: Conservative ambiguity. Unknown imports/reflection/generated inputs/fixtures/cross-language/configuration/environment/security/trust effects expand
       the assurance closure. Lack of observed coverage is not proof of non-dependence. Missing mandatory authorization blocks; it is not cured by running more tests.
@@ -871,6 +873,8 @@ requirements:
       scenario: Cause-specific I11 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   I12:
     requirement: Closed dispositions. Required behavioral claims are exactly authenticated-reuse, execute, or blocked. Structural obligations retain the canonical
       `captured_by_preflight` channel; preflight observations cannot become behavioral receipts. The catalog separately types monitoring/nonapplicability; required
@@ -912,6 +916,8 @@ requirements:
       scenario: Cause-specific I13 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   I14:
     requirement: Periodic drift stays separate. Scheduled observations create typed findings/invalidation for applicable future consumers. They cannot retroactively
       authorize a merge or erase its historical evidence.
@@ -1045,6 +1051,8 @@ requirements:
       scenario: Cause-specific I20 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - canonical-submit-normalization
   I21:
     requirement: Earliest-valid rejection. Every deterministic obligation names the earliest boundary at which its authentic inputs and required authority are available.
       Execute it there, before avoidable downstream model/provider allocation or mutation. Do not claim provider-only facts can be proved locally. Measure detection
@@ -1065,6 +1073,8 @@ requirements:
       scenario: Cause-specific I21 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - canonical-submit-normalization
   I22:
     requirement: Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision.
       Agent-selected defaults, CLI flags, environment variables, hand-edited receipts and silent recovery overrides must not recreate the choice. Genuine policy/intent
@@ -1105,6 +1115,8 @@ requirements:
       scenario: Cause-specific I23 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   I24:
     requirement: "Mechanical subject selection. Use the existing provider resolver for the entire required adopter/source inventory before expensive qualification.\
       \ Freeze exact subjects; supplied roots/interpreters are resources, not selection authority. Provider movement must follow current freshness/invalidation policy\u2014\
@@ -1147,6 +1159,8 @@ requirements:
       scenario: Cause-specific I25 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - canonical-submit-normalization
   I26:
     requirement: Safe parallelism. Readiness requires satisfied semantic dependencies, producer/artifact availability, valid authority and compatible resources. Independent
       nodes may overlap; shared worktrees, migration/database state, ports, runner budgets, credentials, mutation fixtures and publisher/controller writes require
@@ -1303,6 +1317,8 @@ requirements:
       scenario: Cause-specific F01 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   F02:
     requirement: "guards reference typed authenticated facts, their producer, subject/proposition/authority/freshness and independent verification\u2014not caller\
       \ booleans."
@@ -1322,6 +1338,8 @@ requirements:
       scenario: Cause-specific F02 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   F03:
     requirement: every transition closes source, trigger/operation, guards, effects, successor, rejection and bounded recovery.
     owner: ci_authority
@@ -1340,6 +1358,8 @@ requirements:
       scenario: Cause-specific F03 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   F04:
     requirement: human matrix/DAG/transition semantics are deterministically generated.
     owner: ci_authority
@@ -1374,6 +1394,8 @@ requirements:
       scenario: Cause-specific F05 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   F06:
     requirement: "independently trace contract\u2192implementation\u2192positive/control evidence\u2192consumer and reverse-trace every authority effect."
     owner: ci_authority
@@ -1391,6 +1413,8 @@ requirements:
       scenario: Cause-specific F06 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   F07:
     requirement: scope adoption to all transitions consumed/changed by this train and their necessary closure, not an unrelated historical rewrite.
     owner: ci_authority
@@ -1409,6 +1433,8 @@ requirements:
       scenario: Cause-specific F07 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   F08:
     requirement: foundation work does not activate suppression, modify protection or grant controller/release/custody authority.
     owner: ci_authority
@@ -1427,6 +1453,8 @@ requirements:
       scenario: Cause-specific F08 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   CP01:
     requirement: 'Consumer ownership: preserve adopter graph nodes/claims/tests/dependencies/extensions/release/protection semantics; mutate only declared BCF-owned
       projections.'
@@ -1710,6 +1738,8 @@ requirements:
       scenario: Cause-specific AC05 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   AC06:
     requirement: Local green or isolated adopter observation without mandatory provider authority cannot certify PR/main/release/custody.
     owner: evidence
@@ -1783,6 +1813,8 @@ requirements:
       scenario: Cause-specific AC09 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   AC10:
     requirement: Base/head/policy movement between plan, dispatch and finalizer creates an explicit new subject or rejection; in-flight bytes never change silently.
     owner: evidence
@@ -1911,6 +1943,8 @@ requirements:
       scenario: Cause-specific AC16 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - dormant-composition-and-static-bindings
   AC17:
     requirement: Historical ledger/log mismatch rejects before reconciliation worktree/commit/adopter mutation; merely stale derived projections proceed through the
       one canonical generator.
@@ -1930,6 +1964,8 @@ requirements:
       scenario: Cause-specific AC17 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - canonical-submit-normalization
   AC18:
     requirement: Graph-generated evaluator workflow absent from promotion inventory, invalid component order or artifact path without custody fails before costly
       fanout; no static duplicate destination list.
@@ -2009,6 +2045,8 @@ requirements:
       scenario: Cause-specific AC21 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - canonical-submit-normalization
   AC22:
     requirement: 'Required same-session prerequisite versus equivalent historical proof: reuse permitted only where the canonical dependency contract allows it.'
     owner: evidence
@@ -2288,3 +2326,58 @@ canonical_workitem_mapping:
   certification.distribution: P35-P0-03
   certification.custody: P35-P0-04
   foundation.submit-normalization: P32-P0-07
+implementation_slices:
+  dormant-composition-and-static-bindings:
+    id: dormant-composition-and-static-bindings
+    workitem: P32-P0-03
+    scope: Closed proposed node/edge populations, typed fact references, deterministic human views and static runtime/test/control bindings only
+    contract: audits/issue-394/composition-slice.yml
+    producer: bcf_governance/tooling/ci_graph_composition.py::compile_lifecycle_composition
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_bindings
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_valid_composition_has_no_authority_and_is_byte_stable
+    - tests.test_ci_graph_composition::test_binding_conformance_uses_existing_source_and_pytest_collection_owners
+    negative_controls:
+    - cause: deleted-edge-and-test
+      test: tests.test_ci_graph_composition::test_removed_relationship_and_its_tests_cannot_hide_population
+    - cause: false-exclusion
+      test: tests.test_ci_graph_composition::test_false_exclusion_cannot_erase_reachable_guard_failure
+    - cause: omitted-effect
+      test: tests.test_ci_graph_composition::test_omitted_runtime_effect_rejects_independently
+    - cause: authentication-boolean
+      test: tests.test_ci_graph_composition::test_candidate_cannot_supply_authentication_boolean
+    - cause: missing-causal-control
+      test: tests.test_ci_graph_composition::test_binding_conformance_rejects_missing_cause_even_with_existing_negative
+    - cause: deleted-terminal-function
+      test: tests.test_ci_graph_composition::test_binding_conformance_rejects_deleted_function[terminal_consumers]
+    remaining:
+    - Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.
+    - Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required.
+  canonical-submit-normalization:
+    id: canonical-submit-normalization
+    workitem: P32-P0-07
+    scope: Authored phase and release-target rejection, existing local lease and canonical normalization before exact scope/subject capture only
+    contract: audits/issue-394/submit-normalization-slice.yml
+    producer: bcf_governance/tooling/ci_authority_submit.py::_normalize_submission
+    consumer: bcf_governance/tooling/ci_authority_submit.py::submit_candidate
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_candidate_submit::test_submit_normalizes_before_capturing_the_proved_subject
+    - tests.test_candidate_submit::test_fixed_point_submit_normalization_does_not_generate
+    negative_controls:
+    - cause: authored-phase-contradiction
+      test: tests.test_candidate_submit::test_authored_contradiction_rejects_before_any_normalization
+    - cause: wrong-intent-assertion
+      test: tests.test_candidate_submit::test_wrong_intent_assertion_cannot_generate
+    - cause: busy-execution-lease
+      test: tests.test_candidate_submit::test_busy_submit_cannot_normalize_another_active_train
+    - cause: partial-normalization
+      test: tests.test_candidate_submit::test_partial_canonical_apply_requires_a_verified_fixed_point
+    - cause: authored-release-target
+      test: tests.test_reconcile_governance::test_authored_release_target_precedes_every_projection_mutation
+    remaining:
+    - Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.
+    - Provider PR/exact-main authority and full terminal custody are not certified by these local tests.
