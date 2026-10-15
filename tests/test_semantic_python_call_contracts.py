@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+from jsonschema import Draft202012Validator
 
 from bcf_governance.tooling.semantic_ownership_inventory import (
     discover_python_source, SemanticInventoryError,
@@ -58,3 +59,34 @@ def test_identical_call_occurrences_are_distinct_per_function(tmp_path):
 def test_unknown_call_contract_version_rejects_before_source_reads(tmp_path, version):
     with pytest.raises(SemanticInventoryError, match="call contract version"):
         discover_python_source(tmp_path, files=[tmp_path / "missing.py"], call_contracts_version=version)
+
+
+def test_call_contracts_validate_and_reject_authority_and_missing_calls(tmp_path):
+    inventory = _discover(tmp_path, "def work(fn):\n    fn()\n")
+    schema = json.loads((Path(__file__).parents[1] / "schemas/semantic-call-contracts.schema.json").read_text())
+    validator = Draft202012Validator(schema)
+    validator.validate(inventory)
+    fact = _calls(inventory)[0]["call_contract"]
+    fact["authority"] = True
+    assert list(validator.iter_errors(inventory))
+    fact["authority"] = False
+    del _calls(inventory)[0]["call_contract"]
+    assert list(validator.iter_errors(inventory))
+
+
+def test_explicit_none_preserves_default_inventory(tmp_path):
+    path = tmp_path / "model.py"
+    path.write_text("def work(fn):\n    fn('value')\n")
+    default = discover_python_source(tmp_path, files=[path])
+    assert discover_python_source(tmp_path, files=[path], call_contracts_version=None) == default
+    assert "authority" not in default
+    assert all("call_contract" not in call for call in _calls(default))
+
+
+def test_nested_calls_each_receive_facts_without_source_mutation(tmp_path):
+    path = tmp_path / "model.py"
+    source = "def work(fn, nested):\n    fn(nested(1))\n"
+    inventory = _discover(tmp_path, source)
+    assert len(_calls(inventory)) == 2
+    assert all(call["call_contract"]["occurrence"] == 0 for call in _calls(inventory))
+    assert path.read_text() == source
