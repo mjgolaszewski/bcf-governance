@@ -28,6 +28,97 @@ class SemanticOperationEffectError(ValueError):
     """Raised when an operation bypasses its declared effect boundary."""
 
 
+
+def source_operation_call_population(
+    entrypoint: str, inventory: dict[str, Any]
+) -> dict[str, Any]:
+    """Observe discovered Python calls through ports without interpreting effects.
+
+    The protected caller must authenticate parser inputs and their complete scope.
+    Module initialization, external/native behavior and dynamic dispatch are not
+    qualified here. Unknown calls remain explicit and cannot justify suppression.
+    """
+    def reject() -> None:
+        raise SemanticOperationEffectError("operation source call population is incompatible or ambiguous")
+
+    def digest(value: Any) -> bool:
+        return isinstance(value, str) and len(value) == 64 and all(
+            character in "0123456789abcdef" for character in value
+        )
+
+    if inventory.get("call_contracts_version") != "1.0" or inventory.get("authority") is not False:
+        reject()
+    functions: dict[str, dict[str, Any]] = {}
+    if not isinstance(inventory.get("functions"), list) or not isinstance(inventory.get("files"), list):
+        reject()
+    for function in inventory["functions"]:
+        symbol = function.get("symbol") if isinstance(function, dict) else None
+        if not isinstance(symbol, str) or not symbol or symbol in functions:
+            reject()
+        functions[symbol] = function
+    if not isinstance(entrypoint, str) or entrypoint not in functions:
+        reject()
+    files: dict[str, str] = {}
+    for row in inventory.get("files", []):
+        path = row.get("path") if isinstance(row, dict) else None
+        sha = row.get("sha256") if isinstance(row, dict) else None
+        if not isinstance(path, str) or not path or path in files or not digest(sha):
+            reject()
+        files[path] = sha
+    if not files:
+        reject()
+    calls: list[tuple[str, str, str, int, str]] = []
+    identities: set[tuple[str, str, int]] = set()
+    visited: set[str] = set()
+    pending = [entrypoint]
+    while pending:
+        caller = pending.pop()
+        if caller in visited:
+            continue
+        visited.add(caller)
+        function = functions[caller]
+        if caller.partition("::")[0] not in files:
+            reject()
+        if function.get("language", "python") != "python" or not isinstance(function.get("calls"), list):
+            reject()
+        for call in function["calls"]:
+            if not isinstance(call, dict):
+                reject()
+            callee = call.get("called_symbol")
+            fact = call.get("call_contract")
+            if not isinstance(fact, dict):
+                reject()
+            expression = fact.get("expression_sha256")
+            occurrence = fact.get("occurrence")
+            if (
+                not isinstance(callee, str) or not callee
+                or call.get("caller") != caller or fact.get("authority") is not False
+                or not digest(expression) or isinstance(occurrence, bool)
+                or not isinstance(occurrence, int) or occurrence < 0
+            ):
+                reject()
+            identity = (caller, expression, occurrence)
+            if identity in identities:
+                reject()
+            identities.add(identity)
+            resolved = (
+                callee in functions and call.get("dispatch_resolution") != "unresolved"
+                and call.get("call_name") not in {"__import__", "eval", "exec", "<dynamic>"}
+            )
+            calls.append((caller, callee, expression, occurrence, "source" if resolved else "unresolved"))
+            if resolved:
+                pending.append(callee)
+    return {
+        "authority": False,
+        "execution_qualified": False,
+        "scope": "discovered_python_functions_only",
+        "source_files": tuple(sorted(files.items())),
+        "functions": tuple(sorted(visited)),
+        "calls": tuple(sorted(calls)),
+        "unresolved_calls": sum(row[4] == "unresolved" for row in calls),
+    }
+
+
 def _resolve_function(
     symbol: str, functions: dict[str, dict[str, Any]]
 ) -> str | None:

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 import subprocess
+import copy
+import yaml
 
 import pytest
 
@@ -29,6 +31,10 @@ def _repo(tmp_path: Path) -> Path:
     )
     (repo / "spec/phase0/release-train-backtrace.yml").write_bytes(
         (ROOT / "spec/phase0/release-train-backtrace.yml").read_bytes()
+    )
+    (repo / "schemas").mkdir()
+    (repo / "schemas/release-train-backtrace.schema.json").write_bytes(
+        (ROOT / "schemas/release-train-backtrace.schema.json").read_bytes()
     )
     (repo / "bcf_governance/tooling/preflight.py").write_text("VALUE = 1\n")
     _git(repo, "init", "--initial-branch=main")
@@ -76,3 +82,63 @@ def test_matrix_guard_is_self_required_and_adopter_inapplicable(tmp_path: Path) 
     (adopter / "governance/self-governance-policy.yml").write_text("document: {}\n")
     with pytest.raises(CIStateMatrixError, match="unavailable"):
         validate_ci_state_matrix(adopter)
+
+
+@pytest.mark.parametrize("defect", ["duplicate_invariant", "duplicate_primitive", "duplicate_state", "duplicate_transition", "state_reference", "invariant_reference", "active_primitive_reference", "schema_version", "declared_field_bypass", "field_list_omission", "source_identity"])
+def test_machine_backtrace_rejects_typed_identity_and_shape_defects(tmp_path: Path, defect: str) -> None:
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    model = yaml.safe_load(path.read_text())
+    if defect.startswith("duplicate_"):
+        section = {"invariant": "invariants", "primitive": "primitives", "state": "states", "transition": "transitions"}[defect.removeprefix("duplicate_")]
+        duplicate = copy.deepcopy(model[section][0])
+        field = {"invariants": "statement", "primitives": "owner", "states": "owner", "transitions": "cost"}[section]
+        duplicate[field] += "-different"
+        model[section].append(duplicate)
+    elif defect == "state_reference":
+        model["transitions"][0]["to"] = "ST-UNKNOWN"
+    elif defect == "invariant_reference":
+        model["primitives"][0]["invariants"] = ["INV-RT-999"]
+    elif defect == "active_primitive_reference":
+        model["adopter_compatibility_observation"]["primitives"].append("PRIM-UNKNOWN")
+    elif defect == "schema_version":
+        model["document"]["schema_version"] = 99
+    elif defect == "source_identity":
+        model["document"]["source"]["commit_sha"] = "not-a-commit"
+    else:
+        observation = model["adopter_compatibility_observation"]
+        observation["edge_contract_fields"].remove("authority_effect")
+        if defect == "declared_field_bypass":
+            del observation["edges"][0]["authority_effect"]
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    with pytest.raises(CIStateMatrixError, match="machine-readable"):
+        validate_ci_state_matrix(repo)
+
+
+def test_machine_backtrace_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    path.write_text(path.read_text() + "\nvalidation_status: {}\n")
+    with pytest.raises(CIStateMatrixError, match="duplicate YAML key"):
+        validate_ci_state_matrix(repo)
+
+
+def test_machine_backtrace_rejects_symlinked_input(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    retained = path.with_suffix(".retained.yml")
+    path.rename(retained)
+    path.symlink_to(retained.name)
+    with pytest.raises(CIStateMatrixError, match="nonsymlink"):
+        validate_ci_state_matrix(repo)
+
+
+def test_authored_machine_mode_defers_prose_projection_checks(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    (repo / "spec/RELEASE_TRAIN_STATE_DAG.md").write_text("Pending canonical projection.\n")
+    result = validate_ci_state_matrix(repo, authored_only=True)
+    assert result["authority"] is False
+    assert result["execution_qualified"] is False
+    assert result["machine_backtrace"]["transitions"] > 0
+    with pytest.raises(CIStateMatrixError, match="required coverage"):
+        validate_ci_state_matrix(repo)

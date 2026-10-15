@@ -1200,3 +1200,17 @@ def test_reconcile_authored_release_rejects_before_runtime_or_shadow(monkeypatch
     monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', lambda *_a, **_k: pytest.fail('created shadow before authored release rejection'))
     with pytest.raises(SystemExit, match='authored release contradiction'):
         scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply'])
+
+
+def test_reconcile_authored_machine_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation import ci_state_matrix
+
+    def reject(_root, **_kwargs):
+        raise ci_state_matrix.CIStateMatrixError("machine-readable authored contradiction")
+
+    monkeypatch.setattr(ci_state_matrix, "validate_ci_state_matrix", reject)
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(scaffold, "ensure_local_project_python", lambda *_a, **_k: pytest.fail("allocated runtime before authored machine rejection"))
+    monkeypatch.setattr(scaffold, "apply_workflow_authority_transition", lambda *_a, **_k: pytest.fail("created shadow before authored machine rejection"))
+    with pytest.raises(SystemExit, match="machine-readable authored contradiction"):
+        scaffold.reconcile_main(["--repo-root", str(tmp_path), "--apply"])

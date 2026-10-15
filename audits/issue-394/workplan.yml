@@ -134,6 +134,10 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    - bcf_governance/tooling/scaffold_governance_artifacts.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    - schemas/release-train-backtrace.schema.json
     - bcf_governance/tooling/ci_graph_edges.py
     - bcf_governance/tooling/ci_graph_contracts.py
     - bcf_governance/tooling/semantic_operation_effects.py
@@ -158,13 +162,16 @@ workitems:
     evidence: []
   foundation.conformance:
     summary: Independently trace implementation effects and producer consumer populations in both directions
-    status: TODO
+    status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    - bcf_governance/tooling/semantic_ownership_inventory.py
+    - bcf_governance/tooling/semantic_python_calls.py
+    - bcf_governance/tooling/semantic_operation_effects.py
     forbidden_surfaces:
     - frozen or in-flight predecessor bytes policies and trains
     - other agents working trees
@@ -637,6 +644,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/governance_validation/authored_phase_state.py
     - bcf_governance/tooling/ci_authority_submit.py
     - bcf_governance/tooling/reconcile_authority_transition.py
     - bcf_governance/tooling/scaffold_governance_artifacts.py
@@ -1085,6 +1093,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - early-active-phase-schema
     - canonical-submit-normalization
   I22:
     requirement: Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision.
@@ -1374,6 +1383,7 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - authored-machine-backtrace-validation
   F04:
     requirement: human matrix/DAG/transition semantics are deterministically generated.
     owner: ci_authority
@@ -1431,6 +1441,7 @@ requirements:
     implementation_slices:
     - dormant-composition-and-static-bindings
     - opt-in-python-call-facts
+    - source-operation-call-population
   F07:
     requirement: scope adoption to all transitions consumed/changed by this train and their necessary closure, not an unrelated historical rewrite.
     owner: ci_authority
@@ -1963,7 +1974,9 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - authored-machine-backtrace-validation
     - opt-in-python-call-facts
+    - source-operation-call-population
   AC17:
     requirement: Historical ledger/log mismatch rejects before reconciliation worktree/commit/adopter mutation; merely stale derived projections proceed through the
       one canonical generator.
@@ -1984,6 +1997,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - early-active-phase-schema
     - canonical-submit-normalization
   AC18:
     requirement: Graph-generated evaluator workflow absent from promotion inventory, invalid component order or artifact path without custody fails before costly
@@ -2586,3 +2600,88 @@ implementation_slices:
     remaining:
     - Independent actual effect interpretation and complete protected runtime populations remain unimplemented.
     - Same-parser determinism is not a cross-Python AST compatibility or installed-consumer qualification claim.
+  source-operation-call-population:
+    id: source-operation-call-population
+    workitem: P32-P0-04
+    scope: Exact discovered Python function/call traversal through port boundaries; unresolved calls remain explicit and no authority-effect interpretation is inferred.
+    contract: audits/issue-394/operation-call-population-contract.yml
+    producer: bcf_governance/tooling/semantic_operation_effects.py::source_operation_call_population
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_bindings
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_binding_checks_protected_operation_call_populations
+    - tests.test_ci_graph_composition::test_legacy_binding_result_does_not_claim_operation_population_checks
+    - tests.test_semantic_operation_call_population::test_operation_call_population_crosses_ports_and_terminates_cycles
+    - tests.test_semantic_operation_call_population::test_ambiguous_dispatch_stays_unresolved_and_is_not_followed
+    negative_controls:
+    - cause: hidden-call-behind-retained-endpoint
+      test: tests.test_ci_graph_composition::test_binding_rejects_added_call_beyond_retained_declared_endpoint
+    - cause: missing-protected-operation-root
+      test: tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[root]
+    - cause: incompatible-protected-operation-version
+      test: tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[version]
+    - cause: protected-operation-authority-claim
+      test: tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[authority_claim]
+    - cause: added-call-beyond-port
+      test: tests.test_semantic_operation_call_population::test_added_call_changes_population_without_removing_functions
+    - cause: duplicate-call-identity
+      test: tests.test_semantic_operation_call_population::test_operation_call_population_rejects_incompatible_or_ambiguous_input[duplicate_call]
+    - cause: unbound-source-file
+      test: tests.test_semantic_operation_call_population::test_operation_call_population_requires_bound_source_files[unbound_source_file]
+    remaining:
+    - Complete module initialization native external dynamic and cross-language effect populations still require protected independent acquisition and interpretation.
+    - No installed runtime consumer or authority activation uses this query.
+  authored-machine-backtrace-validation:
+    id: authored-machine-backtrace-validation
+    workitem: P32-P0-03
+    scope: Existing backtrace structural schema strict decoding typed references and early authored rejection only; no normative adoption or independent runtime coverage.
+    contract: audits/issue-394/backtrace-validation-contract.yml
+    producer: bcf_governance/tooling/governance_validation/ci_state_matrix.py::validate_ci_state_matrix
+    consumer: Existing canonical reconcile and submit authored-state front doors
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_state_matrix::test_changed_ci_contract_requires_same_candidate_matrix_update
+    - tests.test_ci_state_matrix::test_matrix_guard_is_self_required_and_adopter_inapplicable
+    negative_controls:
+    - cause: duplicated-typed-state-id
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[duplicate_state]
+    - cause: undeclared-state-reference
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[state_reference]
+    - cause: candidate-field-list-bypass
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[declared_field_bypass]
+    - cause: duplicate-yaml-key
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_duplicate_yaml_keys
+    - cause: symlinked-authored-model
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_symlinked_input
+    - cause: machine-contradiction-before-runtime
+      test: tests.test_reconcile_governance::test_reconcile_authored_machine_rejects_before_runtime_or_shadow
+    - cause: machine-contradiction-before-lease
+      test: tests.test_candidate_submit::test_submit_authored_machine_rejects_before_lease_or_reconcile
+    remaining:
+    - Complete independent protected context populations actual effect interpretation recovery and installed-consumer conformance are not established by authored structural checks.
+    - Prose retirement generated dependency views and exact terminal custody remain blocked.
+  early-active-phase-schema:
+    id: early-active-phase-schema
+    workitem: P32-P0-07
+    scope: Existing active-triplet schema consistency and closeout checks moved into the pure authored guard; strict decoding preserves cause priority.
+    contract: audits/issue-394/authored-phase-schema-contract.yml
+    producer: bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state
+    consumer: Existing submit reconcile and preflight authored-state consumers
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_preflight::test_authored_phase_state_accepts_current_complete_triplet
+    negative_controls:
+    - cause: mapping-valued-note-before-allocation
+      test: tests.test_preflight::test_mapping_phase_note_rejects_before_reconcile_allocation
+    - cause: missing-active-phase-schema
+      test: tests.test_preflight::test_authored_phase_state_requires_active_triplet_schema
+    - cause: duplicate-authored-phase-key
+      test: tests.test_preflight::test_authored_phase_state_rejects_duplicate_yaml_keys
+    - cause: malformed-referenced-hotfix
+      test: tests.test_preflight::test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work
+    remaining:
+    - Full retained historical phase population and all source/package/profile/runtime earliest boundaries remain unqualified.
+    - These local controls grant no computed verified or closed truth and no provider authority.

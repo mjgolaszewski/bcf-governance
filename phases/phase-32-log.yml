@@ -25,7 +25,7 @@ workitems:
   status: IN_PROGRESS
   summary: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
 - id: P32-P0-04
-  status: TODO
+  status: IN_PROGRESS
   summary: Independently trace implementation effects and producer consumer populations in both directions
 - id: P32-P0-05
   status: TODO
@@ -50,6 +50,10 @@ execution_evidence:
   - .venv/bin/python -m pytest -q tests/test_self_governance_contracts.py::test_cli_application_operations_are_closed_and_effect_safe
   notes:
   - Canonical file-only candidate projection transaction on 42536402 passed in 619820 ms and committed 53e4f0ca with a clean tree; exact source parent independently checked. Standalone prior convergence observation is retained separately without a custody claim.
+  - "Early authored phase validation now delegates active triplet schema consistency and closeout to the existing phase owner and uses strict YAML. All 168 preflight submit reconcile and machine-state tests pass under the canonical isolated project interpreter. A convenience-controller environment mismatch and stale hard-coded hotfix control were corrected without altering maintenance evidence."
+  - Existing authored machine backtrace guard now uses strict YAML schema and typed-reference checks, rejects malformed models before submit lease or reconciliation runtime/shadow, and watches model/schema inputs. All 102 targeted state/submit/reconcile tests pass; normative lifecycle adoption remains blocked.
+  - Protected optional operation-call binding compares independently retained complete discovered-function closures through existing semantic_ownership query facts. Added-call missing-root wrong-version wrong-source and malformed-catalogue controls pass; 147 focused cases and ten architecture/parity cases passed, with canonical oracle-manifest refresh still pending.
+  - Added independent read-only operation call traversal through declared port-shaped helpers after contracted source facts; 66 focused cases pass. It preserves unknowns and explicitly omits runtime qualification, module initialization and cross-language authority completeness.
   - Post-deconstruction semantic regression completed with 64 passes in 411.76 seconds; governance passed on the same normalized source before call-facts integration.
   - "Integrated opt-in Python call facts after contract-first controls: 60 focused cases plus 10 pack/architecture cases and lint/typecheck passed; an additional 14-case call-fact run includes canonical import resolution. No protected runtime consumer or full reverse-effect coverage is claimed."
   - Canonical reconciliation of 6f0ecc1d passed in 462112 ms and generated definition 5a74037b then authority 6d252aca; exact command observation is retained without percentile or improvement claims.

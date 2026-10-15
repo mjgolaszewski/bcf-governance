@@ -1,0 +1,30 @@
+document:
+  kind: contract_research
+  path: audits/issue-394/machine-model-adoption-research.yml
+  authority: false
+  status: observations_only
+workitem: P32-P0-03
+existing_authored_owner: spec/phase0/release-train-backtrace.yml
+existing_runtime_owner: bcf_governance/tooling/ci_graph_contracts.py
+existing_edge_owner: bcf_governance/tooling/ci_graph_edges.py::compile_edge_contracts
+existing_projection_guard: bcf_governance/tooling/governance_validation/ci_state_matrix.py
+observed:
+- The existing backtrace contains stable invariant primitive state transition and exclusion IDs; reuse and enrich those identities rather than authoring a competing lifecycle ontology.
+- Its document status says active_machine_backtrace but validation_status still explicitly blocks normative adoption until independent owner positive control terminal and recovery tracing succeeds.
+- The current guard checks required prose markers plus partial transition/adopter-edge shape; it does not prove complete context-qualified populations or actual runtime-effect closure.
+- The dormant composition format is a normalized relationship contract over CompiledCIGraph; bind it to the enriched existing authored backtrace before selecting any normative source location.
+- Current proposer-supplied effect strings and referenced function names alone cannot establish the complete independent effect universe.
+adoption_order:
+- Authenticate admitted maintenance successor and preserve its machine backtrace fixes before production adoption.
+- Enrich the existing backtrace with schema-validated typed references to the canonical primitive owners and exact protected runtime source facts.
+- Compile every independently required context-qualified ordered pair to one complete contract or grounded exclusion while referencing existing CI edges by identity and digest.
+- Generate prose matrices diagrams and dependency packets from the compiled owner; replace the prose-marker mutation guard only after equivalent protected complete conformance exists.
+- Qualify fresh install upgrade fixed point profile and installed-consumer behavior independently before retirement or activation.
+forbidden: Duplicate authored transition registries, hand-written authoritative prose, adoption inferred from a YAML status or digest, and suppression before complete independent qualification.
+
+primitive_reference_observations:
+  evidence: audits/issue-394/primitive-reference-observations.yml
+  source_commit: 42536402d41b75964c55f075d52113f1a25c70f4
+  outcome: All fifteen P26 canonical fragments and named executable function references resolve in exact current source; historical audit status is not adoption authority.
+  missing_named_backtrace_references: [TreeIdentity, ExecutionProvenance, Qualification, EvidenceReference, InvalidationReason, ReuseAttestation]
+  consequence: Bind these existing primitives explicitly while enriching the current backtrace; do not mint replacements or claim primitive completeness from the current seventeen rows.

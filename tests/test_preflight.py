@@ -1335,8 +1335,22 @@ def test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    _copy_current_authored_phase_state(repo)
-    malformed = repo / "phases/phase-31-hotfix04.yml"
+    active = _copy_current_authored_phase_state(repo)
+    from bcf_governance.tooling.hotfix_scaffolding import scaffold_hotfix_log, register_hotfix_log
+
+    hotfix_id = f"{active['id']}-HF99"
+    malformed = scaffold_hotfix_log(
+        repo_root=repo, project_id="fixture", hotfix_id=hotfix_id, mode="full",
+        hotfix_number=99, summary="Disposable malformed-log control",
+        related_phase_id=active["id"], date="2026-10-15",
+        validation_commands=["make governance-validate"], force=False,
+    )
+    register_hotfix_log(
+        repo_root=repo, hotfix_log=malformed, hotfix_id=hotfix_id, mode="full",
+        related_phase_id=active["id"], triggered_by_commits=["a" * 40],
+        failing_workflows=[], root_cause="disposable schema control",
+        canonical_artifacts=["plans/phase-ledger.yml"],
+    )
     payload = yaml.safe_load(malformed.read_text(encoding="utf-8"))
     payload["execution_evidence"]["notes"][0] = {"not": "a string"}
     malformed.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
@@ -1408,3 +1422,43 @@ def test_semantic_ownership_failure_prevents_session_allocation(
         preflight._semantic_ownership(repo)
 
     assert calls == []
+
+
+def test_authored_phase_state_accepts_current_complete_triplet(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    before = {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob("*") if path.is_file()}
+    assert validate_authored_phase_state(repo)["phase_id"] == active["id"]
+    assert {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob("*") if path.is_file()} == before
+
+
+def test_mapping_phase_note_rejects_before_reconcile_allocation(tmp_path: Path, monkeypatch) -> None:
+    from bcf_governance.tooling import scaffold_governance_artifacts as scaffold
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    path = repo / active["log"]
+    log = yaml.safe_load(path.read_text())
+    log["execution_evidence"]["notes"].append({"unquoted note": "not a string"})
+    path.write_text(yaml.safe_dump(log, sort_keys=False))
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(scaffold, "ensure_local_project_python", lambda *_a, **_k: pytest.fail("allocated runtime before phase schema rejection"))
+    monkeypatch.setattr(scaffold, "apply_workflow_authority_transition", lambda *_a, **_k: pytest.fail("created shadow before phase schema rejection"))
+    with pytest.raises(SystemExit, match="failed structural schema.*phase-log.schema.json"):
+        scaffold.reconcile_main(["--repo-root", str(repo), "--apply"])
+
+
+def test_authored_phase_state_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    path = repo / active["log"]
+    path.write_text(path.read_text() + "\nnext_work: []\n")
+    with pytest.raises(AuthoredPhaseStateError, match="duplicate YAML key"):
+        validate_authored_phase_state(repo)
+
+
+def test_authored_phase_state_requires_active_triplet_schema(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _copy_current_authored_phase_state(repo)
+    (repo / "schemas/phase-log.schema.json").unlink()
+    with pytest.raises(AuthoredPhaseStateError, match="phase-log.schema.json"):
+        validate_authored_phase_state(repo)

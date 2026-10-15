@@ -16,6 +16,9 @@ from typing import Any, Iterable, Mapping, TYPE_CHECKING
 from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError
+from .semantic_operation_effects import (
+    SemanticOperationEffectError, source_operation_call_population,
+)
 
 if TYPE_CHECKING:
     from .ci_graph_contracts import CompiledCIGraph
@@ -235,6 +238,7 @@ def validate_lifecycle_bindings(
     required_negative_controls: Mapping[Relationship, Mapping[str, str]],
     required_call_edges: Mapping[Relationship, frozenset[tuple[str, str]]],
     required_fact_bindings: Mapping[Relationship, tuple[Mapping[str, str], ...]],
+    required_operation_calls: Mapping[Relationship, Mapping[str, Mapping[str, Any]]] | None = None,
 ) -> dict[str, Any]:
     """Resolve composition bindings against protected source/collection inputs.
 
@@ -247,6 +251,10 @@ def validate_lifecycle_bindings(
     names alone cannot conceal a deleted call between retained functions.
     The protected fact catalogue binds every proposition and its source owners;
     candidate facts cannot choose their own verifier, authority, or freshness.
+    When supplied by a protected caller, operation-call catalogues additionally
+    bind exact discovered function closures through declared port boundaries.
+    Their absence preserves the legacy query and establishes no reverse-effect
+    completeness; even their presence cannot qualify execution or unknown effects.
     """
 
     _validate_compiled_identity(compiled)
@@ -268,6 +276,12 @@ def validate_lifecycle_bindings(
         raise CIGraphError("lifecycle binding independent call population differs")
     if reachable.keys() != required_fact_bindings.keys():
         raise CIGraphError("lifecycle binding independent fact relationship population differs")
+    if required_operation_calls is not None and (
+        not isinstance(required_operation_calls, Mapping)
+        or reachable.keys() != required_operation_calls.keys()
+    ):
+        raise CIGraphError("lifecycle binding independent operation call population differs")
+    operation_populations_checked = 0
     fact_fields = {"id", "producer", "verifier", "subject_binding", "proposition", "authority", "freshness"}
     for pair, contract in reachable.items():
         expected_facts = required_fact_bindings[pair]
@@ -303,6 +317,22 @@ def validate_lifecycle_bindings(
             }
             if callee not in observed_calls:
                 raise CIGraphError(f"lifecycle binding source call is absent or unresolved: {caller} -> {callee}")
+        if required_operation_calls is not None:
+            roots = bound_functions | {
+                fact[role] for fact in expected_facts for role in ("producer", "verifier")
+            }
+            catalogue = required_operation_calls[pair]
+            if not isinstance(catalogue, Mapping) or roots != catalogue.keys():
+                raise CIGraphError("lifecycle binding independent operation call population roots differ")
+            for root in sorted(roots):
+                try:
+                    observed = source_operation_call_population(root, source_inventory)
+                    matches = _bytes(observed) == _bytes(catalogue[root])
+                except (SemanticOperationEffectError, TypeError, ValueError) as exc:
+                    raise CIGraphError("lifecycle binding operation call population is incompatible") from exc
+                if not matches:
+                    raise CIGraphError("lifecycle binding operation call population differs from protected source")
+                operation_populations_checked += 1
         for field in ("positive_tests", "negative_tests"):
             for selector in contract[field]:
                 if selector not in collected_selectors:
@@ -316,12 +346,16 @@ def validate_lifecycle_bindings(
             or set(controls.values()) != set(contract["negative_tests"])
         ):
             raise CIGraphError("lifecycle binding cause-specific negative-control population differs")
-    return {
+    result = {
         "authority": False,
         "execution_qualified": False,
         "composition_sha256": compiled["composition_sha256"],
         "reachable_relationships": len(reachable),
     }
+
+    if required_operation_calls is not None:
+        result["operation_call_populations_checked"] = operation_populations_checked
+    return result
 
 
 def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound") -> str:

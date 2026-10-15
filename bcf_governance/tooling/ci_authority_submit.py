@@ -38,6 +38,7 @@ from .nested_cli_runtime import exact_nested_cli_command
 from .release_version_projection import validate_authored_release_target
 from .runtime_capacity import executing_runtime_version
 from .governance_validation.authored_phase_state import validate_authored_phase_state
+from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 
 
 Runner = Callable[..., Any]
@@ -62,6 +63,7 @@ def _normalize_submission(
         except RuntimeError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         validate_authored_release_target(root, version)
+        validate_ci_state_matrix(root, authored_only=True)
         if semantic_intent is not None and semantic_intent != authored_post_merge_scope(root)[0]:
             raise ProspectiveValidationError(
                 "submitted semantic intent does not match the authored lifecycle intent"
