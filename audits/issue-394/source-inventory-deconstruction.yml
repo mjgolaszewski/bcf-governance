@@ -15,6 +15,7 @@ single_capacity_limited_module:
   source_sha256: 01e5ab6eca73a687c8d3b2591223d8b4ce2ec9006823daea389bbfb227c198d1
 reason: Future source-effect facts would exceed the module limit; split one coherent parser responsibility before adding behavior.
 projection_provenance: governance/canonical-representations.yml
+module_context_owner: governance/self-governance-policy.yml
 canonical_entrypoint: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
 target_modules:
 - bcf_governance/tooling/semantic_ownership_inventory.py
@@ -27,6 +28,7 @@ contract:
 - Extract only the AST function/call visitor and its existing private return-fingerprint and classification constants into a cohesive Python fact collector.
 - Move annotation rendering to the existing annotation owner with the endpoint and function collectors as its two real consumers.
 - Register the extracted collector and shared annotation helper in the existing generated-source provenance owner.
+- Assign the new collector explicitly to semantic_ownership through the existing module-context policy without broadening wildcard ownership.
 - Preserve CLI and source/package/private-template parity and keep every production module within the declared cap.
 - Add no new effect classifier state evaluator lifecycle authority or active optimization during deconstruction.
 expected_tests:
