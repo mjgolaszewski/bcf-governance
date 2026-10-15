@@ -1,0 +1,33 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/baseline-measurement-slice.yml
+  status: planned
+  authority: false
+workitem: P32-P0-06
+bounded_context: evidence
+architectural_layer: tooling
+operation_side: query
+canonical_owner: bcf_governance/tooling/operational_observations.py
+targets:
+- bcf_governance/tooling/operational_observations.py
+- schemas/operational-observation.schema.json
+- tests/test_operational_observations.py
+- audits/issue-394/baseline-observations.yml
+contract:
+- Add an opt-in pipeline timing observation to the existing non-authoritative operational schema; preserve all existing observation variants and callers.
+- Bind exact commit/tree, one pipeline context, one clock identity/basis and an explicit observed start/end window.
+- Report elapsed span, union of observed execution intervals, union of external waits, uncovered span and summed execution elapsed separately.
+- Retain failed cancelled and superseded intervals. CPU use remains unknown unless separately observed for every execution interval.
+- Reject mixed clock identities duplicate intervals negative or boolean times reversed windows and observations outside the declared window.
+- Never infer elapsed time or CPU use from summed job durations.
+- Capture authenticated provider timestamps as local observations without promoting them to matched cohorts or percentile certification.
+- No active proof scheduling suppression or provider/controller mutation is introduced.
+expected_tests:
+- parallel ten millisecond jobs have ten milliseconds elapsed and twenty milliseconds summed execution
+- gaps and external waits remain visible and failures are retained
+- invalid or ambiguous clock and identity snapshots reject
+- old and new observation schema variants remain readable
+forbidden: [new broker, new proof receipt family, performance certification from insufficient samples, maintained adopter mutation]
+remaining:
+- Adequate matched self and isolated-adopter cohorts and separately reviewed frozen targets and budgets.
+- Authenticated independent end-to-end custody and developer-interruption measurements.
