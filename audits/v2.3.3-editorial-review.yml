@@ -141,10 +141,10 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: 1a83f6c6f05e72add4ecfd89858f400a3112b341a9a1ee9b4000af8f2ae859d8
-  after_sha256: 1a83f6c6f05e72add4ecfd89858f400a3112b341a9a1ee9b4000af8f2ae859d8
+  after_sha256: 3e3320f02da80d76e726a83fb2a45bda09dbf54c83441f89cc83de081244d99b
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  disposition: revised
 - path: spec/phase0/README.md
   audience: BCF evaluators and adopters
   canonical_topic_owner: spec/phase0/README.md
