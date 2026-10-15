@@ -632,3 +632,41 @@ def test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout(monkeypatch, t
     captured = capsys.readouterr()
     assert json.loads(captured.out) == result
     assert json.loads(captured.err) == event
+
+
+@pytest.mark.parametrize('defect', ['missing_target', 'partial_owner'])
+def test_submit_release_contradiction_rejects_before_lease_or_reconcile(monkeypatch, tmp_path, defect):
+    (tmp_path / 'manifest.yml').write_text('document:\n  version: 2.5.0\n')
+    if defect == 'missing_target':
+        (tmp_path / 'governance').mkdir()
+        (tmp_path / 'governance/public-contracts.yml').write_text('package:\n  version: 2.5.0\n')
+        (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n')
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('authored contradiction acquired lease'))
+    with pytest.raises(ProspectiveValidationError, match='release'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail('authored contradiction reached reconciliation'))
+
+
+def test_submit_invalid_runtime_version_rejects_before_admission(monkeypatch, tmp_path):
+    def malformed():
+        raise RuntimeError('BCF runtime version owner is malformed')
+    monkeypatch.setattr(submit, 'executing_runtime_version', malformed, raising=False)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('invalid runtime acquired lease'))
+    with pytest.raises(ProspectiveValidationError, match='runtime version'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail('invalid runtime reached reconciliation'))
+
+
+def test_submit_valid_release_target_uses_the_existing_fixed_point_check(monkeypatch, tmp_path):
+    version = submit.executing_runtime_version()
+    (tmp_path / 'manifest.yml').write_text(f'document:\n  version: {version}\n')
+    (tmp_path / 'governance').mkdir()
+    (tmp_path / 'governance/public-contracts.yml').write_text(f'package:\n  version: {version}\n')
+    (tmp_path / 'CHANGELOG.md').write_text(f'# Changelog\n\n## [Unreleased]\n\nRelease target: `{version}`\n')
+    _normalization_state(monkeypatch)
+    calls = []
+    def runner(argv, **_kwargs):
+        calls.append(argv[-1])
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert calls == ['--check']

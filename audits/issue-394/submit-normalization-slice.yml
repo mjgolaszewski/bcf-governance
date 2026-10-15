@@ -64,7 +64,7 @@ coordination_effect:
 
 release_surface_completeness:
   target_module: bcf_governance/tooling/release_version_projection.py
-  bounded_context: operations
+  bounded_context: evidence
   architectural_layer: tooling
   operation_side: query_before_existing_projection_command
   trigger: Package parity found a missing current-version changelog target after normalization had accepted the tree.
@@ -76,6 +76,9 @@ release_surface_completeness:
   - Include every inspected README usage and changelog surface in release-version cache applicability.
   expected_tests: [tests/test_reconcile_governance.py, tests/test_pack_sync.py]
   forbidden: [release publication, phase activation, workflow edits, authority relaxation]
+
+  admission_boundary: The canonical submit caller invokes this same pure owner before acquiring its local lease or requesting reconciliation; partial release ownership rejects there as well.
+  runtime_version_owner: bcf_governance/tooling/runtime_capacity.py::executing_runtime_version
 
 submission_progress_projection:
   targets: [bcf_governance/tooling/ci_authority_submit.py, bcf_governance/tooling/ci_commands.py, tests/test_candidate_submit.py, docs/USAGE.md]

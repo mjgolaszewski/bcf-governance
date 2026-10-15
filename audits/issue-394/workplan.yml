@@ -2392,6 +2392,7 @@ implementation_slices:
     - tests.test_candidate_submit::test_submit_normalizes_before_capturing_the_proved_subject
     - tests.test_candidate_submit::test_fixed_point_submit_normalization_does_not_generate
     - tests.test_candidate_submit::test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout
+    - tests.test_candidate_submit::test_submit_valid_release_target_uses_the_existing_fixed_point_check
     negative_controls:
     - cause: authored-phase-contradiction
       test: tests.test_candidate_submit::test_authored_contradiction_rejects_before_any_normalization
@@ -2405,6 +2406,12 @@ implementation_slices:
       test: tests.test_reconcile_governance::test_authored_release_target_precedes_every_projection_mutation
     - cause: progress-is-not-proof
       test: tests.test_candidate_submit::test_submit_forwards_existing_progress_without_conferring_authority
+    - cause: release-contradiction-before-lease
+      test: tests.test_candidate_submit::test_submit_release_contradiction_rejects_before_lease_or_reconcile[missing_target]
+    - cause: partial-release-owner-before-lease
+      test: tests.test_candidate_submit::test_submit_release_contradiction_rejects_before_lease_or_reconcile[partial_owner]
+    - cause: malformed-runtime-version
+      test: tests.test_candidate_submit::test_submit_invalid_runtime_version_rejects_before_admission
     remaining:
     - Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.
     - Provider PR/exact-main authority and full terminal custody are not certified by these local tests.
