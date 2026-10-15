@@ -67,7 +67,10 @@ class _FunctionVisitor(ast.NodeVisitor):
         local_types: set[str],
         class_name: str | None,
         function: ast.FunctionDef | ast.AsyncFunctionDef,
+        call_contracts: bool = False,
     ) -> None:
+        self.call_contracts = call_contracts
+        self.call_occurrences: dict[str, int] = {}
         self.path = path
         self.imports = imports
         self.import_bindings = import_bindings
@@ -158,6 +161,36 @@ class _FunctionVisitor(ast.NodeVisitor):
             )
         self.generic_visit(node)
 
+    def _source_call_contract(self, node: ast.Call) -> dict[str, Any]:
+        """Observe syntax only; hashes are identities, not secret redaction proofs."""
+        def digest(expression: ast.AST) -> str:
+            return hashlib.sha256(
+                ast.dump(expression, include_attributes=False).encode()
+            ).hexdigest()
+
+        expression_sha256 = digest(node)
+        occurrence = self.call_occurrences.get(expression_sha256, 0)
+        self.call_occurrences[expression_sha256] = occurrence + 1
+        arguments: list[dict[str, Any]] = []
+        for slot, argument in enumerate(node.args):
+            arguments.append({
+                "kind": "starred" if isinstance(argument, ast.Starred) else "positional",
+                "slot": slot,
+                "expression_sha256": digest(argument),
+            })
+        for slot, keyword in enumerate(node.keywords):
+            arguments.append({
+                "kind": "keyword" if keyword.arg is not None else "double_starred",
+                "slot": keyword.arg if keyword.arg is not None else slot,
+                "expression_sha256": digest(keyword.value),
+            })
+        return {
+            "authority": False,
+            "expression_sha256": expression_sha256,
+            "occurrence": occurrence,
+            "arguments": arguments,
+        }
+
     def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
         name = _call_name(node)
         if (
@@ -182,6 +215,8 @@ class _FunctionVisitor(ast.NodeVisitor):
             "line": node.lineno,
             "argument_origins": sorted(self._origins(node)),
         }
+        if self.call_contracts:
+            fact["call_contract"] = self._source_call_contract(node)
         reference = _call_reference(node.func, self.import_bindings)
         if reference is not None:
             fact["import_reference"] = reference
