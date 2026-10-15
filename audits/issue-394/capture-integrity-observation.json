@@ -1,0 +1,18 @@
+{
+  "authority": false,
+  "kind": "capture_integrity_observation",
+  "artifact": "audits/issue-394/observations/reconcile-42536402-attempt-2.json",
+  "finding": "Historical wrapper source_snapshot differs from the producer and observation subjects. Do not use that wrapper field as source authentication. Original bytes remain retained.",
+  "producer_commit": "42536402d41b75964c55f075d52113f1a25c70f4",
+  "wrapper_source_snapshot_commit": "0e99bece17f649419674a7b6d9379a55b98e99e2",
+  "required_early_checks": [
+    "Producer and observation clock IDs match",
+    "Producer and observation commit/tree identities match",
+    "Retained stdout/stderr hashes match producer hashes",
+    "Canonical projection end commit has exact producer commit as parent",
+    "Any embedded source_snapshot must match the same capture, otherwise reject the capture wrapper"
+  ],
+  "new_capture": "audits/issue-394/observations/reconcile-b976db49-attempt-1.json",
+  "new_capture_policy": "Constructed from current producer and observation plus authenticated output bytes; no inherited source_snapshot copied.",
+  "qualification": "Historical source_snapshot mismatch limits that field; no claim that the complete train measurement population has passed integrity qualification."
+}
