@@ -427,6 +427,8 @@ local_command_observations:
   context: failed authored-state admission; original source remained unchanged
 - path: audits/issue-394/observations/reconcile-0e99bece-attempt-1.json
   context: successful canonical projection and workflow authority transaction; opaque execution window with CPU and internal waits unmeasured
+- path: audits/issue-394/observations/reconcile-43c1763b-attempt-1.json
+  context: failed context-budget admission; original source remained unchanged
 local_command_limitations:
 - These are separate command windows, not matched eligible PR cohorts or complete developer-interruption clocks.
 - Preserve failed and successful observations; neither establishes p50/p95 or an approved resource/performance target.

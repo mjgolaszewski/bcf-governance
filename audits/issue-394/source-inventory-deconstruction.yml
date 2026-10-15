@@ -55,3 +55,10 @@ context_budget_correction:
   observed_failure: Adding complete helper provenance exceeded the existing 64-KiB agent-required context budget.
   contract: Deduplicate repeated immutable owner strings through existing YAML scalar-anchor syntax; assert exact parsed-value equality and preserve the budget.
   forbidden: Raising the budget or deleting provenance to admit the candidate.
+
+context_budget_evidence:
+  original_bytes: 65912
+  deduplicated_bytes: 63792
+  unchanged_parsed_semantic_sha256: 980ca11660d01429ef9306aade91393f3ee665939acf2237846710576f831889
+  technique: Named aliases reference immutable repeated owner-symbol strings; no mutable mapping/list aliases or policy values changed.
+  structural_limits: passed_with_existing_64_KiB_budget
