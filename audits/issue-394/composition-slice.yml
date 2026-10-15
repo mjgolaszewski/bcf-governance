@@ -106,3 +106,18 @@ source_call_conformance_slice:
   - A relationship without an internal call obligation needs an existing compiled CI-edge handoff.
   - Unknown or dynamic call resolution blocks static adoption rather than inventing a source edge.
   remaining: Full independently enumerated authority effects and context-qualified runtime populations are still required before adoption.
+
+tracked_projection_fixed_point_slice:
+  workitem: P32-P0-03
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_graph_composition.py, tests/test_ci_graph_composition.py]
+  contract:
+  - Keep the existing full subject-bound renderer as the default and preserve its output.
+  - Add an explicit contract view for tracked generation whose digest binds the complete semantic relationships plus canonical graph CI-edge and policy identities.
+  - Subject commit/tree repository and installed controller identities stay in the authenticated runtime envelope rather than creating self-referential tracked bytes.
+  - Validate the full bound envelope before projecting either view.
+  - Byte-identical contract semantics regenerate identically across runtime subjects; semantic policy edge or contract changes still alter the contract view.
+  - Unknown view selection and tampered bound snapshots reject.
+  remaining: Wire the adopted complete machine model into canonical generation after full population and runtime conformance.
