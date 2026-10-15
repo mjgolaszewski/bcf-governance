@@ -1408,3 +1408,43 @@ def test_semantic_ownership_failure_prevents_session_allocation(
         preflight._semantic_ownership(repo)
 
     assert calls == []
+
+
+def test_authored_phase_state_accepts_current_complete_triplet(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    before = {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob("*") if path.is_file()}
+    assert validate_authored_phase_state(repo)["phase_id"] == active["id"]
+    assert {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob("*") if path.is_file()} == before
+
+
+def test_mapping_phase_note_rejects_before_reconcile_allocation(tmp_path: Path, monkeypatch) -> None:
+    from bcf_governance.tooling import scaffold_governance_artifacts as scaffold
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    path = repo / active["log"]
+    log = yaml.safe_load(path.read_text())
+    log["execution_evidence"]["notes"].append({"unquoted note": "not a string"})
+    path.write_text(yaml.safe_dump(log, sort_keys=False))
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(scaffold, "ensure_local_project_python", lambda *_a, **_k: pytest.fail("allocated runtime before phase schema rejection"))
+    monkeypatch.setattr(scaffold, "apply_workflow_authority_transition", lambda *_a, **_k: pytest.fail("created shadow before phase schema rejection"))
+    with pytest.raises(SystemExit, match="failed structural schema.*phase-log.schema.json"):
+        scaffold.reconcile_main(["--repo-root", str(repo), "--apply"])
+
+
+def test_authored_phase_state_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    path = repo / active["log"]
+    path.write_text(path.read_text() + "\nnext_work: []\n")
+    with pytest.raises(AuthoredPhaseStateError, match="duplicate YAML key"):
+        validate_authored_phase_state(repo)
+
+
+def test_authored_phase_state_requires_active_triplet_schema(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _copy_current_authored_phase_state(repo)
+    (repo / "schemas/phase-log.schema.json").unlink()
+    with pytest.raises(AuthoredPhaseStateError, match="phase-log.schema.json"):
+        validate_authored_phase_state(repo)
