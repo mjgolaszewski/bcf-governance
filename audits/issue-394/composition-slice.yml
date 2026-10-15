@@ -79,3 +79,15 @@ binding_conformance_slice:
   remaining_obligations:
   - Wire actual protected consumer source and test collection owners across every adopted lifecycle context.
   - Independently qualify behavioral positives and cause-specific controls on exact admitted bytes.
+
+requirement_binding_inventory_slice:
+  workitem: P32-P0-03
+  operation_side: query
+  targets: [audits/issue-394/workplan.yml, audits/issue-394/workplan.schema.json, tests/test_ci_graph_composition.py]
+  contract:
+  - Extend the existing requirement inventory with explicit bounded implementation slices and exact executable test/control identities.
+  - Keep every whole-requirement evidence status not_executed until its complete independent terminal acceptance is supplied.
+  - Every slice records its canonical workitem contract producer consumer positive tests cause-specific controls and remaining obligations.
+  - Validate exact node references through the existing governed test-manifest oracle owner.
+  - Reject an empty cause inventory or missing producer consumer or remaining-obligation binding.
+  forbidden: [new truth engine, positive-only closure, replacing terminal custody with local test success]
