@@ -15,7 +15,7 @@ targets:
 - audits/issue-394/baseline-observations.yml
 contract:
 - Add an opt-in pipeline timing observation to the existing non-authoritative operational schema; preserve all existing observation variants and callers.
-- Bind repository name/ID, exact commit/tree, a raw source-snapshot digest, one pipeline context, one clock identity/basis and an explicit observed start/end window.
+- Bind repository name/ID, exact commit/tree, a retained source-snapshot digest, one pipeline context, one clock identity/basis and an explicit observed start/end window.
 - Report elapsed span, union of observed execution intervals, union of external waits, uncovered span and summed execution elapsed separately.
 - Retain failed cancelled and superseded intervals. CPU use remains unknown unless separately observed for every execution interval.
 - Reject mixed clock identities duplicate intervals negative or boolean times reversed windows and observations outside the declared window.

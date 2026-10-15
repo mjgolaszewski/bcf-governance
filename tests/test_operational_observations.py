@@ -224,3 +224,28 @@ def test_pipeline_timing_rejects_unbound_repository_or_snapshot(timing_inputs, f
     timing_inputs[field] = value
     with pytest.raises(OperationalObservationError, match='identity'):
         _timing(timing_inputs)
+
+
+def test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks():
+    import hashlib
+    import json
+
+    from bcf_governance.tooling.operational_observations import pipeline_timing_observation
+
+    root = Path(__file__).resolve().parents[1]
+    capture = json.loads((root / 'audits/issue-394/observations/pr-421-attempt-1.json').read_text())
+    source = capture['source_snapshot']
+    value = capture['observation']
+    assert capture['capture_policy']['matched_cohort'] is False
+    assert capture['capture_policy']['percentile_certification'] is False
+    digest = hashlib.sha256(json.dumps(source, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+    assert value['source_snapshot_sha256'] == digest
+    assert value['repository_id'] == source['repository']['id']
+    assert value['subject'] == {'commit_sha': source['commit']['sha'], 'tree_sha': source['commit']['tree_sha']}
+    assert {row['id'] for row in value['intervals']} == {str(row['id']) for row in source['jobs']['jobs']}
+    assert len(value['intervals']) == source['jobs']['total_count']
+    fields = ['repository', 'repository_id', 'source_snapshot_sha256', 'pipeline', 'clock_id', 'clock_basis', 'start_ms', 'end_ms', 'intervals']
+    assert pipeline_timing_observation(**{field: value[field] for field in fields}, **value['subject']) == value
+    validate_operational_observation(root, value)
+    assert value['elapsed_ms'] != value['execution_sum_ms']
+    assert value['cpu_ms'] == 'unknown'

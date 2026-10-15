@@ -407,3 +407,17 @@ observations:
     started_at: '2026-10-15T15:34:22Z'
     completed_at: '2026-10-15T15:43:16Z'
     elapsed_seconds: 534.0
+
+additional_pipeline_captures:
+- path: audits/issue-394/observations/pr-421-attempt-1.json
+  run_id: 38779824523
+  attempt: 1
+  subject_commit: 1c4820835f3e1590d7f5c5602995ec4a31258980
+  classification: intervening_maintenance_PR_observation_not_matched_benchmark
+  elapsed_ms: 1652000
+  execution_union_ms: 1592000
+  execution_sum_ms: 1685000
+  uncovered_ms: 60000
+  cpu_ms: unknown
+  interpretation: One evidence producer took 1416 seconds while three evidence peers took 24 33 and 36 seconds; investigate after matched baselines and reviewed targets. Uncovered time is unattributed, not automatically provider queue or external wait.
+  authority: false
