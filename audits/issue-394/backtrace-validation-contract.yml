@@ -11,6 +11,8 @@ operation_side: query
 target_modules:
 - bcf_governance/tooling/governance_validation/ci_state_matrix.py
 - schemas/release-train-backtrace.schema.json
+- bcf_governance/tooling/scaffold_governance_artifacts.py
+- bcf_governance/tooling/ci_authority_submit.py
 canonical_authored_source: spec/phase0/release-train-backtrace.yml
 contract:
 - Extend the existing authored-state guard with a versioned structural schema for the current backtrace; preserve existing incomplete-edge error attribution and same-candidate prose checks until replacement conformance exists.
@@ -20,6 +22,8 @@ contract:
 - Preserve the rejected nonnormative provider-coupled historical design and its explicit exclusion; do not treat its stale primitive references as active requirements or rewrite historical bytes.
 - All passing results remain authored structural coverage only and cannot adopt transitions or qualify runtime authority.
 - Candidate schema edits cannot self-authorize; complete independent protected consumer schemas populations effects and execution remain separate adoption prerequisites.
+- Run the same pure authored model guard before submit lease/reconciliation and before standalone runtime/shadow allocation; retain graphless adopter inapplicability.
+- Include the backtrace and its schema in the existing stage watched inputs; no stale local ledger can conceal changed model bytes.
 expected_tests:
 - Existing exact source backtrace and unchanged adopter inapplicability pass.
 - Duplicate IDs dangling transitions wrong schema version duplicate YAML keys and symlinked model reject before allocation.
