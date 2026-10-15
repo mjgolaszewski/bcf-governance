@@ -91,3 +91,18 @@ requirement_binding_inventory_slice:
   - Validate exact node references through the existing governed test-manifest oracle owner.
   - Reject an empty cause inventory or missing producer consumer or remaining-obligation binding.
   forbidden: [new truth engine, positive-only closure, replacing terminal custody with local test success]
+
+source_call_conformance_slice:
+  workitem: P32-P0-03
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_graph_composition.py, tests/test_ci_graph_composition.py]
+  contract:
+  - Resolve protected per-relationship call obligations through existing source-inventory call facts, not source names alone.
+  - Require complete reachable-relationship coverage in the independent call catalogue.
+  - Every required caller/callee must be a discovered runtime function named by its contract.
+  - A removed runtime call rejects even when both function declarations and their tests remain present.
+  - A relationship without an internal call obligation needs an existing compiled CI-edge handoff.
+  - Unknown or dynamic call resolution blocks static adoption rather than inventing a source edge.
+  remaining: Full independently enumerated authority effects and context-qualified runtime populations are still required before adoption.
