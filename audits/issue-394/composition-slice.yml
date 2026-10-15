@@ -214,3 +214,24 @@ source_inventory_deconstruction_stage:
   contract: audits/issue-394/source-inventory-deconstruction.yml
   single_capacity_limited_module: bcf_governance/tooling/semantic_ownership_inventory.py
   rule: Characterize then extract the existing call-fact collector before adding source-effect facts; preserve public inventory behavior and entrypoints.
+
+protected_operation_call_binding_slice:
+  workitem: P32-P0-04
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_graph_composition.py, tests/test_ci_graph_composition.py]
+  shared_kernel_decision: Consume semantic_ownership source_operation_call_population as read-only facts; do not duplicate traversal or classify authority in the composition owner.
+  contract:
+  - Add optional protected operation-call catalogues to the existing binding query while preserving legacy source-only results when absent.
+  - A supplied catalogue must cover every reachable relationship and exactly every implementation terminal fact-producer and fact-verifier root bound by its contract.
+  - Reconstruct each root population independently through the existing query and compare all exact source identities functions calls repeated occurrences and unresolved observations.
+  - A new call behind a port-shaped helper or changed argument digest rejects against the independently retained catalogue even when declared edges tests and functions remain.
+  - Reject missing roots missing relationships incompatible source facts or changed source-file identities; candidate input cannot narrow the supplied protected population.
+  - All results remain authority false and execution_qualified false; absence of this optional dormant capability cannot be treated as complete reverse conformance.
+  - Protected catalogue acquisition authentication complete module/cross-language scope and actual effect interpretation remain separate prerequisites before adoption.
+  expected_tests:
+  - Valid exact independently retained operation population binds without conferring authority.
+  - Added nested unresolved call rejects although required direct call endpoints and tests remain present.
+  - Missing root relationship source identity or compatible call version rejects.
+  - Legacy binding fixture and result remain unchanged when no new catalogue is supplied.
