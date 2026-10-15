@@ -23,6 +23,7 @@ contract:
 - All passing results remain authored structural coverage only and cannot adopt transitions or qualify runtime authority.
 - Candidate schema edits cannot self-authorize; complete independent protected consumer schemas populations effects and execution remain separate adoption prerequisites.
 - Run the same pure authored model guard before submit lease/reconciliation and before standalone runtime/shadow allocation; retain graphless adopter inapplicability.
+- Early mode validates authored machine structure only; prose/projection checks remain in the existing later stage so necessary generation is never blocked by an early generated-view assertion. Preserve the default full guard contract.
 - Include the backtrace and its schema in the existing stage watched inputs; no stale local ledger can conceal changed model bytes.
 expected_tests:
 - Existing exact source backtrace and unchanged adopter inapplicability pass.
@@ -31,3 +32,10 @@ expected_tests:
 - Existing cause-specific incomplete-edge rejection remains unchanged.
 forbidden_surfaces: [prose retirement before conformance, maintenance bytes, changed publication policy, new truth evaluator, hand-edited workflow authority]
 remaining: Full typed context composition primitive binding recovery execution graphs protected effect populations generated prose and installed-consumer qualification remain required.
+
+local_execution:
+  red: Eleven structural controls initially failed against legacy behavior; two early-placement controls initially reached lease/runtime allocation.
+  focused: All 102 state-matrix submit and reconciliation cases passed after implementation.
+  source_compatibility: Exact provider source fd174babd417970929ffde1d62e695010b8f378c with sixteen transitions passes the structural schema and typed-reference checks unchanged; this is not custody admission.
+  static_gates: Existing lint and typecheck gates passed.
+  pending: Pack architecture qualification and canonical test manifest/source lock regeneration.
