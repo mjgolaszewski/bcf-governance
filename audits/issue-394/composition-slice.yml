@@ -142,3 +142,19 @@ existing_effect_inventory_projection_slice:
   - unknown dynamic path and unreachable declared port reject
   - existing Python and TypeScript semantic conformance remains unchanged
   remaining: Bind the full protected runtime effect population into adopted lifecycle contexts and independent terminal consumers.
+
+operation_effect_composition_bridge:
+  workitem: P32-P0-03
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_graph_composition.py, tests/test_ci_graph_composition.py]
+  contract:
+  - Consume the existing validated operation observations as immutable required-effect facts, independently of proposed lifecycle rows.
+  - Require exact protected operation/entrypoint and classified port populations, including cause-preserving role counts.
+  - Bind each existing operation-port identity to every independently required context-qualified relationship; missing or extra bindings reject.
+  - Derive the compiler required effect set from canonical operation role target-kind and symbol identities, without a new effect registry.
+  - Missing old-consumer capability, duplicate operations/ports, wrong entrypoints, malformed facts and unresolved context consumers block adoption.
+  - An omitted proposed effect or edge cannot erase the independently discovered source port.
+  - No source authentication or runtime execution qualification is inferred from a static observation; protected consumers still reconstruct full actual populations.
+  remaining: Full graph/context mapping and protected installed consumer wiring remain required before normative adoption.
