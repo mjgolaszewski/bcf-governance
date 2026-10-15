@@ -1120,7 +1120,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/authored_phase_state.py": {
       "operation": "copy",
-      "sha256": "389d699fdbc52250895237c6aead99b9f37fbb8e924e224f4db69a0384234abd"
+      "sha256": "944ba837d0771dd2c4740cdbce08e040b163c24edfe3c3e5cdee5eb48ecb50cc"
     },
     "scripts/_bcf_runtime/governance_validation/ci_state_matrix.py": {
       "operation": "copy",

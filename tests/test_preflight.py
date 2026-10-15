@@ -1335,8 +1335,22 @@ def test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    _copy_current_authored_phase_state(repo)
-    malformed = repo / "phases/phase-31-hotfix04.yml"
+    active = _copy_current_authored_phase_state(repo)
+    from bcf_governance.tooling.hotfix_scaffolding import scaffold_hotfix_log, register_hotfix_log
+
+    hotfix_id = f"{active['id']}-HF99"
+    malformed = scaffold_hotfix_log(
+        repo_root=repo, project_id="fixture", hotfix_id=hotfix_id, mode="full",
+        hotfix_number=99, summary="Disposable malformed-log control",
+        related_phase_id=active["id"], date="2026-10-15",
+        validation_commands=["make governance-validate"], force=False,
+    )
+    register_hotfix_log(
+        repo_root=repo, hotfix_log=malformed, hotfix_id=hotfix_id, mode="full",
+        related_phase_id=active["id"], triggered_by_commits=["a" * 40],
+        failing_workflows=[], root_cause="disposable schema control",
+        canonical_artifacts=["plans/phase-ledger.yml"],
+    )
     payload = yaml.safe_load(malformed.read_text(encoding="utf-8"))
     payload["execution_evidence"]["notes"][0] = {"not": "a string"}
     malformed.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")

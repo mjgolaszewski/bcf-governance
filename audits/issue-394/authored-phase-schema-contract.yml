@@ -29,3 +29,14 @@ expected_tests:
 - Existing computed-status completion-pair and malformed-hotfix causes retain their priority.
 forbidden_surfaces: [generated-state checks before necessary generation, new phase authority, authored DONE as computed truth, workflow pins, maintenance bytes]
 remaining: Complete historical source/package/profile/runtime pre-dispatch admission and independent provider authority remain unqualified.
+
+fixture_and_runtime_corrections:
+- The inherited malformed-hotfix control named a retired P31 filename; construct and register a disposable current-phase hotfix through existing owners instead of altering retained maintenance evidence.
+- A broad direct test run correctly rejected the convenience controller venv because it exposes system site packages; use the canonical materialized isolated project interpreter for runtime-sensitive tests. Earlier local fixture passes are not declared-runtime certification.
+
+local_execution:
+  red: Three new structural controls failed before implementation while the complete current triplet passed.
+  initial_broad_run: 164 passed with three convenience-controller environment-cause mismatches and one stale inherited hotfix fixture; these were not accepted as a qualified pass.
+  corrected_runtime_run: All 168 preflight submit reconcile and machine-state cases passed in 20.18 seconds under the canonically materialized isolated project interpreter after native disposable-fixture correction.
+  architecture: Ten source/package/private-copy CLI-effect context and module-cap checks passed under the isolated project interpreter; lint and typecheck passed.
+  remaining_checks: Canonical normalization and exact current-tree full semantic conformance remain required.

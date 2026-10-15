@@ -644,6 +644,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/governance_validation/authored_phase_state.py
     - bcf_governance/tooling/ci_authority_submit.py
     - bcf_governance/tooling/reconcile_authority_transition.py
     - bcf_governance/tooling/scaffold_governance_artifacts.py
@@ -1092,6 +1093,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - early-active-phase-schema
     - canonical-submit-normalization
   I22:
     requirement: Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision.
@@ -1995,6 +1997,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - early-active-phase-schema
     - canonical-submit-normalization
   AC18:
     requirement: Graph-generated evaluator workflow absent from promotion inventory, invalid component order or artifact path without custody fails before costly
@@ -2659,3 +2662,26 @@ implementation_slices:
     remaining:
     - Complete independent protected context populations actual effect interpretation recovery and installed-consumer conformance are not established by authored structural checks.
     - Prose retirement generated dependency views and exact terminal custody remain blocked.
+  early-active-phase-schema:
+    id: early-active-phase-schema
+    workitem: P32-P0-07
+    scope: Existing active-triplet schema consistency and closeout checks moved into the pure authored guard; strict decoding preserves cause priority.
+    contract: audits/issue-394/authored-phase-schema-contract.yml
+    producer: bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state
+    consumer: Existing submit reconcile and preflight authored-state consumers
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_preflight::test_authored_phase_state_accepts_current_complete_triplet
+    negative_controls:
+    - cause: mapping-valued-note-before-allocation
+      test: tests.test_preflight::test_mapping_phase_note_rejects_before_reconcile_allocation
+    - cause: missing-active-phase-schema
+      test: tests.test_preflight::test_authored_phase_state_requires_active_triplet_schema
+    - cause: duplicate-authored-phase-key
+      test: tests.test_preflight::test_authored_phase_state_rejects_duplicate_yaml_keys
+    - cause: malformed-referenced-hotfix
+      test: tests.test_preflight::test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work
+    remaining:
+    - Full retained historical phase population and all source/package/profile/runtime earliest boundaries remain unqualified.
+    - These local controls grant no computed verified or closed truth and no provider authority.
