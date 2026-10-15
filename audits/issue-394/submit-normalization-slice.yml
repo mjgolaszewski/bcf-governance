@@ -1,0 +1,24 @@
+document: {kind: affected_surface_contract, path: audits/issue-394/submit-normalization-slice.yml, status: planned, authority: false}
+workitem: P32-P0-07
+trigger: canonical submit rejected incomplete P32 as phase closure because it consumed the inherited generated scope before canonical normalization
+invariants: [I20, I21, I22, I25, I26, AC17, AC21]
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+owner: bcf_governance/tooling/ci_authority_submit.py::submit_candidate
+targets: [bcf_governance/tooling/ci_authority_submit.py, tests/test_candidate_submit.py]
+existing_owners:
+  authored_state: bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state
+  normalization: bcf_governance/tooling/scaffold_governance_artifacts.py::reconcile_main
+  lease: bcf_governance/tooling/local_execution_admission.py::local_gate_lease
+contract:
+- reject authored contradiction or wrong intent assertion before any normalization mutation
+- acquire the existing local lease before normalization so a concurrent admitted train cannot be mutated
+- reuse canonical selective fixed-point checks; invoke the existing exact-runtime reconcile owner only for dirty derived state
+- normalize through the canonical atomic workflow-authority transition; never edit generated pins or choose stages
+- derive fresh context commit tree scope and title after normalization; never prove or push the old subject
+- release the normalization lease before the existing prospective owner acquires its own execution lease
+- normalization failure or partial state blocks prospective proof and push
+positive_tests: [stale generated scope normalizes before title proof and push, fixed-point submission performs no generation]
+negative_tests: [authored contradiction mutates nothing, normalization failure cannot prove or push, busy lease performs no normalization, wrong intent assertion mutates nothing]
+forbidden: [intent-flag workaround, false phase completion, manual generated pins, new mutation authority, new broker or principal, weakening prospective or provider proof]

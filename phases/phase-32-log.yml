@@ -33,6 +33,9 @@ workitems:
 - id: P32-P0-06
   status: IN_PROGRESS
   summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
+- id: P32-P0-07
+  status: IN_PROGRESS
+  summary: Normalize derived governance before deriving submission scope and exact subject
 execution_evidence:
   planned_commands:
   - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
@@ -67,6 +70,9 @@ execution_evidence:
     jobs are recorded without claiming a matched statistical baseline or approved performance targets'
   - The decision inventory distinguishes fourteen mechanically derivable routine choices from explicit policy decisions and
     presently unprovable exclusions
+  - Canonical submit stopped before push with target_not_ready_for_phase_closure for P32 because inherited graph scope was
+    consumed before normalization. No provider mutation occurred. P32-P0-07 brings the existing normalization owner ahead
+    of scope derivation without overriding intent or phase truth.
 closeout_requirements:
   claims:
     workitems_closed:

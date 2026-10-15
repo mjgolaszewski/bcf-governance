@@ -36,6 +36,7 @@ stages:
   - foundation.conformance
   - foundation.deadlines
   - foundation.baseline
+  - foundation.submit-normalization
   activation: active
 - id: dormant
   issue_label: B
@@ -620,6 +621,33 @@ workitems:
       scenario: Publish admitted exact bytes and independently verify immutable custody without rebuilding
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized custody inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  foundation.submit-normalization:
+    summary: Normalize derived governance before deriving submission scope and exact subject
+    status: IN_PROGRESS
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/ci_authority_submit.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.admission
+    expected_tests:
+    - kind: positive
+      scenario: Stale inherited scope normalizes before fresh subject title and prospective proof
+    - kind: cause_specific_negative
+      scenario: Contradiction busy lease or normalization failure cannot mutate prove or push
     acceptance:
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
@@ -2200,6 +2228,11 @@ additional_regressions:
   positive: Incorporate only admitted dependency-DAG frontier fix as an exact regression
   negative: Never close or reorder unrelated workitems to manufacture prefix authority
   source: https://github.com/mjgolaszewski/bcf-governance/issues/420
+- id: submit_stale_inherited_scope
+  workitem: foundation.submit-normalization
+  positive: Canonical normalization precedes scope derivation and fresh subject capture
+  negative: Contradictory authored state wrong assertion busy lease and partial normalization cannot allocate proof or push
+  source: audits/issue-394/submit-normalization-slice.yml
 measurement_policy:
   status: requires_review_after_baseline_before_optimization
   proposed_pr:
@@ -2254,3 +2287,4 @@ canonical_workitem_mapping:
   certification.benchmarks: P35-P0-02
   certification.distribution: P35-P0-03
   certification.custody: P35-P0-04
+  foundation.submit-normalization: P32-P0-07

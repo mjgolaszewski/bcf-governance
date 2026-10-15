@@ -25,6 +25,7 @@ delivery_contract:
   - Independently trace implementation effects and producer consumer populations in both directions
   - Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
   - Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
+  - Normalize derived governance before deriving submission scope and exact subject
   parallelizable_workstreams:
   - id: P32-WS1
     name: typed composition and independent conformance
@@ -49,6 +50,9 @@ scope_lock:
 - order: 5
   statement: Foundation exit requires approved baseline-relative targets before optimization is judged; no shadow suppression
     or phase authority inferred from local green tests
+- order: 6
+  statement: Observed submit admission failure requires existing canonical normalization before exact scope derivation; bounded
+    corrective scope is declared in audits/issue-394/submit-normalization-slice.yml
 verification_plan:
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest -q tests

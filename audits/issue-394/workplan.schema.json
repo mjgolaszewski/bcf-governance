@@ -47,7 +47,8 @@
             "certification.tuning",
             "certification.benchmarks",
             "certification.distribution",
-            "certification.custody"
+            "certification.custody",
+            "foundation.submit-normalization"
           ]
         },
         "contract_owner": {
@@ -196,7 +197,8 @@
               "certification.tuning",
               "certification.benchmarks",
               "certification.distribution",
-              "certification.custody"
+              "certification.custody",
+              "foundation.submit-normalization"
             ]
           }
         },
@@ -432,7 +434,8 @@
                 "certification.tuning",
                 "certification.benchmarks",
                 "certification.distribution",
-                "certification.custody"
+                "certification.custody",
+                "foundation.submit-normalization"
               ]
             }
           },
@@ -468,7 +471,8 @@
         "certification.tuning",
         "certification.benchmarks",
         "certification.distribution",
-        "certification.custody"
+        "certification.custody",
+        "foundation.submit-normalization"
       ],
       "properties": {
         "foundation.admission": {
@@ -529,6 +533,9 @@
           "$ref": "#/$defs/workitem"
         },
         "certification.custody": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.submit-normalization": {
           "$ref": "#/$defs/workitem"
         }
       }
@@ -908,7 +915,8 @@
               "certification.tuning",
               "certification.benchmarks",
               "certification.distribution",
-              "certification.custody"
+              "certification.custody",
+              "foundation.submit-normalization"
             ]
           },
           "positive": {
@@ -1033,7 +1041,8 @@
         "certification.tuning",
         "certification.benchmarks",
         "certification.distribution",
-        "certification.custody"
+        "certification.custody",
+        "foundation.submit-normalization"
       ],
       "properties": {
         "foundation.admission": {
@@ -1095,6 +1104,9 @@
         },
         "certification.custody": {
           "const": "P35-P0-04"
+        },
+        "foundation.submit-normalization": {
+          "const": "P32-P0-07"
         }
       }
     }
