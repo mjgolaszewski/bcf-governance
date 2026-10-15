@@ -421,3 +421,12 @@ additional_pipeline_captures:
   cpu_ms: unknown
   interpretation: One evidence producer took 1416 seconds while three evidence peers took 24 33 and 36 seconds; investigate after matched baselines and reviewed targets. Uncovered time is unattributed, not automatically provider queue or external wait.
   authority: false
+
+local_command_observations:
+- path: audits/issue-394/observations/reconcile-ef142427-attempt-1.json
+  context: failed authored-state admission; original source remained unchanged
+- path: audits/issue-394/observations/reconcile-0e99bece-attempt-1.json
+  context: successful canonical projection and workflow authority transaction; opaque execution window with CPU and internal waits unmeasured
+local_command_limitations:
+- These are separate command windows, not matched eligible PR cohorts or complete developer-interruption clocks.
+- Preserve failed and successful observations; neither establishes p50/p95 or an approved resource/performance target.
