@@ -2305,3 +2305,17 @@ must be replaced by generated views of the complete adopted machine-readable
 contract, including all edge contracts and canonical structural exclusions.
 The dormant compiler alone does not establish complete lifecycle coverage,
 executable conformance, profile parity, or retirement of the historical matrix.
+
+### Issue 394 authored release and static binding checkpoint
+
+Canonical reconciliation now checks the authored current-version changelog target
+before any derived-state mutation. A stale, absent, duplicated, or misplaced target
+rejects; an existing exact released entry remains compatible. Release-version cache
+applicability includes every inspected text surface and both runtime owner locations.
+
+The dormant lifecycle compiler also resolves implementation and terminal references
+against the independently supplied semantic source inventory, and test selectors
+against verified collection. Each reachable relationship must retain the protected
+cause-specific negative-control population. These static checks grant no execution
+qualification; actual protected-consumer wiring and runtime conformance still block
+retirement of this prose view.

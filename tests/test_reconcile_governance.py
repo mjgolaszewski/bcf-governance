@@ -255,9 +255,10 @@ def test_new_release_editorial_base_rejects_untracked_branch(tmp_path: Path) -> 
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:11] == [
+    assert ids[:12] == [
         "authored-phase-state",
         "ci-state-matrix",
+        "authored-release-target",
         "ci-provider-permissions",
         "interpreter-environment",
         "structural-limits",
@@ -874,3 +875,73 @@ def test_reconcile_rejects_graph_declared_default_branch_without_remote_head(
             converge=converge,
             snapshot=_transition_snapshot,
         )
+
+
+def _release_surface_fixture(root: Path, version: str = '2.5.0') -> None:
+    (root / 'governance').mkdir(exist_ok=True)
+    (root / 'manifest.yml').write_text(f'document:\n  version: {version}\n')
+    (root / 'governance/public-contracts.yml').write_text(f'package:\n  version: {version}\n')
+
+
+@pytest.mark.parametrize('changelog', [
+    '# Changelog\n\n## [Unreleased]\n',
+    '# Changelog\n\n## [Unreleased]\n\nRelease target: `2.3.2`\n',
+    '# Changelog\n\n## [Unreleased]\n\nRelease target: `2.5.0`\nRelease target: `2.5.0`\n',
+    '# Changelog\n\n## [Unreleased]\n\n## [2.3.2] - 2026-10-13\nRelease target: `2.5.0`\n',
+])
+def test_release_target_contradiction_rejects_before_any_projection(tmp_path, changelog):
+    _release_surface_fixture(tmp_path, '2.3.2')
+    (tmp_path / 'CHANGELOG.md').write_text(changelog)
+    before = {path: path.read_bytes() for path in tmp_path.rglob('*') if path.is_file()}
+    with pytest.raises(ReleaseVersionProjectionError, match='changelog'):
+        reconcile_release_version_surfaces(tmp_path, version='2.5.0', apply=True)
+    assert {path: path.read_bytes() for path in before} == before
+
+
+@pytest.mark.parametrize('changelog', [
+    '# Changelog\n\n## [Unreleased]\n\nRelease target: `2.5.0`\n',
+    '# Changelog\n\n## [Unreleased]\n\n## [2.5.0] - 2026-10-15\n',
+])
+def test_release_target_or_existing_release_is_accepted(tmp_path, changelog):
+    _release_surface_fixture(tmp_path)
+    (tmp_path / 'CHANGELOG.md').write_text(changelog)
+    assert reconcile_release_version_surfaces(tmp_path, version='2.5.0', apply=False) == ()
+    assert (tmp_path / 'CHANGELOG.md').read_text() == changelog
+
+
+@pytest.mark.parametrize('surface', ['README.md', 'docs/USAGE.md', 'CHANGELOG.md'])
+def test_release_text_change_invalidates_clean_projection_cache(tmp_path, monkeypatch, surface):
+    _git(tmp_path, 'init', '--quiet', '--initial-branch=main')
+    _release_surface_fixture(tmp_path)
+    (tmp_path / 'schemas').mkdir()
+    root = Path(__file__).resolve().parents[1]
+    (tmp_path / 'schemas/reconcile-ledger.schema.json').write_bytes(
+        (root / 'schemas/reconcile-ledger.schema.json').read_bytes()
+    )
+    (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n\nRelease target: `2.5.0`\n')
+    monkeypatch.setattr(scaffold, '__version__', '2.5.0')
+    monkeypatch.setattr(scaffold, 'capability_states', lambda *_a: {})
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *_a: [])
+    stage = next(item for item in reconcile_steps(tmp_path, Path(sys.executable))
+                 if item.step_id == 'release-version-surfaces')
+    check_reconcile_steps(tmp_path, [stage])
+    assert check_reconcile_steps(tmp_path, [stage])['stages'][0]['state'] == 'skipped_clean'
+    path = tmp_path / surface
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = '# Changelog\n\n## [Unreleased]\n' if surface == 'CHANGELOG.md' else 'Supported package version: `v2.3.2`.\n'
+    path.write_text(text)
+    with pytest.raises(ReleaseVersionProjectionError):
+        check_reconcile_steps(tmp_path, [stage])
+
+
+def test_authored_release_target_precedes_every_projection_mutation(tmp_path, monkeypatch):
+    _release_surface_fixture(tmp_path, '2.3.2')
+    (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n')
+    monkeypatch.setattr(scaffold, '__version__', '2.5.0')
+    monkeypatch.setattr(scaffold, 'capability_states', lambda *_a: {})
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *_a: [])
+    steps = reconcile_steps(tmp_path, Path(sys.executable))
+    assert steps[0].step_id == 'authored-release-target'
+    with pytest.raises(ReleaseVersionProjectionError, match='changelog'):
+        steps[0].apply()
+    assert yaml.safe_load((tmp_path / 'manifest.yml').read_text())['document']['version'] == '2.3.2'

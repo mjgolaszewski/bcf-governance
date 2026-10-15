@@ -37,7 +37,9 @@ from .ci_graph_provider_permissions import reconcile_provider_permission_edges
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_values import declared_graph_value_source_paths
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
-from .release_version_projection import reconcile_release_version_surfaces
+from .release_version_projection import (
+    RELEASE_VERSION_WATCH_PATHS, reconcile_release_version_surfaces, validate_authored_release_target,
+)
 from .reconcile_authority_transition import (
     ReconcileAuthorityTransitionError,
     apply_workflow_authority_transition,
@@ -344,6 +346,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
         ))
     steps.extend([
         ReconcileStep(
+            "authored-release-target",
+            lambda: validate_authored_release_target(repo_root, __version__),
+            lambda: validate_authored_release_target(repo_root, __version__),
+            watch_paths=RELEASE_VERSION_WATCH_PATHS,
+        ),
+        ReconcileStep(
             "ci-provider-permissions",
             lambda: reconcile_provider_permission_edges(repo_root, apply=False),
             lambda: reconcile_provider_permission_edges(repo_root, apply=True),
@@ -381,14 +389,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 repo_root, version=__version__, apply=True
             ),
             apply_verifies=True,
-            watch_paths=(
-                "bcf_governance/__init__.py",
-                "bcf_governance/_version.py",
-                "scripts/_bcf_runtime/_version.py",
-                "bcf_governance/tooling/release_version_projection.py",
-                "manifest.yml",
-                "governance/public-contracts.yml",
-            ),
+            watch_paths=RELEASE_VERSION_WATCH_PATHS,
         ),
     ])
     if (repo_root / "governance/gate-contracts.yml").is_file():
