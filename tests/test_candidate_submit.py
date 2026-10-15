@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,6 +16,7 @@ from bcf_governance.tooling.local_pr import (
 
 
 def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateIdentity]:
+    monkeypatch.setattr(submit, "_normalize_submission", lambda *_a, **_k: None, raising=False)
     context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
     identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
     monkeypatch.setattr(submit, "resolve_local_pr_context", lambda *_a, **_k: context)
@@ -488,3 +490,109 @@ def test_submit_rejects_incomplete_proof_before_push(
             provider_api=object(),  # type: ignore[arg-type]
             runner=lambda *_a, **_k: pytest.fail("push ran after incomplete proof"),
         )
+
+
+def _normalization_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext(), raising=False)
+
+
+def test_submit_normalizes_before_capturing_the_proved_subject(monkeypatch, tmp_path):
+    context, old = _state(monkeypatch)
+    fresh = CandidateIdentity('4' * 40, '5' * 40, context.base_sha)
+    identities = iter([old, fresh])
+    trace = []
+    monkeypatch.setattr(submit, '_candidate_identity', lambda *_a, **_k: next(identities))
+    monkeypatch.setattr(submit, '_normalize_submission', lambda *_a, **_k: trace.append('normalize'))
+    monkeypatch.setattr(submit, '_confirm_unchanged', lambda *_a, **_k: None)
+    monkeypatch.setattr(submit, 'run_prospective_train', lambda *_a, **kw: trace.append(('prove', kw['subject_commit'])) or {'status': 'prospectively_admissible_provider_proof_required'})
+    def runner(argv, **_kwargs):
+        trace.append(('push', argv[3]))
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    result = submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), runner=runner)
+    assert trace == ['normalize', ('prove', fresh.commit_sha), ('push', fresh.commit_sha + ':refs/heads/feature')]
+    assert result['subject'] == fresh.as_dict()
+
+
+def test_fixed_point_submit_normalization_does_not_generate(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        trace.append(argv[-1])
+        assert argv[-1] == '--check'
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check']
+
+
+def test_dirty_submit_uses_canonical_normalization_then_rechecks(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        assert 'reconcile' in argv and '-I' in argv
+        trace.append(argv[-1])
+        return SimpleNamespace(returncode=1 if len(trace) == 1 else 0, stdout='', stderr='stale scope' if len(trace) == 1 else '')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check', '--apply', '--check']
+
+
+def test_normalization_failure_cannot_continue_to_proof_or_push(monkeypatch, tmp_path):
+    _state(monkeypatch)
+    def fail(*_args, **_kwargs):
+        raise ProspectiveValidationError('normalization failed')
+    monkeypatch.setattr(submit, '_normalize_submission', fail)
+    monkeypatch.setattr(submit, 'run_prospective_train', lambda *_a, **_k: pytest.fail('unproved continuation'))
+    with pytest.raises(ProspectiveValidationError, match='normalization failed'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), runner=lambda *_a, **_k: pytest.fail('push after failed normalization'))
+
+
+def test_authored_contradiction_rejects_before_any_normalization(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation.authored_phase_state import AuthoredPhaseStateError
+    _normalization_state(monkeypatch)
+    (tmp_path / 'plans').mkdir()
+    (tmp_path / 'plans/phase-ledger.yml').write_text('{}')
+    def reject(*_args):
+        raise AuthoredPhaseStateError('authored contradiction')
+    monkeypatch.setattr(submit, 'validate_authored_phase_state', reject, raising=False)
+    with pytest.raises(ProspectiveValidationError, match='authored contradiction'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('mutated contradiction'))
+
+
+def test_wrong_intent_assertion_cannot_generate(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda *_a: ('pr', None), raising=False)
+    with pytest.raises(ProspectiveValidationError, match='intent'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent='closure', runner=lambda *_a, **_k: pytest.fail('mutated wrong intent'))
+
+
+def test_busy_submit_cannot_normalize_another_active_train(monkeypatch, tmp_path):
+    from bcf_governance.tooling.local_execution_admission import LocalExecutionAdmissionError
+    _normalization_state(monkeypatch)
+    @contextmanager
+    def busy(*_args):
+        raise LocalExecutionAdmissionError('local_execution_busy_deferred')
+        yield
+    monkeypatch.setattr(submit, 'local_gate_lease', busy)
+    with pytest.raises(LocalExecutionAdmissionError, match='busy_deferred'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('mutated busy train'))
+
+
+def test_failed_canonical_apply_cannot_report_normalized(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        trace.append(argv[-1])
+        return SimpleNamespace(returncode=1, stdout='', stderr='partial normalization')
+    with pytest.raises(ProspectiveValidationError, match='partial normalization'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check', '--apply']
+
+
+def test_partial_canonical_apply_requires_a_verified_fixed_point(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        trace.append(argv[-1])
+        return SimpleNamespace(returncode=0 if argv[-1] == '--apply' else 1, stdout='', stderr='still dirty')
+    with pytest.raises(ProspectiveValidationError, match='did not converge'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check', '--apply', '--check']

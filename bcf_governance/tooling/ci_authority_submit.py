@@ -18,7 +18,7 @@ from .candidate_provider_recovery import (
     resolve_candidate_provider_recovery,
 )
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
+from .ci_graph_post_merge import authored_candidate_title, authored_post_merge_scope, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
 from .github_protection import load_protection
 from .local_pr import (
@@ -32,10 +32,55 @@ from .local_pr import (
     run_prospective_train,
 )
 from .ordinary_protection_projection import validate_ordinary_protection_submission
+from .local_execution_admission import local_gate_lease
+from .nested_cli_runtime import exact_nested_cli_command
+from .governance_validation.authored_phase_state import validate_authored_phase_state
 
 
 Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
+
+
+def _normalize_submission(
+    root: Path,
+    *,
+    python_executable: Path,
+    execution_id: str,
+    semantic_intent: str | None,
+    runner: Runner,
+) -> None:
+    """Settle derived state before consuming its submission authority projection."""
+
+    try:
+        if (root / "plans/phase-ledger.yml").is_file():
+            validate_authored_phase_state(root)
+        if semantic_intent is not None and semantic_intent != authored_post_merge_scope(root)[0]:
+            raise ProspectiveValidationError(
+                "submitted semantic intent does not match the authored lifecycle intent"
+            )
+    except ValueError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
+    with local_gate_lease(execution_id):
+        command = exact_nested_cli_command(
+            "reconcile", "--repo-root", str(root), "--python", str(python_executable),
+        )
+        checked = runner([*command, "--check"], cwd=root)
+        if checked.returncode == 0:
+            return
+        # Only the existing canonical owner decides whether inputs can converge.
+        # Keep its deferred write callbacks behind its CLI mutation boundary.
+        result = runner([*command, "--apply"], cwd=root)
+        if result.returncode:
+            detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
+            raise ProspectiveValidationError(
+                f"canonical submission normalization failed: {detail}"
+            )
+        settled = runner([*command, "--check"], cwd=root)
+        if settled.returncode:
+            detail = settled.stderr.strip() or settled.stdout.strip() or f"exit {settled.returncode}"
+            raise ProspectiveValidationError(
+                f"canonical submission normalization did not converge: {detail}"
+            )
 
 
 @dataclass(frozen=True)
@@ -259,6 +304,15 @@ def submit_candidate(
     """Prove and push only the exact immutable candidate that passed the train."""
 
     root = repo_root.resolve()
+    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    identity = _candidate_identity(root, context, runner=runner)
+    _normalize_submission(
+        root,
+        python_executable=python_executable,
+        execution_id=identity.commit_sha,
+        semantic_intent=semantic_intent,
+        runner=runner,
+    )
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
     authority = _canonical_inputs(

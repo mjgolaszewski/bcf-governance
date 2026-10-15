@@ -383,6 +383,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             apply_verifies=True,
             watch_paths=(
                 "bcf_governance/__init__.py",
+                "bcf_governance/_version.py",
+                "scripts/_bcf_runtime/_version.py",
                 "bcf_governance/tooling/release_version_projection.py",
                 "manifest.yml",
                 "governance/public-contracts.yml",

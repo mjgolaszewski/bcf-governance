@@ -446,7 +446,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "675a1f0cdef6a06f1f8821bed3572bcbfb7b9132e53b39d9149c2300337cd536"
+      "sha256": "d55e2ffa5f09ed45c2115778c1e060909964968c413bd7d0f54f570ce6d1c1cb"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -532,7 +532,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "1060cd0c807d8dd16a86d866dd76a5f0da2a311ae066d01dc6513d761fafa72c"
+      "sha256": "43835205aec4385bee1b261224e8babb61ab916523fdefdde8ddb0d1297aa84b"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -1423,7 +1423,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "da8f38be882f4928bf6129d371ccef2b70266b302e48fe953b2922112baf6021"
+      "sha256": "6939f8f0012c71f34d41ac7a6cd5d1da27be7da9df46208654fdf11ded2864fc"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

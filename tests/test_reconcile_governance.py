@@ -69,6 +69,34 @@ def test_reconcile_ledger_skips_only_exact_clean_stage(tmp_path: Path) -> None:
     assert third["stages"][0]["state"] == "checked"
 
 
+@pytest.mark.parametrize("version_source", ["bcf_governance/_version.py", "scripts/_bcf_runtime/_version.py"])
+def test_version_only_change_invalidates_clean_release_projection_cache(tmp_path, monkeypatch, version_source):
+    _git(tmp_path, "init", "--quiet", "--initial-branch=main")
+    root = Path(__file__).resolve().parents[1]
+    for directory in ("schemas", "governance", "bcf_governance"):
+        (tmp_path / directory).mkdir()
+    (tmp_path / "schemas/reconcile-ledger.schema.json").write_bytes(
+        (root / "schemas/reconcile-ledger.schema.json").read_bytes()
+    )
+    (tmp_path / "manifest.yml").write_text("document:\n  version: 1.0.0\n")
+    (tmp_path / "governance/public-contracts.yml").write_text("package:\n  version: 1.0.0\n")
+    source = tmp_path / version_source
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text('__version__ = "1.0.0"\n')
+    monkeypatch.setattr(scaffold, "__version__", "1.0.0")
+    monkeypatch.setattr(scaffold, "capability_states", lambda *_a: {})
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda *_a: [])
+    def stage():
+        return next(item for item in reconcile_steps(tmp_path, Path(sys.executable))
+                    if item.step_id == "release-version-surfaces")
+    check_reconcile_steps(tmp_path, [stage()])
+    assert check_reconcile_steps(tmp_path, [stage()])["stages"][0]["state"] == "skipped_clean"
+    source.write_text('__version__ = "2.0.0"\n')
+    monkeypatch.setattr(scaffold, "__version__", "2.0.0")
+    with pytest.raises(ReleaseVersionProjectionError, match="stale"):
+        check_reconcile_steps(tmp_path, [stage()])
+
+
 def test_reconcile_derives_project_python_before_compiling_test_stages(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

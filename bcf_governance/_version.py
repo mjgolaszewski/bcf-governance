@@ -1,3 +1,3 @@
 """Single authoritative BCF release version."""
 
-__version__ = "2.3.2"
+__version__ = "2.5.0"

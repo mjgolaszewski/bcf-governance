@@ -17,6 +17,13 @@ All notable changes to BCF Governance are recorded here. This file follows
   omissions, false exclusions, stale identities, and missing causal controls;
   compilation grants no execution or certification authority.
 
+### Fixed
+
+- Submission now settles derived governance through the existing canonical
+  reconciliation owner before deriving lifecycle scope and capturing the exact
+  candidate. Authored contradictions, incorrect intent assertions, busy local
+  execution, and failed normalization stop before proof or push.
+
 ## [2.3.2] - 2026-10-13
 
 ### Fixed
