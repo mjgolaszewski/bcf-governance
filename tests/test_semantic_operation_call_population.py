@@ -76,3 +76,17 @@ def test_ambiguous_dispatch_stays_unresolved_and_is_not_followed(inventory):
     result = source_operation_call_population("runtime.py::root", inventory)
     assert result["functions"] == ("runtime.py::root",)
     assert result["unresolved_calls"] == 2
+
+
+@pytest.mark.parametrize("defect", ["functions", "files", "file_digest", "duplicate_file", "unbound_source_file"])
+def test_operation_call_population_requires_bound_source_files(inventory, defect):
+    if defect in {"functions", "files"}:
+        inventory[defect] = None
+    elif defect == "file_digest":
+        inventory["files"][0]["sha256"] = "invalid"
+    elif defect == "duplicate_file":
+        inventory["files"].append(copy.deepcopy(inventory["files"][0]))
+    else:
+        inventory["files"][0]["path"] = "another.py"
+    with pytest.raises(SemanticOperationEffectError):
+        source_operation_call_population("runtime.py::root", inventory)
