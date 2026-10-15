@@ -10,19 +10,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ### Fixed
 
-- Read each required private adopter through its exact repository-scoped,
-  contents-read GitHub App credential, and remove that credential before any
-  adopter-controlled execution.
-- Made release qualification one closed provider-derived transaction: required
-  adopter default branches resolve to an exact all-or-none source inventory,
-  the release verifier produces and the trusted collector authenticates its
-  qualification receipt, and publication follows that receipt automatically.
-  Qualification derives complete build and checksum-declared archive views from
-  one closed asset inventory, so each consumer authenticates its exact
-  proposition without conflating the checksum manifest with archive content.
-  Caller checkouts remain caches only; caller-authored subjects, pass receipts,
-  dispatches, partial inventories, and stale provider identities fail before
-  publication authority.
+- Separated immutable release authority from adopter compatibility. Publication
+  now consumes only terminal BCF certification, independently verified exact
+  assets, and the trusted collector receipt; mutable external repository state,
+  availability, credentials, and compatibility results cannot authorize or
+  block publication. Compatibility remains an exact, pinned, isolated,
+  non-authoritative observation that records typed failures for remediation
+  without installing BCF authority into adopter repositories.
 - Closed existing-repository adoption classification at its canonical owners:
   declared nested test roots and production exclusions now reach structural LOC
   enforcement, valid native Docker Go-template fields remain distinct from BCF

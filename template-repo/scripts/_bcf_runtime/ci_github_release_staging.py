@@ -37,7 +37,6 @@ def stage_receipt_bundle(
     asset_root: Path,
     build_manifest: Path,
     verification: Path,
-    qualification: Path,
     receipt: Path,
 ) -> None:
     """Stage exact release assets and their trusted authority records."""
@@ -46,5 +45,4 @@ def stage_receipt_bundle(
     shutil.copytree(asset_root, destination / "assets")
     shutil.copy2(build_manifest, destination / build_manifest.name)
     shutil.copy2(verification, destination / verification.name)
-    shutil.copy2(qualification, destination / "release-qualification.json")
     shutil.copy2(receipt, destination / "release-receipt.json")

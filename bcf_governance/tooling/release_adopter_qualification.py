@@ -18,18 +18,13 @@ import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
 from .ci_github_values import GitHubValueError, remote_repository
-from .ci_github_api import GitHubAPI
-from .ci_github_identity import GitHubControllerError, resolve_main
+from .ci_github_identity import GitHubControllerError
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
-    AdopterProviderAccess,
     AdopterSourceError,
     AdopterSourceIdentity,
-    materialize_provider_source,
     require_adopter_profile,
-    resolve_adopter_sources,
     source_inventory_sha256,
-    adopter_provider_access_from_environment,
 )
 from .release_asset_inventory import (
     checksum_declared_assets,
@@ -264,33 +259,6 @@ def parse_contract(contract_bytes: bytes, schema_bytes: bytes) -> dict[str, Any]
     identifiers = [item["id"] for item in payload["required_adopters"]]
     if len(repositories) != len(set(repositories)) or len(identifiers) != len(set(identifiers)):
         raise ReleaseQualificationError("release qualification adopters must be unique")
-    credentials = payload["provider_credentials"]
-    credential_ids = [item["id"] for item in credentials]
-    credential_repositories = [
-        f"{item['owner']}/{item['repository']}" for item in credentials
-    ]
-    token_environments = [item["token_environment"] for item in credentials]
-    if (
-        len(credential_ids) != len(set(credential_ids))
-        or len(credential_repositories) != len(set(credential_repositories))
-        or len(token_environments) != len(set(token_environments))
-    ):
-        raise ReleaseQualificationError(
-            "release qualification provider credentials must be unique"
-        )
-    credential_by_id = dict(zip(credential_ids, credential_repositories, strict=True))
-    mapped = []
-    for adopter in payload["required_adopters"]:
-        credential_id = adopter["provider_credential"]
-        if credential_by_id.get(credential_id) != adopter["repository"]:
-            raise ReleaseQualificationError(
-                "release qualification provider credential coverage is not exact"
-            )
-        mapped.append(credential_id)
-    if set(mapped) != set(credential_ids) or len(mapped) != len(credential_ids):
-        raise ReleaseQualificationError(
-            "release qualification provider credential coverage is not exact"
-        )
     return payload
 
 
@@ -419,9 +387,6 @@ def _isolated_project_python(
 def qualify_release(
     repo_root: Path,
     *,
-    provider_api: GitHubAPI,
-    adopter_provider_access: AdopterProviderAccess | None = None,
-    adopter_provider_environment: Mapping[str, str] | None = None,
     repository: str,
     release_assets: Path,
     release_build_manifest: Path,
@@ -430,15 +395,10 @@ def qualify_release(
     producer: Mapping[str, Any],
     output: Path,
 ) -> dict[str, Any]:
-    """Qualify provider-resolved sources without mutating maintained checkouts."""
+    """Observe exact pinned adopter clones without mutating maintained checkouts."""
 
     contract = load_contract(repo_root.resolve())
-    if adopter_provider_environment is not None:
-        adopter_provider_access = adopter_provider_access_from_environment(
-            contract, environment=adopter_provider_environment
-        )
     version, build_assets, assets = _release_assets(release_assets.resolve())
-    release_main = resolve_main(provider_api, repository)
     try:
         build = json.loads(release_build_manifest.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -447,11 +407,6 @@ def qualify_release(
         ) from exc
     if (
         not isinstance(build, dict)
-        or build.get("subject")
-        != {
-            "commit_sha": release_main.checkout_sha,
-            "tree_sha": release_main.tree_sha,
-        }
         or build.get("assets") != build_assets
     ):
         raise ReleaseQualificationError(
@@ -460,58 +415,52 @@ def qualify_release(
     release_repository, release_commit, release_tree = _source_identity(
         repo_root.resolve()
     )
-    if release_repository != repository or (
-        release_commit != release_main.checkout_sha
-        or release_tree != release_main.tree_sha
-    ):
+    if release_repository != repository or build.get("subject") != {
+        "commit_sha": release_commit,
+        "tree_sha": release_tree,
+    }:
         raise ReleaseQualificationError(
             "release qualification source is not current provider exact main"
         )
-    try:
-        sources = resolve_adopter_sources(
-            adopter_provider_access or provider_api, contract
-        )
-    except AdopterSourceError as exc:
-        raise ReleaseQualificationError(str(exc)) from exc
-    source_by_repository = {source.repository: source for source in sources}
     supplied: dict[str, Path] = {}
+    supplied_identity: dict[str, tuple[str, str]] = {}
     for root in adopter_roots:
         resolved = root.resolve()
-        cache_repository, _commit_sha, _tree_sha = _source_identity(resolved)
+        cache_repository, commit_sha, tree_sha = _source_identity(resolved)
         if cache_repository in supplied:
             raise ReleaseQualificationError(
                 f"duplicate adopter checkout cache: {cache_repository}"
             )
         supplied[cache_repository] = resolved
-    required = set(source_by_repository)
-    if set(supplied) - required or set(adopter_pythons) - required:
+        supplied_identity[cache_repository] = (commit_sha, tree_sha)
+    required = {str(item["repository"]) for item in contract["required_adopters"]}
+    if set(supplied) != required or set(adopter_pythons) - required:
         raise ReleaseQualificationError(
-            "supplied adopter caches/interpreters are outside the contract"
+            "exact pinned adopter clone inventory differs from the contract"
         )
     if set(adopter_pythons) - set(supplied):
         raise ReleaseQualificationError(
             "adopter interpreter requires its matching checkout cache"
         )
-    expected_producer_keys = {
-        "repository_id", "workflow", "job", "run_id", "run_attempt"
-    }
-    if set(producer) != expected_producer_keys or (
-        str(producer.get("repository_id")) != release_main.repository_id
-        or str(producer.get("run_id", "")).isdigit() is False
-        or str(producer.get("run_attempt", "")).isdigit() is False
-        or not all(
-            isinstance(producer.get(key), str) and producer.get(key)
-            for key in ("workflow", "job")
-        )
-    ):
+    if producer != {"kind": "local", "id": "bcf-release-compatibility"}:
         raise ReleaseQualificationError(
             "qualification producer identity is not exact"
         )
+    sources = tuple(
+        AdopterSourceIdentity(
+            id=str(item["id"]),
+            repository=str(item["repository"]),
+            repository_id=str(
+                int(hashlib.sha256(str(item["repository"]).encode()).hexdigest()[:15], 16)
+            ),
+            profile=str(item["profile"]),
+            default_branch="pinned-local",
+            commit_sha=supplied_identity[str(item["repository"])][0],
+            tree_sha=supplied_identity[str(item["repository"])][1],
+        )
+        for item in contract["required_adopters"]
+    )
     environment = dict(os.environ)
-    if not environment.get("GITHUB_TOKEN"):
-        raise ReleaseQualificationError("GITHUB_TOKEN is required for release custody")
-    if adopter_provider_access is not None:
-        environment = adopter_provider_access.scrub(environment)
     reports: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:
         temporary_root = Path(temporary)
@@ -528,13 +477,14 @@ def qualify_release(
             repository_name = source.repository
             destination = temporary_root / source.id
             try:
-                if adopter_provider_access is None:
-                    materialize_provider_source(source, destination)
-                else:
-                    materialize_provider_source(
-                        source,
-                        destination,
-                        provider_access=adopter_provider_access,
+                _run(
+                    ["git", "clone", "--no-checkout", str(supplied[repository_name]), str(destination)],
+                    cwd=temporary_root,
+                )
+                _run(["git", "checkout", "--detach", source.commit_sha], cwd=destination)
+                if _run(["git", "rev-parse", "HEAD^{tree}"], cwd=destination) != source.tree_sha:
+                    raise ReleaseQualificationError(
+                        f"materialized pinned source differs from exact identity: {repository_name}"
                     )
                 require_adopter_profile(destination, source)
             except AdopterSourceError as exc:
@@ -622,7 +572,7 @@ def qualify_release(
         "producer": dict(producer),
         "adopters": reports,
         "status": "pass",
-        "publication_eligible_observation": True,
+        "publication_authority": False,
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -641,12 +591,12 @@ def validate_qualification_receipt(
     assets: Mapping[str, str],
     producer: Mapping[str, Any],
 ) -> dict[str, Any]:
-    """Validate the exact non-authoritative observation required by publication."""
+    """Validate an exact non-authoritative compatibility observation."""
 
     if not isinstance(receipt, dict) or set(receipt) != {
         "schema_version", "kind", "authority", "subject", "release",
         "contract_sha256", "source_inventory_sha256", "producer", "adopters", "status",
-        "publication_eligible_observation",
+        "publication_authority",
     }:
         raise ReleaseQualificationError("release qualification receipt inventory is not exact")
     if (
@@ -654,7 +604,7 @@ def validate_qualification_receipt(
         or receipt.get("kind") != "release_adopter_qualification"
         or receipt.get("authority") is not False
         or receipt.get("status") != "pass"
-        or receipt.get("publication_eligible_observation") is not True
+        or receipt.get("publication_authority") is not False
     ):
         raise ReleaseQualificationError("release qualification did not pass as observation only")
     if receipt.get("subject") != {

@@ -239,9 +239,6 @@ def build_trusted_release_receipt(
     output_path: Path,
     certification_provider_artifact: dict[str, Any],
     build_provider_artifact: dict[str, Any],
-    qualification: dict[str, Any],
-    qualification_path: Path,
-    qualification_provider_artifact: dict[str, Any],
 ) -> ReleaseReceipt:
     """Build the sole v1.1 release receipt from verified, acyclic role outputs."""
 
@@ -288,19 +285,6 @@ def build_trusted_release_receipt(
         raise ReleaseReceiptError("release verification is not bound to the exact build")
     if verification.get("status") != "passed":
         raise ReleaseReceiptError("release verifier did not pass")
-    qualification_subject = qualification.get("subject")
-    if (
-        qualification.get("status") != "pass"
-        or qualification.get("publication_eligible_observation") is not True
-        or not isinstance(qualification_subject, dict)
-        or not isinstance(qualification_subject.get("repository"), str)
-        or qualification_subject.get("commit_sha") != subject["commit_sha"]
-        or qualification_subject.get("tree_sha") != subject["tree_sha"]
-        or not isinstance(qualification_provider_artifact, dict)
-    ):
-        raise ReleaseReceiptError(
-            "trusted release receipt requires exact adopter qualification"
-        )
     if (
         str(build_provider_artifact.get("run_id")) != str(build.get("run_id"))
         or int(build_provider_artifact.get("run_attempt", 0))
@@ -330,12 +314,6 @@ def build_trusted_release_receipt(
     controller_custody = validate_controller_custody(
         authorization.get("controller_custody")
     )
-    if qualification_subject.get("repository") != controller_custody[
-        "repository"
-    ]["full_name"]:
-        raise ReleaseReceiptError(
-            "adopter qualification repository differs from controller custody"
-        )
     dependency = verification.get("dependency_closure")
     if not isinstance(controller, dict) or not isinstance(dependency, dict):
         raise ReleaseReceiptError("controller or dependency closure identity is missing")
@@ -345,11 +323,6 @@ def build_trusted_release_receipt(
         _artifact(authorization_path, name="release-authorization.json", media_type="application/json"),
         _artifact(build_manifest_path, name="release-build-manifest.json", media_type="application/json"),
         _artifact(verification_path, name="release-verification.json", media_type="application/json"),
-        _artifact(
-            qualification_path,
-            name="release-qualification.json",
-            media_type="application/json",
-        ),
     ]
     materials.extend(
         _artifact(path, name=path.name, media_type="application/octet-stream")
@@ -404,18 +377,12 @@ def build_trusted_release_receipt(
             "provider_artifacts": {
                 "certification": certification_provider_artifact,
                 "build": build_provider_artifact,
-                "qualification": qualification_provider_artifact,
-            },
-            "adopter_qualification": {
-                "receipt": qualification,
-                "receipt_sha256": _sha256(qualification_path),
-                "provider_artifact": qualification_provider_artifact,
             },
             "verification_execution": verifier,
             "controller": controller,
             "controller_custody": controller_custody,
             "dependency_closure": dependency,
-            "release_artifacts": materials[6:],
+            "release_artifacts": materials[5:],
             "acyclic_construction": {
                 "release_receipt_was_truth_input": False,
                 "candidate_authored_receipt_accepted": False,
@@ -434,7 +401,6 @@ def build_trusted_release_receipt(
         authorization_path,
         build_manifest_path,
         verification_path,
-        qualification_path,
         *release_paths,
     }:
         raise ReleaseReceiptError("trusted release receipt cannot overwrite an input")

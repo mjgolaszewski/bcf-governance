@@ -14,7 +14,6 @@ from bcf_governance.tooling import local_pr
 from bcf_governance.tooling import ci_commands
 from bcf_governance.tooling import release_adopter_qualification as qualification
 from bcf_governance.tooling.ci_github_values import GitHubValueError, remote_repository
-from bcf_governance.tooling.ci_github_identity import MainIdentity
 from bcf_governance.tooling.local_pr_context import LocalValidationLane
 from bcf_governance.tooling.release_adopter_qualification import (
     ReleaseQualificationError,
@@ -33,29 +32,15 @@ from bcf_governance.tooling.release_adopter_sources import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PRODUCER = {
-    "repository_id": "101",
-    "workflow": ".github/workflows/bcf-release-verifier.yml",
-    "job": "qualify",
-    "run_id": "80",
-    "run_attempt": "1",
+    "kind": "local",
+    "id": "bcf-release-compatibility",
 }
 
 
-def test_qualification_cli_derives_provider_producer_identity(
+def test_qualification_cli_derives_local_nonauthoritative_producer_identity(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     observed: dict[str, object] = {}
-    monkeypatch.setenv(
-        "GITHUB_WORKFLOW_REF",
-        "owner/repo/.github/workflows/bcf-release-verifier.yml@refs/heads/main",
-    )
-    monkeypatch.setenv("GITHUB_REPOSITORY_ID", "101")
-    monkeypatch.setenv("GITHUB_JOB", "qualify")
-    monkeypatch.setenv("GITHUB_RUN_ID", "80")
-    monkeypatch.setenv("GITHUB_RUN_ATTEMPT", "2")
-    monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_controller.environment_api", lambda: object()
-    )
 
     def qualify(*_args: object, **kwargs: object) -> dict[str, str]:
         observed.update(kwargs)
@@ -69,27 +54,26 @@ def test_qualification_cli_derives_provider_producer_identity(
         "--release-build-manifest", str(tmp_path / "build.json"),
         "--output", str(tmp_path / "receipt.json"),
     ])
-    assert observed["producer"] == {
-        "repository_id": "101",
-        "workflow": ".github/workflows/bcf-release-verifier.yml",
-        "job": "qualify",
-        "run_id": "80",
-        "run_attempt": "2",
-    }
+    assert observed["producer"] == PRODUCER
 
 
-def test_qualification_cli_rejects_unbound_workflow_identity(
+def test_qualification_cli_ignores_ambient_provider_workflow_identity(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.delenv("GITHUB_WORKFLOW_REF", raising=False)
-    with pytest.raises(SystemExit, match="workflow identity"):
-        ci_commands.main([
-            "qualify-release", "--repo-root", str(tmp_path),
-            "--repository", "owner/repo",
-            "--release-assets", str(tmp_path / "assets"),
-            "--release-build-manifest", str(tmp_path / "build.json"),
-            "--output", str(tmp_path / "receipt.json"),
-        ])
+    observed: dict[str, object] = {}
+    monkeypatch.setenv("GITHUB_WORKFLOW_REF", "attacker/workflow.yml@main")
+    monkeypatch.setattr(
+        ci_commands, "qualify_release",
+        lambda *_args, **kwargs: observed.update(kwargs) or {"status": "pass"},
+    )
+    ci_commands.main([
+        "qualify-release", "--repo-root", str(tmp_path),
+        "--repository", "owner/repo",
+        "--release-assets", str(tmp_path / "assets"),
+        "--release-build-manifest", str(tmp_path / "build.json"),
+        "--output", str(tmp_path / "receipt.json"),
+    ])
+    assert observed["producer"] == PRODUCER
 
 
 def _assets(root: Path) -> dict[str, str]:
@@ -178,7 +162,7 @@ def _receipt(contract: dict[str, object], assets: dict[str, str]) -> dict[str, o
         "producer": PRODUCER,
         "adopters": adopters,
         "status": "pass",
-        "publication_eligible_observation": True,
+        "publication_authority": False,
     }
 
 
@@ -190,23 +174,19 @@ def test_release_qualification_contract_is_closed_and_unique() -> None:
         "racecar-standard-v3",
         "agentbus-standard-v3",
     ]
-    assert [item["repository"] for item in contract["provider_credentials"]] == [
-        "tradeflow", "racecar", "AgentBus",
-    ]
-    assert [item["provider_credential"] for item in contract["required_adopters"]] == [
-        "tradeflow-read", "racecar-read", "agentbus-read",
-    ]
+    assert "provider_credentials" not in contract
+    assert all("provider_credential" not in item for item in contract["required_adopters"])
     assert contract["qualification"] == {
-        "source": "provider_default_branch_transaction",
-        "caller_checkout_role": "environment_and_object_cache_only",
+        "source": "explicit_pinned_local_clone_transaction",
+        "caller_checkout_role": "exact_source_identity",
         "mutation_scope": "disposable_clone_only",
         "fixed_point": "required",
         "evaluation_scope": "canonical_graph_derived",
         "authority": "local_non_authoritative",
-        "execution_provenance": "provider_workflow_run_attempt_job_artifact",
-        "continuation": "automatic_release_verifier_dag",
-        "source_freshness": "current_at_trusted_collection",
-        "product_failure": "blocks_custody_until_attributed",
+        "execution_provenance": "local_observation_receipt",
+        "continuation": "compatibility_report_only",
+        "source_freshness": "exact_at_observation",
+        "product_failure": "typed_remediation_input_no_publication_effect",
         "release_asset_identity": "exact_sha256sums",
     }
 
@@ -257,21 +237,6 @@ def test_archive_projection_cannot_replace_complete_build_inventory(
         commit=release_commit,
         tree=release_tree,
     )
-    monkeypatch.setattr(
-        qualification,
-        "resolve_main",
-        lambda *_args: MainIdentity("101", "main", release_commit, release_tree),
-    )
-    source_resolution_called = False
-
-    def unexpected_source_resolution(*_args: object) -> object:
-        nonlocal source_resolution_called
-        source_resolution_called = True
-        raise AssertionError("adopter source resolution must not start")
-
-    monkeypatch.setattr(
-        qualification, "resolve_adopter_sources", unexpected_source_resolution
-    )
 
     with pytest.raises(
         ReleaseQualificationError,
@@ -279,7 +244,6 @@ def test_archive_projection_cannot_replace_complete_build_inventory(
     ):
         qualify_release(
             REPO_ROOT,
-            provider_api=object(),  # type: ignore[arg-type]
             repository="mjgolaszewski/bcf-governance",
             release_assets=assets,
             release_build_manifest=manifest,
@@ -288,7 +252,6 @@ def test_archive_projection_cannot_replace_complete_build_inventory(
             producer=PRODUCER,
             output=tmp_path / "receipt.json",
         )
-    assert source_resolution_called is False
 
 
 def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
@@ -411,29 +374,15 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
     monkeypatch.setenv("GITHUB_TOKEN", "observation-only")
     monkeypatch.setattr(
         qualification,
-        "resolve_main",
-        lambda *_args: MainIdentity("101", "main", release_commit, release_tree),
-    )
-    monkeypatch.setattr(
-        qualification,
         "_source_identity",
         lambda _root: ("mjgolaszewski/bcf-governance", release_commit, release_tree),
     )
-    monkeypatch.setattr(
-        qualification,
-        "resolve_adopter_sources",
-        lambda *_args: (_ for _ in ()).throw(
-            AdopterSourceError("required adopter provider inventory is incomplete")
-        ),
-    )
-
     with pytest.raises(
         ReleaseQualificationError,
-        match="provider inventory is incomplete",
+        match="exact pinned adopter clone inventory differs from the contract",
     ):
         qualify_release(
             REPO_ROOT,
-            provider_api=object(),  # type: ignore[arg-type]
             repository="mjgolaszewski/bcf-governance",
             release_assets=assets,
             release_build_manifest=manifest,
@@ -463,6 +412,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     adopter_roots: list[Path] = []
     adopter_pythons: dict[str, Path] = {}
     profiles: dict[str, str] = {}
+    source_trees: dict[str, str] = {}
     calls: list[list[str]] = []
     for index, item in enumerate(contract["required_adopters"], start=1):
         root = tmp_path / item["id"]
@@ -476,6 +426,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         adopter_roots.append(root)
         adopter_pythons[item["repository"]] = python
         profiles[item["id"]] = item["profile"]
+        source_trees[item["id"]] = identity
 
     def source_identity(root: Path) -> tuple[str, str, str]:
         return identities[root.resolve()]
@@ -509,6 +460,8 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         if argv[:3] == ["git", "remote", "get-url"]:
             repository = identities[cwd.resolve()][0]
             return f"https://github.com/{repository}.git"
+        if argv[:3] == ["git", "rev-parse", "HEAD^{tree}"]:
+            return source_trees[cwd.name]
         if "prospective-train" in argv:
             return json.dumps({
                 "status": "prospectively_admissible_provider_proof_required",
@@ -518,34 +471,6 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         return ""
 
     monkeypatch.setenv("GITHUB_TOKEN", "observation-only")
-    monkeypatch.setattr(
-        qualification,
-        "resolve_main",
-        lambda *_args: MainIdentity(
-            "101", "main", release_identity[1], release_identity[2]
-        ),
-    )
-    sources = tuple(
-        AdopterSourceIdentity(
-            id=item["id"],
-            repository=item["repository"],
-            repository_id=str(index + 100),
-            profile=item["profile"],
-            default_branch="main",
-            commit_sha=str(index) * 40,
-            tree_sha=str(index) * 40,
-        )
-        for index, item in enumerate(contract["required_adopters"], start=1)
-    )
-    monkeypatch.setattr(
-        qualification, "resolve_adopter_sources", lambda *_args: sources
-    )
-    def materialize(source: AdopterSourceIdentity, destination: Path) -> None:
-        destination.mkdir()
-        (destination / "governance-profile.yml").write_text(
-            f"profile:\n  selected: {source.profile}\n", encoding="utf-8"
-        )
-    monkeypatch.setattr(qualification, "materialize_provider_source", materialize)
     monkeypatch.setattr(qualification, "require_adopter_profile", lambda *_args: None)
     monkeypatch.setattr(qualification, "_source_identity", source_identity)
     monkeypatch.setattr(qualification, "_run", run)
@@ -561,7 +486,6 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
 
     receipt = qualify_release(
         REPO_ROOT,
-        provider_api=object(),  # type: ignore[arg-type]
         repository=release_identity[0],
         release_assets=assets,
         release_build_manifest=manifest,
@@ -580,8 +504,10 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         item["repository"]: (item["source_commit"], item["source_tree"])
         for item in receipt["adopters"]
     } == {
-        source.repository: (source.commit_sha, source.tree_sha)
-        for source in sources
+        str(item["repository"]): identities[
+            (tmp_path / str(item["id"])).resolve()
+        ][1:]
+        for item in contract["required_adopters"]
     }
     install_calls = [call for call in calls if call[4:5] == ["install"]]
     assert len(install_calls) == len(contract["required_adopters"])
@@ -770,7 +696,7 @@ def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
     mutations = []
     for key, value in (
         ("authority", True),
-        ("publication_eligible_observation", False),
+        ("publication_authority", True),
         ("status", "failed"),
     ):
         mutation = copy.deepcopy(receipt)

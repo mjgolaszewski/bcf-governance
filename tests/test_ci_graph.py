@@ -210,11 +210,11 @@ def test_component_order_contract_rejects_incomplete_toolchain_edges(
 ) -> None:
     graph = copy.deepcopy(validate_ci_graph(REPO_ROOT).graph)
     workflow = next(item for item in graph["workflows"] if item["id"] == "release-verifier")
-    qualify = next(item for item in workflow["jobs"] if item["id"] == "qualify")
-    components = qualify["executor"]["components"]
+    runtime = next(item for item in workflow["jobs"] if item["id"] == "runtime")
+    components = runtime["executor"]["components"]
     components.remove("setup-test-node")
     if mutation == "late":
-        components.insert(components.index("qualify-release") + 1, "setup-test-node")
+        components.insert(components.index("verify-release-runtime") + 1, "setup-test-node")
     with pytest.raises(CIGraphError, match="without setup-test-node|violates component ordering"):
         compile_edge_contracts(graph)
 

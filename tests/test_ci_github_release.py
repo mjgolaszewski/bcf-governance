@@ -29,9 +29,6 @@ from bcf_governance.tooling.ci_github_release import (
     verify_release_build,
     verify_release_build_provider,
 )
-from bcf_governance.tooling.ci_github_release_qualification import (
-    authenticate_release_qualification,
-)
 from bcf_governance.tooling.ci_github_release_inputs import (
     _release_version_at_main,
     load_release_authorization_inputs,
@@ -50,10 +47,6 @@ from bcf_governance.tooling.release_asset_inventory import (
 from bcf_governance.tooling.release_receipts import (
     ReleaseReceiptError,
     build_trusted_release_receipt,
-)
-from bcf_governance.tooling.release_adopter_sources import (
-    AdopterSourceIdentity,
-    source_inventory_sha256,
 )
 from bcf_governance.tooling.controller_custody import compile_controller_custody
 from tests._wheel_fixture import write_wheel
@@ -269,78 +262,6 @@ def _sha(path: Path) -> str:
 def _json(path: Path, payload: dict[str, object]) -> Path:
     path.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
     return path
-
-
-def _qualification(path: Path, assets: dict[str, str]) -> Path:
-    contract = yaml.safe_load(
-        (REPO_ROOT / "governance/release-qualification.yml").read_text()
-    )
-    adopters = []
-    for index, item in enumerate(contract["required_adopters"]):
-        identity = f"{index + 1}" * 40
-        adopters.append(
-            {
-                "id": item["id"],
-                "repository": item["repository"],
-                "repository_id": str(index + 201),
-                "profile": item["profile"],
-                "source_branch": "main",
-                "source_commit": identity,
-                "source_tree": identity,
-                "candidate_commit": identity,
-                "candidate_tree": identity,
-                "evaluation": {"intent": "pr", "target": None},
-                "status": "pass",
-            }
-        )
-    return _json(
-        path,
-        {
-            "schema_version": "1.1",
-            "kind": "release_adopter_qualification",
-            "authority": False,
-            "subject": {
-                "repository": "owner/repo",
-                "commit_sha": COMMIT,
-                "tree_sha": TREE,
-            },
-            "release": {
-                "version": "0.7.1",
-                "assets": {
-                    name: digest
-                    for name, digest in assets.items()
-                    if name != "SHA256SUMS"
-                },
-            },
-            "contract_sha256": _sha(
-                REPO_ROOT / "governance/release-qualification.yml"
-            ),
-            "source_inventory_sha256": source_inventory_sha256(
-                [
-                    AdopterSourceIdentity(
-                        id=item["id"],
-                        repository=item["repository"],
-                        repository_id=str(index + 201),
-                        profile=item["profile"],
-                        default_branch="main",
-                        commit_sha=f"{index + 1}" * 40,
-                        tree_sha=f"{index + 1}" * 40,
-                    )
-                    for index, item in enumerate(contract["required_adopters"])
-                ]
-            ),
-            "producer": {
-                "repository_id": "101",
-                "workflow": ".github/workflows/bcf-release-verifier.yml",
-                "job": "qualify",
-                "run_id": "50",
-                "run_attempt": "1",
-            },
-            "adopters": adopters,
-            "status": "pass",
-            "publication_eligible_observation": True,
-        },
-    )
 
 
 def _release_inputs(tmp_path: Path) -> dict[str, object]:
@@ -639,12 +560,6 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
     _json(values["build"], build)  # type: ignore[arg-type]
     verification_path = tmp_path / "release-verification.json"
     verification = _verify(values, verification_path)
-    qualification_path = _qualification(
-        tmp_path / "release-qualification.json", values["assets"]  # type: ignore[arg-type]
-    )
-    qualification = json.loads(qualification_path.read_text())
-    qualification_artifact = _provider_artifact("30", 2, "42")
-
     receipt = build_trusted_release_receipt(
         REPO_ROOT,
         certification=certification,
@@ -663,9 +578,6 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
         output_path=tmp_path / "release.evidence.json",
         certification_provider_artifact=_provider_artifact("50", 1, "41"),
         build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
-        qualification=qualification,
-        qualification_path=qualification_path,
-        qualification_provider_artifact=qualification_artifact,
     )
     assert receipt.payload["observations"]["acyclic_construction"]["candidate_authored_receipt_accepted"] is False
 
@@ -684,9 +596,6 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
             output_path=tmp_path / "wrong-collector.json",
             certification_provider_artifact=_provider_artifact("50", 1, "41"),
             build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
-            qualification=qualification,
-            qualification_path=qualification_path,
-            qualification_provider_artifact=qualification_artifact,
         )
 
     verification["build"]["manifest_sha256"] = "0" * 64  # type: ignore[index]
@@ -706,9 +615,6 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
             output_path=tmp_path / "lookalike.json",
             certification_provider_artifact=_provider_artifact("50", 1, "41"),
             build_provider_artifact=_provider_artifact("20", 1, "40", "e"),
-            qualification=qualification,
-            qualification_path=qualification_path,
-            qualification_provider_artifact=qualification_artifact,
         )
 
 
@@ -1315,9 +1221,6 @@ def test_release_collection_rejects_an_older_same_sha_admission(
             collector_run_attempt="1",
             runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
             runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
-                qualification_path=_json(
-                    tmp_path / "qualification.json", {"status": "pass"}
-                ),
             output_path=tmp_path / "receipt.json",
         )
 
@@ -1344,24 +1247,12 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             "invocation": {"workflow": {"run_id": "50", "run_attempt": "1"}},
             "observations": {
                 "controller_custody": _controller_custody(),
-                "adopter_qualification": {
-                    "receipt": {"status": "pass"},
-                    "receipt_sha256": "d" * 64,
-                    "provider_artifact": _provider_artifact("50", 1, "72"),
-                },
                 "release_artifacts": [
                     {"path": name, "sha256": digest} for name, digest in assets.items()
                 ]
             },
         },
     )
-    qualification_path = _qualification(
-        tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
-    )
-    assert set(json.loads(qualification_path.read_text())["release"]["assets"]) == {
-        "bcf_governance-0.7.1-py3-none-any.whl",
-        "bcf_governance-0.7.1.tar.gz",
-    }
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.resolve_main",
         lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
@@ -1460,77 +1351,6 @@ def test_publisher_requires_collector_receipt_to_bind_exact_assets(
             publisher_run_attempt="1",
         )
 
-
-def test_provider_qualification_artifact_binds_exact_run_and_main(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    for index in range(3):
-        monkeypatch.setenv(f"BCF_ADOPTER_PROVIDER_TOKEN_{index}", f"token-{index}")
-    values = _release_inputs(tmp_path / "release")
-    receipt_path = _qualification(
-        tmp_path / "qualification.json", values["assets"]  # type: ignore[arg-type]
-    )
-    monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release_qualification.authority_role_workflow",
-        lambda *_args: {"active_path": ".github/workflows/bcf-release-verifier.yml"},
-    )
-    monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release_qualification.authenticate_adopter_sources",
-        lambda *_args: None,
-    )
-    artifact = ProviderArtifact(
-        "50", 1, "73", "bcf-release-qualification-50-1",
-        f"sha256:{'d' * 64}", {},
-    )
-    monkeypatch.setattr(
-        "bcf_governance.tooling.ci_github_release_qualification.resolve_role_artifact",
-        lambda *_args, **_kwargs: artifact,
-    )
-    api = SimpleNamespace(
-        content=lambda _repository, path, **_kwargs: GitHubContent(
-            path, "d" * 40, (REPO_ROOT / path).read_bytes()
-        )
-    )
-
-    result, observed_artifact = authenticate_release_qualification(
-        api,  # type: ignore[arg-type]
-        repository="owner/repo",
-        main=MainIdentity("101", "main", COMMIT, TREE),
-        authority={},
-        qualification_path=receipt_path,
-        release_assets={
-            name: digest
-            for name, digest in values["assets"].items()  # type: ignore[union-attr]
-            if name != "SHA256SUMS"
-        },
-        version="0.7.1",
-        run_id="50",
-        run_attempt="1",
-        artifact_name="bcf-release-qualification-50-1",
-    )
-    assert result == json.loads(receipt_path.read_text())
-    assert observed_artifact == artifact
-
-    payload = json.loads(receipt_path.read_text())
-    payload["producer"]["run_attempt"] = "2"
-    _json(receipt_path, payload)
-    with pytest.raises(GitHubControllerError, match="receipt is invalid"):
-        authenticate_release_qualification(
-            api,  # type: ignore[arg-type]
-            repository="owner/repo",
-            main=MainIdentity("101", "main", COMMIT, TREE),
-            authority={},
-            qualification_path=receipt_path,
-            release_assets={
-                name: digest
-                for name, digest in values["assets"].items()  # type: ignore[union-attr]
-                if name != "SHA256SUMS"
-            },
-            version="0.7.1",
-            run_id="50",
-            run_attempt="1",
-            artifact_name="bcf-release-qualification-50-1",
-        )
 
 class _ReleaseAPI:
     def __init__(self) -> None:
