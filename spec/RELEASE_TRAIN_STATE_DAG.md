@@ -139,6 +139,12 @@ provider evidence.
     content-addressed plan, and its environment manifest binds exact realized
     inventory. Namespace ownership is reauthenticated before reuse; a hard-coded
     cache path, separate lifecycle subsystem, or implicit persistence is invalid.
+34. CI topology membership and cardinality are canonical graph projections.
+    Tests may assert the exact derived member set and per-member contracts, but
+    must not preserve a separately authored numeric count that becomes stale
+    when a governed job or component is added or removed. Graph compilation
+    rejects missing, duplicate, or structurally unreachable members before a
+    long evidence train can discover a stale topology oracle.
 
 ## State matrix
 

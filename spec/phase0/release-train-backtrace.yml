@@ -31,6 +31,7 @@ invariants:
 - {id: INV-RT-014, statement: release qualification and publication consume distinct typed projections of one closed exact asset inventory and may never compare unlike projections, basis: spec/RELEASE_TRAIN_STATE_DAG.md#exact-adopter-source-transaction-backtrace}
 - {id: INV-RT-015, statement: adopter compatibility is a non-authoritative observation whose unavailable or failing state is typed and retained without becoming publication success denial or bypass, basis: spec/RELEASE_TRAIN_STATE_DAG.md#release-authority-and-adopter-compatibility-separation}
 - {id: INV-RT-016, statement: every self-only CI value source is owned by exactly one declared self-authority overlay before preflight can allocate provider or evidence work, basis: governance/self-overlays.yml}
+- {id: INV-RT-017, statement: topology tests derive exact current job and component membership from canonical graph ownership and never preserve a hand-maintained cardinality after a governed node is added or removed, basis: spec/RELEASE_TRAIN_STATE_DAG.md#rule-34}
 primitives:
 - {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
 - {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002]}
