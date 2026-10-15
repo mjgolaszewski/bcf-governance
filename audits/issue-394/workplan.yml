@@ -2575,6 +2575,7 @@ implementation_slices:
     - tests.test_semantic_python_call_contracts::test_identical_call_occurrences_are_distinct_per_function
     - tests.test_semantic_python_call_contracts::test_explicit_none_preserves_default_inventory
     - tests.test_semantic_python_call_contracts::test_nested_calls_each_receive_facts_without_source_mutation
+    - tests.test_semantic_python_call_contracts::test_import_resolution_preserves_lexical_call_contracts
     negative_controls:
     - cause: argument-source-mutation
       test: tests.test_semantic_python_call_contracts::test_call_contracts_are_stable_under_line_movement_and_observe_mutation

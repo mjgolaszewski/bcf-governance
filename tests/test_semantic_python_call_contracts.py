@@ -7,7 +7,7 @@ import pytest
 from jsonschema import Draft202012Validator
 
 from bcf_governance.tooling.semantic_ownership_inventory import (
-    discover_python_source, SemanticInventoryError,
+    discover_python_source, resolve_python_imports, SemanticInventoryError,
 )
 
 
@@ -90,3 +90,17 @@ def test_nested_calls_each_receive_facts_without_source_mutation(tmp_path):
     assert len(_calls(inventory)) == 2
     assert all(call["call_contract"]["occurrence"] == 0 for call in _calls(inventory))
     assert path.read_text() == source
+
+
+def test_import_resolution_preserves_lexical_call_contracts(tmp_path):
+    owner = tmp_path / "owner.py"
+    owner.write_text("def execute(value):\n    return value\n")
+    caller = tmp_path / "caller.py"
+    caller.write_text("from owner import execute as run\ndef work():\n    return run('value')\n")
+    discovered = discover_python_source(tmp_path, files=[owner, caller], call_contracts_version="1.0")
+    before = _calls(discovered)[0]["call_contract"]
+    resolved = resolve_python_imports(tmp_path, discovered)
+    assert _calls(resolved)[0]["called_symbol"] == "owner.py::execute"
+    assert _calls(resolved)[0]["call_contract"] == before
+    assert resolved["call_contracts_version"] == "1.0"
+    assert resolved["authority"] is False
