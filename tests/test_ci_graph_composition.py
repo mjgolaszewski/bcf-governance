@@ -250,7 +250,7 @@ def binding_inputs(composition, tmp_path):
     from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
 
     source = tmp_path / 'runtime.py'
-    source.write_text('def verify():\n    return True\n\ndef consume():\n    return True\n')
+    source.write_text('def verify():\n    return True\n\ndef consume():\n    return verify()\n')
     inventory = discover_python_source(tmp_path, files=[source])
     contract = composition['payload']['relationships'][0]['contract']
     contract['implementation'] = ['runtime.py::verify']
@@ -263,6 +263,7 @@ def binding_inputs(composition, tmp_path):
         expected_source=composition['expected_source'],
         source_inventory=inventory,
         collected_selectors=frozenset(contract['positive_tests'] + contract['negative_tests']),
+        required_call_edges={('release', 'build', 'verify'): frozenset({('runtime.py::consume', 'runtime.py::verify')})},
         required_negative_controls={
             ('release', 'build', 'verify'): {
                 'wrong-subject': 'tests/test_runtime.py::test_wrong_subject',
@@ -398,3 +399,67 @@ def test_requirement_slice_rejects_missing_qualification_binding(field):
     del plan['implementation_slices'][slice_id][field]
     with pytest.raises(ValidationError):
         Draft202012Validator(schema).validate(plan)
+
+
+def test_binding_conformance_rejects_removed_call_with_both_functions_present(binding_inputs):
+    for function in binding_inputs['source_inventory']['functions']:
+        if function['symbol'] == 'runtime.py::consume':
+            function['calls'] = []
+    with pytest.raises(CIGraphError, match='source call'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_incomplete_independent_call_population(binding_inputs):
+    binding_inputs['required_call_edges'] = {}
+    with pytest.raises(CIGraphError, match='call population'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_requires_calls_or_compiled_transport(composition, binding_inputs):
+    composition['payload']['relationships'][0]['contract']['ci_edges'] = []
+    composition['payload']['relationships'][0]['contract'].update(
+        implementation=['runtime.py::verify'], terminal_consumers=['runtime.py::consume'],
+        positive_tests=['tests/test_runtime.py::test_valid'],
+        negative_tests=['tests/test_runtime.py::test_wrong_subject'],
+    )
+    binding_inputs['compiled'] = compile_lifecycle_composition(**composition)
+    binding_inputs['required_call_edges'] = {('release', 'build', 'verify'): frozenset()}
+    with pytest.raises(CIGraphError, match='source call or CI transport'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_traces_actual_compiler_and_projection_calls(composition, binding_inputs):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+
+    path = 'bcf_governance/tooling/ci_graph_composition.py'
+    symbol = lambda name: path + '::' + name
+    contract = composition['payload']['relationships'][0]['contract']
+    contract.update(
+        implementation=[symbol('compile_lifecycle_composition'), symbol('_canonical_contract')],
+        terminal_consumers=[symbol('render_lifecycle_composition'), symbol('_validate_compiled_identity')],
+        positive_tests=['tests/test_runtime.py::test_valid'],
+        negative_tests=['tests/test_runtime.py::test_wrong_subject'],
+    )
+    binding_inputs['compiled'] = compile_lifecycle_composition(**composition)
+    binding_inputs['source_inventory'] = discover_python_source(ROOT, files=[ROOT / path])
+    binding_inputs['required_call_edges'] = {('release', 'build', 'verify'): frozenset({
+        (symbol('compile_lifecycle_composition'), symbol('_canonical_contract')),
+        (symbol('render_lifecycle_composition'), symbol('_validate_compiled_identity')),
+    })}
+    assert _validate_bindings(binding_inputs)['authority'] is False
+
+
+def test_binding_conformance_rejects_unresolved_required_call(binding_inputs):
+    for function in binding_inputs['source_inventory']['functions']:
+        if function['symbol'] == 'runtime.py::consume':
+            function['calls'][0]['dispatch_resolution'] = 'unresolved'
+    with pytest.raises(CIGraphError, match='source call is absent or unresolved'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_call_outside_contract_functions(binding_inputs):
+    binding_inputs['required_call_edges'] = {('release', 'build', 'verify'): frozenset({
+        ('runtime.py::unbound', 'runtime.py::verify'),
+    })}
+    with pytest.raises(CIGraphError, match='source call endpoints are unbound'):
+        _validate_bindings(binding_inputs)

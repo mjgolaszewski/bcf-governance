@@ -156,6 +156,7 @@ def validate_lifecycle_bindings(
     source_inventory: dict[str, Any],
     collected_selectors: frozenset[str],
     required_negative_controls: Mapping[Relationship, Mapping[str, str]],
+    required_call_edges: Mapping[Relationship, frozenset[tuple[str, str]]],
 ) -> dict[str, Any]:
     """Resolve composition bindings against protected source/collection inputs.
 
@@ -164,28 +165,45 @@ def validate_lifecycle_bindings(
     this proposal. The independent control catalogue binds causes to exact test
     selectors for every reachable relationship. This checks static conformance;
     it never qualifies execution, freshness, or the behavior of a detector.
+    Protected call obligations must resolve through the same source inventory;
+    names alone cannot conceal a deleted call between retained functions.
     """
 
     _validate_compiled_identity(compiled)
     if compiled["source"] != dict(expected_source):
         raise CIGraphError("lifecycle binding source identity differs from authenticated inputs")
-    functions: set[str] = set()
+    functions: dict[str, dict[str, Any]] = {}
     for function in source_inventory.get("functions", []):
         symbol = function.get("symbol")
         if not isinstance(symbol, str) or not symbol or symbol in functions:
             raise CIGraphError("lifecycle binding runtime function inventory is ambiguous")
-        functions.add(symbol)
+        functions[symbol] = function
     reachable = {
         (row["context"], row["producer"], row["consumer"]): row["contract"]
         for row in compiled["relationships"] if row["contract"] is not None
     }
     if reachable.keys() != required_negative_controls.keys():
         raise CIGraphError("lifecycle binding independent relationship population differs")
+    if reachable.keys() != required_call_edges.keys():
+        raise CIGraphError("lifecycle binding independent call population differs")
     for pair, contract in reachable.items():
         for field in ("implementation", "terminal_consumers"):
             for symbol in contract[field]:
                 if symbol not in functions:
                     raise CIGraphError(f"lifecycle binding runtime function is absent: {symbol}")
+        calls = required_call_edges[pair]
+        if not calls and not contract["ci_edges"]:
+            raise CIGraphError("lifecycle binding has no source call or CI transport")
+        bound_functions = set(contract["implementation"]) | set(contract["terminal_consumers"])
+        for caller, callee in calls:
+            if caller not in bound_functions or callee not in bound_functions:
+                raise CIGraphError("lifecycle binding source call endpoints are unbound")
+            observed_calls = {
+                call.get("called_symbol") for call in functions[caller].get("calls", [])
+                if call.get("dispatch_resolution") != "unresolved"
+            }
+            if callee not in observed_calls:
+                raise CIGraphError(f"lifecycle binding source call is absent or unresolved: {caller} -> {callee}")
         for field in ("positive_tests", "negative_tests"):
             for selector in contract[field]:
                 if selector not in collected_selectors:
