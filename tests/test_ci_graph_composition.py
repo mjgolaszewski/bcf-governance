@@ -776,7 +776,7 @@ def test_binding_rejects_added_call_beyond_retained_declared_endpoint(operation_
         _validate_bindings(operation_call_binding_inputs)
 
 
-@pytest.mark.parametrize("defect", ["relationship", "root", "version", "source_file"])
+@pytest.mark.parametrize("defect", ["relationship", "root", "version", "source_file", "extra_root", "malformed_catalogue", "authority_claim"])
 def test_binding_rejects_incomplete_or_incompatible_operation_population(operation_call_binding_inputs, defect):
     inputs = operation_call_binding_inputs
     catalogue = inputs["required_operation_calls"]
@@ -787,8 +787,14 @@ def test_binding_rejects_incomplete_or_incompatible_operation_population(operati
         del catalogue[pair]["runtime.py::produce"]
     elif defect == "version":
         inputs["source_inventory"]["call_contracts_version"] = "0.9"
-    else:
+    elif defect == "source_file":
         inputs["source_inventory"]["files"][0]["sha256"] = "f" * 64
+    elif defect == "extra_root":
+        catalogue[pair]["runtime.py::invented"] = {}
+    elif defect == "malformed_catalogue":
+        catalogue[pair]["runtime.py::produce"] = {"not-json": {1}}
+    else:
+        catalogue[pair]["runtime.py::produce"]["authority"] = True
     with pytest.raises(CIGraphError, match="operation call population"):
         _validate_bindings(inputs)
 

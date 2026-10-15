@@ -2597,13 +2597,23 @@ implementation_slices:
     scope: Exact discovered Python function/call traversal through port boundaries; unresolved calls remain explicit and no authority-effect interpretation is inferred.
     contract: audits/issue-394/operation-call-population-contract.yml
     producer: bcf_governance/tooling/semantic_operation_effects.py::source_operation_call_population
-    consumer: tests/test_semantic_operation_call_population.py
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_bindings
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_binding_checks_protected_operation_call_populations
+    - tests.test_ci_graph_composition::test_legacy_binding_result_does_not_claim_operation_population_checks
     - tests.test_semantic_operation_call_population::test_operation_call_population_crosses_ports_and_terminates_cycles
     - tests.test_semantic_operation_call_population::test_ambiguous_dispatch_stays_unresolved_and_is_not_followed
     negative_controls:
+    - cause: hidden-call-behind-retained-endpoint
+      test: tests.test_ci_graph_composition::test_binding_rejects_added_call_beyond_retained_declared_endpoint
+    - cause: missing-protected-operation-root
+      test: tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[root]
+    - cause: incompatible-protected-operation-version
+      test: tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[version]
+    - cause: protected-operation-authority-claim
+      test: tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[authority_claim]
     - cause: added-call-beyond-port
       test: tests.test_semantic_operation_call_population::test_added_call_changes_population_without_removing_functions
     - cause: duplicate-call-identity

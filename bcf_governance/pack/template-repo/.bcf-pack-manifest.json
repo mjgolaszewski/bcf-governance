@@ -720,7 +720,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "e164d4eb3d78b587aad8f6c57af4ee0a932e4c698bbe664176970ce76def01dd"
+      "sha256": "fa121dcebe3d4e04d678a88c5c24ede5180bee1184888b1418b7201f192cef92"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",

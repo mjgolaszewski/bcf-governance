@@ -235,3 +235,8 @@ protected_operation_call_binding_slice:
   - Added nested unresolved call rejects although required direct call endpoints and tests remain present.
   - Missing root relationship source identity or compatible call version rejects.
   - Legacy binding fixture and result remain unchanged when no new catalogue is supplied.
+  local_execution:
+    red: Six new binding cases rejected the absent keyword while legacy output still passed.
+    focused: 147 composition operation-call and call-fact cases passed; one governed-oracle resolution check remains deferred until canonical test manifest regeneration.
+    qualification_limit: Full protected population acquisition effect interpretation installation and runtime execution remain unqualified.
+    architecture: Ten source/package/private-copy context CLI-effect and module-cap checks passed; existing lint and typecheck gates passed.
