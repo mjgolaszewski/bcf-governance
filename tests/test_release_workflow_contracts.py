@@ -173,6 +173,8 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
     assert authenticate["needs"] == ["runtime", "qualify"]
     assert runtime["trust"] == qualify["trust"] == "candidate"
     assert authenticate["trust"] == "trusted"
+    assert qualify["protected_environment"] == "bcf-trusted-automation"
+    assert authenticate["protected_environment"] == "bcf-trusted-automation"
     assert runtime["checkout"] is qualify["checkout"] is authenticate["checkout"] is False
     assert compiled.commands["verify-release-runtime"]["environment"] == {
         "GITHUB_TOKEN": "",
@@ -194,6 +196,28 @@ def test_verifier_separates_token_free_runtime_from_provider_authentication() ->
     ]
     upload = compiled.graph["step_components"]["upload-release-runtime"]
     assert upload["condition"] == "always-step"
+    for index, (owner, repository) in enumerate((
+        ("moranwm", "tradeflow"),
+        ("mjgolaszewski", "racecar"),
+        ("mjgolaszewski", "AgentBus"),
+    )):
+        component = compiled.graph["step_components"][
+            f"create-adopter-provider-token-{index}"
+        ]
+        assert component["with"] == {
+            "app-id": "${{ vars.BCF_AUTOMATION_APP_ID }}",
+            "private-key": "${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}",
+            "owner": owner,
+            "repositories": repository,
+            "permission-contents": "read",
+            "skip-token-revoke": "false",
+        }
+        assert f"create-adopter-provider-token-{index}" in (
+            qualify["executor"]["components"]
+        )
+        assert f"create-adopter-provider-token-{index}" in (
+            authenticate["executor"]["components"]
+        )
 
 
 def test_release_collector_recomputes_verification_before_emitting_receipt() -> None:

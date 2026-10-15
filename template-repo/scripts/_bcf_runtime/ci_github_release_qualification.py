@@ -19,6 +19,7 @@ from .release_adopter_qualification import (
 )
 from .release_adopter_sources import (
     AdopterSourceError,
+    adopter_provider_access_from_environment,
     authenticate_adopter_sources,
 )
 
@@ -57,6 +58,12 @@ def authenticate_release_qualification(
         repository, "schemas/release-qualification.schema.json", ref=main.checkout_sha
     )
     contract = parse_contract(contract_content.content, schema_content.content)
+    try:
+        adopter_provider_access = adopter_provider_access_from_environment(contract)
+    except AdopterSourceError as exc:
+        raise GitHubControllerError(
+            "release qualification provider credentials are invalid"
+        ) from exc
     qualification = _json_object(
         qualification_path, "release qualification receipt"
     )
@@ -80,7 +87,7 @@ def authenticate_release_qualification(
             assets=release_assets,
             producer=producer,
         )
-        authenticate_adopter_sources(api, validated)
+        authenticate_adopter_sources(adopter_provider_access, validated)
     except (KeyError, TypeError, AdopterSourceError, ReleaseQualificationError) as exc:
         raise GitHubControllerError("release qualification receipt is invalid") from exc
     artifact = resolve_role_artifact(

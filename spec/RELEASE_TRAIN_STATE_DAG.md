@@ -1452,6 +1452,7 @@ chooses nodes, ordering, concurrency, or fallback behavior.
 | Required adopter source is unresolved | exact qualification contract, authenticated adopter repository identity, provider-declared default branch, and current provider commit/tree at transaction capture | resolve every required adopter from the provider in one closed inventory before cloning, environment admission, reconciliation, or evidence allocation; caller paths may supply object and interpreter caches but never select the subject | one immutable repository/default-branch/commit/tree/profile input for every required adopter, or no qualification work | caller checkout `HEAD`, current local branch, iteration order, stale remote-tracking refs, an unpushed commit, or an agent-selected mixture becoming qualification authority |
 | Required adopter source advances after resolution | captured provider repository/default-branch/commit/tree inventory plus the provider observation identity that produced it | preserve the captured immutable subject for the complete transaction and clone/check out exactly that commit; a later provider head belongs to a new transaction and cannot rewrite or relabel the current proof | one qualification receipt whose source identities exactly equal the pre-work provider inventory | fetching mutable branch heads during adopter iteration, silently upgrading one adopter only, or reusing results under a changed source identity |
 | Required adopter source is absent, unreachable, wrong-repository, wrong-tree, dirty, locally ahead, or product-red | complete resolved provider inventory, supplied cache origins/object membership, exact disposable checkout, and first causal producer result | reject before expensive work when identity or availability is mechanically decidable; otherwise retain and attribute the first product failure without selecting a different branch, predecessor, or local repair | typed source-resolution or external-product failure only; publication and custody remain unavailable | treating a caller path as authority, falling back to a previously green commit, substituting an unmerged repair, retrying with a hand-picked source, or publishing from an incomplete adopter inventory |
+| Required adopter is private or outside the release repository | qualification contract plus an exact repository-to-credential mapping and installation tokens minted with contents-read only for those repositories | validate complete one-to-one credential coverage before provider reads, use each token only for its declared repository identity and immutable fetch, then remove every adopter credential before executing adopter-controlled bytes | a complete frozen source inventory or a typed non-certifying provider-access failure | using the release repository `GITHUB_TOKEN` for an external private repository, broad owner/repository access, a PAT, partial coverage, mutation permission, or leaking provider credentials into adopter execution |
 
 #### Exact adopter-source transaction backtrace
 
@@ -1461,6 +1462,14 @@ select the source subject.  Before any clone, environment construction,
 reconciliation, test, dispatch, or publication work, the provider resolver
 must capture the complete required adopter inventory.  Every later producer
 and consumer preserves that frozen inventory.
+
+Provider access is itself a closed input to that transaction.  The canonical
+qualification contract maps every required repository to exactly one
+repository-scoped GitHub App installation token.  The workflow requests only
+`contents:read`, resolution and immutable fetch consume the mapped token, and
+the qualification runtime strips all adopter provider credentials before any
+adopter-controlled command executes.  The ambient release-repository token is
+never treated as access to an external private repository.
 
 ```text
 invariant

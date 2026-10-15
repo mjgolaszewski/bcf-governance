@@ -15,6 +15,7 @@ from bcf_governance.tooling.release_adopter_sources import (
     require_adopter_profile,
     resolve_adopter_sources,
     source_inventory_sha256,
+    adopter_provider_access_from_environment,
 )
 
 
@@ -25,6 +26,93 @@ def _contract() -> dict[str, object]:
             {"id": "two-standard", "repository": "owner/two", "profile": "standard"},
         ]
     }
+
+
+def _credential_contract() -> dict[str, object]:
+    return {
+        "provider_credentials": [
+            {
+                "id": "one-read",
+                "owner": "owner",
+                "repository": "one",
+                "token_environment": "BCF_ADOPTER_PROVIDER_TOKEN_0",
+            },
+            {
+                "id": "two-read",
+                "owner": "owner",
+                "repository": "two",
+                "token_environment": "BCF_ADOPTER_PROVIDER_TOKEN_1",
+            },
+        ],
+        "required_adopters": [
+            {
+                "id": "one-lite", "repository": "owner/one", "profile": "lite",
+                "provider_credential": "one-read",
+            },
+            {
+                "id": "two-standard", "repository": "owner/two", "profile": "standard",
+                "provider_credential": "two-read",
+            },
+        ],
+    }
+
+
+def test_provider_credentials_are_complete_exact_and_scrubbed_before_execution() -> None:
+    access = adopter_provider_access_from_environment(
+        _credential_contract(),
+        environment={
+            "BCF_ADOPTER_PROVIDER_TOKEN_0": "token-one",
+            "BCF_ADOPTER_PROVIDER_TOKEN_1": "token-two",
+            "SAFE": "retained",
+        },
+    )
+    assert set(access.tokens) == {"owner/one", "owner/two"}
+    assert access.scrub({
+        "BCF_ADOPTER_PROVIDER_TOKEN_0": "token-one",
+        "BCF_ADOPTER_PROVIDER_TOKEN_1": "token-two",
+        "SAFE": "retained",
+    }) == {"SAFE": "retained"}
+
+    with pytest.raises(AdopterSourceError, match="credential is absent"):
+        adopter_provider_access_from_environment(
+            _credential_contract(),
+            environment={"BCF_ADOPTER_PROVIDER_TOKEN_0": "token-one"},
+        )
+
+
+def test_private_source_fetch_uses_only_ephemeral_git_environment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    access = adopter_provider_access_from_environment(
+        _credential_contract(),
+        environment={
+            "BCF_ADOPTER_PROVIDER_TOKEN_0": "token-one",
+            "BCF_ADOPTER_PROVIDER_TOKEN_1": "token-two",
+        },
+    )
+    source = _identity("owner/one", 1)
+    calls: list[tuple[tuple[str, ...], dict[str, str] | None]] = []
+
+    def git(
+        argv: list[str], *, cwd: Path,
+        environment: dict[str, str] | None = None,
+    ) -> str:
+        del cwd
+        calls.append((tuple(argv), environment))
+        if argv[-1] == "HEAD":
+            return source.commit_sha
+        if argv[-1] == "HEAD^{tree}":
+            return source.tree_sha
+        return ""
+
+    monkeypatch.setattr(sources, "_git", git)
+    materialize_provider_source(
+        source, tmp_path / "checkout", provider_access=access
+    )
+    fetch = next(item for item in calls if item[0][:2] == ("git", "fetch"))
+    assert all("token-one" not in argument for argument in fetch[0])
+    assert fetch[1] is not None
+    assert fetch[1]["GIT_CONFIG_KEY_0"].endswith(".extraheader")
 
 
 def _identity(repository: str, index: int) -> AdopterSourceIdentity:

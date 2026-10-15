@@ -401,7 +401,7 @@
     },
     "schemas/release-qualification.schema.json": {
       "operation": "copy",
-      "sha256": "f684c0fe1f83c437dcfafd2b2466e6681aedffcc5fe94678e5dc48f017da8a91"
+      "sha256": "32193610db3e88846c8c61ee58260a5845e82f2dd6dc72a0fd057c41393048d0"
     },
     "schemas/repo-cleanup-contract.schema.json": {
       "operation": "copy",
@@ -536,7 +536,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "3ccc54aef9155421ee936d0c8a4608f3db0e0a524931b0a007ab50213ea52fc2"
+      "sha256": "ba232374817db46c5c4cfde30e1c1891bb9334c624edc738b94e6803682d6a14"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -676,7 +676,7 @@
     },
     "scripts/_bcf_runtime/ci_github_release_qualification.py": {
       "operation": "copy",
-      "sha256": "d4669009ed0b064989919642c0c2d5d20959c979bf16e54e21d7fba1109ac1ae"
+      "sha256": "d773af6e934e8d66f7ac60ebc3729ad5dd9c6e76e228a494213fe2284bbf486f"
     },
     "scripts/_bcf_runtime/ci_github_release_staging.py": {
       "operation": "copy",
@@ -1339,11 +1339,11 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "4b6aecfb220ea7e5d7832276724368bbf50d71592a5b6d60b401fbd5ba376939"
+      "sha256": "fe9824cd9367bf51c199ec2d1f0ecf8ec5bcb6cd7005e7532b43d462c6116ac6"
     },
     "scripts/_bcf_runtime/release_adopter_sources.py": {
       "operation": "copy",
-      "sha256": "69e5e0a7366630c1e6a400f3813852d88413106e8962f95ee526f76a95c79554"
+      "sha256": "30025d37561b4740966bd31c331fada810f8afc0983addd315069508cf15529d"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",

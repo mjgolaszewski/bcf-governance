@@ -22,12 +22,14 @@ from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError, resolve_main
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
+    AdopterProviderAccess,
     AdopterSourceError,
     AdopterSourceIdentity,
     materialize_provider_source,
     require_adopter_profile,
     resolve_adopter_sources,
     source_inventory_sha256,
+    adopter_provider_access_from_environment,
 )
 from .release_asset_inventory import (
     checksum_declared_assets,
@@ -262,6 +264,33 @@ def parse_contract(contract_bytes: bytes, schema_bytes: bytes) -> dict[str, Any]
     identifiers = [item["id"] for item in payload["required_adopters"]]
     if len(repositories) != len(set(repositories)) or len(identifiers) != len(set(identifiers)):
         raise ReleaseQualificationError("release qualification adopters must be unique")
+    credentials = payload["provider_credentials"]
+    credential_ids = [item["id"] for item in credentials]
+    credential_repositories = [
+        f"{item['owner']}/{item['repository']}" for item in credentials
+    ]
+    token_environments = [item["token_environment"] for item in credentials]
+    if (
+        len(credential_ids) != len(set(credential_ids))
+        or len(credential_repositories) != len(set(credential_repositories))
+        or len(token_environments) != len(set(token_environments))
+    ):
+        raise ReleaseQualificationError(
+            "release qualification provider credentials must be unique"
+        )
+    credential_by_id = dict(zip(credential_ids, credential_repositories, strict=True))
+    mapped = []
+    for adopter in payload["required_adopters"]:
+        credential_id = adopter["provider_credential"]
+        if credential_by_id.get(credential_id) != adopter["repository"]:
+            raise ReleaseQualificationError(
+                "release qualification provider credential coverage is not exact"
+            )
+        mapped.append(credential_id)
+    if set(mapped) != set(credential_ids) or len(mapped) != len(credential_ids):
+        raise ReleaseQualificationError(
+            "release qualification provider credential coverage is not exact"
+        )
     return payload
 
 
@@ -391,6 +420,8 @@ def qualify_release(
     repo_root: Path,
     *,
     provider_api: GitHubAPI,
+    adopter_provider_access: AdopterProviderAccess | None = None,
+    adopter_provider_environment: Mapping[str, str] | None = None,
     repository: str,
     release_assets: Path,
     release_build_manifest: Path,
@@ -402,6 +433,10 @@ def qualify_release(
     """Qualify provider-resolved sources without mutating maintained checkouts."""
 
     contract = load_contract(repo_root.resolve())
+    if adopter_provider_environment is not None:
+        adopter_provider_access = adopter_provider_access_from_environment(
+            contract, environment=adopter_provider_environment
+        )
     version, build_assets, assets = _release_assets(release_assets.resolve())
     release_main = resolve_main(provider_api, repository)
     try:
@@ -433,7 +468,9 @@ def qualify_release(
             "release qualification source is not current provider exact main"
         )
     try:
-        sources = resolve_adopter_sources(provider_api, contract)
+        sources = resolve_adopter_sources(
+            adopter_provider_access or provider_api, contract
+        )
     except AdopterSourceError as exc:
         raise ReleaseQualificationError(str(exc)) from exc
     source_by_repository = {source.repository: source for source in sources}
@@ -473,6 +510,8 @@ def qualify_release(
     environment = dict(os.environ)
     if not environment.get("GITHUB_TOKEN"):
         raise ReleaseQualificationError("GITHUB_TOKEN is required for release custody")
+    if adopter_provider_access is not None:
+        environment = adopter_provider_access.scrub(environment)
     reports: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:
         temporary_root = Path(temporary)
@@ -489,7 +528,14 @@ def qualify_release(
             repository_name = source.repository
             destination = temporary_root / source.id
             try:
-                materialize_provider_source(source, destination)
+                if adopter_provider_access is None:
+                    materialize_provider_source(source, destination)
+                else:
+                    materialize_provider_source(
+                        source,
+                        destination,
+                        provider_access=adopter_provider_access,
+                    )
                 require_adopter_profile(destination, source)
             except AdopterSourceError as exc:
                 raise ReleaseQualificationError(str(exc)) from exc

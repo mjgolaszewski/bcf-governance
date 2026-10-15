@@ -63,6 +63,33 @@ commands:
     environment: {BCF_CONTROLLER_EXECUTION_REQUIRED: 'true'}
     required_environment: [BCF_CONTROLLER_EXECUTION_REQUIRED]
 step_components:
+  create-adopter-provider-token-0:
+    kind: action
+    name: Mint exact read-only provider token for TradeFlow
+    id: adopter-provider-token-0
+    action: create-github-app-token
+    with: {app-id: '${{ vars.BCF_AUTOMATION_APP_ID }}', private-key: '${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}', owner: '{source:release-qualification:provider_credentials.0.owner}', repositories: '{source:release-qualification:provider_credentials.0.repository}', permission-contents: read, skip-token-revoke: 'false'}
+    environment: {}
+    produces: []
+    consumes: []
+  create-adopter-provider-token-1:
+    kind: action
+    name: Mint exact read-only provider token for Racecar
+    id: adopter-provider-token-1
+    action: create-github-app-token
+    with: {app-id: '${{ vars.BCF_AUTOMATION_APP_ID }}', private-key: '${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}', owner: '{source:release-qualification:provider_credentials.1.owner}', repositories: '{source:release-qualification:provider_credentials.1.repository}', permission-contents: read, skip-token-revoke: 'false'}
+    environment: {}
+    produces: []
+    consumes: []
+  create-adopter-provider-token-2:
+    kind: action
+    name: Mint exact read-only provider token for AgentBus
+    id: adopter-provider-token-2
+    action: create-github-app-token
+    with: {app-id: '${{ vars.BCF_AUTOMATION_APP_ID }}', private-key: '${{ secrets.BCF_AUTOMATION_APP_PRIVATE_KEY }}', owner: '{source:release-qualification:provider_credentials.2.owner}', repositories: '{source:release-qualification:provider_credentials.2.repository}', permission-contents: read, skip-token-revoke: 'false'}
+    environment: {}
+    produces: []
+    consumes: []
   setup-release-directories: {kind: directory_setup, name: Allocate private release authorization directories, paths: ['${{ runner.temp }}/bcf-release/certification', '${{ runner.temp }}/bcf-release/controller'], produces: [], consumes: []}
   resolve-release-inputs:
     kind: command
@@ -197,7 +224,7 @@ step_components:
     kind: command
     name: Qualify exact release bytes against provider-resolved adopters
     command: qualify-release
-    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_ADOPTER_PROVIDER_TOKEN_0: '${{ steps.adopter-provider-token-0.outputs.token }}', BCF_ADOPTER_PROVIDER_TOKEN_1: '${{ steps.adopter-provider-token-1.outputs.token }}', BCF_ADOPTER_PROVIDER_TOKEN_2: '${{ steps.adopter-provider-token-2.outputs.token }}'}
     produces: [release-qualification]
     consumes: [release-authorization, release-build-bundle]
   upload-release-qualification:
@@ -237,7 +264,7 @@ step_components:
     kind: command
     name: Recompute provider, Git, dependency, runtime, and asset custody
     command: collect-release
-    environment: {GITHUB_TOKEN: '${{ github.token }}'}
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_ADOPTER_PROVIDER_TOKEN_0: '${{ steps.adopter-provider-token-0.outputs.token }}', BCF_ADOPTER_PROVIDER_TOKEN_1: '${{ steps.adopter-provider-token-1.outputs.token }}', BCF_ADOPTER_PROVIDER_TOKEN_2: '${{ steps.adopter-provider-token-2.outputs.token }}'}
     produces: [release-receipt-bundle]
     consumes: []
   upload-release-receipt:
@@ -316,8 +343,8 @@ workflows:
   permissions: {}
   jobs:
   - {id: runtime, display_name: Execute token-free offline wheel and sdist verification, semantic_role: release-runtime-verifier, resource_class: hosted-release, trust: candidate, needs: [], condition: release-trigger-success, timeout_minutes: 30, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, setup-test-node, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, verify-release-runtime, upload-release-runtime]}, produces: [release-runtime-evidence], consumes: [release-authorization, release-build-bundle], required: true}
-  - {id: qualify, display_name: Qualify provider-resolved adopter sources against exact release bytes, semantic_role: release-adopter-qualifier, resource_class: hosted-release, trust: candidate, needs: [runtime], condition: release-runtime-green, timeout_minutes: 90, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, setup-test-node, checkout-triggering-release-subject, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, setup-release-qualification-directory, qualify-release, upload-release-qualification]}, produces: [release-qualification], consumes: [release-authorization, release-build-bundle], required: true}
-  - {id: collect, display_name: Authenticate runtime and adopter qualification then emit the sole trusted receipt, semantic_role: release-trusted-collector, resource_class: trusted-control, trust: trusted, needs: [runtime, qualify], condition: release-runtime-and-qualification-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, download-release-qualification, setup-verification-directories, authenticate-release-verification, collect-release, upload-release-receipt]}, produces: [release-receipt-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence, release-qualification], required: true}
+  - {id: qualify, display_name: Qualify provider-resolved adopter sources against exact release bytes, semantic_role: release-adopter-qualifier, resource_class: hosted-release, trust: candidate, needs: [runtime], condition: release-runtime-green, timeout_minutes: 90, permissions: {actions: read, contents: read}, checkout: false, protected_environment: bcf-trusted-automation, components: [], executor: {kind: component_sequence, components: [setup-release-python, setup-test-node, checkout-triggering-release-subject, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, setup-release-qualification-directory, create-adopter-provider-token-0, create-adopter-provider-token-1, create-adopter-provider-token-2, qualify-release, upload-release-qualification]}, produces: [release-qualification], consumes: [release-authorization, release-build-bundle], required: true}
+  - {id: collect, display_name: Authenticate runtime and adopter qualification then emit the sole trusted receipt, semantic_role: release-trusted-collector, resource_class: trusted-control, trust: trusted, needs: [runtime, qualify], condition: release-runtime-and-qualification-green, timeout_minutes: 10, permissions: {actions: read, contents: read}, checkout: false, protected_environment: bcf-trusted-automation, components: [], executor: {kind: component_sequence, components: [setup-release-python, download-triggering-release-authorization, install-triggering-release-controller, download-triggering-release-build, download-release-runtime, download-release-qualification, setup-verification-directories, create-adopter-provider-token-0, create-adopter-provider-token-1, create-adopter-provider-token-2, authenticate-release-verification, collect-release, upload-release-receipt]}, produces: [release-receipt-bundle], consumes: [release-authorization, release-build-bundle, release-runtime-evidence, release-qualification], required: true}
 - id: release-publisher
   path: .github/workflows/bcf-release-publisher.yml
   display_name: bcf/immutable-release-publisher

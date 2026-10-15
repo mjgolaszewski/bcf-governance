@@ -3,7 +3,7 @@
   "$id": "https://bcf.example/schemas/release-qualification.schema.json",
   "type": "object",
   "additionalProperties": false,
-  "required": ["document", "schema_version", "required_adopters", "qualification"],
+  "required": ["document", "schema_version", "provider_credentials", "required_adopters", "qualification"],
   "properties": {
     "document": {
       "type": "object",
@@ -13,23 +13,39 @@
         "kind": {"const": "release_qualification_contract"},
         "name": {"type": "string", "minLength": 1},
         "id": {"type": "string", "minLength": 1},
-        "version": {"const": "1.1.0"},
+        "version": {"const": "1.2.0"},
         "status": {"const": "active"},
         "path": {"const": "governance/release-qualification.yml"}
       }
     },
-    "schema_version": {"const": "1.1"},
+    "schema_version": {"const": "1.2"},
+    "provider_credentials": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "owner", "repository", "token_environment"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
+          "owner": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+          "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"},
+          "token_environment": {"type": "string", "pattern": "^BCF_ADOPTER_PROVIDER_TOKEN_[0-9]+$"}
+        }
+      }
+    },
     "required_adopters": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "repository", "profile"],
+        "required": ["id", "repository", "profile", "provider_credential"],
         "properties": {
           "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"},
           "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
           "profile": {"enum": ["lite", "standard", "regulated"]}
+          ,"provider_credential": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$"}
         }
       }
     },
