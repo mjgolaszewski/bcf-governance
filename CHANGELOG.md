@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-10-15
+
 ### Fixed
 
 - Derived bounded post-merge workitem intent from the validated dependency DAG

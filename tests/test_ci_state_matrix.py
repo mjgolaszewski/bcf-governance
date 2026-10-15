@@ -4,6 +4,7 @@ from pathlib import Path
 import subprocess
 
 import pytest
+import yaml
 
 from bcf_governance.tooling.governance_validation.ci_state_matrix import (
     CIStateMatrixError,
@@ -50,7 +51,13 @@ def test_changed_ci_contract_requires_same_candidate_matrix_update(tmp_path: Pat
         stream.write("\nCandidate-specific transition coverage.\n")
     report = validate_ci_state_matrix(repo)
     assert report["changed_contracts"] == ["bcf_governance/tooling/preflight.py", "spec/RELEASE_TRAIN_STATE_DAG.md"]
-    assert report["machine_backtrace"] == {"edges": 7, "transitions": 15}
+    machine = yaml.safe_load(
+        (repo / "spec/phase0/release-train-backtrace.yml").read_text(encoding="utf-8")
+    )
+    assert report["machine_backtrace"] == {
+        "edges": len(machine["adopter_compatibility_observation"]["edges"]),
+        "transitions": len(machine["transitions"]),
+    }
 
 
 def test_machine_backtrace_rejects_an_incomplete_edge_before_ci_allocation(

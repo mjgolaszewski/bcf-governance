@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "675a1f0cdef6a06f1f8821bed3572bcbfb7b9132e53b39d9149c2300337cd536"
+      "sha256": "a9c33e0f3aa4692d357b1adc010a284124eb1b34902a334c2f2dabc782d42424"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",

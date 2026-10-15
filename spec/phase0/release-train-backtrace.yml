@@ -33,6 +33,7 @@ invariants:
 - {id: INV-RT-016, statement: every self-only CI value source is owned by exactly one declared self-authority overlay before preflight can allocate provider or evidence work, basis: governance/self-overlays.yml}
 - {id: INV-RT-017, statement: topology tests derive exact current job and component membership from canonical graph ownership and never preserve a hand-maintained cardinality after a governed node is added or removed, basis: spec/RELEASE_TRAIN_STATE_DAG.md#rule-34}
 - {id: INV-RT-018, statement: bounded workitem intent derives only from the validated dependency DAG and cannot be suppressed or broadened by unrelated list order or lifecycle state, basis: spec/RELEASE_TRAIN_STATE_DAG.md#integrated-workitem-dependency-frontier-state-machine}
+- {id: INV-RT-019, statement: one canonical release version projects every package documentation manifest graph workflow and authority surface before lifecycle intent is derived and partial or semantic drift fails before evidence allocation, basis: spec/RELEASE_TRAIN_STATE_DAG.md#release-version-projection-state-machine}
 primitives:
 - {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
 - {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002]}
@@ -51,7 +52,9 @@ primitives:
 - {id: PRIM-RELEASE-ASSET-INVENTORY, canonical_name: ReleaseAssetInventory, owner: bcf_governance/tooling/release_asset_inventory.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-014]}
 - {id: PRIM-ADOPTER-COMPATIBILITY-OBSERVATION, canonical_name: AdopterCompatibilityObservation, owner: governance/release-qualification.yml, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015]}
 - {id: PRIM-WORKITEM-FRONTIER, canonical_name: BoundedWorkitemFrontier, owner: bcf_governance/tooling/ci_graph_post_merge.py::authored_post_merge_scope, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-018]}
+- {id: PRIM-RELEASE-VERSION, canonical_name: ReleaseVersionProjection, owner: bcf_governance/tooling/release_version_projection.py::reconcile_release_version_surfaces, invariants: [INV-RT-006, INV-RT-010, INV-RT-019]}
 states:
+- {id: ST-RECONCILED, owner: reconcile_governance, authority: none}
 - {id: ST-INTENT, owner: ci_graph_post_merge, authority: none}
 - {id: ST-PREFLIGHT, owner: governance_validation.runner, authority: structural}
 - {id: ST-PLAN, owner: evidence_planning, authority: scheduling}
@@ -69,6 +72,7 @@ states:
 - {id: ST-ADOPTER-COMPAT, owner: adopter_qualification, authority: none}
 - {id: ST-CUSTODY, owner: release_custody_audit, authority: terminal_record}
 transitions:
+- {id: TR-000, from: ST-RECONCILED, to: ST-INTENT, invariants: [INV-RT-006, INV-RT-007, INV-RT-010, INV-RT-019], producer: release_version_projection_and_reconcile_governance, consumer: ci_graph_post_merge, cost: cheap_pre_submission, rejection: missing_partial_stale_or_semantically_unaccounted_projection}
 - {id: TR-001, from: ST-INTENT, to: ST-PREFLIGHT, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-010], producer: governance_validation.runner, consumer: evidence_planning, cost: cheap_pre_allocation, rejection: structural_or_semantic_failure}
 - {id: TR-002, from: ST-PREFLIGHT, to: ST-PLAN, invariants: [INV-RT-001, INV-RT-002, INV-RT-005, INV-RT-011], producer: evidence_planning, consumer: execution_groups, cost: pre_fanout, rejection: ambiguous_plan_expands_or_rejects}
 - {id: TR-003, from: ST-PLAN, to: ST-EVIDENCE, invariants: [INV-RT-001, INV-RT-002, INV-RT-005], producer: execution_groups, consumer: governance_truth, cost: expensive_execution, rejection: producer_failure_timeout_or_receipt_mismatch}
@@ -101,6 +105,22 @@ bounded_workitem_frontier_contract:
   - {id: BWFX-001, reason: yaml_list_position_is_not_dependency_authority}
   - {id: BWFX-002, reason: unrelated_lifecycle_state_cannot_suppress_or_acquire_bounded_authority}
   - {id: BWFX-003, reason: ambiguous_frontier_cannot_be_caller_selected}
+release_version_projection_contract:
+  normative: true
+  primitive: PRIM-RELEASE-VERSION
+  canonical_owner: bcf_governance/tooling/release_version_projection.py::reconcile_release_version_surfaces
+  inputs: [canonical_package_version, public_contract_registry, package_manifest, documentation_markers, graph_value_source_dependencies]
+  outputs: [public_contract_version, package_manifest_version, documentation_version, runtime_mirror_version, graph_input_digest, rendered_workflow_digests, workflow_authority_pins, editorial_inventory]
+  states:
+  - {id: RVP-001, state: canonical_version_unchanged_and_all_projections_exact, result: no_change, authority: none}
+  - {id: RVP-002, state: canonical_version_advances_and_owned_surfaces_are_projectable, result: deterministic_projection_then_graph_render_and_authority_pin, authority: none}
+  - {id: RVP-003, state: generated_workflow_bytes_change_only_through_the_exact_release_contract_digest, result: mechanical_generated_consequence, authority: none}
+  - {id: RVP-004, state: any_owned_surface_missing_partial_stale_or_ambiguous, result: reject_before_lifecycle_intent_or_evidence, authority: none}
+  - {id: RVP-005, state: graph_topology_workflow_behavior_or_authority_semantics_change_beyond_owned_digest_projection, result: require_separate_semantic_matrix_contract, authority: none}
+  exclusions:
+  - {id: RVPX-001, reason: release_version_projection_cannot_select_lifecycle_intent}
+  - {id: RVPX-002, reason: generated_digest_rotation_cannot_confer_controller_release_or_publication_authority}
+  - {id: RVPX-003, reason: partial_projection_cannot_be_labeled_inapplicable}
 adopter_source_transaction:
   normative: false
   status: rejected_provider_coupled_design
