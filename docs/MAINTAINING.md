@@ -186,6 +186,13 @@ bcf reconcile --repo-root . --apply
 bcf reconcile --repo-root . --check
 ```
 
+The submission front door supplies the apply-only `--commit-derived` assertion
+to reconciliation when normalization is required. The existing transaction owner
+requires a clean committed source, verifies every derived byte in its shadow,
+and promotes one projection commit or the required workflow authority pair.
+Standalone `reconcile --apply` retains its existing file-only behavior. These
+local commits still require the complete prospective and provider proofs.
+
 The audit records the exact base and current digest of every tracked
 human-facing source document, its audience, canonical topic owner, findings,
 and disposition. It is review evidence, not lifecycle or release authority.

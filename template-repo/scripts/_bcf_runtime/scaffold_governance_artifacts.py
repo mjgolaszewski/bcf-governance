@@ -43,6 +43,7 @@ from .release_version_projection import (
 from .reconcile_authority_transition import (
     ReconcileAuthorityTransitionError,
     apply_workflow_authority_transition,
+    candidate_projection_source,
     result_json as authority_transition_json,
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
@@ -635,9 +636,16 @@ def reconcile_main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="recompute every check-stage as the selective-equivalence oracle",
     )
+    parser.add_argument("--commit-derived", action="store_true", help="commit exact derived candidate projections for canonical submission")
     args = parser.parse_args(argv)
+    if args.commit_derived and not args.apply:
+        parser.error("--commit-derived requires --apply")
     root = args.repo_root.resolve()
     try:
+        if args.force and not args.check:
+            raise ReconcileError("--force is valid only with --check")
+        if args.commit_derived:
+            candidate_projection_source(root)
         project_python = (
             ensure_local_project_python(
                 root,
@@ -649,19 +657,18 @@ def reconcile_main(argv: list[str] | None = None) -> None:
         )
         steps = reconcile_steps(root, project_python)
         ledger = None
-        if args.force and not args.check:
-            raise ReconcileError("--force is valid only with --check")
         if args.check:
             ledger = check_reconcile_steps(root, steps, force=args.force)
             rounds = 0
         else:
             transition = None
-            if any(step.step_id == "workflow-authority" for step in steps):
+            if args.commit_derived or any(step.step_id == "workflow-authority" for step in steps):
                 transition = apply_workflow_authority_transition(
                     root,
                     step_factory=lambda candidate: reconcile_steps(candidate, project_python),
                     converge=converge,
                     snapshot=_reconcile_snapshot,
+                    commit_projection=args.commit_derived,
                 )
             if transition is not None:
                 record_reconcile_steps(root, reconcile_steps(root, project_python))

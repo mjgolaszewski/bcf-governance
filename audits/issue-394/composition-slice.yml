@@ -188,6 +188,7 @@ tracked_machine_contract_slice:
   compatibility:
   - Preserve version 1.0 subject-bound input and both existing human renderer views.
   - Add explicit version 1.1 authored input containing relationships without a runtime source envelope.
+  - Register both readable schema versions in the existing self public-contract inventory; this declaration does not activate the lifecycle model.
   - Installed consumers must explicitly support the new schema before adoption; old consumers must reject it safely.
   contract:
   - Render canonical machine input from the existing compiled owner without a self-referential repository commit/tree identity.

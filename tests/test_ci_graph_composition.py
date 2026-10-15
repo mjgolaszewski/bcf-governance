@@ -658,3 +658,82 @@ def test_fact_binding_rejects_orphan_source_owner(binding_inputs, role):
     ]
     with pytest.raises(CIGraphError, match='fact source runtime function'):
         _validate_bindings(binding_inputs)
+
+
+def test_machine_contract_round_trip_preserves_every_relationship(composition):
+    compiled = compile_lifecycle_composition(**composition)
+    text = render_lifecycle_composition(compiled, view='machine')
+    authored = json.loads(text)
+    assert authored == {'schema_version': '1.1', 'relationships': compiled['relationships']}
+    assert text == json.dumps(authored, sort_keys=True, separators=(',', ':')) + '\n'
+    composition['payload'] = authored
+    rebound = compile_lifecycle_composition(**composition)
+    assert rebound['source'] == compiled['source']
+    assert rebound['relationships'] == compiled['relationships']
+    assert rebound['authority'] is False
+    assert render_lifecycle_composition(rebound, view='machine') == text
+
+
+def test_machine_contract_bytes_are_stable_across_subjects_and_order(composition):
+    first = compile_lifecycle_composition(**composition)
+    text = render_lifecycle_composition(first, view='machine')
+    composition['payload'] = json.loads(text)
+    composition['payload']['relationships'].reverse()
+    composition['expected_source'] = dict(composition['expected_source'], commit_sha='1' * 40, tree_sha='2' * 40)
+    rebound = compile_lifecycle_composition(**composition)
+    assert rebound['source'] != first['source']
+    assert rebound['composition_sha256'] != first['composition_sha256']
+    assert render_lifecycle_composition(rebound, view='machine') == text
+
+
+def test_authored_machine_contract_cannot_inject_runtime_source(composition):
+    composition['payload']['schema_version'] = '1.1'
+    with pytest.raises(CIGraphError, match='schema'):
+        compile_lifecycle_composition(**composition)
+
+
+def test_legacy_machine_contract_still_requires_source(composition):
+    del composition['payload']['source']
+    with pytest.raises(CIGraphError, match='schema'):
+        compile_lifecycle_composition(**composition)
+
+
+@pytest.mark.parametrize('source', [None, {}, {'commit_sha': 'invented'}])
+def test_authored_machine_contract_requires_complete_protected_source(composition, source):
+    composition['payload'] = json.loads(render_lifecycle_composition(compile_lifecycle_composition(**composition), view='machine'))
+    composition['expected_source'] = source
+    with pytest.raises(CIGraphError, match='authenticated source identity'):
+        compile_lifecycle_composition(**composition)
+
+
+@pytest.mark.parametrize('field', ['ci_edges_sha256', 'graph_sha256'])
+def test_authored_machine_contract_rejects_wrong_current_graph(composition, field):
+    composition['payload'] = json.loads(render_lifecycle_composition(compile_lifecycle_composition(**composition), view='machine'))
+    composition['expected_source'] = dict(composition['expected_source'], **{field: 'f' * 64})
+    with pytest.raises(CIGraphError, match='CI edge identity'):
+        compile_lifecycle_composition(**composition)
+
+
+@pytest.mark.parametrize('omission', ['relationship', 'effect'])
+def test_authored_machine_contract_cannot_omit_protected_population(composition, omission):
+    composition['payload'] = json.loads(render_lifecycle_composition(compile_lifecycle_composition(**composition), view='machine'))
+    if omission == 'relationship':
+        composition['payload']['relationships'].pop(0)
+    else:
+        composition['payload']['relationships'][0]['contract']['effects'] = []
+    with pytest.raises(CIGraphError, match='population'):
+        compile_lifecycle_composition(**composition)
+
+
+def test_machine_view_rejects_tampered_bound_envelope(composition):
+    compiled = compile_lifecycle_composition(**composition)
+    compiled['source']['tree_sha'] = '0' * 40
+    with pytest.raises(CIGraphError, match='projection identity'):
+        render_lifecycle_composition(compiled, view='machine')
+
+
+def test_authored_machine_contract_rejects_unknown_schema_version(composition):
+    composition['payload'] = json.loads(render_lifecycle_composition(compile_lifecycle_composition(**composition), view='machine'))
+    composition['payload']['schema_version'] = '1.2'
+    with pytest.raises(CIGraphError, match='schema'):
+        compile_lifecycle_composition(**composition)

@@ -132,6 +132,8 @@ def compile_lifecycle_composition(
     A ``None`` expected disposition denotes a structurally reachable pair.
     Otherwise the value is its exact canonical structural exclusion. A failed
     reachable guard must remain a rejection in its contract, never an exclusion.
+    Version 1.1 authored input omits runtime source identity; the complete bound
+    envelope comes exclusively from the protected consumer in either version.
     Callers must obtain both expected populations from protected canonical owners,
     independently of the proposed payload. No result confers truth authority.
     """
@@ -142,9 +144,14 @@ def compile_lifecycle_composition(
     )
     if errors:
         raise CIGraphError(f"lifecycle composition schema violation: {errors[0].message}")
-    if payload["source"] != dict(expected_source):
+    source_schema = schema.get("$defs", {}).get("source", schema["properties"]["source"])
+    if not isinstance(expected_source, Mapping) or next(
+        Draft202012Validator(source_schema).iter_errors(dict(expected_source)), None
+    ) is not None:
+        raise CIGraphError("lifecycle composition authenticated source identity is invalid")
+    source = dict(expected_source)
+    if payload["schema_version"] == "1.0" and payload["source"] != source:
         raise CIGraphError("lifecycle composition source identity differs from authenticated inputs")
-    source = payload["source"]
     if (
         source["graph_sha256"] != compiled_graph.graph_sha256
         or source["ci_edges_sha256"] != edge_population_sha256(compiled_graph)
@@ -318,7 +325,7 @@ def validate_lifecycle_bindings(
 
 
 def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound") -> str:
-    """Project all compiled relationships and contract fields into a human view.
+    """Project complete compiled relationships into human or authored machine views.
 
     This returns bytes-to-save as text; reconciliation retains ownership of writes.
     Diagram node IDs are derived from context-qualified states, never caller code.
@@ -327,8 +334,12 @@ def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound
     """
 
     _validate_compiled_identity(compiled)
-    if view not in {"bound", "contract"}:
+    if view not in {"bound", "contract", "machine"}:
         raise CIGraphError("lifecycle composition projection view is invalid")
+    if view == "machine":
+        return _bytes({
+            "schema_version": "1.1", "relationships": compiled["relationships"],
+        }).decode() + "\n"
     source = compiled["source"]
     identity = f"Composition: `{compiled['composition_sha256']}`"
     if view == "contract":

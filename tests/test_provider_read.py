@@ -135,3 +135,42 @@ def test_provider_retry_rejects_mutation_method() -> None:
             timeout=30,
             opener=lambda *_args, **_kwargs: pytest.fail("mutation reached transport"),
         )
+
+
+@pytest.mark.parametrize('value', ['NaN', 'nan', '+nan', '-nan', 'inf', '-inf', 'Infinity', '31', '-1', 'invalid'])
+def test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat(value: str) -> None:
+    request = Request('https://api.github.test/value', method='GET')
+    seen: list[Request] = []
+    delays: list[float] = []
+
+    def opener(current: Request, *, timeout: int) -> _Response:
+        seen.append(current)
+        if len(seen) == 1:
+            raise _http(503, value)
+        return _Response(b'exact')
+
+    with pytest.raises(ProviderReadError, match='Retry-After'):
+        open_provider_get(request, timeout=30, opener=opener, sleeper=delays.append)
+    assert seen == [request]
+    assert delays == []
+
+
+@pytest.mark.parametrize('value', ['0', '0.5', '30'])
+def test_provider_retry_preserves_finite_inclusive_delay_bounds(value: str) -> None:
+    request = Request('https://api.github.test/value', method='GET')
+    seen: list[Request] = []
+    delays: list[float] = []
+    observations: list[ProviderReadAttempt] = []
+
+    def opener(current: Request, *, timeout: int) -> _Response:
+        seen.append(current)
+        if len(seen) == 1:
+            raise _http(429, value)
+        return _Response(b'exact')
+
+    with open_provider_get(request, timeout=30, opener=opener, sleeper=delays.append, observations=observations) as response:
+        assert response.read() == b'exact'
+    assert seen == [request, request]
+    assert delays == [float(value)]
+    assert [row.ordinal for row in observations] == [1, 2]
+    assert observations[0].request_sha256 == observations[1].request_sha256

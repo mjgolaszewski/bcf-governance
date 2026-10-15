@@ -33,6 +33,13 @@ class ReconcileAuthorityTransitionResult:
     authority_commit: str
 
 
+@dataclass(frozen=True)
+class ReconcileProjectionResult:
+    rounds: int
+    source_commit: str
+    projection_commit: str
+
+
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
 _DEFINITION_MESSAGE = "chore(bcf): reconcile canonical workflow projection"
 _AUTHORITY_MESSAGE = "chore(bcf): pin reconciled workflow authority"
@@ -188,6 +195,17 @@ def _preconditions(root: Path, paths: tuple[str, ...]) -> tuple[str, str, str]:
     return head, branch, status
 
 
+
+def candidate_projection_source(root: Path, paths: tuple[str, ...] = ()) -> tuple[str, str, str]:
+    """Validate source custody before allocating candidate projection work."""
+
+    observed = _preconditions(root, paths)
+    if observed[2]:
+        raise ReconcileAuthorityTransitionError(
+            "candidate projection requires a clean committed source tree"
+        )
+    return observed
+
 def _commit_all(root: Path, message: str) -> str:
     _git(root, "add", "--all")
     if _git(root, "diff", "--cached", "--quiet", check=False).returncode == 0:
@@ -262,16 +280,23 @@ def apply_workflow_authority_transition(
     step_factory: Callable[[Path], tuple[Step, ...]],
     converge: Callable[[Iterable[Step], Callable[[], str]], int],
     snapshot: Callable[[Path], str],
-) -> ReconcileAuthorityTransitionResult | None:
+    commit_projection: bool = False,
+) -> ReconcileAuthorityTransitionResult | ReconcileProjectionResult | None:
     """Prove and promote the mandatory definition-then-authority commit pair.
 
     Returns ``None`` when canonical projection does not alter trusted workflow
     bytes; the caller may then use the ordinary file-only reconciliation path.
+    Canonical submission can instead request exact committed projection custody
+    from a clean source, through this same isolated promotion/rollback owner.
     """
 
     root = repo_root.resolve()
-    paths = _workflow_paths(root)
-    head, branch, original_status = _preconditions(root, paths)
+    has_authority = (root / "governance/ci-authority.yml").is_file()
+    paths = _workflow_paths(root) if has_authority or not commit_projection else ()
+    head, branch, original_status = (
+        candidate_projection_source(root, paths) if commit_projection
+        else _preconditions(root, paths)
+    )
     original_snapshot = snapshot(root)
     original_index_tree = _text(root, "write-tree")
     with tempfile.TemporaryDirectory(prefix="bcf-reconcile-authority-") as temporary:
@@ -280,14 +305,30 @@ def apply_workflow_authority_transition(
         copy_repository_shadow(root, backup, preserve_git_history=True)
         backup_commit = _snapshot_commit(backup)
         copy_repository_shadow(root, shadow, preserve_git_history=True)
-        before_authority, authority_and_after = _split_steps(step_factory(shadow))
+        all_steps = step_factory(shadow)
+        before_authority, authority_and_after = (
+            _split_steps(all_steps) if has_authority else (all_steps, ())
+        )
         first_rounds = converge(before_authority, lambda: snapshot(shadow))
         _reject_unexplained_workflow_drift(root, shadow, head, paths)
-        if not _changed_workflows(shadow, head, paths):
-            return None
-        definition_commit = _commit_all(shadow, _DEFINITION_MESSAGE)
-        second_rounds = converge(authority_and_after, lambda: snapshot(shadow))
-        authority_commit = _commit_all(shadow, _AUTHORITY_MESSAGE)
+        file_projection = not _changed_workflows(shadow, head, paths)
+        if file_projection:
+            if not commit_projection:
+                return None
+            second_rounds = converge(all_steps, lambda: snapshot(shadow))
+            if _changed_workflows(shadow, head, paths):
+                raise ReconcileAuthorityTransitionError(
+                    "file-only projection changed a trusted workflow after authority ordering"
+                )
+            if snapshot(shadow) == original_snapshot:
+                return None
+            definition_commit = authority_commit = _commit_all(
+                shadow, "chore(bcf): reconcile canonical candidate projections"
+            )
+        else:
+            definition_commit = _commit_all(shadow, _DEFINITION_MESSAGE)
+            second_rounds = converge(authority_and_after, lambda: snapshot(shadow))
+            authority_commit = _commit_all(shadow, _AUTHORITY_MESSAGE)
         for step in step_factory(shadow):
             step.check()
         if _text(shadow, "status", "--porcelain=v1", "-z"):
@@ -308,7 +349,7 @@ def apply_workflow_authority_transition(
         try:
             _git(root, "fetch", "--quiet", str(shadow), f"{authority_commit}:{temporary_ref}")
             _git(root, "fetch", "--quiet", str(backup), f"{backup_commit}:{backup_ref}")
-            if _text(root, "rev-parse", f"{authority_commit}^") != definition_commit:
+            if not file_projection and _text(root, "rev-parse", f"{authority_commit}^") != definition_commit:
                 raise ReconcileAuthorityTransitionError(
                     "authority commit is not the direct child of the definition commit"
                 )
@@ -357,6 +398,8 @@ def apply_workflow_authority_transition(
         finally:
             _git(root, "update-ref", "-d", temporary_ref, check=False)
             _git(root, "update-ref", "-d", backup_ref, check=False)
+    if file_projection:
+        return ReconcileProjectionResult(first_rounds + second_rounds, head, authority_commit)
     return ReconcileAuthorityTransitionResult(
         rounds=first_rounds + second_rounds,
         definition_commit=definition_commit,
@@ -364,7 +407,13 @@ def apply_workflow_authority_transition(
     )
 
 
-def result_json(result: ReconcileAuthorityTransitionResult) -> str:
+def result_json(result: ReconcileAuthorityTransitionResult | ReconcileProjectionResult) -> str:
+    if isinstance(result, ReconcileProjectionResult):
+        return json.dumps({
+            "status": "committed_candidate_projection", "authority": False,
+            "rounds": result.rounds, "source_commit": result.source_commit,
+            "projection_commit": result.projection_commit,
+        }, sort_keys=True)
     return json.dumps(
         {
             "status": "committed_workflow_authority_transition",

@@ -220,18 +220,6 @@
           }
         }
       }
-    }
-  },
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "schema_version",
-    "source",
-    "relationships"
-  ],
-  "properties": {
-    "schema_version": {
-      "const": "1.0"
     },
     "source": {
       "type": "object",
@@ -275,6 +263,23 @@
           "pattern": "^[a-f0-9]{64}$"
         }
       }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "relationships"
+  ],
+  "properties": {
+    "schema_version": {
+      "enum": [
+        "1.0",
+        "1.1"
+      ]
+    },
+    "source": {
+      "$ref": "#/$defs/source"
     },
     "relationships": {
       "type": "array",
@@ -350,5 +355,28 @@
         ]
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "1.0"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "source"
+        ]
+      },
+      "else": {
+        "not": {
+          "required": [
+            "source"
+          ]
+        }
+      }
+    }
+  ]
 }

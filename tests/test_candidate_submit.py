@@ -529,6 +529,7 @@ def test_dirty_submit_uses_canonical_normalization_then_rechecks(monkeypatch, tm
     trace = []
     def runner(argv, **_kwargs):
         assert 'reconcile' in argv and '-I' in argv
+        assert ('--commit-derived' in argv) is (argv[-1] == '--apply')
         trace.append(argv[-1])
         return SimpleNamespace(returncode=1 if len(trace) == 1 else 0, stdout='', stderr='stale scope' if len(trace) == 1 else '')
     submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)

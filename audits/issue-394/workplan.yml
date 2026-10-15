@@ -638,6 +638,8 @@ workitems:
     operation_side: contract_then_command_and_query
     target_modules:
     - bcf_governance/tooling/ci_authority_submit.py
+    - bcf_governance/tooling/reconcile_authority_transition.py
+    - bcf_governance/tooling/scaffold_governance_artifacts.py
     forbidden_surfaces:
     - frozen or in-flight predecessor bytes policies and trains
     - other agents working trees
@@ -2445,7 +2447,27 @@ implementation_slices:
     - tests.test_candidate_submit::test_fixed_point_submit_normalization_does_not_generate
     - tests.test_candidate_submit::test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout
     - tests.test_candidate_submit::test_submit_valid_release_target_uses_the_existing_fixed_point_check
+    - tests.test_reconcile_governance::test_candidate_file_projection_commits_exact_derived_bytes_and_is_idempotent
+    - tests.test_reconcile_governance::test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry
+    - tests.test_reconcile_governance::test_commit_derived_preserves_trusted_workflow_definition_authority_pair
+    - tests.test_reconcile_governance::test_commit_derived_cli_preserves_existing_projection_owner_result
     negative_controls:
+    - cause: dirty-projection-source
+      test: tests.test_reconcile_governance::test_candidate_file_projection_rejects_dirty_source_before_shadow
+    - cause: source-movement-during-projection
+      test: tests.test_reconcile_governance::test_candidate_file_projection_preserves_concurrent_source_movement
+    - cause: projection-owner-failure
+      test: tests.test_reconcile_governance::test_candidate_file_projection_failure_preserves_original_tree
+    - cause: late-trusted-workflow-mutation
+      test: tests.test_reconcile_governance::test_candidate_file_projection_rejects_late_trusted_workflow_change
+    - cause: projection-promotion-failure
+      test: tests.test_reconcile_governance::test_candidate_file_projection_promotion_failure_restores_exact_source
+    - cause: contradictory-force-apply-before-runtime
+      test: tests.test_reconcile_governance::test_reconcile_force_apply_rejects_before_runtime_allocation
+    - cause: commit-derived-check-mode
+      test: tests.test_reconcile_governance::test_commit_derived_rejects_check_before_runtime_allocation
+    - cause: dirty-source-before-runtime
+      test: tests.test_reconcile_governance::test_commit_derived_rejects_dirty_before_runtime_allocation
     - cause: authored-phase-contradiction
       test: tests.test_candidate_submit::test_authored_contradiction_rejects_before_any_normalization
     - cause: wrong-intent-assertion

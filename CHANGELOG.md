@@ -17,7 +17,9 @@ Release target: `2.5.0`
 - Added a dormant lifecycle composition schema and pure compiler over existing
   CI edges. Independent relationship and runtime-effect populations reject
   omissions, false exclusions, stale identities, and missing causal controls;
-  compilation grants no execution or certification authority.
+  compilation grants no execution or certification authority. Versioned authored
+  machine contracts regenerate without self-referential subject hashes; protected
+  fact catalogues bind exact source producers, verifiers, and proposition fields.
 
 - Added opt-in pipeline timing observations that keep elapsed time, overlapping
   execution, external waits, unobserved gaps, and measured CPU separate. Failed,
@@ -29,6 +31,10 @@ Release target: `2.5.0`
   reconciliation owner before deriving lifecycle scope and capturing the exact
   candidate. Authored contradictions, incorrect intent assertions, busy local
   execution, and failed normalization stop before proof or push.
+  File-only normalization commits the verified derived candidate through the
+  existing isolated reconciliation transaction before exact-subject recapture.
+- Rejected nonfinite provider `Retry-After` values before sleeping or retrying,
+  preserving finite bounded delays and exact GET request identity.
 
 - Derived bounded post-merge workitem intent from the validated dependency DAG
   instead of YAML list position, so one exact `DONE` predecessor can certify

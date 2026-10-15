@@ -77,7 +77,7 @@ def _normalize_submission(
             return
         # Only the existing canonical owner decides whether inputs can converge.
         # Keep its deferred write callbacks behind its CLI mutation boundary.
-        result = runner([*command, "--apply"], cwd=root)
+        result = runner([*command, "--commit-derived", "--apply"], cwd=root)
         if result.returncode:
             detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
             raise ProspectiveValidationError(

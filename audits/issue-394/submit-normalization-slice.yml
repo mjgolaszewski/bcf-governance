@@ -111,7 +111,7 @@ file_projection_custody_correction:
   - Add an internal front-door-selected --commit-derived assertion for apply; callers still select no reconciliation stages or lifecycle intent.
   - Ordinary adopters without a self-authority registry retain their canonical projection ownership and receive no invented controller requirement.
   contract:
-  - Require a clean committed source before candidate projection, before any shadow owner runs.
+  - Reject contradictory apply/check assertions before runtime allocation and require a clean committed source before any shadow owner runs.
   - Prove all canonical projection bytes in the existing isolated transaction shadow and commit only that resulting derived candidate.
   - Keep every existing exact branch subject snapshot concurrency and rollback check before promotion.
   - If trusted workflows change, retain the exact two-commit definition then authority transaction.
@@ -127,5 +127,10 @@ file_projection_custody_correction:
   - tests.test_reconcile_governance::test_candidate_file_projection_rejects_late_trusted_workflow_change
   - tests.test_reconcile_governance::test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry
   - tests.test_reconcile_governance::test_commit_derived_rejects_check_before_runtime_allocation
+  - tests.test_reconcile_governance::test_commit_derived_rejects_dirty_before_runtime_allocation
+  - tests.test_reconcile_governance::test_commit_derived_cli_preserves_existing_projection_owner_result
+  - tests.test_reconcile_governance::test_commit_derived_preserves_trusted_workflow_definition_authority_pair
+  - tests.test_reconcile_governance::test_candidate_file_projection_promotion_failure_restores_exact_source
+  - tests.test_reconcile_governance::test_reconcile_force_apply_rejects_before_runtime_allocation
   - tests.test_candidate_submit::test_dirty_submit_uses_canonical_normalization_then_rechecks
   forbidden_surfaces: [direct Git commit in submission owner, provider mutation, selected reconciliation stages, hand-authored workflow pins, maintained adopters, frozen maintenance distribution]

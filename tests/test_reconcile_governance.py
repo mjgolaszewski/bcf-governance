@@ -955,3 +955,219 @@ def test_partial_release_ownership_rejects_in_first_authored_stage(tmp_path, mon
     assert steps[0].step_id == 'authored-release-target'
     with pytest.raises(ReleaseVersionProjectionError, match='ownership is partial'):
         steps[0].apply()
+
+
+def _candidate_projection_steps(root: Path) -> tuple[ReconcileStep, ...]:
+    output = root / 'derived.txt'
+
+    def project() -> None:
+        output.write_text('derived\n')
+
+    def check() -> None:
+        assert output.read_text() == 'derived\n'
+
+    return (
+        ReconcileStep('projection', check, project),
+        ReconcileStep('workflow-authority', lambda: None, lambda: None),
+    )
+
+
+def test_candidate_file_projection_commits_exact_derived_bytes_and_is_idempotent(tmp_path):
+    import json
+
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    workflow = (root / '.github/workflows/admission.yml').read_bytes()
+    authority = (root / 'governance/ci-authority.yml').read_bytes()
+    result = apply_workflow_authority_transition(
+        root, step_factory=_candidate_projection_steps, converge=converge,
+        snapshot=_transition_snapshot, commit_projection=True,
+    )
+    assert result.source_commit == base
+    assert _git(root, 'rev-parse', result.projection_commit + '^') == base
+    assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
+    assert _git(root, 'status', '--porcelain') == ''
+    assert _git(root, 'diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD') == 'derived.txt'
+    assert (root / '.github/workflows/admission.yml').read_bytes() == workflow
+    assert (root / 'governance/ci-authority.yml').read_bytes() == authority
+    report = json.loads(authority_transition.result_json(result))
+    assert report['status'] == 'committed_candidate_projection'
+    assert report['projection_commit'] == result.projection_commit
+    assert 'authority_commit' not in report
+    assert apply_workflow_authority_transition(
+        root, step_factory=_candidate_projection_steps, converge=converge,
+        snapshot=_transition_snapshot, commit_projection=True,
+    ) is None
+    assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
+
+
+def test_candidate_file_projection_rejects_dirty_source_before_shadow(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'intent').write_text('uncommitted\n')
+    with pytest.raises(ReconcileAuthorityTransitionError, match='clean committed'):
+        apply_workflow_authority_transition(
+            root, step_factory=lambda _root: pytest.fail('dirty candidate allocated shadow owners'),
+            converge=converge, snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert (root / 'intent').read_text() == 'uncommitted\n'
+
+
+def test_candidate_file_projection_preserves_concurrent_source_movement(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+
+    def steps(candidate):
+        first, authority = _candidate_projection_steps(candidate)
+
+        def project():
+            first.apply()
+            (root / 'intent').write_text('concurrent\n')
+
+        return (ReconcileStep('projection', first.check, project), authority)
+
+    with pytest.raises(ReconcileAuthorityTransitionError, match='repository changed'):
+        apply_workflow_authority_transition(
+            root, step_factory=steps, converge=converge,
+            snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert _git(root, 'rev-parse', 'HEAD') == base
+    assert (root / 'intent').read_text() == 'concurrent\n'
+    assert not (root / 'derived.txt').exists()
+
+
+def test_candidate_file_projection_failure_preserves_original_tree(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    original = _transition_snapshot(root)
+
+    def steps(candidate):
+        def fail():
+            (candidate / 'derived.txt').write_text('partial\n')
+            raise ReconcileError('injected projection failure')
+        return (ReconcileStep('projection', lambda: None, fail), _candidate_projection_steps(candidate)[1])
+
+    with pytest.raises(ReconcileError, match='injected projection failure'):
+        apply_workflow_authority_transition(
+            root, step_factory=steps, converge=converge,
+            snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert _git(root, 'rev-parse', 'HEAD') == base
+    assert _transition_snapshot(root) == original
+    assert _git(root, 'status', '--porcelain') == ''
+
+
+def test_candidate_file_projection_rejects_late_trusted_workflow_change(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    original = _transition_snapshot(root)
+
+    def steps(candidate):
+        def late():
+            (candidate / '.github/workflows/admission.yml').write_text('name: late\n')
+        return (*_candidate_projection_steps(candidate), ReconcileStep('late', lambda: None, late))
+
+    with pytest.raises(ReconcileAuthorityTransitionError, match='file-only.*trusted workflow'):
+        apply_workflow_authority_transition(
+            root, step_factory=steps, converge=converge,
+            snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert _transition_snapshot(root) == original
+    assert _git(root, 'status', '--porcelain') == ''
+
+
+def test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'governance/ci-authority.yml').unlink()
+    _git(root, 'add', '--all')
+    _git(root, 'commit', '--quiet', '-m', 'ordinary adopter')
+    result = apply_workflow_authority_transition(
+        root, step_factory=lambda candidate: _candidate_projection_steps(candidate)[:1],
+        converge=converge, snapshot=_transition_snapshot, commit_projection=True,
+    )
+    assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
+    assert _git(root, 'status', '--porcelain') == ''
+    assert not (root / 'governance/ci-authority.yml').exists()
+
+
+def test_commit_derived_rejects_check_before_runtime_allocation(monkeypatch, tmp_path):
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for invalid assertion'))
+    with pytest.raises(SystemExit) as error:
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--check', '--commit-derived'])
+    assert error.value.code == 2
+
+
+def test_commit_derived_rejects_dirty_before_runtime_allocation(monkeypatch, tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'intent').write_text('dirty\n')
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for dirty candidate'))
+    with pytest.raises(SystemExit, match='clean committed'):
+        scaffold.reconcile_main(['--repo-root', str(root), '--apply', '--commit-derived'])
+
+
+def test_commit_derived_cli_preserves_existing_projection_owner_result(monkeypatch, tmp_path, capsys):
+    import json
+
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ())
+    monkeypatch.setattr(scaffold, 'reconcile_steps', lambda *_args: _candidate_projection_steps(root))
+    monkeypatch.setattr(scaffold, 'record_reconcile_steps', lambda *_args: None)
+
+    def project(observed_root, **kwargs):
+        assert observed_root == root
+        assert kwargs['commit_projection'] is True
+        return authority_transition.ReconcileProjectionResult(2, base, 'a' * 40)
+
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', project)
+    scaffold.reconcile_main(['--repo-root', str(root), '--apply', '--commit-derived'])
+    report = json.loads(capsys.readouterr().out)
+    assert report['status'] == 'committed_candidate_projection'
+    assert report['authority'] is False
+    assert report['source_commit'] == base
+
+
+def test_commit_derived_preserves_trusted_workflow_definition_authority_pair(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'intent').write_text('new\n')
+    _git(root, 'add', 'intent')
+    _git(root, 'commit', '--quiet', '-m', 'authored candidate')
+    base = _git(root, 'rev-parse', 'HEAD')
+    result = apply_workflow_authority_transition(
+        root, step_factory=_transition_steps, converge=converge,
+        snapshot=_transition_snapshot, commit_projection=True,
+    )
+    assert _git(root, 'rev-parse', result.definition_commit + '^') == base
+    assert _git(root, 'rev-parse', result.authority_commit + '^') == result.definition_commit
+    assert _git(root, 'rev-parse', 'HEAD') == result.authority_commit
+    assert _git(root, 'status', '--porcelain') == ''
+
+
+def test_candidate_file_projection_promotion_failure_restores_exact_source(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    original = _transition_snapshot(root)
+    failed = False
+
+    def snapshot(candidate):
+        nonlocal failed
+        if candidate == root and not failed and _git(root, 'rev-parse', 'HEAD') != base:
+            failed = True
+            raise ReconcileAuthorityTransitionError('injected file projection promotion failure')
+        return _transition_snapshot(candidate)
+
+    with pytest.raises(ReconcileAuthorityTransitionError, match='injected file projection promotion failure'):
+        apply_workflow_authority_transition(
+            root, step_factory=_candidate_projection_steps, converge=converge,
+            snapshot=snapshot, commit_projection=True,
+        )
+    assert failed
+    assert _git(root, 'rev-parse', 'HEAD') == base
+    assert _transition_snapshot(root) == original
+    assert _git(root, 'status', '--porcelain') == ''
+    assert _git(root, 'for-each-ref', '--format=%(refname)', 'refs/bcf/') == ''
+
+
+def test_reconcile_force_apply_rejects_before_runtime_allocation(monkeypatch, tmp_path):
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ('test',))
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for contradictory force/apply'))
+    with pytest.raises(SystemExit, match='--force is valid only with --check'):
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply', '--force'])

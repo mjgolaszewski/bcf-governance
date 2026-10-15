@@ -250,7 +250,7 @@
     },
     "schemas/ci-lifecycle-composition.schema.json": {
       "operation": "copy",
-      "sha256": "e7036bdeac25937aab951a66f7a00a6d42c7e9ba464c4ddc0fd70908e214c515"
+      "sha256": "85781ff360710fcee8924ac2a4b65f6715adfcf47863b8d609839524f5458e13"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -532,7 +532,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "4439d3ec6e0db27d46aa9a2e6db2c4b0ae0e8a9b5009a40da8c791048de094eb"
+      "sha256": "13d68e6c5c56253e1719d5dcea4092872995ef98b8f77288c6dc1d926269086a"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -716,7 +716,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "c98a80260968d1f0c41d2ce716c8cf1d3bb9dbc857e8d31b4638b4ad38f09f5c"
+      "sha256": "e164d4eb3d78b587aad8f6c57af4ee0a932e4c698bbe664176970ce76def01dd"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
@@ -1315,7 +1315,7 @@
     },
     "scripts/_bcf_runtime/provider_read.py": {
       "operation": "copy",
-      "sha256": "f8cec39ffccbb99167d7ff7f0d36b09a38777db09cd9e277849f4a52eac608dd"
+      "sha256": "7a2b8cd2d05aeedaf3d4167c74594ac57cf05e7b9a721a9c6f282071bda24c4b"
     },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",
@@ -1335,7 +1335,7 @@
     },
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
-      "sha256": "1ab41e1c61b6cbe0559ee4c4c6d92d0d1c31938a8f12581bbe08b8308e55747f"
+      "sha256": "162a298cc596ff72c035b84c73e5ee70794330f343ac08fd792bf25d49a955f0"
     },
     "scripts/_bcf_runtime/reconcile_stage_ledger.py": {
       "operation": "copy",
@@ -1423,7 +1423,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "977894c30116cb5cbad1bc88b167b9d3f96e99f73c22bd0bdd6f489d92341363"
+      "sha256": "f91a870d698e092d7e7a86bfdad3bfe1f9519a305cfada1801e9958d21c8f744"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

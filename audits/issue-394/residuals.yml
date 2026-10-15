@@ -185,7 +185,22 @@ items:
   owner: ci_authority
   source: bcf_governance/tooling/ci_graph_timeouts.py
   regression_surface: tests/test_ci_graph.py
-  evidence: Separate agent branch contains deadline work; reconcile only admitted behavior then close measured-envelope composition
-    and every sibling provider consumer
+  evidence: Preserved provider-deadline branch is specification-only and supplies no admitted runtime fix; static component minima remain. Full measured envelopes and every sibling consumer remain required; source-bound research is retained in audits/issue-394/deadline-research.yml
   residual_owner: P32-P0-05
   consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: 394.nonfinite-provider-backoff
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/provider_read.py
+  regression_surface: tests/test_provider_read.py
+  evidence: Four NaN headers reproduced the bounded-delay escape before correction; finite-number rejection now preserves valid boundaries. Local behavioral tests pass; governed train and installed qualification remain pending.
+  residual_owner: P32-P0-02
+  consumer_adoption: No predecessor or immutable maintenance bytes were changed; independent distribution qualification remains required.
+- id: 394.file-projection-custody
+  disposition: PARTIAL
+  owner: operations
+  source: bcf_governance/tooling/reconcile_authority_transition.py
+  regression_surface: tests/test_reconcile_governance.py
+  evidence: Standalone reconciliation intentionally leaves file-only projections for review. Canonical submission now requests exact clean-source shadow promotion through that same owner before subject recapture; local tests preserve workflow authority pairs, ordinary adopter absence, concurrency and rollback.
+  residual_owner: P32-P0-07
+  consumer_adoption: Full canonical submission and independent provider/distribution qualification remain pending; local commits grant no certification authority.

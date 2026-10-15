@@ -637,6 +637,11 @@ publication boundary, and successor eligibility. It rechecks unchanged custody
 immediately before pushing the exact proved commit. An optional `--intent`
 assertion must agree with the derived intent.
 
+Start from a clean committed authored candidate. When derived projections need
+normalization, the reconciliation transaction proves them in an isolated shadow
+and commits the exact derived candidate before prospective proof. Trusted
+workflow changes retain their definition and authority commit pair.
+
 Prospective stage events are flushed as non-authoritative JSON on stderr while
 the command runs. The terminal result remains on stdout. Progress events are
 observations; provider certification still comes from the independent authority.
