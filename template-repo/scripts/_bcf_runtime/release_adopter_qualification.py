@@ -31,6 +31,7 @@ from .release_adopter_sources import (
 )
 from .release_asset_inventory import (
     checksum_declared_assets,
+    exact_assets,
     release_asset_paths,
     release_asset_version,
 )
@@ -62,10 +63,13 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _release_assets(root: Path) -> tuple[str, dict[str, str]]:
+def _release_assets(
+    root: Path,
+) -> tuple[str, dict[str, str], dict[str, str]]:
     try:
         paths = release_asset_paths(root)
-        return release_asset_version(paths).value, checksum_declared_assets(paths)
+        version = release_asset_version(paths).value
+        return version, exact_assets(paths), checksum_declared_assets(paths)
     except GitHubControllerError as exc:
         raise ReleaseQualificationError(str(exc)) from exc
 
@@ -398,7 +402,7 @@ def qualify_release(
     """Qualify provider-resolved sources without mutating maintained checkouts."""
 
     contract = load_contract(repo_root.resolve())
-    version, assets = _release_assets(release_assets.resolve())
+    version, build_assets, assets = _release_assets(release_assets.resolve())
     release_main = resolve_main(provider_api, repository)
     try:
         build = json.loads(release_build_manifest.read_text(encoding="utf-8"))
@@ -413,7 +417,7 @@ def qualify_release(
             "commit_sha": release_main.checkout_sha,
             "tree_sha": release_main.tree_sha,
         }
-        or build.get("assets") != assets
+        or build.get("assets") != build_assets
     ):
         raise ReleaseQualificationError(
             "release assets are not bound to the current exact build manifest"
