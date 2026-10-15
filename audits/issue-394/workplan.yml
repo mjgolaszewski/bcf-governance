@@ -100,7 +100,7 @@ workitems:
     evidence: []
   foundation.residuals:
     summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
-    status: DONE
+    status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: evidence
     architectural_layer: tooling
@@ -2468,6 +2468,10 @@ implementation_slices:
       test: tests.test_reconcile_governance::test_commit_derived_rejects_check_before_runtime_allocation
     - cause: dirty-source-before-runtime
       test: tests.test_reconcile_governance::test_commit_derived_rejects_dirty_before_runtime_allocation
+    - cause: standalone-authored-phase-before-allocation
+      test: tests.test_reconcile_governance::test_reconcile_authored_phase_rejects_before_runtime_or_shadow
+    - cause: standalone-authored-release-before-allocation
+      test: tests.test_reconcile_governance::test_reconcile_authored_release_rejects_before_runtime_or_shadow
     - cause: authored-phase-contradiction
       test: tests.test_candidate_submit::test_authored_contradiction_rejects_before_any_normalization
     - cause: wrong-intent-assertion

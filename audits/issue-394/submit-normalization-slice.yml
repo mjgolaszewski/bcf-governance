@@ -134,3 +134,18 @@ file_projection_custody_correction:
   - tests.test_reconcile_governance::test_reconcile_force_apply_rejects_before_runtime_allocation
   - tests.test_candidate_submit::test_dirty_submit_uses_canonical_normalization_then_rechecks
   forbidden_surfaces: [direct Git commit in submission owner, provider mutation, selected reconciliation stages, hand-authored workflow pins, maintained adopters, frozen maintenance distribution]
+
+standalone_authored_preflight_correction:
+  workitem: P32-P0-07
+  bounded_context: operations
+  architectural_layer: tooling
+  operation_side: command
+  targets: [bcf_governance/tooling/scaffold_governance_artifacts.py]
+  contract:
+  - Invoke the existing pure authored phase and release-target validators before runtime allocation and reconciliation shadow creation.
+  - Keep their existing first-stage checks and cause-specific errors; generated-state checks still follow necessary generation.
+  - Preserve graphless fixtures and standalone apply/check behavior.
+  exact_controls:
+  - tests.test_reconcile_governance::test_reconcile_authored_phase_rejects_before_runtime_or_shadow
+  - tests.test_reconcile_governance::test_reconcile_authored_release_rejects_before_runtime_or_shadow
+  forbidden: [new state evaluator, bypassing authored contradictions, manual generated hashes, provider mutation]
