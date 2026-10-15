@@ -30,6 +30,11 @@ Release target: `2.5.0`
   candidate. Authored contradictions, incorrect intent assertions, busy local
   execution, and failed normalization stop before proof or push.
 
+- Derived bounded post-merge workitem intent from the validated dependency DAG
+  instead of YAML list position, so one exact `DONE` predecessor can certify
+  its declared `TODO` successor without unrelated active work suppressing the
+  proposition; ambiguous, fan-in, and fan-out frontiers remain non-certifying.
+
 ## [2.3.2] - 2026-10-13
 
 ### Fixed
