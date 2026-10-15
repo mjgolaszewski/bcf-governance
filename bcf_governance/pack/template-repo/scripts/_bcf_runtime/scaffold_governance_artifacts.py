@@ -340,6 +340,8 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             lambda: validate_ci_state_matrix(repo_root),
             watch_paths=(
                 "spec/RELEASE_TRAIN_STATE_DAG.md",
+                "spec/phase0/release-train-backtrace.yml",
+                "schemas/release-train-backtrace.schema.json",
                 "governance/ci-graph.yml",
                 "bcf_governance/tooling",
                 ".github/workflows",
@@ -648,6 +650,8 @@ def reconcile_main(argv: list[str] | None = None) -> None:
             from .governance_validation.authored_phase_state import validate_authored_phase_state
             validate_authored_phase_state(root)
         validate_authored_release_target(root, __version__)
+        from .governance_validation.ci_state_matrix import validate_ci_state_matrix
+        validate_ci_state_matrix(root, authored_only=True)
         if args.commit_derived:
             candidate_projection_source(root)
         project_python = (

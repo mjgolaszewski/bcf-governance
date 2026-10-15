@@ -35,7 +35,7 @@ remaining: Full typed context composition primitive binding recovery execution g
 
 local_execution:
   red: Eleven structural controls initially failed against legacy behavior; two early-placement controls initially reached lease/runtime allocation.
-  focused: All 102 state-matrix submit and reconciliation cases passed after implementation.
+  focused: All 103 state-matrix submit and reconciliation cases passed after authored-only mode integration; normal full checks remain unchanged.
   source_compatibility: Exact provider source fd174babd417970929ffde1d62e695010b8f378c with sixteen transitions passes the structural schema and typed-reference checks unchanged; this is not custody admission.
   static_gates: Existing lint and typecheck gates passed.
-  pending: Pack architecture qualification and canonical test manifest/source lock regeneration.
+  pending: Final integrated architecture qualification and canonical test manifest/source lock regeneration.

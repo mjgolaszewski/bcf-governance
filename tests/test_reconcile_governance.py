@@ -1205,7 +1205,7 @@ def test_reconcile_authored_release_rejects_before_runtime_or_shadow(monkeypatch
 def test_reconcile_authored_machine_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
     from bcf_governance.tooling.governance_validation import ci_state_matrix
 
-    def reject(_root):
+    def reject(_root, **_kwargs):
         raise ci_state_matrix.CIStateMatrixError("machine-readable authored contradiction")
 
     monkeypatch.setattr(ci_state_matrix, "validate_ci_state_matrix", reject)

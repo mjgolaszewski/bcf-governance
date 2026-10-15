@@ -676,7 +676,7 @@ def test_submit_valid_release_target_uses_the_existing_fixed_point_check(monkeyp
 def test_submit_authored_machine_rejects_before_lease_or_reconcile(monkeypatch, tmp_path):
     from bcf_governance.tooling.governance_validation.ci_state_matrix import CIStateMatrixError
 
-    def reject(_root):
+    def reject(_root, **_kwargs):
         raise CIStateMatrixError("machine-readable authored contradiction")
 
     monkeypatch.setattr(submit, "validate_ci_state_matrix", reject, raising=False)

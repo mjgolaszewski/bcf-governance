@@ -1,0 +1,515 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Release train backtrace structural references version 2; no adoption authority",
+  "type": "object",
+  "required": [
+    "document",
+    "construction_rule",
+    "invariants",
+    "primitives",
+    "states",
+    "transitions",
+    "bounded_workitem_frontier_contract",
+    "adopter_source_transaction",
+    "adopter_compatibility_observation",
+    "composition",
+    "exclusions",
+    "validation_status"
+  ],
+  "properties": {
+    "document": {
+      "type": "object",
+      "required": [
+        "kind",
+        "id",
+        "schema_version",
+        "status",
+        "issue",
+        "source"
+      ],
+      "properties": {
+        "kind": {
+          "const": "release_train_phase0_backtrace"
+        },
+        "schema_version": {
+          "const": 2
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue": {
+          "const": 394
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "repository",
+            "commit_sha",
+            "tree_sha",
+            "installed_controller_commit_sha",
+            "ci_graph_sha256"
+          ],
+          "properties": {
+            "repository": {
+              "type": "string",
+              "minLength": 3
+            },
+            "commit_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "tree_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "installed_controller_commit_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "ci_graph_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          }
+        }
+      }
+    },
+    "construction_rule": {
+      "type": "object"
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "statement",
+          "basis"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^INV-RT-[0-9]{3}$"
+          },
+          "statement": {
+            "type": "string",
+            "minLength": 1
+          },
+          "basis": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "primitives": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "canonical_name",
+          "owner",
+          "invariants"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^PRIM-[A-Z0-9-]+$"
+          },
+          "canonical_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "invariants": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^INV-RT-[0-9]{3}$"
+            }
+          }
+        }
+      }
+    },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "owner",
+          "authority"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^ST-[A-Z0-9-]+$"
+          },
+          "owner": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "from",
+          "to",
+          "invariants",
+          "producer",
+          "consumer",
+          "cost",
+          "rejection"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^TR-[0-9]{3}$"
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^ST-[A-Z0-9-]+$"
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^ST-[A-Z0-9-]+$"
+          },
+          "invariants": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^INV-RT-[0-9]{3}$"
+            }
+          },
+          "producer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "consumer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "cost": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rejection": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "bounded_workitem_frontier_contract": {
+      "type": "object",
+      "required": [
+        "normative",
+        "primitive"
+      ],
+      "properties": {
+        "normative": {
+          "const": true
+        },
+        "primitive": {
+          "type": "string",
+          "pattern": "^PRIM-[A-Z0-9-]+$"
+        }
+      }
+    },
+    "adopter_source_transaction": {
+      "type": "object",
+      "required": [
+        "normative",
+        "status",
+        "exclusion_reason"
+      ],
+      "properties": {
+        "normative": {
+          "const": false
+        },
+        "status": {
+          "const": "rejected_provider_coupled_design"
+        },
+        "exclusion_reason": {
+          "const": "mutable_external_adopter_state_has_no_release_authority"
+        }
+      }
+    },
+    "adopter_compatibility_observation": {
+      "type": "object",
+      "required": [
+        "normative",
+        "publication_prerequisite",
+        "primitives",
+        "edge_contract_fields",
+        "edges"
+      ],
+      "properties": {
+        "normative": {
+          "const": true
+        },
+        "publication_prerequisite": {
+          "const": false
+        },
+        "primitives": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^PRIM-[A-Z0-9-]+$"
+          }
+        },
+        "edge_contract_fields": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "allOf": [
+            {
+              "contains": {
+                "const": "id"
+              }
+            },
+            {
+              "contains": {
+                "const": "from"
+              }
+            },
+            {
+              "contains": {
+                "const": "to"
+              }
+            },
+            {
+              "contains": {
+                "const": "producer"
+              }
+            },
+            {
+              "contains": {
+                "const": "consumer"
+              }
+            },
+            {
+              "contains": {
+                "const": "canonical_owner"
+              }
+            },
+            {
+              "contains": {
+                "const": "required"
+              }
+            },
+            {
+              "contains": {
+                "const": "identity_binding"
+              }
+            },
+            {
+              "contains": {
+                "const": "authority_effect"
+              }
+            },
+            {
+              "contains": {
+                "const": "earliest_rejection"
+              }
+            },
+            {
+              "contains": {
+                "const": "reject"
+              }
+            },
+            {
+              "contains": {
+                "const": "failure_transition"
+              }
+            },
+            {
+              "contains": {
+                "const": "recovery_transition"
+              }
+            },
+            {
+              "contains": {
+                "const": "cost"
+              }
+            }
+          ]
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "from",
+              "to",
+              "producer",
+              "consumer",
+              "canonical_owner",
+              "required",
+              "identity_binding",
+              "authority_effect",
+              "earliest_rejection",
+              "reject",
+              "failure_transition",
+              "recovery_transition",
+              "cost"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1
+              },
+              "producer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "consumer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "canonical_owner": {
+                "type": "string",
+                "minLength": 1
+              },
+              "required": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "identity_binding": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "authority_effect": {
+                "type": "string",
+                "minLength": 1
+              },
+              "earliest_rejection": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reject": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "failure_transition": {
+                "type": "string",
+                "minLength": 1
+              },
+              "recovery_transition": {
+                "type": "string",
+                "minLength": 1
+              },
+              "cost": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    },
+    "composition": {
+      "type": "object"
+    },
+    "exclusions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "reason"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "invariant": {
+            "type": "string",
+            "pattern": "^INV-RT-[0-9]{3}$"
+          }
+        }
+      }
+    },
+    "validation_status": {
+      "type": "object",
+      "required": [
+        "adoption_blocker"
+      ],
+      "properties": {
+        "adoption_blocker": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}

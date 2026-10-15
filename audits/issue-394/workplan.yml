@@ -134,6 +134,10 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    - bcf_governance/tooling/scaffold_governance_artifacts.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    - schemas/release-train-backtrace.schema.json
     - bcf_governance/tooling/ci_graph_edges.py
     - bcf_governance/tooling/ci_graph_contracts.py
     - bcf_governance/tooling/semantic_operation_effects.py
@@ -1377,6 +1381,7 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - authored-machine-backtrace-validation
   F04:
     requirement: human matrix/DAG/transition semantics are deterministically generated.
     owner: ci_authority
@@ -1967,6 +1972,7 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - authored-machine-backtrace-validation
     - opt-in-python-call-facts
     - source-operation-call-population
   AC17:
@@ -2623,3 +2629,33 @@ implementation_slices:
     remaining:
     - Complete module initialization native external dynamic and cross-language effect populations still require protected independent acquisition and interpretation.
     - No installed runtime consumer or authority activation uses this query.
+  authored-machine-backtrace-validation:
+    id: authored-machine-backtrace-validation
+    workitem: P32-P0-03
+    scope: Existing backtrace structural schema strict decoding typed references and early authored rejection only; no normative adoption or independent runtime coverage.
+    contract: audits/issue-394/backtrace-validation-contract.yml
+    producer: bcf_governance/tooling/governance_validation/ci_state_matrix.py::validate_ci_state_matrix
+    consumer: Existing canonical reconcile and submit authored-state front doors
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_state_matrix::test_changed_ci_contract_requires_same_candidate_matrix_update
+    - tests.test_ci_state_matrix::test_matrix_guard_is_self_required_and_adopter_inapplicable
+    negative_controls:
+    - cause: duplicated-typed-state-id
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[duplicate_state]
+    - cause: undeclared-state-reference
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[state_reference]
+    - cause: candidate-field-list-bypass
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[declared_field_bypass]
+    - cause: duplicate-yaml-key
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_duplicate_yaml_keys
+    - cause: symlinked-authored-model
+      test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_symlinked_input
+    - cause: machine-contradiction-before-runtime
+      test: tests.test_reconcile_governance::test_reconcile_authored_machine_rejects_before_runtime_or_shadow
+    - cause: machine-contradiction-before-lease
+      test: tests.test_candidate_submit::test_submit_authored_machine_rejects_before_lease_or_reconcile
+    remaining:
+    - Complete independent protected context populations actual effect interpretation recovery and installed-consumer conformance are not established by authored structural checks.
+    - Prose retirement generated dependency views and exact terminal custody remain blocked.
