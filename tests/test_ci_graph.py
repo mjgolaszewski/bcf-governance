@@ -384,6 +384,104 @@ def test_post_merge_scope_selects_unique_done_frontier_amid_unrelated_active_wor
     assert authored_post_merge_scope(tmp_path) == ("pr", None)
 
 
+def test_post_merge_scope_derives_nonprefix_dependency_frontier(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P02",
+            "workitems": "plans/phase-02-workitems.yml",
+            "log": "phases/phase-02-log.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P02-R0", "status": "IN_PROGRESS", "acceptance": []},
+            {"id": "P02-R1", "status": "IN_PROGRESS", "acceptance": []},
+            {"id": "P02-R2", "status": "IN_PROGRESS", "acceptance": []},
+            {"id": "P02-R3", "status": "DONE", "acceptance": []},
+            {
+                "id": "P02-R4",
+                "status": "TODO",
+                "acceptance": ["requires-workitem-closure:P02-R3"],
+            },
+        ]}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    assert authored_post_merge_scope(tmp_path) == ("workitem", "P02-R3")
+
+
+def test_post_merge_scope_withholds_ambiguous_parallel_frontiers(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P02",
+            "workitems": "plans/phase-02-workitems.yml",
+            "log": "phases/phase-02-log.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P02-A1", "status": "DONE", "acceptance": []},
+            {
+                "id": "P02-A2",
+                "status": "TODO",
+                "acceptance": ["requires-workitem-closure:P02-A1"],
+            },
+            {"id": "P02-B1", "status": "DONE", "acceptance": []},
+            {
+                "id": "P02-B2",
+                "status": "TODO",
+                "acceptance": ["requires-workitem-closure:P02-B1"],
+            },
+        ]}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    assert authored_post_merge_scope(tmp_path) == ("pr", None)
+
+
+def test_post_merge_scope_withholds_fan_in_frontier(tmp_path: Path) -> None:
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "phases").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text(
+        yaml.safe_dump({"active_phase": {
+            "id": "P02",
+            "workitems": "plans/phase-02-workitems.yml",
+            "log": "phases/phase-02-log.yml",
+        }}), encoding="utf-8"
+    )
+    (tmp_path / "plans/phase-02-workitems.yml").write_text(
+        yaml.safe_dump({"workitems": [
+            {"id": "P02-A", "status": "DONE", "acceptance": []},
+            {"id": "P02-B", "status": "DONE", "acceptance": []},
+            {
+                "id": "P02-C",
+                "status": "TODO",
+                "acceptance": [
+                    "requires-workitem-closure:P02-A",
+                    "requires-workitem-closure:P02-B",
+                ],
+            },
+        ]}), encoding="utf-8"
+    )
+    (tmp_path / "phases/phase-02-log.yml").write_text(
+        yaml.safe_dump({"document": {"status": "active"}}), encoding="utf-8"
+    )
+
+    assert authored_post_merge_scope(tmp_path) == ("pr", None)
+
+
 def test_post_merge_scope_selects_pr_for_active_direct_successor(
     tmp_path: Path,
 ) -> None:

@@ -6,6 +6,13 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Derived bounded post-merge workitem intent from the validated dependency DAG
+  instead of YAML list position, so one exact `DONE` predecessor can certify
+  its declared `TODO` successor without unrelated active work suppressing the
+  proposition; ambiguous, fan-in, and fan-out frontiers remain non-certifying.
+
 ## [2.3.2] - 2026-10-13
 
 ### Fixed
