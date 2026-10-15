@@ -737,3 +737,61 @@ def test_authored_machine_contract_rejects_unknown_schema_version(composition):
     composition['payload']['schema_version'] = '1.2'
     with pytest.raises(CIGraphError, match='schema'):
         compile_lifecycle_composition(**composition)
+
+
+@pytest.fixture
+def operation_call_binding_inputs(binding_inputs, tmp_path):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+    source = tmp_path / "runtime.py"
+    source.write_text(source.read_text().replace("return True", "return declared_port()") + "\ndef declared_port():\n    return True\n")
+    inventory = discover_python_source(tmp_path, files=[source], call_contracts_version="1.0")
+    binding_inputs["source_inventory"] = inventory
+    roots = ("runtime.py::produce", "runtime.py::verify", "runtime.py::consume")
+    binding_inputs["required_operation_calls"] = {
+        ("release", "build", "verify"): {
+            root: source_operation_call_population(root, inventory) for root in roots
+        }
+    }
+    return binding_inputs
+
+
+def test_binding_checks_protected_operation_call_populations(operation_call_binding_inputs):
+    before = copy.deepcopy(operation_call_binding_inputs)
+    result = _validate_bindings(operation_call_binding_inputs)
+    assert result["authority"] is False
+    assert result["execution_qualified"] is False
+    assert result["operation_call_populations_checked"] == 3
+    assert operation_call_binding_inputs == before
+
+
+def test_binding_rejects_added_call_beyond_retained_declared_endpoint(operation_call_binding_inputs):
+    inventory = operation_call_binding_inputs["source_inventory"]
+    helper = next(row for row in inventory["functions"] if row["symbol"] == "runtime.py::declared_port")
+    call = copy.deepcopy(next(row for row in inventory["functions"] if row["symbol"] == "runtime.py::verify")["calls"][0])
+    call.update(caller=helper["symbol"], called_symbol="runtime.py::hidden", call_name="hidden")
+    call["call_contract"]["expression_sha256"] = "e" * 64
+    helper["calls"].append(call)
+    with pytest.raises(CIGraphError, match="operation call population"):
+        _validate_bindings(operation_call_binding_inputs)
+
+
+@pytest.mark.parametrize("defect", ["relationship", "root", "version", "source_file"])
+def test_binding_rejects_incomplete_or_incompatible_operation_population(operation_call_binding_inputs, defect):
+    inputs = operation_call_binding_inputs
+    catalogue = inputs["required_operation_calls"]
+    pair = ("release", "build", "verify")
+    if defect == "relationship":
+        del catalogue[pair]
+    elif defect == "root":
+        del catalogue[pair]["runtime.py::produce"]
+    elif defect == "version":
+        inputs["source_inventory"]["call_contracts_version"] = "0.9"
+    else:
+        inputs["source_inventory"]["files"][0]["sha256"] = "f" * 64
+    with pytest.raises(CIGraphError, match="operation call population"):
+        _validate_bindings(inputs)
+
+
+def test_legacy_binding_result_does_not_claim_operation_population_checks(binding_inputs):
+    assert "operation_call_populations_checked" not in _validate_bindings(binding_inputs)
