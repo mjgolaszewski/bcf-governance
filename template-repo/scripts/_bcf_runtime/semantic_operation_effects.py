@@ -55,13 +55,13 @@ def _port_identity(
     return ("function", resolved) if resolved is not None else ("call", value)
 
 
-def validate_operation_effects(
+def validated_operation_effect_inventory(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
     *, source_modules: tuple[str, ...] = (),
-) -> tuple[int, int]:
-    """Trace one entrypoint and require all effects to cross declared ports."""
+) -> tuple[tuple[str, str, str], ...]:
+    """Trace and validate effects once, then expose immutable classified ports."""
     functions = {
         str(row["symbol"]): row for row in inventory.get("functions", [])
     }
@@ -179,4 +179,28 @@ def validate_operation_effects(
             f"operation {operation['id']} has undeclared authority effects: "
             + ", ".join(sorted(authority))
         )
-    return len(mutation_ports & reached), len(authority_ports & reached)
+    return tuple(sorted(
+        (classification, target_kind, symbol)
+        for classification, ports in (
+            ("mutation", mutation_ports), ("authority", authority_ports),
+            ("observation", non_authoritative_ports),
+        )
+        for target_kind, symbol in ports & reached
+    ))
+
+
+def validate_operation_effects(
+    operation: dict[str, Any],
+    entrypoint_symbol: str,
+    inventory: dict[str, Any],
+    *, source_modules: tuple[str, ...] = (),
+) -> tuple[int, int]:
+    """Preserve the existing validator counts and fail-closed effect semantics."""
+
+    ports = validated_operation_effect_inventory(
+        operation, entrypoint_symbol, inventory, source_modules=source_modules,
+    )
+    return (
+        sum(classification == "mutation" for classification, _, _ in ports),
+        sum(classification == "authority" for classification, _, _ in ports),
+    )

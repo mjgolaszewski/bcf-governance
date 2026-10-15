@@ -35,7 +35,7 @@ from .semantic_authority_migrations import (
 from .semantic_locking import atomic_write, render_lock_yaml, sha256_bytes, stable_payload_digest
 from .semantic_operation_effects import (
     SemanticOperationEffectError,
-    validate_operation_effects,
+    validated_operation_effect_inventory,
 )
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
 
@@ -537,7 +537,7 @@ def _validate_operations(
                 f"operation {operation['id']} entrypoint is absent from the shared source inventory"
             )
         try:
-            write_count, authority_count = validate_operation_effects(
+            effect_ports = validated_operation_effect_inventory(
                 operation, str(function["symbol"]), inventory,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
@@ -545,7 +545,12 @@ def _validate_operations(
             raise SemanticAuthorityError(str(exc)) from exc
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
-            "write_effect_count": write_count, "authority_effect_count": authority_count,
+            "write_effect_count": sum(role == "mutation" for role, _, _ in effect_ports),
+            "authority_effect_count": sum(role == "authority" for role, _, _ in effect_ports),
+            "effect_ports": [
+                {"classification": role, "target_kind": kind, "symbol": symbol}
+                for role, kind, symbol in effect_ports
+            ],
         })
     missing = sorted(
         f"{population_id}:{key}"

@@ -68,7 +68,9 @@ qualification:
     repository_id: 1390225113
     tree_sha: d7d050ec69bff7813677586611878864ec76cb2b
   first_causal_failure: repository declares no interpreter dependency contract
-  first_consumer: ensure_local_project_python for tradeflow-lite before install
+  first_consumer: ensure_local_project_python during qualification; retained stderr does not identify the adopter or stage
+  attribution_status: unproven
+  followup_source_review: Pinned TradeFlow f7e9166 declares a legacy governance requirements contract under the unchanged interpreter owner; pinned Racecar 38945f5 returns no contract. The earlier TradeFlow-before-install attribution is withdrawn.
   complete_qualified_inventory: false
   publication_authority: false
 intervening_changes:
@@ -88,5 +90,5 @@ decision:
   - P35
   canonical_active_phase_changed: true
   production_changed: false
-  required_next_action: Record the optional TradeFlow compatibility defect as a residual; execute foundation without granting it publication authority
+  required_next_action: Record the optional adopter compatibility failure and missing diagnostic attribution as residuals; execute foundation without granting it publication authority
   user_clarification: Follow current policy; carry the failure as a residual

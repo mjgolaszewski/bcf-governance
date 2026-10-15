@@ -513,3 +513,103 @@ def test_contract_view_still_rejects_tampered_bound_identity(composition):
 def test_renderer_rejects_unknown_view(composition):
     with pytest.raises(CIGraphError, match='view'):
         render_lifecycle_composition(compile_lifecycle_composition(**composition), view='invented')
+
+
+@pytest.fixture
+def effect_population_inputs():
+    return dict(
+        observations=[dict(
+            operation='release.publish.v1', entrypoint='publisher.py::main',
+            write_effect_count=0, authority_effect_count=1,
+            effect_ports=[dict(classification='authority', target_kind='function', symbol='publisher.py::publish')],
+        )],
+        expected_entrypoints={'release.publish.v1': 'publisher.py::main'},
+        effect_bindings={
+            ('release.publish.v1', 'authority', 'function', 'publisher.py::publish'):
+                frozenset({('release', 'build', 'verify')}),
+        },
+    )
+
+
+def _effect_population(inputs):
+    from bcf_governance.tooling.ci_graph_composition import lifecycle_effect_population
+
+    return lifecycle_effect_population(**inputs)
+
+
+def test_operation_effect_population_closes_actual_compiler_effects(composition, effect_population_inputs):
+    effects = _effect_population(effect_population_inputs)
+    composition['expected_effects'] = effects
+    composition['payload']['relationships'][0]['contract']['effects'] = [next(iter(effects))[-1]]
+    assert compile_lifecycle_composition(**composition)['authority'] is False
+    composition['payload']['relationships'][0]['contract']['effects'] = []
+    with pytest.raises(CIGraphError, match='effect population'):
+        compile_lifecycle_composition(**composition)
+
+
+@pytest.mark.parametrize('defect', ['missing_operation', 'missing_port', 'extra_binding', 'wrong_entrypoint', 'duplicate_operation', 'duplicate_port', 'old_consumer', 'wrong_role_count', 'missing_context', 'unknown_role', 'unknown_kind', 'malformed_port', 'invalid_context', 'empty_expected'])
+def test_operation_effect_population_rejects_omitted_or_ambiguous_facts(effect_population_inputs, defect):
+    inputs = effect_population_inputs
+    row = inputs['observations'][0]
+    if defect == 'missing_operation':
+        inputs['observations'] = []
+    elif defect == 'missing_port':
+        row['effect_ports'] = []
+        row['authority_effect_count'] = 0
+    elif defect == 'extra_binding':
+        inputs['effect_bindings'][('foreign.v1', 'authority', 'call', 'api.publish')] = frozenset({('release', 'build', 'verify')})
+    elif defect == 'wrong_entrypoint':
+        row['entrypoint'] = 'foreign.py::main'
+    elif defect == 'duplicate_operation':
+        inputs['observations'].append(copy.deepcopy(row))
+    elif defect == 'duplicate_port':
+        row['effect_ports'].append(copy.deepcopy(row['effect_ports'][0]))
+    elif defect == 'old_consumer':
+        del row['effect_ports']
+    elif defect == 'wrong_role_count':
+        row['authority_effect_count'] = False
+    elif defect == 'missing_context':
+        key = next(iter(inputs['effect_bindings']))
+        inputs['effect_bindings'][key] = frozenset()
+    elif defect == 'unknown_role':
+        row['effect_ports'][0]['classification'] = 'caller-authorized'
+    elif defect == 'unknown_kind':
+        row['effect_ports'][0]['target_kind'] = 'unchecked'
+    elif defect == 'malformed_port':
+        row['effect_ports'][0]['authorized'] = True
+    elif defect == 'invalid_context':
+        key = next(iter(inputs['effect_bindings']))
+        inputs['effect_bindings'][key] = frozenset({('release', 'verify', 'verify')})
+    else:
+        inputs['expected_entrypoints'] = {}
+    with pytest.raises(CIGraphError):
+        _effect_population(inputs)
+
+
+def test_discovered_source_authority_port_survives_candidate_effect_omission(composition, tmp_path):
+    from bcf_governance.tooling.semantic_operation_effects import validated_operation_effect_inventory
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+
+    source = tmp_path / 'publisher.py'
+    source.write_text('def main():\n    return publish()\n\ndef publish():\n    return True\n')
+    inventory = discover_python_source(tmp_path, files=[source])
+    operation = dict(id='release.publish.v1', allowed_mutation_ports=[],
+                     allowed_authority_ports=['publisher.py::publish'], non_authoritative_output_effects=[])
+    ports = validated_operation_effect_inventory(operation, 'publisher.py::main', inventory)
+    inputs = dict(
+        observations=[dict(operation=operation['id'], entrypoint='publisher.py::main',
+                           write_effect_count=0, authority_effect_count=1,
+                           effect_ports=[dict(classification=role, target_kind=kind, symbol=symbol) for role, kind, symbol in ports])],
+        expected_entrypoints={operation['id']: 'publisher.py::main'},
+        effect_bindings={(operation['id'], role, kind, symbol): frozenset({('release', 'build', 'verify')})
+                         for role, kind, symbol in ports},
+    )
+    composition['expected_effects'] = _effect_population(inputs)
+    composition['payload']['relationships'][0]['contract']['effects'] = [next(iter(composition['expected_effects']))[-1]]
+    assert compile_lifecycle_composition(**composition)['authority'] is False
+    composition['payload']['relationships'][0]['contract']['effects'] = []
+    with pytest.raises(CIGraphError, match='effect population'):
+        compile_lifecycle_composition(**composition)
+    composition['payload']['relationships'].pop(0)
+    with pytest.raises(CIGraphError, match='population'):
+        compile_lifecycle_composition(**composition)

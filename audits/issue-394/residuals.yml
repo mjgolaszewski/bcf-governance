@@ -177,8 +177,7 @@ items:
   owner: validation
   source: bcf_governance/tooling/interpreter_environment.py
   regression_surface: tests/test_interpreter_environment.py
-  evidence: 'Provider-default TradeFlow f7e9166 fails canonical predecessor compatibility before install: repository declares no interpreter
-    dependency contract; current policy retains this as non-authoritative remediation input'
+  evidence: 'Retained predecessor qualification stderr says repository declares no interpreter dependency contract but identifies neither adopter nor stage. Pinned TradeFlow has a legacy requirements contract; the prior TradeFlow-before-install attribution is withdrawn. Current policy retains the compatibility failure as non-authoritative remediation input.'
   residual_owner: P33-P0-06
   consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
 - id: 394.provider-deadline
