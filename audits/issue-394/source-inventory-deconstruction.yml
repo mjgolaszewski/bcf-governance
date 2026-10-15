@@ -49,3 +49,9 @@ local_execution:
   architecture: Six structural/CLI-effect/copy cases passed; the new file initially had no context mapping, then its exact semantic_ownership registration passed.
   framework_self_conformance: The intermediate run rejected the stale semantic lock; it was interrupted after 6 passes and 1 lock failure. No complete self-conformance pass is claimed.
   next: Integrate the extracted source and refresh projections only through canonical reconciliation, then rerun framework self-conformance and governance before feature additions.
+
+context_budget_correction:
+  surface: governance/canonical-representations.yml
+  observed_failure: Adding complete helper provenance exceeded the existing 64-KiB agent-required context budget.
+  contract: Deduplicate repeated immutable owner strings through existing YAML scalar-anchor syntax; assert exact parsed-value equality and preserve the budget.
+  forbidden: Raising the budget or deleting provenance to admit the candidate.
