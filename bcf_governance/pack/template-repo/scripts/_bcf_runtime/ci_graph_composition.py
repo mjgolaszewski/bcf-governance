@@ -227,6 +227,7 @@ def validate_lifecycle_bindings(
     collected_selectors: frozenset[str],
     required_negative_controls: Mapping[Relationship, Mapping[str, str]],
     required_call_edges: Mapping[Relationship, frozenset[tuple[str, str]]],
+    required_fact_bindings: Mapping[Relationship, tuple[Mapping[str, str], ...]],
 ) -> dict[str, Any]:
     """Resolve composition bindings against protected source/collection inputs.
 
@@ -237,6 +238,8 @@ def validate_lifecycle_bindings(
     it never qualifies execution, freshness, or the behavior of a detector.
     Protected call obligations must resolve through the same source inventory;
     names alone cannot conceal a deleted call between retained functions.
+    The protected fact catalogue binds every proposition and its source owners;
+    candidate facts cannot choose their own verifier, authority, or freshness.
     """
 
     _validate_compiled_identity(compiled)
@@ -256,7 +259,26 @@ def validate_lifecycle_bindings(
         raise CIGraphError("lifecycle binding independent relationship population differs")
     if reachable.keys() != required_call_edges.keys():
         raise CIGraphError("lifecycle binding independent call population differs")
+    if reachable.keys() != required_fact_bindings.keys():
+        raise CIGraphError("lifecycle binding independent fact relationship population differs")
+    fact_fields = {"id", "producer", "verifier", "subject_binding", "proposition", "authority", "freshness"}
     for pair, contract in reachable.items():
+        expected_facts = required_fact_bindings[pair]
+        if (
+            not expected_facts
+            or any(
+                not isinstance(fact, Mapping) or set(fact) != fact_fields
+                or any(not isinstance(value, str) or not value for value in fact.values())
+                for fact in expected_facts
+            )
+            or len({fact["id"] for fact in expected_facts}) != len(expected_facts)
+            or sorted(_bytes(dict(fact)) for fact in expected_facts) != sorted(_bytes(fact) for fact in contract["facts"])
+        ):
+            raise CIGraphError("lifecycle binding independent fact population differs or is invalid")
+        for fact in expected_facts:
+            for role in ("producer", "verifier"):
+                if fact[role] not in functions:
+                    raise CIGraphError(f"lifecycle binding fact source runtime function is absent: {fact[role]}")
         for field in ("implementation", "terminal_consumers"):
             for symbol in contract[field]:
                 if symbol not in functions:

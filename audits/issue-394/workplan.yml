@@ -2375,6 +2375,32 @@ implementation_slices:
       test: tests.test_semantic_operation_inventory::test_deleted_port_cannot_hide_source_effect[allowed_authority_ports-undeclared authority]
     - cause: unresolved-source-effect-path
       test: tests.test_semantic_operation_inventory::test_effect_inventory_rejects_unresolved_path_before_projection
+    - cause: substituted-fact-id
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[id]
+    - cause: substituted-fact-producer
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[producer]
+    - cause: substituted-fact-verifier
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[verifier]
+    - cause: substituted-fact-subject_binding
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[subject_binding]
+    - cause: substituted-fact-proposition
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[proposition]
+    - cause: substituted-fact-authority
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[authority]
+    - cause: substituted-fact-freshness
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[freshness]
+    - cause: incomplete-fact-relationship-population
+      test: tests.test_ci_graph_composition::test_fact_binding_requires_complete_independent_relationship_population
+    - cause: missing-protected-fact-population
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_invalid_protected_fact_population[missing]
+    - cause: duplicate-protected-fact-population
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_invalid_protected_fact_population[duplicate]
+    - cause: changed-protected-fact-population
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_invalid_protected_fact_population[changed]
+    - cause: orphan-fact-producer
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[producer]
+    - cause: orphan-fact-verifier
+      test: tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[verifier]
     remaining:
     - Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.
     - Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required.

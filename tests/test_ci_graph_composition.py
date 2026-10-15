@@ -250,9 +250,10 @@ def binding_inputs(composition, tmp_path):
     from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
 
     source = tmp_path / 'runtime.py'
-    source.write_text('def verify():\n    return True\n\ndef consume():\n    return verify()\n')
+    source.write_text('def produce():\n    return b"assets"\n\ndef verify():\n    return True\n\ndef consume():\n    return verify()\n')
     inventory = discover_python_source(tmp_path, files=[source])
     contract = composition['payload']['relationships'][0]['contract']
+    contract['facts'][0].update(producer='runtime.py::produce', verifier='runtime.py::verify')
     contract['implementation'] = ['runtime.py::verify']
     contract['terminal_consumers'] = ['runtime.py::consume']
     contract['positive_tests'] = ['tests/test_runtime.py::test_valid']
@@ -262,6 +263,7 @@ def binding_inputs(composition, tmp_path):
         compiled=compiled,
         expected_source=composition['expected_source'],
         source_inventory=inventory,
+        required_fact_bindings={('release', 'build', 'verify'): tuple(copy.deepcopy(contract['facts']))},
         collected_selectors=frozenset(contract['positive_tests'] + contract['negative_tests']),
         required_call_edges={('release', 'build', 'verify'): frozenset({('runtime.py::consume', 'runtime.py::verify')})},
         required_negative_controls={
@@ -440,6 +442,8 @@ def test_binding_conformance_traces_actual_compiler_and_projection_calls(composi
         positive_tests=['tests/test_runtime.py::test_valid'],
         negative_tests=['tests/test_runtime.py::test_wrong_subject'],
     )
+    contract['facts'][0].update(producer=symbol('compile_lifecycle_composition'), verifier=symbol('_validate_compiled_identity'))
+    binding_inputs['required_fact_bindings'] = {('release', 'build', 'verify'): tuple(copy.deepcopy(contract['facts']))}
     binding_inputs['compiled'] = compile_lifecycle_composition(**composition)
     binding_inputs['source_inventory'] = discover_python_source(ROOT, files=[ROOT / path])
     binding_inputs['required_call_edges'] = {('release', 'build', 'verify'): frozenset({
@@ -613,3 +617,44 @@ def test_discovered_source_authority_port_survives_candidate_effect_omission(com
     composition['payload']['relationships'].pop(0)
     with pytest.raises(CIGraphError, match='population'):
         compile_lifecycle_composition(**composition)
+
+
+@pytest.mark.parametrize('field', ['id', 'producer', 'verifier', 'subject_binding', 'proposition', 'authority', 'freshness'])
+def test_fact_binding_rejects_substitution_from_independent_owner(composition, binding_inputs, field):
+    composition['payload']['relationships'][0]['contract']['facts'][0][field] = 'substituted'
+    if field == 'id':
+        composition['payload']['relationships'][0]['contract']['guards'][0]['fact_id'] = 'substituted'
+    binding_inputs['compiled'] = compile_lifecycle_composition(**composition)
+    with pytest.raises(CIGraphError, match='fact population'):
+        _validate_bindings(binding_inputs)
+
+
+def test_fact_binding_requires_complete_independent_relationship_population(binding_inputs):
+    binding_inputs['required_fact_bindings'] = {}
+    with pytest.raises(CIGraphError, match='independent fact relationship population'):
+        _validate_bindings(binding_inputs)
+
+
+@pytest.mark.parametrize('mutation', ['missing', 'duplicate', 'changed'])
+def test_fact_binding_rejects_invalid_protected_fact_population(binding_inputs, mutation):
+    pair = ('release', 'build', 'verify')
+    facts = binding_inputs['required_fact_bindings'][pair]
+    if mutation == 'missing':
+        facts = ()
+    elif mutation == 'duplicate':
+        facts = facts + facts
+    else:
+        facts[0]['authority'] = 'another-authority'
+    binding_inputs['required_fact_bindings'][pair] = facts
+    with pytest.raises(CIGraphError, match='fact population'):
+        _validate_bindings(binding_inputs)
+
+
+@pytest.mark.parametrize('role', ['producer', 'verifier'])
+def test_fact_binding_rejects_orphan_source_owner(binding_inputs, role):
+    fact = binding_inputs['required_fact_bindings'][('release', 'build', 'verify')][0]
+    binding_inputs['source_inventory']['functions'] = [
+        row for row in binding_inputs['source_inventory']['functions'] if row['symbol'] != fact[role]
+    ]
+    with pytest.raises(CIGraphError, match='fact source runtime function'):
+        _validate_bindings(binding_inputs)
