@@ -9,11 +9,11 @@ source:
   issue_updated_at: '2026-10-15T15:46:46Z'
   issue_body_sha256: 7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e
   repository: mjgolaszewski/bcf-governance
-  commit_sha: 2d2d00b2f26a9e149aebd7efa548236abe7b16e9
-  tree_sha: 5d495765d9ae935b5e43425e2bf7c56b2b4646f9
+  commit_sha: 28d3b83843035bd5abcbd16722200c97b21d6f9f
+  tree_sha: bc7c6a86fee8029504e50d1fdb47fda119c0f2cb
 target_version: 2.5.0
 admission:
-  status: admitted_under_current_policy
+  status: local_construction_provider_hold
   canonical_phase_ids:
   - P32
   - P33
@@ -22,8 +22,8 @@ admission:
   canonical_release_train_id: release_27
   rule: Derive phase and train IDs only after exact predecessor closure qualifications compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: none; local adopter compatibility failure is an explicitly non-authoritative residual with unproven adopter/stage attribution
-  unblock_condition: not applicable; user clarified current-policy admission
+  blocker: Provider submission is held for minimal maintenance patch distribution; local foundation construction only. Current IDs do not reserve canonical successor or release IDs.
+  unblock_condition: Verify immutable maintenance patch custody and exact current predecessor/controller truth, then rederive phase and train IDs from canonical state. Optional compatibility failures remain residuals under current policy.
   evidence: audits/issue-394/admission.yml
 stages:
 - id: foundation

@@ -1,0 +1,67 @@
+document:
+  kind: intervening_maintenance_admission_observation
+  path: audits/issue-394/maintenance-admission.yml
+  authority: false
+  status: verified_source_integrated_distribution_pending
+subject:
+  issue: 420
+  pull_request: 421
+  commit_sha: 28d3b83843035bd5abcbd16722200c97b21d6f9f
+  tree_sha: bc7c6a86fee8029504e50d1fdb47fda119c0f2cb
+provider:
+  admission_run: 38783903462
+  admission_attempt: 2
+  finalizer_run: 38792223386
+  finalizer_attempt: 1
+  certification_artifact: 12001640492
+  publisher_run: 38793397047
+  publisher_attempt: 1
+  status_context: bcf/exact-main-certification
+  status: success
+  admission_ordinal: '38783903462002001'
+verified:
+  bundle_owner: bcf_governance/tooling/ci_github_bundle.py::verify_bundle
+  certification_owner: bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification
+  truth_owner: bcf_governance/tooling/governance_cleanup/truth_reports.py::load_truth_reports
+  computed_state: certified
+  phase: P31
+  effective_state: closed
+  bundle_files_sha256:
+    ci-authority.json: 2ee0b4fe441b5d16b322c0f7df08b56fb67391af1a739bdc18a1dfcd45bb16f4
+    ci-certification.json: fc694ff664187879e6012f68ca8a9a3405ddd371446f0b55d89b31ca18279c8e
+    controller-custody.json: 90b1341bf712dfe9c999e96d29647f3478d68f65536cc66b2e4e3da4e233042c
+    evidence-session.json: 73dce8f663bc65f13584f49aa912bbdc93f23a7dc02c312735bf85674222ddad
+    governance-truth.json: e74aa19d8dd9921a10e5a8e7b72e1cf46ce56e6d82f69c93bcd99c45a71c4fdc
+    raw/governance.json: fcfaa727910e9f1e2fedd359dccecb94eddda7495372d2665e62e2ef0f789a41
+installed_controller:
+  resolution_owner: bcf_governance/tooling/routine_controller_provider.py::effective_controller_authority
+  controller_commit_sha: 28d3b83843035bd5abcbd16722200c97b21d6f9f
+  controller_bundle_sha256: dba614d03bca9835050d32fec4423f55553e9dbceb1c896d1e2a0908c5a30bbe
+custody:
+  rotation_run: 38785740464
+  rotation_attempt: 1
+  post_certification_rotation_run: 38792223437
+  post_certification_outcome: no_transition/controller_current
+  builder_artifact: 11997062568
+  builder_run: 38783903462
+  builder_attempt: 1
+coordination:
+  identity: home:bcf-governance:bcf-394-ironwatch
+  counterparty: bcf-governance:closure-engine
+  authenticated_handoff_cursor: 6468
+acceptance:
+  scope: 'Admitted #420 selector and unchanged authority boundaries; full Issue 394 profile and terminal qualification remain open'
+  regressions: 17 graph scope/title/direct-target cases and 5 bounded downstream truth/release cases passed on the integrated source
+  frozen_public_release_reference: audits/issue-394/admission.yml#immutable_custody
+  new_composition_activation: false
+deadline_branch:
+  observed_commit: 626c15d204f8b1832be6165bdd24969673fccaab
+  classification: specification_only_not_admitted_runtime_fix
+  remaining_owner: P32-P0-05
+distribution:
+  status: minimal_patch_custody_pending
+  latest_immutable_release_at_handoff: v2.3.2
+  fix_available_in_that_release: false
+  provider_submission_hold: true
+  coordination_cursor: 6478
+  next_action: Refresh predecessor admission and derive new canonical IDs only after immutable maintenance patch custody.

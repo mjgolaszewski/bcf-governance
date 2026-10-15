@@ -1,6 +1,6 @@
 document:
   kind: issue_394_predecessor_admission_observation
-  status: admitted_under_current_policy
+  status: initial_baseline_validated_provider_refresh_pending
   authority: false
   path: audits/issue-394/admission.yml
 subject:
@@ -79,16 +79,20 @@ intervening_changes:
   consequence: Issue source e96382f6 description is superseded for these owners; restoring mechanical selection is a residual, never an assertion that current main
     still supplies it
 - source: https://github.com/mjgolaszewski/bcf-governance/issues/420
-  fact: Non-prefix bounded workitem fix remains separate agent work
-  consequence: Reauthenticate and reconcile admitted fix before successor construction
+  fact: PR 421 merged as 28d3b838 and fresh exact-main attempt 2 plus independent controller resolution verify P31 closure and ordinary-current custody
+  consequence: Integrated unchanged dependency-frontier fix and its regressions; frozen public release bytes remain at the original immutable subject
+  evidence: audits/issue-394/maintenance-admission.yml
 decision:
-  successor_admitted: true
-  canonical_phase_ids_reserved:
+  successor_admitted: false
+  initial_baseline_admission_validated: true
+  activation_scope: isolated_local_proposal_only
+  refresh_reason: Maintenance owner is deriving a minimal immutable patch so adopters can consume the admitted 420 fix; provider submission remains held.
+  canonical_phase_ids_derived:
   - P32
   - P33
   - P34
   - P35
   canonical_active_phase_changed: true
   production_changed: false
-  required_next_action: Record the optional adopter compatibility failure and missing diagnostic attribution as residuals; execute foundation without granting it publication authority
+  required_next_action: Retain optional compatibility and diagnostic residuals; complete local foundation work while awaiting patch custody, then rederive canonical IDs before provider submission
   user_clarification: Follow current policy; carry the failure as a residual
