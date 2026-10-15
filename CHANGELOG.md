@@ -19,6 +19,10 @@ Release target: `2.5.0`
   omissions, false exclusions, stale identities, and missing causal controls;
   compilation grants no execution or certification authority.
 
+- Added opt-in pipeline timing observations that keep elapsed time, overlapping
+  execution, external waits, unobserved gaps, and measured CPU separate. Failed,
+  cancelled, superseded, and skipped work remains visible.
+
 ### Fixed
 
 - Submission now settles derived governance through the existing canonical

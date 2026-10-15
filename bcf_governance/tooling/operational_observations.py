@@ -113,6 +113,106 @@ def provider_queue_observation(
     }
 
 
+PIPELINE_CLOCKS = frozenset({
+    "pr", "exact_main", "controller", "release", "adopter",
+    "publication_to_custody", "dispatch_to_custody", "merge_to_custody",
+    "periodic", "developer_interruption",
+})
+
+
+def _timing_milliseconds(value: object) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+        raise OperationalObservationError("pipeline timing requires nonnegative integer milliseconds")
+    return value
+
+
+def _interval_union_ms(intervals: list[dict[str, Any]]) -> int:
+    total = 0
+    current_end = 0
+    for start, end in sorted((row["start_ms"], row["end_ms"]) for row in intervals):
+        total += max(0, end - max(start, current_end))
+        current_end = max(current_end, end)
+    return total
+
+
+def pipeline_timing_observation(
+    *, repository: str, repository_id: int, source_snapshot_sha256: str,
+    commit_sha: str, tree_sha: str, pipeline: str,
+    clock_id: str, clock_basis: str, start_ms: int, end_ms: int,
+    intervals: Iterable[Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Measure one observed pipeline window without summing parallel wall time.
+
+    The caller authenticates snapshots and supplies one explicit clock domain.
+    Missing execution intervals remain uncovered time, never fabricated zero-cost
+    work. Execution and wait unions may overlap and must not be added together.
+    CPU is independently observed, not estimated from job elapsed time.
+    This opt-in observation neither changes legacy reports nor confers authority.
+    """
+
+    if re.fullmatch(r"[^/\s]+/[^/\s]+", repository) is None or (
+        isinstance(repository_id, bool) or not isinstance(repository_id, int) or repository_id < 1
+    ):
+        raise OperationalObservationError("pipeline timing repository identity is invalid")
+    if re.fullmatch(r"[a-f0-9]{64}", source_snapshot_sha256) is None:
+        raise OperationalObservationError("pipeline timing source snapshot identity is invalid")
+    if _SHA.fullmatch(commit_sha) is None or _SHA.fullmatch(tree_sha) is None:
+        raise OperationalObservationError("pipeline timing subject identity is invalid")
+    if pipeline not in PIPELINE_CLOCKS or clock_basis not in {"provider_utc_ms", "monotonic_ms"}:
+        raise OperationalObservationError("pipeline timing context or clock basis is invalid")
+    if not isinstance(clock_id, str) or not clock_id:
+        raise OperationalObservationError("pipeline timing clock identity is invalid")
+    start_ms, end_ms = _timing_milliseconds(start_ms), _timing_milliseconds(end_ms)
+    if end_ms < start_ms:
+        raise OperationalObservationError("pipeline timing window is reversed")
+    rows: dict[str, dict[str, Any]] = {}
+    required = {"id", "clock_id", "kind", "status", "start_ms", "end_ms"}
+    for value in intervals:
+        row = dict(value)
+        if not required.issubset(row) or set(row) - required - {"cpu_ms"}:
+            raise OperationalObservationError("pipeline timing interval fields are incomplete or unknown")
+        identity = row["id"]
+        if not isinstance(identity, str) or not identity or identity in rows:
+            raise OperationalObservationError("pipeline timing interval identity is absent or duplicated")
+        if row["clock_id"] != clock_id:
+            raise OperationalObservationError("pipeline timing interval mixes clock identities")
+        if row["kind"] not in {"execution", "external_wait"}:
+            raise OperationalObservationError("pipeline timing interval kind is invalid")
+        statuses = {"passed", "failed", "cancelled", "superseded", "skipped"}
+        if row["kind"] == "external_wait":
+            statuses = {"completed", "failed", "cancelled", "superseded"}
+        if row["status"] not in statuses:
+            raise OperationalObservationError("pipeline timing interval status is invalid")
+        left = _timing_milliseconds(row["start_ms"])
+        right = _timing_milliseconds(row["end_ms"])
+        if not start_ms <= left <= right <= end_ms:
+            raise OperationalObservationError("pipeline timing interval is reversed or outside its window")
+        if "cpu_ms" in row:
+            _timing_milliseconds(row["cpu_ms"])
+            if row["kind"] != "execution":
+                raise OperationalObservationError("pipeline timing external wait cannot supply execution CPU")
+        rows[identity] = row
+    ordered = [rows[key] for key in sorted(rows)]
+    executions = [row for row in ordered if row["kind"] == "execution"]
+    waits = [row for row in ordered if row["kind"] == "external_wait"]
+    cpu: int | str = "unknown"
+    if executions and all("cpu_ms" in row for row in executions):
+        cpu = sum(row["cpu_ms"] for row in executions)
+    return {
+        "schema_version": "1.0", "kind": "pipeline_timing", "authority": False,
+        "subject": {"commit_sha": commit_sha, "tree_sha": tree_sha},
+        "repository": repository, "repository_id": repository_id,
+        "source_snapshot_sha256": source_snapshot_sha256,
+        "pipeline": pipeline, "clock_id": clock_id, "clock_basis": clock_basis,
+        "start_ms": start_ms, "end_ms": end_ms, "elapsed_ms": end_ms - start_ms,
+        "execution_union_ms": _interval_union_ms(executions),
+        "execution_sum_ms": sum(row["end_ms"] - row["start_ms"] for row in executions),
+        "external_wait_union_ms": _interval_union_ms(waits),
+        "uncovered_ms": end_ms - start_ms - _interval_union_ms(ordered),
+        "cpu_ms": cpu, "intervals": ordered,
+    }
+
+
 def amplification_observation(
     *, train_id: str, commit_sha: str, tree_sha: str, events: Iterable[Mapping[str, Any]]
 ) -> dict[str, Any]:

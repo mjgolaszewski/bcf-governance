@@ -716,6 +716,8 @@ requirements:
       scenario: Cause-specific I03 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - separate-pipeline-clock-observation
   I04:
     requirement: Independent completeness. Trusted truth independently derives/verifies required claims, impact, exclusions, selected execution and reuse. A candidate
       planner's internally consistent omissions cannot certify themselves.
@@ -875,6 +877,7 @@ requirements:
     evidence_status: not_executed
     implementation_slices:
     - dormant-composition-and-static-bindings
+    - separate-pipeline-clock-observation
   I12:
     requirement: Closed dispositions. Required behavioral claims are exactly authenticated-reuse, execute, or blocked. Structural obligations retain the canonical
       `captured_by_preflight` channel; preflight observations cannot become behavioral receipts. The catalog separately types monitoring/nonapplicability; required
@@ -1261,6 +1264,8 @@ requirements:
       scenario: Cause-specific I30 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - separate-pipeline-clock-observation
   I31:
     requirement: Scheduled work is an obligation, not a clock guarantee. Define due/expiry/grace, missed/delayed run detection, bounded catch-up, nonoverlap, invalidation
       and on-demand execute/block fallback. No scheduled/queued/started/skipped job extends evidence validity or satisfies a required consumer without completed qualified
@@ -2391,3 +2396,26 @@ implementation_slices:
     remaining:
     - Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.
     - Provider PR/exact-main authority and full terminal custody are not certified by these local tests.
+  separate-pipeline-clock-observation:
+    id: separate-pipeline-clock-observation
+    workitem: P32-P0-06
+    scope: Opt-in nonauthoritative repository/snapshot-bound clock windows with separate elapsed, execution overlap, waits, gaps and measured CPU
+    contract: audits/issue-394/baseline-measurement-slice.yml
+    producer: bcf_governance/tooling/operational_observations.py::pipeline_timing_observation
+    consumer: bcf_governance/tooling/operational_observations.py::validate_operational_observation
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_operational_observations::test_pipeline_timing_keeps_parallel_elapsed_separate_from_sum_and_cpu
+    - tests.test_operational_observations::test_pipeline_timing_retains_waits_gaps_cancellation_and_supersession
+    - tests.test_operational_observations::test_pipeline_timing_is_deterministic_detached_and_schema_valid
+    negative_controls:
+    - cause: mixed-clock
+      test: tests.test_operational_observations::test_pipeline_timing_rejects_ambiguous_or_invalid_intervals[mixed_clock]
+    - cause: wrong-subject-or-window
+      test: tests.test_operational_observations::test_pipeline_timing_rejects_wrong_subject_and_reversed_window
+    - cause: missing-snapshot
+      test: tests.test_operational_observations::test_pipeline_timing_rejects_unbound_repository_or_snapshot[source_snapshot_sha256-missing]
+    remaining:
+    - Adequate matched self/isolated-adopter cohorts and separately approved frozen performance/resource targets remain required.
+    - Independent complete producer populations, terminal custody clocks and measured CPU are not inferred from these observations.

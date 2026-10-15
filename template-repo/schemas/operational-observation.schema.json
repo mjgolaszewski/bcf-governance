@@ -63,6 +63,188 @@
         "successor": {"type": ["string", "null"]},
         "history_owner": {"const": "plans/phase-history.yml"}
       }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "kind",
+        "authority",
+        "subject",
+        "pipeline",
+        "clock_id",
+        "clock_basis",
+        "start_ms",
+        "end_ms",
+        "elapsed_ms",
+        "execution_union_ms",
+        "execution_sum_ms",
+        "external_wait_union_ms",
+        "uncovered_ms",
+        "cpu_ms",
+        "intervals",
+        "repository",
+        "repository_id",
+        "source_snapshot_sha256"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "kind": {
+          "const": "pipeline_timing"
+        },
+        "authority": {
+          "const": false
+        },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "commit_sha",
+            "tree_sha"
+          ],
+          "properties": {
+            "commit_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "tree_sha": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}$"
+            }
+          }
+        },
+        "pipeline": {
+          "enum": [
+            "pr",
+            "exact_main",
+            "controller",
+            "release",
+            "adopter",
+            "publication_to_custody",
+            "dispatch_to_custody",
+            "merge_to_custody",
+            "periodic",
+            "developer_interruption"
+          ]
+        },
+        "clock_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clock_basis": {
+          "enum": [
+            "provider_utc_ms",
+            "monotonic_ms"
+          ]
+        },
+        "start_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "execution_union_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "execution_sum_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "external_wait_union_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "uncovered_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cpu_ms": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "const": "unknown"
+            }
+          ]
+        },
+        "intervals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "clock_id",
+              "kind",
+              "status",
+              "start_ms",
+              "end_ms"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "clock_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "execution",
+                  "external_wait"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "passed",
+                  "failed",
+                  "cancelled",
+                  "superseded",
+                  "completed",
+                  "skipped"
+                ]
+              },
+              "start_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_ms": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cpu_ms": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        "repository": {
+          "type": "string",
+          "pattern": "^[^/\\s]+/[^/\\s]+$"
+        },
+        "repository_id": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "source_snapshot_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
     }
   ]
 }
