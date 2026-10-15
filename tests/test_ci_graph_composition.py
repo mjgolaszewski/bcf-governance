@@ -243,3 +243,130 @@ def test_train_inventory_rejects_unmapped_or_unqualified_requirement(requirement
         del plan["requirements"][requirement]["negative_binding"]
     with pytest.raises(ValidationError):
         Draft202012Validator(schema).validate(plan)
+
+
+@pytest.fixture
+def binding_inputs(composition, tmp_path):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+
+    source = tmp_path / 'runtime.py'
+    source.write_text('def verify():\n    return True\n\ndef consume():\n    return True\n')
+    inventory = discover_python_source(tmp_path, files=[source])
+    contract = composition['payload']['relationships'][0]['contract']
+    contract['implementation'] = ['runtime.py::verify']
+    contract['terminal_consumers'] = ['runtime.py::consume']
+    contract['positive_tests'] = ['tests/test_runtime.py::test_valid']
+    contract['negative_tests'] = ['tests/test_runtime.py::test_wrong_subject']
+    compiled = compile_lifecycle_composition(**composition)
+    return dict(
+        compiled=compiled,
+        expected_source=composition['expected_source'],
+        source_inventory=inventory,
+        collected_selectors=frozenset(contract['positive_tests'] + contract['negative_tests']),
+        required_negative_controls={
+            ('release', 'build', 'verify'): {
+                'wrong-subject': 'tests/test_runtime.py::test_wrong_subject',
+            },
+        },
+    )
+
+
+def _validate_bindings(inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_lifecycle_bindings
+
+    return validate_lifecycle_bindings(**inputs)
+
+
+def test_binding_conformance_resolves_real_inventory_without_conferring_execution(binding_inputs):
+    before = copy.deepcopy(binding_inputs)
+    result = _validate_bindings(binding_inputs)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert result['composition_sha256'] == binding_inputs['compiled']['composition_sha256']
+    assert result['reachable_relationships'] == 1
+    assert result == _validate_bindings(binding_inputs)
+    assert binding_inputs == before
+
+
+@pytest.mark.parametrize('field', ['implementation', 'terminal_consumers'])
+def test_binding_conformance_rejects_deleted_function(binding_inputs, field):
+    symbol = binding_inputs['compiled']['relationships'][0]['contract'][field][0]
+    binding_inputs['source_inventory']['functions'] = [
+        row for row in binding_inputs['source_inventory']['functions'] if row['symbol'] != symbol
+    ]
+    with pytest.raises(CIGraphError, match='runtime function'):
+        _validate_bindings(binding_inputs)
+
+
+@pytest.mark.parametrize('selector', ['tests/test_runtime.py::test_valid', 'tests/test_runtime.py::test_wrong_subject'])
+def test_binding_conformance_rejects_uncollected_test(binding_inputs, selector):
+    binding_inputs['collected_selectors'] -= {selector}
+    with pytest.raises(CIGraphError, match='collected test'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_ambiguous_function_inventory(binding_inputs):
+    binding_inputs['source_inventory']['functions'].append(
+        copy.deepcopy(binding_inputs['source_inventory']['functions'][0])
+    )
+    with pytest.raises(CIGraphError, match='ambiguous'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_missing_independent_relationship(binding_inputs):
+    binding_inputs['required_negative_controls'] = {}
+    with pytest.raises(CIGraphError, match='relationship population'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_missing_cause_even_with_existing_negative(binding_inputs):
+    controls = binding_inputs['required_negative_controls'][('release', 'build', 'verify')]
+    controls['wrong-authority'] = 'tests/test_runtime.py::test_wrong_authority'
+    binding_inputs['collected_selectors'] |= {'tests/test_runtime.py::test_wrong_authority'}
+    with pytest.raises(CIGraphError, match='cause-specific'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_empty_causal_catalogue(binding_inputs):
+    binding_inputs['required_negative_controls'][('release', 'build', 'verify')] = {}
+    with pytest.raises(CIGraphError, match='cause-specific'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_tampered_compilation(binding_inputs):
+    binding_inputs['compiled']['relationships'][0]['contract']['implementation'] = ['runtime.py::invented']
+    with pytest.raises(CIGraphError, match='projection identity'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_rejects_wrong_source(binding_inputs):
+    binding_inputs['expected_source'] = {**binding_inputs['expected_source'], 'tree_sha': 'f' * 40}
+    with pytest.raises(CIGraphError, match='source identity'):
+        _validate_bindings(binding_inputs)
+
+
+def test_binding_conformance_uses_existing_source_and_pytest_collection_owners(binding_inputs, tmp_path):
+    import sys
+
+    from bcf_governance.tooling.test_manifests import collect_selector_map
+
+    tests = tmp_path / 'tests'
+    tests.mkdir()
+    (tests / 'test_runtime.py').write_text(
+        'def test_valid():\n    assert True\n\ndef test_wrong_subject():\n    assert True\n'
+    )
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    (governance / 'gate-contracts.yml').write_text(
+        'gates:\n  contract-test:\n    evidence:\n      test_contract:\n'
+        '        selectors: [tests/test_runtime.py]\n'
+        '        expected_node_manifest: governance/contract-tests.txt\n'
+    )
+    mapping = collect_selector_map(tmp_path, 'contract-test', python_executable=sys.executable)
+    binding_inputs['collected_selectors'] = frozenset(selector for _, selector in mapping.entries)
+    assert _validate_bindings(binding_inputs)['execution_qualified'] is False
+    (tests / 'test_runtime.py').write_text('def test_valid():\n    assert True\n')
+    mapping = collect_selector_map(tmp_path, 'contract-test', python_executable=sys.executable)
+    binding_inputs['collected_selectors'] = frozenset(selector for _, selector in mapping.entries)
+    with pytest.raises(CIGraphError, match='collected test'):
+        _validate_bindings(binding_inputs)

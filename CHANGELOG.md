@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+Release target: `2.5.0`
+
 ### Added
 
 - Registered the Issue #394 four-phase 2.5.0 train with explicit predecessor

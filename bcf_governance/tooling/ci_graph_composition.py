@@ -139,6 +139,74 @@ def compile_lifecycle_composition(
     return json.loads(_bytes(result))
 
 
+def _validate_compiled_identity(compiled: dict[str, Any]) -> None:
+    content = {key: value for key, value in compiled.items() if key != "composition_sha256"}
+    if (
+        compiled.get("authority") is not False
+        or hashlib.sha256(_bytes(content)).hexdigest() != compiled.get("composition_sha256")
+    ):
+        raise CIGraphError("lifecycle composition projection identity is invalid")
+
+
+
+def validate_lifecycle_bindings(
+    compiled: dict[str, Any],
+    *,
+    expected_source: Mapping[str, str],
+    source_inventory: dict[str, Any],
+    collected_selectors: frozenset[str],
+    required_negative_controls: Mapping[Relationship, Mapping[str, str]],
+) -> dict[str, Any]:
+    """Resolve composition bindings against protected source/collection inputs.
+
+    Use the existing semantic source inventory and verified pytest collection.
+    Their authentication and completeness belong to the protected consumer, not
+    this proposal. The independent control catalogue binds causes to exact test
+    selectors for every reachable relationship. This checks static conformance;
+    it never qualifies execution, freshness, or the behavior of a detector.
+    """
+
+    _validate_compiled_identity(compiled)
+    if compiled["source"] != dict(expected_source):
+        raise CIGraphError("lifecycle binding source identity differs from authenticated inputs")
+    functions: set[str] = set()
+    for function in source_inventory.get("functions", []):
+        symbol = function.get("symbol")
+        if not isinstance(symbol, str) or not symbol or symbol in functions:
+            raise CIGraphError("lifecycle binding runtime function inventory is ambiguous")
+        functions.add(symbol)
+    reachable = {
+        (row["context"], row["producer"], row["consumer"]): row["contract"]
+        for row in compiled["relationships"] if row["contract"] is not None
+    }
+    if reachable.keys() != required_negative_controls.keys():
+        raise CIGraphError("lifecycle binding independent relationship population differs")
+    for pair, contract in reachable.items():
+        for field in ("implementation", "terminal_consumers"):
+            for symbol in contract[field]:
+                if symbol not in functions:
+                    raise CIGraphError(f"lifecycle binding runtime function is absent: {symbol}")
+        for field in ("positive_tests", "negative_tests"):
+            for selector in contract[field]:
+                if selector not in collected_selectors:
+                    raise CIGraphError(f"lifecycle binding collected test is absent: {selector}")
+        controls = required_negative_controls[pair]
+        if (
+            not controls
+            or any(not isinstance(cause, str) or not cause for cause in controls)
+            or any(not isinstance(selector, str) or not selector for selector in controls.values())
+            or len(set(controls.values())) != len(controls)
+            or set(controls.values()) != set(contract["negative_tests"])
+        ):
+            raise CIGraphError("lifecycle binding cause-specific negative-control population differs")
+    return {
+        "authority": False,
+        "execution_qualified": False,
+        "composition_sha256": compiled["composition_sha256"],
+        "reachable_relationships": len(reachable),
+    }
+
+
 def render_lifecycle_composition(compiled: dict[str, Any]) -> str:
     """Project all compiled relationships and contract fields into a human view.
 
@@ -146,12 +214,7 @@ def render_lifecycle_composition(compiled: dict[str, Any]) -> str:
     Diagram node IDs are derived from context-qualified states, never caller code.
     """
 
-    content = {key: value for key, value in compiled.items() if key != "composition_sha256"}
-    if (
-        compiled.get("authority") is not False
-        or hashlib.sha256(_bytes(content)).hexdigest() != compiled.get("composition_sha256")
-    ):
-        raise CIGraphError("lifecycle composition projection identity is invalid")
+    _validate_compiled_identity(compiled)
 
     def display(value: Any) -> str:
         text = value if isinstance(value, str) else _bytes(value).decode()
