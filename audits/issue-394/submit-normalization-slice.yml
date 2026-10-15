@@ -92,3 +92,40 @@ submission_progress_projection:
   - Keep the optional callback additive and preserve behavior for callers without a sink.
   expected_tests: [test_submit_forwards_existing_progress_without_conferring_authority, test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout]
   forbidden: [new progress authority, second execution path, provider polling loop, fabricated progress on silent stages]
+
+file_projection_custody_correction:
+  workitem: P32-P0-07
+  bounded_context: operations
+  submission_consumer_context: ci_authority
+  architectural_layer: tooling
+  operation_side: command
+  target_modules:
+  - bcf_governance/tooling/reconcile_authority_transition.py
+  - bcf_governance/tooling/scaffold_governance_artifacts.py
+  - bcf_governance/tooling/ci_authority_submit.py
+  expected_tests: [tests/test_reconcile_governance.py, tests/test_candidate_submit.py]
+  defect: Ordinary file-only reconciliation leaves generated tracked changes uncommitted, so the subsequent exact candidate query correctly rejects.
+  shared_kernel_decision: The existing operations-owned reconciliation transaction remains the sole Git projection-custody owner; ci_authority invokes it through the existing exact nested CLI boundary.
+  compatibility:
+  - Preserve ordinary standalone reconcile --apply file-only behavior and the workflow-definition/authority pair.
+  - Add an internal front-door-selected --commit-derived assertion for apply; callers still select no reconciliation stages or lifecycle intent.
+  - Ordinary adopters without a self-authority registry retain their canonical projection ownership and receive no invented controller requirement.
+  contract:
+  - Require a clean committed source before candidate projection, before any shadow owner runs.
+  - Prove all canonical projection bytes in the existing isolated transaction shadow and commit only that resulting derived candidate.
+  - Keep every existing exact branch subject snapshot concurrency and rollback check before promotion.
+  - If trusted workflows change, retain the exact two-commit definition then authority transaction.
+  - Reject late trusted-workflow changes from a purported file-only path rather than bypassing pin custody.
+  - Repeat fixed points produce no empty commit; a projection failure or concurrent source movement cannot mutate the original candidate.
+  - Submission recaptures the fresh commit/tree and runs unchanged prospective/provider proof boundaries afterward.
+  - No local Git commit confers provider certification merge release or custody authority.
+  exact_tests:
+  - tests.test_reconcile_governance::test_candidate_file_projection_commits_exact_derived_bytes_and_is_idempotent
+  - tests.test_reconcile_governance::test_candidate_file_projection_rejects_dirty_source_before_shadow
+  - tests.test_reconcile_governance::test_candidate_file_projection_preserves_concurrent_source_movement
+  - tests.test_reconcile_governance::test_candidate_file_projection_failure_preserves_original_tree
+  - tests.test_reconcile_governance::test_candidate_file_projection_rejects_late_trusted_workflow_change
+  - tests.test_reconcile_governance::test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry
+  - tests.test_reconcile_governance::test_commit_derived_rejects_check_before_runtime_allocation
+  - tests.test_candidate_submit::test_dirty_submit_uses_canonical_normalization_then_rechecks
+  forbidden_surfaces: [direct Git commit in submission owner, provider mutation, selected reconciliation stages, hand-authored workflow pins, maintained adopters, frozen maintenance distribution]
