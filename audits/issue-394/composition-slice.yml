@@ -57,3 +57,25 @@ remaining_foundation_obligations:
 - bind every adopted transition to implementation positive and cause-specific negative execution
 - generate the actual human lifecycle projections and prove their parity
 - qualify every applicable profile and terminal context independently
+
+binding_conformance_slice:
+  workitem: P32-P0-03
+  owner: home:bcf-governance:bcf-394-ironwatch
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  target_modules: [bcf_governance/tooling/ci_graph_composition.py]
+  expected_tests: [tests/test_ci_graph_composition.py]
+  source_of_functions: existing semantic source-discovery inventory from the protected consumer
+  source_of_tests: existing verified pytest selector collection from the protected consumer
+  source_of_causes: independent protected per-relationship required negative-control mapping
+  required_behavior:
+  - Resolve every implementation and terminal-consumer reference to exactly one discovered runtime function.
+  - Resolve every positive and negative selector to the exact independently collected pytest population.
+  - Require exactly the protected cause-specific negative-control bindings for every reachable relationship.
+  - Reject missing relationships, missing causes, duplicate function identities, forged compiled digests and stale source identities.
+  - Return only a deterministic nonauthoritative static-conformance observation; existence never substitutes for execution qualification.
+  forbidden_surfaces: [truth engine, provider mutation, active suppression, generated workflows, maintained adopters]
+  remaining_obligations:
+  - Wire actual protected consumer source and test collection owners across every adopted lifecycle context.
+  - Independently qualify behavioral positives and cause-specific controls on exact admitted bytes.
