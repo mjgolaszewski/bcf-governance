@@ -23,6 +23,7 @@ targets:
 - tests/test_candidate_submit.py
 - bcf_governance/tooling/scaffold_governance_artifacts.py
 - tests/test_reconcile_governance.py
+- governance/application-operations.yml
 existing_owners:
   authored_state: bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state
   normalization: bcf_governance/tooling/scaffold_governance_artifacts.py::reconcile_main
@@ -53,3 +54,10 @@ forbidden:
 - new mutation authority
 - new broker or principal
 - weakening prospective or provider proof
+coordination_effect:
+  symbol: bcf_governance/tooling/local_execution_admission.py::local_gate_lease
+  classification: non_authoritative_output_effects
+  scope: Existing fixed host-local lease path and authenticated execution namespace only
+  rejection: Invalid execution identity or busy lease blocks before normalization
+  cleanup: Existing finally block unlocks and closes its descriptor
+  authority_effect: none; no provider or truth effect

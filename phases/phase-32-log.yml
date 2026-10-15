@@ -85,6 +85,9 @@ execution_evidence:
     effect boundary. That effect-boundary test passed after the delegation correction. Source-version-only cache invalidation
     is characterized for both source and private-runtime owners; fifty-eight focused tests pass. Source package version is
     now 2.5.0; derived version surfaces remain the canonical reconciliation owner responsibility before submission.
+  - Canonical normalization correctly rejected an unbound direct local lease effect in its shadow before root promotion or
+    push. The existing coordination primitive is now explicitly bound as a non-authoritative output effect in the existing
+    CLI operation; provider authority ports and authority_conferral remain unchanged.
 closeout_requirements:
   claims:
     workitems_closed:
