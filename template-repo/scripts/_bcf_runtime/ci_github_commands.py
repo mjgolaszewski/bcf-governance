@@ -315,7 +315,6 @@ def _release_parser() -> argparse.ArgumentParser:
     collect.add_argument("--build-manifest", type=Path, required=True)
     collect.add_argument("--verification", type=Path, required=True)
     collect.add_argument("--runtime-report", type=Path, required=True)
-    collect.add_argument("--qualification", type=Path, required=True)
     _runtime_evidence_arguments(collect)
     _release_artifact_arguments(collect)
     collect.add_argument("--output", type=Path, required=True)
@@ -528,7 +527,6 @@ def _release(argv: list[str]) -> None:
                 collector_run_attempt=_required_environment("GITHUB_RUN_ATTEMPT"),
                 runtime_report_path=args.runtime_report,
                 runtime_evidence=_runtime_evidence(args),
-                qualification_path=args.qualification,
                 output_path=args.output,
             )
             if args.bundle_output is not None:
@@ -541,7 +539,6 @@ def _release(argv: list[str]) -> None:
                     asset_root=args.release_artifact_dir,
                     build_manifest=args.build_manifest,
                     verification=args.verification,
-                    qualification=args.qualification,
                     receipt=args.output,
                 )
         else:

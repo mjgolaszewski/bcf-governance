@@ -437,26 +437,12 @@ def main(argv: list[str] | None = None) -> None:
                         "--adopter-python requires unique OWNER/REPO=PATH values"
                     )
                 interpreters[repository] = Path(path)
-            workflow_ref = os.environ.get("GITHUB_WORKFLOW_REF", "")
-            workflow_prefix = f"{args.repository}/"
-            workflow_path, separator, _workflow_ref = workflow_ref.partition("@")
-            if not separator or not workflow_path.startswith(workflow_prefix):
-                raise ReleaseQualificationError(
-                    "qualification workflow identity is unavailable"
-                )
             producer = {
-                "repository_id": os.environ.get("GITHUB_REPOSITORY_ID", ""),
-                "workflow": workflow_path.removeprefix(workflow_prefix),
-                "job": os.environ.get("GITHUB_JOB", ""),
-                "run_id": os.environ.get("GITHUB_RUN_ID", ""),
-                "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+                "kind": "local",
+                "id": "bcf-release-compatibility",
             }
-            from .ci_github_controller import environment_api
-            provider_api = environment_api()
             result = qualify_release(
                 args.repo_root,
-                provider_api=provider_api,
-                adopter_provider_environment=os.environ,
                 repository=args.repository,
                 release_assets=args.release_assets,
                 release_build_manifest=args.release_build_manifest,

@@ -71,9 +71,13 @@ def _validate_machine_backtrace(repo_root: Path) -> dict[str, int]:
         raise CIStateMatrixError(f"machine-readable CI state backtrace is unreadable: {exc}") from exc
     if not isinstance(payload, dict):
         raise CIStateMatrixError("machine-readable CI state backtrace must be a mapping")
-    transaction = payload.get("adopter_source_transaction")
+    transaction = payload.get("adopter_compatibility_observation")
     if not isinstance(transaction, dict):
-        raise CIStateMatrixError("machine-readable adopter source transaction is missing")
+        raise CIStateMatrixError("machine-readable adopter compatibility graph is missing")
+    if transaction.get("publication_prerequisite") is not False:
+        raise CIStateMatrixError(
+            "adopter compatibility must not become a publication prerequisite"
+        )
     declared = transaction.get("edge_contract_fields")
     edges = transaction.get("edges")
     if not isinstance(declared, list) or not declared or not isinstance(edges, list) or not edges:

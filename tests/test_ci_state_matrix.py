@@ -50,7 +50,7 @@ def test_changed_ci_contract_requires_same_candidate_matrix_update(tmp_path: Pat
         stream.write("\nCandidate-specific transition coverage.\n")
     report = validate_ci_state_matrix(repo)
     assert report["changed_contracts"] == ["bcf_governance/tooling/preflight.py", "spec/RELEASE_TRAIN_STATE_DAG.md"]
-    assert report["machine_backtrace"] == {"edges": 20, "transitions": 15}
+    assert report["machine_backtrace"] == {"edges": 7, "transitions": 15}
 
 
 def test_machine_backtrace_rejects_an_incomplete_edge_before_ci_allocation(
@@ -60,11 +60,11 @@ def test_machine_backtrace_rejects_an_incomplete_edge_before_ci_allocation(
     path = repo / "spec/phase0/release-train-backtrace.yml"
     path.write_text(
         path.read_text(encoding="utf-8").replace(
-            "authority_effect: release_transaction_identity_only, ", "", 1
+            "authority_effect: exact_release_byte_verification, ", "", 1
         ),
         encoding="utf-8",
     )
-    with pytest.raises(CIStateMatrixError, match="AS-000 lacks: authority_effect"):
+    with pytest.raises(CIStateMatrixError, match="AC-001 lacks: authority_effect"):
         validate_ci_state_matrix(repo)
 
 

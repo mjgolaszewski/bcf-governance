@@ -1,8 +1,8 @@
 document:
   kind: release_train_phase0_backtrace
   id: bcf.release-train.phase0-backtrace.v1
-  schema_version: 1
-  status: speculative_non_authoritative
+  schema_version: 2
+  status: active_machine_backtrace
   issue: 394
   source:
     repository: mjgolaszewski/bcf-governance
@@ -27,9 +27,9 @@ invariants:
 - {id: INV-RT-010, statement: generated and human representations are projections of singular executable owners, basis: governance/canonical-representations.yml}
 - {id: INV-RT-011, statement: reuse changes execution only and cannot broaden proposition qualification freshness dependency or authority, basis: audits/bcf-2.1-p26-invariant-ownership.yml}
 - {id: INV-RT-012, statement: recovery is bounded and cannot bypass the failed invariant or broaden authority, basis: schemas/recovery-reentry-authorization.schema.json}
-- {id: INV-RT-013, statement: every required adopter source is resolved from authenticated provider state as one immutable all-or-none inventory before qualification work and caller resources never select a subject, basis: spec/RELEASE_TRAIN_STATE_DAG.md#exact-adopter-source-transaction-backtrace}
+- {id: INV-RT-013, statement: adopter compatibility observes exact pinned source and release identities but mutable external repository state can neither authorize nor block immutable BCF publication, basis: spec/RELEASE_TRAIN_STATE_DAG.md#release-authority-and-adopter-compatibility-separation}
 - {id: INV-RT-014, statement: release qualification and publication consume distinct typed projections of one closed exact asset inventory and may never compare unlike projections, basis: spec/RELEASE_TRAIN_STATE_DAG.md#exact-adopter-source-transaction-backtrace}
-- {id: INV-RT-015, statement: every required adopter provider read and immutable fetch is covered by one exact repository-scoped read-only installation credential before source resolution and no adopter execution receives that credential, basis: spec/RELEASE_TRAIN_STATE_DAG.md#exact-adopter-source-transaction-backtrace}
+- {id: INV-RT-015, statement: adopter compatibility is a non-authoritative observation whose unavailable or failing state is typed and retained without becoming publication success denial or bypass, basis: spec/RELEASE_TRAIN_STATE_DAG.md#release-authority-and-adopter-compatibility-separation}
 - {id: INV-RT-016, statement: every self-only CI value source is owned by exactly one declared self-authority overlay before preflight can allocate provider or evidence work, basis: governance/self-overlays.yml}
 primitives:
 - {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
@@ -47,7 +47,7 @@ primitives:
 - {id: PRIM-ADOPTER-SOURCE, canonical_name: AdopterSourceIdentity, owner: schemas/release-qualification.schema.json, invariants: [INV-RT-001, INV-RT-005, INV-RT-013]}
 - {id: PRIM-ADOPTER-SOURCE-INVENTORY, canonical_name: AdopterSourceInventory, owner: bcf_governance/tooling/release_adopter_sources.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-013]}
 - {id: PRIM-RELEASE-ASSET-INVENTORY, canonical_name: ReleaseAssetInventory, owner: bcf_governance/tooling/release_asset_inventory.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-014]}
-- {id: PRIM-ADOPTER-PROVIDER-CREDENTIAL-SET, canonical_name: AdopterProviderCredentialSet, owner: governance/release-qualification.yml, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015]}
+- {id: PRIM-ADOPTER-COMPATIBILITY-OBSERVATION, canonical_name: AdopterCompatibilityObservation, owner: governance/release-qualification.yml, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015]}
 states:
 - {id: ST-INTENT, owner: ci_graph_post_merge, authority: none}
 - {id: ST-PREFLIGHT, owner: governance_validation.runner, authority: structural}
@@ -63,7 +63,7 @@ states:
 - {id: ST-RELEASE-AUTH, owner: ci_github_release, authority: release_authorization}
 - {id: ST-ASSET-VERIFY, owner: release_verifier, authority: exact_byte_release}
 - {id: ST-PUBLISHED, owner: provider_release, authority: publication}
-- {id: ST-ADOPTER-QUAL, owner: adopter_qualification, authority: qualification}
+- {id: ST-ADOPTER-COMPAT, owner: adopter_qualification, authority: none}
 - {id: ST-CUSTODY, owner: release_custody_audit, authority: terminal_record}
 transitions:
 - {id: TR-001, from: ST-INTENT, to: ST-PREFLIGHT, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-010], producer: governance_validation.runner, consumer: evidence_planning, cost: cheap_pre_allocation, rejection: structural_or_semantic_failure}
@@ -78,10 +78,13 @@ transitions:
 - {id: TR-010, from: ST-LIFECYCLE-CERT, to: ST-CONTROLLER, invariants: [INV-RT-004, INV-RT-009, INV-RT-012], producer: controller_lifecycle, consumer: subsequent_exact_main, cost: provider_controller_mutation, rejection: custody_or_rotation_failure, applicability: only_when_controller_transition_required}
 - {id: TR-011, from: ST-LIFECYCLE-CERT, to: ST-RELEASE-AUTH, invariants: [INV-RT-004, INV-RT-008], producer: ci_github_release, consumer: release_verifier, cost: provider_release_preflight, rejection: bounded_or_nonterminal_certification}
 - {id: TR-012, from: ST-RELEASE-AUTH, to: ST-ASSET-VERIFY, invariants: [INV-RT-001, INV-RT-005, INV-RT-008], producer: release_collector_verifier, consumer: publication, cost: build_and_verify_assets, rejection: asset_digest_or_inventory_mismatch}
-- {id: TR-013, from: ST-ASSET-VERIFY, to: ST-ADOPTER-QUAL, invariants: [INV-RT-005, INV-RT-008, INV-RT-010], producer: adopter_qualification_harness, consumer: publication_eligibility, cost: adopter_execution, rejection: missing_profile_or_failed_fixed_point}
-- {id: TR-014, from: ST-ADOPTER-QUAL, to: ST-PUBLISHED, invariants: [INV-RT-004, INV-RT-008], producer: provider_release_publication, consumer: custody, cost: provider_publication, rejection: qualification_or_upload_identity_mismatch}
+- {id: TR-013, from: ST-ASSET-VERIFY, to: ST-ADOPTER-COMPAT, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015], producer: adopter_compatibility_harness, consumer: compatibility_report_and_remediation, cost: adopter_execution, rejection: typed_unavailable_or_failed_observation_without_publication_effect}
+- {id: TR-014, from: ST-ASSET-VERIFY, to: ST-PUBLISHED, invariants: [INV-RT-001, INV-RT-004, INV-RT-005, INV-RT-008], producer: provider_release_publication, consumer: custody, cost: provider_publication, rejection: exact_runtime_asset_receipt_or_upload_identity_mismatch}
 - {id: TR-015, from: ST-PUBLISHED, to: ST-CUSTODY, invariants: [INV-RT-001, INV-RT-008, INV-RT-010], producer: release_custody_audit, consumer: future_release_and_human_review, cost: verification_only, rejection: immutable_custody_incomplete}
 adopter_source_transaction:
+  normative: false
+  status: rejected_provider_coupled_design
+  exclusion_reason: mutable_external_adopter_state_has_no_release_authority
   invariant: INV-RT-013
   all_or_none: true
   freeze_before: [cache_admission, clone, profile_admission, environment_admission, reconciliation, evidence_allocation, dispatch, publication]
@@ -126,6 +129,21 @@ adopter_source_transaction:
   - {id: ASX-005, reason: tag_not_default_branch_commit}
   - {id: ASX-006, reason: partial_inventory_not_qualification}
   downstream_consumers: [release_transaction_resolver, cli_cache_arguments, cache_admission, checkout_materialization, profile_admission, interpreter_admission, release_installation, synthetic_candidate, reconciliation, prospective_execution, governed_qualification_job, receipt_emission, dispatch, trusted_publisher, release_receipt, immutable_assets, tag, independent_custody]
+adopter_compatibility_observation:
+  normative: true
+  invariant: INV-RT-013
+  publication_prerequisite: false
+  source_mode: exact_pinned_fixture_or_explicit_local_clone
+  primitives: [PRIM-ADOPTER-REPOSITORY, PRIM-ADOPTER-SOURCE, PRIM-ADOPTER-SOURCE-INVENTORY, PRIM-ADOPTER-COMPATIBILITY-OBSERVATION, PRIM-RELEASE-ASSET-INVENTORY]
+  edge_contract_fields: [id, from, to, producer, consumer, canonical_owner, required, identity_binding, authority_effect, earliest_rejection, reject, failure_transition, recovery_transition, cost]
+  edges:
+  - {id: AC-001, from: exact_release_asset_inventory, to: trusted_release_receipt, producer: independent_runtime_verifier, consumer: trusted_release_collector, canonical_owner: release_receipts.collect_release_receipt, required: [terminal_certification, release_commit, release_tree, wheel_digest, sdist_digest, checksum_manifest_digest, runtime_verification], identity_binding: [repository, release_commit, release_tree, asset_digests, verifier_run, verifier_attempt], authority_effect: exact_release_byte_verification, earliest_rejection: before_publication_mutation, reject: [missing_terminal_certification, wrong_subject, rebuilt_asset, incomplete_asset_inventory, invalid_runtime_evidence, wrong_run_attempt], failure_transition: noncertifying_release_receipt_rejected, recovery_transition: retry_same_exact_release_transaction, cost: trusted_verification}
+  - {id: AC-002, from: trusted_release_receipt, to: immutable_publication, producer: release_publisher, consumer: independent_custody_verifier, canonical_owner: ci_github_release.publish_certified_release, required: [trusted_release_receipt, exact_assets, exact_tag, active_publisher_job_inventory], identity_binding: [receipt_artifact, release_commit, release_tree, asset_digests, tag, publisher_run, publisher_attempt], authority_effect: immutable_release_publication, earliest_rejection: before_provider_publication_mutation, reject: [wrong_receipt, rebuilt_bytes, wrong_tag, partial_publisher_inventory, conflicting_publication], failure_transition: publication_unavailable, recovery_transition: retry_idempotent_exact_publication, cost: provider_mutation}
+  - {id: AC-003, from: immutable_publication, to: terminal_custody, producer: independent_custody_verifier, consumer: future_release, canonical_owner: release_custody_verification, required: [publication, trusted_release_receipt, release_commit, release_tree, exact_assets], identity_binding: [tag, release_commit, release_tree, asset_digests, publication_observation], authority_effect: terminal_release_custody, earliest_rejection: before_custody_closeout, reject: [wrong_version, wrong_assets, wrong_subject, mutable_tag, hand_authored_custody], failure_transition: custody_incomplete, recovery_transition: retry_observation_only, cost: verification_only}
+  - {id: AC-004, from: exact_release_asset_inventory, to: pinned_adopter_compatibility_input, producer: compatibility_input_resolver, consumer: adopter_compatibility_harness, canonical_owner: release_adopter_qualification.load_qualification_contract, required: [exact_release_assets, explicit_pinned_source_identity, profile, isolated_execution_contract], identity_binding: [release_commit, release_tree, asset_digests, adopter_repository, adopter_commit, adopter_tree, profile], authority_effect: none, earliest_rejection: before_compatibility_execution, reject: [mutable_default_branch_as_authority, ambient_checkout, caller_selected_unbound_subject, missing_profile, wrong_release_assets], failure_transition: compatibility_observation_unavailable, recovery_transition: provide_new_explicit_pinned_input, cost: cheap}
+  - {id: AC-005, from: pinned_adopter_compatibility_input, to: compatibility_observation, producer: adopter_compatibility_harness, consumer: compatibility_report_and_remediation, canonical_owner: release_adopter_qualification.run_release_adopter_qualification, required: [exact_pinned_source, exact_release_assets, isolated_environment, reconciliation_result, prospective_result], identity_binding: [release_commit, release_tree, asset_digests, adopter_commit, adopter_tree, profile, execution_session], authority_effect: none, earliest_rejection: before_report_emission, reject: [source_mutation, rebuilt_asset, ambient_bcf, incomplete_execution, wrong_profile, unbound_result], failure_transition: typed_failed_compatibility_observation, recovery_transition: remediate_product_or_fixture_then_new_observation, cost: compatibility_execution}
+  - {id: AC-006, from: compatibility_observation, to: immutable_publication, producer: none, consumer: none, canonical_owner: release_authority_exclusion, required: [typed_non_authoritative_observation, explicit_exclusion_reason], identity_binding: [release_commit, release_tree, asset_digests], authority_effect: none, earliest_rejection: graph_compilation, reject: [observation_confers_publication, observation_blocks_publication, missing_observation_treated_as_success, external_head_freshness_required], failure_transition: structural_contract_rejected, recovery_transition: restore_release_authority_separation, cost: cheap, exclusion: mutable_external_adopter_state_has_no_release_authority}
+  - {id: AC-007, from: compatibility_observation, to: remediation_backlog, producer: compatibility_reporter, consumer: product_maintainer, canonical_owner: governance/release-qualification.yml, required: [typed_result, exact_release_identity, exact_adopter_identity, first_causal_failure], identity_binding: [release_commit, release_tree, adopter_commit, adopter_tree, profile], authority_effect: informational_only, earliest_rejection: before_human_or_agent_remediation, reject: [unbound_report, report_as_authority, silent_failure, mutation_of_adopter_repository], failure_transition: observation_retained_nonauthoritatively, recovery_transition: bounded_product_remediation, cost: reporting_only}
 composition:
   ci_job_edges:
     canonical_owner: bcf_governance/tooling/ci_graph_edges.py::compile_edge_contracts
