@@ -19,6 +19,7 @@ from .ci_graph_yaml import load_yaml_path, render_yaml
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
+    workitem_predecessors,
 )
 from .governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
@@ -219,24 +220,29 @@ def authored_post_merge_scope(repo_root: Path) -> tuple[str, str | None]:
         if set(statuses.values()) != {"DONE"}:
             raise CIGraphError("completed phase contains unfinished workitems")
         return "closure", None
-    completed_prefix = []
-    for item in workitems:
-        identity = str(item["id"])
-        if statuses[identity] != "DONE":
-            break
-        completed_prefix.append(identity)
-    if completed_prefix and len(completed_prefix) < len(workitems):
-        successor = workitems[len(completed_prefix)]
-        dependency = f"requires-workitem-closure:{completed_prefix[-1]}"
-        if dependency not in successor.get("acceptance", []):
-            return "pr", None
-        if successor.get("status") in {"IN_PROGRESS", "BLOCKED"}:
-            return "pr", None
-    return (
-        ("workitem", completed_prefix[-1])
-        if completed_prefix
-        else ("pr", None)
-    )
+    predecessors = {
+        str(item["id"]): workitem_predecessors(item) for item in workitems
+    }
+    successors: dict[str, list[str]] = {identity: [] for identity in statuses}
+    for successor, dependencies in predecessors.items():
+        for predecessor in dependencies:
+            successors[predecessor].append(successor)
+
+    frontiers = []
+    for target, target_successors in successors.items():
+        if statuses[target] != "DONE" or len(target_successors) != 1:
+            continue
+        successor = target_successors[0]
+        if statuses[successor] != "TODO" or predecessors[successor] != [target]:
+            continue
+        frontiers.append(target)
+    if len(frontiers) == 1:
+        return "workitem", frontiers[0]
+    if set(statuses.values()) == {"DONE"}:
+        terminal = [identity for identity, values in successors.items() if not values]
+        if len(terminal) == 1:
+            return "workitem", terminal[0]
+    return "pr", None
 
 
 def authored_candidate_title(

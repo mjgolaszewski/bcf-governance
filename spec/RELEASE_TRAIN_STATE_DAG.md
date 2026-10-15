@@ -386,18 +386,21 @@ declared and must represent its absence as typed Python-only applicability.
 | Workflow evaluation input | declared default or explicit typed intent/target | environment/data projection then runtime validation | expression embedded in `run:` source, unknown intent, or malformed target | none |
 | Phase artifact identity | exact plan deliverable, workitem summary, and log summary | canonical phase-catalog validation | any authored identity differs across the triplet | none; reject before evidence |
 
-## Integrated workitem-prefix state machine
+## Integrated workitem dependency-frontier state machine
 
 This phase deliberately avoids one full custody train per internal workitem.
 The existing bounded-workitem proposition is sufficient when the canonical
-lifecycle resolver closes an ordered dependency prefix on one exact subject.
+lifecycle resolver closes one exact dependency frontier on one exact subject.
 No batch authority or synthetic aggregate certification is introduced.
 
 | Authored workitem state | Evidence state | Derived lifecycle result | Post-merge target | Authority/result |
 | --- | --- | --- | --- | --- |
-| no `DONE` prefix | any | first workitem active/planned | `pr` / exact subject | PR progress only; no successor eligibility |
+| no unique `DONE` dependency frontier | any | open work remains active/planned | `pr` / exact subject | PR progress only; no successor eligibility |
 | P0-01 `DONE`, later open | applicable exact evidence closes P0-01 | P0-01 closed; P0-02 eligible | `workitem:P0-01` | only declared P0-02 eligibility |
 | P0-01..P0-04 `DONE`, P0-05 open | one exact session supplies every required claim; each predecessor closes before its successor | P0-01..P0-04 closed; P0-05 eligible; phase active | `workitem:P0-04` | P0-04 closure mechanically entails the exact predecessor chain; only P0-05 eligibility |
+| earlier listed workitems open; R3 `DONE`; R4 `TODO` explicitly requires R3 | applicable exact evidence closes R3 | R3 closed; R4 eligible; unrelated work unchanged | `workitem:R3` | list position cannot suppress exact bounded closure; only R4 eligibility |
+| unrelated `DONE`, active, or blocked islands exist beside one exact R3 -> R4 frontier | applicable exact evidence closes R3 | R3 closed; R4 eligible; islands retain their own state | `workitem:R3` | unrelated islands neither acquire nor suppress authority |
+| multiple eligible frontiers, fan-in, fan-out, or otherwise ambiguous successor ownership | any | no unique bounded proposition | `pr` / exact subject | fail closed to PR progress; never guess a target |
 | P0-04 `DONE` with any predecessor not closed | missing, invalid, stale, wrong subject/session/producer/claim, or inapplicable evidence | P0-04 completed but unverified | `workitem:P0-04` | fail `bounded_workitem_target_not_closed`; no eligibility |
 | dependent item `DONE` while any declared predecessor is not `DONE` | any | contradictory authored frontier | none | reject structurally before evidence; unrelated work islands remain independently classifiable |
 | every workitem `DONE`, phase still active | complete exact evidence | workitems closed; phase remains active | terminal workitem | bounded success only; no release authority |
@@ -564,8 +567,9 @@ in structural preflight.
 
 ## P29 outward construction tree
 
-- **Invariant: one integrated candidate closes one exact dependent prefix.**
-  - **Primitives:** ordered workitem IDs, authored state, predecessor edges,
+- **Invariant: one integrated candidate closes one exact dependency frontier.**
+  - **Primitives:** workitem identities, authored state, validated predecessor
+    and successor edges,
     applicable receipt references, exact subject, terminal target.
     - **Contracts:** workitem ledger, evidence-derived lifecycle observation,
       evaluation scope, certified proposition.
@@ -728,7 +732,7 @@ test-only, or inspected-no-impact before provider execution.
 | Derived planning/history | first-stage structural | lifecycle input only | exact lifecycle projection | successor selection | scoped target | scope preserved | release closure rejects stale state | installed parity |
 | Amplification/queue metrics | display only | display only | observation only | observation only | observation only | observation only | closeout only | schema parity |
 | Evaluation-input projection | structural expression-in-run rejection | inspected-no-impact | typed environment data | direct-event default parity | exact scoped proposition | scope preserved | bounded certification cannot broaden | generated parity |
-| Integrated workitem prefix | authored dependency-prefix validation | inspected-no-impact | same exact evidence closes ordered prefix | terminal prefix target selected | all predecessor observations retained | terminal target/scope preserved | only next declared workitem eligible; release rejects | lifecycle parity |
+| Integrated workitem frontier | authored dependency-DAG validation and unique-frontier derivation | inspected-no-impact | same exact evidence closes exact target | exact dependency-frontier target selected independent of list order | all predecessor observations retained | exact target/scope preserved | only uniquely declared successor eligible; release rejects | lifecycle parity |
 | Local toolchain/resource admission | first operation | no controller authority | prevents allocation when unready/busy | same selected environment | no semantic evidence on rejection | no bundle/status on rejection | no authority effect | adopter entrypoint parity |
 | Controller/project interpreter separation | fixed local selector and environment scrub before project preflight | no controller authority change | exact project interpreter runs adopter preflight and evidence without controller path leakage | unchanged provider-selected Python | no evidence from a mismatched environment | no bundle/status on rejection | no authority effect | self and adopter selection parity |
 | Prospective pending rotation | PR preflight authenticates stale-runtime routing first | installed N must parse/authorize exact candidate | local PR evidence remains non-authoritative | post-merge semantic projection is explicitly prospective and noncertifying | provider executes controller build only until N+1 installed | no finalizer/publisher before fresh exact-main | no successor/release authority before fresh exact-main | packaged runtime parity |
