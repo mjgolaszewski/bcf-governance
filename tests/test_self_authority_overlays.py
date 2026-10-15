@@ -29,6 +29,7 @@ def _copy_contract(tmp_path: Path) -> Path:
         "governance/github-protection.yml",
         "governance/break-glass-recovery.yml",
         "governance/public-contracts.yml",
+        "governance/release-qualification.yml",
         "schemas/self-authority-overlays.schema.json",
     ):
         target = root / relative
@@ -76,6 +77,12 @@ def test_repository_self_overlays_have_exact_unique_non_leaking_ownership() -> N
     assert ".github/workflows/bcf-release-publisher.yml" in generated[
         "self-publication-authority"
     ]
+    assert "governance/release-qualification.yml" in {
+        path
+        for overlay in _contract(REPO_ROOT)["overlays"]
+        if overlay["id"] == "self-publication-authority"
+        for path in overlay["authority_surfaces"]
+    }
 
 
 @pytest.mark.parametrize(
