@@ -21,3 +21,10 @@ adoption_order:
 - Generate prose matrices diagrams and dependency packets from the compiled owner; replace the prose-marker mutation guard only after equivalent protected complete conformance exists.
 - Qualify fresh install upgrade fixed point profile and installed-consumer behavior independently before retirement or activation.
 forbidden: Duplicate authored transition registries, hand-written authoritative prose, adoption inferred from a YAML status or digest, and suppression before complete independent qualification.
+
+primitive_reference_observations:
+  evidence: audits/issue-394/primitive-reference-observations.yml
+  source_commit: 42536402d41b75964c55f075d52113f1a25c70f4
+  outcome: All fifteen P26 canonical fragments and named executable function references resolve in exact current source; historical audit status is not adoption authority.
+  missing_named_backtrace_references: [TreeIdentity, ExecutionProvenance, Qualification, EvidenceReference, InvalidationReason, ReuseAttestation]
+  consequence: Bind these existing primitives explicitly while enriching the current backtrace; do not mint replacements or claim primitive completeness from the current seventeen rows.
