@@ -1,0 +1,74 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 35 Workitems
+  id: bcf-governance-phase-35-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-10-15T00:00:00Z'
+  status: planned
+  path: plans/phase-35-workitems.yml
+  phase_id: P35
+workitems:
+- id: P35-P0-01
+  priority: P0
+  status: TODO
+  summary: Tune measured critical paths only after complete assurance and isolation proof
+  acceptance:
+  - requires-phase-closure:P34
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.certification.tuning
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P35-P0-02
+  priority: P0
+  status: TODO
+  summary: Meet separately frozen PR exact-main release adopter custody and interruption targets
+  acceptance:
+  - requires-workitem-closure:P35-P0-01
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.certification.benchmarks
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P35-P0-03
+  priority: P0
+  status: TODO
+  summary: Certify exact source wheel sdist template installed-runtime and real-adopter equivalence
+  acceptance:
+  - requires-workitem-closure:P35-P0-02
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context installation; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.certification.distribution
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P35-P0-04
+  priority: P0
+  status: TODO
+  summary: Publish admitted exact bytes and independently verify immutable custody without rebuilding
+  acceptance:
+  - requires-workitem-closure:P35-P0-03
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.certification.custody
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test

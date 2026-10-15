@@ -1,0 +1,53 @@
+document:
+  kind: execution_phase_plan
+  name: Phase 33 Plan
+  id: bcf-governance-phase-33-plan
+  version: 1.0.0
+  generated_at_utc: '2026-10-15T00:00:00Z'
+  status: planned
+  path: plans/phase-33-plan.yml
+phase:
+  id: P33
+  build_block: idcc-dormant-mechanisms-2.5.0
+  planner: home:bcf-governance:bcf-394-ironwatch
+  date: '2026-10-15'
+  scope_source:
+  - AGENTS.yml
+  - plans/product-spec.yml
+  - plans/build-plan.yml
+  - plans/phase-ledger.yml
+  - MEMORY.yml
+delivery_contract:
+  tightly_scoped_deliverables:
+  - Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
+  - Authenticate proof applicability and exact resumable coalesced submit release and adopter transactions
+  - Derive conservative claim test control impact with independently checked required populations
+  - Schedule only the unresolved sound closure with deterministic resource-safe bounded fanout
+  - Derive complete exact adopter subjects and safely reuse isolated outcomes through exact-byte custody
+  - Project approved periodic policy and profile-specific dormant capabilities through canonical installation
+  - Prove full governed versus shadow differential behavior and isolated installed-adopter parity
+  parallelizable_workstreams:
+  - id: P33-WS1
+    name: dormant
+  hard_dependencies:
+  - P32
+  docker_first_local_runtime: repo_native_validation_and_governance_commands
+  completeness_standard: full_completeness_for_declared_scope
+scope_lock:
+- order: 1
+  statement: keep the phase narrowly scoped to declared deliverables and update canonical governed artifacts in the same change
+- order: 2
+  statement: No frozen or in-flight predecessor mutation; no maintained adopter writes; no hand-edited generated workflows
+    or authority pins
+- order: 3
+  statement: Current v2.3.2 local compatibility failures are residuals without new publication authority; preserve exact protected
+    provider boundaries
+- order: 4
+  statement: Commit the affected-surface matrix and positive plus cause-specific negative bindings before production changes;
+    fully bind every mapped issue requirement
+- order: 5
+  statement: Foundation exit requires approved baseline-relative targets before optimization is judged; no shadow suppression
+    or phase authority inferred from local green tests
+verification_plan:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests

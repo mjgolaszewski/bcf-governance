@@ -1,0 +1,40 @@
+document: {kind: affected_surface_contract, path: audits/issue-394/composition-slice.yml, status: planned, authority: false}
+workitem: P32-P0-03
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+invariants: [I04, I11, I13, I23, F01, F02, F03, F05, F06, F07, F08]
+canonical_owner: governance/ci-graph.yml
+scope:
+  primitive: compose existing compiled CI edges with context-qualified lifecycle relationships
+  implementation: bcf_governance/tooling/ci_graph_composition.py
+  schema: schemas/ci-lifecycle-composition.schema.json
+  tests: tests/test_ci_graph_composition.py
+  mirrors: generated through the canonical pack manifest generator
+independent_inputs:
+- the protected consumer supplies the complete required relationship population and structural exclusions
+- the protected consumer supplies the complete required runtime authority-effect population
+- the existing CompiledCIGraph supplies graph identity and CI edge population
+- symbol and test bindings are mandatory contract references; their executable conformance remains a separate foundation obligation
+behavior:
+- exact repository source tree controller policy graph and CI-edge identities are mandatory
+- every expected context-qualified ordered relationship has exactly one contract or exact canonical structural exclusion
+- reachable relationships include authenticated facts guards effects failure recovery cleanup resource cost and terminal bindings
+- missing context population changed edge digest false exclusion omitted runtime effect and missing causal control reject
+- deterministic canonical output is nonauthoritative; successful compilation cannot activate suppression or grant terminal authority
+forbidden:
+- a new CI graph truth engine claim registry or active execution strategy
+- caller booleans standing in for authenticated facts
+- candidate-owned required-population derivation
+- treating symbol existence or a schema digest as execution proof
+- editing generated workflows frozen predecessor bytes or maintained adopters
+acceptance:
+- characterize valid composition and every rejection above before implementing the compiler
+- prove reordered equivalent input produces identical canonical bytes
+- prove deleting a relationship and its tests cannot defeat the independent population
+- prove source package and private template parity
+remaining_foundation_obligations:
+- authenticate and wire the actual full lifecycle and runtime-effect populations through canonical owners
+- bind every adopted transition to implementation positive and cause-specific negative execution
+- generate the actual human lifecycle projections and prove their parity
+- qualify every applicable profile and terminal context independently

@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mechanism",
+        "input_schema",
+        "output_schema",
+        "cardinality",
+        "facts",
+        "guards",
+        "effects",
+        "successor",
+        "rejection",
+        "recovery",
+        "cleanup",
+        "freshness",
+        "cost_boundary",
+        "resource_class",
+        "reuse",
+        "implementation",
+        "positive_tests",
+        "negative_tests",
+        "terminal_consumers",
+        "ci_edges"
+      ],
+      "properties": {
+        "mechanism": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "output_schema": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cardinality": {
+          "type": "string",
+          "minLength": 1
+        },
+        "facts": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "producer",
+              "verifier",
+              "subject_binding",
+              "proposition",
+              "authority",
+              "freshness"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "producer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "verifier": {
+                "type": "string",
+                "minLength": 1
+              },
+              "subject_binding": {
+                "type": "string",
+                "minLength": 1
+              },
+              "proposition": {
+                "type": "string",
+                "minLength": 1
+              },
+              "authority": {
+                "type": "string",
+                "minLength": 1
+              },
+              "freshness": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "guards": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "effects": {
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "successor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rejection": {
+          "type": "string",
+          "minLength": 1
+        },
+        "recovery": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cleanup": {
+          "type": "string",
+          "minLength": 1
+        },
+        "freshness": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cost_boundary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resource_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reuse": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implementation": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "positive_tests": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "negative_tests": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "terminal_consumers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "ci_edges": {
+          "type": "array",
+          "minItems": 0,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "producer",
+              "consumer"
+            ],
+            "properties": {
+              "producer": {
+                "type": "string",
+                "minLength": 1
+              },
+              "consumer": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source",
+    "relationships"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository_id",
+        "commit_sha",
+        "tree_sha",
+        "controller_commit_sha",
+        "policy_sha256",
+        "graph_sha256",
+        "ci_edges_sha256"
+      ],
+      "properties": {
+        "repository_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "tree_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "controller_commit_sha": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "policy_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "graph_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ci_edges_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "relationships": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "context",
+          "producer",
+          "consumer",
+          "contract",
+          "exclusion"
+        ],
+        "properties": {
+          "context": {
+            "type": "string",
+            "minLength": 1
+          },
+          "producer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "consumer": {
+            "type": "string",
+            "minLength": 1
+          },
+          "contract": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/contract"
+              }
+            ]
+          },
+          "exclusion": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "minLength": 1
+              }
+            ]
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "contract": {
+                "type": "object"
+              },
+              "exclusion": {
+                "type": "null"
+              }
+            }
+          },
+          {
+            "properties": {
+              "contract": {
+                "type": "null"
+              },
+              "exclusion": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,2256 @@
+schema_version: '1.0'
+document:
+  kind: issue_394_pre_admission_workplan
+  path: audits/issue-394/workplan.yml
+  status: registered
+  authority: false
+source:
+  issue: https://github.com/mjgolaszewski/bcf-governance/issues/394
+  issue_updated_at: '2026-10-15T15:46:46Z'
+  issue_body_sha256: 7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e
+  repository: mjgolaszewski/bcf-governance
+  commit_sha: 2d2d00b2f26a9e149aebd7efa548236abe7b16e9
+  tree_sha: 5d495765d9ae935b5e43425e2bf7c56b2b4646f9
+target_version: 2.5.0
+admission:
+  status: admitted_under_current_policy
+  canonical_phase_ids:
+  - P32
+  - P33
+  - P34
+  - P35
+  canonical_release_train_id: release_27
+  rule: Derive phase and train IDs only after exact predecessor closure qualifications compatible installed authority and immutable custody are authenticated
+  canonical_active_phase_preserved: P32
+  blocker: none; local TradeFlow compatibility failure is an explicitly non-authoritative residual
+  unblock_condition: not applicable; user clarified current-policy admission
+  evidence: audits/issue-394/admission.yml
+stages:
+- id: foundation
+  issue_label: 0+A
+  depends_on: []
+  workitems:
+  - foundation.admission
+  - foundation.residuals
+  - foundation.composition
+  - foundation.conformance
+  - foundation.deadlines
+  - foundation.baseline
+  activation: active
+- id: dormant
+  issue_label: B
+  depends_on:
+  - foundation
+  workitems:
+  - dormant.early-checks
+  - dormant.continuation
+  - dormant.impact
+  - dormant.scheduling
+  - dormant.release
+  - dormant.projection
+  - dormant.shadow
+  activation: planned
+- id: activation
+  issue_label: C
+  depends_on:
+  - dormant
+  workitems:
+  - activation.authority
+  - activation.periodic
+  - activation.rollback
+  activation: planned
+- id: certification
+  issue_label: D
+  depends_on:
+  - activation
+  workitems:
+  - certification.tuning
+  - certification.benchmarks
+  - certification.distribution
+  - certification.custody
+  activation: planned
+workitems:
+  foundation.admission:
+    summary: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
+    status: IN_PROGRESS
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: query
+    target_modules:
+    - bcf_governance/tooling/ci_github_release_collection.py
+    - bcf_governance/tooling/governance_truth.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on: []
+    expected_tests:
+    - kind: positive
+      scenario: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized admission inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  foundation.residuals:
+    summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: query
+    target_modules:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_scheduling.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.admission
+    expected_tests:
+    - kind: positive
+      scenario: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized residuals inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  foundation.composition:
+    summary: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.residuals
+    expected_tests:
+    - kind: positive
+      scenario: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized composition inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  foundation.conformance:
+    summary: Independently trace implementation effects and producer consumer populations in both directions
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.composition
+    expected_tests:
+    - kind: positive
+      scenario: Independently trace implementation effects and producer consumer populations in both directions
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized conformance inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  foundation.deadlines:
+    summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/ci_graph_timeouts.py
+    - bcf_governance/tooling/provider_read.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.conformance
+    expected_tests:
+    - kind: positive
+      scenario: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized deadlines inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  foundation.baseline:
+    summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: query
+    target_modules:
+    - bcf_governance/tooling/operational_observations.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.admission
+    - foundation.residuals
+    expected_tests:
+    - kind: positive
+      scenario: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized baseline inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.early-checks:
+    summary: Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - foundation.conformance
+    - foundation.deadlines
+    - foundation.baseline
+    expected_tests:
+    - kind: positive
+      scenario: Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized early-checks inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.continuation:
+    summary: Authenticate proof applicability and exact resumable coalesced submit release and adopter transactions
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.early-checks
+    expected_tests:
+    - kind: positive
+      scenario: Authenticate proof applicability and exact resumable coalesced submit release and adopter transactions
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized continuation inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.impact:
+    summary: Derive conservative claim test control impact with independently checked required populations
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.early-checks
+    expected_tests:
+    - kind: positive
+      scenario: Derive conservative claim test control impact with independently checked required populations
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized impact inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.scheduling:
+    summary: Schedule only the unresolved sound closure with deterministic resource-safe bounded fanout
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.continuation
+    - dormant.impact
+    expected_tests:
+    - kind: positive
+      scenario: Schedule only the unresolved sound closure with deterministic resource-safe bounded fanout
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized scheduling inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.release:
+    summary: Derive complete exact adopter subjects and safely reuse isolated outcomes through exact-byte custody
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/release_adopter_sources.py
+    - bcf_governance/tooling/release_adopter_qualification.py
+    - bcf_governance/tooling/release_publication_transaction.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.scheduling
+    expected_tests:
+    - kind: positive
+      scenario: Derive complete exact adopter subjects and safely reuse isolated outcomes through exact-byte custody
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized release inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.projection:
+    summary: Project approved periodic policy and profile-specific dormant capabilities through canonical installation
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: installation
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.release
+    expected_tests:
+    - kind: positive
+      scenario: Project approved periodic policy and profile-specific dormant capabilities through canonical installation
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized projection inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  dormant.shadow:
+    summary: Prove full governed versus shadow differential behavior and isolated installed-adopter parity
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/governance_truth.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.projection
+    expected_tests:
+    - kind: positive
+      scenario: Prove full governed versus shadow differential behavior and isolated installed-adopter parity
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized shadow inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  activation.authority:
+    summary: Expand compatible trusted consumers before protected context-specific opt-in activation
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/ci_graph_controller_lifecycle.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - dormant.shadow
+    expected_tests:
+    - kind: positive
+      scenario: Expand compatible trusted consumers before protected context-specific opt-in activation
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized authority inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  activation.periodic:
+    summary: Activate approved due expiry grace catch-up findings and foreground priority semantics
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/evidence_planning.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - activation.authority
+    expected_tests:
+    - kind: positive
+      scenario: Activate approved due expiry grace catch-up findings and foreground priority semantics
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized periodic inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  activation.rollback:
+    summary: Prove automatic unsafe-suppression disable opt-out and exact rollback preserving proof and history
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: installation
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/governance_install/runtime_custody_operations.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - activation.periodic
+    expected_tests:
+    - kind: positive
+      scenario: Prove automatic unsafe-suppression disable opt-out and exact rollback preserving proof and history
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized rollback inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  certification.tuning:
+    summary: Tune measured critical paths only after complete assurance and isolation proof
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/evidence_scheduling.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - activation.rollback
+    expected_tests:
+    - kind: positive
+      scenario: Tune measured critical paths only after complete assurance and isolation proof
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized tuning inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  certification.benchmarks:
+    summary: Meet separately frozen PR exact-main release adopter custody and interruption targets
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: evidence
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/operational_observations.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - certification.tuning
+    expected_tests:
+    - kind: positive
+      scenario: Meet separately frozen PR exact-main release adopter custody and interruption targets
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized benchmarks inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  certification.distribution:
+    summary: Certify exact source wheel sdist template installed-runtime and real-adopter equivalence
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: installation
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/release_adopter_qualification.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - certification.benchmarks
+    expected_tests:
+    - kind: positive
+      scenario: Certify exact source wheel sdist template installed-runtime and real-adopter equivalence
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized distribution inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+  certification.custody:
+    summary: Publish admitted exact bytes and independently verify immutable custody without rebuilding
+    status: TODO
+    owner: home:bcf-governance:bcf-394-ironwatch
+    bounded_context: ci_authority
+    architectural_layer: tooling
+    operation_side: contract_then_command_and_query
+    target_modules:
+    - bcf_governance/tooling/release_publication_transaction.py
+    forbidden_surfaces:
+    - frozen or in-flight predecessor bytes policies and trains
+    - other agents working trees
+    - maintained adopter repositories
+    - hand-edited generated workflows or authority pins
+    depends_on:
+    - certification.distribution
+    expected_tests:
+    - kind: positive
+      scenario: Publish admitted exact bytes and independently verify immutable custody without rebuilding
+    - kind: cause_specific_negative
+      scenario: Reject missing wrong-subject stale incomplete or unauthorized custody inputs before dependent effects
+    acceptance:
+    - Commit complete affected-surface contract and executable bindings before production changes
+    - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+    - Prove source package template and applicable profile parity
+    - Require independent scoped BCF closure rather than authored DONE
+    evidence: []
+requirements:
+  I01:
+    requirement: Assurance monotonicity. Optimization changes execution strategy, never required propositions, negative controls, evidence standards, independence,
+      authority, failure semantics or protection. Redundant mechanisms may be consolidated only through an explicit proposition-preserving governed change.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I01 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I01 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I02:
+    requirement: Claim-first. `ClaimIdentity`, `Qualification` and their dependency closures determine required proof. Jobs/groups/shards are execution containers,
+      not evidence identities or authority shortcuts.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I02 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I02 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I03:
+    requirement: Exact identity. Plans bind repository ID, source/base/head/tree as applicable, policy, installed controller/evaluator, graph, toolchain, environment,
+      test/control manifest, dependency model, source evidence, freshness evaluation, algorithm version and execution session. Nonapplicable fields require canonical
+      typed treatment, not invented values.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I03 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I03 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I04:
+    requirement: Independent completeness. Trusted truth independently derives/verifies required claims, impact, exclusions, selected execution and reuse. A candidate
+      planner's internally consistent omissions cannot certify themselves.
+    owner: ci_authority
+    workitem: foundation.conformance
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    producer: foundation.conformance
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I04 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I04 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I05:
+    requirement: Conservative ambiguity. Unknown imports/reflection/generated inputs/fixtures/cross-language/configuration/environment/security/trust effects expand
+      the assurance closure. Lack of observed coverage is not proof of non-dependence. Missing mandatory authorization blocks; it is not cured by running more tests.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I05 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I05 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I06:
+    requirement: Negative controls preserved. Each applicable cause-specific control must execute or have independently applicable qualification/reuse. Reusing a
+      positive result does not automatically reuse its detector qualification. Syntax mutation success is not proof of the proposition.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I06 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I06 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I07:
+    requirement: Provider independence. Local, shadow and isolated qualification observations cannot certify provider PR, protected merge, exact-main, controller,
+      release or custody authority. Preserve provenance and authority classes through every handoff.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I07 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I07 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I08:
+    requirement: "No time-based laundering. Periodic evidence satisfies a consumer only after exact proposition, dependencies, policy, source, toolchain/environment,\
+      \ qualification, freshness and authority validation. \u201CGreen last night\u201D is insufficient."
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I08 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I08 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I09:
+    requirement: Stable protection. Required provider status identities and admission boundaries remain stable. Internal dynamic fanout, zero-work plans, skipped/missing
+      jobs and nonapplicable lanes never manufacture terminal success.
+    owner: ci_authority
+    workitem: activation.authority
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_controller_lifecycle.py
+    producer: activation.authority
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I09 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I09 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I10:
+    requirement: Replan on invalidation. PR/base movement, subject changes, relevant policy/graph/controller/toolchain/environment changes and evidence expiry trigger
+      a new exact plan/applicability decision. Old plans are immutable and cannot authorize new subjects.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I10 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I10 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I11:
+    requirement: Deterministic planning. Identical canonical input snapshots produce byte-identical model, plan, partition and reason outputs. Bind duration/resource
+      observations and evaluation time when used; deterministic tie-breaking is mandatory.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I11 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I11 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I12:
+    requirement: Closed dispositions. Required behavioral claims are exactly authenticated-reuse, execute, or blocked. Structural obligations retain the canonical
+      `captured_by_preflight` channel; preflight observations cannot become behavioral receipts. The catalog separately types monitoring/nonapplicability; required
+      merge/release proof cannot be relabeled monitoring. All exclusions are independently checked.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I12 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I12 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I13:
+    requirement: No candidate self-exemption. Candidate bytes cannot redefine impact, evaluator, policy, tests or exclusions so as to grant themselves authority.
+      Candidate content is data only under explicit source contracts; protected-base/managed-controller ownership remains enforced.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I13 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I13 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I14:
+    requirement: Periodic drift stays separate. Scheduled observations create typed findings/invalidation for applicable future consumers. They cannot retroactively
+      authorize a merge or erase its historical evidence.
+    owner: evidence
+    workitem: activation.periodic
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_planning.py
+    producer: activation.periodic
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I14 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I14 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I15:
+    requirement: Exact inventory. Test selection includes canonical test IDs, fixtures, parameter/generated identities, discovery tooling and negative controls. New/uncollected/dynamic
+      tests require conservative fallback; a narrow test command cannot redefine the required population.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I15 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I15 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I16:
+    requirement: "Complete execution. SPLINTER preserves exact union, zero overlap within a partitioned obligation, resource isolation, cleanup, canonical JUnit identities\
+      \ and manifest checks. Distinct policy-required independent executions remain distinct obligations, not \u201Cduplicates\u201D to optimize away."
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I16 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I16 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I17:
+    requirement: Failure containment. Timeout, partial execution, unavailable/invalid proof and planner defects cannot grant success. Retain unaffected applicable
+      proof, derive a bounded recovery frontier and distinguish infrastructure failure from a real product/control failure.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I17 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I17 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I18:
+    requirement: 'Observations have no truth authority. Timing, cache hits, historical failure frequency, queue waits, costs and predicted critical paths may influence
+      ordering/placement only after correctness is established. They cannot waive proof or grant permission; explain/report artifacts remain `authority: false`.'
+    owner: evidence
+    workitem: foundation.baseline
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/operational_observations.py
+    producer: foundation.baseline
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I18 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I18 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I19:
+    requirement: Adopter parity. Self-managed BCF, Lite, Standard-v3, Regulated, Python-only and mixed toolchains retain their own requirements. The same product
+      semantics must be installable; BCF-self controller/release/toolchain fixtures cannot be imposed on ordinary consumers.
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I19 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I19 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I20:
+    requirement: No hidden operator procedure. The canonical front door derives ordinary intent/target, source/base, proof population, reuse, partition, next action
+      and recovery from authenticated state. No agent-selected skip list, lane, test subset, artifact IDs, arbitrary adopter ref or copied provider facts.
+    owner: ci_authority
+    workitem: dormant.early-checks
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    producer: dormant.early-checks
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I20 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I20 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I21:
+    requirement: Earliest-valid rejection. Every deterministic obligation names the earliest boundary at which its authentic inputs and required authority are available.
+      Execute it there, before avoidable downstream model/provider allocation or mutation. Do not claim provider-only facts can be proved locally. Measure detection
+      latency and downstream work avoided for seeded failures.
+    owner: ci_authority
+    workitem: dormant.early-checks
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    producer: dormant.early-checks
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I21 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I21 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I22:
+    requirement: Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision.
+      Agent-selected defaults, CLI flags, environment variables, hand-edited receipts and silent recovery overrides must not recreate the choice. Genuine policy/intent
+      changes retain explicit human authorization; absence of derivable authority yields a typed blocker.
+    owner: ci_authority
+    workitem: dormant.early-checks
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    producer: dormant.early-checks
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I22 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I22 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I23:
+    requirement: Composed semantic closure. Extend existing `CompiledCIGraph`/`EdgeContract` ownership through lifecycle, facts, costs, recovery, release/adopter
+      and custody terminal consumers. Validate populations as well as edges. Every reachable context-specific relationship has a complete contract; each structurally
+      absent relationship has one canonical typed exclusion. No independent graph copy or second truth engine.
+    owner: ci_authority
+    workitem: foundation.composition
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    producer: foundation.composition
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I23 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I23 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I24:
+    requirement: "Mechanical subject selection. Use the existing provider resolver for the entire required adopter/source inventory before expensive qualification.\
+      \ Freeze exact subjects; supplied roots/interpreters are resources, not selection authority. Provider movement must follow current freshness/invalidation policy\u2014\
+      never silently alter an in-flight inventory, choose older green sources, or relax collection-time checks."
+    owner: ci_authority
+    workitem: dormant.release
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/release_adopter_sources.py
+    - bcf_governance/tooling/release_adopter_qualification.py
+    - bcf_governance/tooling/release_publication_transaction.py
+    producer: dormant.release
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I24 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I24 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I25:
+    requirement: "Single canonical handoff. One admitted candidate/operation has one tracked submit/release transaction and resumable exact continuation. A second\
+      \ frontend invocation must observe/join or reject duplicate in-flight work under policy, not launch another identical train. Transport ambiguity is not \u201C\
+      exactly once\u201D; authenticate outcome before retrying a mutation. No duplicate local gate train solely because the operation crosses a workflow boundary."
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I25 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I25 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I26:
+    requirement: Safe parallelism. Readiness requires satisfied semantic dependencies, producer/artifact availability, valid authority and compatible resources. Independent
+      nodes may overlap; shared worktrees, migration/database state, ports, runner budgets, credentials, mutation fixtures and publisher/controller writes require
+      explicit isolation or exclusion. A faster plan must not remove a real assurance dependency.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I26 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I26 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I27:
+    requirement: Honest adaptive optimization. Compute the minimal sound unresolved execution closure within the conservative model, then use bounded deterministic
+      scheduling heuristics to reduce its measured critical path. Do not claim a globally optimal schedule. Duration/cost models cannot select away required work
+      or trigger speculative duplicate execution by default.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I27 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I27 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I28:
+    requirement: Bounded resources and custody. Admission respects CPU/RAM/disk/I/O/concurrency/API budgets. Reuse immutable verified inputs where allowed; mutation-specific
+      environments and evidence outputs remain isolated. Retire exact execution-owned ephemeral state on terminal paths, preserve referenced evidence/retention roots,
+      and diagnose undeclared growth. No global prune or cache hit treated as proof.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I28 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I28 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I29:
+    requirement: End-to-end release identity. Build, verifier, adopter qualification, trusted collector, immutable publisher and custody audit preserve exact authorized
+      bytes and independent trust roles. Source proof is not artifact proof; publisher/collector must not rebuild already-certified artifacts or silently requalify
+      all adopters. Every remaining repeated check must identify its distinct proposition or changed applicability.
+    owner: ci_authority
+    workitem: dormant.release
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/release_adopter_sources.py
+    - bcf_governance/tooling/release_adopter_qualification.py
+    - bcf_governance/tooling/release_publication_transaction.py
+    producer: dormant.release
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I29 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I29 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I30:
+    requirement: Pipeline-specific outcomes. Material wall-clock reduction must be measured separately for PR, exact-main/controller, release/adopter and terminal
+      custody, plus end-to-end developer interruption. Faster PRs, fewer jobs or shorter summed CPU time cannot substitute for unchanged release-to-custody latency;
+      shifting work to nights is reported, not hidden.
+    owner: evidence
+    workitem: foundation.baseline
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/operational_observations.py
+    producer: foundation.baseline
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I30 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I30 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I31:
+    requirement: Scheduled work is an obligation, not a clock guarantee. Define due/expiry/grace, missed/delayed run detection, bounded catch-up, nonoverlap, invalidation
+      and on-demand execute/block fallback. No scheduled/queued/started/skipped job extends evidence validity or satisfies a required consumer without completed qualified
+      proof.
+    owner: evidence
+    workitem: activation.periodic
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_planning.py
+    producer: activation.periodic
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I31 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I31 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  I32:
+    requirement: Minimum operational surface. Extend existing BCF owners and provider facilities; no new broker/controller/agent orchestrator merely to schedule CI.
+      Every additional process, principal, receipt family, manual handoff or bookkeeping commit must justify a unique assurance function and measured cost. Keep the
+      ordinary agent interface small.
+    owner: evidence
+    workitem: foundation.baseline
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/operational_observations.py
+    producer: foundation.baseline
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid I32 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific I32 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F01:
+    requirement: one normative owner per affected transition; no second evaluator.
+    owner: ci_authority
+    workitem: foundation.composition
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    producer: foundation.composition
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F01 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F01 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F02:
+    requirement: "guards reference typed authenticated facts, their producer, subject/proposition/authority/freshness and independent verification\u2014not caller\
+      \ booleans."
+    owner: ci_authority
+    workitem: foundation.composition
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    producer: foundation.composition
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F02 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F02 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F03:
+    requirement: every transition closes source, trigger/operation, guards, effects, successor, rejection and bounded recovery.
+    owner: ci_authority
+    workitem: foundation.composition
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    producer: foundation.composition
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F03 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F03 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F04:
+    requirement: human matrix/DAG/transition semantics are deterministically generated.
+    owner: ci_authority
+    workitem: foundation.conformance
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    producer: foundation.conformance
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F04 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F04 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F05:
+    requirement: establish conformance to existing assurances before optimization; observed defects require governed correction, not silent semantic redefinition.
+    owner: ci_authority
+    workitem: foundation.conformance
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    producer: foundation.conformance
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F05 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F05 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F06:
+    requirement: "independently trace contract\u2192implementation\u2192positive/control evidence\u2192consumer and reverse-trace every authority effect."
+    owner: ci_authority
+    workitem: foundation.conformance
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    producer: foundation.conformance
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F06 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F06 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F07:
+    requirement: scope adoption to all transitions consumed/changed by this train and their necessary closure, not an unrelated historical rewrite.
+    owner: ci_authority
+    workitem: foundation.composition
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    producer: foundation.composition
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F07 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F07 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  F08:
+    requirement: foundation work does not activate suppression, modify protection or grant controller/release/custody authority.
+    owner: ci_authority
+    workitem: foundation.composition
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_edges.py
+    - bcf_governance/tooling/ci_graph_contracts.py
+    producer: foundation.composition
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid F08 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific F08 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP01:
+    requirement: 'Consumer ownership: preserve adopter graph nodes/claims/tests/dependencies/extensions/release/protection semantics; mutate only declared BCF-owned
+      projections.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP01 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP01 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP02:
+    requirement: 'Canonical distribution: one scheduler/composition implementation and profile-aware install/upgrade projection across source, wheel/sdist, packaged
+      runtime and templates; no copied consumer-specific planner.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP02 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP02 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP03:
+    requirement: 'Preserve-first upgrade: authenticate predecessor/current bytes, derive minimal owned changes, retain unrelated content, prove idempotent second
+      run/fixed point and safe rollback.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP03 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP03 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP04:
+    requirement: 'Profile specificity: Lite, Standard-v3, Regulated, Python-only and mixed Python/Node/TypeScript have explicit supported capabilities and typed nonapplicability.
+      No self-controller, self-release or irrelevant toolchain requirements imposed on ordinary adopters.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP04 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP04 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP05:
+    requirement: "Consumer-local proof: derive each adopter's own source\u2192owner\u2192claim\u2192test/control closure and proof inventory; another repository's\
+      \ application results cannot supply its authority."
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP05 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP05 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP06:
+    requirement: 'Provider boundary: preserve required statuses, exact provider repository/base/head, protected evaluator/controller and protection declarations.
+      No candidate-controlled skip authority or unreviewed protection mutation.'
+    owner: ci_authority
+    workitem: activation.authority
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_controller_lifecycle.py
+    producer: activation.authority
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP06 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP06 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP07:
+    requirement: 'Actual adoption proof: fixture/schema/installer success is insufficient. Qualify isolated real consumer checkouts with their own test/control execution
+      and independently verified completeness. Preserve provider-only proof requirements rather than simulating certification.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP07 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP07 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP08:
+    requirement: 'Safe absence: old/malformed/missing declarations are mechanically migrated with proof or yield a typed blocker; no silent capability loss or inferred
+      permissions.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP08 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP08 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP09:
+    requirement: 'Periodic isolation: project schedules from each consumer''s approved proposition catalog, not BCF-self cron controls. Installed feature availability
+      does not establish adoption or applicable periodic proof.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP09 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP09 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  CP10:
+    requirement: 'Parity/custody: verify exact installed runtime, source/package/template equivalence, repository/subject/policy/toolchain/freshness/provider scope
+      and cold reconstruction of required evidence.'
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid CP10 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific CP10 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC01:
+    requirement: 'Docs-only candidate: every required proposition still accounted for through valid reuse/execution; no blanket path skip.'
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC01 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC01 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC02:
+    requirement: Direct unit/shared helper/fixture/schema/dependency/generated/semantic-registry/trust/controller changes invalidate their sound closure.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC02 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC02 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC03:
+    requirement: Dynamic import/reflection/native/plugin/cross-language effects, missing test discovery and stale/partial coverage expand; omission never means unaffected.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC03 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC03 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC04:
+    requirement: Detector/mutation-only change retains exact negative qualification; stale syntactic oracle/zero-or-multiple target fails at earliest valid boundary.
+    owner: ci_authority
+    workitem: dormant.early-checks
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    producer: dormant.early-checks
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC04 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC04 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC05:
+    requirement: 'Candidate edits its planner/impact map/evaluator/tests/exclusions to self-pass: independent trusted required-population and effect checks reject.'
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC05 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC05 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC06:
+    requirement: Local green or isolated adopter observation without mandatory provider authority cannot certify PR/main/release/custody.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC06 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC06 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC07:
+    requirement: Wrong-subject/policy/controller/toolchain/repository or expired nightly proof cannot satisfy a current consumer.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC07 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC07 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC08:
+    requirement: Periodic red, missing/delayed/disabled/skipped run or expired source opens typed debt/finding/invalidation; no historical rewrite or fresh-proof
+      assumption.
+    owner: evidence
+    workitem: activation.periodic
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_planning.py
+    producer: activation.periodic
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC08 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC08 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC09:
+    requirement: Missing claim/producer/consumer, false exclusion, unmodeled terminal, duplicate test, overlapping/gapped partition or absent shard blocks truth.
+    owner: ci_authority
+    workitem: foundation.conformance
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    producer: foundation.conformance
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC09 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC09 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC10:
+    requirement: Base/head/policy movement between plan, dispatch and finalizer creates an explicit new subject or rejection; in-flight bytes never change silently.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC10 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC10 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC11:
+    requirement: 'Provider 429/5xx/transient timeout versus 401/403/404, digest mismatch, artifact churn or wrong attempt: exact bounded retry/terminal classification;
+      ambiguity is not an empty inventory.'
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC11 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC11 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC12:
+    requirement: Bounded workitem/phase/exact-main/ordinary-current/no-transition/pending-rotation/recovery/release/custody permutations preserve exact distinct authority.
+    owner: ci_authority
+    workitem: activation.authority
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_controller_lifecycle.py
+    producer: activation.authority
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC12 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC12 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC13:
+    requirement: Self/Lite/Standard-v3/Regulated plus pure/mixed toolchains retain actual adopter requirements and installation/projection parity.
+    owner: installation
+    workitem: dormant.projection
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/ci_graph.py
+    - bcf_governance/tooling/install_governance_pack.py
+    producer: dormant.projection
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC13 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC13 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC14:
+    requirement: Scheduler timeout, unavailable cache, resource conflict, interrupted/partial job or cancelled stale candidate produces a safe complete fallback/recovery,
+      never an omitted obligation.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC14 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC14 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC15:
+    requirement: 'Full-governed versus shadow-selected differential corpus and seeded behavioral defects: zero missed required failing propositions accepted for activation.'
+    owner: ci_authority
+    workitem: activation.authority
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_controller_lifecycle.py
+    producer: activation.authority
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC15 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC15 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC16:
+    requirement: "Source\u2192contract\u2192producer\u2192consumer and reverse runtime-effect conformance catch a removed edge/test pair and unbound side effect;\
+      \ all exclusions independently grounded."
+    owner: ci_authority
+    workitem: foundation.conformance
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+    producer: foundation.conformance
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC16 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC16 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC17:
+    requirement: Historical ledger/log mismatch rejects before reconciliation worktree/commit/adopter mutation; merely stale derived projections proceed through the
+      one canonical generator.
+    owner: ci_authority
+    workitem: dormant.early-checks
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    producer: dormant.early-checks
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC17 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC17 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC18:
+    requirement: Graph-generated evaluator workflow absent from promotion inventory, invalid component order or artifact path without custody fails before costly
+      fanout; no static duplicate destination list.
+    owner: ci_authority
+    workitem: dormant.early-checks
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    producer: dormant.early-checks
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC18 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC18 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC19:
+    requirement: Wrong adopter branch/root/interpreter, partial inventory, ambient BCF/package, wrong profile or malformed exact assets fails at the earliest boundary
+      with sufficient facts. Current provider resolver is retained.
+    owner: ci_authority
+    workitem: dormant.release
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/release_adopter_sources.py
+    - bcf_governance/tooling/release_adopter_qualification.py
+    - bcf_governance/tooling/release_publication_transaction.py
+    producer: dormant.release
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC19 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC19 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC20:
+    requirement: 'One required adopter source advances after snapshot/before collection: current freshness rule enforced, sound affected remainder derived, no hidden
+      older-green fallback or global unnecessary requalification.'
+    owner: ci_authority
+    workitem: dormant.release
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/release_adopter_sources.py
+    - bcf_governance/tooling/release_adopter_qualification.py
+    - bcf_governance/tooling/release_publication_transaction.py
+    producer: dormant.release
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC20 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC20 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC21:
+    requirement: "Retry exact prospective\u2192submit or release\u2192qualification continuation: only invalidated/unobserved work executes; duplicate concurrent\
+      \ invocation cannot create duplicate admitted mutation or claim credit."
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC21 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC21 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC22:
+    requirement: 'Required same-session prerequisite versus equivalent historical proof: reuse permitted only where the canonical dependency contract allows it.'
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC22 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC22 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC23:
+    requirement: Highly skewed 23-minute producer / subminute peers, missing/corrupt/adversarial timings and changing capacity preserve coverage and bounded resource
+      use; compare real critical paths.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC23 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC23 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC24:
+    requirement: Concurrent fixtures/worktrees/ports/databases/caches/credentials, nested fanout and cancellation prove isolation, exact cleanup and no predecessor-state
+      leakage.
+    owner: evidence
+    workitem: dormant.scheduling
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_scheduling.py
+    - bcf_governance/tooling/evidence_shards.py
+    producer: dormant.scheduling
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC24 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC24 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC25:
+    requirement: Crash after provider accepts dispatch/publish but before receipt, duplicate/out-of-order callback, partial collector and interrupted credential retirement
+      reconcile exact state; no retry-until-green.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC25 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC25 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC26:
+    requirement: Archive/manifest/receipt substitution, wrong run/attempt or caller-authored qualification JSON rejected independently before immutable publication/custody.
+    owner: ci_authority
+    workitem: dormant.release
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/release_adopter_sources.py
+    - bcf_governance/tooling/release_adopter_qualification.py
+    - bcf_governance/tooling/release_publication_transaction.py
+    producer: dormant.release
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC26 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC26 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC27:
+    requirement: Retention/GC race, vanished durable input or warm-cache-only success rejects; required original evidence remains cold-resolvable without duplicated
+      bulk archives.
+    owner: evidence
+    workitem: dormant.continuation
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_recovery_frontier.py
+    producer: dormant.continuation
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC27 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC27 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC28:
+    requirement: Late/missed periodic refresh under resource contention does not starve foreground required work or extend TTL; due-state catch-up is bounded and
+      observable.
+    owner: evidence
+    workitem: activation.periodic
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/evidence_planning.py
+    producer: activation.periodic
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC28 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC28 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC29:
+    requirement: A real runtime upgrade preserves the existing one-implementation-PR/no-bookkeeping-only follow-up outcome where applicable; a truly new policy change
+      remains separately authorized.
+    owner: ci_authority
+    workitem: activation.authority
+    contract_owner: governance/ci-graph.yml
+    implementation_targets:
+    - bcf_governance/tooling/ci_graph_controller_lifecycle.py
+    producer: activation.authority
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC29 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC29 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC30:
+    requirement: Every seeded deterministic failure records earliest-valid detection and no avoidable downstream allocation/mutation; checks requiring provider/build
+      facts remain correctly later.
+    owner: evidence
+    workitem: foundation.baseline
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/operational_observations.py
+    producer: foundation.baseline
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC30 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC30 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC31:
+    requirement: Empty execution remainder still undergoes independent required-claim/reuse verification and emits legitimate stable terminal status; no empty matrix
+      implies green.
+    owner: evidence
+    workitem: dormant.impact
+    contract_owner: governance/gate-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/affected_proof_closure.py
+    - bcf_governance/tooling/evidence_planning.py
+    - bcf_governance/tooling/test_manifests.py
+    producer: dormant.impact
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC31 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC31 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+  AC32:
+    requirement: Fresh install, authenticated upgrade, opt-out and rollback preserve consumer graph/protection/history/applicable proof; dormant compatibility expansion
+      cannot activate itself.
+    owner: installation
+    workitem: activation.rollback
+    contract_owner: governance/public-contracts.yml
+    implementation_targets:
+    - bcf_governance/tooling/governance_install/runtime_custody_operations.py
+    producer: activation.rollback
+    consumer: independent trusted completeness and affected terminal consumer
+    positive_binding:
+      status: required_before_implementation
+      scenario: Valid AC32 proposition reaches only its authorized consumer
+    negative_binding:
+      status: required_before_implementation
+      scenario: Cause-specific AC32 violation is independently rejected
+    terminal_gate: certification.custody
+    evidence_status: not_executed
+additional_regressions:
+- id: provider_deadline_948
+  workitem: foundation.deadlines
+  positive: A complete bounded inner envelope plus setup cleanup and headroom fits the canonically quantized outer deadline
+  negative: Reject 568 seconds of inner work plus setup cleanup and headroom under a 600 second outer ceiling; cover every sibling provider-effective consumer
+  source: https://github.com/mjgolaszewski/bcf-governance/issues/394#issuecomment-6196161840
+- id: issue_420_nonprefix_frontier
+  workitem: foundation.residuals
+  positive: Incorporate only admitted dependency-DAG frontier fix as an exact regression
+  negative: Never close or reorder unrelated workitems to manufacture prefix authority
+  source: https://github.com/mjgolaszewski/bcf-governance/issues/420
+measurement_policy:
+  status: requires_review_after_baseline_before_optimization
+  proposed_pr:
+    p50_improvement_percent: 25
+    p95_improvement_percent: 20
+    max_risk_class_p95_regression_percent: 10
+  separate_required_targets:
+  - release
+  - adopter qualification
+  - dispatch-to-terminal-custody
+  - merge-to-terminal-custody
+  - earliest failure latency and downstream work avoided
+  - planner overhead
+  - compute storage API and complexity budgets
+  reporting:
+  - actual nonoverlapping critical paths
+  - BCF-controlled and total elapsed time including waits
+  - matched cold and warm cohorts with exact identities counts variance exclusions
+  - include failed slow superseded and periodic-shifted work
+  - no p95 certification from insufficient observations
+  approved_targets: null
+verification_commands:
+- .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
+- .venv/bin/python -m pytest -q tests
+completion:
+  status: not_complete
+  requires:
+  - all 82 identified requirements plus deadline regression bound to executable positive and cause-specific negative evidence
+  - independent contract and runtime-effect population completeness
+  - profile and real isolated-adopter parity
+  - approved separately measured pipeline improvements
+  - exact protected scope certification and independently verified immutable custody
+  - Resolve predecessor admission and derive canonical phase IDs before phase activation or production implementation
+canonical_workitem_mapping:
+  foundation.admission: P32-P0-01
+  foundation.residuals: P32-P0-02
+  foundation.composition: P32-P0-03
+  foundation.conformance: P32-P0-04
+  foundation.deadlines: P32-P0-05
+  foundation.baseline: P32-P0-06
+  dormant.early-checks: P33-P0-01
+  dormant.continuation: P33-P0-02
+  dormant.impact: P33-P0-03
+  dormant.scheduling: P33-P0-04
+  dormant.release: P33-P0-05
+  dormant.projection: P33-P0-06
+  dormant.shadow: P33-P0-07
+  activation.authority: P34-P0-01
+  activation.periodic: P34-P0-02
+  activation.rollback: P34-P0-03
+  certification.tuning: P35-P0-01
+  certification.benchmarks: P35-P0-02
+  certification.distribution: P35-P0-03
+  certification.custody: P35-P0-04

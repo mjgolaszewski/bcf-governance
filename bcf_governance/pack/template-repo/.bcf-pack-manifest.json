@@ -248,6 +248,10 @@
       "operation": "copy",
       "sha256": "f31b97e7645722a1865399603b24b4e955ad34382ea6c56e54d01f3cacea0399"
     },
+    "schemas/ci-lifecycle-composition.schema.json": {
+      "operation": "copy",
+      "sha256": "cfd6e50884c972f976c95079114538b8bd8cc3c2a4ed315889a16b7964cc1f4e"
+    },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
       "sha256": "a16f344547dafff61fc2cc7c78a25bf5c8640bb2a0ef6db323d4b2cfc2e14b32"
