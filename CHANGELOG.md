@@ -6,6 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Added
+
+- Registered the Issue #394 four-phase 2.5.0 train with explicit predecessor
+  custody, requirement ownership, scoped workitems, and separate baseline and
+  activation gates. Local adopter compatibility failures remain observations
+  under the existing publication policy.
+- Added a dormant lifecycle composition schema and pure compiler over existing
+  CI edges. Independent relationship and runtime-effect populations reject
+  omissions, false exclusions, stale identities, and missing causal controls;
+  compilation grants no execution or certification authority.
+
 ## [2.3.2] - 2026-10-13
 
 ### Fixed

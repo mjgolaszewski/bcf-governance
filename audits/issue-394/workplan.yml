@@ -72,7 +72,7 @@ stages:
 workitems:
   foundation.admission:
     summary: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
-    status: IN_PROGRESS
+    status: DONE
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
     architectural_layer: tooling
@@ -99,7 +99,7 @@ workitems:
     evidence: []
   foundation.residuals:
     summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
-    status: TODO
+    status: DONE
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: evidence
     architectural_layer: tooling
@@ -127,7 +127,7 @@ workitems:
     evidence: []
   foundation.composition:
     summary: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
-    status: TODO
+    status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
     architectural_layer: tooling
@@ -210,7 +210,7 @@ workitems:
     evidence: []
   foundation.baseline:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
-    status: TODO
+    status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: evidence
     architectural_layer: tooling

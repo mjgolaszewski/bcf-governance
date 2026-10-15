@@ -96,8 +96,27 @@
           "minItems": 1,
           "uniqueItems": true,
           "items": {
-            "type": "string",
-            "minLength": 1
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fact_id",
+              "check"
+            ],
+            "properties": {
+              "fact_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "check": {
+                "enum": [
+                  "exact_subject",
+                  "exact_proposition",
+                  "qualified_authority",
+                  "freshness",
+                  "complete_inventory"
+                ]
+              }
+            }
           }
         },
         "effects": {
