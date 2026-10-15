@@ -671,3 +671,16 @@ def test_submit_valid_release_target_uses_the_existing_fixed_point_check(monkeyp
         return SimpleNamespace(returncode=0, stdout='', stderr='')
     submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
     assert calls == ['--check']
+
+
+def test_submit_authored_machine_rejects_before_lease_or_reconcile(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation.ci_state_matrix import CIStateMatrixError
+
+    def reject(_root):
+        raise CIStateMatrixError("machine-readable authored contradiction")
+
+    monkeypatch.setattr(submit, "validate_ci_state_matrix", reject, raising=False)
+    monkeypatch.setattr(submit, "local_gate_lease", lambda *_a: pytest.fail("authored machine contradiction acquired lease"))
+    with pytest.raises(ProspectiveValidationError, match="machine-readable authored contradiction"):
+        submit._normalize_submission(tmp_path, python_executable=Path("/python"), execution_id="2" * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail("authored machine contradiction reached reconciliation"))
