@@ -178,3 +178,28 @@ independent_fact_binding_slice:
   - Deleted producer or verifier rejects despite retained edge tests and implementation functions.
   forbidden_surfaces: [provider mutation, active suppression, workflow authority, maintained adopters, frozen distribution]
   remaining: Authenticate actual canonical fact owners and full consumer populations before normative adoption.
+
+tracked_machine_contract_slice:
+  workitem: P32-P0-03
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_graph_composition.py, schemas/ci-lifecycle-composition.schema.json, tests/test_ci_graph_composition.py]
+  compatibility:
+  - Preserve version 1.0 subject-bound input and both existing human renderer views.
+  - Add explicit version 1.1 authored input containing relationships without a runtime source envelope.
+  - Installed consumers must explicitly support the new schema before adoption; old consumers must reject it safely.
+  contract:
+  - Render canonical machine input from the existing compiled owner without a self-referential repository commit/tree identity.
+  - Require the protected consumer to supply a complete schema-valid authenticated source envelope for every compilation.
+  - Bind the compiled result to that exact source, policy, graph and existing CI-edge population; authored input cannot select source authority.
+  - Forbid a caller-supplied source envelope in version 1.1 and require it in legacy version 1.0.
+  - Preserve complete relationship semantics, required populations, exclusions and effect checks through render/compile round trips.
+  - Machine bytes remain stable across runtime subjects and input order; runtime compiled identity still changes with authenticated subject.
+  expected_tests:
+  - Legacy subject-bound input and existing human views remain unchanged.
+  - Canonical machine round trip preserves every contract and exclusion.
+  - Missing or malformed protected source and injected authored source reject.
+  - Current graph/edge identity mismatch and missing relationship/effect still reject in authored mode.
+  forbidden_surfaces: [active suppression, provider mutation, caller-authorized facts, generated workflows, frozen distribution]
+  remaining: Populate and independently qualify the complete actual lifecycle model before normative adoption or prose retirement.

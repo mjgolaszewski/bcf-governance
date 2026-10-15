@@ -1,0 +1,26 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/provider-read-bounds-slice.yml
+  status: planned
+  authority: false
+workitem: P32-P0-02
+purpose: Governed correction of an observed existing bounded-retry defect; no deadline optimization or activation.
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+canonical_owner: bcf_governance/tooling/provider_read.py
+invariants: [I01, I05, I23, F05]
+target_modules: [bcf_governance/tooling/provider_read.py]
+expected_tests: [tests/test_provider_read.py]
+contract:
+- Keep the existing immutable GET-only transient/terminal retry taxonomy and exact request identity.
+- Accept only finite Retry-After numbers within the existing inclusive zero-to-thirty-second policy.
+- Reject nonfinite or out-of-policy header values with ProviderReadError before sleep or a subsequent request.
+- Preserve default backoff, valid finite values, retry counts, response ownership and mutation exclusion.
+- Do not represent a socket timeout as a complete operation or pipeline deadline.
+forbidden_surfaces: [provider mutation, retrying mutations, release policy, workflow pins, frozen distribution, maintained adopters]
+completion:
+- Characterize NaN escape with an injected no-wait sleeper and exact request counter before production correction.
+- Positive finite-boundary tests and cause-specific nonfinite/out-of-range controls pass.
+- Preserve existing provider transport behavioral tests and canonical source/package/template parity.
+remaining: Full authenticated end-to-end deadline composition remains P32-P0-05 after independent conformance.

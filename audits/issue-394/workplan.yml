@@ -73,7 +73,7 @@ stages:
 workitems:
   foundation.admission:
     summary: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
-    status: DONE
+    status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
     architectural_layer: tooling
@@ -677,6 +677,8 @@ requirements:
       scenario: Cause-specific I01 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - finite-provider-retry-bound
   I02:
     requirement: Claim-first. `ClaimIdentity`, `Qualification` and their dependency closures determine required proof. Jobs/groups/shards are execution containers,
       not evidence identities or authority shortcuts.
@@ -760,6 +762,8 @@ requirements:
       scenario: Cause-specific I05 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - finite-provider-retry-bound
   I06:
     requirement: Negative controls preserved. Each applicable cause-specific control must execute or have independently applicable qualification/reuse. Reusing a
       positive result does not automatically reuse its detector qualification. Syntax mutation success is not proof of the proposition.
@@ -1121,6 +1125,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
   I24:
     requirement: "Mechanical subject selection. Use the existing provider resolver for the entire required adopter/source inventory before expensive qualification.\
@@ -1402,6 +1407,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
   F06:
     requirement: "independently trace contract\u2192implementation\u2192positive/control evidence\u2192consumer and reverse-trace every authority effect."
@@ -1861,6 +1867,8 @@ requirements:
       scenario: Cause-specific AC11 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - finite-provider-retry-bound
   AC12:
     requirement: Bounded workitem/phase/exact-main/ordinary-current/no-transition/pending-rotation/recovery/release/custody permutations preserve exact distinct authority.
     owner: ci_authority
@@ -2350,6 +2358,8 @@ implementation_slices:
     - tests.test_ci_graph_composition::test_binding_conformance_uses_existing_source_and_pytest_collection_owners
     - tests.test_ci_graph_composition::test_binding_conformance_traces_actual_compiler_and_projection_calls
     - tests.test_ci_graph_composition::test_contract_view_is_stable_across_bound_subjects
+    - tests.test_ci_graph_composition::test_machine_contract_round_trip_preserves_every_relationship
+    - tests.test_ci_graph_composition::test_machine_contract_bytes_are_stable_across_subjects_and_order
     - tests.test_semantic_operation_inventory::test_validated_inventory_preserves_port_classes_and_legacy_counts
     - tests.test_ci_graph_composition::test_discovered_source_authority_port_survives_candidate_effect_omission
     negative_controls:
@@ -2369,6 +2379,22 @@ implementation_slices:
       test: tests.test_ci_graph_composition::test_binding_conformance_rejects_removed_call_with_both_functions_present
     - cause: unresolved-source-call
       test: tests.test_ci_graph_composition::test_binding_conformance_rejects_unresolved_required_call
+    - cause: authored-runtime-source-injection
+      test: tests.test_ci_graph_composition::test_authored_machine_contract_cannot_inject_runtime_source
+    - cause: legacy-runtime-source-missing
+      test: tests.test_ci_graph_composition::test_legacy_machine_contract_still_requires_source
+    - cause: missing-protected-source
+      test: tests.test_ci_graph_composition::test_authored_machine_contract_requires_complete_protected_source[source1]
+    - cause: current-graph-mismatch
+      test: tests.test_ci_graph_composition::test_authored_machine_contract_rejects_wrong_current_graph[graph_sha256]
+    - cause: authored-relationship-omission
+      test: tests.test_ci_graph_composition::test_authored_machine_contract_cannot_omit_protected_population[relationship]
+    - cause: authored-effect-omission
+      test: tests.test_ci_graph_composition::test_authored_machine_contract_cannot_omit_protected_population[effect]
+    - cause: machine-view-bound-snapshot-tamper
+      test: tests.test_ci_graph_composition::test_machine_view_rejects_tampered_bound_envelope
+    - cause: unsupported-machine-schema
+      test: tests.test_ci_graph_composition::test_authored_machine_contract_rejects_unknown_schema_version
     - cause: tracked-view-bound-snapshot-tamper
       test: tests.test_ci_graph_composition::test_contract_view_still_rejects_tampered_bound_identity
     - cause: undeclared-source-authority
@@ -2464,3 +2490,42 @@ implementation_slices:
     remaining:
     - Adequate matched self/isolated-adopter cohorts and separately approved frozen performance/resource targets remain required.
     - Independent complete producer populations, terminal custody clocks and measured CPU are not inferred from these observations.
+  finite-provider-retry-bound:
+    id: finite-provider-retry-bound
+    workitem: P32-P0-02
+    scope: Correct the existing Retry-After finite-number boundary while preserving GET-only retries and exact request identity.
+    contract: audits/issue-394/provider-read-bounds-slice.yml
+    producer: bcf_governance/tooling/provider_read.py::_retry_after
+    consumer: bcf_governance/tooling/provider_read.py::open_provider_get
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_provider_read::test_provider_retry_preserves_finite_inclusive_delay_bounds[0]
+    - tests.test_provider_read::test_provider_retry_preserves_finite_inclusive_delay_bounds[0.5]
+    - tests.test_provider_read::test_provider_retry_preserves_finite_inclusive_delay_bounds[30]
+    negative_controls:
+    - cause: invalid-retry-delay-NaN
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[NaN]
+    - cause: invalid-retry-delay-nan
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[nan]
+    - cause: invalid-retry-delay-+nan
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[+nan]
+    - cause: invalid-retry-delay--nan
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[-nan]
+    - cause: invalid-retry-delay-inf
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[inf]
+    - cause: invalid-retry-delay--inf
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[-inf]
+    - cause: invalid-retry-delay-Infinity
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[Infinity]
+    - cause: invalid-retry-delay-31
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[31]
+    - cause: invalid-retry-delay--1
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[-1]
+    - cause: invalid-retry-delay-invalid
+      test: tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[invalid]
+    - cause: mutation-retry-forbidden
+      test: tests.test_provider_read::test_provider_retry_rejects_mutation_method
+    remaining:
+    - Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.
+    - These local transport controls confer no provider certification or custody authority.

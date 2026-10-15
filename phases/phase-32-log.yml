@@ -16,7 +16,7 @@ summary:
   - phase artifacts were scaffolded from the governance template
 workitems:
 - id: P32-P0-01
-  status: DONE
+  status: IN_PROGRESS
   summary: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
 - id: P32-P0-02
   status: DONE
