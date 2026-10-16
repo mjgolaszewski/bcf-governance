@@ -11,8 +11,7 @@ hotfix:
   mode: full
   related_phase_id: P31
   hotfix_number: 5
-  summary: retire exact historical governance-pack runtime residue during adopter
-    upgrades
+  summary: close exact successor custody and protected-merge provider-result edges
 execution_evidence:
   planned_commands:
   - .venv/bin/python -m pytest -q tests/test_install_governance_pack.py tests/test_install_release_custody.py
@@ -37,6 +36,17 @@ execution_evidence:
     lossless JSON strings and validates the complete entry before mutation.
   - Focused cleanup, phase-schema, governance-validation, and pack-parity
     validation passed with 131 tests.
+  - >-
+    AgentBus PR #59 exposed the protected-merge provider-result edge after its
+    exact evidence became green before native auto-merge was requested. GitHub
+    returned GraphQL data null, which the old consumer treated as a mapping.
+    The closed result classifier now distinguishes success, rejection, unknown,
+    pending, and certified-clean states; only an exact provider-clean PR may
+    reach one override-free ordinary merge-commit request, and every mutation
+    result is reread against the immutable PR subject before success.
+  - The protected-merge response and submission frontier focused suite passed
+    with 32 tests, including null, partial, mixed error/data, moved subject,
+    provider-clean, blocked, and unknown-result permutations.
 closeout_requirements:
   claims:
     required_suites_green:

@@ -17,6 +17,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Made phase-retention cleanup losslessly project every supported structured
   execution observation into its compact history schema before any file is
   moved or removed; unsupported shapes fail with the repository unchanged.
+- Made protected candidate submission classify every native auto-merge provider
+  result before use. Exact PRs that become certified and clean before native
+  auto-merge can be enabled now derive one ordinary merge commit with no
+  override; null, partial, error-bearing, moved, or ambiguous results fail
+  closed or resolve only through an exact authenticated reread.
 
 ## [2.3.3] - 2026-10-15
 

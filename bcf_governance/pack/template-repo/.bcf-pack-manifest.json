@@ -528,7 +528,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "1060cd0c807d8dd16a86d866dd76a5f0da2a311ae066d01dc6513d761fafa72c"
+      "sha256": "095c7e52663ee28b0d661105a4adccf78de25776afb44a604a2d051c86d09313"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -656,7 +656,7 @@
     },
     "scripts/_bcf_runtime/ci_github_pr_mutations.py": {
       "operation": "copy",
-      "sha256": "360e8bb7a94db3593ce53b5a636457a71b7f4a7e3dc25600748f2ee476208bed"
+      "sha256": "c12a706f9cb3c989d373867ff2822c9ad1d7ba6c7b66a55122a1a8db71fbeccb"
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
