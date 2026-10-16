@@ -3,12 +3,12 @@
     "kind": "contract_research",
     "path": "audits/issue-394/capture-acceptance-contract.json",
     "authority": false,
-    "status": "proposed_not_implemented"
+    "status": "contract_before_implementation"
   },
   "owner": "bcf_governance/tooling/operational_observations.py",
   "workitem_alias": "foundation.baseline",
-  "bounded_context": "operational_observations",
-  "layer": "application_query",
+  "bounded_context": "operations",
+  "layer": "tooling",
   "command_query_side": "query",
   "forbidden_surfaces": [
     "provider authority",
@@ -47,5 +47,15 @@
   ],
   "recovery": "Preserve rejected originals and any separately authenticated producer bytes. Create a new explicitly linked capture only from independently recoverable originals; never infer missing bytes or silently repair provenance.",
   "current_evidence": "audits/issue-394/capture-integrity-population.json",
-  "activation": "Production guard and tests remain pending under peer hold; this specification conveys no execution or lifecycle authority."
+  "activation": "Pure opt-in capture acceptance query before baseline inclusion; no performance, custody or lifecycle authority.",
+  "representation_rules": [
+    "Provider captures use source_snapshot with repository/run/commit/jobs; producer commit identifies observer code and is not the measured subject.",
+    "Local captures use source_snapshot when present, otherwise producer. A producer containing clock/stream capture facts must agree with the selected local snapshot on commit/tree/clock and declared stream digests.",
+    "Recompute source digest using canonical sorted compact JSON and reject duplicates/nonfinite values before parsing observations.",
+    "Legacy raw submit progress records without a complete timing capture remain unqualified."
+  ],
+  "targets": [
+    "bcf_governance/tooling/operational_observations.py",
+    "tests/test_operational_observations.py"
+  ]
 }
