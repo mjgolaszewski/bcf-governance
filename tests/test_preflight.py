@@ -1547,3 +1547,27 @@ def test_authored_phase_result_primitive_and_real_consumers_have_one_source_owne
     assert binding['document']['authority'] is False
     assert binding['execution_qualified'] is False
     assert binding['normative_adoption_qualified'] is False
+
+
+@pytest.mark.parametrize("case", ["no-pack", "valid", "bad-digest", "missing-manifest"])
+def test_pack_admission_extraction_preserves_existing_result_and_error_bytes(tmp_path, case):
+    import hashlib
+    root = tmp_path
+    if case == "no-pack":
+        assert preflight._pack_manifest(root) == {"applicable": False}
+        return
+    template = root / "bcf_governance/pack/template-repo"
+    template.mkdir(parents=True)
+    (template / "owned.txt").write_text("current\n")
+    if case != "missing-manifest":
+        digest = hashlib.sha256(b"current\n").hexdigest() if case == "valid" else "0" * 64
+        (template / ".bcf-pack-manifest.json").write_text(json.dumps({"schema_version": "2.0",
+            "files": {"owned.txt": {"sha256": digest, "operation": "copy"}}, "generated": [], "retired_files": {}}))
+    if case == "valid":
+        assert preflight._pack_manifest(root) == {"applicable": True, "file_count": 1, "template_interpreter": "not_declared"}
+    else:
+        message = ("template pack is missing .bcf-pack-manifest.json" if case == "missing-manifest"
+                   else "pack manifest mismatch: missing=[], stale=[], digest_mismatch=['owned.txt']")
+        with pytest.raises(preflight.PreflightError) as observed:
+            preflight._pack_manifest(root)
+        assert str(observed.value) == message
