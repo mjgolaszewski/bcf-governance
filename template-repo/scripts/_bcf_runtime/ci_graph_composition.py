@@ -476,6 +476,7 @@ def validate_lifecycle_bindings(
     candidate facts cannot choose their own verifier, authority, or freshness.
     When supplied by a protected caller, operation-call catalogues additionally
     bind exact discovered function closures through declared port boundaries.
+    Protected initialization scopes additionally bind all discovered module facts.
     Their absence preserves the legacy query and establishes no reverse-effect
     completeness; even their presence cannot qualify execution or unknown effects.
     """
@@ -549,7 +550,13 @@ def validate_lifecycle_bindings(
                 raise CIGraphError("lifecycle binding independent operation call population roots differ")
             for root in sorted(roots):
                 try:
-                    observed = source_operation_call_population(root, source_inventory)
+                    expected = catalogue[root]
+                    include_initialization = isinstance(expected, Mapping) and expected.get("scope") == (
+                        "discovered_python_functions_and_possible_initialization"
+                    )
+                    observed = source_operation_call_population(
+                        root, source_inventory, include_initialization=include_initialization
+                    )
                     matches = _bytes(observed) == _bytes(catalogue[root])
                 except (SemanticOperationEffectError, TypeError, ValueError) as exc:
                     raise CIGraphError("lifecycle binding operation call population is incompatible") from exc

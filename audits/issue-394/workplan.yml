@@ -1467,6 +1467,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - initialization-operation-consumer-binding
     - opt-in-python-initialization-facts
     - dormant-composition-and-static-bindings
     - opt-in-python-call-facts
@@ -2010,6 +2011,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - initialization-operation-consumer-binding
     - opt-in-python-initialization-facts
     - dormant-composition-and-static-bindings
     - authored-machine-backtrace-validation
@@ -2904,3 +2906,30 @@ implementation_slices:
     - Independent protected complete source scope and runtime effect interpretation including implicit native dynamic and cross-language execution remain unqualified.
     - No downstream lifecycle consumer binding or installed-consumer qualification uses these possible-site facts.
     - Canonical test-manifest normalization and full governed acceptance remain blocked.
+  initialization-operation-consumer-binding:
+    id: initialization-operation-consumer-binding
+    workitem: P32-P0-04
+    scope: Existing operation and lifecycle binding owners compare source-produced possible initialization facts for every discovered Python module; no execution completeness or authority claim.
+    contract: audits/issue-394/initialization-consumer-binding-contract.json
+    producer: bcf_governance/tooling/semantic_operation_effects.py::source_operation_call_population
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_bindings
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_semantic_operation_call_population::test_opted_initialization_population_covers_every_discovered_module
+    - tests.test_ci_graph_composition::test_lifecycle_binding_checks_source_initialization_population
+    negative_controls:
+    - cause: missing-module-before-function-traversal
+      test: tests.test_semantic_operation_call_population::test_invalid_initialization_rejects_before_function_closure_traversal
+    - cause: removed-initialization-module
+      test: tests.test_ci_graph_composition::test_lifecycle_binding_rejects_initialization_omission_or_substitution[removed_module]
+    - cause: substituted-initialization-site
+      test: tests.test_ci_graph_composition::test_lifecycle_binding_rejects_initialization_omission_or_substitution[changed_site]
+    - cause: removed-initialization-uncertainty
+      test: tests.test_ci_graph_composition::test_lifecycle_binding_rejects_initialization_omission_or_substitution[removed_unknown]
+    - cause: candidate-schema-self-exemption
+      test: tests.test_semantic_operation_call_population::test_candidate_schema_cannot_weaken_initialization_contract
+    remaining:
+    - Protected caller must independently authenticate the complete parser/source population and exact bytes; facts and this query cannot authenticate themselves.
+    - Implicit native external dynamic and cross-language runtime effect interpretation and actual installed consumer conformance remain unqualified.
+    - Canonical test-manifest normalization normative DAG adoption and whole-requirement closure remain blocked.

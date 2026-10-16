@@ -6,6 +6,10 @@ Licensed under the MIT License.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
+from jsonschema import Draft202012Validator
 from typing import Any
 
 
@@ -30,13 +34,14 @@ class SemanticOperationEffectError(ValueError):
 
 
 def source_operation_call_population(
-    entrypoint: str, inventory: dict[str, Any]
+    entrypoint: str, inventory: dict[str, Any], *, include_initialization: bool = False,
 ) -> dict[str, Any]:
     """Observe discovered Python calls through ports without interpreting effects.
 
     The protected caller must authenticate parser inputs and their complete scope.
-    Module initialization, external/native behavior and dynamic dispatch are not
-    qualified here. Unknown calls remain explicit and cannot justify suppression.
+    Optional initialization facts conservatively retain every discovered module.
+    Initialization execution, external/native behavior and dynamic dispatch remain
+    unqualified. Unknown calls cannot justify suppression.
     """
     def reject() -> None:
         raise SemanticOperationEffectError("operation source call population is incompatible or ambiguous")
@@ -46,6 +51,8 @@ def source_operation_call_population(
             character in "0123456789abcdef" for character in value
         )
 
+    if not isinstance(include_initialization, bool):
+        raise SemanticOperationEffectError("initialization population option must be boolean")
     if inventory.get("call_contracts_version") != "1.0" or inventory.get("authority") is not False:
         reject()
     functions: dict[str, dict[str, Any]] = {}
@@ -67,6 +74,7 @@ def source_operation_call_population(
         files[path] = sha
     if not files:
         reject()
+    initialization = _initialization_population(inventory, files) if include_initialization else {}
     calls: list[tuple[str, str, str, int, str]] = []
     identities: set[tuple[str, str, int]] = set()
     visited: set[str] = set()
@@ -108,7 +116,7 @@ def source_operation_call_population(
             calls.append((caller, callee, expression, occurrence, "source" if resolved else "unresolved"))
             if resolved:
                 pending.append(callee)
-    return {
+    result = {
         "authority": False,
         "execution_qualified": False,
         "scope": "discovered_python_functions_only",
@@ -116,6 +124,48 @@ def source_operation_call_population(
         "functions": tuple(sorted(visited)),
         "calls": tuple(sorted(calls)),
         "unresolved_calls": sum(row[4] == "unresolved" for row in calls),
+    }
+    result.update(initialization)
+    return result
+
+
+def _initialization_population(inventory: dict[str, Any], files: dict[str, str]) -> dict[str, Any]:
+    """Validate only with the executing distribution's schema, never candidate policy."""
+    source = Path(__file__).resolve()
+    schema_root = (
+        source.parents[1] / "pack/template-repo/schemas"
+        if source.parent.name == "tooling"
+        else source.parents[2] / "schemas"
+    )
+    try:
+        schema = json.loads((schema_root / "semantic-initialization-contracts.schema.json").read_text())
+        errors = list(Draft202012Validator(schema).iter_errors(inventory))
+    except (OSError, UnicodeError, ValueError) as exc:
+        raise SemanticOperationEffectError("initialization schema is unavailable or invalid") from exc
+    if errors:
+        raise SemanticOperationEffectError("initialization population facts are incompatible")
+    modules: dict[str, tuple[Any, ...]] = {}
+    for row in inventory["module_initializers"]:
+        path = row["path"]
+        if path not in files or path in modules:
+            raise SemanticOperationEffectError("initialization module population is duplicated or unbound")
+        identities: set[tuple[str, str, int]] = set()
+        sites = []
+        for site in row["sites"]:
+            identity = (site["kind"], site["expression_sha256"], site["occurrence"])
+            if identity in identities:
+                raise SemanticOperationEffectError("initialization site population is duplicated")
+            identities.add(identity)
+            sites.append((*identity, site["line"], site.get("call_name", "")))
+        modules[path] = (tuple(sorted(sites)), tuple(sorted(
+            (unknown["reason"], unknown["line"]) for unknown in row["unresolved"]
+        )), tuple(row["limitations"]))
+    if modules.keys() != files.keys():
+        raise SemanticOperationEffectError("initialization module population is incomplete")
+    return {
+        "scope": "discovered_python_functions_and_possible_initialization",
+        "completeness_qualified": False,
+        "module_initializers": tuple((path, *modules[path]) for path in sorted(modules)),
     }
 
 

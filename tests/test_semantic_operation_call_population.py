@@ -157,3 +157,28 @@ def test_invalid_initialization_rejects_before_function_closure_traversal(initia
     initialization_inventory['functions'][0]['calls'] = None
     with pytest.raises(SemanticOperationEffectError, match='initialization'):
         source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
+
+
+def test_candidate_schema_cannot_weaken_initialization_contract(initialization_inventory, tmp_path):
+    schemas = tmp_path / 'schemas'
+    schemas.mkdir()
+    (schemas / 'semantic-initialization-contracts.schema.json').write_text('{}')
+    initialization_inventory['module_initializers'][0]['completeness_qualified'] = True
+    with pytest.raises(SemanticOperationEffectError, match='initialization'):
+        source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
+
+
+def test_private_runtime_resolves_its_installed_initialization_schema(initialization_inventory, tmp_path):
+    import runpy
+    import shutil
+
+    root = Path(__file__).parents[1]
+    runtime = tmp_path / 'scripts/_bcf_runtime'
+    runtime.mkdir(parents=True)
+    schemas = tmp_path / 'schemas'
+    schemas.mkdir()
+    shutil.copy2(root / 'bcf_governance/tooling/semantic_operation_effects.py', runtime / 'semantic_operation_effects.py')
+    shutil.copy2(root / 'schemas/semantic-initialization-contracts.schema.json', schemas / 'semantic-initialization-contracts.schema.json')
+    private = runpy.run_path(str(runtime / 'semantic_operation_effects.py'))
+    expected = source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
+    assert private['source_operation_call_population']('root.py::root', initialization_inventory, include_initialization=True) == expected

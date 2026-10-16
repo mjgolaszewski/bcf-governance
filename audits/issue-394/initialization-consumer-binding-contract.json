@@ -45,5 +45,13 @@
     "Determinism under file/module/site permutation and no source mutation"
   ],
   "completion": "Focused tests plus existing architecture/parity checks; actual independent effect interpretation and lifecycle consumers remain separately blocked.",
-  "schema_custody": "Resolve the schema exclusively from the executing BCF distribution: packaged template schemas for source/wheel tooling, adjacent installed schemas for private runtime. No candidate schema path or caller-authored schema is accepted."
+  "schema_custody": "Resolve the schema exclusively from the executing BCF distribution: packaged template schemas for source/wheel tooling, adjacent installed schemas for private runtime. No candidate schema path or caller-authored schema is accepted.",
+  "local_execution": {
+    "red_query": "12 actual failures and 16 passes after port staging; absent opted-in scope/module facts and ten nonrejecting corruptions. Contract and port committed f5db5dd1.",
+    "red_lifecycle": "One positive lifecycle-binding failure and three negative controls already passing; latter were not claimed as causal red evidence. Contract/tests committed a2da6859.",
+    "red_early_boundary": "Missing initialization module population reached function validation before initialization rejection. Contract/control committed 3af3f0fd.",
+    "partial_broad_suite": "244 passed; one expected governed-oracle failure remains because canonical test manifests are held.",
+    "remaining": "Canonical oracle normalization, actual independent protected effect population and real installed-consumer qualification remain open.",
+    "final": "36 final operation/private-runtime/candidate-schema/lifecycle/CLI-effect checks passed in 91.26 seconds."
+  }
 }
