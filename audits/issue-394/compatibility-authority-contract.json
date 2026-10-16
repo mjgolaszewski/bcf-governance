@@ -22,7 +22,8 @@
     "Use existing ancestors traversal to reject direct or transitive observational provenance entering receipt/publication/custody authority, even when an edge labels its effect none.",
     "Declared failure/recovery outcomes inherit the edge consumer context for policy separation; structural-exclusion repair outcomes inherit the excluded producer context. They cannot become authority inputs. This is not a new recovery executor or a claim that untyped paths are bounded.",
     "Preserve legitimate release-to-compatibility observation and reporting flows; existing typed bounded recovery conformance remains unchanged.",
-    "Apply the same guard from authored preflight; return shape and valid model remain unchanged. No provider behavior or optional adopter policy change."
+    "Apply the same guard from authored preflight; return shape and valid model remain unchanged. No provider behavior or optional adopter policy change.",
+    "Nonauthoritative context propagates through intermediate and branch outcomes; every edge in that context may declare only consumer-approved nonauthoritative effects. Unknown or authoritative effect labels reject even without an authority-named destination."
   ],
   "expected_tests": [
     "Missing/forged exclusion and direct/indirect authority coupling reject",

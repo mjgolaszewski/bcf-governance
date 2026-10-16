@@ -550,9 +550,45 @@ def test_compatibility_cannot_enter_release_authority_paths(tmp_path, defect):
             added['to'] = 'immutable_publication'
         else:
             added['from'] = next(row for row in edges if row['id'] == 'AC-005')['recovery_transition']
-            added['to'] = 'independent_custody_verifier'
+            added['to'] = 'terminal_custody'
         edges.append(added)
     path.write_text(yaml.safe_dump(model, sort_keys=False))
     cause = 'non-authoritative.*authority' if defect in {'direct', 'indirect', 'failure', 'recovery'} else ('pair' if defect == 'duplicate_pair' else 'exclusion')
     with pytest.raises(CIStateMatrixError, match=cause):
+        validate_ci_state_matrix(repo, authored_only=True)
+
+
+@pytest.mark.parametrize('extension', [False, True])
+def test_current_compatibility_policy_preserves_reporting_and_publisher_recovery(tmp_path, extension):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    edges = model['adopter_compatibility_observation']['edges']
+    publisher = next(row for row in edges if row['id'] == 'AC-002')
+    publisher['recovery_transition'] = 'retry_same_authenticated_publication'
+    if extension:
+        report = copy.deepcopy(next(row for row in edges if row['id'] == 'AC-007'))
+        report.update(id='AC-REPORT', **{'from': 'remediation_backlog', 'to': 'operator_note'}, failure_transition='note_unavailable', recovery_transition='retry_note')
+        edges.append(report)
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    result = validate_ci_state_matrix(repo, authored_only=True)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+
+
+@pytest.mark.parametrize('defect', ['authority_marker', 'unknown_effect', 'indirect_marker'])
+def test_compatibility_cannot_launder_authority_through_effect_labels(tmp_path, defect):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    edges = model['adopter_compatibility_observation']['edges']
+    if defect == 'indirect_marker':
+        edge = copy.deepcopy(next(row for row in edges if row['id'] == 'AC-007'))
+        edge.update(id='AC-MARKER', **{'from': 'remediation_backlog', 'to': 'operator_note'}, failure_transition='note_failed', recovery_transition='note_retry')
+        edges.append(edge)
+    else:
+        edge = next(row for row in edges if row['id'] == 'AC-005')
+    edge['authority_effect'] = 'unknown' if defect == 'unknown_effect' else 'release_authorization'
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    with pytest.raises(CIStateMatrixError, match='non-authoritative.*authority'):
         validate_ci_state_matrix(repo, authored_only=True)
