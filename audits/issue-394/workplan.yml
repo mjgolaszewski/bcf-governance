@@ -2437,6 +2437,11 @@ additional_regressions:
   source: audits/issue-394/submit-normalization-slice.yml
 measurement_policy:
   status: requires_review_after_baseline_before_optimization
+  collection_strategy:
+    user_selected: governed_provider_runs_plus_controlled_isolated_local_adopter_trials
+    provider_runs: collect_as_they_occur_including_available_v2_3_4_CI_logs
+    controlled_trials: isolated_local_and_pinned_adopter_trials
+    qualification: authenticate_exact_subject_and_clock_then_freeze_matched_cohorts_before_percentile_claims
   proposed_pr:
     p50_improvement_percent: 25
     p95_improvement_percent: 20
