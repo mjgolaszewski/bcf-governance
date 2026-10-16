@@ -5,7 +5,7 @@
   "execution_qualified": false,
   "scope": "compiled_job_deadlines_and_declared_component_floors_only",
   "producer": {
-    "recipe_sha256": "cb795e2e9c1fab9858e922c61cce33ec069bd9d3441acab91e243e96bed54e1d",
+    "recipe_sha256": "31da41c248c2f77aa71e67b173cdaabe0b9c6a32cd8b8f2b4acb7c975b9f2e70",
     "compiler_owner": "bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph"
   },
   "subject": {

@@ -59,3 +59,27 @@ def test_deadline_inventory_rejects_moving_or_uncommitted_source(inputs, monkeyp
         monkeypatch.setattr(module, '_subject', lambda root: next(subjects))
     with pytest.raises(ValueError, match='deadline inventory'):
         module.collect(root)
+
+
+def test_controller_consumer_inventory_uses_exact_full_source_and_retains_every_call(monkeypatch, tmp_path):
+    module = collector()
+    subject = {'commit_sha': 'a' * 40, 'tree_sha': 'b' * 40}
+    target = 'bcf_governance/tooling/routine_controller_provider.py::resolve_effective_controller'
+    inventory = {'files': [{'path': 'caller.py', 'sha256': 'c' * 64}], 'functions': [
+        {'symbol': name, 'calls': [{'called_symbol': target, 'line': 1}]}
+        for name in ('caller.py::first', 'caller.py::second', 'tests/control.py::case')]}
+    monkeypatch.setattr(module, '_subject', lambda root: subject)
+    def discover(root, **kwargs):
+        assert root == tmp_path
+        assert kwargs == {'call_contracts_version': '1.0', 'source_subject': subject}
+        return inventory
+    monkeypatch.setattr(module, 'discover_python_source', discover)
+    monkeypatch.setattr(module, 'resolve_python_imports', lambda root, value: value)
+    value = module.collect_controller_consumers(tmp_path)
+    assert value == module.collect_controller_consumers(tmp_path)
+    assert value['authority'] is False and value['execution_qualified'] is False
+    assert {row['consumer'] for row in value['consumers']} == {'caller.py::first', 'caller.py::second', 'tests/control.py::case'}
+    subjects = iter([subject, {**subject, 'commit_sha': 'd' * 40}])
+    monkeypatch.setattr(module, '_subject', lambda root: next(subjects))
+    with pytest.raises(ValueError, match='controller consumer inventory source changed'):
+        module.collect_controller_consumers(tmp_path)

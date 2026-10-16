@@ -3,11 +3,13 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import json
 from pathlib import Path
 import subprocess
 
 from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
 from bcf_governance.tooling.semantic_source_paths import committed_regular_blob_capture
+from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
 
 
 def _subject(root: Path) -> dict[str, str]:
@@ -58,3 +60,31 @@ def collect(repo_root: Path) -> dict:
             'unqualified': ['independent complete runtime provider consumer population',
                             'bounded retry setup cleanup measurement headroom composition',
                             'deadline sufficiency activation and terminal custody']}
+
+
+def collect_controller_consumers(repo_root: Path) -> dict:
+    """Observe exact direct resolver calls; no runtime reachability qualification."""
+    subject = _subject(repo_root)
+    inventory = resolve_python_imports(repo_root, discover_python_source(
+        repo_root, call_contracts_version='1.0', source_subject=subject,
+    ))
+    targets = {
+        'bcf_governance/tooling/routine_controller_provider.py::resolve_effective_controller',
+        'bcf_governance/tooling/routine_controller_provider.py::effective_controller_authority',
+    }
+    calls = [{'consumer': function['symbol'], 'producer': call['called_symbol'], 'call': copy.deepcopy(call)}
+             for function in inventory['functions'] for call in function['calls']
+             if call['called_symbol'] in targets]
+    if _subject(repo_root) != subject:
+        raise ValueError('controller consumer inventory source changed during capture')
+    population = sorted(inventory['files'], key=lambda row: row['path'])
+    return {'schema_version': '1.0', 'kind': 'controller_direct_consumer_inventory',
+            'authority': False, 'execution_qualified': False, 'subject': subject,
+            'producer': {'recipe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                         'owner': 'bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source'},
+            'source_files_checked': len(population),
+            'source_file_population_sha256': hashlib.sha256(json.dumps(population, sort_keys=True, separators=(',', ':')).encode()).hexdigest(),
+            'consumers': sorted(calls, key=lambda row: (row['producer'], row['consumer'], str(row['call']))),
+            'scope': 'Exact committed Python-tree source-resolved direct calls only; test calls retained.',
+            'unqualified': ['reflection and dynamic runtime effects', 'independent full provider consumer population',
+                            'runtime deadline composition sufficiency and activation']}

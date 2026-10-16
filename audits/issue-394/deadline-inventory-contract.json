@@ -20,13 +20,15 @@
     "Bind exact committed graph/schema/compiled inputs through existing regular Git blob capture; reject changed subject or committed input mismatch.",
     "No new graph traversal/compiler, cost estimator, runtime parser or provider lookup.",
     "Preserve legacy minimum_job_timeout_minutes semantics as job floors, not summable component work durations.",
-    "Output is static unqualified observation; runtime provider consumer completeness, retry/setup/cleanup/headroom composition, measurements and activation remain unresolved."
+    "Output is static unqualified observation; runtime provider consumer completeness, retry/setup/cleanup/headroom composition, measurements and activation remain unresolved.",
+    "Additional source observation: use existing exact committed Python-tree discovery and import resolver to inventory every source-resolved direct call to the two existing effective-controller resolver owners. Preserve test calls separately; dynamic/runtime population remains unqualified."
   ],
   "expected_tests": [
     "All compiled jobs including non-component executors remain in inventory.",
     "Every sibling consumer of an existing component floor is retained.",
     "Moving subject or mismatched committed inputs reject.",
-    "Stable repeated projection is deterministic, read-only and non-authoritative."
+    "Stable repeated projection is deterministic, read-only and non-authoritative.",
+    "Exact committed source subject passes through unchanged; all source-resolved direct callers are retained without file preselection, and moving subject rejects."
   ],
   "forbidden_surfaces": [
     "Production source/schema/timeout policy changes",
