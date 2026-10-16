@@ -2066,3 +2066,66 @@ def test_typed_deadline_survives_every_generated_view_and_machine_round_trip(dea
     args = copy.copy(data['composition'])
     args['payload'] = json.loads(machine)
     assert render_lifecycle_composition(compile_lifecycle_composition(**args), view='machine') == machine
+
+
+@pytest.fixture
+def deadline_fanin(deadline_composition):
+    import copy
+    from dataclasses import replace
+    from itertools import permutations
+    data = deadline_composition
+    composition = data['composition']
+    graph = data['compiled_graph']
+    graph.edge_contracts = (*graph.edge_contracts, replace(graph.edge_contracts[0], producer='stage:produce'))
+    data['expected_source']['ci_edges_sha256'] = edge_population_sha256(graph)
+    graph.graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 10
+    left = composition['payload']['relationships'][0]
+    left['contract']['deadline'].update(setup_ms=0, cleanup_ms=0)
+    left['contract']['deadline']['operations'][0].update(id='left', bounded_attempt_ms=300000)
+    right = copy.deepcopy(left)
+    right['producer'] = 'stage'
+    right['contract']['ci_edges'][0]['producer'] = 'stage:produce'
+    right['contract']['deadline']['operations'][0]['id'] = 'right'
+    composition['payload']['relationships'].append(right)
+    composition['expected_populations']['release'] = ('build', 'verify', 'stage')
+    composition['expected_relationships'][('release', 'stage', 'verify')] = None
+    composition['expected_effects'].add(('release', 'stage', 'verify', 'verify'))
+    existing = {(row['producer'], row['consumer']) for row in composition['payload']['relationships']}
+    for producer, consumer in permutations(('build', 'verify', 'stage'), 2):
+        if (producer, consumer) not in existing:
+            composition['payload']['relationships'].append(dict(context='release', producer=producer,
+                consumer=consumer, contract=None, exclusion='no-structural-path'))
+            composition['expected_relationships'][('release', producer, consumer)] = 'no-structural-path'
+    data['required_deadlines'] = {('release', row['producer'], row['consumer']): copy.deepcopy(row['contract']['deadline'])
+        for row in (left, right)}
+    data['required_ci_consumers'][('release', 'stage', 'verify')] = ('verify:consume',)
+    next(iter(data['measurements'].values()))['lower_bound_ms'] = 0
+    return data
+
+
+def test_typed_deadline_accumulates_distinct_relationship_work_in_one_real_job(deadline_fanin):
+    with pytest.raises(CIGraphError, match='deadline job.*600000ms.*660000ms'):
+        _deadline_projection(deadline_fanin)
+
+
+def test_typed_deadline_counts_one_identical_physical_operation_once_per_job(deadline_fanin):
+    data = deadline_fanin
+    data['composition']['payload']['relationships'][2]['contract']['deadline']['operations'][0]['id'] = 'left'
+    data['required_deadlines'][('release', 'stage', 'verify')]['operations'][0]['id'] = 'left'
+    value = _deadline_projection(data)
+    assert value['job_deadlines'] == ({'consumer': 'verify:consume', 'required_ms': 360000,
+        'available_ms': 600000, 'operations_checked': 1},)
+
+
+@pytest.mark.parametrize('defect', ['operation', 'allowance'])
+def test_typed_deadline_rejects_ambiguous_shared_job_identity_or_policy(deadline_fanin, defect):
+    data = deadline_fanin
+    right = data['composition']['payload']['relationships'][2]['contract']['deadline']
+    policy = data['required_deadlines'][('release', 'stage', 'verify')]
+    if defect == 'operation':
+        right['operations'][0].update(id='left', bounded_attempt_ms=300001)
+        policy['operations'][0].update(id='left', bounded_attempt_ms=300001)
+    else:
+        right['headroom_ms'] = policy['headroom_ms'] = 70000
+    with pytest.raises(CIGraphError, match='deadline.*(identity|allowance).*inconsistent'):
+        _deadline_projection(data)

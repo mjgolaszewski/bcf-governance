@@ -49,5 +49,27 @@
     "Per-socket timeout or measured lower bound is not proof of a total operation upper bound.",
     "Contexts without actual bound outer execution budget reject; full runtime/cost/consumer population remains unqualified.",
     "No active deadline projection, proof suppression, installed consumer adoption, normative prose DAG retirement or successor custody."
-  ]
+  ],
+  "job_composition_followup": {
+    "source_sha256": "c24fa2aa692a92ba3e2c5a741eac2fd877338a3e567aa3d23382886ddaddaaaf",
+    "initial_counterexamples": "Three budget/identity/policy controls failed by DID NOT RAISE; shared-operation projection lacked its job result.",
+    "focused": {
+      "passed": 38,
+      "seconds": 0.56
+    },
+    "broad": {
+      "passed": 493,
+      "failed": 1,
+      "seconds": 69.4,
+      "failure": "Generated oracle inventory pending canonical normalization; retained failing test."
+    },
+    "checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "governance_yaml": "passed",
+      "runtime_copy_parity": "passed"
+    },
+    "result": "Aggregate all relationship costs per real CI consumer. Stable physical operation ID references count once only with identical bindings; job allowance bindings must agree; independently qualified whole-job measurement floors combine by max.",
+    "limits": "Physical instance identity, genuine upper bounds and measurement applicability/authenticity still require independent source/runtime qualification; no execution suppression or activation."
+  }
 }

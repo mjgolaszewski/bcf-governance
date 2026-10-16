@@ -76,6 +76,7 @@ def validate_lifecycle_deadline_bindings(*, compiled, compiled_graph, schema, ex
     job_budgets = {workflow['id'] + ':' + job['id']: job['timeout_minutes'] * 60000
                    for workflow in compiled_graph.graph['workflows'] for job in workflow['jobs']}
     deadlines = []
+    job_costs = {}
     for pair, contract in sorted(contracts.items()):
         spec = required_deadlines[pair]
         if contract.get('deadline') != spec or not isinstance(spec, Mapping):
@@ -104,8 +105,33 @@ def validate_lifecycle_deadline_bindings(*, compiled, compiled_graph, schema, ex
         available = min(job_budgets[value] for value in consumers)
         if available < required:
             raise CIGraphError(f'deadline envelope {pair} {available}ms cannot contain required {required}ms')
+        for consumer in consumers:
+            allowances = (spec['setup_ms'], spec['cleanup_ms'], spec['headroom_ms'])
+            job = job_costs.setdefault(consumer, dict(allowances=allowances, operations={}, floor=0))
+            if job['allowances'] != allowances:
+                raise CIGraphError('deadline job allowance bindings are inconsistent')
+            job['floor'] = max(job['floor'], floor)
+            for operation in operations:
+                previous = job['operations'].get(operation['id'])
+                if previous is not None and previous != operation:
+                    raise CIGraphError('deadline physical operation identity bindings are inconsistent')
+                job['operations'][operation['id']] = dict(operation)
         deadlines.append(dict(relationship=pair, required_ms=required, available_ms=available,
                               measurement=status, operations_checked=len(operations)))
+    job_deadlines = []
+    for consumer, job in sorted(job_costs.items()):
+        work = sum(row['bounded_attempt_ms'] * row['max_attempts']
+                   + row['max_retry_delay_ms'] * (row['max_attempts'] - 1)
+                   for row in job['operations'].values())
+        setup, cleanup, headroom = job['allowances']
+        required = quantized_deadline_ms(bounded_work_ms=work, setup_ms=setup,
+            cleanup_ms=cleanup, measured_lower_bound_ms=job['floor'], headroom_ms=headroom)
+        available = job_budgets[consumer]
+        if available < required:
+            raise CIGraphError(f'deadline job {consumer} {available}ms cannot contain required {required}ms')
+        job_deadlines.append(dict(consumer=consumer, required_ms=required, available_ms=available,
+                                  operations_checked=len(job['operations'])))
     return dict(authority=False, execution_qualified=False,
         scope='declared_deadline_arithmetic_with_protected_bindings_only',
-        schema_version='1.0', source=dict(expected_source), deadlines=tuple(deadlines))
+        schema_version='1.0', source=dict(expected_source), deadlines=tuple(deadlines),
+        job_deadlines=tuple(job_deadlines))
