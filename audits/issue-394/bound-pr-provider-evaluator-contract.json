@@ -1,0 +1,29 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-02",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "authenticated_query_before_check_publication",
+  "targets": [
+    "bcf_governance/tooling/ci_github_pr.py",
+    "tests/test_ci_github_pr_authority.py"
+  ],
+  "contract": [
+    "Use current authenticated protected default commit/tree for policy/runtime/workflow/evaluator source, independent of semantic PR comparison.",
+    "Default-target comparison must still equal current protected default; preserve all valid default observation fields and legacy default evidence.",
+    "For a bound nondefault comparison, authenticate exact provider ref and commit/tree; add comparison metadata to evaluator identity while base continues to identify protected source.",
+    "Recompute that comparison at publisher consumption; movement, retarget, missing ref/object or wrong source rejects before check publication.",
+    "Finalizer rechecks PR binding and protected default after evidence reads; publisher rechecks them before mutation.",
+    "Nondefault PR certification is PR progress only: no default-main successor transition equivalence, protected merge, phase/controller/release/custody authority.",
+    "Generated executable checkout has already been separated to workflow-definition source; no installed adoption or activation is inferred by these unit controls."
+  ],
+  "compatibility": "Previously valid default-target output remains byte-shape compatible. Newly supported previously rejected nondefault context adds evaluator.comparison. No CLI change. Existing default observations remain readable.",
+  "tests": [
+    "bound nondefault finalizer/publisher use protected source and bind comparison tree",
+    "comparison movement between finalizer and publisher rejects",
+    "PR or protected source movement during evidence reads rejects",
+    "missing/wrong comparison reference and malformed tree reject before producer consumption",
+    "unchanged current-default guard and substituted evaluator identity remain enforced"
+  ]
+}
