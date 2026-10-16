@@ -1,0 +1,46 @@
+{
+  "document": {
+    "kind": "implementation_contract",
+    "path": "audits/issue-394/publication-metadata-fix-contract.json",
+    "authority": false
+  },
+  "bounded_context": "release_publication",
+  "layer": "application",
+  "command_query_side": "publish command and inspect query",
+  "workitem_alias": "dormant.continuation",
+  "dependencies": "Existing native publication transaction; successor admission and computed workitem closure remain pending.",
+  "targets": [
+    "bcf_governance/tooling/release_publication_transaction.py",
+    "tests/test_ci_github_release.py",
+    "template-repo/scripts/_bcf_runtime/release_publication_transaction.py",
+    "bcf_governance/pack/template-repo/scripts/_bcf_runtime/release_publication_transaction.py"
+  ],
+  "forbidden": [
+    "installer and runtime retirement implementation",
+    "fix/v2.3.4-runtime-retirement",
+    "authority pins and generated workflows",
+    "frozen release bytes",
+    "provider mutation or submission"
+  ],
+  "contract": [
+    "Validate tag name prerelease and expected body on the final pre-publication provider observation before publishing",
+    "Validate the same metadata on final immutable provider observation before returning verified",
+    "Preserve inspect_release callers through an optional expected_body argument; standalone inspection still checks canonical tag/name/prerelease",
+    "Every publisher path supplies exact expected body, including already-published and race-converged paths",
+    "Keep immutable exact-tag exact-assets and attestation checks mandatory",
+    "No blind retry; preserve exact continuation after response loss"
+  ],
+  "expected_tests": [
+    "Pre-publication body/name/prerelease movement rejects with no publication mutation",
+    "Post-publication body/name/prerelease movement rejects instead of returning verified",
+    "Standalone inspection rejects wrong metadata and optional expected-body mismatch",
+    "Draft/upload/publication response loss resumes without duplicate mutations",
+    "Existing release tests and exact runtime/template parity",
+    "Architecture module size and CLI effect boundaries"
+  ],
+  "peer_authorization": [
+    6870,
+    6883
+  ],
+  "completion_limit": "Local fix evidence only; no release train or independent custody closure."
+}
