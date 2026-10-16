@@ -1,0 +1,43 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/lifecycle-view-deconstruction-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Current composition module756LOC approaches800 cap; extract pure views before mandatory CI-edge population conformance growth. No new semantics during extraction.",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "bcf_governance/tooling/ci_graph_composition_views.py",
+    "governance/canonical-representations.yml"
+  ],
+  "contract": [
+    "Move only render_lifecycle_composition implementation into a same-context pure view delegate. Preserve its root-module compatibility alias and all signatures.",
+    "Reuse existing compiled identity and canonical byte owners through local imports; no second compiler, schema or truth owner.",
+    "Capture bound/contract/machine view bytes for the existing deterministic complete-field fixture before source mutation; require exact equality after extraction plus existing escaping/reordering/roundtrip controls.",
+    "Regenerate portable/source/schema parity only through pack owner; no canonical lock/test-manifest/workflow/pin normalization."
+  ],
+  "expected_tests": [
+    "Three-view byte characterization and legacy alias identity",
+    "Existing render/machine/roundtrip/escaping tests",
+    "LOC/context/private runtime/pack parity and static/governance validation"
+  ],
+  "forbidden_surfaces": [
+    "feature addition during extraction",
+    "authority activation or prose retirement",
+    "provider/installer/custody/frozen bytes",
+    "canonical normalization"
+  ],
+  "completion": "Characterization-led pure view deconstruction only; full graph/runtime adoption remains open.",
+  "before_characterization": {
+    "source_module_sha256": "482ae9f48bb9a372f1e197b725e6d4e142d96dd294be1ebf18b2eaf7d50f45af",
+    "view_artifact": "audits/issue-394/lifecycle-views-before.json",
+    "artifact_sha256": "f186b7877adaf2d1d45f1470988d9db427f9a54224fc97a5dd3e94e23a39697c",
+    "scope": "All three views of existing deterministic fixture; synthetic source envelopes, not provider/runtime proof."
+  }
+}

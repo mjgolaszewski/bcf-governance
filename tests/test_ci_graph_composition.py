@@ -1378,3 +1378,11 @@ def test_reconstructed_binding_passes_import_roots_to_exact_discovery(reconstruc
     monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', discover)
     owner.validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs)
     assert seen == [('.',)]
+
+
+def test_lifecycle_views_match_retained_characterization(composition):
+    retained = json.loads((ROOT / 'audits/issue-394/lifecycle-views-before.json').read_text())
+    compiled = compile_lifecycle_composition(**composition)
+    assert retained['authority'] is False
+    assert retained['qualification'] == 'synthetic_fixture_projection_only'
+    assert {view: render_lifecycle_composition(compiled, view=view) for view in ('bound', 'contract', 'machine')} == retained['views']
