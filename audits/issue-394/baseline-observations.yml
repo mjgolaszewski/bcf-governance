@@ -409,6 +409,20 @@ observations:
     elapsed_seconds: 534.0
 
 additional_pipeline_captures:
+- path: audits/issue-394/observations/pr-426-attempt-1.json
+  run_id: 38856273908
+  attempt: 1
+  subject_commit: 4dec14dc15beecaa7416f302cc251fd9afbd3e06
+  classification: intervening_maintenance_PR_observation_not_matched_benchmark
+  source_snapshot_sha256: 6177af65cd62ad328fe3704244508e7d7901724ad0a0c05e0024cba3e755fa3f
+  elapsed_ms: 1753000
+  execution_union_ms: 1685000
+  execution_sum_ms: 1764000
+  uncovered_ms: 68000
+  cpu_ms: unknown
+  interpretation: All seven jobs retained. Source-derived intervals reproduce mechanically; terminal run and complete job
+    population rereads matched. External waits are unmeasured and uncovered time is unattributed. No matched comparison or
+    approved target.
 - path: audits/issue-394/observations/pr-421-attempt-1.json
   run_id: 38779824523
   attempt: 1

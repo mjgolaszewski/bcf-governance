@@ -21,5 +21,21 @@
     "Snapshot projection is not provider authentication or job-attempt custody; caller authenticates exact response endpoint and expected run/attempt.",
     "No matched cohort, percentile, approved target, full lifecycle timeline or performance certification.",
     "No provider/controller mutation or installer/custody writes."
-  ]
+  ],
+  "provider_capture_followup": {
+    "path": "audits/issue-394/observations/pr-426-attempt-1.json",
+    "source_snapshot_sha256": "6177af65cd62ad328fe3704244508e7d7901724ad0a0c05e0024cba3e755fa3f",
+    "producer_commit": "b05a380598a45295ca0cdd45f7456568df4581d0",
+    "raw_interval_reconstruction": "Both retained PR 421 and PR 426 captures reproduce exactly.",
+    "observations_suite": {
+      "passed": 59,
+      "seconds": 0.24
+    },
+    "job_count": 7,
+    "run_and_population_rereads": "matched",
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "governance_yaml": "passed",
+    "coverage_schema": "passed"
+  }
 }

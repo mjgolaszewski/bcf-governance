@@ -2613,6 +2613,7 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks
     - tests.test_operational_observations::test_provider_snapshot_projection_matches_retained_intervals
     - tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success
     - tests.test_operational_observations::test_provider_snapshot_zero_jobs_and_explicit_offsets_remain_honest
@@ -2633,6 +2634,7 @@ implementation_slices:
     - cause: missing-snapshot
       test: tests.test_operational_observations::test_pipeline_timing_rejects_unbound_repository_or_snapshot[source_snapshot_sha256-missing]
     remaining:
+    - PR 426 attempt 1 is retained in audits/issue-394/observations/pr-426-attempt-1.json with source digest 6177af65cd62ad328fe3704244508e7d7901724ad0a0c05e0024cba3e755fa3f; unmatched maintenance observation excluded from optimization certification.
     - Raw snapshot projection now independently derives captured job intervals and statuses through the existing timing owner; evidence audits/issue-394/provider-snapshot-projection-verification.json. Caller must still authenticate provider response and exact attempt endpoint.
     - Adequate matched self/isolated-adopter cohorts and separately approved frozen performance/resource targets remain required.
     - Independent complete producer populations, terminal custody clocks and measured CPU are not inferred from these observations.

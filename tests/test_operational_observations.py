@@ -226,14 +226,15 @@ def test_pipeline_timing_rejects_unbound_repository_or_snapshot(timing_inputs, f
         _timing(timing_inputs)
 
 
-def test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks():
+@pytest.mark.parametrize('capture_name', ['pr-421-attempt-1.json', 'pr-426-attempt-1.json'])
+def test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks(capture_name):
     import hashlib
     import json
 
     from bcf_governance.tooling.operational_observations import pipeline_timing_observation
 
     root = Path(__file__).resolve().parents[1]
-    capture = json.loads((root / 'audits/issue-394/observations/pr-421-attempt-1.json').read_text())
+    capture = json.loads((root / 'audits/issue-394/observations' / capture_name).read_text())
     source = capture['source_snapshot']
     value = capture['observation']
     assert capture['capture_policy']['matched_cohort'] is False
@@ -249,6 +250,9 @@ def test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks(
     validate_operational_observation(root, value)
     assert value['elapsed_ms'] != value['execution_sum_ms']
     assert value['cpu_ms'] == 'unknown'
+    from bcf_governance.tooling.operational_observations import provider_attempt_timing_observation
+    assert provider_attempt_timing_observation(source, expected_run_id=source['run']['id'],
+        expected_attempt=source['run']['run_attempt'], pipeline='pr') == value
 
 
 
