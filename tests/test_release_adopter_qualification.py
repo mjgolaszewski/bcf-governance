@@ -411,6 +411,57 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
     assert not (tmp_path / "receipt.json").exists()
 
 
+@pytest.mark.parametrize('defect', ['profile', 'missing-profile', 'missing-python', 'nonexecutable-python', None])
+def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path, monkeypatch, defect):
+    contract = load_contract(REPO_ROOT)
+    assets = tmp_path / 'assets'
+    assets.mkdir()
+    digests = _assets(assets)
+    release = ('mjgolaszewski/bcf-governance', 'a' * 40, 'b' * 40)
+    manifest = _build_manifest(tmp_path / 'build.json', _build_assets(assets, digests),
+                               commit=release[1], tree=release[2])
+    identities = {REPO_ROOT.resolve(): release}
+    roots = []
+    for index, item in enumerate(contract['required_adopters'], 1):
+        root = tmp_path / item['id']
+        root.mkdir()
+        (root / 'governance-profile.yml').write_text(
+            f"profile:\n  selected: {item['profile']}\n", encoding='utf-8',
+        )
+        identities[root.resolve()] = (item['repository'], str(index) * 40, str(index) * 40)
+        roots.append(root)
+    last = roots[-1]
+    python = last / 'python'
+    python.write_text('#!/bin/sh\n', encoding='utf-8')
+    python.chmod(0o755)
+    if defect == 'profile':
+        (last / 'governance-profile.yml').write_text('profile: {selected: wrong}\n')
+    elif defect == 'missing-profile':
+        (last / 'governance-profile.yml').unlink()
+    elif defect == 'missing-python':
+        python.unlink()
+    elif defect == 'nonexecutable-python':
+        python.chmod(0o644)
+    effects = []
+    def allocation(**kwargs):
+        effects.append('allocation')
+        raise AssertionError('first allocation reached')
+    monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
+    monkeypatch.setattr(qualification.tempfile, 'TemporaryDirectory', allocation)
+    if defect is None:
+        expected, message = AssertionError, 'first allocation reached'
+    else:
+        expected = ReleaseQualificationError
+        message = 'profile' if 'profile' in defect else 'interpreter is unavailable'
+    with pytest.raises(expected, match=message):
+        qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
+                        release_build_manifest=manifest, adopter_roots=roots,
+                        adopter_pythons={contract['required_adopters'][-1]['repository']: python},
+                        producer=PRODUCER, output=tmp_path / 'receipt.json')
+    assert effects == (['allocation'] if defect is None else [])
+    assert not (tmp_path / 'receipt.json').exists()
+
+
 def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
