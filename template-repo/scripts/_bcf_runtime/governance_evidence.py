@@ -44,6 +44,7 @@ from .evidence_sessions import (
     select_session,
 )
 from .evidence_sessions import receipt_workflow_identity
+from .evidence_session_inputs import bind_current_session_inputs
 from .evidence_storage_projection import install_durable_inputs as _install_durable_inputs
 from .evidence_test_adapters import (
     captured_receipt_succeeded,
@@ -533,6 +534,9 @@ def capture_gate(
         output_dir,
         session_manifest,
         required=contract_version in {"2.0", "3.0"},
+    )
+    job_environment = bind_current_session_inputs(
+        repo_root, session, contract["invocation"].get("required_env", []), job_environment
     )
     claim_ids, qualification_refs = claim_capture(
         repo_root, target, contract_version, session

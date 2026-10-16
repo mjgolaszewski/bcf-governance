@@ -122,6 +122,54 @@ def test_canonical_installed_wrapper_has_no_source_package_dependency(tmp_path, 
     assert "prepare" in result.stdout and "resolve-github" in result.stdout
 
 
+@pytest.mark.parametrize("binding_enabled", [False, True])
+def test_installed_dependent_gate_reads_only_current_session(
+    tmp_path, installed_consumer, isolated_python, binding_enabled
+):
+    from test_governance_evidence import _make_session_input_consumer_repo
+
+    fixture_root = tmp_path / "fixture"
+    fixture_root.mkdir()
+    repo = _make_session_input_consumer_repo(fixture_root)
+    wrapper = installed_consumer / "scripts/governance_evidence.py"
+    if not binding_enabled:
+        runtime = installed_consumer / "scripts/_bcf_runtime/governance_evidence.py"
+        source = runtime.read_text()
+        binding = ('    job_environment = bind_current_session_inputs(\n'
+                   '        repo_root, session, contract["invocation"].get("required_env", []), job_environment\n'
+                   '    )\n')
+        assert source.count(binding) == 1
+        runtime.write_text(source.replace(binding, ""))
+
+    def evidence(*arguments, expected_exit=0, **environment):
+        result = subprocess.run(
+            [str(isolated_python), str(wrapper), "--repo-root", str(repo), *arguments],
+            cwd=tmp_path, env=_environment(**environment), capture_output=True, text=True,
+        )
+        assert result.returncode == expected_exit, result.stdout + result.stderr
+        return Path(result.stdout.strip())
+
+    sessions = []
+    for artifact_root in (repo / ".artifacts/bcf/sessions", tmp_path / "external"):
+        manifest = evidence("session", "--artifact-root", str(artifact_root),
+                            "--expected-gate", "gate", "--expected-gate", "dependent",
+                            "--expected-producer", "local", "--local-producer-id", "local")
+        evidence("run", "--gate", "gate", "--output", str(manifest.parent / "gate"),
+                 "--session-manifest", str(manifest), "--python", str(isolated_python))
+        sessions.append(manifest)
+    current = sessions[1]
+    receipt = evidence(
+        "run", "--gate", "dependent", "--output", str(current.parent / "dependent"),
+        "--session-manifest", str(current), "--python", str(isolated_python),
+        DEPENDENCY_RECEIPTS=str(repo / ".artifacts/bcf/sessions"),
+        EXPECTED_SESSION_ID=json.loads(current.read_text())["session_id"],
+        expected_exit=0 if binding_enabled else 1,
+    )
+    assert json.loads(receipt.read_text())["result"] == ("passed" if binding_enabled else "failed")
+    if not binding_enabled:
+        assert "foreign session input" in (receipt.parent / "dependent.stderr.txt").read_text()
+
+
 def _install_contract_fixture(source: Path, consumer: Path) -> None:
     for name in ("governance", ".github"):
         shutil.copytree(source / name, consumer / name, dirs_exist_ok=True)

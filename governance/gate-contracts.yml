@@ -61,7 +61,7 @@ claim_model:
         toolchain: [&id011 toolchain]
         trust: [&id025 workflows]
       qualification_scope: &id009 detector
-      profiles: [normal, &id010 regulated, self]
+      profiles: &pf [normal, &id010 regulated, self]
       whole_tree: true
     governance-exposure-clean:
       truth: tracked content contains no forbidden local or private exposure
@@ -74,7 +74,7 @@ claim_model:
         toolchain: []
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
       whole_tree: true
     source-syntax-format:
       truth: tracked Python parses and tracked content has no prohibited trailing whitespace
@@ -87,7 +87,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
     semantic-ownership-valid:
       truth: every declared canonical representation has exactly one authorized semantic owner
       execution_group: *id006
@@ -99,7 +99,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-context-membership:
       truth: production modules belong to exactly one bounded context
       execution_group: &id015 python-tests
@@ -111,7 +111,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-cqrs-side:
       truth: declared operations preserve command query separation
       execution_group: *id015
@@ -123,7 +123,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-duplication:
       truth: source and governed runtime mirrors remain exact
       execution_group: *id015
@@ -147,7 +147,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-layer-membership:
       truth: production modules belong to exactly one declared layer
       execution_group: *id015
@@ -159,7 +159,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-module-size:
       truth: production modules satisfy the declared size limit
       execution_group: *id015
@@ -171,7 +171,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-router-thinness:
       truth: transport and CLI wrappers remain thin
       execution_group: *id015
@@ -183,7 +183,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     architecture-test:
       truth: declared source roots match packaged implementation boundaries
       execution_group: *id015
@@ -195,7 +195,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     contract-test:
       truth: public contracts and adapters satisfy their declared executable tests
       execution_group: *id015
@@ -207,7 +207,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     test:
       truth: the declared test population passes
       execution_group: *id015
@@ -219,7 +219,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *pf
     python-compile-version-contract:
       truth: Python sources compile and the package declares its version assignment
       execution_group: python-compile-version
@@ -231,7 +231,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
     security-secret-scan:
       truth: tracked text contains no declared secret markers
       execution_group: secret-scan
@@ -243,7 +243,7 @@ claim_model:
         toolchain: []
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
       whole_tree: true
     security-dependency-audit:
       truth: the exact installed declared dependency closure is mutually consistent and has no vulnerability reported by the pinned freshness-bound advisory scanner
@@ -256,7 +256,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
     security-sbom:
       truth: the declared dependency set has a deterministic SBOM
       execution_group: sbom
@@ -268,7 +268,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
     unsafe-subprocess-static:
       truth: tracked Python contains no unsafe shell subprocess invocation
       execution_group: unsafe-subprocess
@@ -280,7 +280,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
     runtime-smoke:
       truth: source version and CLI execute in the declared environment
       execution_group: *id005
@@ -292,7 +292,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *pf
 gates:
   architecture-context-membership:
     invocation: {argv: [python3, &id029 .github/scripts/run_self_governance_gate.py, *id013], cwd: ., env: {}, required_env: []}
@@ -586,6 +586,7 @@ gates:
     - {id: release-check-fresh-session-truth-must-fail, mutation: {path: *id104, search: --evidence-dir \"$$session_dir\", replace: --evidence-dir $(BCF_EVIDENCE_DIR)}, oracle: {kind: *id033, node_ids: ['tests.test_self_governance_contracts::test_self_release_check_is_an_exact_generator_product']}}
     - {id: reusable-base-precedence-must-fail, mutation: {path: bcf_governance/tooling/repository_comparison_context.py, search: '"${{ inputs.comparison_base_sha || github.event_name', replace: '"${{ '''' || github.event_name'}, oracle: {kind: *id033, node_ids: ['tests.test_ci_graph::test_reusable_base_precedes_origin']}}
     - {id: local-session-producer-admission-must-fail, mutation: {path: *id105, search: '    if producer["kind"] == "local" and producer["producer_id"] not in inventory:', replace: '    if False and producer["kind"] == "local" and producer["producer_id"] not in inventory:'}, oracle: {kind: *id033, node_ids: ['tests.test_governance_evidence::test_local_session_rejects_unadmitted_producer_before_allocation']}}
+    - {id: session-input-binding-must-fail, mutation: {path: bcf_governance/tooling/evidence_session_inputs.py, search: 'if Path(value) in (SESSION_INPUT_NAMESPACE, namespace):', replace: 'if False:'}, oracle: {kind: *id033, node_ids: ['tests.test_governance_evidence::test_dependent_gate_consumes_exact_current_session_inputs[local]']}}
     - {id: protection-ambiguous-ruleset-takeover-must-fail, mutation: {path: bcf_governance/tooling/github_protection.py, search: '    if len(overlaps) > 1:', replace: *id056}, oracle: {kind: *id033, node_ids: ['tests.test_ci_github_pr_authority::test_protection_rejects_ambiguous_existing_branch_rulesets']}}
     - {id: cold-bootstrap-installed-controller-dependency-must-fail, mutation: {path: *id046, search: '            argv.append(''"${{ runner.temp }}/bcf-controller/bin/bcf"'')', replace: '            argv.append(compiled.trusted_controller)'}, oracle: {kind: *id033, node_ids: ['tests.test_ci_self_controller::test_controller_bootstrap_is_cold_start_safe_and_interpreter_owned']}}
     - {id: automation-run-candidate-binding-must-fail, mutation: {path: *id106, search: '        or identity.candidate != subject', replace: '        or False'}, oracle: {kind: *id033, node_ids: ['tests.test_ci_github_automation::test_admission_binds_candidate_head_separately_from_main_workflow_bytes']}}
