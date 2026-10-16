@@ -735,7 +735,7 @@ second session candidate. Missing, multiple, symlinked, malformed, unreadable,
 misnamed, or permission-unsafe root manifests fail before a gate starts.
 
 When a gate declares a required environment input at the canonical
-`.artifacts/bcf/sessions` namespace (workspace-relative or absolute), capture
+`.artifacts/bcf/sessions` namespace (non-authoritative until captured), capture
 binds that input to the exact validated session. This applies to external local
 sessions and downloaded CI sessions. Other workspace inputs stay unchanged;
 dependent gates never discover older repository sessions as a fallback.

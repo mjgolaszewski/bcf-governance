@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 0be4b5f51b4da1f1e6a10ab47769655bb9f268f36c2eb45c8960ee1b4a0ea7d1
-  after_sha256: f35913d01abef1fcaf361da0f916076add1167130be63b240571c8f91ae3a13d
+  after_sha256: 51a0ca41a99f334b66c0ff352fa4975480e071d6b1690db5f925fb8c0ccf3152
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -141,10 +141,10 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: 4e9942b0a3ec7696d048323da161e4526212477fae62c1b64e2468d01a2ca7b1
-  after_sha256: 4e9942b0a3ec7696d048323da161e4526212477fae62c1b64e2468d01a2ca7b1
+  after_sha256: ea59c6f1f6cab29634f57eeeb5bf9c48ebc16999728ef72e7d21304c7288ed23
   findings:
   - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  disposition: revised
 - path: spec/phase0/README.md
   audience: BCF evaluators and adopters
   canonical_topic_owner: spec/phase0/README.md

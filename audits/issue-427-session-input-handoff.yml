@@ -22,3 +22,11 @@ observations:
 - stage: broader_source_validation
   result: forty_five_passed_one_deferred
   deferred_reason: exact_governance_capture_requires_clean_committed_definition
+- stage: clean_definition_validation
+  result: failed_before_behavioral_probes
+  cause: documentation_artifact_reference_lacked_non_authoritative_marker
+  remediation: mark_namespace_reference_non_authoritative_until_captured
+- stage: subsequent_reconciliation
+  result: rejected_before_commit
+  cause: changed_evidence_contract_requires_human_readable_state_matrix_update
+  remediation: record_local_hosted_stale_session_and_foreign_output_transitions_in_state_matrix
