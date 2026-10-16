@@ -1443,7 +1443,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "335341cb57ff2f813794d48b94c0e7e32a870947a197b744fdbfaa4daf26cc39"
+      "sha256": "e628029654662f266196a6716ec403aa50f5947fd5b987b2fc0e2c03d7bd525b"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

@@ -15,7 +15,9 @@
     "bcf_governance/tooling/ci_graph_timeouts.py",
     "tests/test_ci_graph.py",
     "bcf_governance/tooling/ci_authority_submit.py",
-    "tests/test_candidate_submit.py"
+    "tests/test_candidate_submit.py",
+    "bcf_governance/tooling/scaffold_governance_artifacts.py",
+    "tests/test_reconcile_governance.py"
   ],
   "contract": [
     "Legacy timeout defaults apply only when gate-contracts is genuinely absent.",
@@ -23,7 +25,8 @@
     "Preserve normal regular-file timeout defaults and overrides and genuine-absence compatibility.",
     "This closes an early resource check only; complete provider/deadline composition and measurements remain unqualified.",
     "Distinguish omitted timeout declarations from explicitly malformed policy, gate and invocation containers or explicit null timeout; reject typed errors before graph rendering.",
-    "Canonical submit calls this existing pure timeout-policy owner during authored admission before lease acquisition or reconciliation; preserve existing exception translation and reconciliation ownership."
+    "Canonical submit calls this existing pure timeout-policy owner during authored admission before lease acquisition or reconciliation; preserve existing exception translation and reconciliation ownership.",
+    "Direct reconciliation authored admission and independently callable step factory must run the existing policy query before interpreter preparation or step actions; stage order, caching semantics and authority ownership remain unchanged."
   ],
   "expected_tests": [
     "Existing symlink with larger timeout rejects.",
@@ -32,7 +35,8 @@
     "Genuinely absent policy keeps legacy defaults.",
     "Regular policy keeps exact declared timeout and overrides.",
     "Malformed policy/gate/invocation containers and explicit null overrides reject through direct and graph consumers; omitted optional policy/invocation/timeout retains compatibility.",
-    "Real malformed policy resources/declarations reject canonical submission before local lease or reconciliation; valid policy still reaches existing fixed-point check."
+    "Real malformed policy resources/declarations reject canonical submission before local lease or reconciliation; valid policy still reaches existing fixed-point check.",
+    "Malformed timeout policy rejects before interpreter preparation or step construction in both check/apply CLI modes and direct step factory."
   ],
   "forbidden_surfaces": [
     "full deadline feature or policy activation",

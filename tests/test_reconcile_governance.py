@@ -1214,3 +1214,34 @@ def test_reconcile_authored_machine_rejects_before_runtime_or_shadow(monkeypatch
     monkeypatch.setattr(scaffold, "apply_workflow_authority_transition", lambda *_a, **_k: pytest.fail("created shadow before authored machine rejection"))
     with pytest.raises(SystemExit, match="machine-readable authored contradiction"):
         scaffold.reconcile_main(["--repo-root", str(tmp_path), "--apply"])
+
+
+
+@pytest.mark.parametrize('mode', ['--check', '--apply', 'factory'])
+@pytest.mark.parametrize('defect', ['null_policy', 'null_timeout', 'dangling_symlink'])
+def test_reconcile_timeout_policy_rejects_before_runtime_or_steps(monkeypatch, tmp_path, mode, defect):
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    path = governance / 'gate-contracts.yml'
+    if defect == 'dangling_symlink':
+        path.symlink_to(tmp_path / 'absent-timeouts.yml')
+    elif defect == 'null_policy':
+        path.write_text('execution_policy: null\n')
+    else:
+        path.write_text('gates: {example: {invocation: {timeout_seconds: null}}}\n')
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *a, **kw: pytest.fail('invalid timeout prepared interpreter'))
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *a, **kw: pytest.fail('invalid timeout inspected test runtime'))
+    monkeypatch.setattr(scaffold, 'declared_graph_value_source_paths', lambda *a, **kw: pytest.fail('invalid timeout constructed graph steps'))
+    before = path.lstat()
+    if mode == 'factory':
+        from bcf_governance.tooling.ci_graph_errors import CIGraphError
+        with pytest.raises(CIGraphError, match='timeout|regular nonsymlink'):
+            reconcile_steps(tmp_path, Path(sys.executable))
+    else:
+        monkeypatch.setattr(scaffold, 'reconcile_steps', lambda *a, **kw: pytest.fail('invalid timeout constructed steps'))
+        with pytest.raises(SystemExit, match='timeout|regular nonsymlink'):
+            scaffold.reconcile_main(['--repo-root', str(tmp_path), mode])
+    after = path.lstat()
+    assert (after.st_mode, after.st_ino, after.st_size, after.st_mtime_ns) == (
+        before.st_mode, before.st_ino, before.st_size, before.st_mtime_ns,
+    )

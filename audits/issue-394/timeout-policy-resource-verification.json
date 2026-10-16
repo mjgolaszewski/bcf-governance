@@ -78,5 +78,29 @@
       "pack_parity": "passed",
       "governance_yaml": "passed"
     }
+  },
+  "direct_reconcile_followup": {
+    "red": {
+      "failed": 9,
+      "seconds": 1.36
+    },
+    "focused": {
+      "passed": 10,
+      "seconds": 3.19,
+      "includes": "Existing unchanged closed dependency-order contract."
+    },
+    "behavior": "Existing policy query runs before direct reconciliation interpreter preparation and at independently callable step-factory ingress; no new stage/cache/mutation owner.",
+    "combined_verification": {
+      "passed": 103,
+      "seconds": 88.54,
+      "scope": "Full reconciliation and candidate-submit suites, LOC/context/private-runtime parity and retained actual BCF public-operation characterization; all 21 observations byte-identical."
+    },
+    "checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "pack_parity": "passed",
+      "governance_yaml": "passed",
+      "coverage_schema": "passed"
+    }
   }
 }
