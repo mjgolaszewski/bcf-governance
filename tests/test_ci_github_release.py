@@ -1703,3 +1703,107 @@ def test_release_inspection_rejects_provider_custody_mutants(
             expected_commit=COMMIT,
             expected_assets={"asset.whl": "d" * 64},
         )
+
+
+@pytest.mark.parametrize("field,value", [("body", "foreign notes"), ("name", "foreign name"), ("prerelease", True)])
+def test_publication_rejects_metadata_movement_before_publish(tmp_path, field, value):
+    values = _release_inputs(tmp_path)
+
+    class MovedDraftAPI(_ReleaseAPI):
+        reads = 0
+
+        def releases(self, repository, *, page):
+            self.reads += 1
+            if self.reads == 2:
+                self.release[field] = value
+            return super().releases(repository, page=page)
+
+    api = MovedDraftAPI()
+    api.release.update(draft=True, immutable=False, assets=[
+        {"name": name, "digest": f"sha256:{digest}"}
+        for name, digest in values["assets"].items()
+    ])
+    with pytest.raises(GitHubControllerError, match="identity conflicts"):
+        publish_release(api, repository="owner/repo", tag="v0.7.1",
+                        expected_commit=COMMIT, release_artifacts=values["artifacts"], body="notes")
+    assert api.mutations == []
+
+
+@pytest.mark.parametrize("field,value", [("body", "foreign notes"), ("name", "foreign name"), ("prerelease", True)])
+def test_publication_rejects_metadata_movement_at_publish(tmp_path, field, value):
+    values = _release_inputs(tmp_path)
+
+    class MovedPublicationAPI(_ReleaseAPI):
+        def publish_release(self, *args, **kwargs):
+            self.release[field] = value
+            return super().publish_release(*args, **kwargs)
+
+    api = MovedPublicationAPI()
+    api.ref = None
+    api.release = None
+    with pytest.raises(GitHubControllerError, match="identity conflicts"):
+        publish_release(api, repository="owner/repo", tag="v0.7.1",
+                        expected_commit=COMMIT, release_artifacts=values["artifacts"], body="notes")
+    assert api.mutations.count("publish") == 1
+
+
+@pytest.mark.parametrize("field,value", [("tag_name", "v0.7.2"), ("name", "foreign name"), ("prerelease", True)])
+def test_release_inspection_rejects_noncanonical_metadata(field, value):
+    api = _ReleaseAPI()
+    api.release[field] = value
+    with pytest.raises(GitHubControllerError, match="identity conflicts"):
+        inspect_release(api, repository="owner/repo", tag="v0.7.1", expected_commit=COMMIT,
+                        expected_assets={"asset.whl": "d" * 64})
+    assert api.mutations == []
+
+
+def test_release_inspection_binds_optional_expected_body():
+    api = _ReleaseAPI()
+    with pytest.raises(GitHubControllerError, match="identity conflicts"):
+        inspect_release(api, repository="owner/repo", tag="v0.7.1", expected_commit=COMMIT,
+                        expected_assets={"asset.whl": "d" * 64}, expected_body="different notes")
+    assert api.mutations == []
+
+
+@pytest.mark.parametrize("stage", ["draft", "upload", "publish"])
+def test_publication_continues_after_lost_mutation_response(tmp_path, stage):
+    values = _release_inputs(tmp_path)
+
+    class LostResponseAPI(_ReleaseAPI):
+        armed = True
+
+        def crash(self, at):
+            if self.armed and at == stage:
+                self.armed = False
+                raise RuntimeError("response lost after committed mutation")
+
+        def create_draft_release(self, *args, **kwargs):
+            result = super().create_draft_release(*args, **kwargs)
+            self.crash("draft")
+            return result
+
+        def upload_release_asset(self, *args, **kwargs):
+            result = super().upload_release_asset(*args, **kwargs)
+            self.crash("upload")
+            return result
+
+        def publish_release(self, *args, **kwargs):
+            result = super().publish_release(*args, **kwargs)
+            self.crash("publish")
+            return result
+
+    api = LostResponseAPI()
+    api.ref = None
+    api.release = None
+    kwargs = dict(repository="owner/repo", tag="v0.7.1", expected_commit=COMMIT,
+                  release_artifacts=values["artifacts"], body="notes")
+    with pytest.raises(RuntimeError, match="response lost"):
+        publish_release(api, **kwargs)
+    prior = list(api.mutations)
+    result = publish_release(api, **kwargs)
+    assert result["status"] == "verified"
+    assert len(api.mutations) == len(set(api.mutations))
+    assert api.mutations.count("draft") == api.mutations.count("publish") == 1
+    if stage == "publish":
+        assert api.mutations == prior
+        assert result["decision"] == "already_published"
