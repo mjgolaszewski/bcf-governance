@@ -1356,3 +1356,25 @@ def test_duplicate_protected_operation_identity_rejects_before_source_discovery(
     monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', lambda *args, **kwargs: pytest.fail('source discovery before duplicate identity rejection'))
     with pytest.raises(CIGraphError, match='operation IDs must be unique'):
         owner.validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+def test_import_resource_rejection_precedes_public_policy_capture(public_reconstructed_binding_inputs, monkeypatch):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import ci_graph_composition_operations
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    monkeypatch.setattr(ci_graph_composition_operations, 'load_committed_application_operations', lambda *args, **kwargs: pytest.fail('policy capture before import-root rejection'))
+    with pytest.raises(CIGraphError, match='Python import root'):
+        owner.validate_reconstructed_lifecycle_bindings(**inputs, source_import_roots=('missing',))
+
+
+def test_reconstructed_binding_passes_import_roots_to_exact_discovery(reconstructed_binding_inputs, monkeypatch):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import semantic_ownership_inventory
+    real = semantic_ownership_inventory.discover_python_source
+    seen = []
+    def discover(*args, **kwargs):
+        seen.append(kwargs.get('import_roots'))
+        return real(*args, **kwargs)
+    monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', discover)
+    owner.validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs)
+    assert seen == [('.',)]
