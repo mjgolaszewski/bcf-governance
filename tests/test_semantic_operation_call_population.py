@@ -90,3 +90,63 @@ def test_operation_call_population_requires_bound_source_files(inventory, defect
         inventory["files"][0]["path"] = "another.py"
     with pytest.raises(SemanticOperationEffectError):
         source_operation_call_population("runtime.py::root", inventory)
+
+
+@pytest.fixture
+def initialization_inventory(tmp_path):
+    paths = [tmp_path / 'root.py', tmp_path / 'other.py']
+    paths[0].write_text('initialize()\ndef root():\n    pass\n')
+    paths[1].write_text('unrelated_initialization()\n')
+    return discover_python_source(tmp_path, files=paths, call_contracts_version='1.0', initialization_contracts_version='1.0')
+
+
+def test_opted_initialization_population_covers_every_discovered_module(initialization_inventory):
+    original = copy.deepcopy(initialization_inventory)
+    result = source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
+    assert result['scope'] == 'discovered_python_functions_and_possible_initialization'
+    assert result['execution_qualified'] is False
+    assert result['completeness_qualified'] is False
+    assert [row[0] for row in result['module_initializers']] == ['other.py', 'root.py']
+    assert initialization_inventory == original
+    initialization_inventory['module_initializers'].reverse()
+    assert source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True) == result
+    assert source_operation_call_population('root.py::root', initialization_inventory) == source_operation_call_population('root.py::root', initialization_inventory, include_initialization=False)
+
+
+@pytest.mark.parametrize('defect', ['version', 'missing_module', 'duplicate_module', 'unbound_module', 'duplicate_site', 'missing_call_name', 'authority', 'completeness', 'limitations', 'site_digest'])
+def test_initialization_population_rejects_incompatible_or_incomplete_facts(initialization_inventory, defect):
+    rows = initialization_inventory['module_initializers']
+    if defect == 'version':
+        initialization_inventory['initialization_contracts_version'] = '2.0'
+    elif defect == 'missing_module':
+        rows.pop()
+    elif defect == 'duplicate_module':
+        rows.append(copy.deepcopy(rows[0]))
+    elif defect == 'unbound_module':
+        rows[0]['path'] = 'unknown.py'
+    elif defect == 'duplicate_site':
+        rows[0]['sites'].append(copy.deepcopy(rows[0]['sites'][0]))
+    elif defect == 'missing_call_name':
+        del rows[0]['sites'][0]['call_name']
+    elif defect == 'authority':
+        rows[0]['authority'] = True
+    elif defect == 'completeness':
+        rows[0]['completeness_qualified'] = True
+    elif defect == 'limitations':
+        rows[0]['limitations'] = []
+    else:
+        rows[0]['sites'][0]['expression_sha256'] = 'invalid'
+    with pytest.raises(SemanticOperationEffectError, match='initialization'):
+        source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
+
+
+def test_source_initialization_change_is_observed_without_removing_functions(tmp_path):
+    path = tmp_path / 'root.py'
+    def population(source):
+        path.write_text(source)
+        inventory = discover_python_source(tmp_path, files=[path], call_contracts_version='1.0', initialization_contracts_version='1.0')
+        return source_operation_call_population('root.py::root', inventory, include_initialization=True)
+    first = population('initialize(1)\ndef root():\n    pass\n')
+    changed = population('initialize(2)\ndef root():\n    pass\n')
+    assert first['functions'] == changed['functions']
+    assert first['module_initializers'] != changed['module_initializers']

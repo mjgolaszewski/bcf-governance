@@ -30,7 +30,7 @@ class SemanticOperationEffectError(ValueError):
 
 
 def source_operation_call_population(
-    entrypoint: str, inventory: dict[str, Any]
+    entrypoint: str, inventory: dict[str, Any], *, include_initialization: bool = False,
 ) -> dict[str, Any]:
     """Observe discovered Python calls through ports without interpreting effects.
 

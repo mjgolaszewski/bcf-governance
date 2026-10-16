@@ -1,0 +1,45 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "authority": false,
+    "status": "planned",
+    "path": "audits/issue-394/initialization-consumer-binding-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/semantic_operation_effects.py::source_operation_call_population",
+  "dependency_acceptance": "Initialization source observations must pass behavioral/schema/default compatibility and source/package parity checks before consumer mutation. Complete requires-workitem-closure:P32-P0-03 remains unmet and blocks normative adoption.",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_operation_effects.py",
+    "tests/test_semantic_operation_call_population.py"
+  ],
+  "contract": [
+    "Add an explicit include_initialization keyword to the existing read-only operation population query; default result remains exactly unchanged.",
+    "Opted-in query validates versioned initialization facts using the installed canonical schema, not caller policy or a second syntax interpreter.",
+    "Require exactly one initializer row for every already-discovered Python source file. Reject missing/duplicate/unbound rows and duplicate site identities; bind results to the existing source file hash inventory.",
+    "Retain all module sites conservatively rather than inferring that disconnected module effects are unrelated; unknown import/native/implicit/dynamic effects prevent execution or completeness qualification.",
+    "Return deterministic immutable tuples for source module/site/unknown observations. Do not infer runtime call closure, claim impact, suppression, provider authority or actual complete source coverage.",
+    "Protected caller remains responsible for authenticating parser, exact source population and source file bytes; candidate-provided inventories never authenticate themselves."
+  ],
+  "forbidden_surfaces": [
+    "normative DAG adoption",
+    "proof suppression",
+    "effect interpretation",
+    "canonical normalization",
+    "provider/adopter/installer/custody",
+    "workflow and authority pins"
+  ],
+  "expected_tests": [
+    "Legacy query result identical with default/false option",
+    "Opt-in retains module sites including disconnected source files and empty-site limitations",
+    "Reject missing/version/authority/completeness/malformed schema facts",
+    "Reject duplicate/missing/unbound module population and duplicate lexical site identities",
+    "Source initialization mutation changes the bound population without removing endpoint functions",
+    "Determinism under file/module/site permutation and no source mutation"
+  ],
+  "completion": "Focused tests plus existing architecture/parity checks; actual independent effect interpretation and lifecycle consumers remain separately blocked.",
+  "schema_custody": "Resolve the schema exclusively from the executing BCF distribution: packaged template schemas for source/wheel tooling, adjacent installed schemas for private runtime. No candidate schema path or caller-authored schema is accepted."
+}
