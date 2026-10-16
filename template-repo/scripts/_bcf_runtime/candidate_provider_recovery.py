@@ -9,6 +9,7 @@ import yaml
 
 from .ci_authority_pins import CIAuthorityPinError, compiled_workflow_job_names
 from .ci_github import GithubReferenceError, authenticate_github_run
+from .ci_github_values import GitHubValueError, sha
 from .ci_recovery_frontier import RecoveryFrontierError, candidate_provider_frontier
 from .ci_candidate_pr import _validate as _validate_candidate_pr
 from .local_pr import CandidateIdentity, LocalPRContext, ProspectiveValidationError
@@ -387,6 +388,26 @@ def execute_candidate_provider_recovery(
             or pull_request.get("head_sha") != candidate.commit_sha
             or _positive(identity["run_attempt"], field="candidate provider attempt") >= MAX_PROVIDER_ATTEMPTS):
         raise ProspectiveValidationError("candidate provider retry contradicts independently proved context")
+    binding = (context.base_ref, context.pull_request_number,
+               context.pull_request_node_id, context.provider_head_sha)
+    if context.repository is not None and (
+        context.repository != repository or context.repository_id != repository_id
+    ):
+        raise ProspectiveValidationError("candidate provider bound context repository differs")
+    if any(value is not None for value in binding) and (
+        any(value is None for value in binding)
+        or context.repository != repository or context.repository_id != repository_id
+        or type(context.pull_request_number) is not int
+        or context.pull_request_number != number
+        or context.pull_request_node_id != pull_request.get("node_id")
+        or not isinstance(context.provider_head_sha, str)
+    ):
+        raise ProspectiveValidationError("candidate provider bound context is incomplete or differs")
+    if any(value is not None for value in binding):
+        try:
+            sha(context.provider_head_sha, field="bound provider head")
+        except GitHubValueError as exc:
+            raise ProspectiveValidationError("candidate provider bound context head is invalid") from exc
     current_pr = api.pull_request(repository, number)
     if current_pr.get("merged") is True:
         raise ProspectiveValidationError("candidate provider PR is already merged")

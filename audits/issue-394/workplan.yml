@@ -3945,6 +3945,7 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_candidate_provider_recovery::test_retry_preserves_exact_bound_default_context
     - tests.test_local_pr::test_bound_stacked_pr_context_uses_authenticated_base_instead_of_default
     - tests.test_local_pr::test_bound_stacked_pr_synthetic_event_preserves_provider_base_ref
     - tests.test_local_pr::test_bound_pr_local_descendant_keeps_distinct_provider_head
@@ -3955,6 +3956,18 @@ implementation_slices:
     - tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_can_only_observe_and_never_confer_release
     - tests.test_semantic_ownership::test_protected_merge_context_authorization_is_declared_and_causal
     negative_controls:
+    - cause: bound-retry-context-repository-before-provider-read
+      test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[repository]
+    - cause: bound-retry-context-repository-id-before-provider-read
+      test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[repository-id]
+    - cause: bound-retry-context-pull-number-before-provider-read
+      test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[pull-number]
+    - cause: bound-retry-context-pull-node-before-provider-read
+      test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[pull-node]
+    - cause: bound-retry-context-partial-binding-before-provider-read
+      test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[partial-binding]
+    - cause: bound-retry-context-noncanonical-head-before-provider-read
+      test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[noncanonical-head]
     - cause: unprovable-provider-binding-ambiguous
       test: tests.test_local_pr::test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts[ambiguous]
     - cause: unprovable-provider-binding-provider-failure

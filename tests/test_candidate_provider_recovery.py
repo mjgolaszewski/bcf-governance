@@ -438,14 +438,14 @@ def test_retry_executor_never_repairs_independently_proved_context(field, value)
     assert provider.reruns == []
 
 
-@pytest.mark.parametrize("cause", ["repository", "repository-id", "pull-number", "pull-node", "partial-binding"])
+@pytest.mark.parametrize("cause", ["repository", "repository-id", "pull-number", "pull-node", "partial-binding", "noncanonical-head"])
 def test_retry_rejects_inconsistent_bound_context_before_provider_reads(cause):
     from dataclasses import replace
     context = replace(CONTEXT, base_ref="main", repository="owner/repo", repository_id=17,
         pull_request_number=7, pull_request_node_id="PR_exact7", provider_head_sha=HEAD)
     changes = {"repository": {"repository": "other/repo"}, "repository-id": {"repository_id": 99},
                "pull-number": {"pull_request_number": 8}, "pull-node": {"pull_request_node_id": "PR_changed8"},
-               "partial-binding": {"provider_head_sha": None}}
+               "partial-binding": {"provider_head_sha": None}, "noncanonical-head": {"provider_head_sha": HEAD + " "}}
     provider = Provider(); frontier = _resolve(provider)
     provider.pull_request = lambda *_a, **_k: pytest.fail("provider read preceded invalid binding rejection")
     with pytest.raises(ProspectiveValidationError, match="bound context"):

@@ -82,6 +82,12 @@
     "passed": 1,
     "elapsed_seconds": 1.59,
     "scope": "Repository/name/PR-number/node/partial-binding contradictions reached provider reads before rejection; real existing fixture methods, not missing-interface failures.",
-    "pending": "Implementation and full retry regression."
+    "pending": "Corrected; full retry module passes 72 tests in 8.45s."
+  },
+  "metadata_consumer_verification": {
+    "passed": 72,
+    "seconds": 8.45,
+    "scope": "Complete provider retry module; bound repository/number/node/partial/head-format contradictions reject before reads; default bound and legacy positives retained.",
+    "intermediate_failure": "Positive control caught undefined regex reference; reused existing provider SHA validator and reran complete module."
   }
 }

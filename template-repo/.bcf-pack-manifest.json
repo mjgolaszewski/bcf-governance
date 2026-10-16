@@ -504,7 +504,7 @@
     },
     "scripts/_bcf_runtime/candidate_provider_recovery.py": {
       "operation": "copy",
-      "sha256": "a3b92fa04f6efcdd8ae279ac3a072767b68fe6251996d9c5cfb7cec8d1b1925b"
+      "sha256": "fe9d896f05d70da1d6b0647d159d0a86636a2e371b644f2d2a7dd64f425b9bcb"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
