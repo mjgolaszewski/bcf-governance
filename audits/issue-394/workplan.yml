@@ -134,6 +134,9 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/evaluation_scope.py
+    - bcf_governance/tooling/ci_graph_composition.py
+    - schemas/ci-certification.schema.json
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
     - bcf_governance/tooling/scaffold_governance_artifacts.py
     - bcf_governance/tooling/ci_authority_submit.py
@@ -1016,6 +1019,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - terminal-proposition-binding
     - publication-metadata-revalidation
   I18:
     requirement: 'Observations have no truth authority. Timing, cache hits, historical failure frequency, queue waits, costs and predicted critical paths may influence
@@ -1096,6 +1100,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - terminal-proposition-binding
     - typed-guard-preservation
     - typed-reference-before-allocation
     - publication-metadata-revalidation
@@ -1121,6 +1126,8 @@ requirements:
       scenario: Cause-specific I22 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - terminal-proposition-binding
   I23:
     requirement: Composed semantic closure. Extend existing `CompiledCIGraph`/`EdgeContract` ownership through lifecycle, facts, costs, recovery, release/adopter
       and custody terminal consumers. Validate populations as well as edges. Every reachable context-specific relationship has a complete contract; each structurally
@@ -1142,6 +1149,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - terminal-proposition-binding
     - typed-guard-preservation
     - typed-lifecycle-path-binding
     - finite-provider-retry-bound
@@ -1391,6 +1399,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - terminal-proposition-binding
     - typed-guard-preservation
     - typed-reference-before-allocation
     - typed-lifecycle-path-binding
@@ -1916,6 +1925,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - terminal-proposition-binding
     - typed-guard-preservation
     - typed-lifecycle-path-binding
   AC13:
@@ -2801,3 +2811,28 @@ implementation_slices:
     - Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations
       remain unqualified.
     - Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required.
+  terminal-proposition-binding:
+    id: terminal-proposition-binding
+    workitem: P32-P0-03
+    scope: Existing evaluation scope owner derives exact intent/target binding, failed evaluations carry no successor eligibility, and terminal
+      predicates retain exact typed phase identity.
+    contract: audits/issue-394/terminal-proposition-binding-contract.json
+    producer: bcf_governance/tooling/evaluation_scope.py::certified_proposition
+    consumer: Existing proposition verification and terminal phase/release predicates
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_evaluation_scope::test_bounded_proposition_never_authorizes_failed_evaluation[True-pass]
+    - tests.test_evaluation_scope::test_terminal_predicate_preserves_valid_certification_without_truth_status
+    negative_controls:
+    - cause: failed-evaluation-with-closed-target
+      test: tests.test_evaluation_scope::test_bounded_proposition_never_authorizes_failed_evaluation[True-fail]
+    - cause: workitem-intent-with-phase-kind
+      test: tests.test_evaluation_scope::test_proposition_decoder_binds_intent_to_canonical_target_kind[phase-workitem]
+    - cause: bounded-authority-on-phase-terminal
+      test: tests.test_evaluation_scope::test_terminal_predicate_rejects_scope_or_authority_confusion[bounded-authority]
+    - cause: scope-target-before-authenticated-snapshots
+      test: tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[workitem-workitem-P01]
+    remaining:
+    - Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.
+    - No local proposition or static terminal predicate authenticates provider custody or closes the whole train.

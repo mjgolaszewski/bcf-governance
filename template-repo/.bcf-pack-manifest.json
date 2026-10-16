@@ -238,7 +238,7 @@
     },
     "schemas/ci-certification.schema.json": {
       "operation": "copy",
-      "sha256": "5f0bb57e8a800f027c4fc1ed5b8e4204f557ddb020c0577de123a349df3bbfa5"
+      "sha256": "1c5b2cf7f4ae49c18030be25ec1ff51622c4894810798e6f5afc86ea688169db"
     },
     "schemas/ci-graph-extension.schema.json": {
       "operation": "copy",
@@ -876,7 +876,7 @@
     },
     "scripts/_bcf_runtime/evaluation_scope.py": {
       "operation": "copy",
-      "sha256": "30e631e94317e4700add202196bb93dabfeab932439a47afde05c5dfcd862fca"
+      "sha256": "9928682f9f51209142521928ec0e85aed37cdc520ac3879ae0fa151414178362"
     },
     "scripts/_bcf_runtime/evidence_attestation.py": {
       "operation": "copy",

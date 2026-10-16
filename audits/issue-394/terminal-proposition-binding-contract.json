@@ -4,15 +4,16 @@
     "path": "audits/issue-394/terminal-proposition-binding-contract.json",
     "authority": false
   },
-  "bounded_context": "evaluation_scope",
-  "layer": "domain_query",
+  "bounded_context": "evidence",
+  "layer": "tooling",
   "side": "query",
   "workitem_alias": "foundation.composition",
   "targets": [
     "bcf_governance/tooling/evaluation_scope.py",
     "schemas/ci-certification.schema.json",
     "tests/test_evaluation_scope.py",
-    "canonical private runtime/schema copies through pack owner"
+    "canonical private runtime/schema copies through pack owner",
+    "tests/test_ci_certification.py"
   ],
   "forbidden": [
     "installer/custody/release-byte changes",
@@ -32,7 +33,8 @@
     "Terminal phase predicate requires exact typed phase target and no bounded successor authority; malformed inputs return false",
     "Existing valid progress/workitem/phase and scopeless legacy certification contracts remain readable",
     "Certification schema rejects intent/target-kind contradictions before snapshot/provider allocation; tests derive valid matrix from existing owner",
-    "No local proposition or pure terminal predicate independently authenticates custody or provider authority"
+    "No local proposition or pure terminal predicate independently authenticates custody or provider authority",
+    "Malformed bounded target IDs and PR commit ID shapes reject in existing certification schema before authenticated snapshot loading"
   ],
   "tests": [
     "Closed/open target crossed with pass/fail evaluations",
