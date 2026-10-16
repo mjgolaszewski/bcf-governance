@@ -12,6 +12,7 @@ from jsonschema import Draft202012Validator, SchemaError
 
 from ..ci_graph_composition import validate_backtrace_transition_references
 from ..ci_graph_errors import CIGraphError
+from ..ci_graph_edges import validate_authority_separation
 from ..ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .preflight_repository_context import pr_context
 
@@ -175,6 +176,16 @@ def _validate_machine_backtrace(repo_root: Path) -> dict[str, int]:
     if error is not None:
         raise CIStateMatrixError(f"machine-readable backtrace schema violation: {error.message}")
     _validate_backtrace_references(payload)
+    try:
+        validate_authority_separation(
+            edges,
+            non_authoritative_states=frozenset({"pinned_adopter_compatibility_input", "compatibility_observation", "remediation_backlog"}),
+            authority_states=frozenset({"exact_release_asset_inventory", "trusted_release_receipt", "immutable_publication", "terminal_custody"}),
+            required_exclusions={("compatibility_observation", "immutable_publication"): "mutable_external_adopter_state_has_no_release_authority"},
+            permitted_non_authority_effects=frozenset({"none", "informational_only"}),
+        )
+    except CIGraphError as exc:
+        raise CIStateMatrixError(str(exc)) from exc
     return {"edges": len(edges), "transitions": len(transitions)}
 
 

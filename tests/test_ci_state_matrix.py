@@ -558,7 +558,7 @@ def test_compatibility_cannot_enter_release_authority_paths(tmp_path, defect):
         validate_ci_state_matrix(repo, authored_only=True)
 
 
-@pytest.mark.parametrize('extension', [False, True])
+@pytest.mark.parametrize('extension', [False, True, 'failure_report'])
 def test_current_compatibility_policy_preserves_reporting_and_publisher_recovery(tmp_path, extension):
     repo = _repo(tmp_path)
     path = repo / 'spec/phase0/release-train-backtrace.yml'
@@ -568,7 +568,8 @@ def test_current_compatibility_policy_preserves_reporting_and_publisher_recovery
     publisher['recovery_transition'] = 'retry_same_authenticated_publication'
     if extension:
         report = copy.deepcopy(next(row for row in edges if row['id'] == 'AC-007'))
-        report.update(id='AC-REPORT', **{'from': 'remediation_backlog', 'to': 'operator_note'}, failure_transition='note_unavailable', recovery_transition='retry_note')
+        origin = next(row for row in edges if row['id'] == 'AC-005')['failure_transition'] if extension == 'failure_report' else 'remediation_backlog'
+        report.update(id='AC-REPORT', **{'from': origin, 'to': 'operator_note'}, failure_transition='note_unavailable', recovery_transition='retry_note')
         edges.append(report)
     path.write_text(yaml.safe_dump(model, sort_keys=False))
     result = validate_ci_state_matrix(repo, authored_only=True)
@@ -591,4 +592,41 @@ def test_compatibility_cannot_launder_authority_through_effect_labels(tmp_path, 
     edge['authority_effect'] = 'unknown' if defect == 'unknown_effect' else 'release_authorization'
     path.write_text(yaml.safe_dump(model, sort_keys=False))
     with pytest.raises(CIStateMatrixError, match='non-authoritative.*authority'):
+        validate_ci_state_matrix(repo, authored_only=True)
+
+
+@pytest.mark.parametrize('defect', ['consumer', 'missing_custody', 'cycle', 'unavailable', 'cancelled', 'deep_failure'])
+def test_compatibility_authority_branch_and_population_controls(tmp_path, defect):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    edges = model['adopter_compatibility_observation']['edges']
+    if defect == 'consumer':
+        next(row for row in edges if row['id'] == 'AC-006')['consumer'] = 'publisher'
+        cause = 'exclusion'
+    elif defect == 'missing_custody':
+        edges.remove(next(row for row in edges if row['id'] == 'AC-003'))
+        cause = 'policy state population'
+    else:
+        added = copy.deepcopy(next(row for row in edges if row['id'] == 'AC-007'))
+        added.update(id='AC-BRANCH', failure_transition='branch_failed', recovery_transition='branch_retry')
+        if defect == 'cycle':
+            added.update(**{'from': 'trusted_release_receipt', 'to': 'exact_release_asset_inventory'})
+            cause = 'cycle'
+        else:
+            cause = 'non-authoritative.*authority'
+            if defect == 'unavailable':
+                origin = next(row for row in edges if row['id'] == 'AC-004')['failure_transition']
+            elif defect == 'cancelled':
+                next(row for row in edges if row['id'] == 'AC-005')['failure_transition'] = 'compatibility_cancelled'
+                origin = 'compatibility_cancelled'
+            else:
+                intermediate = copy.deepcopy(added)
+                intermediate.update(id='AC-INTERMEDIATE', **{'from': 'compatibility_observation', 'to': 'bridge'}, failure_transition='bridge_rejected', recovery_transition='bridge_retry')
+                edges.append(intermediate)
+                origin = 'bridge_rejected'
+            added.update(**{'from': origin, 'to': 'trusted_release_receipt'})
+        edges.append(added)
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    with pytest.raises(CIStateMatrixError, match=cause):
         validate_ci_state_matrix(repo, authored_only=True)

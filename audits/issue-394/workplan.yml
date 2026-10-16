@@ -764,6 +764,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
@@ -954,6 +955,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - protected-public-operation-population
     - dormant-composition-and-static-bindings
   I14:
@@ -1172,6 +1174,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - terminal-proposition-binding
     - typed-guard-preservation
     - typed-lifecycle-path-binding
@@ -1382,6 +1385,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - dormant-composition-and-static-bindings
   F02:
     requirement: "guards reference typed authenticated facts, their producer, subject/proposition/authority/freshness and independent verification\u2014not caller\
@@ -1484,6 +1488,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
@@ -1512,6 +1517,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - dormant-composition-and-static-bindings
   F08:
     requirement: foundation work does not activate suppression, modify protection or grant controller/release/custody authority.
@@ -1817,6 +1823,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
     - dormant-composition-and-static-bindings
@@ -1894,6 +1901,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - typed-guard-preservation
     - typed-reference-before-allocation
     - typed-lifecycle-path-binding
@@ -1958,6 +1966,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - terminal-proposition-binding
     - typed-guard-preservation
     - typed-lifecycle-path-binding
@@ -2034,6 +2043,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
@@ -3173,3 +3183,29 @@ implementation_slices:
     - Committed policy query derives the digest from exact Git bytes; protected caller must independently authenticate consumer repository policy authorization exact source population and provider context. Query observations never authenticate themselves. Contract audits/issue-394/committed-operation-policy-contract.json; local evidence audits/issue-394/committed-operation-policy-verification.json.
     - Current snapshot observations do not establish ongoing filesystem freshness complete runtime effects or actual provider-owned lifecycle integration.
     - Canonical semantic lock/oracle normalization installed consumer qualification normative adoption performance and custody remain blocked.
+  compatibility-authority-separation:
+    id: compatibility-authority-separation
+    workitem: P32-P0-04
+    scope: Existing CI edge/ancestor owner rejects contradictory compatibility-to-authority paths, effects and exclusions in authored
+      preflight; no new evaluator or provider authority. Evidence audits/issue-394/compatibility-authority-verification.json.
+    contract: audits/issue-394/compatibility-authority-contract.json
+    producer: bcf_governance/tooling/ci_graph_edges.py::validate_authority_separation
+    consumer: bcf_governance/tooling/governance_validation/ci_state_matrix.py::_validate_machine_backtrace
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery
+    negative_controls:
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths
+    - cause: authority-effect-claim-on-observational-or-intermediate-edge
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls
+    remaining:
+    - Consumer policy populations must execute under independently authenticated trusted runtime; this local authored check does
+      not authenticate its caller or source.
+    - Full normative relationship/effect conformance and bounded inter-attempt recovery qualification remain separate; no authority,
+      execution or adoption proof.
+    - Canonical lock/test-manifest/workflow normalization remains held; installed consumers performance budgets and terminal custody
+      remain unqualified.
