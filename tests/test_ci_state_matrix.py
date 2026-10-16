@@ -198,3 +198,24 @@ def test_authored_backtrace_accepts_declared_typed_transition_references(tmp_pat
     result = validate_ci_state_matrix(repo, authored_only=True)
     assert result["authority"] is False
     assert result["execution_qualified"] is False
+
+
+@pytest.mark.parametrize("field", ["rejection_transition", "retry_of"])
+@pytest.mark.parametrize("defect", ["missing", "changed", "duplicate"])
+def test_authored_reference_guard_rejects_lost_guard_obligation(field, defect):
+    from bcf_governance.tooling.governance_validation.ci_state_matrix import _validate_backtrace_references
+
+    model = yaml.safe_load((ROOT / "spec/phase0/release-train-backtrace.yml").read_text())
+    success, rejected, recovery = model["transitions"][:3]
+    success.update(kind="success", rejection_transition=rejected["id"], guard_refs=["sha256:" + "a" * 64])
+    rejected.update(kind="rejection", guard_refs=list(success["guard_refs"]), invariants=list(success["invariants"]))
+    rejected["from"] = success["from"]
+    recovery.update(kind="recovery", retry_of=success["id"], max_attempts=2,
+                    guard_refs=list(success["guard_refs"]), invariants=list(success["invariants"]))
+    recovery["from"], recovery["to"] = rejected["to"], success["from"]
+    changed = rejected if field == "rejection_transition" else recovery
+    if defect == "missing": changed.pop("guard_refs")
+    elif defect == "changed": changed["guard_refs"] = ["sha256:" + "b" * 64]
+    else: changed["guard_refs"] *= 2
+    with pytest.raises(CIStateMatrixError, match="guard"):
+        _validate_backtrace_references(model)

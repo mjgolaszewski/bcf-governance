@@ -821,6 +821,10 @@ def path_inputs(composition):
         dict(id="TR-003", kind="recovery", **{"from": "ST-FAIL", "to": "ST-START"},
              invariants=["INV-RT-001"], retry_of="TR-001", max_attempts=2),
     ]
+    guard_refs = ["sha256:" + hashlib.sha256(json.dumps(guard, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+                  for guard in contract["guards"]]
+    for transition in transitions:
+        transition["guard_refs"] = list(guard_refs)
     backtrace = dict(states=states, transitions=transitions)
     return dict(compiled=compiled, expected_source=dict(composition["expected_source"]), backtrace=backtrace,
                 expected_backtrace_sha256=hashlib.sha256(json.dumps(backtrace, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
@@ -962,3 +966,40 @@ def test_typed_paths_reject_nonstring_transition_references(path_inputs, field, 
     _refresh_path_digest(path_inputs)
     with pytest.raises(CIGraphError, match="typed transition reference"):
         _path_query(path_inputs)
+
+
+@pytest.mark.parametrize("defect", ["missing-all", "missing-recovery", "changed-recovery", "unknown-all", "duplicate", "malformed", "nonstring"])
+def test_typed_paths_reject_dropped_or_poisoned_guard_references(path_inputs, defect):
+    edges = path_inputs["backtrace"]["transitions"]
+    if defect == "missing-all":
+        for row in edges: row.pop("guard_refs")
+    elif defect == "missing-recovery": edges[2].pop("guard_refs")
+    elif defect == "changed-recovery": edges[2]["guard_refs"] = ["sha256:" + "f" * 64]
+    elif defect == "unknown-all":
+        for row in edges: row["guard_refs"] = ["sha256:" + "f" * 64]
+    elif defect == "duplicate": edges[2]["guard_refs"] *= 2
+    elif defect == "malformed": edges[2]["guard_refs"] = ["not-a-guard-reference"]
+    elif defect == "nonstring": edges[2]["guard_refs"] = [{}]
+    _refresh_path_digest(path_inputs)
+    with pytest.raises(CIGraphError, match="guard"):
+        _path_query(path_inputs)
+
+
+def test_typed_paths_cannot_omit_a_compiled_guard_obligation(path_inputs, composition):
+    import hashlib
+
+    contract = composition["payload"]["relationships"][0]["contract"]
+    contract.update(successor="ST-OK", rejection="ST-FAIL", recovery="TR-003")
+    added = dict(fact_id="exact-assets", check="freshness")
+    reference = "sha256:" + hashlib.sha256(json.dumps(added, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+    for row in path_inputs["backtrace"]["transitions"]:
+        row["guard_refs"].append(reference)
+    _refresh_path_digest(path_inputs)
+    # Model retains both independently bound obligations, proposed compiled guard
+    # population omits one. A source hash alone must not conceal that omission.
+    path_inputs["compiled"] = compile_lifecycle_composition(**composition)
+    with pytest.raises(CIGraphError, match="guard"):
+        _path_query(path_inputs)
+    contract["guards"].append(added)
+    path_inputs["compiled"] = compile_lifecycle_composition(**composition)
+    assert _path_query(path_inputs)["guard_obligations_checked"] == 2
