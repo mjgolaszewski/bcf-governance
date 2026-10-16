@@ -35,6 +35,7 @@ invariants:
 - {id: INV-RT-018, statement: bounded workitem intent derives only from the validated dependency DAG and cannot be suppressed or broadened by unrelated list order or lifecycle state, basis: spec/RELEASE_TRAIN_STATE_DAG.md#integrated-workitem-dependency-frontier-state-machine}
 - {id: INV-RT-019, statement: one canonical release version projects every package documentation manifest graph workflow and authority surface before lifecycle intent is derived and partial or semantic drift fails before evidence allocation, basis: spec/RELEASE_TRAIN_STATE_DAG.md#release-version-projection-state-machine}
 - {id: INV-RT-020, statement: an adopter upgrade retires a pack path only from an exact content-addressed retirement declared by the authenticated successor pack and rejects unexplained residue before proof allocation, basis: spec/RELEASE_TRAIN_STATE_DAG.md#adopter-runtime-retirement-state-machine}
+- {id: INV-RT-021, statement: phase retention projects every accepted authored execution-evidence shape into the closed phase-history schema before any artifact removal and preserves the complete validation observation deterministically, basis: spec/RELEASE_TRAIN_STATE_DAG.md#phase-retention-validation-projection-state-machine}
 primitives:
 - {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
 - {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002]}
@@ -55,6 +56,7 @@ primitives:
 - {id: PRIM-WORKITEM-FRONTIER, canonical_name: BoundedWorkitemFrontier, owner: bcf_governance/tooling/ci_graph_post_merge.py::authored_post_merge_scope, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-018]}
 - {id: PRIM-RELEASE-VERSION, canonical_name: ReleaseVersionProjection, owner: bcf_governance/tooling/release_version_projection.py::reconcile_release_version_surfaces, invariants: [INV-RT-006, INV-RT-010, INV-RT-019]}
 - {id: PRIM-RUNTIME-RETIREMENT, canonical_name: RuntimeRetirementInventory, owner: template-repo/.bcf-pack-manifest.json, invariants: [INV-RT-003, INV-RT-005, INV-RT-006, INV-RT-010, INV-RT-020]}
+- {id: PRIM-PHASE-HISTORY-VALIDATION, canonical_name: PhaseHistoryValidationProjection, owner: bcf_governance/tooling/governance_cleanup/phase_retention.py, invariants: [INV-RT-003, INV-RT-005, INV-RT-006, INV-RT-010, INV-RT-021]}
 states:
 - {id: ST-RECONCILED, owner: reconcile_governance, authority: none}
 - {id: ST-INTENT, owner: ci_graph_post_merge, authority: none}
@@ -151,6 +153,25 @@ adopter_runtime_retirement_contract:
   - {id: ARRX-002, reason: runtime_lock_omission_is_not_deletion_authority}
   - {id: ARRX-003, reason: filename_or_directory_membership_is_not_ownership}
   - {id: ARRX-004, reason: adopter_compatibility_observation_is_not_mutation_authority}
+phase_retention_validation_projection_contract:
+  normative: true
+  primitive: PRIM-PHASE-HISTORY-VALIDATION
+  canonical_owner: bcf_governance/tooling/governance_cleanup/phase_retention.py::_phase_history_entry
+  inputs: [validated_phase_log, authored_execution_evidence, authenticated_closed_truth_report, exact_retention_artifact_set]
+  outputs: [schema_valid_phase_history_validation_strings, exact_phase_history_entry, typed_rejection]
+  states:
+  - {id: PRV-001, state: execution_validation_item_is_nonempty_string, result: preserve_exact_string, authority: historical_observation_only}
+  - {id: PRV-002, state: execution_validation_item_is_supported_structured_mapping, result: canonical_lossless_json_string, authority: historical_observation_only}
+  - {id: PRV-003, state: execution_validation_item_is_empty_malformed_or_unsupported, result: reject_before_retention_mutation, authority: none}
+  - {id: PRV-004, state: projected_history_entry_matches_schema_and_truth_subject, result: atomically_write_history_then_apply_exact_retention_plan, authority: retention_only}
+  - {id: PRV-005, state: projected_history_entry_fails_schema_or_truth_binding, result: leave_repository_byte_identical, authority: none}
+  edge_contracts:
+  - {id: PRVE-001, from: authored_phase_execution_evidence, to: history_validation_projection, producer: phase_log_schema, consumer: phase_retention_projector, required: [closed_item_shapes, deterministic_serialization], identity_binding: [phase_id, authored_log_digest, validation_item_order, validation_item_bytes], earliest_rejection: cleanup_plan_before_mutation, reject: [untyped_item, empty_string, unserializable_mapping, lossy_field_drop]}
+  - {id: PRVE-002, from: history_validation_projection, to: phase_history_schema, producer: phase_retention_projector, consumer: phase_history_validator, required: [nonempty_string_inventory, exact_order, complete_structured_payload], identity_binding: [phase_id, projected_validation_digest, truth_report_digest], earliest_rejection: cleanup_validation_before_mutation, reject: [raw_mapping_leak, partial_projection, reordered_item, schema_drift]}
+  - {id: PRVE-003, from: validated_phase_history_entry, to: retention_mutation, producer: cleanup_validator, consumer: cleanup_transaction, required: [schema_valid_entry, authenticated_truth_snapshot, exact_artifact_inventory], identity_binding: [phase_id, retention_ref, truth_report_digest, artifact_digests], earliest_rejection: before_first_write_move_or_delete, reject: [history_write_without_validation, artifact_removal_before_history, wrong_subject, incomplete_artifact_set]}
+  exclusions:
+  - {id: PRVX-001, reason: phase_history_compaction_cannot_confer_evidence_truth_certification_or_successor_authority}
+  - {id: PRVX-002, reason: caller_authored_history_repair_cannot_replace_the_canonical_projection}
 adopter_source_transaction:
   normative: false
   status: rejected_provider_coupled_design

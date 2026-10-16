@@ -2348,6 +2348,39 @@ closed. A packaged adopter runtime without that policy or document returns the
 closed typed result `not_applicable_to_adopter`; it does not acquire or invent
 BCF release-train authorship.
 
+### Phase-retention validation projection state machine
+
+Phase closeout accepts both legacy command strings and governed structured
+execution observations, but `plans/phase-history.yml` intentionally retains one
+compact string inventory. The cleanup owner therefore projects each accepted
+item before any repository mutation: a non-empty string is preserved byte for
+byte; a supported mapping becomes canonical lossless JSON with sorted keys and
+compact separators. Empty, unsupported, or unserializable values reject while
+the repository is still byte-identical. The complete projected entry must then
+pass the phase-history schema and exact truth/artifact bindings before cleanup
+may write history, move a file, or remove a file.
+
+```text
+invariant
+  every accepted phase-log evidence shape has one deterministic history form,
+  and retention cannot mutate until the complete history consumer accepts it
+    -> primitive
+       PhaseHistoryValidationProjection(phase, log digest, ordered item bytes,
+       canonical string, truth digest)
+      -> contract
+         validated phase log -> lossless ordered projection -> phase-history
+         schema -> exact truth/artifact binding -> atomic retention mutation
+        -> producer
+           phase-log schema and phase-retention projector
+          -> consumers
+             phase-history validator, cleanup transaction, later lifecycle
+             catalog and human audit
+```
+
+Retention remains historical observation only. It cannot create evidence,
+certification, successor eligibility, or release authority, and a caller may
+not repair the generated history entry by hand.
+
 Issue 346 applies as a construction constraint, not another phase or command.
 An extraction is permitted only for a measured ownership, dependency, or LOC
 violation; characterization precedes it; one governed change extracts at most
