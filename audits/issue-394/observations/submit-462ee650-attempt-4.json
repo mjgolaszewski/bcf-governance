@@ -1,0 +1,176 @@
+{
+  "authority": false,
+  "command": [
+    "bcf",
+    "ci",
+    "submit",
+    "--repo-root",
+    "."
+  ],
+  "subject_before": {
+    "commit_sha": "462ee650c9dba599a65880fa140b4acc8f9ce831",
+    "tree_sha": "8590e9b69529b4c62d2a43205caf67c15a17166e"
+  },
+  "subject_after": {
+    "commit_sha": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+    "tree_sha": "9f32f536cc8451cea0f1b116716161e7e50e9005"
+  },
+  "started_at": "2026-10-16T10:53:30.231236+00:00",
+  "ended_at": "2026-10-16T11:19:25.605420+00:00",
+  "elapsed_ms": 1555374,
+  "returncode": 1,
+  "progress": [
+    {
+      "authority": false,
+      "execution_id": "submission:462ee650c9dba599a65880fa140b4acc8f9ce831",
+      "kind": "submission_progress",
+      "monotonic_ms": 0,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "normalization",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:462ee650c9dba599a65880fa140b4acc8f9ce831",
+      "kind": "submission_progress",
+      "monotonic_ms": 841058,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "normalization",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:462ee650c9dba599a65880fa140b4acc8f9ce831",
+      "kind": "submission_progress",
+      "monotonic_ms": 843495,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "submission_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:462ee650c9dba599a65880fa140b4acc8f9ce831",
+      "kind": "submission_progress",
+      "monotonic_ms": 844580,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "submission_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 4,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "fixed_point",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 5514,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "fixed_point",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 5580,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "exposure",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6045,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "exposure",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6045,
+      "schema_version": "1.0",
+      "sequence": 5,
+      "stage": "negative_controls",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 28757,
+      "schema_version": "1.0",
+      "sequence": 6,
+      "stage": "negative_controls",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 28758,
+      "schema_version": "1.0",
+      "sequence": 7,
+      "stage": "provider_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 506415,
+      "schema_version": "1.0",
+      "sequence": 8,
+      "stage": "provider_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 506416,
+      "schema_version": "1.0",
+      "sequence": 9,
+      "stage": "preflight",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "97c1e986d7b2880381d75522d6cff3119aa1272c",
+      "kind": "prospective_progress",
+      "monotonic_ms": 702578,
+      "schema_version": "1.0",
+      "sequence": 10,
+      "stage": "preflight",
+      "state": "failed"
+    }
+  ],
+  "limits": [
+    "Command window includes reconciliation and external waits; CPU is unmeasured.",
+    "Credential lookup and initial Git checks precede measured command launch.",
+    "Unmatched single execution; no percentile or improvement certification."
+  ],
+  "capture_sha256": "0c84f51f597c2b9d6c97750056357184aaf0e4f42bbf088a39b462c6d9fc35bb",
+  "failure": {
+    "stage": "preflight",
+    "owner": "bcf_governance/tooling/preflight.py::_semantic_ownership",
+    "diagnostic": "downstream_normalization:bcf_governance/tooling/candidate_provider_recovery.py::execute_candidate_provider_recovery",
+    "disposition": "Trace actual semantic normalization contract and move same static query before provider authentication; preserve rule."
+  }
+}
