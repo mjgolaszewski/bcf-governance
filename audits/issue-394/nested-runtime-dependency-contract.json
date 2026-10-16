@@ -7,10 +7,12 @@
     "tests/test_release_adopter_qualification.py"
   ],
   "contract": [
-    "Derive dependency roots from actual distributions visible to the admitted invoking runtime as well as its existing purelib/platlib roots.",
+    "Derive the complete active dependency closure from exact candidate wheel METADATA and actual installed distribution origins, alongside existing purelib/platlib roots; include the packaging dependency used by the existing probe.",
     "Flatten observed roots as paths; do not execute or recursively copy path-hook code. Preserve exact wheel precedence and existing child origin/version/dependency verification.",
     "Resolve, validate and deterministically sort roots before allocating a fresh controller; reject unavailable/unsafe roots with the existing typed error.",
-    "Nested projections must retain dependencies physically installed outside the immediate parent prefix. No manual pip repair, extra dependency installation, provider mutation or weakened probe."
+    "Nested projections must retain dependencies physically installed outside the immediate parent prefix. No manual pip repair, extra dependency installation, provider mutation or weakened probe.",
+    "Do not project unrelated editable/project distributions or guess roots from sys.path; validate wheel identity and dependency versions/markers/extras before allocation.",
+    "Missing, contradictory, ambiguous wheel metadata and unverifiable direct-URL dependencies fail closed without provisioning or extra installation."
   ],
   "cause": "Canonical7f82a29f qualification omitted packaging because sysconfig did not include its actual admitted distribution origin.",
   "verification": [
