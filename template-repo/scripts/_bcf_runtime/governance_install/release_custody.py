@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import re
 import subprocess
@@ -29,6 +29,7 @@ from .runtime_custody import (
     RUNTIME_LOCK_PATH,
     RuntimeCustodyError,
     RuntimeCustodyFailure,
+    RuntimeCustodySnapshot,
     RuntimeCustodyState,
     inspect_runtime_custody,
 )
@@ -159,10 +160,30 @@ class UpgradeReleaseCustody:
     release: ReleaseCustody | None
     preserved: dict[str, str]
     candidate: dict[str, Any] | None = None
+    retirements: dict[str, str] = field(default_factory=dict)
 
     @property
     def excluded_paths(self) -> frozenset[str]:
         return frozenset(self.preserved)
+
+    @property
+    def managed_retirement_paths(self) -> tuple[str, ...]:
+        return tuple(sorted(self.retirements))
+
+    def retire(self, target_root: Path) -> None:
+        """Remove only the exact path/digest identities admitted before mutation."""
+
+        for relative, expected in sorted(self.retirements.items()):
+            path = target_root / relative
+            if not path.is_file() or path.is_symlink():
+                raise ReleaseCustodyError(
+                    f"admitted runtime retirement changed before mutation: {relative}"
+                )
+            if _sha256_bytes(path.read_bytes()) != expected:
+                raise ReleaseCustodyError(
+                    f"admitted runtime retirement digest changed before mutation: {relative}"
+                )
+            path.unlink()
 
     def project(
         self,
@@ -516,6 +537,67 @@ def release_custody_requested(assets: Path | None) -> bool:
     return assets is not None
 
 
+def _plan_runtime_retirements(
+    target_root: Path,
+    *,
+    snapshot: RuntimeCustodySnapshot,
+    active_paths: frozenset[str],
+    retired_files: dict[str, tuple[str, ...]],
+    upgrade: bool,
+) -> dict[str, str]:
+    """Admit only exact successor-declared historical bytes for retirement."""
+
+    runtime_owned = snapshot.runtime_owned
+    preserved = snapshot.consumer_preserved
+
+    def declared_retirement(relative: str, observed: str) -> bool:
+        allowed = retired_files.get(relative, ())
+        if observed in allowed:
+            return True
+        adaptation = snapshot.installer_adaptations.get(relative)
+        return bool(
+            adaptation
+            and adaptation[0] in allowed
+            and adaptation[1] == observed
+            and runtime_owned.get(relative) == observed
+        )
+
+    for relative, expected in sorted(runtime_owned.items()):
+        if relative in active_paths or relative in preserved:
+            continue
+        if not declared_retirement(relative, expected):
+            raise ReleaseCustodyError(
+                f"successor pack does not retire predecessor runtime path: {relative}"
+            )
+
+    planned: dict[str, str] = {}
+    for relative in sorted(retired_files):
+        if relative in active_paths:
+            raise ReleaseCustodyError(
+                f"successor pack path is both active and retired: {relative}"
+            )
+        if relative in preserved:
+            continue
+        path = target_root / relative
+        if not path.exists() and not path.is_symlink():
+            continue
+        if not upgrade:
+            raise ReleaseCustodyError(
+                f"fresh install destination contains retired BCF runtime: {relative}"
+            )
+        if not path.is_file() or path.is_symlink():
+            raise ReleaseCustodyError(
+                f"retired BCF runtime path is not one regular file: {relative}"
+            )
+        observed = _sha256_bytes(path.read_bytes())
+        if not declared_retirement(relative, observed):
+            raise ReleaseCustodyError(
+                f"retired BCF runtime has unexplained bytes: {relative}"
+            )
+        planned[relative] = observed
+    return planned
+
+
 def prepare_upgrade_release_custody(
     target_root: Path,
     release_assets: Path | None,
@@ -525,6 +607,9 @@ def prepare_upgrade_release_custody(
     *,
     force_rescaffold: bool = False,
     candidate_qualification_source: Path | None = None,
+    manifest_entries: dict[str, dict[str, Any]] | None = None,
+    retired_files: dict[str, tuple[str, ...]] | None = None,
+    upgrade_paths: tuple[str, ...] = (),
 ) -> UpgradeReleaseCustody:
     """Fail before mutation unless an upgrade can advance existing custody."""
 
@@ -560,6 +645,19 @@ def prepare_upgrade_release_custody(
         raise RuntimeError(decision.disposition.value)
     if force_rescaffold:
         return UpgradeReleaseCustody(None, {})
+    retirements = (
+        _plan_runtime_retirements(
+            target_root,
+            snapshot=snapshot,
+            active_paths=selected_runtime_inventory_paths(
+                manifest_entries, upgrade_paths
+            ),
+            retired_files=retired_files,
+            upgrade=upgrade,
+        )
+        if manifest_entries is not None and retired_files is not None
+        else {}
+    )
     if candidate_qualification_source is not None:
         identity = _candidate_qualification_identity(
             candidate_qualification_source, target_root, template_root
@@ -567,9 +665,13 @@ def prepare_upgrade_release_custody(
         identity["predecessor_runtime_lock_sha256"] = _sha256_bytes(
             snapshot.lock_bytes or b""
         )
-        return UpgradeReleaseCustody(None, snapshot.consumer_preserved, identity)
+        return UpgradeReleaseCustody(
+            None, snapshot.consumer_preserved, identity, retirements
+        )
     if release_assets is None:
-        return UpgradeReleaseCustody(None, snapshot.consumer_preserved)
+        return UpgradeReleaseCustody(
+            None, snapshot.consumer_preserved, retirements=retirements
+        )
     release = prepare_release_custody(
         release_assets,
         installed_version=executing_runtime_version(),
@@ -577,7 +679,9 @@ def prepare_upgrade_release_custody(
         token=os.environ.get("GITHUB_TOKEN", ""),
         api=api,
     )
-    return UpgradeReleaseCustody(release, snapshot.consumer_preserved)
+    return UpgradeReleaseCustody(
+        release, snapshot.consumer_preserved, retirements=retirements
+    )
 
 
 def project_upgrade_runtime_lock(

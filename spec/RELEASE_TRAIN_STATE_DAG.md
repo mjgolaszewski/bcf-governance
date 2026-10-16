@@ -972,6 +972,11 @@ the missing derivation is a product defect and execution stops at that owner.
 | bound PR pending | exact provider repository/PR/base/head/merge relationship, required checks and protection contract | observe the same immutable subject until a typed terminal edge exists | pending with no mutation authority | merge attempt, evidence relabel, check substitution, unrelated rerun |
 | bound PR certified and mergeable | exact provider PR/base/head/tree, authenticated certification, protection and allowed merge methods | derive and execute the sole legal protected merge operation | exact merged commit/tree and exact-main successor | caller-selected merge method, destructive ancestry, stale certification, bypass actor or missing required context |
 | prospectively proved PR with native auto-merge | exact provider repository/PR node/base/head/tree, canonical protection digest, repository auto-merge capability and merge-commit method | idempotently enable the provider setting when absent and bind `MERGE` auto-merge to the exact PR node | provider waits for the ordinary protected certification and performs one normal merge commit | manual merge timing, squash/rebase choice, bypass, moved head/base, duplicate PR, token retained after request |
+| native auto-merge response is successful | closed GraphQL object with exact non-null data, no errors, exact PR node/number and `MERGE` request | authenticate the complete response before consuming it | typed `enabled` result bound to the exact PR | interpreting partial data, mixed data/errors, a different PR, or another merge method as success |
+| native auto-merge response has null/partial data or any GraphQL error | complete provider response plus the exact operation idempotency key and immutable PR identity | classify a typed provider rejection and reread the same exact PR before any retry or alternate action | committed, same-pending, certified-clean, moved/conflicting, or fail-closed unknown state | language-level null dereference, omitted error inventory, blind replay, error-text-selected authority, or success inferred from HTTP 200 |
+| exact PR remains pending and provider still permits auto-merge after an unknown result | same repository/PR/base/head/tree, same operation key, absent auto-merge request, incomplete required checks | retry the identical auto-merge mutation at most once | native pending auto-merge or typed terminal rejection | new operation identity, changed merge method, unbounded retry, or candidate-selected continuation |
+| exact PR is already certified clean before native auto-merge can be enabled | exact repository/PR/base/head/tree, authenticated required certification, provider `CLEAN` mergeability proving no protected condition remains unmet, and allowed merge-commit method | derive the existing `certified_mergeable` frontier and request one exact normal merge commit with only exact head SHA and `merge` method; independently reread the merged PR and bind the resulting merge commit | exact merged subject enters exact-main; no bypass, override, or candidate authority is introduced | retrying an impossible auto-merge request, administrator override, any unmet protected condition, stale certification, squash/rebase, moved subject, or treating clean as generic inapplicable |
+| normal protected merge result is null, partial, conflicting, or uncertain | exact mutation identity, pre-state and authenticated post-mutation PR reread | classify committed/not-committed/conflict without relabeling evidence; retry only an exact idempotent not-committed edge allowed by the frontier | exact merged result or typed noncertifying stop | trusting response prose, reporting submission success before reread, merging a different head, or bypassing protection |
 | certified predecessor with direct successor active | ordered workitem dependency, predecessor `DONE` plus authenticated bounded certification, direct successor `IN_PROGRESS` or `BLOCKED` | select PR-progress for the active successor; preserve predecessor custody without recertifying it | successor candidate remains nonterminal until it is authored `DONE` | repeatedly targeting predecessor, treating unrelated active work as the successor, or inferring parent-phase closure |
 | authored bounded-workitem closeout | direct successor changes from `IN_PROGRESS` to `DONE`, every predecessor is `DONE`, phase remains active, and the successor after the target remains unopened | derive `workitem:<exact-id>` from the canonical lifecycle and mechanically project that scope through graph, workflows, authority, truth, finalizer and publisher | authenticated bounded closure may make only the direct successor eligible; phase and release authority remain absent | stale PR-progress graph, operator-selected target, skipped predecessor, phase closure, unrelated successor eligibility, bounded status published as exact-main or release certification |
 | bound PR base advanced | exact provider base/head/merge base, candidate tree, certification subject and changed dependency closure | derive reconstruction/rebase or a typed superseded result; invalidate only subject- or base-bound proof | new exact candidate requiring the affected proof frontier | blind update-branch, stale proof reuse, ancestry destruction, ambiguous merge relationship |
@@ -991,6 +996,48 @@ the missing derivation is a product defect and execution stops at that owner.
 | adopter qualification | exact candidate or immutable release bytes, adopter profile and repository identity | treat the BCF self-release matrix guard as typed not-applicable, then perform non-destructive install/upgrade and canonical proof | attributed compatibility observation only | self repository missing its matrix, cross-repository mutation, different bytes, adopter report treated as BCF authority |
 | release-bound adopter candidate qualification | exact clean candidate commit/tree and pack digest, exact clean adopter commit/tree, predecessor immutable runtime-lock digest | canonical installer selects the typed non-authoritative qualification operation, projects exact candidate runtime custody, then runs the ordinary adopter proof path | attributed prepublication observation only; release and publication authority remain absent | ordinary local upgrade, release-custody claim, missing or dirty identity, mixed candidate bytes, unexplained lock removal, qualification marker committed as release custody |
 | adopter install transaction promotes generated graph | validated adopter graph plus exact current and retired generated workflow inventory | transaction allowlist derives from the graph renderer owner; final graph parity is checked inside rollback custody | promoted target equals the validated shadow | hand-maintained workflow paths, shadow-only success, partial promotion, unrelated workflow mutation |
+
+### Protected-merge provider-result state machine
+
+```text
+EXACT_PROSPECTIVELY_PROVED_PR
+  -> READ_EXACT_PR_AND_PROTECTION
+     -> PENDING_REQUIREMENTS + AUTO_MERGE_ENABLEABLE
+        -> ENABLE_NATIVE_AUTO_MERGE
+           -> CLOSED_GRAPHQL_SUCCESS -> AUTHENTICATE_EXACT_REQUEST -> PENDING_PROVIDER_MERGE
+           -> NULL/PARTIAL/ERROR/TRANSPORT_UNKNOWN
+              -> REREAD_SAME_EXACT_PR
+                 -> AUTO_MERGE_BOUND -> COMMITTED_REQUEST
+                 -> SAME_PENDING_ENABLEABLE -> ONE_IDENTICAL_RETRY
+                 -> CERTIFIED_CLEAN + NO_UNMET_PROTECTED_CONDITION -> ONE_EXACT_NORMAL_MERGE
+                 -> MOVED/CONFLICTING/AMBIGUOUS -> STOP_NONCERTIFYING
+     -> AUTO_MERGE_ALREADY_BOUND_TO_MERGE -> IDEMPOTENT_PENDING_PROVIDER_MERGE
+     -> CERTIFIED_CLEAN + NO_UNMET_PROTECTED_CONDITION
+        -> ONE_EXACT_NORMAL_MERGE
+           -> REREAD_MERGED_PR_AND_MERGE_COMMIT -> EXACT_MAIN
+           -> UNKNOWN -> REREAD_BEFORE_ANY_RETRY
+     -> MISSING_CERTIFICATION / WRONG SUBJECT / NONEMPTY_OR_REDACTED_BYPASS
+        -> STOP_NONCERTIFYING
+```
+
+The GraphQL transport boundary is not the semantic result boundary. HTTP 200,
+`data: null`, partial data, mixed data and errors, malformed errors, and exact
+success data are distinct closed inputs. The canonical result classifier owns
+that distinction before downstream code may dereference a field or choose an
+action. Provider error prose never grants authority. Only authenticated current
+PR state selects one continuation. A PR that became `CLEAN` before native
+auto-merge could be enabled is not retried as if requirements were pending: the
+existing `certified_mergeable` frontier may select one normal merge-commit
+request only after exact required certification, provider-clean protection
+satisfaction, allowed merge method, and immutable subject are reauthenticated;
+the mutation contains no bypass or override input. The merge result is
+then reread and bound to exact-main. Any missing, redacted, moved, conflicting,
+or unclassified state stops without merge or retry.
+
+The complete producer/consumer edges are machine-readable in
+`protected_merge_provider_result_contract` in
+`spec/phase0/release-train-backtrace.yml`; prose does not define an additional
+lane.
 
 ### P30 workitem DAG
 
@@ -1866,6 +1913,39 @@ no plan may delete an object reachable from a protected retention root.
 | Retry-capable evidence shard can resolve prior-attempt provider proofs | exact gate-shard executor, capture component, provider API operation and job permission map | derive the component's least read capability (`actions:read`) into every reachable producer job during install/upgrade/reconcile; validate the component-to-job permission edge before rendering or evidence allocation | first attempts remain ordinary execution and later attempts may authenticate exact prior artifacts without acquiring write authority | token presence without provider permission, preserving a legacy `contents:read`-only producer, granting write authority, or discovering HTTP 403 after fan-out |
 | Retry-capable evidence shard lacks its declared provider read capability | same exact graph edge with absent, `none`, malformed or conflicting permission | reject graph compilation/upgrade before workflow projection; a known legacy canonical edge may be migrated only by the canonical upgrade/reconcile owner | typed deterministic permission-contract failure with no provider execution | runtime best effort, silently disabling reuse, agent-authored workflow permission, repository-specific exception, or treating denial as semantic evidence failure |
 | Existing adopter upgrade needs its generated-workflow transaction closure while successor validation adds a migratable graph requirement | exact preserved graph/extensions/workflows, successor runtime/schema, and the closed canonical migration set | project migrations into an isolated transaction-planning shadow, validate the successor graph there, and derive current plus retired generated paths from that same projected state before opening the real atomic transaction | complete destination closure followed by one atomic upgrade; maintained adopter bytes remain untouched until successor validation passes | validating N state directly with N+1 before migration, weakening the successor validator, omitting generated paths, mutating the maintained checkout during planning, or an agent ordering migration manually |
+| Existing adopter contains a runtime path retired from the successor pack | authenticated successor pack manifest, active successor inventory, mechanically derived historical path/digest retirements, exact installed custody, observed nonsymlink path bytes, and complete transaction destination closure | before mutation derive one closed retirement plan; remove only absent or exact declared historical bytes inside the atomic install shadow; validate that no retired residue survives and that active and consumer-preserved inventories remain exact before promotion | successor runtime lock and installed tree agree exactly; legacy pack residue is absent without granting generic pruning authority | treating lock omission, directory membership, filename, wildcard, or caller instruction as ownership; deleting unknown drift or consumer bytes; discovering the orphan during expensive adopter proof; or promoting a shadow-only deletion |
+
+### Adopter runtime retirement state machine
+
+The pack manifest is the sole successor owner of both active runtime files and
+content-addressed retirements. Its generator derives retirements from prior
+pack-manifest history; neither an agent nor an adopter authors tombstones. A
+retirement binds one safe repository-relative path to every authenticated
+historical digest that BCF previously installed at that path. Active and
+retired paths are disjoint.
+
+| Installed state | Mechanical decision | Result | Rejected alternative |
+| --- | --- | --- | --- |
+| Retired path absent | no-op | idempotent upgrade | manufacturing a file or requiring cleanup |
+| Retired path is a regular file with a declared historical digest | include its exact path/digest in the atomic transaction plan | remove in shadow, promote only after strict successor validation | generic prune, manual deletion, or path-only ownership |
+| Retired path has an unknown digest | reject before shadow mutation and proof allocation | adopter bytes preserved for explicit diagnosis | deleting drift because the name once belonged to BCF |
+| Retired path is a symlink, directory, or traverses an unsafe component | reject before mutation | no filesystem traversal or ambiguous ownership | following links or recursive removal |
+| Path remains active in the successor inventory | active entry wins; retirement overlap is a malformed manifest | normal copy/preserve/generate semantics | delete-then-copy ambiguity |
+| Path is authenticated consumer-preserved custody | preserve it and reject a conflicting retirement | consumer ownership remains exact | BCF reclaiming adopter-owned bytes |
+| Predecessor runtime lock owns a path absent from the successor | require the successor retirement inventory to contain that exact path/digest | exact atomic retirement | interpreting lock omission as deletion authority |
+| Predecessor lock owns installer-adapted bytes whose released digest is retired | authenticate that the adaptation path is runtime-owned, its installed digest equals the owned and observed bytes, and its released digest is in the successor retirement inventory | exact atomic retirement while preserving the released-to-installed custody chain | deleting transformed bytes from path history alone, accepting an orphan adaptation, or trusting an installed digest that differs from the owned file |
+| Promotion or final validation fails | restore every exact pre-transaction byte | no partial install or deletion | shadow-only success or incomplete rollback |
+| Fresh install has no retired residue | no retirement action | normal fresh install | scanning unrelated files |
+| Fresh-install destination already contains retired residue | reject destination conflict | no implicit upgrade or cleanup | silently converting fresh install into mutation authority |
+
+The complete edge chain is `historical pack manifests → successor retirement
+inventory → authenticated upgrade plan → atomic installer shadow → successor
+runtime lock → strict provenance validation → adopter proof`. Every edge binds
+the successor manifest digest; upgrade edges additionally bind predecessor lock
+digest, observed path digest, and transaction identity. Candidate qualification
+and immutable release upgrade consume the same plan. Local upgrades may use the
+same exact pack contract but confer no release custody. Qualification reports
+remain observations and never authorize deletion.
 | A successor graph migration emits a field absent from the adopter's installed schema | exact candidate pack manifest, complete successor schema directory, legacy graph and closed graph migrations | project the candidate-owned schema set into the same isolated planning shadow before applying graph migrations or invoking successor validation; the real atomic upgrade preserves the identical schema-before-graph order | one schema/graph-compatible successor state used for destination closure and final promotion | validating migrated graph bytes with the legacy schema, copying one schema ad hoc, weakening either schema, or discovering ordering only during adopter qualification |
 | Reused and fresh splinter results reach aggregate fan-in | immutable partition plus one current execution accounting entry for every splinter | require exact union, zero overlap, successful result, clean owned-state retirement and byte-valid JUnit for every entry before emitting the ordinary gate receipt | unchanged aggregate claim proposition and ordinary truth path | partial aggregate truth, duplicated nodes, missing cleanup observation, or a splinter proof emitted as a claim receipt |
 | Splinter proof bytes cross execution-worktree into receipt capture | exact repository root, governed report path and proof/JUnit members projected as repository-relative paths | resolve every declared member beneath the executing repository, reject escape or absence, then copy exact bytes into the existing shard receipt artifact | one path-stable proof inventory consumable by local and provider capture | cwd-relative shorthand, host-absolute path, missing artifact, or accepting a successful command without a capturable proof |
@@ -2314,6 +2394,67 @@ the self-governance policy makes the matrix mandatory and deletion fails
 closed. A packaged adopter runtime without that policy or document returns the
 closed typed result `not_applicable_to_adopter`; it does not acquire or invent
 BCF release-train authorship.
+
+### Phase-retention validation projection state machine
+
+Phase closeout accepts both legacy command strings and governed structured
+execution observations, but `plans/phase-history.yml` intentionally retains one
+compact string inventory. The cleanup owner therefore projects each accepted
+item before any repository mutation: a non-empty string is preserved byte for
+byte; a supported mapping becomes canonical lossless JSON with sorted keys and
+compact separators. Empty, unsupported, or unserializable values reject while
+the repository is still byte-identical. The complete projected entry must then
+pass the phase-history schema and exact truth/artifact bindings before cleanup
+may write history, move a file, or remove a file.
+
+```text
+invariant
+  every accepted phase-log evidence shape has one deterministic history form,
+  and retention cannot mutate until the complete history consumer accepts it
+    -> primitive
+       PhaseHistoryValidationProjection(phase, log digest, ordered item bytes,
+       canonical string, truth digest)
+      -> contract
+         validated phase log -> lossless ordered projection -> phase-history
+         schema -> exact truth/artifact binding -> atomic retention mutation
+        -> producer
+           phase-log schema and phase-retention projector
+          -> consumers
+             phase-history validator, cleanup transaction, later lifecycle
+             catalog and human audit
+```
+
+Retention remains historical observation only. It cannot create evidence,
+certification, successor eligibility, or release authority, and a caller may
+not repair the generated history entry by hand.
+
+### Cause-specific negative-control fixture reachability
+
+A negative control proves its declared detector only when its baseline satisfies
+every earlier closed schema and identity contract. The fixture then applies one
+named mutation and must reach the earliest authoritative consumer that owns the
+intended rejection. An unrelated earlier failure is typed oracle drift, not a
+passing control, and may not be repaired by renaming the expected diagnostic or
+weakening production validation.
+
+```text
+invariant
+  every declared mutation reaches and is killed by its named production detector
+    -> primitive
+       CauseSpecificNegativeControl(schema version, valid baseline digest,
+       mutation identity, production owner, intended rejection class)
+      -> contract
+         current closed schema -> schema-valid baseline -> one exact mutation ->
+         earliest production consumer -> cause-specific rejection before cost
+        -> producer
+           canonical fixture builder and focused mutation control
+          -> consumers
+             production preflight, evidence-allocation sentinel, mutation registry
+```
+
+Malformed, obsolete, multiply mutated, or caller-relabelled fixtures are
+structurally excluded. Their rejection cannot stand in for the security or
+freshness proposition named by the control.
 
 Issue 346 applies as a construction constraint, not another phase or command.
 An extraction is permitted only for a measured ownership, dependency, or LOC

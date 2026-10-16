@@ -238,12 +238,43 @@ def _request_protected_auto_merge(
             authority.repository,
             pull_request["number"],
             node_id=str(pull_request["node_id"]),
+            expected_base_sha=identity.base_sha,
             expected_head_sha=identity.commit_sha,
         )
     except ValueError as exc:
         raise ProspectiveValidationError(
             "provider did not bind exact protected auto-merge"
         ) from exc
+    if result.get("status") == "certified_clean":
+        frontier = protected_merge_frontier(
+            identity={
+                "repository": authority.repository,
+                "repository_id": str(pull_request["repository_id"]),
+                "pull_request": str(pull_request["number"]),
+                "base_sha": identity.base_sha,
+                "head_sha": identity.commit_sha,
+                "tree_sha": identity.tree_sha,
+                "protection_sha256": authority.protection_sha256,
+            },
+            state="certified_mergeable",
+            certification_identity=f"prospective:{prospective_frontier_sha256}",
+        )
+        if frontier["action"]["kind"] != "merge_commit":
+            raise ProspectiveValidationError(
+                "certified candidate frontier did not select a normal merge commit"
+            )
+        try:
+            result = provider_api.merge_clean_pull_request(
+                authority.repository,
+                pull_request["number"],
+                node_id=str(pull_request["node_id"]),
+                expected_base_sha=identity.base_sha,
+                expected_head_sha=identity.commit_sha,
+            )
+        except ValueError as exc:
+            raise ProspectiveValidationError(
+                "provider did not bind exact normal protected merge"
+            ) from exc
     return result, frontier
 
 
@@ -361,7 +392,11 @@ def submit_candidate(
     )
     return {
         "status": (
-            "provider_retry_submitted" if provider_retry_submitted else "submitted"
+            "provider_retry_submitted"
+            if provider_retry_submitted
+            else "merged"
+            if str(auto_merge.get("status", "")).startswith("merged")
+            else "submitted"
         ),
         "subject": identity.as_dict(),
         "repository": authority.repository,

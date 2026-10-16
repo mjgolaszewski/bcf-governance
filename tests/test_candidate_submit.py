@@ -384,12 +384,14 @@ def test_direct_main_auto_merge_consumes_precompiled_authority_without_self_file
             number: int,
             *,
             node_id: str,
+            expected_base_sha: str,
             expected_head_sha: str,
         ) -> dict[str, object]:
             assert repository == authority.repository
-            assert (number, node_id, expected_head_sha) == (
+            assert (number, node_id, expected_base_sha, expected_head_sha) == (
                 7,
                 "PR_exact7",
+                identity.base_sha,
                 identity.commit_sha,
             )
             return {"status": "enabled"}
@@ -409,6 +411,54 @@ def test_direct_main_auto_merge_consumes_precompiled_authority_without_self_file
     assert result == {"status": "enabled"}
     assert frontier["identity"]["protection_sha256"] == "9" * 64
     assert not (tmp_path / "governance/github-protection.yml").exists()
+
+
+def test_provider_clean_pr_selects_certified_mergeable_frontier_before_merge() -> None:
+    identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
+    authority = submit.SubmissionAuthority(
+        mode="workitem",
+        target="P07-P0-03",
+        lane="direct_protected_main",
+        repository="owner/adopter",
+        repository_id=17,
+        protection_sha256="9" * 64,
+    )
+    calls: list[str] = []
+
+    class Provider:
+        def enable_pull_request_auto_merge(self, *_args, **kwargs):
+            assert kwargs["expected_base_sha"] == identity.base_sha
+            assert kwargs["expected_head_sha"] == identity.commit_sha
+            calls.append("classify")
+            return {"status": "certified_clean", "pull_request": 7}
+
+        def merge_clean_pull_request(self, *_args, **kwargs):
+            assert calls == ["classify"]
+            assert kwargs["expected_base_sha"] == identity.base_sha
+            assert kwargs["expected_head_sha"] == identity.commit_sha
+            calls.append("merge")
+            return {
+                "status": "merged",
+                "pull_request": 7,
+                "merge_commit_sha": "4" * 40,
+            }
+
+    result, frontier = submit._request_protected_auto_merge(
+        provider_api=Provider(),  # type: ignore[arg-type]
+        authority=authority,
+        identity=identity,
+        pull_request={
+            "number": 7,
+            "node_id": "PR_exact7",
+            "repository_id": 17,
+        },
+        prospective_frontier_sha256="8" * 64,
+    )
+
+    assert result["status"] == "merged"
+    assert calls == ["classify", "merge"]
+    assert frontier["state"] == "certified_mergeable"
+    assert frontier["action"]["kind"] == "merge_commit"
 
 
 def test_direct_main_submit_rejects_remote_provider_disagreement(

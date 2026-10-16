@@ -3,9 +3,7 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import importlib.resources
-import json
 import os
 import re
 import shutil
@@ -24,6 +22,7 @@ from .governance_install.existing_adoption import compile_existing_adoption_inve
 from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.phase import generate_phase_artifacts  # noqa: E402
 from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
+from .governance_install.pack_manifest import PackManifest, load_pack_manifest  # noqa: E402
 from .local_cli_receipt import project_local_cli_receipt, resolve_local_cli  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
@@ -230,66 +229,18 @@ def _reject_symlink_destination(target_root: Path, relative_path: Path) -> None:
             raise ValueError(f"refusing to install through symlink: {relative_path}")
 
 
-def _pack_manifest_entries(template_root: Path) -> dict[str, dict[str, Any]]:
-    manifest_path = template_root / ".bcf-pack-manifest.json"
-    if not manifest_path.is_file() or manifest_path.is_symlink():
-        raise ValueError("template pack is missing .bcf-pack-manifest.json")
-    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
-        result: dict[str, Any] = {}
-        for key, value in pairs:
-            if key in result:
-                raise ValueError(f"pack manifest duplicates destination {key}")
-            result[key] = value
-        return result
-
-    payload = json.loads(
-        manifest_path.read_text(encoding="utf-8"), object_pairs_hook=unique_object
+def _pack_manifest(template_root: Path) -> PackManifest:
+    return load_pack_manifest(
+        template_root,
+        iter_template_files=_iter_template_files,
+        profile_choices=PROFILE_CHOICES,
     )
-    raw_files = payload.get("files") if isinstance(payload, dict) else None
-    if not isinstance(raw_files, dict) or not raw_files:
-        raise ValueError("pack manifest must declare a non-empty files mapping")
-    entries: dict[str, dict[str, Any]] = {}
-    for raw_path, raw_entry in raw_files.items():
-        relative = Path(str(raw_path))
-        _validate_relative_path(relative)
-        if not isinstance(raw_entry, dict):
-            raise ValueError(f"pack manifest entry for {raw_path} must be a mapping")
-        digest = raw_entry.get("sha256")
-        if not isinstance(digest, str) or not re.fullmatch(r"[a-f0-9]{64}", digest):
-            raise ValueError(f"pack manifest has invalid digest for {raw_path}")
-        if raw_entry.get("operation") not in {"copy", "merge", "generate", "preserve"}:
-            raise ValueError(f"pack manifest has invalid operation for {raw_path}")
-        profiles = raw_entry.get("profiles")
-        if profiles is not None and (
-            not isinstance(profiles, list)
-            or not profiles
-            or not all(value in PROFILE_CHOICES for value in profiles)
-        ):
-            raise ValueError(f"pack manifest has invalid profiles for {raw_path}")
-        scope = raw_entry.get("installation_scope", "ordinary_adopter")
-        if scope not in {"ordinary_adopter", "self_authority"}:
-            raise ValueError(f"pack manifest has invalid installation scope for {raw_path}")
-        if relative.as_posix() in entries:
-            raise ValueError(f"pack manifest duplicates {raw_path}")
-        entries[relative.as_posix()] = raw_entry
-    actual = {
-        path.relative_to(template_root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-        for path in _iter_template_files(template_root)
-    }
-    expected_digests = {path: str(entry["sha256"]) for path, entry in entries.items()}
-    if actual != expected_digests:
-        missing = sorted(set(actual) - set(entries))
-        stale = sorted(set(entries) - set(actual))
-        mismatched = sorted(
-            path
-            for path in set(actual) & set(entries)
-            if actual[path] != expected_digests[path]
-        )
-        raise ValueError(
-            "pack manifest mismatch: "
-            f"missing={missing}, stale={stale}, digest_mismatch={mismatched}"
-        )
-    return entries
+
+
+def _pack_manifest_entries(template_root: Path) -> dict[str, dict[str, Any]]:
+    """Compatibility projection for existing callers of the active inventory."""
+
+    return _pack_manifest(template_root).files
 
 
 def _copy_template(
@@ -507,7 +458,8 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         raise RuntimeError("--upgrade cannot be combined with --force-rescaffold")
 
     template_root = _template_root()
-    entries = _pack_manifest_entries(template_root)
+    entries = args.pack_manifest.files
+    args.release_custody.retire(target_root)
     migrate_existing_adoption_contract(target_root)
     retired_self_authority = retire_self_authority_pack_surfaces(
         target_root=target_root,
@@ -701,6 +653,7 @@ def install(args: argparse.Namespace) -> InstallResult:
     if git_root.returncode != 0 or Path(git_root.stdout.strip()).resolve() != target_root:
         raise RuntimeError("installation target must be the root of an initialized Git repository")
     local_cli = resolve_local_cli(sys.executable)
+    args.pack_manifest = _pack_manifest(_template_root())
     args.release_custody = prepare_upgrade_release_custody(
         target_root,
         getattr(args, "release_assets", None),
@@ -709,6 +662,11 @@ def install(args: argparse.Namespace) -> InstallResult:
         force_rescaffold=getattr(args, "force_rescaffold", False),
         candidate_qualification_source=getattr(
             args, "candidate_qualification_source", None
+        ),
+        manifest_entries=args.pack_manifest.files,
+        retired_files=args.pack_manifest.retired_files,
+        upgrade_paths=UPGRADE_REFRESH_PATHS + (
+            UPGRADE_RESET_OPTION_PATHS if args.reset_options else ()
         ),
     )
     args.profile, contract_version = resolve_install_contract_version(
@@ -757,6 +715,9 @@ def install(args: argparse.Namespace) -> InstallResult:
         baseline=INSTALL_MANAGED_PATHS,
     )
     transaction_paths = extend_existing_adoption_paths(transaction_paths, args.existing_adoption_inventory)
+    transaction_paths = tuple(
+        dict.fromkeys(transaction_paths + args.release_custody.managed_retirement_paths)
+    )
 
     def mutate(shadow: Path) -> None:
         result_box.append(
