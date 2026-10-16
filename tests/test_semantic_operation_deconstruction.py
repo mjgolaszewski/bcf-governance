@@ -21,3 +21,14 @@ def test_legacy_operation_validator_alias_has_one_implementation():
     from bcf_governance.tooling import semantic_authority_operations
 
     assert contracts._validate_operations is semantic_authority_operations._validate_operations
+
+
+def test_extracted_validator_helpers_keep_resolved_source_owners():
+    from bcf_governance.tooling.semantic_ownership_inventory import resolve_python_imports
+
+    paths = [ROOT / 'bcf_governance/tooling/semantic_authority_contracts.py', ROOT / 'bcf_governance/tooling/semantic_authority_operations.py']
+    inventory = resolve_python_imports(ROOT, discover_python_source(ROOT, files=paths, call_contracts_version='1.0'))
+    function = next(row for row in inventory['functions'] if row['symbol'] == 'bcf_governance/tooling/semantic_authority_operations.py::_validate_operations')
+    targets = {call['called_symbol'] for call in function['calls']}
+    assert 'bcf_governance/tooling/semantic_authority_contracts.py::_schema' in targets
+    assert 'bcf_governance/tooling/semantic_authority_contracts.py::_discover_population' in targets

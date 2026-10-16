@@ -38,6 +38,7 @@ from .semantic_operation_effects import (
     validated_operation_effect_inventory,
 )
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping, load_unique_mapping_text
+from .semantic_authority_operations import _validate_operations
 
 
 FAMILIES_PATH = Path("governance/semantic-families.yml")
@@ -498,82 +499,6 @@ def _validate_operation_structure(
                 f"operation {operation['id']} references an unknown semantic family"
             )
     return population_ids
-
-
-def _validate_operations(
-    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any]
-) -> list[dict[str, Any]]:
-    _schema(repo_root, "application-operations.schema.json", payload)
-    populations = payload["populations"]
-    population_ids = _validate_operation_structure(payload)
-    discovered = {str(row["id"]): (
-        _discover_population(repo_root, row, inventory) if row["adapter"] == "typescript_exports"
-        else _discover_population(repo_root, row)
-    ) for row in populations}
-    classified: dict[tuple[str, str], str] = {}
-    functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
-    observations: list[dict[str, Any]] = []
-    for operation in payload["operations"]:
-        population_id = str(operation["population"])
-        key = str(operation["population_key"])
-        slot = (population_id, key)
-        if slot in classified:
-            raise SemanticAuthorityError(
-                f"public operation {population_id}:{key} is multiply classified by {classified[slot]} and {operation['id']}"
-            )
-        classified[slot] = str(operation["id"])
-        actual_symbol = discovered[population_id].get(key)
-        if actual_symbol is None:
-            raise SemanticAuthorityError(f"operation {operation['id']} is stale; {population_id}:{key} is not discovered")
-        if operation["entrypoints"] != [actual_symbol]:
-            raise SemanticAuthorityError(
-                f"operation {operation['id']} entrypoints must exactly match discovered {actual_symbol}"
-            )
-        kind = str(operation["semantic_kind"])
-        mutates = bool(operation["authoritative_mutation"])
-        confers = bool(operation["authority_conferral"])
-        if kind in READ_ONLY_KINDS and (mutates or confers):
-            raise SemanticAuthorityError(f"{kind} operation {operation['id']} cannot mutate or confer authority")
-        if kind == "projection" and not operation["produces_projection"]:
-            raise SemanticAuthorityError(f"projection operation {operation['id']} must construct a read model")
-        if kind not in MUTATING_KINDS and (operation["allowed_mutation_ports"] or operation["allowed_authority_ports"]):
-            raise SemanticAuthorityError(f"non-mutating operation {operation['id']} cannot declare mutation or authority ports")
-        if mutates and not operation["allowed_mutation_ports"]:
-            raise SemanticAuthorityError(f"mutating operation {operation['id']} requires a declared mutation port")
-        if confers and not operation["allowed_authority_ports"]:
-            raise SemanticAuthorityError(f"authority operation {operation['id']} requires a declared authority port")
-        if operation["model_callable"] and confers:
-            raise SemanticAuthorityError(f"model-callable operation {operation['id']} cannot confer authority")
-        function = _function_for_entrypoint(repo_root, actual_symbol, functions)
-        if function is None:
-            raise SemanticAuthorityError(
-                f"operation {operation['id']} entrypoint is absent from the shared source inventory"
-            )
-        try:
-            effect_ports = validated_operation_effect_inventory(
-                operation, str(function["symbol"]), inventory,
-                source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
-            )
-        except SemanticOperationEffectError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
-        observations.append({
-            "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
-            "write_effect_count": sum(role == "mutation" for role, _, _ in effect_ports),
-            "authority_effect_count": sum(role == "authority" for role, _, _ in effect_ports),
-            "effect_ports": [
-                {"classification": role, "target_kind": kind, "symbol": symbol}
-                for role, kind, symbol in effect_ports
-            ],
-        })
-    missing = sorted(
-        f"{population_id}:{key}"
-        for population_id, entries in discovered.items()
-        for key in entries
-        if (population_id, key) not in classified
-    )
-    if missing:
-        raise SemanticAuthorityError("unclassified public application operations: " + ", ".join(missing))
-    return observations
 
 
 def collect_representation_provenance(

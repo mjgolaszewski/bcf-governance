@@ -3083,7 +3083,7 @@ implementation_slices:
   protected-public-operation-population:
     id: protected-public-operation-population
     workitem: P32-P0-04
-    scope: Existing operation registry/effect owner closes public source populations under a protected registry byte digest; no candidate capability opt-out or new evaluator.
+    scope: Existing operation registry/effect owner closes public source populations under a protected registry byte digest; no candidate capability opt-out or new evaluator. Characterization-led extraction evidence is retained in audits/issue-394/operation-validator-deconstruction-verification.json.
     contract: audits/issue-394/protected-operation-population-contract.json
     producer: bcf_governance/tooling/semantic_authority_contracts.py::load_application_operations
     consumer: bcf_governance/tooling/semantic_authority_contracts.py::required_application_operation_population
@@ -3091,6 +3091,9 @@ implementation_slices:
     authority: false
     positive_tests:
     - tests.test_semantic_protected_operations::test_protected_operations_are_source_derived_and_deterministic
+    - tests.test_semantic_operation_deconstruction::test_actual_public_operation_observations_match_pre_deconstruction_bytes
+    - tests.test_semantic_operation_deconstruction::test_legacy_operation_validator_alias_has_one_implementation
+    - tests.test_semantic_operation_deconstruction::test_extracted_validator_helpers_keep_resolved_source_owners
     - tests.test_semantic_protected_operations::test_protected_factory_preserves_legacy_decode
     negative_controls:
     - cause: caller-registry-substitution-before-discovery

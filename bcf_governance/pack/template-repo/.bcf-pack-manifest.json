@@ -1463,11 +1463,15 @@
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "d8af49a6b8e0ee8e5f3e92abb188988f556eb23b766a8c216ebf4117f36167d4"
+      "sha256": "bb9002ad77e14f517e8adbb8c07cf00cd177b6ef274063573502715aa98f1f5f"
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",
       "sha256": "d84e346aec76c1a757cdef6bd7f80b09bbaf95ea73fb7c89ba6f104403ff3fc9"
+    },
+    "scripts/_bcf_runtime/semantic_authority_operations.py": {
+      "operation": "copy",
+      "sha256": "4bc8c8f73742dec26f18cbf7dbe19083c9a99f94d49a0efc933fbb045c9e164d"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",
