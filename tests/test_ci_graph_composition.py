@@ -1896,3 +1896,173 @@ def test_reconstructed_schema_reference_closure_uses_dialect_resources(schema_re
     assert result['references_checked'] == (0 if case == 'ref_shaped_data' else 1)
     assert result['authority'] is False
     assert result['execution_qualified'] is False
+
+
+@pytest.fixture
+def deadline_composition(composition):
+    import copy
+    pair = ('release', 'build', 'verify')
+    measurement = 'f' * 64
+    spec = dict(schema_version='1.0', operations=[dict(id='provider-resolution', owner='verifier::verify',
+        bounded_attempt_ms=568000, max_attempts=1, max_retry_delay_ms=0)], setup_ms=20000,
+        cleanup_ms=10000, headroom_ms=60000,
+        measurement_ref=measurement, measurement_policy='require_fresh')
+    composition['payload']['relationships'][0]['contract']['deadline'] = copy.deepcopy(spec)
+    composition['compiled_graph'].graph = {'workflows': [{'id': 'verify', 'jobs': [{'id': 'consume', 'timeout_minutes': 11}]}]}
+    return dict(composition=composition, compiled_graph=composition['compiled_graph'],
+        required_ci_consumers={pair: ('verify:consume',)}, schema=SCHEMA, expected_source=composition['expected_source'],
+        required_deadlines={pair: spec}, measurements={measurement: dict(subject=dict(commit_sha='1'*40, tree_sha='2'*40),
+            observed_at_ms=1000000, expires_at_ms=3000000, lower_bound_ms=568000)},
+        expected_measurement_subjects={measurement: dict(commit_sha='1'*40, tree_sha='2'*40)}, now_ms=2000000)
+
+
+def _deadline_projection(inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_lifecycle_deadline_bindings
+    args = {key: value for key, value in inputs.items() if key != 'composition'}
+    return validate_lifecycle_deadline_bindings(compiled=compile_lifecycle_composition(**inputs['composition']), **args)
+
+
+def test_typed_deadline_composes_internal_work_allowances_and_integer_quantization(deadline_composition):
+    first = _deadline_projection(deadline_composition)
+    assert first == _deadline_projection(deadline_composition)
+    assert first['authority'] is False and first['execution_qualified'] is False
+    assert first['schema_version'] == '1.0' and first['source'] == deadline_composition['expected_source']
+    assert first['deadlines'][0]['required_ms'] == 660000
+    assert first['deadlines'][0]['measurement'] == 'fresh'
+
+
+@pytest.mark.parametrize('defect', ['outer', 'missing-spec', 'missing-both', 'duplicate-operation', 'candidate-policy',
+    'missing-measurement', 'stale-measurement', 'wrong-subject', 'wrong-source', 'future-measurement', 'missing-descriptor'])
+def test_typed_deadline_rejects_inadequate_or_unbound_inputs(deadline_composition, defect):
+    import copy
+    data = deadline_composition
+    spec = next(iter(data['required_deadlines'].values()))
+    descriptor = data['composition']['payload']['relationships'][0]['contract']['deadline']
+    measurement = next(iter(data['measurements'].values()))
+    if defect == 'outer':
+        data['compiled_graph'].graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 10
+    elif defect == 'missing-spec': data['required_deadlines'].clear()
+    elif defect == 'missing-both':
+        data['required_deadlines'].clear()
+        del data['composition']['payload']['relationships'][0]['contract']['deadline']
+    elif defect == 'duplicate-operation':
+        spec['operations'].append(copy.deepcopy(spec['operations'][0]))
+        descriptor['operations'] = copy.deepcopy(spec['operations'])
+    elif defect == 'candidate-policy': descriptor['headroom_ms'] = 1
+    elif defect == 'missing-measurement': data['measurements'].clear()
+    elif defect == 'stale-measurement': measurement['expires_at_ms'] = data['now_ms']
+    elif defect == 'wrong-subject': measurement['subject']['commit_sha'] = '3' * 40
+    elif defect == 'wrong-source': data['expected_source'] = {**data['expected_source'], 'commit_sha': '4' * 40}
+    elif defect == 'future-measurement': measurement['observed_at_ms'] = data['now_ms'] + 1
+    elif defect == 'missing-descriptor': del data['composition']['payload']['relationships'][0]['contract']['deadline']
+    with pytest.raises(CIGraphError, match='deadline|schema'):
+        _deadline_projection(data)
+
+
+@pytest.mark.parametrize('state', ['missing', 'stale'])
+def test_typed_deadline_fallback_requires_explicit_protected_policy(deadline_composition, state):
+    data = deadline_composition
+    next(iter(data['required_deadlines'].values()))['measurement_policy'] = 'bounded_fallback'
+    data['composition']['payload']['relationships'][0]['contract']['deadline']['measurement_policy'] = 'bounded_fallback'
+    if state == 'missing': data['measurements'].clear()
+    else: next(iter(data['measurements'].values()))['expires_at_ms'] = data['now_ms']
+    result = _deadline_projection(data)
+    assert result['deadlines'][0]['measurement'] == 'bounded_fallback_' + state
+    assert result['deadlines'][0]['required_ms'] == 660000
+
+
+@pytest.mark.parametrize('field,value', [('bounded_attempt_ms', True), ('max_attempts', 0), ('max_retry_delay_ms', -1), ('bounded_attempt_ms', 0.5)])
+def test_typed_deadline_schema_rejects_noninteger_or_invalid_operation_bounds(deadline_composition, field, value):
+    deadline_composition['composition']['payload']['relationships'][0]['contract']['deadline']['operations'][0][field] = value
+    errors = list(Draft202012Validator({'$ref': '#/$defs/deadline', '$defs': SCHEMA['$defs']}).iter_errors(deadline_composition['composition']['payload']['relationships'][0]['contract']['deadline']))
+    assert any(list(error.absolute_path)[-1:] == [field] for error in errors)
+    with pytest.raises(CIGraphError, match='schema'):
+        compile_lifecycle_composition(**deadline_composition['composition'])
+
+
+def test_typed_deadline_counts_each_bounded_attempt_and_retry_delay(deadline_composition):
+    import copy
+    data = deadline_composition
+    spec = next(iter(data['required_deadlines'].values()))
+    spec['operations'] = [dict(id='first', owner='verifier::verify', bounded_attempt_ms=200000,
+        max_attempts=2, max_retry_delay_ms=30000), dict(id='second', owner='verifier::verify',
+        bounded_attempt_ms=100000, max_attempts=1, max_retry_delay_ms=0)]
+    next(iter(data['measurements'].values()))['lower_bound_ms'] = 0
+    data['composition']['payload']['relationships'][0]['contract']['deadline'] = copy.deepcopy(spec)
+    assert _deadline_projection(data)['deadlines'][0]['required_ms'] == 660000
+
+
+def test_typed_deadline_measurement_floor_cannot_reduce_declared_envelope(deadline_composition):
+    data = deadline_composition
+    next(iter(data['measurements'].values()))['lower_bound_ms'] = 760000
+    data['compiled_graph'].graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 14
+    assert _deadline_projection(data)['deadlines'][0]['required_ms'] == 840000
+
+
+def test_typed_deadline_operation_owner_uses_existing_implementation_bindings(deadline_composition):
+    data = deadline_composition
+    next(iter(data['required_deadlines'].values()))['operations'][0]['owner'] = 'unknown::owner'
+    data['composition']['payload']['relationships'][0]['contract']['deadline']['operations'][0]['owner'] = 'unknown::owner'
+    with pytest.raises(CIGraphError, match='deadline operation owner'):
+        _deadline_projection(data)
+
+
+def test_typed_deadline_protected_population_cannot_assign_cost_to_excluded_pair(deadline_composition):
+    data = deadline_composition
+    data['required_deadlines'][('release', 'verify', 'build')] = next(iter(data['required_deadlines'].values()))
+    with pytest.raises(CIGraphError, match='deadline protected relationship population'):
+        _deadline_projection(data)
+
+
+@pytest.mark.parametrize('defect', ['inflated-budget', 'missing-ci-reference', 'missing-ci-policy', 'wrong-graph', 'wrong-edges'])
+def test_typed_deadline_cannot_self_exempt_from_actual_ci_consumer_budget(deadline_composition, defect):
+    import copy
+    data = deadline_composition
+    if defect == 'inflated-budget':
+        next(iter(data['required_deadlines'].values()))['outer_timeout_minutes'] = 20
+        data['composition']['payload']['relationships'][0]['contract']['deadline']['outer_timeout_minutes'] = 20
+    elif defect == 'missing-ci-reference': data['composition']['payload']['relationships'][0]['contract']['ci_edges'] = []
+    elif defect == 'missing-ci-policy': data['required_ci_consumers'].clear()
+    else:
+        data['compiled_graph'] = copy.deepcopy(data['compiled_graph'])
+        if defect == 'wrong-graph': data['compiled_graph'].graph_sha256 = '0' * 64
+        else: data['compiled_graph'].edge_contracts = ()
+    with pytest.raises(CIGraphError, match='deadline|schema'):
+        _deadline_projection(data)
+
+
+def test_typed_deadline_uses_every_protected_sibling_consumer_budget(deadline_composition):
+    from dataclasses import replace
+    data = deadline_composition
+    graph = data['compiled_graph']
+    sibling = replace(graph.edge_contracts[0], consumer='sibling:consume')
+    graph.edge_contracts = (*graph.edge_contracts, sibling)
+    graph.graph['workflows'].append({'id': 'sibling', 'jobs': [{'id': 'consume', 'timeout_minutes': 10}]})
+    data['expected_source']['ci_edges_sha256'] = edge_population_sha256(graph)
+    contract = data['composition']['payload']['relationships'][0]['contract']
+    contract['ci_edges'].append({'producer': sibling.producer, 'consumer': sibling.consumer})
+    data['required_ci_consumers'][('release', 'build', 'verify')] = ('verify:consume', 'sibling:consume')
+    with pytest.raises(CIGraphError, match='600000ms cannot contain required 660000ms'):
+        _deadline_projection(data)
+
+
+def test_typed_deadline_cannot_invent_unbound_non_ci_outer_budget(deadline_composition):
+    data = deadline_composition
+    data['composition']['payload']['relationships'][0]['contract']['ci_edges'] = []
+    data['required_ci_consumers'][('release', 'build', 'verify')] = ()
+    with pytest.raises(CIGraphError, match='actual outer execution budget is unbound'):
+        _deadline_projection(data)
+
+
+def test_typed_deadline_survives_every_generated_view_and_machine_round_trip(deadline_composition):
+    import copy
+    data = deadline_composition
+    compiled = compile_lifecycle_composition(**data['composition'])
+    for view in ('bound', 'contract', 'machine'):
+        rendered = render_lifecycle_composition(compiled, view=view)
+        assert rendered == render_lifecycle_composition(compiled, view=view)
+        assert 'bounded_attempt_ms' in rendered and '568000' in rendered
+    machine = render_lifecycle_composition(compiled, view='machine')
+    args = copy.copy(data['composition'])
+    args['payload'] = json.loads(machine)
+    assert render_lifecycle_composition(compile_lifecycle_composition(**args), view='machine') == machine

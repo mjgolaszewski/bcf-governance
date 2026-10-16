@@ -32,7 +32,8 @@
     "Measurement source/subject/freshness must match protected expected metadata. Missing or stale measurement obeys explicit protected block-or-bounded-fallback policy; no silent measured value substitution.",
     "Strict projection requires every protected reachable relationship cost contract or independently grounded exclusion and returns authority false / execution_qualified false. It never declares real runtime bounded merely because declared arithmetic validates.",
     "Do not sum legacy minimum_job_timeout_minutes floors as component durations. Existing gate and component acceptance and diagnostic behavior must be characterized unchanged.",
-    "Regenerate all human views and source/schema/package mirrors through existing owners; preserve byte-stable legacy views."
+    "Regenerate all human views and source/schema/package mirrors through existing owners; preserve byte-stable legacy views.",
+    "Bind existing compiled CI graph/edge identities and independently supplied complete CI consumer references. Derive available outer milliseconds mechanically from the minimum actual referenced consumer job timeout; do not author a duplicate outer budget. Candidate deletion of CI references cannot self-exempt. Non-CI contexts with no bound runtime budget block rather than inventing one."
   ],
   "required_controls": [
     "Reproduce 568000 ms internal work plus setup/cleanup/headroom exceeding a 600000 ms envelope; reject before any render/allocation.",

@@ -1185,6 +1185,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-deadline-envelopes
     - exact-committed-lifecycle-schema-bindings
     - authored-phase-result-contract
     - canonical-ci-edge-reference-coverage
@@ -1422,6 +1423,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-deadline-envelopes
     - exact-committed-lifecycle-schema-bindings
     - authored-phase-result-contract
     - dormant-composition-and-static-bindings
@@ -1467,6 +1469,8 @@ requirements:
       scenario: Cause-specific F04 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - typed-deadline-envelopes
   F05:
     requirement: establish conformance to existing assurances before optimization; observed defects require governed correction, not silent semantic redefinition.
     owner: ci_authority
@@ -1558,6 +1562,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-deadline-envelopes
     - dormant-composition-and-static-bindings
   CP01:
     requirement: 'Consumer ownership: preserve adopter graph nodes/claims/tests/dependencies/extensions/release/protection semantics; mutate only declared BCF-owned
@@ -3452,3 +3457,35 @@ implementation_slices:
     - Progress is not certification, receipt, deadline sufficiency or full timing attribution.
     - 'Verification: audits/issue-394/provider-authority-progress-verification.json;
       all whole requirements remain open.'
+
+  typed-deadline-envelopes:
+    id: typed-deadline-envelopes
+    workitem: P32-P0-05
+    scope: Dormant typed sequential cost and retry envelope over existing compiled lifecycle/CI
+      consumers; derive outer job budget mechanically, preserve legacy floors.
+    contract: audits/issue-394/typed-deadline-envelope-contract.json
+    producer: bcf_governance/tooling/ci_graph_timeouts.py::quantized_deadline_ms
+    consumer: bcf_governance/tooling/ci_graph_composition_costs.py::validate_lifecycle_deadline_bindings;
+      existing gate/component timeout owners
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_typed_deadline_composes_internal_work_allowances_and_integer_quantization
+    - tests.test_ci_graph_composition::test_typed_deadline_survives_every_generated_view_and_machine_round_trip
+    negative_controls:
+    - cause: 568-seconds-plus-allowances-exceed-600-second-actual-consumer
+      test: tests.test_ci_graph_composition::test_typed_deadline_rejects_inadequate_or_unbound_inputs[outer]
+    - cause: missing-or-inflated-consumer-budget-reference
+      test: tests.test_ci_graph_composition::test_typed_deadline_cannot_self_exempt_from_actual_ci_consumer_budget[missing-ci-reference]
+    - cause: smaller-sibling-outer-budget
+      test: tests.test_ci_graph_composition::test_typed_deadline_uses_every_protected_sibling_consumer_budget
+    remaining:
+    - Caller must authenticate complete policy/source owners, genuine total runtime
+      bounds, original measurement custody and clock; arithmetic validation does not
+      establish these facts.
+    - Non-CI contexts lacking a bound runtime deadline reject; full provider/controller/exact-main/release/adopter/custody
+      population and source bounds remain unqualified.
+    - No active deadline projection, suppression, installed-consumer adoption or normative
+      machine-DAG retirement.
+    - 'Canonical test inventory/semantic lock normalization and full governed qualification
+      remain required; evidence: audits/issue-394/typed-deadline-envelope-verification.json.'

@@ -254,7 +254,7 @@
     },
     "schemas/ci-lifecycle-composition.schema.json": {
       "operation": "copy",
-      "sha256": "85781ff360710fcee8924ac2a4b65f6715adfcf47863b8d609839524f5458e13"
+      "sha256": "dc1e233ec3483f648cb26abd5b4a548933cdab41684516951213a2ac4e5f43ba"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -732,7 +732,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "d4eea8cd407fee5fa045755c99cf50c14e53c2004ad43d10aa554eebc9148b3d"
+      "sha256": "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd"
+    },
+    "scripts/_bcf_runtime/ci_graph_composition_costs.py": {
+      "operation": "copy",
+      "sha256": "2a7261a7f996537fb865747bb6fc575e45f5a87391700650fb69078672a5e867"
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
@@ -828,7 +832,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_timeouts.py": {
       "operation": "copy",
-      "sha256": "9421d7b0f9b3f3d9b34bd2f009365639a96183d5da38f8dbb88affb4e1f028bb"
+      "sha256": "d9896916928ff325ef5391e7fff9e792b63d4025cabee2ef251a323490c9c099"
     },
     "scripts/_bcf_runtime/ci_graph_values.py": {
       "operation": "copy",

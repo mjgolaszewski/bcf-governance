@@ -3627,3 +3627,24 @@ def test_strict_yaml_decoder_types_invalid_complex_mapping_keys(content):
     from bcf_governance.tooling.ci_graph_yaml import GraphYAMLError, load_yaml_bytes
     with pytest.raises(GraphYAMLError, match='mapping key must be hashable'):
         load_yaml_bytes(content, source='authored-fixture.yml')
+
+
+def test_deadline_quantization_preserves_exact_integer_boundaries():
+    from bcf_governance.tooling.ci_graph_timeouts import quantized_deadline_ms
+    def required(work):
+        return quantized_deadline_ms(bounded_work_ms=work, setup_ms=0, cleanup_ms=0,
+            measured_lower_bound_ms=0, headroom_ms=0)
+    assert required(60000) == 60000
+    assert required(60001) == 120000
+    assert required(60000 * 2**70 + 1) == 60000 * (2**70 + 1)
+    for malformed in (True, -1, 0.5):
+        with pytest.raises(CIGraphError, match='deadline bounds'):
+            required(malformed)
+
+
+def test_component_minimum_floors_remain_nonsummable_job_constraints():
+    graph = {'step_components': {'first': {'minimum_job_timeout_minutes': 10},
+        'second': {'minimum_job_timeout_minutes': 11}}, 'workflows': [{'id': 'release', 'jobs': [
+            {'id': 'route', 'timeout_minutes': 11, 'executor': {'kind': 'component_sequence',
+                'components': ['first', 'second']}}]}]}
+    validate_component_job_timeouts(graph)

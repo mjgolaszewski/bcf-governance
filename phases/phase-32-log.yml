@@ -28,7 +28,7 @@ workitems:
   status: IN_PROGRESS
   summary: Independently trace implementation effects and producer consumer populations in both directions
 - id: P32-P0-05
-  status: TODO
+  status: IN_PROGRESS
   summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
 - id: P32-P0-06
   status: IN_PROGRESS
@@ -196,6 +196,7 @@ execution_evidence:
   - "Deadline research source inventory now binds exact committed Python-tree discovery/import resolution: 1066 files and 12 direct calls to existing effective-controller resolver owners, including one test call. All four audit controls pass; final recipe re-captures graph and source data. No runtime reflection/authority completeness or deadline sufficiency inferred. Active canonical submission remains on unchanged normalized subject 29dc4878; research is isolated."
   - "Real canonical preflight exposure failure motivated a bounded earlier check through the same owner after fixed-point generation and before provider work. The new negative control first reached provider work and failed; after correction all 120 prospective/observation/LOC/context/private-copy tests pass. Three provider progress controls failed before instrumentation; initial success fixture then exposed its missing downstream compatibility stub, corrected without product exception/fallback changes. New provider progress preserves known ValueError/OSError exception identity and inapplicable contexts. Module remains 794 LOC; source/schema copies regenerated only by pack owner. Lint/typecheck pass; actual 21-operation characterization passed in 76.85 seconds; no deadline or authority activation."
   - "Merged deadline research and provider progress/exposure-frontier changes at ecfc8609 after failed submission quiesced. Only phase-log append conflict required resolution; both histories retained. Combined source passed 123 prospective/operational/deadline cases including both earlier installer/preflight failure controls in 8.06 seconds; exposure scan passes. Prior source-level run passed 120 behavioral/structural cases and actual 21-operation characterization. Follow-up current-memory field correction is documentation only. No manual generated workflow/authority changes; canonical front door owns remaining normalization and proof."
+  - "Dormant typed deadline cost schema/query now composes bounded sequential attempts/retry delays, explicit allowances, protected measurement/fallback and integer minute quantization. Available budgets derive from actual compiled CI consumer jobs; independent consumer references reject deletion and sibling minimum shortfalls, and unbound non-CI contexts block. Existing gate/component floors retain semantics through shared arithmetic (two original controls passed before change). Final 34 focused cases pass; broader run 486 passed with one pending generated-oracle failure; unchanged actual 21-operation characterization passes in 79.41 seconds. Lint/typecheck/governance YAML and pack parity pass. P32-P0-05 becomes IN_PROGRESS; source bounds/proof authenticity/full runtime population and activation remain unqualified. No closure or performance claim."
 closeout_requirements:
   claims:
     workitems_closed:
