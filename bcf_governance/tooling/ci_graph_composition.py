@@ -453,6 +453,78 @@ def validate_lifecycle_paths(
     }
 
 
+def _binding_declarations(
+    compiled, expected_source, collected_selectors, required_negative_controls,
+    required_call_edges, required_fact_bindings, required_operation_calls,
+):
+    _validate_compiled_identity(compiled)
+    if not isinstance(expected_source, Mapping) or compiled["source"] != dict(expected_source):
+        raise CIGraphError("lifecycle binding source identity differs from authenticated inputs")
+    reachable = {
+        (row["context"], row["producer"], row["consumer"]): row["contract"]
+        for row in compiled["relationships"] if row["contract"] is not None
+    }
+    if not isinstance(required_negative_controls, Mapping) or reachable.keys() != required_negative_controls.keys():
+        raise CIGraphError("lifecycle binding independent relationship population differs")
+    if not isinstance(required_call_edges, Mapping) or reachable.keys() != required_call_edges.keys():
+        raise CIGraphError("lifecycle binding independent call population differs")
+    if not isinstance(required_fact_bindings, Mapping) or reachable.keys() != required_fact_bindings.keys():
+        raise CIGraphError("lifecycle binding independent fact relationship population differs")
+    if required_operation_calls is not None and (
+        not isinstance(required_operation_calls, Mapping)
+        or reachable.keys() != required_operation_calls.keys()
+    ):
+        raise CIGraphError("lifecycle binding independent operation call population differs")
+    if not isinstance(collected_selectors, (set, frozenset)) or any(
+        not isinstance(selector, str) or not selector for selector in collected_selectors
+    ):
+        raise CIGraphError("lifecycle binding collected test population is malformed")
+    fact_fields = {"id", "producer", "verifier", "subject_binding", "proposition", "authority", "freshness"}
+    for pair, contract in reachable.items():
+        expected_facts = required_fact_bindings[pair]
+        if (
+            not isinstance(expected_facts, (tuple, list)) or not expected_facts
+            or any(
+                not isinstance(fact, Mapping) or set(fact) != fact_fields
+                or any(not isinstance(value, str) or not value for value in fact.values())
+                for fact in expected_facts
+            )
+            or len({fact["id"] for fact in expected_facts}) != len(expected_facts)
+            or sorted(_bytes(dict(fact)) for fact in expected_facts) != sorted(_bytes(fact) for fact in contract["facts"])
+        ):
+            raise CIGraphError("lifecycle binding independent fact population differs or is invalid")
+        calls = required_call_edges[pair]
+        bound_functions = set(contract["implementation"]) | set(contract["terminal_consumers"])
+        if not isinstance(calls, (set, frozenset, tuple, list)) or any(
+            not isinstance(edge, (tuple, list)) or len(edge) != 2
+            or any(not isinstance(value, str) or value not in bound_functions for value in edge)
+            for edge in calls
+        ):
+            raise CIGraphError("lifecycle binding source call endpoints are unbound or malformed")
+        if not calls and not contract["ci_edges"]:
+            raise CIGraphError("lifecycle binding has no source call or CI transport")
+        for field in ("positive_tests", "negative_tests"):
+            for selector in contract[field]:
+                if selector not in collected_selectors:
+                    raise CIGraphError(f"lifecycle binding collected test is absent: {selector}")
+        controls = required_negative_controls[pair]
+        if (
+            not isinstance(controls, Mapping) or not controls
+            or any(not isinstance(cause, str) or not cause for cause in controls)
+            or any(not isinstance(selector, str) or not selector for selector in controls.values())
+            or len(set(controls.values())) != len(controls)
+            or set(controls.values()) != set(contract["negative_tests"])
+        ):
+            raise CIGraphError("lifecycle binding cause-specific negative-control population differs")
+    return reachable
+
+
+def _binding_operation_roots(contract):
+    return set(contract["implementation"]) | set(contract["terminal_consumers"]) | {
+        fact[role] for fact in contract["facts"] for role in ("producer", "verifier")
+    }
+
+
 def validate_lifecycle_bindings(
     compiled: dict[str, Any],
     *,
@@ -482,45 +554,19 @@ def validate_lifecycle_bindings(
     completeness; even their presence cannot qualify execution or unknown effects.
     """
 
-    _validate_compiled_identity(compiled)
-    if compiled["source"] != dict(expected_source):
-        raise CIGraphError("lifecycle binding source identity differs from authenticated inputs")
+    reachable = _binding_declarations(
+        compiled, expected_source, collected_selectors, required_negative_controls,
+        required_call_edges, required_fact_bindings, required_operation_calls,
+    )
     functions: dict[str, dict[str, Any]] = {}
     for function in source_inventory.get("functions", []):
         symbol = function.get("symbol")
         if not isinstance(symbol, str) or not symbol or symbol in functions:
             raise CIGraphError("lifecycle binding runtime function inventory is ambiguous")
         functions[symbol] = function
-    reachable = {
-        (row["context"], row["producer"], row["consumer"]): row["contract"]
-        for row in compiled["relationships"] if row["contract"] is not None
-    }
-    if reachable.keys() != required_negative_controls.keys():
-        raise CIGraphError("lifecycle binding independent relationship population differs")
-    if reachable.keys() != required_call_edges.keys():
-        raise CIGraphError("lifecycle binding independent call population differs")
-    if reachable.keys() != required_fact_bindings.keys():
-        raise CIGraphError("lifecycle binding independent fact relationship population differs")
-    if required_operation_calls is not None and (
-        not isinstance(required_operation_calls, Mapping)
-        or reachable.keys() != required_operation_calls.keys()
-    ):
-        raise CIGraphError("lifecycle binding independent operation call population differs")
     operation_populations_checked = 0
-    fact_fields = {"id", "producer", "verifier", "subject_binding", "proposition", "authority", "freshness"}
     for pair, contract in reachable.items():
         expected_facts = required_fact_bindings[pair]
-        if (
-            not expected_facts
-            or any(
-                not isinstance(fact, Mapping) or set(fact) != fact_fields
-                or any(not isinstance(value, str) or not value for value in fact.values())
-                for fact in expected_facts
-            )
-            or len({fact["id"] for fact in expected_facts}) != len(expected_facts)
-            or sorted(_bytes(dict(fact)) for fact in expected_facts) != sorted(_bytes(fact) for fact in contract["facts"])
-        ):
-            raise CIGraphError("lifecycle binding independent fact population differs or is invalid")
         for fact in expected_facts:
             for role in ("producer", "verifier"):
                 if fact[role] not in functions:
@@ -530,12 +576,7 @@ def validate_lifecycle_bindings(
                 if symbol not in functions:
                     raise CIGraphError(f"lifecycle binding runtime function is absent: {symbol}")
         calls = required_call_edges[pair]
-        if not calls and not contract["ci_edges"]:
-            raise CIGraphError("lifecycle binding has no source call or CI transport")
-        bound_functions = set(contract["implementation"]) | set(contract["terminal_consumers"])
         for caller, callee in calls:
-            if caller not in bound_functions or callee not in bound_functions:
-                raise CIGraphError("lifecycle binding source call endpoints are unbound")
             observed_calls = {
                 call.get("called_symbol") for call in functions[caller].get("calls", [])
                 if call.get("dispatch_resolution") != "unresolved"
@@ -543,9 +584,7 @@ def validate_lifecycle_bindings(
             if callee not in observed_calls:
                 raise CIGraphError(f"lifecycle binding source call is absent or unresolved: {caller} -> {callee}")
         if required_operation_calls is not None:
-            roots = bound_functions | {
-                fact[role] for fact in expected_facts for role in ("producer", "verifier")
-            }
+            roots = _binding_operation_roots(contract)
             catalogue = required_operation_calls[pair]
             if not isinstance(catalogue, Mapping) or roots != catalogue.keys():
                 raise CIGraphError("lifecycle binding independent operation call population roots differ")
@@ -564,19 +603,6 @@ def validate_lifecycle_bindings(
                 if not matches:
                     raise CIGraphError("lifecycle binding operation call population differs from protected source")
                 operation_populations_checked += 1
-        for field in ("positive_tests", "negative_tests"):
-            for selector in contract[field]:
-                if selector not in collected_selectors:
-                    raise CIGraphError(f"lifecycle binding collected test is absent: {selector}")
-        controls = required_negative_controls[pair]
-        if (
-            not controls
-            or any(not isinstance(cause, str) or not cause for cause in controls)
-            or any(not isinstance(selector, str) or not selector for selector in controls.values())
-            or len(set(controls.values())) != len(controls)
-            or set(controls.values()) != set(contract["negative_tests"])
-        ):
-            raise CIGraphError("lifecycle binding cause-specific negative-control population differs")
     result = {
         "authority": False,
         "execution_qualified": False,
@@ -600,7 +626,48 @@ def validate_reconstructed_lifecycle_bindings(
     source_import_roots: tuple[str, ...] = (".",),
 ) -> dict[str, Any]:
     """Reconstruct exact source inputs; caller authenticates protected context."""
-    return {}
+    from .semantic_ownership_inventory import (
+        SemanticInventoryError, discover_python_source, resolve_python_imports,
+    )
+
+    reachable = _binding_declarations(
+        compiled, expected_source, collected_selectors, required_negative_controls,
+        required_call_edges, required_fact_bindings, required_operation_calls,
+    )
+    if required_operation_calls is None:
+        raise CIGraphError("reconstructed binding requires complete operation populations")
+    for pair, contract in reachable.items():
+        catalogue = required_operation_calls[pair]
+        if not isinstance(catalogue, Mapping) or catalogue.keys() != _binding_operation_roots(contract):
+            raise CIGraphError("reconstructed binding operation source roots differ")
+        if any(not isinstance(population, Mapping) or population.get("scope") != (
+                "discovered_python_functions_and_possible_initialization"
+        ) or population.get("authority") is not False
+            or population.get("execution_qualified") is not False
+            or population.get("completeness_qualified") is not False
+            for population in catalogue.values()):
+            raise CIGraphError("reconstructed binding requires initialization-aware source populations")
+    subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
+    try:
+        inventory = discover_python_source(
+            repo_root, source_subject=subject, call_contracts_version="1.0",
+            initialization_contracts_version="1.0",
+        )
+        inventory = resolve_python_imports(repo_root, inventory, source_import_roots)
+    except (SemanticInventoryError, OSError, TypeError, ValueError) as exc:
+        raise CIGraphError(f"lifecycle binding exact source reconstruction failed: {exc}") from exc
+    result = validate_lifecycle_bindings(
+        compiled, expected_source=expected_source, source_inventory=inventory,
+        collected_selectors=collected_selectors, required_negative_controls=required_negative_controls,
+        required_call_edges=required_call_edges, required_fact_bindings=required_fact_bindings,
+        required_operation_calls=required_operation_calls,
+    )
+    result["source_reconstruction"] = {
+        "subject": dict(subject),
+        "population_sha256": hashlib.sha256(_bytes(inventory["source_population"])).hexdigest(),
+        "import_roots": tuple(sorted(source_import_roots)),
+    }
+    return result
 
 
 def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound") -> str:

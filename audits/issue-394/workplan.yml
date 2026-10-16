@@ -171,6 +171,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/ci_graph_composition.py
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
     - bcf_governance/tooling/semantic_ownership_inventory.py
     - bcf_governance/tooling/semantic_python_calls.py
@@ -758,6 +759,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
     - dormant-composition-and-static-bindings
   I05:
@@ -1472,6 +1474,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
     - initialization-operation-consumer-binding
     - opt-in-python-initialization-facts
@@ -2017,6 +2020,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
     - initialization-operation-consumer-binding
     - opt-in-python-initialization-facts
@@ -3002,3 +3006,34 @@ implementation_slices:
     - Environment consistency and local Git ancestry do not authenticate provider repository/head authority; protected producer custody remains independently required.
     - Full earliest-boundary latency and downstream-work measurements across every pipeline and installed consumer remain unqualified.
     - Canonical test-manifest normalization normative DAG adoption and whole-requirement closure remain blocked.
+  reconstructed-lifecycle-source-binding:
+    id: reconstructed-lifecycle-source-binding
+    workitem: P32-P0-04
+    scope: Separate dormant query on existing composition owner reconstructs exact-subject call/initialization facts instead of accepting caller inventories; all conformance remains delegated to the existing binding owner.
+    contract: audits/issue-394/reconstructed-source-binding-contract.json
+    producer: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_reconstructed_lifecycle_bindings
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject
+    - tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner
+    negative_controls:
+    - cause: substituted-protected-source-subject-before-discovery
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[subject]
+    - cause: missing-protected-operation-root-before-discovery
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[root]
+    - cause: weakened-operation-observation-scope
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[scope]
+    - cause: malformed-protected-call-endpoint-before-io
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_malformed_declarations_before_io[call_endpoint]
+    - cause: authority-bearing-observation-catalogue
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_malformed_declarations_before_io[authority]
+    - cause: dirty-source-hidden-by-endpoint-inventory
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_source_movement[dirty]
+    - cause: caller-source-inventory-injection
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_accepts_no_caller_inventory
+    remaining:
+    - Actual protected provider-owned invocation must authenticate repository/context and independently reconstruct complete required populations; this dormant query does not authenticate caller-supplied expected context.
+    - Complete runtime effects guard authority recovery execution profile installation and normative model adoption remain unqualified.
+    - Canonical oracle normalization approved performance targets and independent terminal custody remain blocked.
