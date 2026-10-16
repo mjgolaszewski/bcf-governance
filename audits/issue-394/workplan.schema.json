@@ -245,9 +245,32 @@
         },
         "evidence": {
           "type": "array",
-          "maxItems": 0
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "References to nonauthoritative completion observations; independent verified/closed truth is computed by BCF."
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "DONE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
     },
     "implementation_slice": {
       "type": "object",

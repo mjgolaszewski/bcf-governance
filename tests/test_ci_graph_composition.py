@@ -2184,3 +2184,19 @@ def test_authored_requirement_bindings_resolve_against_exact_collection_before_g
     for binding in plan['implementation_slices'].values():
         nodes = binding['positive_tests'] + [row['test'] for row in binding['negative_controls']]
         assert index.resolve(nodes, preferred_gate='test') == 'test'
+
+
+@pytest.mark.parametrize('status,citations,valid', [
+    ('DONE', [], False),
+    ('DONE', ['audits/issue-394/admission-implementation-completion.json'], True),
+    ('IN_PROGRESS', [], True),
+    ('DONE', [{'authority': True, 'closed': True}], False),
+])
+def test_workitem_completion_cites_observations_without_promoting_them_to_truth(status, citations, valid):
+    plan = load_yaml_path(ROOT / 'audits/issue-394/workplan.yml')
+    row = plan['workitems']['foundation.admission']
+    row['status'], row['evidence'] = status, citations
+    schema = json.loads((ROOT / 'audits/issue-394/workplan.schema.json').read_text())
+    errors = list(Draft202012Validator(schema).iter_errors(plan))
+    assert bool(errors) is not valid
+    assert all(requirement['evidence_status'] == 'not_executed' for requirement in plan['requirements'].values())
