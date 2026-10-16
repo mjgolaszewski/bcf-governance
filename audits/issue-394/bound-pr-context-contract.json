@@ -28,7 +28,8 @@
     "governance/canonical-representations.yml",
     "spec/phase0/release-train-backtrace.yml",
     "bcf_governance/tooling/candidate_provider_recovery.py",
-    "bcf_governance/tooling/ordinary_protection_projection.py"
+    "bcf_governance/tooling/ordinary_protection_projection.py",
+    "bcf_governance/tooling/ci_github_values.py"
   ],
   "invariant": "An authenticated bound PR supplies its exact base/head relationship; default branch is not a substitute for that relationship. Candidate-local proof never grants provider certification, protected-main or release authority.",
   "contract": [
@@ -76,5 +77,10 @@
     "Invented authenticated booleans or provider facts copied into authoritative source",
     "Treating read-only observation as merge/release authorization"
   ],
-  "dependency_acceptance": "Isolated foundation residual correction after exact admitted baseline evidence; full P02 closure and later dormant activation remain pending. All 82 whole issue requirements remain open."
+  "dependency_acceptance": "Isolated foundation residual correction after exact admitted baseline evidence; full P02 closure and later dormant activation remain pending. All 82 whole issue requirements remain open.",
+  "construction_sequence": [
+    "Characterize existing ci_candidate_pr._validate exact positive output and cause-specific failure messages before factoring that one provider identity responsibility.",
+    "Move its pure provider projection validation into existing ci_github_values owner, translating GitHubValueError to the unchanged public ProspectiveValidationError at the existing wrapper. Both existing candidate projection and new local bound discovery consume the same query; no parallel PR identity parser.",
+    "Only then implement resolver and complete downstream context propagation, late reauthentication and authority controls before integration."
+  ]
 }
