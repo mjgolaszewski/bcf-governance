@@ -202,6 +202,10 @@
       "operation": "copy",
       "sha256": "50fe308568dd36872c6c587d2a00cbbfc496013ec5723b6ff3a7c5a5e26180ce"
     },
+    "schemas/authored-phase-state-result.schema.json": {
+      "operation": "copy",
+      "sha256": "72518be5539a7a50fc411ba0ed44c219cc651b61af5048d42b6c37c10b07d92c"
+    },
     "schemas/automation-producers.schema.json": {
       "operation": "copy",
       "sha256": "e6b583eb991edd1ed4403d8c77f17baed23221ec65be639bcd28ba474cfa5d27"

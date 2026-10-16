@@ -1178,6 +1178,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authored-phase-result-contract
     - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - terminal-proposition-binding
@@ -1413,6 +1414,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authored-phase-result-contract
     - dormant-composition-and-static-bindings
   F03:
     requirement: every transition closes source, trigger/operation, guards, effects, successor, rejection and bounded recovery.
@@ -1494,6 +1496,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authored-phase-result-contract
     - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
@@ -3359,3 +3362,30 @@ implementation_slices:
       no provider authenticity or custody claim.
     - Legacy telemetry labels are preserved and do not substitute for computed verified/closed truth.
     - Complete lifecycle runtime effects, installed consumers, canonical normalization and terminal custody remain unqualified.
+  authored-phase-result-contract:
+    id: authored-phase-result-contract
+    workitem: P32-P0-03
+    scope: Versioned schema and unqualified existing-catalog primitive for unchanged authored consistency result; actual producer
+      and five declared consumers bind one TR-001 ingredient without full-transition adoption.
+    contract: audits/issue-394/authored-phase-result-contract.json
+    producer: bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state
+    consumer: Existing preflight result sink and authored-consistency rejection guards recorded in audits/issue-394/tr-001-authored-subcontract.json
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_preflight::test_authored_phase_result_has_typed_contract_without_changing_producer
+    - tests.test_preflight::test_authored_phase_result_primitive_and_real_consumers_have_one_source_owner
+    negative_controls:
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts
+    remaining:
+    - Schema is a declaration/conformance contract; current consumers retain existing producer success/error behavior, not a
+      new mandatory runtime result validator.
+    - Exact authenticated source, proposition/freshness, trusted required-population and installed consumer execution remain
+      unqualified.
+    - Static call closure covers declared source modules only; independent whole-runtime producer/consumer/effect completeness
+      remains required.
+    - TR-001 full preflight contract, explicit guarded outcomes, recovery/cost/terminal bindings and normative adoption remain
+      open.
+    - Evidence audits/issue-394/authored-phase-result-verification.json; no proof/closure/custody authority from schema or primitive
+      presence.

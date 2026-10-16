@@ -1,0 +1,58 @@
+{
+  "document": {
+    "kind": "lifecycle_subcontract_binding",
+    "path": "audits/issue-394/tr-001-authored-subcontract.json",
+    "authority": false
+  },
+  "canonical_transition": "TR-001",
+  "scope": "authored_consistency_ingredient_only",
+  "primitive": "PRIM-AUTHORED-PHASE-RESULT",
+  "invariants": [
+    "INV-RT-006",
+    "INV-RT-007"
+  ],
+  "producer": "bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state",
+  "result_schema": "schemas/authored-phase-state-result.schema.json",
+  "consumers": [
+    {
+      "symbol": "bcf_governance/tooling/ci_authority_submit.py::_normalize_submission",
+      "consumption": "rejection_guard"
+    },
+    {
+      "symbol": "bcf_governance/tooling/scaffold_governance_artifacts.py::reconcile_main",
+      "consumption": "rejection_guard"
+    },
+    {
+      "symbol": "bcf_governance/tooling/scaffold_governance_artifacts.py::reconcile_steps",
+      "consumption": "deferred_rejection_guard"
+    },
+    {
+      "symbol": "bcf_governance/tooling/preflight.py::run_preflight",
+      "consumption": "result_and_rejection_guard"
+    },
+    {
+      "symbol": "bcf_governance/tooling/governance_validation/runner.py::validate_repo_root",
+      "consumption": "rejection_guard"
+    }
+  ],
+  "input_contract_owners": [
+    "schemas/product-spec.schema.json",
+    "schemas/build-plan.schema.json",
+    "schemas/phase-ledger.schema.json",
+    "schemas/memory.schema.json",
+    "schemas/phase-plan.schema.json",
+    "schemas/phase-workitems.schema.json",
+    "schemas/phase-log.schema.json",
+    "schemas/hotfix-log.schema.json"
+  ],
+  "producer_validation_scope": "Authored cross-identity, triplet and referenced-hotfix consistency; full input-schema governance validation remains a separate existing gate.",
+  "failure": "Existing AuthoredPhaseStateError propagates through each existing consumer boundary.",
+  "recovery": "Correct authored inputs and invoke existing consumer again; no automatic retry or resume authority is introduced.",
+  "execution_qualified": false,
+  "normative_adoption_qualified": false,
+  "remaining": [
+    "Authenticate exact subject and installed consumer bindings independently.",
+    "Trace every additional TR-001 preflight obligation and its complete positive/cause-specific execution controls.",
+    "Bind the complete context-qualified ordered population, rejection/recovery paths, costs and terminal consumers before normative adoption."
+  ]
+}

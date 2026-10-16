@@ -1478,3 +1478,64 @@ def test_invalid_comparison_context_rejects_before_authored_or_runtime_work(tmp_
         preflight.run_preflight(repo, mode='pr', python_executable=Path(sys.executable), artifact_root=tmp_path / 'evidence', trace=calls.append)
     assert calls == ['git-state', 'pr-context']
     assert not (tmp_path / 'evidence').exists()
+
+
+
+def test_authored_phase_result_has_typed_contract_without_changing_producer(tmp_path):
+    from jsonschema import Draft202012Validator
+    repo = tmp_path / 'repo'
+    _copy_current_authored_phase_state(repo)
+    schema = json.loads((REPO_ROOT / 'schemas/authored-phase-state-result.schema.json').read_text())
+    Draft202012Validator.check_schema(schema)
+    before = {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob('*') if path.is_file()}
+    result = validate_authored_phase_state(repo)
+    Draft202012Validator(schema).validate(result)
+    assert set(result) == {'phase_id', 'build_block', 'paths', 'hotfix_paths'}
+    assert validate_authored_phase_state(repo) == result
+    assert {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob('*') if path.is_file()} == before
+
+
+@pytest.mark.parametrize('defect', ['missing_phase', 'missing_build', 'missing_paths', 'missing_hotfixes', 'wrong_phase_type', 'empty_build', 'short_paths', 'reordered_paths', 'absolute_path', 'traversal_path', 'wrong_hotfix_type', 'authority', 'verified', 'closed'])
+def test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts(defect):
+    from jsonschema import Draft202012Validator, ValidationError
+    schema = json.loads((REPO_ROOT / 'schemas/authored-phase-state-result.schema.json').read_text())
+    value = dict(phase_id='P01', build_block='example', paths=['plans/phase-01-plan.yml', 'plans/phase-01-workitems.yml', 'phases/phase-01-log.yml'], hotfix_paths=[])
+    if defect.startswith('missing_'):
+        value.pop({'missing_phase':'phase_id','missing_build':'build_block','missing_paths':'paths','missing_hotfixes':'hotfix_paths'}[defect])
+    elif defect == 'wrong_phase_type': value['phase_id'] = True
+    elif defect == 'empty_build': value['build_block'] = ''
+    elif defect == 'short_paths': value['paths'].pop()
+    elif defect == 'reordered_paths': value['paths'].reverse()
+    elif defect == 'absolute_path': value['paths'][0] = '/plans/phase-01-plan.yml'
+    elif defect == 'traversal_path': value['paths'][0] = 'plans/../plans/phase-01-plan.yml'
+    elif defect == 'wrong_hotfix_type': value['hotfix_paths'] = {}
+    elif defect == 'authority': value['authority'] = True
+    else: value['effective_state'] = defect
+    with pytest.raises(ValidationError):
+        Draft202012Validator(schema).validate(value)
+
+
+
+def test_authored_phase_result_primitive_and_real_consumers_have_one_source_owner():
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    binding = json.loads((REPO_ROOT / 'audits/issue-394/tr-001-authored-subcontract.json').read_text())
+    model = yaml.safe_load((REPO_ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    primitive = next(row for row in model['primitives'] if row['id'] == binding['primitive'])
+    assert primitive['canonical_reference'] == binding['result_schema']
+    assert primitive['executable_owner'] == binding['producer']
+    assert primitive['invariants'] == binding['invariants']
+    assert primitive['qualification'] == 'schema_and_source_conformance_only'
+    from jsonschema import Draft202012Validator
+    for path in binding['input_contract_owners']:
+        Draft202012Validator.check_schema(json.loads((REPO_ROOT / path).read_text()))
+    symbols = {binding['producer'], *(row['symbol'] for row in binding['consumers'])}
+    files = [REPO_ROOT / path for path in sorted({symbol.partition('::')[0] for symbol in symbols})]
+    inventory = resolve_python_imports(REPO_ROOT, discover_python_source(REPO_ROOT, files=files, call_contracts_version='1.0'))
+    functions = {row['symbol']: row for row in inventory['functions']}
+    assert symbols <= functions.keys()
+    actual_consumers = {symbol for symbol, function in functions.items()
+                        if binding['producer'] in {call['called_symbol'] for call in function['calls']}}
+    assert actual_consumers == {row['symbol'] for row in binding['consumers']}
+    assert binding['document']['authority'] is False
+    assert binding['execution_qualified'] is False
+    assert binding['normative_adoption_qualified'] is False
