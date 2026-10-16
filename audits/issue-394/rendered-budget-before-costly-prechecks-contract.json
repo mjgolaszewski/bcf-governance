@@ -1,0 +1,38 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-07",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "post_fixed_point_query_order",
+  "targets": [
+    "bcf_governance/tooling/local_pr.py",
+    "tests/test_prospective_validation.py"
+  ],
+  "observed": {
+    "maintenance_bus_cursor": 8151,
+    "subject": "8704c330",
+    "failure": "tests.test_profile_yaml::test_current_gate_contract_renders_inside_existing_context_budget",
+    "rendered_bytes": 103743,
+    "cap_bytes": 103424,
+    "preceding_passes": 2367,
+    "source_evidence": "Retained JUnit failure parsed read-only; no maintenance source mutation."
+  },
+  "existing_successor_guard": "validate_distribution_pack already invokes existing profile renderer and projected context-budget owner after canonical generation, but prospective source_distribution stage follows negative-control and semantic qualification.",
+  "contract": [
+    "Keep canonical fixed-point and source/policy binding prerequisites; never reject a merely stale generated pack before generation can settle.",
+    "Keep cheap exposure rejection first; then run existing source-distribution/pack/rendered-budget admission before costly negative-control/semantic qualification and all provider/evidence work.",
+    "Do not duplicate renderer/budget logic or change caps, profile semantics, status identities, required controls, proof authority or historical progress readability.",
+    "On failure preserve typed cause and source_distribution progress terminal; no downstream costly check, provider work, allocation or mutation.",
+    "On pass execute every remaining required check unchanged."
+  ],
+  "verification": [
+    "Synthetic authored YAML fits declared byte budget but exact canonical render exceeds it; actual existing distribution query rejects before negative-control/semantic/provider sentinels.",
+    "Exposure failure retains first priority; existing semantic/negative-control failures and progress causes remain intact.",
+    "Affected prospective/source/profile/pack tests and native/installed parity."
+  ],
+  "limits": [
+    "No claim that maintenance2.3.4/2.3.5 source contains successor guard; no backport or alteration of maintenance repair.",
+    "Complete earliest-valid failure population remains open."
+  ]
+}
