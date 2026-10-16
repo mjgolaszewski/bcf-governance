@@ -115,3 +115,14 @@ def test_conditional_calls_and_class_annotated_value_are_possible_sites(tmp_path
     assert any(row['kind'] == 'annotation' for row in facts['sites'])
     assert any(row['kind'] == 'import' for row in facts['sites'])
     assert any(row['reason'] == 'metaclass_and_implicit_class_hooks' for row in facts['unresolved'])
+
+
+def test_empty_explicit_site_population_cannot_claim_effect_completeness(tmp_path):
+    facts = discover(tmp_path, 'result = left + right\n')['module_initializers'][0]
+    assert facts['sites'] == []
+    assert facts['execution_qualified'] is False
+    assert facts['completeness_qualified'] is False
+    assert facts['limitations'] == [
+        'implicit_protocol_effects_not_enumerated',
+        'external_native_dynamic_execution_not_resolved',
+    ]

@@ -29,7 +29,9 @@
           "execution_qualified",
           "scope",
           "sites",
-          "unresolved"
+          "unresolved",
+          "completeness_qualified",
+          "limitations"
         ],
         "properties": {
           "path": {
@@ -135,6 +137,15 @@
                 }
               }
             }
+          },
+          "completeness_qualified": {
+            "const": false
+          },
+          "limitations": {
+            "const": [
+              "implicit_protocol_effects_not_enumerated",
+              "external_native_dynamic_execution_not_resolved"
+            ]
           }
         }
       }

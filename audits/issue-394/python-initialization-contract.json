@@ -17,7 +17,8 @@
     "Exclude deferred function and lambda bodies; retain generator uncertainty and annotation uncertainty explicitly.",
     "All sites are possible effects, never proof of execution, purity, completeness or suppression eligibility. Dynamic execution and implicit language hooks remain unresolved.",
     "Hash syntax with occurrence ordinals and source lines; do not emit literal expressions or fabricated call nodes.",
-    "Default inventory remains byte-equivalent; no import resolution or source operation consumer activation in this slice."
+    "Default inventory remains byte-equivalent; no import resolution or source operation consumer activation in this slice.",
+    "Every module result explicitly sets completeness_qualified false and declares implicit protocol and external/native/dynamic execution limitations even when the explicit site population is empty."
   ],
   "target_modules": [
     "bcf_governance/tooling/semantic_ownership_inventory.py",
