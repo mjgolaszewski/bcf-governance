@@ -70,4 +70,3 @@ def validate_distribution_pack(repo_root: Path, *, python_executable: Path | Non
             else "dependencies_only"
         ),
     }
-
