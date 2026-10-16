@@ -23,8 +23,8 @@ admission:
   rule: Derive phase and train IDs only after exact predecessor closure qualifications
     compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: Authored integration, canonical normalization and exact successor proof
-    remain pending; predecessor distribution hold is lifted.
+  blocker: Attempt six interrupted during unpromoted normalization; bound-PR integration,
+    canonical normalization and exact successor proof remain pending. Predecessor hold is lifted.
   unblock_condition: Complete admitted v2.3.4 source integration and existing canonical
     execution path. Optional compatibility failures remain residuals under current
     policy.
@@ -207,7 +207,7 @@ workitems:
     evidence: []
   foundation.deadlines:
     summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
-    status: TODO
+    status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
     architectural_layer: tooling
