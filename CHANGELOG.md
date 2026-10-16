@@ -27,6 +27,10 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Reject missing PR changelog deltas before normalization allocation using the
+  resolved comparison base and canonical candidate scope. Stacked-base changes
+  and ambient validation flags cannot substitute for the leaf PR obligation.
+
 - Submission now settles derived governance through the existing canonical
   reconciliation owner before deriving lifecycle scope and capturing the exact
   candidate. Authored contradictions, incorrect intent assertions, busy local

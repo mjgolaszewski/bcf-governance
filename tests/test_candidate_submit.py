@@ -547,6 +547,7 @@ def test_submit_rejects_incomplete_proof_before_push(
 
 
 def _normalization_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(submit, 'validate_pull_request_changelog_update', lambda *_a: None)
     monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories', lambda *_a, **_k: None)
     monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext(), raising=False)
 
@@ -991,3 +992,62 @@ def test_authored_source_distribution_rejects_before_lease_and_reconciliation(mo
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source declaration'))
     assert caught.value.__cause__ is failure
+
+
+@pytest.mark.parametrize('stacked', [False, True])
+@pytest.mark.parametrize('changed', [False, True])
+def test_exact_pr_changelog_precedes_normalization_allocation(monkeypatch, tmp_path, stacked, changed):
+    import os
+    import subprocess
+
+    def git(*args):
+        return subprocess.run(['git', '-C', str(tmp_path), *args], capture_output=True,
+            text=True, check=True).stdout.strip()
+    git('init', '-b', 'main')
+    git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'user.name', 'Fixture')
+    (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n')
+    git('add', '.'); git('commit', '-m', 'base')
+    base = git('rev-parse', 'HEAD')
+    if stacked:
+        (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\nStack only\n')
+        git('add', '.'); git('commit', '-m', 'stack changelog')
+        base = git('rev-parse', 'HEAD')
+    git('checkout', '-b', 'feature')
+    (tmp_path / 'source.py').write_text('VALUE = 1\n')
+    if changed:
+        (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\nLeaf change\n')
+    git('add', '.'); git('commit', '-m', 'leaf')
+    head = git('rev-parse', 'HEAD')
+    context = LocalPRContext('origin', 'main', base, head, 'feature',
+        base_ref='stack' if stacked else None, repository='owner/repo', repository_id=17,
+        pull_request_number=7, pull_request_node_id='PR_exact7', provider_head_sha=head)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda _: ('closure', None) if stacked else ('pr', None))
+    trace = []
+    monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories',
+        lambda *_a, **_k: trace.append('collection') if changed else pytest.fail('collected tests before deterministic changelog rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext() if changed else pytest.fail('lease before changelog rejection'))
+    monkeypatch.setenv('BCF_ENFORCE_PR_CHANGELOG', 'false')
+    monkeypatch.setenv('BCF_VALIDATION_LANE', 'isolated_candidate_qualification')
+    def normalize():
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id=head,
+            semantic_intent=None, context=context,
+            runner=lambda *_a, **_k: SimpleNamespace(returncode=0) if changed else pytest.fail('reconciliation before changelog rejection'))
+    if changed:
+        normalize()
+        assert trace == ['collection']
+    else:
+        with pytest.raises(ProspectiveValidationError, match='every pull request must update CHANGELOG.md'):
+            normalize()
+    assert os.environ['BCF_ENFORCE_PR_CHANGELOG'] == 'false'
+    assert os.environ['BCF_VALIDATION_LANE'] == 'isolated_candidate_qualification'
+
+
+def test_default_main_closure_normalization_keeps_release_changelog_scope(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda _: ('closure', 'P32'))
+    monkeypatch.setattr(submit, 'validate_pull_request_changelog_update',
+        lambda *_a: pytest.fail('release scope acquired PR changelog obligation'))
+    context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'feature')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+        semantic_intent=None, context=context, runner=lambda *_a, **_k: SimpleNamespace(returncode=0))

@@ -44,6 +44,8 @@ from .governance_validation.preflight_distribution import validate_source_distri
 from .runtime_capacity import executing_runtime_version
 from .ci_graph_timeouts import gate_timeout_contract
 from .governance_validation.authored_phase_state import validate_authored_phase_state
+from .governance_validation.required_artifacts import validate_pull_request_changelog_update
+from .local_pr_context import _pr_environment
 from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 
 
@@ -72,14 +74,17 @@ def _normalize_submission(
         validate_authored_release_target(root, version)
         gate_timeout_contract(root)
         validate_ci_state_matrix(root, authored_only=True)
-        if semantic_intent is not None:
+        if semantic_intent is not None or context is not None:
             mode, target = authored_post_merge_scope(root)
             if context is not None:
                 mode, target = candidate_semantic_scope(mode, target, context=context)
-            if semantic_intent != mode:
+            if semantic_intent is not None and semantic_intent != mode:
                 raise ProspectiveValidationError(
                     "submitted semantic intent does not match the authored lifecycle intent"
                 )
+            if mode == "pr" and context is not None:
+                with _pr_environment(context):
+                    validate_pull_request_changelog_update(root)
         validate_authored_test_reference_inventories(root, python_executable=python_executable)
         validate_authored_semantic_ownership(root)
         validate_source_distribution(root, python_executable=python_executable)

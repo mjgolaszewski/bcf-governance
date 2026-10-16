@@ -23,8 +23,9 @@ admission:
   rule: Derive phase and train IDs only after exact predecessor closure qualifications
     compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: Attempt six interrupted during unpromoted normalization; bound-PR integration,
-    canonical normalization and exact successor proof remain pending. Predecessor hold is lifted.
+  blocker: Original attempt six was interrupted during unpromoted normalization. Recovered primary
+    normalized to67825aac then failed provider inventory stability before behavioral proof;
+    bound-PR integration and exact successor proof remain pending. Predecessor hold is lifted.
   unblock_condition: Complete admitted v2.3.4 source integration and existing canonical
     execution path. Optional compatibility failures remain residuals under current
     policy.
@@ -2624,6 +2625,9 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_candidate_submit::test_exact_pr_changelog_precedes_normalization_allocation[True-False]
+    - tests.test_candidate_submit::test_exact_pr_changelog_precedes_normalization_allocation[True-True]
+    - tests.test_candidate_submit::test_default_main_closure_normalization_keeps_release_changelog_scope
     - tests.test_candidate_submit::test_submit_normalizes_before_capturing_the_proved_subject
     - tests.test_candidate_submit::test_fixed_point_submit_normalization_does_not_generate
     - tests.test_candidate_submit::test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout
@@ -2633,6 +2637,10 @@ implementation_slices:
     - tests.test_reconcile_governance::test_commit_derived_preserves_trusted_workflow_definition_authority_pair
     - tests.test_reconcile_governance::test_commit_derived_cli_preserves_existing_projection_owner_result
     negative_controls:
+    - cause: missing-exact-default-PR-changelog-before-normalization-allocation
+      test: tests.test_candidate_submit::test_exact_pr_changelog_precedes_normalization_allocation[False-False]
+    - cause: changelog-only-in-stacked-base-cannot-satisfy-leaf
+      test: tests.test_candidate_submit::test_exact_pr_changelog_precedes_normalization_allocation[False-True]
     - cause: dirty-projection-source
       test: tests.test_reconcile_governance::test_candidate_file_projection_rejects_dirty_source_before_shadow
     - cause: source-movement-during-projection

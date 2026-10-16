@@ -1,0 +1,35 @@
+{
+  "authority": false,
+  "contract_commit": "f607095c",
+  "workitem": "P32-P0-07",
+  "observed_defect": "Default and stacked real-Git omission cases reached test collection before fix; both failed the explicit early-rejection sentinel.",
+  "implementation": "Existing canonical scope/context and changelog owners execute before collection, source-distribution admission, lease and reconciliation; later fresh-subject gate retained.",
+  "checks": {
+    "submission_suite": {
+      "passed": 62,
+      "elapsed_seconds": 1.02
+    },
+    "affected_submission_prospective_pack": {
+      "passed": 131,
+      "elapsed_seconds": 20.75
+    },
+    "authored_semantic_ownership": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_module_size": "passed",
+    "architecture_context_membership": "passed"
+  },
+  "scope": [
+    "positive exact PR delta for default/stacked comparisons",
+    "missing leaf delta and changelog-only-in-stack reject before allocation",
+    "raw ambient opt-out and isolated qualification lane overridden/restored",
+    "default-main closure retains release obligation scope",
+    "context-free normalization compatibility retained by prior suite"
+  ],
+  "limits": [
+    "Complete deterministic failure population and earliest-safe-boundary conformance remain open.",
+    "Exact installed parity for this source change and independent complete consumer acceptance remain required.",
+    "No successor heavy train started while maintenance427 owns the lane.",
+    "No phase/controller/release/custody authority or whole requirement closure conferred."
+  ]
+}
