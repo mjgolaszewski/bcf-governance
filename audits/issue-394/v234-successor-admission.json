@@ -1,0 +1,177 @@
+{
+  "document": {
+    "kind": "successor_baseline_admission_observation",
+    "path": "audits/issue-394/v234-successor-admission.json",
+    "authority": false,
+    "status": "predecessor_authenticated_source_integration_pending"
+  },
+  "subject": {
+    "repository": "mjgolaszewski/bcf-governance",
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+    "tag": "v2.3.4"
+  },
+  "closed_predecessor": {
+    "certification": {
+      "status": "pass",
+      "computed_state": "certified",
+      "admission_ordinal": 38858875383002001,
+      "selected_attempts": [
+        [
+          "governance",
+          2
+        ]
+      ],
+      "reasons": [],
+      "certification_sha256": "fbafafc457753764544079ed4f5c55c5f7cfa6ccd3a2447a21a9c60bda951324",
+      "session_manifest_sha256": "f9fb8db826f4970223a2e23932b7cc23dfe1627f3257a0d5d2388073d8b998f6",
+      "raw_snapshot_sha256": [
+        [
+          "governance",
+          "8d76369ca06d1447170ebdb6604c99a7325226cbd8ba3d5beb29ece9b8c59b23"
+        ]
+      ],
+      "evaluation_scope": {
+        "intent": "closure",
+        "target": {
+          "id": "P31",
+          "kind": "phase"
+        }
+      },
+      "certified_proposition": {
+        "authorizes": [],
+        "conclusion": "success",
+        "eligible_successors": [],
+        "predicate": "phase_closed",
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "target": {
+          "id": "P31",
+          "kind": "phase"
+        }
+      }
+    },
+    "closed_phases": [
+      "P31"
+    ],
+    "truth": {
+      "P31": {
+        "report": {
+          "status": "pass",
+          "effective_state": "closed",
+          "subject": {
+            "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "tracked_clean": true,
+            "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+            "untracked_clean": true
+          },
+          "phase_id": "P31",
+          "verifier": {
+            "id": "bcf truth",
+            "kind": "service"
+          }
+        },
+        "verification_snapshot": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+          "truth_report_sha256": "e17a149d69eb5b986831455957c9337039c8c0cf0b848973f115a006c53120a8",
+          "evidence_bundle_sha256": "e99b72ab4182951fbf39364e82cc42ecedcc0e59016c27acb5968ca95cc360b2",
+          "durable_ref": "github-actions://mjgolaszewski/bcf-governance/runs/38858875383/attempts/2/bcf-governance-truth",
+          "verifier": {
+            "kind": "service",
+            "id": "bcf truth"
+          }
+        }
+      }
+    }
+  },
+  "certification_artifact": {
+    "run_id": 38864317679,
+    "attempt": 1,
+    "artifact_id": 12030816786,
+    "provider_archive_sha256": "02650ded768cb49e3f880b30075d326a7af80911a1bedf3c2d30f144135afa5e",
+    "bundle_manifest": {
+      "admission_ordinal": "38858875383002001",
+      "computed_state": "certified",
+      "files": {
+        "ci-authority.json": "a7301d2c7741f9e8f1ef3dcc7f7b9cbeef2303c25b45cd1477861347f8944ae9",
+        "ci-certification.json": "fbafafc457753764544079ed4f5c55c5f7cfa6ccd3a2447a21a9c60bda951324",
+        "controller-custody.json": "039408c0cc454527f5055c1dfb965549d72ddddbb9ec43bb041c64b849b6447d",
+        "evidence-session.json": "f9fb8db826f4970223a2e23932b7cc23dfe1627f3257a0d5d2388073d8b998f6",
+        "governance-truth.json": "e17a149d69eb5b986831455957c9337039c8c0cf0b848973f115a006c53120a8",
+        "raw/governance.json": "8d76369ca06d1447170ebdb6604c99a7325226cbd8ba3d5beb29ece9b8c59b23"
+      },
+      "kind": "certification",
+      "schema_version": "1.1",
+      "subject": {
+        "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+        "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+      }
+    },
+    "verification_owners": [
+      "bcf_governance/tooling/ci_github_bundle.py::verify_bundle",
+      "bcf_governance/tooling/ci_authority_certification.py::verify_ci_certification",
+      "bcf_governance/tooling/governance_cleanup/truth_reports.py::load_truth_reports"
+    ]
+  },
+  "immutable_custody": {
+    "status": "verified",
+    "tag": "v2.3.4",
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "immutable": true,
+    "draft": false,
+    "assets": {
+      "SHA256SUMS": "1c29a86add2e50e8315c084cc7d168172822882d85866a84a73a425d8e9b2c9d",
+      "bcf_governance-2.3.4-py3-none-any.whl": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
+      "bcf_governance-2.3.4.tar.gz": "9fe8cddee2e81f451f0bece4b28cbdf71b0ef715fbf23503ff8dcfce2f454b10"
+    }
+  },
+  "asset_readback": {
+    "independently_downloaded": true,
+    "all_three_assets_sha256_equal_immutable_inventory": true,
+    "archives_match_SHA256SUMS": true,
+    "owner": "bcf_governance/tooling/release_publication_transaction.py::inspect_release",
+    "verifier_run": 38867337948,
+    "publisher_run": 38867648790
+  },
+  "effective_installed_controller": {
+    "controller_commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "controller_bundle_sha256": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba"
+  },
+  "controller_authentication": {
+    "owner": "bcf_governance/tooling/routine_controller_provider.py::effective_controller_authority",
+    "provider_workflow_authority_verified": true,
+    "query_repo_root": "exact detached admitted v2.3.4 source",
+    "same_invocation_completed": true,
+    "wheel_contains_exact_admitted_controller_and_certification_module_bytes": true
+  },
+  "adopter_policy": {
+    "path": "governance/release-qualification.yml",
+    "sha256": "cd6c56c84e82861c24de6c34ea212e48071ca49723fc25b82afc9520c3e6e9f5",
+    "qualification_authority": "local_non_authoritative",
+    "product_failure": "typed_remediation_input_no_publication_effect",
+    "operator_disposition": "Follow current policy; carry optional compatibility/interpreter failure as residual. No successful optional observation invented."
+  },
+  "derived_successor": {
+    "predecessor_phase": "P31",
+    "phase": "P32",
+    "release_train": "release_27",
+    "target_version": "2.5.0",
+    "basis": "Canonical active P31 completed and independently verified closed; highest release train 26. Existing proposed P32\u2013P35 and release_27 do not collide."
+  },
+  "handoff": {
+    "identity": "home:bcf-governance:bcf-394-ironwatch",
+    "peer": "bcf-governance:closure-engine",
+    "cursors": [
+      7349,
+      7353,
+      7357
+    ]
+  },
+  "limits": [
+    "Authenticated predecessor admission only; source integration, canonical normalization and successor provider admission remain outstanding.",
+    "No complete Issue 394 requirement, performance budget, machine-DAG adoption, installed optimization qualification or successor custody asserted."
+  ]
+}
