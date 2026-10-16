@@ -1,0 +1,63 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/early-coverage-admission-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority orchestration consuming existing evidence/test inventory owner",
+  "architectural_layer": "tooling queries and existing command orchestrator",
+  "operation_side": "query before command mutation",
+  "affected_surface_matrix": [
+    {
+      "module": "bcf_governance/tooling/test_manifests.py",
+      "context": "evidence",
+      "side": "existing exact test collection/index queries"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_authority_submit.py",
+      "context": "ci_authority",
+      "side": "existing normalization command orchestration"
+    },
+    {
+      "module": "bcf_governance/tooling/governance_validation/preflight_negative_controls.py",
+      "context": "governance",
+      "side": "existing oracle applicability query"
+    }
+  ],
+  "targets": [
+    "bcf_governance/tooling/test_manifests.py",
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "bcf_governance/tooling/governance_validation/preflight_negative_controls.py",
+    "schemas/gate-contracts.schema.json",
+    "governance/gate-contracts.yml",
+    "tests/test_test_manifests.py",
+    "tests/test_candidate_submit.py",
+    "tests/test_preflight.py"
+  ],
+  "contract": [
+    "Add optional reference_inventories declarations to existing gate test_contract; each strict descriptor has portable regular repository path and closed format implementation_slice_bindings.v1. Legacy absence performs no new collection. Explicit malformed/empty declarations block.",
+    "Read declared slice positive_tests and negative_controls test references using existing strict YAML owner. Require nonempty exact node lists, unique causes/positive identities and regular non-symlink resources. This query validates reference applicability only, not independent full requirement/effect/runtime completeness.",
+    "Use existing collect_selector_maps once across declared producer gates before normalization lease or reconciliation; preserve exact producer ownership through OracleManifestIndex. Bare parameterized, missing or foreign-producer references reject; never expand them implicitly or edit authored/generated data.",
+    "Existing preflight negative-control oracle owner validates the same declarations against canonical manifests after generation and before provider work. Same closed parser and exact resolver serve both consumers.",
+    "Run authored release/phase/timeout/machine/intent contradictions before collection, and collection before leasing or reconciliation. Preserve original typed cause and all existing later proof.",
+    "Project capability through canonical pack owner; do not force reference inventory declarations on legacy consumers. Actual self gate declares existing issue coverage inventory.",
+    "Return nonauthoritative counts only. Installed trusted policy/independent required populations and full normative lifecycle adoption remain unqualified; declaration validity grants no suppression or authority."
+  ],
+  "expected_tests": [
+    "Real collected exact references pass despite stale generated manifest; later manifest query rejects until correct.",
+    "Bare parameterized/missing/foreign-producer nodes reject without writes; malformed declarations, paths, symlinks, duplicate YAML keys and empty or ambiguous controls reject before collection.",
+    "Legacy absence avoids collection; real valid minimal fixture and mixed declared gates preserve producer ownership.",
+    "Submission rejects before lease/reconcile/provider for coverage contradiction; later preflight retains same cause.",
+    "Schema, source/package/template parity, architecture/LOC and actual 21-operation characterization remain required."
+  ],
+  "forbidden_surfaces": [
+    "Hardcoded Issue 394 paths in production code",
+    "Manual generated workflows/authority/test manifest normalization",
+    "Looser prefix oracle matching or auto-expansion of authored references",
+    "New graph/truth/receipt registry",
+    "Maintained adopters or frozen release assets"
+  ],
+  "dependency_acceptance": "Foundation deterministic rejection only; does not close prerequisite workitems or activate optimization."
+}
