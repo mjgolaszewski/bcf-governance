@@ -38,7 +38,7 @@ from .evidence_workitem_lifecycle import (
     validate_evaluation_authored_ready,
 )
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, _exposure_scan, _negative_control_targets, _semantic_ownership, run_preflight
+from .preflight import PreflightError, _exposure_scan, _negative_control_targets, _pack_manifest, _semantic_ownership, run_preflight
 from .ci_authority_prospective_truth import require_truth as _require_truth
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
@@ -299,6 +299,7 @@ def _run_prospective_train(
         ("exposure", _exposure_scan),
         ("negative_controls", _negative_control_targets),
         ("semantic_ownership", _semantic_ownership),
+        ("source_distribution", lambda root: _pack_manifest(root, python_executable=python_executable)),
     ):
         emit(stage, "started")
         try:

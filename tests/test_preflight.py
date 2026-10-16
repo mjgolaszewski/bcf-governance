@@ -620,7 +620,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         lambda _: {"status": "conformant", "blocking_violation_count": 0},
     )
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
-    monkeypatch.setattr(preflight, "_pack_manifest", lambda _: {"applicable": False})
+    monkeypatch.setattr(preflight, "_pack_manifest", lambda _, **kwargs: {"applicable": False})
     monkeypatch.setattr(
         preflight,
         "compile_migration_plan",
@@ -944,6 +944,9 @@ def test_stale_pack_manifest_fails_before_evidence(
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {})
     monkeypatch.setattr(preflight, "_pr_context", lambda *_: {})
     monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
+    monkeypatch.setattr(preflight, "compile_migration_plan", lambda *_a, **_k: {})
+    monkeypatch.setattr(preflight, "check_editorial", lambda *_a, **_k: {})
+    monkeypatch.setattr(preflight, "build_verification_plan", lambda *_a, **_k: {"execution_dag": {"nodes": []}})
     monkeypatch.setattr(
         preflight,
         "allocate_session",
@@ -1547,3 +1550,52 @@ def test_authored_phase_result_primitive_and_real_consumers_have_one_source_owne
     assert binding['document']['authority'] is False
     assert binding['execution_qualified'] is False
     assert binding['normative_adoption_qualified'] is False
+
+
+@pytest.mark.parametrize("case", ["no-pack", "valid", "bad-digest", "missing-manifest"])
+def test_pack_admission_extraction_preserves_existing_result_and_error_bytes(tmp_path, case):
+    import hashlib
+    root = tmp_path
+    if case == "no-pack":
+        assert preflight._pack_manifest(root) == {"applicable": False}
+        return
+    template = root / "bcf_governance/pack/template-repo"
+    template.mkdir(parents=True)
+    (template / "owned.txt").write_text("current\n")
+    if case != "missing-manifest":
+        digest = hashlib.sha256(b"current\n").hexdigest() if case == "valid" else "0" * 64
+        (template / ".bcf-pack-manifest.json").write_text(json.dumps({"schema_version": "2.0",
+            "files": {"owned.txt": {"sha256": digest, "operation": "copy"}}, "generated": [], "retired_files": {}}))
+    if case == "valid":
+        assert preflight._pack_manifest(root) == {"applicable": True, "file_count": 1, "template_interpreter": "not_declared"}
+    else:
+        message = ("template pack is missing .bcf-pack-manifest.json" if case == "missing-manifest"
+                   else "pack manifest mismatch: missing=[], stale=[], digest_mismatch=['owned.txt']")
+        with pytest.raises(preflight.PreflightError) as observed:
+            preflight._pack_manifest(root)
+        assert str(observed.value) == message
+
+
+@pytest.mark.parametrize('response', ['[]', '{"authority":true}', '{"authority":false,"built_bytes_verified":false,"scope":"static_source_declaration_coverage","file_count":true}', 'invalid-json'])
+def test_source_distribution_observation_rejects_malformed_or_authoritative_response(monkeypatch, tmp_path, response):
+    from bcf_governance.tooling.governance_validation import preflight_distribution as distribution
+    from types import SimpleNamespace
+    (tmp_path / 'bcf_governance/pack/template-repo').mkdir(parents=True)
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname="fixture"\n')
+    owner = tmp_path / '.github/scripts/release_source_inventory.py'
+    owner.parent.mkdir(parents=True)
+    owner.write_text('# fixture\n')
+    monkeypatch.setattr(distribution, 'project_python_environment', lambda *_a: {})
+    monkeypatch.setattr(distribution.subprocess, 'run', lambda *_a, **_k: SimpleNamespace(returncode=0, stdout=response, stderr=''))
+    with pytest.raises(ValueError):
+        distribution.validate_source_distribution(tmp_path, python_executable=Path('/project-python'))
+
+
+def test_pack_preflight_translates_source_query_io_failure_preserving_cause(monkeypatch, tmp_path):
+    failure = OSError('project interpreter unavailable')
+    def reject(*_a, **_k):
+        raise failure
+    monkeypatch.setattr(preflight, 'validate_distribution_pack', reject)
+    with pytest.raises(preflight.PreflightError, match='project interpreter unavailable') as caught:
+        preflight._pack_manifest(tmp_path, python_executable=Path('/project-python'))
+    assert caught.value.__cause__ is failure

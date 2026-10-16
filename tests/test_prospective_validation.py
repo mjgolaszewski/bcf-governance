@@ -359,6 +359,7 @@ def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> Sim
 
 def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
     monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
+    monkeypatch.setattr(prospective, "_pack_manifest", lambda *_a, **_k: {"applicable": False}, raising=False)
     monkeypatch.setattr(
         prospective,
         "resolve_local_pr_context",
@@ -1861,3 +1862,17 @@ def test_policy_context_rejects_incomplete_or_wrong_source_subject(policy_stack,
     with pytest.raises(ProspectiveLaneError):
         prospective_policy_binding(f.root, lane='trusted_exact_main', custody_state='ordinary_executable_controller', changed_paths=('README.md',),
             base_sha=f.base, base_tree=f.base_tree, candidate_sha=f.head, candidate_tree=f.tree, policy_context=replace(f.context, **fields[cause]))
+
+def test_source_distribution_failure_rejects_before_provider_and_preserves_cause(monkeypatch, tmp_path):
+    _front_door(monkeypatch, [])
+    events = []
+    failure = prospective.PreflightError('source distribution failed: source manifest omits tracked source: audits/collector.py')
+    def reject(*_a, **_k):
+        raise failure
+    monkeypatch.setattr(prospective, '_pack_manifest', reject, raising=False)
+    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *_a, **_k: pytest.fail('provider reached before source distribution rejection'))
+    with pytest.raises(prospective.ProspectiveValidationError, match='source manifest omits') as caught:
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
+            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
+    assert caught.value.__cause__ is failure
+    assert [(e['stage'], e['state']) for e in events[-2:]] == [('source_distribution', 'started'), ('source_distribution', 'failed')]

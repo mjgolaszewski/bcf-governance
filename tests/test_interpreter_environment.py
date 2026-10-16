@@ -366,6 +366,7 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
         "pip-audit",
         "pytest",
         "pyyaml",
+        "referencing",
         "setuptools",
         "urllib3",
         "wheel",

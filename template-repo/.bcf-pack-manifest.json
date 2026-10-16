@@ -552,7 +552,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "a7c04f89b6ed84d80063479c8f1be72672343b1c2944ef573d0c9bc3fc588b2b"
+      "sha256": "7fe0f437aba8be04d0e802745c2786367ba51290991bbc66e79947e92ed5b019"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -1164,7 +1164,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/context_budgets.py": {
       "operation": "copy",
-      "sha256": "da5180e3ff5cd4bfa9ae1dc3d6feb41c1b52fc6d2bf7aa44ef13893af6c20b84"
+      "sha256": "1a56af8c2b1e9b43934cdb13583b12c10d7040d44bac6c6a125034975a34e47b"
     },
     "scripts/_bcf_runtime/governance_validation/editorial_contract.py": {
       "operation": "copy",
@@ -1189,6 +1189,10 @@
     "scripts/_bcf_runtime/governance_validation/preflight_diagnostics.py": {
       "operation": "copy",
       "sha256": "82338e9ddd038f06141bdccb532f51e455fc72ae4b92c8d032aad023f152e402"
+    },
+    "scripts/_bcf_runtime/governance_validation/preflight_distribution.py": {
+      "operation": "copy",
+      "sha256": "398ec7b9b0b39f399ed8ff3314d2708f538c3ff0fa382af10e3fdb871fe58481"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
@@ -1271,7 +1275,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "644fb0f04408233efb8a8998d4288c96ad4b1a5ecce74e41b100e12162fb9aa5"
+      "sha256": "17adce6cd0756eabdf200255f67c9e254eed0f128d16741be5e074c21bb6fb21"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1299,7 +1303,7 @@
     },
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
-      "sha256": "3fc472addde78dffe23c732b90375a964def5b91db6f711523ef903539850c33"
+      "sha256": "96f841bb7f106dd15107910ba176c3f5455269c4976e188440e9080092f6e0f2"
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",
@@ -1311,7 +1315,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "337173595a4062b50def9b68e3ae6172f46baa6c28be67c3ce0a968437567c85"
+      "sha256": "9c0efe0f2122cf2166dcacdc9d53954b70c32a2c8c09feb77379b79371477da2"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
@@ -1339,7 +1343,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "9d2db288cd4b1eb266b6d91db8b44b318dc816b5f9fc321ba576f588200bd0f1"
+      "sha256": "4342a15153140368872fb9fd810e4e48911f477c9fb31b98f96e94f2f2b093d2"
     },
     "scripts/_bcf_runtime/prospective_candidate_identity.py": {
       "operation": "copy",

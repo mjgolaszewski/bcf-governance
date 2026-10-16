@@ -40,6 +40,7 @@ from .nested_cli_runtime import exact_nested_cli_command
 from .release_version_projection import validate_authored_release_target
 from .test_manifests import validate_authored_test_reference_inventories
 from .semantic_ownership_scan import validate_authored_semantic_ownership
+from .governance_validation.preflight_distribution import validate_source_distribution
 from .runtime_capacity import executing_runtime_version
 from .ci_graph_timeouts import gate_timeout_contract
 from .governance_validation.authored_phase_state import validate_authored_phase_state
@@ -81,7 +82,8 @@ def _normalize_submission(
                 )
         validate_authored_test_reference_inventories(root, python_executable=python_executable)
         validate_authored_semantic_ownership(root)
-    except ValueError as exc:
+        validate_source_distribution(root, python_executable=python_executable)
+    except (OSError, ValueError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     with local_gate_lease(execution_id):
         command = exact_nested_cli_command(
