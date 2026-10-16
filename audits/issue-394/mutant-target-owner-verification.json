@@ -1,0 +1,33 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/mutant-target-owner-contract.json",
+  "initial_controls": "Both existing exact-target inventory and new early-admission control failed on original source.",
+  "checks": {
+    "harness_prospective_structural": {
+      "passed": 54,
+      "seconds": 138.61
+    },
+    "real_preflight_target_bindings": 275,
+    "lint": "passed",
+    "typecheck": "passed",
+    "pack_parity": "source regenerated through existing owner; structural exact-copy gate passed"
+  },
+  "kill_evidence": "Unmutated isolated semantic-contract oracle passed; same declared oracle killed migrated mutant by expected DID NOT RAISE, not infrastructure/import failure.",
+  "preserved": [
+    "Mutant ID, source mutation, exact-one target count and declared oracle.",
+    "Original complete late preflight check and provider authority predicates."
+  ],
+  "fixture_history": [
+    "First expanded unit run lacked gate contracts in deliberately minimal preflight-stub roots; added scoped existing-query stub to those unit fixtures.",
+    "Positive and negative real-mutant fixture initially reused one fresh-only package directory; corrected to separate isolated roots without changing production copy semantics."
+  ],
+  "limits": [
+    "Earlier static applicability is after required generation, not complete all-pipeline earliest-boundary proof.",
+    "No provider certification, phase closure, optimization activation or percentile claim."
+  ],
+  "loc": {
+    "local_pr": 795,
+    "mutant_harness": 694
+  }
+}

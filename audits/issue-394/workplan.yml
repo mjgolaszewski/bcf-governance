@@ -1128,6 +1128,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - migrated-mutant-owner-and-early-control-admission
     - provider-authority-progress-and-exposure-frontier
     - unambiguous-authored-lifecycle-inputs
     - timeout-policy-resource-admission
@@ -1485,6 +1486,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - migrated-mutant-owner-and-early-control-admission
     - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
   F06:
@@ -2354,6 +2356,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - migrated-mutant-owner-and-early-control-admission
     - provider-authority-progress-and-exposure-frontier
     - unambiguous-authored-lifecycle-inputs
     - timeout-policy-resource-admission
@@ -3452,3 +3455,25 @@ implementation_slices:
     - Progress is not certification, receipt, deadline sufficiency or full timing attribution.
     - 'Verification: audits/issue-394/provider-authority-progress-verification.json;
       all whole requirements remain open.'
+
+  migrated-mutant-owner-and-early-control-admission:
+    id: migrated-mutant-owner-and-early-control-admission
+    workitem: P32-P0-02
+    scope: Retain original semantic operation completeness mutant at extracted canonical
+      owner and reject stale control applicability before provider work.
+    contract: audits/issue-394/mutant-target-owner-contract.json
+    producer: .github/scripts/run_validator_mutants.py::validate_mutant_targets
+    consumer: Existing preflight._negative_control_targets and local_pr source admission
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_mutant_harness::test_every_mutant_targets_exactly_one_canonical_semantic_owner
+    - tests.test_mutant_harness::test_migrated_operation_completeness_mutant_keeps_positive_and_cause_specific_kill
+    negative_controls:
+    - cause: stale-control-before-provider-work
+      test: tests.test_prospective_validation::test_static_control_failure_stops_before_provider_and_preserves_cause
+    remaining:
+    - Canonical normalization, exact candidate proof and full source/profile/authority
+      contexts remain required.
+    - Existing late preflight remains; no control/oracle weakening or proof suppression.
+    - 'Evidence: audits/issue-394/mutant-target-owner-verification.json.'

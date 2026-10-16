@@ -38,7 +38,7 @@ from .evidence_workitem_lifecycle import (
     validate_evaluation_authored_ready,
 )
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, _exposure_scan, run_preflight
+from .preflight import PreflightError, _exposure_scan, _negative_control_targets, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -297,13 +297,14 @@ def _run_prospective_train(
             authority_applicability = ordinary_authority_applicability(policy_identity)
         except ProspectiveLaneError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
-    emit("exposure", "started")
-    try:
-        _exposure_scan(root)
-    except PreflightError as exc:
-        fail_stage("exposure")
-        raise ProspectiveValidationError(str(exc)) from exc
-    emit("exposure", "complete")
+    for stage, check in (("exposure", _exposure_scan), ("negative_controls", _negative_control_targets)):
+        emit(stage, "started")
+        try:
+            check(root)
+        except PreflightError as exc:
+            fail_stage(stage)
+            raise ProspectiveValidationError(str(exc)) from exc
+        emit(stage, "complete")
     verify_provider_authority = repository is not None and (
         custody_state != "ordinary_executable_controller"
         or authority_applicability == "provider_verification_required"

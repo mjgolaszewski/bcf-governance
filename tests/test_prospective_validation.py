@@ -352,6 +352,7 @@ def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> Sim
 
 
 def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
+    monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
     monkeypatch.setattr(
         prospective,
         "resolve_local_pr_context",
@@ -1290,6 +1291,7 @@ def test_typed_intent_must_match_canonical_graph_before_preflight(
 def test_terminal_reauthentication_rejects_base_movement(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
     trace: list[str] = []
     contexts = iter(
         (
@@ -1730,3 +1732,18 @@ def test_exposure_failure_stops_before_provider_authority_and_retains_cause(monk
             repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
     assert caught.value.__cause__ is failure
     assert [(row['stage'], row['state']) for row in events[-2:]] == [('exposure', 'started'), ('exposure', 'failed')]
+
+
+def test_static_control_failure_stops_before_provider_and_preserves_cause(monkeypatch, tmp_path):
+    _front_door(monkeypatch, [])
+    events = []
+    failure = prospective.PreflightError('scheduled mutant target is stale')
+    def controls(root):
+        raise failure
+    monkeypatch.setattr(prospective, '_negative_control_targets', controls, raising=False)
+    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *args, **kwargs: pytest.fail('provider ran before static control rejection'))
+    with pytest.raises(prospective.ProspectiveValidationError, match='scheduled mutant target is stale') as caught:
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
+            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
+    assert caught.value.__cause__ is failure
+    assert [(row['stage'], row['state']) for row in events[-2:]] == [('negative_controls', 'started'), ('negative_controls', 'failed')]
