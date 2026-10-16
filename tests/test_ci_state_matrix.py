@@ -499,3 +499,17 @@ def test_active_receipt_owner_is_registered_factory_called_by_real_collector():
     collector = next(row for row in inventory['functions'] if row['symbol'] == 'bcf_governance/tooling/ci_github_release.py::collect_release')
     called = {row['called_symbol'] for row in collector['calls']}
     assert called & set(receipt['authorized_constructors_and_factories']) == {edge['canonical_owner']}
+
+
+def test_active_qualification_owners_follow_existing_command_and_loader_calls():
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    edges = {row['id']: row for row in model['adopter_compatibility_observation']['edges']}
+    modules = ['bcf_governance/tooling/ci_commands.py', 'bcf_governance/tooling/release_adopter_qualification.py']
+    inventory = resolve_python_imports(ROOT, discover_python_source(ROOT, files=[ROOT / module for module in modules], call_contracts_version='1.0'))
+    functions = {row['symbol']: row for row in inventory['functions']}
+    harness = edges['AC-005']['canonical_owner']
+    loader = edges['AC-004']['canonical_owner']
+    command_calls = {call['called_symbol'] for row in inventory['functions'] if row['symbol'].startswith(modules[0] + '::') for call in row['calls']}
+    assert harness in command_calls
+    assert loader in {call['called_symbol'] for call in functions[harness]['calls']}
