@@ -315,6 +315,12 @@ def authenticated_stacked_pr(tmp_path, monkeypatch):
         state["reads"].append("current")
         return copy.deepcopy(state["current"])
     monkeypatch.setenv("GITHUB_TOKEN", "fixture-read-only-token")
+    def reference(_api, name, ref):
+        assert name == "owner/repository" and ref == "heads/main"
+        state["reads"].append("reference")
+        sequence = state.get("default_reference_sequence")
+        return copy.deepcopy(sequence.pop(0) if sequence else state.get("default_reference", {"ref": "refs/heads/main", "object": {"type": "commit", "sha": default_base}}))
+    monkeypatch.setattr(GitHubAPI, "reference", reference)
     monkeypatch.setattr(GitHubAPI, "repository", repository)
     monkeypatch.setattr(GitHubAPI, "pull_requests", pulls)
     monkeypatch.setattr(GitHubAPI, "pull_request", current)
@@ -424,3 +430,32 @@ def test_bound_stacked_context_retains_distinct_protected_default_subject(authen
     expected_tree = subprocess.check_output(['git', 'rev-parse', fixture.default_base + '^{tree}'], cwd=fixture.repo, text=True).strip()
     assert context.protected_default_tree == expected_tree
     assert context.as_dict()['protected_default_sha'] != context.as_dict()['base_sha']
+
+
+@pytest.mark.parametrize('cause', ['wrong-ref', 'tag-object', 'wrong-sha', 'missing-object', 'noncanonical-sha'])
+def test_protected_default_subject_rejects_before_pr_discovery(authenticated_stacked_pr, cause):
+    import copy
+    fixture = authenticated_stacked_pr
+    reference = {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': fixture.default_base}}
+    if cause == 'wrong-ref': reference['ref'] = 'refs/heads/stack'
+    elif cause == 'tag-object': reference['object']['type'] = 'tag'
+    elif cause == 'wrong-sha': reference['object']['sha'] = fixture.head
+    elif cause == 'missing-object': del reference['object']
+    else: reference['object']['sha'] = ' ' + fixture.default_base
+    fixture.state['default_reference'] = copy.deepcopy(reference)
+    with pytest.raises(LocalPRError, match='protected default'):
+        resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert fixture.state['reads'] == ['repository', 'reference']
+
+
+@pytest.mark.parametrize('bound', [False, True])
+def test_protected_default_movement_during_bound_or_absence_discovery_rejects(authenticated_stacked_pr, bound):
+    fixture = authenticated_stacked_pr
+    fixture.state['default_reference_sequence'] = [
+        {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': fixture.default_base}},
+        {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': fixture.head}},
+    ]
+    if not bound: fixture.state['pulls'] = []
+    with pytest.raises(LocalPRError, match='protected default ref disagrees'):
+        resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert fixture.state['reads'].count('reference') == 2

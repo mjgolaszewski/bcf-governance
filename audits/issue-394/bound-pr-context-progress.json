@@ -102,5 +102,22 @@
       "scope": "complete ordinary protection and local PR modules; unavailable context preserves failure and prevents protection consumption"
     },
     "integration": "still blocked on protected-default source/evaluator and remaining authority matrix"
+  },
+  "protected_default_snapshot": {
+    "red": {
+      "failed": 1,
+      "seconds": 1.19,
+      "cause": "distinct protected-default subject missing from real stack context"
+    },
+    "positive_and_cause_controls": {
+      "passed": 46,
+      "seconds": 17.78,
+      "scope": "complete local PR and direct protection suites; wrong ref, tag object, wrong SHA, missing object, noncanonical SHA, movement during bound and authenticated-absence discovery"
+    },
+    "unqualified": [
+      "Downstream policy invalidation still uses comparison base; must consume protected snapshot separately.",
+      "Ordinary evaluator executable source separation, fresh mutation consumption, full compatible installation and deadline bounds remain open."
+    ],
+    "authority": false
   }
 }

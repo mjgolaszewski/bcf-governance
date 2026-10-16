@@ -1275,7 +1275,7 @@
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
-      "sha256": "5424d888e02bb129ac80dc01373aefcca0ea2a4591a3998e54867fa66b404291"
+      "sha256": "723a9a33879d200d93f0cc91ccb5a34ee48bee888c3e56f264b6c1d1312727d5"
     },
     "scripts/_bcf_runtime/local_proof_bundles.py": {
       "operation": "copy",

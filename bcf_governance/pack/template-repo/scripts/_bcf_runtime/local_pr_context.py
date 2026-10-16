@@ -66,6 +66,8 @@ class LocalPRContext:
     pull_request_number: int | None = None
     pull_request_node_id: str | None = None
     provider_head_sha: str | None = None
+    protected_default_sha: str | None = None
+    protected_default_tree: str | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {key: value for key, value in asdict(self).items() if value is not None}
@@ -172,7 +174,7 @@ def _bound_pr_projection(value: Mapping[str, Any], *, repository_id: int, branch
 
 def _bound_pr_context(
     repo_root: Path, *, remote: str, default_branch: str, head_ref: str,
-    head_sha: str, runner: Runner, provider_api: GitHubAPI | None,
+    head_sha: str, default_sha: str, runner: Runner, provider_api: GitHubAPI | None,
 ) -> dict[str, Any] | None:
     """Authenticate branch binding; unavailable GitHub facts never mean no PR."""
     remote_url = _checked(runner, ["git", "remote", "get-url", remote], cwd=repo_root)
@@ -191,6 +193,14 @@ def _bound_pr_context(
             or observed_repository.get("full_name") != repository
             or observed_repository.get("default_branch") != default_branch):
         raise LocalPRError("local PR provider repository does not match selected remote")
+    def verify_default() -> None:
+        observed = api.reference(repository, f"heads/{default_branch}")
+        obj = observed.get("object")
+        if (observed.get("ref") != f"refs/heads/{default_branch}"
+                or not isinstance(obj, Mapping) or obj.get("type") != "commit"
+                or sha(obj.get("sha"), field="protected default ref") != default_sha):
+            raise LocalPRError("protected default ref disagrees with fetched subject or moved during discovery")
+    verify_default()
     if head_ref == "detached-head":
         raise LocalPRError("bound PR discovery requires an exact local branch")
     matches = []
@@ -209,6 +219,7 @@ def _bound_pr_context(
     if len(matches) > 1:
         raise LocalPRError("local branch has ambiguous open PR bindings")
     if not matches:
+        verify_default()
         return {"repository": repository, "repository_id": repository_id}
     binding = matches[0]
     for ref, expected in ((binding["base_ref"], binding["base_sha"]), (head_ref, binding["head_sha"])):
@@ -224,6 +235,7 @@ def _bound_pr_context(
                                    repository_id=repository_id, branch=head_ref)
     if current != binding:
         raise LocalPRError("bound PR identity moved during local discovery")
+    verify_default()
     return {"base_ref": binding["base_ref"], "base_sha": binding["base_sha"],
             "repository": repository, "repository_id": repository_id,
             "pull_request_number": binding["number"], "pull_request_node_id": binding["node_id"],
@@ -259,10 +271,12 @@ def resolve_local_pr_context(
     head_ref = _checked(runner, ["git", "branch", "--show-current"], cwd=repo_root) or "detached-head"
     try:
         binding = _bound_pr_context(repo_root, remote=remote, default_branch=default_branch,
-                                   head_ref=head_ref, head_sha=head_sha, runner=runner, provider_api=provider_api)
+                                   head_ref=head_ref, head_sha=head_sha, default_sha=base_sha, runner=runner, provider_api=provider_api)
     except ValueError as exc:
         raise LocalPRError(str(exc)) from exc
     if binding is not None:
+        binding["protected_default_sha"] = base_sha
+        binding["protected_default_tree"] = _checked(runner, ["git", "rev-parse", "--verify", f"{base_sha}^{{tree}}"], cwd=repo_root)
         base_sha = binding.pop("base_sha", base_sha)
     ancestry = runner(
         ["git", "merge-base", "--is-ancestor", base_sha, head_sha], cwd=repo_root

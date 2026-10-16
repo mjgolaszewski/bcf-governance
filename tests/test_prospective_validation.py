@@ -1794,3 +1794,16 @@ def test_prospective_truth_acceptance_extraction_characterization(report, messag
         with pytest.raises(prospective.ProspectiveValidationError) as observed:
             prospective._require_truth(report, boundary="golden")
         assert str(observed.value) == message
+
+
+def test_prospective_policy_consumer_receives_separate_protected_context(monkeypatch, tmp_path):
+    trace = []
+    _front_door(monkeypatch, trace)
+    context = LocalPRContext('origin', 'main', BASE, HEAD, 'feature', protected_default_sha=BASE, protected_default_tree=BASE_TREE)
+    monkeypatch.setattr(prospective, 'resolve_local_pr_context', lambda *_a, **_k: context)
+    def bind(*_args, **kwargs):
+        assert kwargs.get('policy_context') is context
+        assert kwargs.get('runner') is _runner
+        return 'runtime_only', POLICY_IDENTITY
+    monkeypatch.setattr(prospective, 'prospective_policy_binding', bind)
+    prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False, runner=_runner)
