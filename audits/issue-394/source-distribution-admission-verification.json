@@ -1,0 +1,53 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "status": "focused_verified_canonical_pending",
+  "original_failure": "audits/issue-394/observations/submit-1e1d9252-attempt-5.json",
+  "checks": [
+    {
+      "population": "six affected behavioral suites",
+      "passed": 246,
+      "elapsed_seconds": 21.35
+    },
+    {
+      "population": "follow-up preflight and candidate admission",
+      "passed": 137,
+      "elapsed_seconds": 7.48
+    },
+    {
+      "population": "actual 21 operation golden and architecture sample behavior",
+      "passed": 10,
+      "elapsed_seconds": 83.83
+    },
+    {
+      "population": "actual structural limits",
+      "context_files": 24,
+      "production_modules": 594
+    },
+    {
+      "population": "native lint/typecheck/governance/exposure",
+      "result": "passed"
+    },
+    {
+      "population": "project interpreter pack query",
+      "file_count": 416,
+      "result": "passed"
+    },
+    {
+      "population": "stale pack original oracle with exact bypass mutation",
+      "positive": "passed",
+      "negative": "failed at session allocation sentinel; unrelated migration/editorial/verification queries isolated"
+    },
+    {
+      "population": "tracked complete built-sdist, rendered context budget, 82-requirement schema and fresh exact selector collection",
+      "passed": 4,
+      "elapsed_seconds": 14.38
+    }
+  ],
+  "limitations": [
+    "Declaration query is not built-byte verification. Actual archive oracle remains mandatory.",
+    "New source must be tracked before final complete source inventory check.",
+    "Canonical normalization, full evidence and all 82 whole issue requirements remain open.",
+    "Governance initially found stale mutation search after adding project interpreter argument. Updated exact search only; retained original oracle and cause-specific positive/negative execution."
+  ]
+}

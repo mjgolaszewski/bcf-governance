@@ -6,6 +6,7 @@ import copy
 from pathlib import Path
 
 import yaml
+import pytest
 
 from bcf_governance.tooling.profile_yaml import render_profile_surface
 
@@ -54,3 +55,19 @@ def test_equal_string_list_facts_share_projection_independent_of_input_aliases()
     assert render_profile_surface(yaml.safe_load(rendered), width=4096) == rendered
     render_profile_surface({"unrelated": ["standard", "regulated"]}, width=120)
     assert render_profile_surface(independent, width=4096) == rendered
+
+
+@pytest.mark.parametrize("cause", ["bytes", "lines", "unknown", "wrong-type"])
+def test_projected_content_uses_existing_budget_owner_without_mutation(tmp_path, cause):
+    from bcf_governance.tooling.governance_validation.context_budgets import _validate_context_budgets
+    from bcf_governance.tooling.governance_validation.common import GovernanceValidationError
+    path = tmp_path / 'gates.yml'; path.write_text('small\n')
+    manifest = {'context_budgets': {'agent_required_files': {'gates.yml': {'line_hard_cap': 2, 'kib_hard_cap': 1}}}}
+    _validate_context_budgets(tmp_path, manifest)
+    projected = {'gates.yml': b'x' * 1025 if cause == 'bytes' else b'a\nb\nc\n'}
+    if cause == 'unknown': projected = {'unknown.yml': b'small\n'}
+    elif cause == 'wrong-type': projected = {'gates.yml': 'not immutable bytes'}
+    before = copy.deepcopy(manifest); raw = path.read_bytes()
+    with pytest.raises(GovernanceValidationError):
+        _validate_context_budgets(tmp_path, manifest, projected_contents=projected)
+    assert manifest == before and path.read_bytes() == raw

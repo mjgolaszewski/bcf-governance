@@ -903,3 +903,17 @@ def test_authored_semantic_ownership_rejects_before_lease_and_reconciliation(mon
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source ownership'))
     assert caught.value.__cause__ is failure
+
+
+def test_authored_source_distribution_rejects_before_lease_and_reconciliation(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    failure = ValueError('source manifest omits governed audit collector')
+    def reject(root, *, python_executable):
+        assert root == tmp_path and python_executable == Path('/python')
+        raise failure
+    monkeypatch.setattr(submit, 'validate_source_distribution', reject)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('leased before source declaration rejection'))
+    with pytest.raises(ProspectiveValidationError, match='source manifest omits') as caught:
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
+            semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source declaration'))
+    assert caught.value.__cause__ is failure

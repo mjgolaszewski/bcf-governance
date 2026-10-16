@@ -34,13 +34,15 @@ _ProfileSurfaceDumper.add_representer(_FlowMapping, _represent_flow_mapping)
 _ProfileSurfaceDumper.add_representer(_SharedScalar, yaml.SafeDumper.represent_str)
 
 
-def _compact_control_mappings(value: Any, scalars: dict[str, _SharedScalar]) -> Any:
+def _compact_control_mappings(
+    value: Any, scalars: dict[str, _SharedScalar], sequences: dict[tuple[str, ...], list[Any]],
+) -> Any:
     if isinstance(value, str) and len(value) >= 8:
         return scalars.setdefault(value, _SharedScalar(value))
     if isinstance(value, dict):
         result = {}
         for key, item in value.items():
-            compact = _compact_control_mappings(item, scalars)
+            compact = _compact_control_mappings(item, scalars, sequences)
             if key in {
                 "negative_controls",
                 "output_requirements",
@@ -52,7 +54,10 @@ def _compact_control_mappings(value: Any, scalars: dict[str, _SharedScalar]) -> 
             result[key] = compact
         return result
     if isinstance(value, list):
-        return [_compact_control_mappings(item, scalars) for item in value]
+        compact = [_compact_control_mappings(item, scalars, sequences) for item in value]
+        if value and all(isinstance(item, str) for item in value) and sum(map(len, value)) >= 8:
+            return sequences.setdefault(tuple(value), compact)
+        return compact
     return value
 
 
@@ -60,7 +65,7 @@ def render_profile_surface(payload: dict[str, Any], *, width: int) -> str:
     """Render controls compactly without changing their decoded semantics."""
 
     return yaml.dump(
-        _compact_control_mappings(payload, {}),
+        _compact_control_mappings(payload, {}, {}),
         Dumper=_ProfileSurfaceDumper,
         sort_keys=False,
         width=width,

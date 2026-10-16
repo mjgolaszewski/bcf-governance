@@ -3919,3 +3919,25 @@ implementation_slices:
       machine-DAG retirement.
     - 'Canonical test inventory/semantic lock normalization and full governed qualification
       remain required; evidence: audits/issue-394/typed-deadline-envelope-verification.json.'
+  source-distribution-admission:
+    id: source-distribution-admission
+    workitem: P32-P0-02
+    scope: Correct demonstrated attempt-five dependency, profile-rendering and source archive defects; reject authored manifest omissions before normalization and generated pack defects before provider work.
+    contract: audits/issue-394/source-distribution-admission-contract.json
+    producer: .github/scripts/release_source_inventory.py::validate_sdist_manifest_coverage
+    consumer: Existing normalization admission and post-generation pack preflight
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_profile_yaml::test_equal_string_list_facts_share_projection_independent_of_input_aliases
+    - tests.test_release_artifacts::test_source_manifest_query_uses_backend_defaults_without_build_or_mutation
+    - tests.test_release_artifacts::test_built_sdist_contains_every_governed_source_file
+    negative_controls:
+    - cause: authored-source-omission-before-normalization-lease
+      test: tests.test_candidate_submit::test_authored_source_distribution_rejects_before_lease_and_reconciliation
+    - cause: generated-distribution-failure-before-provider
+      test: tests.test_prospective_validation::test_source_distribution_failure_rejects_before_provider_and_preserves_cause
+    remaining:
+    - Canonical normalization and exact successor evidence remain required; static declarations never establish actual built archive bytes.
+    - Immutable attempt-five failure capture retained at audits/issue-394/observations/submit-1e1d9252-attempt-5.json.
+    - Full installed consumer qualification, approved measurements, actual machine composition and independent terminal custody remain open; all 82 whole requirements stay open.

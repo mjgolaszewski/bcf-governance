@@ -75,3 +75,110 @@ def validate_sdist_source_inventory(repo_root: Path, sdist: Path) -> None:
                 changed.append(relative)
     if changed:
         raise ValueError("source archive changes tracked source: " + ", ".join(changed))
+
+
+def validate_sdist_manifest_coverage(repo_root: Path) -> dict[str, object]:
+    """Check static setuptools declarations without building or running commands.
+
+    This query requires the caller's working directory to be the source root.
+    It never substitutes for validation of the actual built archive bytes.
+    """
+    from contextlib import closing
+    import tomllib
+    from setuptools import Distribution
+    from setuptools.command.sdist import sdist
+    from setuptools._distutils.filelist import FileList
+    from setuptools._distutils.text_file import TextFile
+    from setuptools._distutils.errors import DistutilsError
+
+    root = repo_root.resolve()
+    if root != Path.cwd().resolve():
+        raise ValueError("source declaration query requires its exact working directory")
+    tracked = tracked_source_inventory(root)
+    for relative in tracked:
+        path = root / relative
+        if not path.is_file() or path.is_symlink() or path.resolve() != path:
+            raise ValueError("source declaration requires regular owned files: " + relative)
+    inputs = {name: (root / name).read_bytes() for name in ("pyproject.toml", "MANIFEST.in")}
+    project = tomllib.loads(inputs["pyproject.toml"].decode("utf-8"))
+    backend = project.get("build-system", {})
+    options = project.get("tool", {}).get("setuptools", {})
+    dynamic = project.get("project", {}).get("dynamic", [])
+    dynamic_options = options.get("dynamic", {})
+    if dynamic:
+        # The framework's declared version attribute is AST-readable through the
+        # backend's own static reader; never permit its module-execution fallback.
+        from importlib.util import spec_from_file_location
+        from setuptools.config.expand import StaticModule
+        if (dynamic != ["version"] or dynamic_options != {
+                "version": {"attr": "bcf_governance._version.__version__"}}):
+            raise ValueError("source declaration query cannot prove dynamic configuration")
+        if "bcf_governance/_version.py" not in tracked:
+            raise ValueError("source version attribute is outside the tracked source population")
+        version_path = root / "bcf_governance/_version.py"
+        inputs["bcf_governance/_version.py"] = version_path.read_bytes()
+        spec = spec_from_file_location("bcf_governance._version", version_path)
+        try:
+            if spec is None or not isinstance(StaticModule("bcf_governance._version", spec).__version__, str):
+                raise ValueError("version attribute is not a static string")
+        except AttributeError as exc:
+            raise ValueError("source declaration query cannot prove a static version") from exc
+    elif dynamic_options:
+        raise ValueError("source declaration query has unbound dynamic metadata")
+    if (backend.get("build-backend") != "setuptools.build_meta" or backend.get("backend-path")
+            or any(options.get(key) for key in ("cmdclass", "ext-modules"))
+            or any((root / name).exists() for name in ("setup.py", "setup.cfg"))):
+        raise ValueError("source declaration query requires static setuptools configuration")
+
+    class DeclarationDistribution(Distribution):
+        def run_command(self, command):
+            raise ValueError("source declaration query cannot execute backend command: " + command)
+
+    class DeclarationQuery(sdist):
+        def _add_defaults_python(self):
+            if self.distribution.has_pure_modules():
+                build_py = self.get_finalized_command("build_py")
+                self.filelist.extend(build_py.get_source_files())
+                # MANIFEST rules are applied below. Do not run egg_info or read a
+                # possibly stale SOURCES.txt to discover package data recursively.
+                build_py.manifest_files = {}
+                for package in self.distribution.packages or ():
+                    self.filelist.extend(build_py.find_data_files(package, build_py.get_package_dir(package)))
+
+    distribution = DeclarationDistribution()
+    distribution.script_name = "setup.py"
+    distribution.parse_config_files()
+    query = DeclarationQuery(distribution)
+    query.ensure_finalized()
+    query.filelist = FileList()
+    query.filelist.allfiles = sorted(tracked)
+    query.add_defaults()
+    query.filelist.append("MANIFEST.in")
+    try:
+        with closing(TextFile(str(root / "MANIFEST.in"), strip_comments=True, skip_blanks=True,
+                              join_lines=True, lstrip_ws=True, rstrip_ws=True, collapse_join=True)) as template:
+            while (line := template.readline()) is not None:
+                query.filelist.process_template_line(line)
+    except (DistutilsError, ValueError) as exc:
+        raise ValueError("invalid source manifest declaration: " + str(exc)) from exc
+    if (any((root / name).read_bytes() != raw for name, raw in inputs.items())
+            or tracked_source_inventory(root) != tracked):
+        raise ValueError("source declaration inputs changed during inventory")
+    missing = sorted(tracked - frozenset(query.filelist.files))
+    if missing:
+        raise ValueError("source manifest omits tracked source: " + ", ".join(missing))
+    return {"authority": False, "scope": "static_source_declaration_coverage",
+            "file_count": len(tracked), "built_bytes_verified": False}
+
+
+if __name__ == "__main__":
+    import argparse
+    import json
+    parser = argparse.ArgumentParser(description="Check source-distribution declaration coverage.")
+    parser.add_argument("--repo-root", type=Path, default=Path.cwd())
+    args = parser.parse_args()
+    try:
+        result = validate_sdist_manifest_coverage(args.repo_root)
+    except (OSError, ValueError) as exc:
+        raise SystemExit(str(exc)) from exc
+    print(json.dumps(result, sort_keys=True))
