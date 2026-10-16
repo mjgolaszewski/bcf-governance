@@ -234,7 +234,8 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/provider-io-inventory-verification.json
   foundation.baseline:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
     status: IN_PROGRESS

@@ -1,0 +1,23 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "workitem": "P32-P0-05",
+  "contract": "747261fc",
+  "red_before_fix": "New independent-population control fails AttributeError: collect_provider_io_candidates missing.",
+  "checks": {
+    "deadline_inventory": {
+      "passed": 6,
+      "elapsed_seconds": 0.28
+    },
+    "governance_yaml": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_context_membership": "passed"
+  },
+  "scope": "Same committed source owner and source stability boundary; resolved transport calls plus lexical read candidates, not runtime effect qualification.",
+  "remaining": [
+    "Exact committed population snapshot and native checks pending.",
+    "Seven previously observed provider response.read sites have no qualified total wall-clock read bounds.",
+    "P32-P0-03 dependency unresolved; no deadline activation, new implementation slice or whole requirement closure."
+  ]
+}
