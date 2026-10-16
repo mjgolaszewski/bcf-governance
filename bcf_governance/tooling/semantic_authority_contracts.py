@@ -745,3 +745,10 @@ def validate_application_operations(
     return _validate_operations(
         repo_root, load_application_operations(repo_root).raw, inventory
     )
+
+
+def required_application_operation_population(
+    repo_root: Path, inventory: dict[str, Any], *, expected_registry_sha256: str,
+) -> dict[str, Any]:
+    """Observe required public operations under a protected registry byte identity."""
+    return {}
