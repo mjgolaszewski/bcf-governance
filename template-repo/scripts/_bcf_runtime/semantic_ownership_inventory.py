@@ -206,6 +206,7 @@ def discover_python_source(
     *, call_contracts_version: str | None = None,
     initialization_contracts_version: str | None = None,
     source_subject: dict[str, str] | None = None,
+    import_roots: tuple[str, ...] | None = None,
 ) -> dict[str, Any]:
     """Parse the tracked population without consulting semantic declarations."""
     if call_contracts_version is not None and call_contracts_version != "1.0":
@@ -213,6 +214,7 @@ def discover_python_source(
     if initialization_contracts_version is not None and initialization_contracts_version != "1.0":
         raise SemanticInventoryError("unsupported Python initialization contract version")
     repo_root = repo_root.resolve()
+    normalized_roots = validate_python_import_roots(repo_root, import_roots) if import_roots is not None else None
     population = None
     if source_subject is not None:
         try:
@@ -235,6 +237,8 @@ def discover_python_source(
         if len(observed_paths) != len(set(observed_paths)) or set(observed_paths) != expected_blobs.keys():
             raise SemanticInventoryError("exact source file population differs from committed tree")
         paths = sorted(paths, key=lambda path: _relative(repo_root, path))
+    if normalized_roots is not None:
+        _import_module_population({"files": [{"path": _relative(repo_root, path)} for path in paths]}, normalized_roots)
     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
     file_rows: list[dict[str, str]] = []
     functions: list[dict[str, Any]] = []
@@ -346,9 +350,11 @@ def _root_contains(root: str, path: str) -> str | None:
     return path[len(prefix) :] if path.startswith(prefix) else None
 
 
-def _validate_import_roots(
-    repo_root: Path, inventory: dict[str, Any], import_roots: tuple[str, ...]
-) -> tuple[dict[str, str], dict[str, str]]:
+def validate_python_import_roots(
+    repo_root: Path, import_roots: tuple[str, ...],
+) -> tuple[str, ...]:
+    """Check declared import resources before discovery; this is no freshness proof."""
+    repo_root = repo_root.resolve()
     if not import_roots:
         raise SemanticInventoryError("Python import roots must not be empty")
     normalized = tuple(sorted(set(import_roots)))
@@ -382,6 +388,20 @@ def _validate_import_roots(
                 f"Python import root must be an existing regular directory: {root}"
             )
 
+    return normalized
+
+
+def _validate_import_roots(
+    repo_root: Path, inventory: dict[str, Any], import_roots: tuple[str, ...]
+) -> tuple[dict[str, str], dict[str, str]]:
+    normalized = validate_python_import_roots(repo_root, import_roots)
+    return _import_module_population(inventory, normalized)
+
+
+def _import_module_population(
+    inventory: dict[str, Any], normalized: tuple[str, ...],
+) -> tuple[dict[str, str], dict[str, str]]:
+    """Resolve module identity from paths only, before or after AST discovery."""
     module_index: dict[str, str] = {}
     module_by_path: dict[str, str] = {}
     paths = [str(value["path"]) for value in inventory.get("files", [])]

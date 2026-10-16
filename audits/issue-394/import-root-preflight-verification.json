@@ -1,0 +1,44 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/import-root-preflight-verification.json"
+  },
+  "status": "focused_checks_passed_with_canonical_blocker",
+  "contract_test_commits": [
+    "fa9cb893",
+    "ea3e950e"
+  ],
+  "source_hashes": {
+    "bcf_governance/tooling/semantic_ownership_inventory.py": "5e2ff8d54172de24f960552db6316b2dcd42c7afd7c93555df87b8d56e3d20ca",
+    "bcf_governance/tooling/ci_graph_composition.py": "482ae9f48bb9a372f1e197b725e6d4e142d96dd294be1ebf18b2eaf7d50f45af",
+    "tests/test_semantic_import_roots.py": "2ef2b061d378005b01731e9315e2b10da74133be40d4f22fb4c4a52faf4215e1",
+    "tests/test_ci_graph_composition.py": "ed63c01b9e6dbd47e745629afed0137d085cf16feb7ef5385552d24db7b444e0"
+  },
+  "red_controls": [
+    "Six actual failures before declaration left-shift: missing, duplicate, escaping, empty, overlapping and symlink import roots reached source discovery.",
+    "Three actual failures before path-population implementation, with temporary optional parser API port in working source: ambiguous and empty populations were not rejected and lifecycle query supplied no roots. ea3e950e retains contract/tests; temporary API port was not committed in that test commit."
+  ],
+  "tests": {
+    "initial": "38 reconstructed/public-integration cases passed in 4.12s after declaration check extraction.",
+    "intermediate": "274 passed plus retained canonical oracle failure in 111.90s before extending to pre-AST path populations.",
+    "focused_final": "55 passed, 178 deselected in 5.43s, including resolver, neutral inventory characterization, declaration checks and path-population controls.",
+    "affected_final": "277 passed, 1 failed in 107.15s. Only failure: test_requirement_slice_bindings_resolve_through_canonical_oracle_owner: test-node oracle is absent from governed manifests. No skip or assertion change.",
+    "actual_self": "21 public-operation observations remain byte-identical to retained pre-deconstruction JSON.",
+    "static": "lint/typecheck passed",
+    "coverage": "Schema validates; 82 whole requirements not_executed; 21 slices.",
+    "pack": "Canonical generator and --check passed; final affected run covers private-runtime/source/pack parity and LOC/context gates."
+  },
+  "behavior": [
+    "Existing import resource checks have one owner callable before policy capture and source discovery.",
+    "Optional parser roots qualify the complete discovered path population before any AST parse; the same path-only module identity logic owns collisions and empty populations. No files are filtered.",
+    "Resolver retains resource and population revalidation after discovery. Default parser output remains unchanged when optional roots are absent.",
+    "Lifecycle query explicitly passes declared normalized roots into exact source discovery."
+  ],
+  "remaining": [
+    "Canonical semantic lock and governed test-node normalization remain held; full canonical suite is not green.",
+    "Resource observations are not continued freshness, execution qualification, provider context authentication or admission.",
+    "Whole lifecycle adoption, trusted provider invocation, installed consumers, approved performance budgets and terminal custody remain open."
+  ],
+  "whole_requirement_closure": false
+}

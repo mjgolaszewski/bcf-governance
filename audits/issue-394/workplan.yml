@@ -3032,11 +3032,18 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_reconstructed_binding_passes_import_roots_to_exact_discovery
     - tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle
     - tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction
     - tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject
     - tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner
     negative_controls:
+    - cause: ambiguous-or-empty-import-path-population-before-ast
+      test: tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse
+    - cause: invalid-declared-import-resource-before-source-work
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources
+    - cause: invalid-import-resource-before-protected-policy-capture
+      test: tests.test_ci_graph_composition::test_import_resource_rejection_precedes_public_policy_capture
     - cause: duplicate-protected-operation-identity-before-source-work
       test: tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery
     - cause: missing-or-unbound-public-operation-relationship-before-source-work
@@ -3060,6 +3067,7 @@ implementation_slices:
     - cause: caller-source-inventory-injection
       test: tests.test_ci_graph_composition::test_reconstructed_binding_accepts_no_caller_inventory
     remaining:
+    - Source-independent import resource checks run before policy capture and AST; path populations are checked before AST and the resolver revalidates afterward. Contract audits/issue-394/import-root-preflight-contract.json; evidence audits/issue-394/import-root-preflight-verification.json. This does not establish continued filesystem freshness.
     - Strict public-operation mode connects one captured consumer policy to complete declared public-operation relationships; independent policy and relationship-catalogue authorization plus actual provider-owned invocation remain open. Contract audits/issue-394/public-operation-lifecycle-contract.json; evidence audits/issue-394/public-operation-lifecycle-verification.json.
     - Actual protected provider-owned invocation must authenticate repository/context and independently reconstruct complete required populations; this dormant query does not authenticate caller-supplied expected context.
     - Complete runtime effects guard authority recovery execution profile installation and normative model adoption remain unqualified.

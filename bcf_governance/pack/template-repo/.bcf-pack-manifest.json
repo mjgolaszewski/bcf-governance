@@ -728,7 +728,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "4afb99c1c0459d78d9e2778815acf7ce874e4497b1b04d7aaa6b2511b59ad5b4"
+      "sha256": "482ae9f48bb9a372f1e197b725e6d4e142d96dd294be1ebf18b2eaf7d50f45af"
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
@@ -1507,7 +1507,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_inventory.py": {
       "operation": "copy",
-      "sha256": "64d1f4088ead420bb3c4aa900b8f8b16a04bc7f814a21d9ad415fee909c5cfc1"
+      "sha256": "5e2ff8d54172de24f960552db6316b2dcd42c7afd7c93555df87b8d56e3d20ca"
     },
     "scripts/_bcf_runtime/semantic_ownership_reference.py": {
       "operation": "copy",

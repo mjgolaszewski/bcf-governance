@@ -629,7 +629,7 @@ def validate_reconstructed_lifecycle_bindings(
 ) -> dict[str, Any]:
     """Reconstruct exact source inputs; caller authenticates protected context."""
     from .semantic_ownership_inventory import (
-        SemanticInventoryError, discover_python_source, resolve_python_imports,
+        SemanticInventoryError, discover_python_source, resolve_python_imports, validate_python_import_roots,
     )
 
     reachable = _binding_declarations(
@@ -649,6 +649,10 @@ def validate_reconstructed_lifecycle_bindings(
             or population.get("completeness_qualified") is not False
             for population in catalogue.values()):
             raise CIGraphError("reconstructed binding requires initialization-aware source populations")
+    try:
+        source_import_roots = validate_python_import_roots(repo_root, source_import_roots)
+    except (SemanticInventoryError, OSError, TypeError, ValueError) as exc:
+        raise CIGraphError(f"lifecycle binding exact source reconstruction failed: {exc}") from exc
     from .ci_graph_composition_operations import capture_public_operation_bindings, validate_public_operation_capture
 
     capture = None
@@ -662,6 +666,7 @@ def validate_reconstructed_lifecycle_bindings(
     try:
         inventory = discover_python_source(
             repo_root, source_subject=subject, call_contracts_version="1.0",
+            import_roots=source_import_roots,
             initialization_contracts_version="1.0",
         )
         inventory = resolve_python_imports(repo_root, inventory, source_import_roots)
