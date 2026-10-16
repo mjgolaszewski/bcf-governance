@@ -712,5 +712,22 @@ def required_committed_application_operation_population(
     repo_root: Path, inventory: dict[str, Any], *,
     policy_commit_sha: str, policy_tree_sha: str,
 ) -> dict[str, Any]:
-    """Observe operations under a caller-authenticated committed policy subject."""
-    return {}
+    """Observe operations under a caller-authenticated committed policy subject.
+
+    The consumer repository's protected policy subject is distinct from installed
+    controller source. Object identity alone does not authenticate that subject.
+    """
+    from .semantic_source_paths import committed_application_registry_identity
+
+    try:
+        identity = committed_application_registry_identity(
+            repo_root, commit_sha=policy_commit_sha, tree_sha=policy_tree_sha,
+        )
+    except (OSError, ValueError) as exc:
+        raise SemanticAuthorityError(str(exc)) from exc
+    result = required_application_operation_population(
+        repo_root, inventory, expected_registry_sha256=identity["registry_sha256"],
+    )
+    result["policy_subject"] = identity["subject"]
+    result["policy_blob_oid"] = identity["blob_oid"]
+    return result

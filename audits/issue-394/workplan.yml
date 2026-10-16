@@ -3095,7 +3095,17 @@ implementation_slices:
     - tests.test_semantic_operation_deconstruction::test_legacy_operation_validator_alias_has_one_implementation
     - tests.test_semantic_operation_deconstruction::test_extracted_validator_helpers_keep_resolved_source_owners
     - tests.test_semantic_protected_operations::test_protected_factory_preserves_legacy_decode
+    - tests.test_semantic_protected_operations::test_committed_policy_derives_digest_and_reuses_existing_population
+    - tests.test_semantic_protected_operations::test_replacement_ref_cannot_change_committed_policy
     negative_controls:
+    - cause: candidate-selects-required-policy-digest
+      test: tests.test_semantic_protected_operations::test_dirty_policy_cannot_supply_its_own_required_digest
+    - cause: nonregular-or-absent-committed-policy
+      test: tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob
+    - cause: mismatched-or-unavailable-policy-subject
+      test: tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population
+    - cause: unavailable-or-substituted-policy-blob
+      test: tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks
     - cause: caller-registry-substitution-before-discovery
       test: tests.test_semantic_protected_operations::test_registry_substitution_rejects_before_discovery
     - cause: removed-source-and-registry-entry-self-exemption
@@ -3109,6 +3119,6 @@ implementation_slices:
     - cause: dynamic-public-entry-inventory
       test: tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[dynamic]
     remaining:
-    - Protected caller must independently authenticate the expected registry digest exact parser source population and provider/repository context; query observations never authenticate themselves.
+    - Committed policy query derives the digest from exact Git bytes; protected caller must independently authenticate consumer repository policy authorization exact source population and provider context. Query observations never authenticate themselves. Contract audits/issue-394/committed-operation-policy-contract.json; local evidence audits/issue-394/committed-operation-policy-verification.json.
     - Current snapshot observations do not establish ongoing filesystem freshness complete runtime effects or actual lifecycle relationship integration.
     - Canonical semantic lock/oracle normalization installed consumer qualification normative adoption performance and custody remain blocked.

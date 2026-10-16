@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import subprocess
+import hashlib
 from pathlib import Path, PurePosixPath
 import re
 from typing import Any
@@ -71,6 +72,16 @@ def _committed_git(repo_root: Path, *args: str) -> bytes:
     return result.stdout
 
 
+def _validate_committed_subject(repo_root: Path, subject: dict[str, str]) -> None:
+    _exact_subject(subject)
+    commit_sha, tree_sha = subject["commit_sha"], subject["tree_sha"]
+    if _committed_git(repo_root, "cat-file", "-t", commit_sha) != b"commit\n":
+        raise ValueError("source subject must identify an exact commit object")
+    actual_tree = _committed_git(repo_root, "rev-parse", f"{commit_sha}^{{tree}}")
+    if actual_tree != (tree_sha + "\n").encode():
+        raise ValueError("source subject commit and tree differ")
+
+
 def committed_python_source_population(
     repo_root: Path, *, commit_sha: str, tree_sha: str,
 ) -> dict[str, Any]:
@@ -80,12 +91,7 @@ def committed_python_source_population(
     provider authority or a complete interpretation of runtime effects.
     """
     subject = dict(commit_sha=commit_sha, tree_sha=tree_sha)
-    _exact_subject(subject)
-    if _committed_git(repo_root, "cat-file", "-t", commit_sha) != b"commit\n":
-        raise ValueError("source subject must identify an exact commit object")
-    actual_tree = _committed_git(repo_root, "rev-parse", f"{commit_sha}^{{tree}}")
-    if actual_tree != (tree_sha + "\n").encode():
-        raise ValueError("source subject commit and tree differ")
+    _validate_committed_subject(repo_root, subject)
     raw = _committed_git(repo_root, "ls-tree", "-r", "-z", "--full-tree", tree_sha)
     if raw and not raw.endswith(b"\0"):
         raise ValueError("committed source tree records are malformed")
@@ -136,3 +142,28 @@ def committed_python_source_delta(
                 changed=tuple(sorted(path for path in previous.keys() & current.keys()
                                      if previous[path] != current[path])),
                 unresolved_changed=before["unresolved_entries"] != after["unresolved_entries"])
+
+
+def committed_application_registry_identity(
+    repo_root: Path, *, commit_sha: str, tree_sha: str,
+) -> dict[str, Any]:
+    """Observe fixed consumer policy bytes; caller authenticates the subject."""
+    subject = dict(commit_sha=commit_sha, tree_sha=tree_sha)
+    _validate_committed_subject(repo_root, subject)
+    path = "governance/application-operations.yml"
+    record = _committed_git(repo_root, "--literal-pathspecs", "ls-tree", "-z", "--full-tree", tree_sha, "--", path)
+    try:
+        entry, terminator = record.split(b"\0")
+        metadata, actual_path = entry.split(b"\t")
+        mode, kind, oid = metadata.decode("ascii").split()
+        if (terminator or actual_path != path.encode()
+                or mode not in {"100644", "100755"} or kind != "blob"
+                or re.fullmatch(r"[a-f0-9]{40}", oid) is None):
+            raise ValueError("invalid record")
+    except (ValueError, UnicodeError) as exc:
+        raise ValueError("committed application policy must be one regular blob") from exc
+    raw = _committed_git(repo_root, "cat-file", "blob", oid)
+    if hashlib.sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest() != oid:
+        raise ValueError("committed application policy blob identity differs")
+    return dict(authority=False, execution_qualified=False, subject=subject,
+                path=path, blob_oid=oid, registry_sha256=hashlib.sha256(raw).hexdigest())

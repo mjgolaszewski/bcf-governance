@@ -197,3 +197,23 @@ def test_replacement_ref_cannot_change_committed_policy(committed_inputs):
     git('replace', subject['policy_commit_sha'], git('rev-parse', 'HEAD'))
     inputs[2].write_text(inputs[2].read_text().replace('# replacement\n', ''))
     assert committed_run(committed_inputs)['registry_sha256'] == inputs[3]
+
+
+@pytest.mark.parametrize('outcome', ['unavailable', 'substituted'])
+def test_committed_policy_blob_read_failure_or_substitution_blocks(committed_inputs, monkeypatch, outcome):
+    from bcf_governance.tooling import semantic_source_paths
+
+    original = semantic_source_paths._committed_git
+    blob_reads = []
+    def read(root, *args):
+        if args[:2] == ('cat-file', 'blob'):
+            blob_reads.append(args)
+            if outcome == 'unavailable':
+                raise ValueError('cannot resolve committed policy blob')
+            return b'poisoned policy bytes'
+        return original(root, *args)
+    monkeypatch.setattr(semantic_source_paths, '_committed_git', read)
+    monkeypatch.setattr(owner, '_validate_operations', lambda *args: pytest.fail('population before blob authentication'))
+    with pytest.raises(owner.SemanticAuthorityError, match='blob'):
+        committed_run(committed_inputs)
+    assert len(blob_reads) == 1
