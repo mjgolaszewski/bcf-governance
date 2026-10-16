@@ -1,0 +1,53 @@
+{
+  "document": {
+    "kind": "implementation_contract",
+    "path": "audits/issue-394/provider-retry-consumption-contract.json",
+    "authority": false
+  },
+  "bounded_context": "ci_authority",
+  "layer": "tooling",
+  "side": "query_then_command",
+  "workitem_alias": "dormant.continuation",
+  "targets": [
+    "bcf_governance/tooling/candidate_provider_recovery.py",
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "tests/test_candidate_provider_recovery.py",
+    "tests/test_candidate_submit.py",
+    "canonical private runtime copies through pack owner"
+  ],
+  "ports": [
+    "Existing GitHubAPI pull_request commit run and rerun_workflow methods",
+    "Existing candidate PR validation owner and candidate_provider_frontier compiler"
+  ],
+  "forbidden": [
+    "provider/adopter operations in this implementation session",
+    "workflow/pin/integration/admission",
+    "installer/custody/release bytes",
+    "new caller-selected retry policy or alternate mutation owner"
+  ],
+  "contract": [
+    "Retry execution requires independently captured LocalPRContext CandidateIdentity and canonical PR projection; canonical submit supplies these mechanically",
+    "Reconstruct complete proposed frontier through existing compiler and reject contradictions before provider reads",
+    "Authenticate current PR through existing PR validator and compare exact proved branch/base/head/repository/node identity",
+    "Authenticate current Git commit/tree before recovery proof reads",
+    "Re-resolve through existing provider recovery owner; changed state/run/attempt/job/budget rejects before mutation",
+    "Read exact latest run again immediately before one provider-native rerun and reject changed identity/attempt/state",
+    "Only completed failure with existing exact transient-upload proof can select retry; cancellation timeout unknown or other terminal conclusions stop before job reads",
+    "Mutation conflict/response loss propagates without blind POST retry; next canonical invocation reobserves provider state",
+    "Legacy nonmutating observe/stop frontiers remain readable without new context; missing context cannot authorize mutation",
+    "No claim of atomic provider compare-and-mutate or full concurrent transaction qualification; remaining race must retain safe conflict/uncertainty semantics"
+  ],
+  "tests": [
+    "Bare forged frontier rejects before provider reads",
+    "Self-consistently rehashed wrong run still rejects against fresh provider evidence",
+    "Independent candidate/PR context mismatch and current PR/commit movement reject",
+    "Attempt advancement semantic failure missing evidence or active run reject stale retry",
+    "Final run read catches attempt movement after inventory classification",
+    "One exact valid retry and duplicate invocation observes/rejects existing work",
+    "Response lost after rerun never causes blind replay",
+    "Canonical submit passes independently captured context",
+    "Cancellation and timeout cannot be reanimated as transport retry"
+  ],
+  "peer_scope": 6870,
+  "completion_limit": "Local bounded recovery correction only; canonical normalization, installed consumer and independent provider custody qualification remain pending."
+}
