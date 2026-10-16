@@ -30,6 +30,13 @@ execution_evidence:
     predecessor ownership, or incomplete promotion before adopter proof.
   - Focused installer, runtime-custody, transaction-rollback, and pack-parity
     validation passed with 123 tests.
+  - >-
+    AgentBus closeout exposed a separate producer-consumer mismatch: phase logs
+    validly carried structured execution observations while phase history
+    requires strings. Cleanup now preserves those observations as canonical
+    lossless JSON strings and validates the complete entry before mutation.
+  - Focused cleanup, phase-schema, governance-validation, and pack-parity
+    validation passed with 131 tests.
 closeout_requirements:
   claims:
     required_suites_green:

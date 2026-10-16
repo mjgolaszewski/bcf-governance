@@ -12,6 +12,9 @@ import pytest
 import yaml
 
 from bcf_governance.tooling.governance_cleanup.truth_reports import load_truth_reports
+from bcf_governance.tooling.governance_cleanup.phase_retention import (
+    _project_phase_history_validation,
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLEANUP = REPO_ROOT / "scripts" / "cleanup_governance_pack.py"
@@ -465,6 +468,29 @@ def _init_git_repo(repo: Path) -> str:
     ).stdout.strip()
 
 
+def test_phase_history_validation_projection_preserves_supported_shapes() -> None:
+    assert _project_phase_history_validation(
+        [
+            "make test",
+            {"result": "63 passed", "command": "uv run pytest"},
+        ]
+    ) == [
+        "make test",
+        '{"command":"uv run pytest","result":"63 passed"}',
+    ]
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["make test", [""], [{"result": "green"}], [1]],
+)
+def test_phase_history_validation_projection_rejects_unsupported_shapes(
+    value: object,
+) -> None:
+    with pytest.raises(RuntimeError, match="phase execution validation"):
+        _project_phase_history_validation(value)
+
+
 def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path) -> None:
     cleanup = _load_cleanup_module()
     repo = tmp_path / "repo"
@@ -541,7 +567,14 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
             "document": {"status": "completed"},
             "phase": {"id": "P01", "build_block": "foundation"},
             "summary": {"outcome": "verified", "highlights": ["foundation complete"]},
-            "execution_evidence": {"executed_commands": ["make test"]},
+            "execution_evidence": {
+                "executed_commands": [
+                    {
+                        "command": "PYTHONHASHSEED=0 uv run --locked --extra dev pytest",
+                        "result": "63 passed on Python 3.12 and 63 passed on Python 3.14",
+                    }
+                ]
+            },
         },
     )
     _write_yaml(
@@ -594,7 +627,10 @@ def test_cleanup_archives_closed_phase_triplet_and_writes_history(tmp_path: Path
     assert entry["derived_state_at_capture"] == "closed"
     assert entry["verification_snapshot"]["truth_report_sha256"]
     assert entry["summary"] == ["foundation complete"]
-    assert entry["validation"] == ["make test"]
+    assert entry["validation"] == [
+        '{"command":"PYTHONHASHSEED=0 uv run --locked --extra dev pytest",'
+        '"result":"63 passed on Python 3.12 and 63 passed on Python 3.14"}'
+    ]
     assert {
         artifact["path"] for artifact in entry["archived_artifacts"]
     } == {

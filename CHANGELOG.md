@@ -14,6 +14,9 @@ All notable changes to BCF Governance are recorded here. This file follows
   a mechanically derived, content-addressed successor manifest. Unknown drift,
   consumer-owned bytes, unsafe paths, and incomplete transaction promotion
   fail before proof allocation; active runtime and custody remain exact.
+- Made phase-retention cleanup losslessly project every supported structured
+  execution observation into its compact history schema before any file is
+  moved or removed; unsupported shapes fail with the repository unchanged.
 
 ## [2.3.3] - 2026-10-15
 

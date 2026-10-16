@@ -44,7 +44,39 @@
           "items": { "type": "string", "minLength": 1 }
         },
         "executed_commands": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "type": "string", "minLength": 1 },
+              {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": false,
+                "required": ["command"],
+                "properties": {
+                  "command": { "type": "string", "minLength": 1 },
+                  "result": { "type": "string", "minLength": 1 },
+                  "scope": { "type": "string", "minLength": 1 },
+                  "exit_code": { "type": "integer" },
+                  "record": {
+                    "oneOf": [
+                      { "type": "string", "minLength": 1 },
+                      {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["path", "sha256"],
+                        "properties": {
+                          "path": { "type": "string", "minLength": 1 },
+                          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+                        }
+                      }
+                    ]
+                  },
+                  "record_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+                }
+              }
+            ]
+          }
         },
         "notes": {
           "type": "array",

@@ -322,7 +322,7 @@
     },
     "schemas/hotfix-log.schema.json": {
       "operation": "copy",
-      "sha256": "1488764d6a4a84418b0d4830147da2c8216c08d698cb12ed0625b9e810befb2a"
+      "sha256": "28173b8327ca6322ae27e42f9b1c9b70cbcf4adc7958b84d62111ab676a96386"
     },
     "schemas/memory.schema.json": {
       "operation": "copy",
@@ -346,7 +346,7 @@
     },
     "schemas/phase-log.schema.json": {
       "operation": "copy",
-      "sha256": "a5e5e90ff1cc6878378f0e80637d604c6464b628bda97dad1cf98fe811605e50"
+      "sha256": "dc30830b03ff29b1633e538f29bf923712c770dac5a5b219641b95d31526deba"
     },
     "schemas/phase-plan.schema.json": {
       "operation": "copy",
@@ -992,7 +992,7 @@
     },
     "scripts/_bcf_runtime/governance_cleanup/phase_retention.py": {
       "operation": "copy",
-      "sha256": "8d75a774ae77d6fefb214f1fa801b92baa4470a67de7280c2915e25b1a418ef5"
+      "sha256": "1d3f8b0fd53ac56c2b6dea29d430d292721c98d4cf46eda3e1d31e3ae0401eb0"
     },
     "scripts/_bcf_runtime/governance_cleanup/phase_retention_projection.py": {
       "operation": "copy",

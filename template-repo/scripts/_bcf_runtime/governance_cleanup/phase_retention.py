@@ -19,6 +19,38 @@ DEFAULT_PHASE_ARCHIVE_ROOT = "governance/archive/phase-artifacts"
 DEFAULT_PHASE_HISTORY_PATH = "plans/phase-history.yml"
 PHASE_RETENTION_MODES = {"archive", "git_history"}
 
+
+def _project_phase_history_validation(value: object) -> list[str]:
+    """Project accepted execution observations into the compact history contract."""
+
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise RuntimeError("phase execution validation must be an ordered list")
+    projected: list[str] = []
+    for index, item in enumerate(value):
+        if isinstance(item, str):
+            if not item:
+                raise RuntimeError(
+                    f"phase execution validation item {index} must be non-empty"
+                )
+            projected.append(item)
+            continue
+        if not isinstance(item, dict) or not isinstance(item.get("command"), str) or not item["command"]:
+            raise RuntimeError(
+                f"phase execution validation item {index} has an unsupported shape"
+            )
+        try:
+            encoded = json.dumps(
+                item, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+            )
+        except (TypeError, ValueError) as exc:
+            raise RuntimeError(
+                f"phase execution validation item {index} is not serializable"
+            ) from exc
+        projected.append(encoded)
+    return projected
+
 def _load_yaml(path: Path) -> dict[str, Any] | None:
     if not path.exists():
         return None
@@ -557,7 +589,7 @@ def _phase_history_entry(
         ),
         "outcome": str(outcome or "completed"),
         "summary": highlights if isinstance(highlights, list) and highlights else ["closed phase retained"],
-        "validation": validation if isinstance(validation, list) else [],
+        "validation": _project_phase_history_validation(validation),
         "archived_artifacts": list(artifact_entries_by_path.values()),
     }
 
