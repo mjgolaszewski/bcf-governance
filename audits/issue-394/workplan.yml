@@ -3503,6 +3503,10 @@ implementation_slices:
       test: tests.test_ci_graph_composition::test_typed_deadline_cannot_self_exempt_from_actual_ci_consumer_budget[missing-ci-reference]
     - cause: smaller-sibling-outer-budget
       test: tests.test_ci_graph_composition::test_typed_deadline_uses_every_protected_sibling_consumer_budget
+    - cause: expiry-erases-larger-authenticated-floor-and-admits-short-outer-budget
+      test: tests.test_ci_graph_composition::test_typed_deadline_expiry_cannot_erase_a_larger_authenticated_floor[11]
+    - cause: expiry-shrinks-relationship-or-job-envelope
+      test: tests.test_ci_graph_composition::test_typed_deadline_expiry_cannot_erase_a_larger_authenticated_floor[14]
     remaining:
     - Caller must authenticate complete policy/source owners, genuine total runtime
       bounds, original measurement custody and clock; arithmetic validation does not

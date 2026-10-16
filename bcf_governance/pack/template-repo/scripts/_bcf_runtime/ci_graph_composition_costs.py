@@ -35,7 +35,7 @@ def _measurement_floor(spec, measurements, expected_subjects, now_ms):
         raise CIGraphError('deadline measurement clock is invalid')
     if value['expires_at_ms'] <= now_ms:
         if fallback:
-            return 0, 'bounded_fallback_stale'
+            return value['lower_bound_ms'], 'bounded_fallback_stale'
         raise CIGraphError('deadline required measurement is stale')
     return value['lower_bound_ms'], 'fresh'
 
