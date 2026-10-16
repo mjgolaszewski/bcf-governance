@@ -24,9 +24,9 @@
   "limits": [
     "Complete independent authority/consumer populations and canonical real-adopter qualification remain open."
   ],
-  "bounded_context": "ci_authority",
+  "bounded_context": "evidence",
   "architectural_layer": "tooling",
   "operation_side": "dependency_origin_query_before_controller_command",
   "canonical_owner": "bcf_governance/tooling/release_adopter_qualification.py::_exact_release_runtime",
-  "scope_clarification": "Canonical workitem foundation.residuals and existing release qualification owner supply context/layer; explicit fields retained before production commit."
+  "scope_clarification": "Corrected earlier ci_authority annotation before source commit: governance/self-governance-policy.yml tooling_contexts.evidence owns release_*; workplan foundation.residuals also declares evidence. Existing command owner unchanged."
 }
