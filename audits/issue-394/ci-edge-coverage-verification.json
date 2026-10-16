@@ -1,0 +1,40 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "path": "audits/issue-394/ci-edge-coverage-verification.json",
+    "authority": false
+  },
+  "status": "focused_checks_passed_with_canonical_blocker",
+  "contract_test_commit": "7f55fe75",
+  "deconstruction_commit": "638b38ad",
+  "source_hashes": {
+    "bcf_governance/tooling/ci_graph_composition.py": "8ea29532e44f77d25021069e50e131895841799b956f2e2a145daf6d04052d1e",
+    "tests/test_ci_graph_composition.py": "c30ad8bb185a832eb224c565f6edc6461910c472f81e0eeb65d83a800a24d8a3"
+  },
+  "red_evidence": "9 actual failures after API port, in 0.69s: absent complete view, candidate omissions including edge/test co-deletion, wrong source/stale canonical graph/tampered integrity, duplicate canonical pairs, resealed unreachable reference and empty-population result.",
+  "tests": {
+    "focused": "13 passed, 221 deselected in 0.35s, including ungrounded exclusion variants and multiple contexts without double-count.",
+    "final": "380 passed, 1 retained canonical oracle failure in 136.29s; full composition/CI graph/actual-self operation characterization/LOC/context/private-runtime/pack suites.",
+    "blocker": "test_requirement_slice_bindings_resolve_through_canonical_oracle_owner: test-node oracle is absent from governed manifests. No skip or weakened assertion.",
+    "characterization": "All three retained lifecycle views and all 21 actual-self operation observations remain unchanged. Public renderer source identity/guard retained.",
+    "static": "lint/typecheck passed",
+    "coverage": "coverage-schema-ok; 82 whole statuses not_executed; 23 partial slices.",
+    "pack": "canonical generator and --check passed."
+  },
+  "behavior": [
+    "Required reachable CI references derive only from existing caller-authenticated CompiledCIGraph/EdgeContract population; no candidate required-list or waiver.",
+    "Complete source/graph/edge digest and composition integrity bind before counting; unknown/unreachable references and omitted canonical edges reject even when candidate tests change or digest is resealed.",
+    "All unreachable exclusion references project directly from canonical owner. Reordered inputs produce identical outputs; multiple lifecycle contexts remain visible while canonical CI edges count once.",
+    "Legacy partial compilation remains readable; explicit complete-reference query does not grant runtime/terminal authority, including zero-edge populations."
+  ],
+  "loc": {
+    "composition_owner": 751,
+    "private_view_delegate": 73
+  },
+  "remaining": [
+    "Protected caller must authenticate graph/repository/source/controller custody and invoke this conformance before claiming complete CI integration.",
+    "CI-reference coverage does not prove semantic context mapping, full lifecycle/source/effect/test/control closure, required execution/reuse, or external terminal custody.",
+    "Canonical normalization is held; installed profiles approved performance budgets guarded mechanism activation and immutable terminal custody remain open."
+  ],
+  "whole_requirement_closure": false
+}

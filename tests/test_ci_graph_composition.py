@@ -1508,3 +1508,28 @@ def test_empty_ci_edge_population_does_not_claim_runtime_qualification(compositi
     assert result['reachable_edges_checked'] == 0
     assert result['authority'] is False
     assert result['execution_qualified'] is False
+
+
+@pytest.mark.parametrize('reason', [None, '', False])
+def test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion(composition, reason):
+    from dataclasses import replace
+    _ci_coverage_inputs(composition, excluded=True)
+    graph = composition['compiled_graph']
+    graph.edge_contracts = (graph.edge_contracts[0], replace(graph.edge_contracts[1], exclusion_reason=reason))
+    source = dict(composition['expected_source'], ci_edges_sha256=edge_population_sha256(graph))
+    composition['expected_source'] = composition['payload']['source'] = source
+    with pytest.raises(CIGraphError, match='exclusion'):
+        _check_ci_coverage(composition)
+
+
+def test_ci_edge_coverage_retains_all_context_bindings_without_double_count(composition):
+    extra = copy.deepcopy(composition['payload']['relationships'])
+    for row in extra:
+        row['context'] = 'controller'
+    composition['payload']['relationships'].extend(extra)
+    composition['expected_populations']['controller'] = ('build', 'verify')
+    composition['expected_relationships'].update({('controller', 'build', 'verify'): None, ('controller', 'verify', 'build'): 'no-structural-path'})
+    composition['expected_effects'].add(('controller', 'build', 'verify', 'verify'))
+    result = _check_ci_coverage(composition)
+    assert result['reachable_edges_checked'] == 1
+    assert result['ci_edge_bindings'] == (('build:produce', 'verify:consume', (('controller', 'build', 'verify'), ('release', 'build', 'verify'))),)

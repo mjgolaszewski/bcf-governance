@@ -702,3 +702,50 @@ def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound
     from .ci_graph_composition_views import _render_lifecycle_composition
 
     return _render_lifecycle_composition(compiled, view=view)
+
+
+def validate_lifecycle_ci_edge_coverage(
+    compiled: dict[str, Any], *, compiled_graph: CompiledCIGraph,
+    expected_source: Mapping[str, str],
+) -> dict[str, Any]:
+    """Observe all canonical CI references; caller authenticates source/custody.
+
+    Partial compilation remains readable. This explicit conformance requires all
+    reachable edges and projects unreachable exclusions from the existing owner;
+    neither a matching digest nor complete references qualify runtime authority.
+    """
+    _validate_compiled_identity(compiled)
+    source = compiled["source"]
+    if (not isinstance(expected_source, Mapping) or source != dict(expected_source)
+            or source["graph_sha256"] != compiled_graph.graph_sha256
+            or source["ci_edges_sha256"] != edge_population_sha256(compiled_graph)):
+        raise CIGraphError("lifecycle CI edge coverage source identity differs")
+    edges = {(edge.producer, edge.consumer): edge for edge in compiled_graph.edge_contracts}
+    if len(edges) != len(compiled_graph.edge_contracts):
+        raise CIGraphError("lifecycle CI edge coverage canonical population has duplicate pairs")
+    if any(not isinstance(edge.reachable, bool) or (not edge.reachable and (
+            not isinstance(edge.exclusion_reason, str) or not edge.exclusion_reason)) for edge in edges.values()):
+        raise CIGraphError("lifecycle CI edge coverage canonical exclusion is ungrounded")
+    required = {pair for pair, edge in edges.items() if edge.reachable}
+    bindings: dict[tuple[str, str], set[Relationship]] = {}
+    for row in compiled["relationships"]:
+        if row["contract"] is None:
+            continue
+        for reference in row["contract"]["ci_edges"]:
+            pair = reference["producer"], reference["consumer"]
+            if pair not in required:
+                raise CIGraphError("lifecycle CI edge coverage reference is absent or unreachable")
+            bindings.setdefault(pair, set()).add((row["context"], row["producer"], row["consumer"]))
+    if bindings.keys() != required:
+        raise CIGraphError("lifecycle CI edge coverage is incomplete")
+    return {
+        "authority": False, "execution_qualified": False,
+        "scope": "canonical_ci_edge_reference_coverage",
+        "composition_sha256": compiled["composition_sha256"],
+        "ci_edges_sha256": source["ci_edges_sha256"],
+        "reachable_edges_checked": len(required),
+        "ci_edge_bindings": tuple((producer, consumer, tuple(sorted(bindings[(producer, consumer)])))
+                                  for producer, consumer in sorted(bindings)),
+        "canonical_exclusions": tuple((producer, consumer, edge.exclusion_reason)
+                                      for (producer, consumer), edge in sorted(edges.items()) if not edge.reachable),
+    }

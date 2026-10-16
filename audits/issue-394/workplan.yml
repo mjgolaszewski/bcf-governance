@@ -764,6 +764,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
@@ -955,6 +956,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
     - dormant-composition-and-static-bindings
@@ -1174,6 +1176,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - terminal-proposition-binding
     - typed-guard-preservation
@@ -1385,6 +1388,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - dormant-composition-and-static-bindings
   F02:
@@ -1488,6 +1492,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
@@ -1823,6 +1828,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
@@ -1901,6 +1907,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - typed-guard-preservation
     - typed-reference-before-allocation
@@ -2043,6 +2050,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
     - authenticated-base-registry-reads
@@ -3212,3 +3220,37 @@ implementation_slices:
       execution or adoption proof.
     - Canonical lock/test-manifest/workflow normalization remains held; installed consumers performance budgets and terminal custody
       remain unqualified.
+  canonical-ci-edge-reference-coverage:
+    id: canonical-ci-edge-reference-coverage
+    workitem: P32-P0-04
+    scope: Mandatory CI-reference coverage derives all reachable canonical edges and exclusion projections from existing CompiledCIGraph/EdgeContract;
+      no candidate-selected required list or waiver. Evidence audits/issue-394/ci-edge-coverage-verification.json.
+    contract: audits/issue-394/ci-edge-coverage-contract.json
+    producer: bcf_governance/tooling/ci_graph_edges.py::compile_edge_contracts
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_ci_edge_coverage
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_complete_ci_edge_coverage_is_kernel_derived_stable_and_read_only
+    - tests.test_ci_graph_composition::test_ci_edge_coverage_retains_all_context_bindings_without_double_count
+    - tests.test_ci_graph_composition::test_empty_ci_edge_population_does_not_claim_runtime_qualification
+    negative_controls:
+    - cause: omitted-canonical-edge-or-edge-and-test-pair
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate
+    - cause: wrong-source-stale-population-or-integrity
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity
+    - cause: candidate-resealed-unreachable-reference
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_resealed_unreachable_reference
+    - cause: duplicate-canonical-edge-pair
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_duplicate_canonical_pairs
+    - cause: ungrounded-canonical-exclusion
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion
+    remaining:
+    - Local verification is retained at audits/issue-394/ci-edge-coverage-verification.json; no full canonical or runtime qualification.
+    - Caller must authenticate compiled CI graph source/repository/controller custody; this query does not authenticate expected_source
+      or create runtime authority.
+    - Static CI-reference coverage does not prove semantic context mapping complete lifecycle/source/effect closure test/control
+      execution or non-CI external terminal custody.
+    - Normative trusted consumer must require this conformance before claiming complete CI integration; legacy partial compilation
+      alone claims no such completeness.
+    - Canonical normalization installed profiles approved performance budgets and immutable terminal custody remain open.
