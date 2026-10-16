@@ -24,7 +24,8 @@
     "Add a text ingress to the existing unique-key YAML decoder and retain its file ingress as a delegate; no second parser or caller-authentication boolean.",
     "Preserve true pre-adoption file absence and valid legacy mapping readability. Existing exact-base migration owner and migration authorization policy remain unchanged.",
     "Reject missing/corrupt base evidence before migration registration writes and before any downstream authority consumer.",
-    "Preserve standard legacy YAML merge-key ordering and explicit override semantics while rejecting repeated explicit keys; enforce uniqueness before the existing SafeLoader merge expansion."
+    "Preserve standard legacy YAML merge-key ordering and explicit override semantics while rejecting repeated explicit keys; enforce uniqueness before the existing SafeLoader merge expansion.",
+    "Full migration validation reuses the existing exact-base identity/ancestry owner before registry reads; tree objects and unrelated or unavailable commits cannot pose as the comparison base."
   ],
   "forbidden_surfaces": [
     "new migration approval policy",

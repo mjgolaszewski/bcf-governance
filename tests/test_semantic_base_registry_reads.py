@@ -149,3 +149,15 @@ def test_merge_expansion_cannot_hide_repeated_authored_keys(payload):
 
     with pytest.raises(SemanticYAMLError, match='duplicate'):
         load_unique_mapping_text(payload)
+
+
+@pytest.mark.parametrize('kind', ['tree', 'unrelated_commit'])
+def test_full_migration_validation_requires_a_real_ancestor_commit_before_reads(repo, monkeypatch, kind):
+    from types import SimpleNamespace
+
+    tree = git(repo, 'rev-parse', 'HEAD^{tree}')
+    base = tree if kind == 'tree' else git(repo, 'commit-tree', tree, '-m', 'unrelated')
+    monkeypatch.setenv('BCF_PR_BASE_SHA', base)
+    monkeypatch.setattr(owner, '_git_yaml', lambda *a, **kw: pytest.fail('registry read before exact base validation'))
+    with pytest.raises(owner.SemanticMigrationError, match='base'):
+        owner.validate_exact_base_migrations(repo, {'families': [], 'migrations': []}, {'operations': [], 'migrations': []}, SimpleNamespace(raw={}))
