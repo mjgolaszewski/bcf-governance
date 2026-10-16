@@ -702,3 +702,11 @@ def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound
     from .ci_graph_composition_views import _render_lifecycle_composition
 
     return _render_lifecycle_composition(compiled, view=view)
+
+
+def validate_lifecycle_ci_edge_coverage(
+    compiled: dict[str, Any], *, compiled_graph: CompiledCIGraph,
+    expected_source: Mapping[str, str],
+) -> dict[str, Any]:
+    """Observe all canonical CI references; caller authenticates source/custody."""
+    return {}

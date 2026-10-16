@@ -1413,3 +1413,98 @@ def test_lifecycle_view_bytes_keep_existing_source_owner():
     view = next(row for row in inventory['functions'] if row['symbol'] == 'bcf_governance/tooling/ci_graph_composition_views.py::_render_lifecycle_composition')
     calls = {row['called_symbol'] for row in view['calls']}
     assert 'bcf_governance/tooling/ci_graph_composition.py::_bytes' in calls
+
+
+def _ci_coverage_inputs(composition, *, second=False, excluded=False, duplicate=False):
+    from dataclasses import replace
+    edge = composition['compiled_graph'].edge_contracts[0]
+    rows = [edge]
+    if second:
+        rows.append(replace(edge, producer='other:produce', consumer='other:consume'))
+    if excluded:
+        rows.append(replace(edge, producer=edge.consumer, consumer=edge.producer, reachable=False, exclusion_reason='no-structural-path'))
+    if duplicate:
+        rows.append(edge)
+    composition['compiled_graph'].edge_contracts = tuple(rows)
+    source = dict(composition['expected_source'], ci_edges_sha256=edge_population_sha256(composition['compiled_graph']))
+    composition['expected_source'] = composition['payload']['source'] = source
+    return composition
+
+
+def _check_ci_coverage(composition):
+    from bcf_governance.tooling.ci_graph_composition import validate_lifecycle_ci_edge_coverage
+    return validate_lifecycle_ci_edge_coverage(compile_lifecycle_composition(**composition), compiled_graph=composition['compiled_graph'], expected_source=composition['expected_source'])
+
+
+def test_complete_ci_edge_coverage_is_kernel_derived_stable_and_read_only(composition):
+    inputs = _ci_coverage_inputs(composition, second=True, excluded=True)
+    contract = inputs['payload']['relationships'][0]['contract']
+    contract['ci_edges'].append(dict(producer='other:produce', consumer='other:consume'))
+    before = copy.deepcopy(inputs)
+    result = _check_ci_coverage(inputs)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert result['reachable_edges_checked'] == 2
+    assert result['canonical_exclusions'] == (('verify:consume', 'build:produce', 'no-structural-path'),)
+    assert len(result['ci_edge_bindings']) == 2
+    assert inputs == before
+    inputs['compiled_graph'].edge_contracts = tuple(reversed(inputs['compiled_graph'].edge_contracts))
+    contract['ci_edges'].reverse()
+    assert _check_ci_coverage(inputs) == result
+
+
+@pytest.mark.parametrize('omission', ['second_edge', 'edge_and_tests'])
+def test_ci_edge_coverage_cannot_be_selected_by_candidate(composition, omission):
+    if omission == 'second_edge':
+        _ci_coverage_inputs(composition, second=True)
+    else:
+        contract = composition['payload']['relationships'][0]['contract']
+        contract['ci_edges'] = []
+        contract['positive_tests'] = ['other::test_irrelevant']
+        contract['negative_tests'] = ['other::test_other_cause']
+    with pytest.raises(CIGraphError, match='coverage.*incomplete'):
+        _check_ci_coverage(composition)
+
+
+@pytest.mark.parametrize('defect', ['source', 'graph', 'integrity'])
+def test_ci_edge_coverage_rejects_wrong_identity(composition, defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_lifecycle_ci_edge_coverage
+    compiled = compile_lifecycle_composition(**composition)
+    expected = dict(composition['expected_source'])
+    if defect == 'source':
+        expected['repository_id'] = '999'
+    elif defect == 'graph':
+        composition['compiled_graph'].edge_contracts = ()
+    else:
+        compiled['authority'] = True
+    with pytest.raises(CIGraphError, match='identity|source'):
+        validate_lifecycle_ci_edge_coverage(compiled, compiled_graph=composition['compiled_graph'], expected_source=expected)
+
+
+def test_ci_edge_coverage_rejects_duplicate_canonical_pairs(composition):
+    _ci_coverage_inputs(composition, duplicate=True)
+    with pytest.raises(CIGraphError, match='duplicate'):
+        _check_ci_coverage(composition)
+
+
+def test_ci_edge_coverage_rejects_resealed_unreachable_reference(composition):
+    import hashlib
+    from bcf_governance.tooling.ci_graph_composition import validate_lifecycle_ci_edge_coverage
+    _ci_coverage_inputs(composition, excluded=True)
+    compiled = compile_lifecycle_composition(**composition)
+    compiled['relationships'][0]['contract']['ci_edges'] = [dict(producer='verify:consume', consumer='build:produce')]
+    unsigned = {key: value for key, value in compiled.items() if key != 'composition_sha256'}
+    compiled['composition_sha256'] = hashlib.sha256(json.dumps(unsigned, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+    with pytest.raises(CIGraphError, match='absent|unreachable'):
+        validate_lifecycle_ci_edge_coverage(compiled, compiled_graph=composition['compiled_graph'], expected_source=composition['expected_source'])
+
+
+def test_empty_ci_edge_population_does_not_claim_runtime_qualification(composition):
+    composition['compiled_graph'].edge_contracts = ()
+    composition['payload']['relationships'][0]['contract']['ci_edges'] = []
+    source = dict(composition['expected_source'], ci_edges_sha256=edge_population_sha256(composition['compiled_graph']))
+    composition['expected_source'] = composition['payload']['source'] = source
+    result = _check_ci_coverage(composition)
+    assert result['reachable_edges_checked'] == 0
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
