@@ -1807,3 +1807,51 @@ def test_publication_continues_after_lost_mutation_response(tmp_path, stage):
     if stage == "publish":
         assert api.mutations == prior
         assert result["decision"] == "already_published"
+
+
+@pytest.mark.parametrize("existing", [True, False])
+def test_publication_revalidates_body_on_converged_final_read(tmp_path, existing):
+    values = _release_inputs(tmp_path)
+
+    class MovedConvergedAPI(_ReleaseAPI):
+        def create_draft_release(self, *args, **kwargs):
+            super().create_draft_release(*args, **kwargs)
+            self.release.update(draft=False, immutable=True, assets=[
+                {"name": name, "digest": f"sha256:{digest}"}
+                for name, digest in values["assets"].items()
+            ])
+            raise GitHubAPIConflictError("concurrent exact publication")
+
+        def release_by_tag(self, *args, **kwargs):
+            self.release["body"] = "moved after convergence"
+            return super().release_by_tag(*args, **kwargs)
+
+    api = MovedConvergedAPI()
+    if existing:
+        api.release["assets"] = [
+            {"name": name, "digest": f"sha256:{digest}"}
+            for name, digest in values["assets"].items()
+        ]
+    else:
+        api.release = None
+    with pytest.raises(GitHubControllerError, match="identity conflicts"):
+        publish_release(api, repository="owner/repo", tag="v0.7.1", expected_commit=COMMIT,
+                        release_artifacts=values["artifacts"], body="notes")
+    assert "publish" not in api.mutations
+    if existing:
+        assert api.mutations == []
+
+
+@pytest.mark.parametrize("draft", [0, 1, None, "true"])
+def test_publication_rejects_untyped_draft_before_tag_mutation(tmp_path, draft):
+    values = _release_inputs(tmp_path)
+    api = _ReleaseAPI()
+    api.ref = None
+    api.release.update(draft=draft, assets=[
+        {"name": name, "digest": f"sha256:{digest}"}
+        for name, digest in values["assets"].items()
+    ])
+    with pytest.raises(GitHubControllerError, match="lifecycle is invalid"):
+        publish_release(api, repository="owner/repo", tag="v0.7.1", expected_commit=COMMIT,
+                        release_artifacts=values["artifacts"], body="notes")
+    assert api.mutations == []
