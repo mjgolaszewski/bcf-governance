@@ -171,6 +171,8 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/semantic_yaml.py
+    - bcf_governance/tooling/semantic_authority_migrations.py
     - bcf_governance/tooling/ci_graph_composition.py
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
     - bcf_governance/tooling/semantic_ownership_inventory.py
@@ -759,6 +761,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
     - dormant-composition-and-static-bindings
@@ -783,6 +786,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-base-registry-reads
     - finite-provider-retry-bound
   I06:
     requirement: Negative controls preserved. Each applicable cause-specific control must execute or have independently applicable qualification/reuse. Reusing a
@@ -1109,6 +1113,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-base-registry-reads
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
     - terminal-proposition-binding
@@ -1474,6 +1479,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
     - initialization-operation-consumer-binding
@@ -1805,6 +1811,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-base-registry-reads
     - dormant-composition-and-static-bindings
   AC06:
     requirement: Local green or isolated adopter observation without mandatory provider authority cannot certify PR/main/release/custody.
@@ -2020,6 +2027,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
     - initialization-operation-consumer-binding
@@ -3037,3 +3045,32 @@ implementation_slices:
     - Actual protected provider-owned invocation must authenticate repository/context and independently reconstruct complete required populations; this dormant query does not authenticate caller-supplied expected context.
     - Complete runtime effects guard authority recovery execution profile installation and normative model adoption remain unqualified.
     - Canonical oracle normalization approved performance targets and independent terminal custody remain blocked.
+  authenticated-base-registry-reads:
+    id: authenticated-base-registry-reads
+    workitem: P32-P0-04
+    scope: Existing migration owner distinguishes independently proven absent registries from failed or malformed reads and validates exact base ancestry before reading; existing unique YAML owner preserves legacy merge semantics.
+    contract: audits/issue-394/base-registry-read-contract.json
+    producer: bcf_governance/tooling/semantic_authority_migrations.py::_git_yaml
+    consumer: bcf_governance/tooling/semantic_authority_migrations.py::validate_exact_base_migrations
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_semantic_base_registry_reads::test_true_registry_absence_and_valid_mapping_remain_supported
+    - tests.test_semantic_base_registry_reads::test_file_and_text_semantic_yaml_decoders_share_duplicate_rejection
+    negative_controls:
+    - cause: unavailable-base-laundered-as-no-registry
+      test: tests.test_semantic_base_registry_reads::test_unavailable_base_cannot_disable_full_migration_validation
+    - cause: unreadable-registry-hides-retired-operation
+      test: tests.test_semantic_base_registry_reads::test_unreadable_base_cannot_hide_operation_retirement
+    - cause: replacement-object-erases-base-population
+      test: tests.test_semantic_base_registry_reads::test_git_replacement_cannot_erase_base_operation_population
+    - cause: tree-object-before-registry-reads
+      test: tests.test_semantic_base_registry_reads::test_full_migration_validation_requires_a_real_ancestor_commit_before_reads[tree]
+    - cause: unrelated-base-before-registry-reads
+      test: tests.test_semantic_base_registry_reads::test_full_migration_validation_requires_a_real_ancestor_commit_before_reads[unrelated_commit]
+    - cause: malformed-present-registry-not-absence
+      test: tests.test_semantic_base_registry_reads::test_malformed_present_registry_is_a_typed_base_failure
+    remaining:
+    - Exact local Git identity and ancestry are not independent provider context authentication; existing migration approval semantics are unchanged.
+    - Independent complete operation/effect population acquisition and actual protected lifecycle invocation remain unqualified.
+    - Canonical semantic lock and test-manifest normalization remain held; no normative adoption performance installed-consumer or custody closure.

@@ -43,5 +43,18 @@
     "Canonical unique file/text decoder parity",
     "Operation retirement cannot hide behind unavailable base registry"
   ],
-  "completion": "Affected behavioral/static/parity checks; protected provider/context authentication and complete lifecycle population conformance remain open."
+  "completion": "Affected behavioral/static/parity checks; protected provider/context authentication and complete lifecycle population conformance remain open.",
+  "local_execution": {
+    "contract_red_commits": [
+      "eb1a8e9b",
+      "5fdf5d41",
+      "fc9a14e1",
+      "bd768888"
+    ],
+    "final_focused": "35 passed in 120.25 seconds",
+    "static_parity": "governance-yaml-ok; lint/typecheck LOC/context/private-copy/pack and CLI effect checks passed",
+    "retained_global_blocker": "Interrupted overbroad suite after 379.25s: 25 pass, stale semantic lock failure, exit2. No full semantic-conformance claim and no manual lock normalization.",
+    "verification": "audits/issue-394/base-registry-read-verification.json",
+    "remaining": "Independent context/provider/population authentication actual normative model/profile adoption canonical lock/oracle normalization performance and custody remain open."
+  }
 }
