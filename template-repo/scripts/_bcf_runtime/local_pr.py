@@ -284,6 +284,8 @@ def _run_prospective_train(
             base_tree=base_tree,
             candidate_sha=identity.commit_sha,
             candidate_tree=identity.tree_sha,
+            policy_context=context,
+            runner=runner,
         )
     except ProspectiveLaneError as exc:
         raise ProspectiveValidationError(str(exc)) from exc

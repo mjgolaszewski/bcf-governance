@@ -1804,6 +1804,60 @@ def test_prospective_policy_consumer_receives_separate_protected_context(monkeyp
     def bind(*_args, **kwargs):
         assert kwargs.get('policy_context') is context
         assert kwargs.get('runner') is _runner
-        return 'runtime_only', POLICY_IDENTITY
+        raise RuntimeError('policy context boundary observed')
     monkeypatch.setattr(prospective, 'prospective_policy_binding', bind)
-    prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False, runner=_runner)
+    with pytest.raises(RuntimeError, match='policy context boundary observed'):
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False, runner=_runner)
+
+
+@pytest.fixture
+def policy_stack(tmp_path):
+    def git(*args):
+        return subprocess.check_output(['git', *args], cwd=tmp_path, text=True).strip()
+    git('init', '-q')
+    git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'user.name', 'Policy fixture')
+    policy = tmp_path / 'governance'
+    policy.mkdir()
+    (policy / 'ci-graph.yml').write_text('revision: protected\n')
+    (policy / 'ci-authority.yml').write_text('authority: protected\n')
+    git('add', '.')
+    git('commit', '-qm', 'protected source')
+    source, source_tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
+    (policy / 'ci-authority.yml').write_text('authority: feature\n')
+    git('add', '.')
+    git('commit', '-qm', 'feature base policy change')
+    base, base_tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
+    (tmp_path / 'README.md').write_text('leaf docs\n')
+    git('add', '.')
+    git('commit', '-qm', 'leaf docs')
+    head, tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
+    context = LocalPRContext('origin', 'main', base, head, 'leaf', base_ref='stack', repository='owner/repo', repository_id=17,
+        protected_default_sha=source, protected_default_tree=source_tree)
+    return SimpleNamespace(root=tmp_path, context=context, source=source, source_tree=source_tree, base=base, base_tree=base_tree, head=head, tree=tree)
+
+
+def test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source(policy_stack):
+    from bcf_governance.tooling.ci_authority_prospective_lanes import prospective_policy_binding
+    f = policy_stack
+    transition, policy = prospective_policy_binding(f.root, lane='trusted_exact_main', custody_state='ordinary_executable_controller',
+        changed_paths=('README.md',), base_sha=f.base, base_tree=f.base_tree, candidate_sha=f.head, candidate_tree=f.tree, policy_context=f.context)
+    assert transition == 'ordinary_authority_change'
+    assert policy['source']['commit_sha'] == f.source
+    assert policy['source']['tree_sha'] == f.source_tree
+    assert policy['source']['policy_sha256'] != policy['candidate']['policy_sha256']
+    assert f.context.base_sha == f.base
+
+
+@pytest.mark.parametrize('cause', ['partial-sha', 'partial-tree', 'missing-snapshot', 'wrong-tree', 'wrong-comparison', 'wrong-head', 'unknown-commit'])
+def test_policy_context_rejects_incomplete_or_wrong_source_subject(policy_stack, cause):
+    from dataclasses import replace
+    from bcf_governance.tooling.ci_authority_prospective_lanes import prospective_policy_binding, ProspectiveLaneError
+    f = policy_stack
+    fields = {'partial-sha': {'protected_default_sha': None}, 'partial-tree': {'protected_default_tree': None},
+        'missing-snapshot': {'protected_default_sha': None, 'protected_default_tree': None},
+        'wrong-tree': {'protected_default_tree': f.tree}, 'wrong-comparison': {'base_sha': f.source},
+        'wrong-head': {'head_sha': f.base}, 'unknown-commit': {'protected_default_sha': '0' * 40}}
+    with pytest.raises(ProspectiveLaneError):
+        prospective_policy_binding(f.root, lane='trusted_exact_main', custody_state='ordinary_executable_controller', changed_paths=('README.md',),
+            base_sha=f.base, base_tree=f.base_tree, candidate_sha=f.head, candidate_tree=f.tree, policy_context=replace(f.context, **fields[cause]))

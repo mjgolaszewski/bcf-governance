@@ -3955,7 +3955,20 @@ implementation_slices:
     - tests.test_ci_graph::test_stacked_candidate_progress_cannot_claim_rendered_default_main_terminal
     - tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_can_only_observe_and_never_confer_release
     - tests.test_semantic_ownership::test_protected_merge_context_authorization_is_declared_and_causal
+    - tests.test_local_pr::test_bound_stacked_context_retains_distinct_protected_default_subject
+    - tests.test_ordinary_protection_projection::test_direct_protection_prospective_uses_supplied_authenticated_context_client
+    - tests.test_prospective_validation::test_prospective_policy_consumer_receives_separate_protected_context
+    - tests.test_prospective_validation::test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source
+    - tests.test_ci_graph::test_v3_reference_graph_projects_proof_transport_and_planned_shards
     negative_controls:
+    - cause: finalizer-executes-comparison-base
+      test: tests.test_ci_graph::test_ordinary_evaluator_rejects_untrusted_executable_checkout[finalizer-comparison-base]
+    - cause: finalizer-executes-candidate-head
+      test: tests.test_ci_graph::test_ordinary_evaluator_rejects_untrusted_executable_checkout[finalizer-candidate-head]
+    - cause: publisher-executes-comparison-base
+      test: tests.test_ci_graph::test_ordinary_evaluator_rejects_untrusted_executable_checkout[publisher-comparison-base]
+    - cause: publisher-executes-candidate-head
+      test: tests.test_ci_graph::test_ordinary_evaluator_rejects_untrusted_executable_checkout[publisher-candidate-head]
     - cause: bound-retry-context-repository-before-provider-read
       test: tests.test_candidate_provider_recovery::test_retry_rejects_inconsistent_bound_context_before_provider_reads[repository]
     - cause: bound-retry-context-repository-id-before-provider-read
@@ -4006,6 +4019,36 @@ implementation_slices:
       test: tests.test_candidate_submit::test_nondefault_target_never_invokes_protected_merge_mutations[closure]
     - cause: provider-retarget-during-metadata-write
       test: tests.test_ci_candidate_pr::test_bound_stacked_pr_rejects_base_retarget_in_metadata_response
+    - cause: direct-protection-context-unavailable
+      test: tests.test_ordinary_protection_projection::test_direct_protection_prospective_context_failure_cannot_continue
+    - cause: protected-default-wrong-ref
+      test: tests.test_local_pr::test_protected_default_subject_rejects_before_pr_discovery[wrong-ref]
+    - cause: protected-default-tag-object
+      test: tests.test_local_pr::test_protected_default_subject_rejects_before_pr_discovery[tag-object]
+    - cause: protected-default-wrong-sha
+      test: tests.test_local_pr::test_protected_default_subject_rejects_before_pr_discovery[wrong-sha]
+    - cause: protected-default-missing-object
+      test: tests.test_local_pr::test_protected_default_subject_rejects_before_pr_discovery[missing-object]
+    - cause: protected-default-noncanonical-sha
+      test: tests.test_local_pr::test_protected_default_subject_rejects_before_pr_discovery[noncanonical-sha]
+    - cause: protected-default-movement-False
+      test: tests.test_local_pr::test_protected_default_movement_during_bound_or_absence_discovery_rejects[False]
+    - cause: protected-default-movement-True
+      test: tests.test_local_pr::test_protected_default_movement_during_bound_or_absence_discovery_rejects[True]
+    - cause: protected-policy-source-partial-sha
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[partial-sha]
+    - cause: protected-policy-source-partial-tree
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[partial-tree]
+    - cause: protected-policy-source-missing-snapshot
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[missing-snapshot]
+    - cause: protected-policy-source-wrong-tree
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[wrong-tree]
+    - cause: protected-policy-source-wrong-comparison
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[wrong-comparison]
+    - cause: protected-policy-source-wrong-head
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[wrong-head]
+    - cause: protected-policy-source-unknown-commit
+      test: tests.test_prospective_validation::test_policy_context_rejects_incomplete_or_wrong_source_subject[unknown-commit]
     remaining:
     - Do not merge or activate this isolated partial implementation. Complete audits/issue-394/bound-pr-authority-context-research.json
       first.

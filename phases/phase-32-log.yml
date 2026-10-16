@@ -12,6 +12,7 @@ phase:
 summary:
   outcome: active
   highlights:
+  - "Recovered unfinished policy-source propagation and qualified it with protected-default invalidation and malformed-context controls. Contract 87707f56 precedes ordinary executable-source correction; regression 1be276c1 reproduced acceptance of feature-base evaluator checkout. Ordinary finalizer/publisher now bind immutable workflow-definition source; four cause controls reject candidate/comparison execution. Combined affected suites pass286 plus174 cases; actual-operation/pack/exact-reference batch passes13. Native governance/lint/typecheck/module/context gates pass. Feature remains isolated and nonmergeable pending complete protected consumer/normalization/adopter proof; all82 whole requirements remain open."
   - P32 is opened for Issue 394 foundation with complete assurance through immutable 2.5.0 custody
   - phase artifacts were scaffolded from the governance template
 workitems:

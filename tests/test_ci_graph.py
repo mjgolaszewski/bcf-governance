@@ -3673,15 +3673,16 @@ def test_nondefault_candidate_projection_rejects_unbound_context():
         candidate_post_merge_evaluation(evaluation, context=LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack"))
 
 
-@pytest.mark.parametrize("source", ["${{ github.event.workflow_run.pull_requests[0].base.sha }}", "${{ github.event.workflow_run.head_sha }}"])
-def test_ordinary_evaluator_rejects_untrusted_executable_checkout(tmp_path: Path, source: str) -> None:
+@pytest.mark.parametrize("source", ["${{ github.event.workflow_run.pull_requests[0].base.sha }}", "${{ github.event.workflow_run.head_sha }}"], ids=["comparison-base", "candidate-head"])
+@pytest.mark.parametrize("component", ["checkout-protected-pr-base", "checkout-protected-finalizer-base"], ids=["finalizer", "publisher"])
+def test_ordinary_evaluator_rejects_untrusted_executable_checkout(tmp_path: Path, source: str, component: str) -> None:
     graph = build_reference_ci_graph(
         project_id="v3-fixture", profile="standard", profile_contract_version="3.0",
         gates=["governance-validate", "test", "contract-test", "runtime-smoke"],
         candidate_labels=["ubuntu-24.04"], trusted_labels=["self-hosted", "fixture-trusted"],
         candidate_hosted=True, trusted_hosted=False,
     )
-    graph["step_components"]["checkout-protected-pr-base"]["with"]["ref"] = source
+    graph["step_components"][component]["with"]["ref"] = source
     _write_graph(tmp_path, graph)
     with pytest.raises(CIGraphError, match="invalid exact checkout/controller contract"):
         validate_ci_graph(tmp_path)
