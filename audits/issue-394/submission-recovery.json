@@ -30,7 +30,7 @@
   },
   "raw_progress_sha256": "857bc22b1a30c75838e6fb507b927eea2a895cfe0165695d134e2262ea307911",
   "classification": "Interrupted local normalization with no observed promotion or provider submission; original exit code and timing are unknown.",
-  "recovery": "Preserve shadow diff and original capture outside distribution; restart only through canonical submit after authored recovery changes and completed feature integration. Recheck lease and provider state at submission.",
+  "recovery": "Preserve shadow diff and original capture outside distribution; restart only through canonical submit after authored recovery and affected-source checks. Unfinished bound-PR source stays isolated; its integration requires separate qualification. Recheck lease and provider state at submission.",
   "limitations": [
     "Not a successful prospective proof or terminal certification.",
     "No percentile or elapsed-duration claim.",
