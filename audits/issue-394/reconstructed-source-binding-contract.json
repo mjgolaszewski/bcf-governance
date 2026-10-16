@@ -25,7 +25,8 @@
     "Return detached source subject/population digest/import-root observations with authority false and execution_qualified false. No provider repository authority or complete runtime effect interpretation is inferred.",
     "Dirty missing substituted extra or unresolved source inputs block; no fallback to a caller-authored inventory. Protected caller still authenticates repository/context and all expected populations.",
     "Extract existing source-independent population/fact/test/control declaration checks into one shared pure helper used by both binding queries; reject those contradictions before reconstruction I/O.",
-    "Malformed protected mapping/fact/control/selector declarations, unbound call endpoints and authority-bearing observation catalogues reject with CIGraphError before source I/O."
+    "Malformed protected mapping/fact/control/selector declarations, unbound call endpoints and authority-bearing observation catalogues reject with CIGraphError before source I/O.",
+    "Shared ingress preserves legacy list and tuple call-edge pairs with identical semantics; shape validation must not introduce a minor-release incompatibility."
   ],
   "forbidden_surfaces": [
     "normative DAG activation",
@@ -44,5 +45,16 @@
     "Legacy binding output remains unchanged",
     "No source execution or provider authority from reconstruction"
   ],
-  "completion": "Focused behavioral plus parity/static/architecture controls; actual provider-owned invocation and full independent guard/effect populations remain required."
+  "completion": "Focused behavioral plus parity/static/architecture controls; actual provider-owned invocation and full independent guard/effect populations remain required.",
+  "local_execution": {
+    "contract_red_commits": [
+      "b65ec3d6",
+      "c533034a"
+    ],
+    "final_expanded": "282 passed and one known canonical oracle failure in 16.29 seconds",
+    "cli_effect": "1 passed in 83.85 seconds",
+    "static_parity": "governance-yaml-ok; lint/typecheck, LOC/context/private copies and canonical pack --check passed",
+    "verification": "audits/issue-394/reconstructed-source-binding-verification.json",
+    "remaining": "Actual protected provider-owned invocation independent expected populations runtime effects installed consumers canonical oracle normalization normative adoption performance and custody remain unqualified."
+  }
 }

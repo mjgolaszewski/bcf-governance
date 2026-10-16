@@ -1102,6 +1102,7 @@ def test_reconstructed_source_binding_uses_exact_protected_subject(reconstructed
     }
     assert len(result['source_reconstruction']['population_sha256']) == 64
     assert reconstructed_binding_inputs == before
+    assert validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs) == result
 
 
 @pytest.mark.parametrize('defect', ['subject', 'root', 'scope', 'catalogue'])
@@ -1161,3 +1162,40 @@ def test_reconstructed_binding_rejects_malformed_declarations_before_io(reconstr
     monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('source read before malformed declaration rejection'))
     with pytest.raises(CIGraphError):
         owner.validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('roots', [('missing',), ('.', '.'), ('../escape',)])
+def test_reconstructed_binding_rejects_invalid_import_resources(reconstructed_binding_inputs, roots):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+
+    with pytest.raises(CIGraphError, match='source reconstruction'):
+        validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs, source_import_roots=roots)
+
+
+def test_reconstructed_binding_accepts_no_caller_inventory(reconstructed_binding_inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+
+    with pytest.raises(TypeError, match='source_inventory'):
+        validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs, source_inventory={'functions': []})
+
+
+def test_reconstructed_binding_delegates_to_existing_conformance_owner(reconstructed_binding_inputs, monkeypatch):
+    from bcf_governance.tooling import ci_graph_composition as owner
+
+    seen = []
+    real = owner.validate_lifecycle_bindings
+    def observed(*args, **kwargs):
+        seen.append(kwargs['source_inventory']['source_population']['subject'])
+        return real(*args, **kwargs)
+    monkeypatch.setattr(owner, 'validate_lifecycle_bindings', observed)
+    result = owner.validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs)
+    assert seen == [result['source_reconstruction']['subject']]
+
+
+def test_shared_binding_checks_preserve_legacy_sequence_call_edges(binding_inputs):
+    original = _validate_bindings(binding_inputs)
+    binding_inputs['required_call_edges'] = {
+        pair: [list(edge) for edge in edges]
+        for pair, edges in binding_inputs['required_call_edges'].items()
+    }
+    assert _validate_bindings(binding_inputs) == original
