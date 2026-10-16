@@ -137,3 +137,15 @@ def test_valid_legacy_yaml_merges_keep_safe_loader_semantics(repo, payload):
     git(repo, 'commit', '-qm', 'legacy merge')
     assert load_unique_mapping_text(payload) == expected
     assert owner._git_yaml(repo, git(repo, 'rev-parse', 'HEAD'), Path('governance/application-operations.yml')) == expected
+
+
+@pytest.mark.parametrize('payload', [
+    'defaults: &base {operations: []}\n<<: *base\noperations: []\noperations: []\n',
+    'defaults: &base {operations: [], operations: []}\n<<: *base\n',
+    'defaults: &base {operations: []}\n<<: *base\n<<: *base\n',
+])
+def test_merge_expansion_cannot_hide_repeated_authored_keys(payload):
+    from bcf_governance.tooling.semantic_yaml import load_unique_mapping_text, SemanticYAMLError
+
+    with pytest.raises(SemanticYAMLError, match='duplicate'):
+        load_unique_mapping_text(payload)
