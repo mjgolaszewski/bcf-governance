@@ -476,3 +476,26 @@ def test_rejected_provider_design_cannot_become_active_primitive_authority(tmp_p
         result = validate_ci_state_matrix(repo, authored_only=True)
         assert result['authority'] is False
         assert result['execution_qualified'] is False
+
+
+@pytest.mark.parametrize('identity', ['AC-001', 'AC-002', 'AC-004', 'AC-005'])
+def test_active_executable_edge_owner_resolves_exact_source_function(identity):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+    model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    edge = next(row for row in model['adopter_compatibility_observation']['edges'] if row['id'] == identity)
+    module, separator, function = edge['canonical_owner'].partition('::')
+    assert separator, 'executable edge owner must identify exact source module and function'
+    inventory = discover_python_source(ROOT, files=[ROOT / module])
+    assert edge['canonical_owner'] in {row['symbol'] for row in inventory['functions']}
+
+
+def test_active_receipt_owner_is_registered_factory_called_by_real_collector():
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    edge = next(row for row in model['adopter_compatibility_observation']['edges'] if row['id'] == 'AC-001')
+    representations = yaml.safe_load((ROOT / 'governance/canonical-representations.yml').read_text())
+    receipt = next(row for row in representations['representations'] if row['semantic_id'] == 'governance.release-receipt.v1')
+    inventory = resolve_python_imports(ROOT, discover_python_source(ROOT, files=[ROOT / 'bcf_governance/tooling/ci_github_release.py', ROOT / 'bcf_governance/tooling/release_receipts.py'], call_contracts_version='1.0'))
+    collector = next(row for row in inventory['functions'] if row['symbol'] == 'bcf_governance/tooling/ci_github_release.py::collect_release')
+    called = {row['called_symbol'] for row in collector['calls']}
+    assert called & set(receipt['authorized_constructors_and_factories']) == {edge['canonical_owner']}
