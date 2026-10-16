@@ -27,10 +27,17 @@
     "lint": "passed",
     "typecheck": "passed",
     "architecture_module_size": "passed",
-    "architecture_context_membership": "passed"
+    "architecture_context_membership": "passed",
+    "exact_installed_budget_ordering_control": {
+      "passed": 1,
+      "elapsed_seconds": 0.1,
+      "subject": "7f82a29fd0ec3bedb66715c8458d97048e7d15a0",
+      "module_origin": "asserted exact installed runtime"
+    }
   },
   "remaining": [
     "Exact installed parity and canonical pinned-adopter qualification.",
     "Complete earliest-safe failure population and whole acceptance remain open."
-  ]
+  ],
+  "canonical_pinned_qualification": "audits/issue-394/pinned-qualification-7f82a29f-terminal.json"
 }
