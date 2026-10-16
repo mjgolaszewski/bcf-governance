@@ -406,3 +406,34 @@ def test_matching_bare_local_comparison_assertion_is_preserved(tmp_path, monkeyp
     base = _git(repo, 'rev-parse', 'origin/main')
     monkeypatch.setenv('BCF_COMPARISON_BASE_SHA', base)
     assert validate_ci_state_matrix(repo)['comparison_base'] == base
+
+
+@pytest.mark.parametrize('consumer', ['adopter_source_transaction', 'adopter_compatibility_observation', 'bounded_workitem_frontier_contract'])
+def test_all_primitive_consumers_reject_undeclared_references(tmp_path, consumer):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    if consumer == 'bounded_workitem_frontier_contract':
+        model[consumer]['primitive'] = 'PRIM-UNKNOWN'
+    else:
+        model[consumer]['primitives'].append('PRIM-UNKNOWN')
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    with pytest.raises(CIStateMatrixError, match='primitive reference'):
+        validate_ci_state_matrix(repo, authored_only=True)
+
+
+def test_actual_backtrace_declares_every_consumed_primitive():
+    model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    declared = {row['id'] for row in model['primitives']}
+    consumed = set(model['adopter_source_transaction']['primitives']) | set(model['adopter_compatibility_observation']['primitives']) | {model['bounded_workitem_frontier_contract']['primitive']}
+    assert consumed <= declared
+
+
+def test_actual_backtrace_binds_all_retained_p26_primitive_owners():
+    retained = yaml.safe_load((ROOT / 'audits/bcf-2.1-p26-invariant-ownership.yml').read_text())
+    model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    bindings = {row['canonical_name']: row for row in model['primitives']}
+    assert {row['id'] for row in retained['primitives']} <= bindings.keys()
+    for row in retained['primitives']:
+        assert bindings[row['id']]['canonical_reference'] == row['canonical_owner']
+        assert bindings[row['id']]['executable_owner'] == row['executable_owner']

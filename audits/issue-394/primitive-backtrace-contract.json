@@ -1,0 +1,42 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/primitive-backtrace-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend existing machine backtrace and reference guard. Existing adoption_blocker still requires independent implementation/positive/control/terminal/recovery tracing; no activation or prose retirement.",
+  "target_modules": [
+    "spec/phase0/release-train-backtrace.yml",
+    "schemas/release-train-backtrace.schema.json",
+    "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
+    "tests/test_ci_state_matrix.py"
+  ],
+  "contract": [
+    "Reference guard must include adopter_source_transaction primitive IDs, alongside existing compatibility/frontier consumers; undeclared references reject in authored preflight.",
+    "Reuse retained P26 inventory by exact canonical names, canonical schema references and executable owner strings. Add six missing names; preserve existing primitive IDs and owner fields. New fields are additive reference metadata, not authority verdicts.",
+    "Declare the already-referenced provider credential-set design primitive explicitly. Current source has no AdopterProviderCredentialSet type: retain an implementation_obligation and exact unresolved evidence, never invent a working owner or assert implementation qualification.",
+    "Resolve existing P26 schema fragments and executable module/functions independently against current source. Preserve retained P26 audit bytes and historical source envelope. Reference resolution is not execution proof.",
+    "Document source schema remains version 2; additive fields preserve old reader compatibility. Generated schema mirrors use canonical pack generator only."
+  ],
+  "expected_tests": [
+    "Every typed primitive consumer rejects undeclared references before allocation",
+    "Actual source transaction has no undeclared primitive IDs",
+    "All fifteen P26 names have exact retained canonical/executable references",
+    "Current canonical schema fragments and executable references resolve for P26 names",
+    "Existing backtrace/schema/preflight behavior and parity remain intact"
+  ],
+  "forbidden_surfaces": [
+    "invented provider credential implementation",
+    "historical P26 audit rewrite",
+    "new truth registry",
+    "authority activation or prose retirement",
+    "canonical normalization provider/installer/custody"
+  ],
+  "completion": "Primitive/reference closure and explicit unimplemented obligation only. Full runtime conformance and required credential-set mechanism remain blockers."
+}
