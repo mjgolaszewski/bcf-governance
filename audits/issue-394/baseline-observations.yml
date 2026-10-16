@@ -452,3 +452,20 @@ local_command_observations:
 local_command_limitations:
 - These are separate command windows, not matched eligible PR cohorts or complete developer-interruption clocks.
 - Preserve failed and successful observations; neither establishes p50/p95 or an approved resource/performance target.
+
+v234_captures:
+  subject:
+    commit_sha: d02f11ef3eafd99e451c1482c5d3403c2feefd03
+    tree_sha: 2b62137827a0bc73633ba0778d45887be3aa9be6
+  status: unmatched_maintenance_observations_only
+  authority: false
+  percentile_certification: false
+  observations:
+  - {path: audits/issue-394/observations/release-build-v234-attempt-1.json, elapsed_ms: 796000}
+  - {path: audits/issue-394/observations/release-verifier-v234-attempt-1.json, elapsed_ms: 174000}
+  - {path: audits/issue-394/observations/release-publisher-v234-attempt-1.json, elapsed_ms: 889000}
+  rejected:
+  - path: audits/issue-394/observations/exact-main-v234-attempt-2.json
+    cause: Provider run_started_at precedes created_at by one second; existing strict timing projection rejects.
+    disposition: Retain raw facts without clamping; no valid elapsed or percentile claim.
+  limits: Separate workflow windows are not dispatch-to-custody or merge-to-custody certification; CPU and external waits remain unmeasured.

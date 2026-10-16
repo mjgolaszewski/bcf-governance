@@ -1,0 +1,97 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/v234-integration-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "bounded_context": "governed successor integration preserving existing context owners",
+  "architectural_layer": "existing tooling and governed artifacts",
+  "operation_side": "command orchestration; no new authority owner",
+  "workitem": "P32-P0-01",
+  "dependency_acceptance": "Exact completed P31, compatible effective installed controller and independently verified immutable v2.3.4 custody required before successor admission. Optional adopter observation failures remain residual under current policy.",
+  "baseline": {
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+  },
+  "construction_checkpoint": "89935abe",
+  "target_modules": [
+    "Existing changed source/tests and governed phase/release state from the two histories, constrained by exact per-file three-way review."
+  ],
+  "conflict_inventory": [
+    ".github/workflows/bcf-authority-canary.yml",
+    ".github/workflows/bcf-automation-admission.yml",
+    ".github/workflows/bcf-automation-reconcile.yml",
+    ".github/workflows/bcf-break-glass-recovery.yml",
+    ".github/workflows/bcf-controller-rotation.yml",
+    ".github/workflows/bcf-evidence-storage-qualification-source.yml",
+    ".github/workflows/bcf-evidence-storage-qualification.yml",
+    ".github/workflows/bcf-exact-main.yml",
+    ".github/workflows/bcf-pr-finalizer.yml",
+    ".github/workflows/bcf-pr-status-publisher.yml",
+    ".github/workflows/bcf-release-publisher.yml",
+    ".github/workflows/bcf-release-verifier.yml",
+    ".github/workflows/bcf-status-publisher.yml",
+    ".github/workflows/bcf-trusted-finalizer.yml",
+    ".github/workflows/governance-mutants-nightly.yml",
+    ".github/workflows/governance-mutants-weekly.yml",
+    ".github/workflows/governance.yml",
+    ".github/workflows/release.yml",
+    "CHANGELOG.md",
+    "README.md",
+    "bcf_governance/_version.py",
+    "bcf_governance/pack/template-repo/.bcf-pack-manifest.json",
+    "bcf_governance/pack/template-repo/scripts/_bcf_runtime/_version.py",
+    "docs/USAGE.md",
+    "governance/application-operations.yml",
+    "governance/ci-authority.yml",
+    "governance/ci-graph.yml",
+    "governance/public-contracts.yml",
+    "governance/semantic-lock.yml",
+    "governance/test-duration-observations.json",
+    "governance/test-manifests/test.txt",
+    "manifest.yml",
+    "plans/phase-ledger.yml",
+    "spec/phase0/release-train-backtrace.yml",
+    "template-repo/.bcf-pack-manifest.json",
+    "template-repo/scripts/_bcf_runtime/_version.py"
+  ],
+  "rules": [
+    "Create successor integration worktree from admitted canonical baseline; retain original construction branch and peer checkouts unchanged.",
+    "Keep canonical baseline generated workflow/authority and inventory bytes initially; canonical reconciler alone derives any successor definition/authority pair. Never hand-author pins.",
+    "Merge authored source/contracts and retain admitted runtime-retirement, structured phase evidence and exhaustive protected-merge results with their regression tests.",
+    "Regenerate source/package/template copies and manifests through existing pack owner only.",
+    "Resolve historical release facts from both histories; retain 2.5.0 successor target only after deriving next IDs from admitted canonical state.",
+    "Record every conflict decision and current tests; do not treat local merge or successful tests as provider admission/closure."
+  ],
+  "expected_tests": [
+    "Affected protected merge, installer custody, cleanup retention, candidate/preflight and composition suites.",
+    "AST architecture, LOC, source/package/template parity, unchanged public-operation characterization.",
+    "Governance validation, static gates and canonical execution front door after normalized authored integration."
+  ],
+  "forbidden_surfaces": [
+    "Other agent checkouts and in-flight/provider transactions",
+    "Frozen v2.3.4 release assets and tags",
+    "Manual workflow/authority pin editing",
+    "Maintained adopter repository mutations",
+    "Proof suppression or unqualified requirement closure"
+  ],
+  "public_operation_characterization": {
+    "historical_golden": "audits/issue-394/operation-validator-before.json",
+    "historical_sha256": "3608ae8615a244b64928672c2610635aa471a83301e16b4007c7641c650ac157",
+    "canonical_baseline_capture_sha256": "9821224acb7eafb75f74cb405018557f9684524415104ba05c58b66d16eb363d",
+    "baseline_capture_method": "Existing construction source inventory/operation validator applied read-only to exact detached v2.3.4 source.",
+    "observed_canonical_change": "governance.cli.ci.v1 adds admitted ci_authority_submit.py::provider_api.merge_clean_pull_request mutation call; write_effect_count 11 to 12. Canonical main lacks the construction-only local_gate_lease observation, which the integration must retain.",
+    "expected_integrated_change": "Retain original golden and add exactly the admitted protected-merge mutation port/count, preserving construction lease observation and every other operation row.",
+    "test_policy": "Retain historical golden bytes, add separately source-bound migration expectation and exact before/after control; never weaken equality to population counts."
+  },
+  "resolution_matrix": {
+    "generated_workflows_authority_locks_test_inventory": "Retain exact canonical first-parent bytes during authored merge. Existing canonical reconciliation alone generates successor projections and authority commit pair.",
+    "source_and_tests": "Three-way merge preserves both admitted maintenance regressions and construction behavior; run affected controls.",
+    "release_metadata": "Preserve canonical maintenance release history and successor 2.5.0 intent through existing release projection.",
+    "application_operations": "Retain both construction local_gate_lease observation and canonical protected-merge mutation port/migration.",
+    "phase_ledger": "Preserve canonical hotfix records; add existing successor phase/train only after exact predecessor/controller admission and next-ID derivation.",
+    "backtrace": "Union keyed descriptors and invariants while retaining historical source identity and rejected adopter-source design qualification; preserve every admitted maintenance subcontract.",
+    "package_mirrors": "Canonical pack generator derives all copies/manifests after authored source decisions."
+  }
+}

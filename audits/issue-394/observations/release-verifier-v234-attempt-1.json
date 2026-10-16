@@ -1,0 +1,121 @@
+{
+  "document": {
+    "kind": "pipeline_timing_capture",
+    "path": "audits/issue-394/observations/release-verifier-v234-attempt-1.json",
+    "authority": false
+  },
+  "producer": {
+    "commit_sha": "89935abe1f4688ed097687025e75b69e6c379409",
+    "function": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+    "source_sha256": "7780a57c01d34bb44897b8c19218ec82035fac73ef898b5515ef85991fa0fe6b"
+  },
+  "capture_policy": {
+    "source": "Authenticated exact-attempt GitHub API; complete single-page job population and stable terminal run/jobs reread.",
+    "endpoints": {
+      "run": "repos/mjgolaszewski/bcf-governance/actions/runs/38867337948/attempts/1",
+      "jobs": "repos/mjgolaszewski/bcf-governance/actions/runs/38867337948/attempts/1/jobs?per_page=100"
+    },
+    "workflow_path": ".github/workflows/bcf-release-verifier.yml",
+    "context_binding": "Exact canonical v2.3.4 workflow role; event alone does not establish pipeline context.",
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "targets_frozen": false,
+    "eligible_optimization_baseline": false,
+    "scope": "Run-created through latest job completion/run update only; no custody or developer interruption clock. CPU and external waits unmeasured.",
+    "ineligibility": "Single maintenance run, no matched optimization cohort.",
+    "complete_job_population_reread_equal": true,
+    "terminal_run_reread_equal": true
+  },
+  "source_snapshot": {
+    "repository": {
+      "id": 1207503211,
+      "full_name": "mjgolaszewski/bcf-governance"
+    },
+    "run": {
+      "id": 38867337948,
+      "run_attempt": 1,
+      "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-16T07:27:32Z",
+      "run_started_at": "2026-10-16T07:27:32Z",
+      "updated_at": "2026-10-16T07:30:26Z",
+      "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948"
+    },
+    "commit": {
+      "sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+    },
+    "jobs": {
+      "total_count": 2,
+      "jobs": [
+        {
+          "id": 116863087831,
+          "run_id": 38867337948,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Execute token-free offline wheel and sdist verification",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:35Z",
+          "completed_at": "2026-10-16T07:29:21Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948/job/116863087831",
+          "run_attempt": 1
+        },
+        {
+          "id": 116863701379,
+          "run_id": 38867337948,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:24Z",
+          "completed_at": "2026-10-16T07:30:25Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948/job/116863701379",
+          "run_attempt": 1
+        }
+      ]
+    }
+  },
+  "observation": {
+    "schema_version": "1.0",
+    "kind": "pipeline_timing",
+    "authority": false,
+    "subject": {
+      "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+    },
+    "repository": "mjgolaszewski/bcf-governance",
+    "repository_id": 1207503211,
+    "source_snapshot_sha256": "2bad25634199f807be8d79ae0fb4a15860495f81fe3f03e0648fb29c58ea0962",
+    "pipeline": "release",
+    "clock_id": "github:1207503211:run:38867337948:attempt:1",
+    "clock_basis": "provider_utc_ms",
+    "start_ms": 1792135652000,
+    "end_ms": 1792135826000,
+    "elapsed_ms": 174000,
+    "execution_union_ms": 167000,
+    "execution_sum_ms": 167000,
+    "external_wait_union_ms": 0,
+    "uncovered_ms": 7000,
+    "cpu_ms": "unknown",
+    "intervals": [
+      {
+        "id": "116863087831",
+        "clock_id": "github:1207503211:run:38867337948:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792135655000,
+        "end_ms": 1792135761000
+      },
+      {
+        "id": "116863701379",
+        "clock_id": "github:1207503211:run:38867337948:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792135764000,
+        "end_ms": 1792135825000
+      }
+    ]
+  }
+}
