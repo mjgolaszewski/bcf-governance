@@ -33,7 +33,13 @@
     "governance_yaml": "passed",
     "authored_semantic_ownership": "passed",
     "architecture_module_size": "passed",
-    "architecture_context_membership": "passed"
+    "architecture_context_membership": "passed",
+    "isolated_installed_controller_pr_release_custody_submission": {
+      "passed": 285,
+      "elapsed_seconds": 54.26,
+      "origins": "package/API/PR/submission asserted under exact installed runtime",
+      "runtime_admission": "existing exact release runtime owner"
+    }
   },
   "live_read_only_probe": {
     "authority": false,
@@ -50,8 +56,18 @@
     "mutations": false
   },
   "remaining": [
-    "Exact installed parity and complete independent authority/consumer population conformance.",
+    "Installed parity for stated285 cases passes; complete independent authority/consumer population conformance remains open.",
     "Canonical normalization, full successor provider/adopter admission and final train acceptance.",
     "No whole requirement or complete-goal claim."
-  ]
+  ],
+  "exact_build": {
+    "authority": false,
+    "commit": "1c11841dea38efbb28be3288450f49b9c34bd5ad",
+    "tree": "19f31ab9903932cb485acbc2602aa1877603e303",
+    "python_files_equal": 597,
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "b4ed602f945826a3ad751116cf7debbc2cce9ea70a772b117fe6c73964fb93a4",
+      "bcf_governance-2.5.0.tar.gz": "50d94463075d00b11b994c07f7b34b99443504dafbcf733312e61523aaa6f5f7"
+    }
+  }
 }
