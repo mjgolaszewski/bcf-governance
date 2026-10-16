@@ -1753,3 +1753,42 @@ def test_matching_effect_omissions_cannot_erase_actual_source(nonempty_public_ef
     inputs['compiled'] = compile_lifecycle_composition(**composition)
     with pytest.raises(CIGraphError, match='source effect bindings'):
         validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+
+@pytest.mark.parametrize('consumer', ['references', 'paths'])
+def test_recovery_cannot_drop_rejection_path_invariant(path_inputs, consumer):
+    from bcf_governance.tooling.ci_graph_composition import validate_backtrace_transition_references
+    rows = path_inputs['backtrace']['transitions']
+    rows[1]['invariants'].append('INV-RETRY-OUTCOME-AUTHENTICATED')
+    _refresh_path_digest(path_inputs)
+    with pytest.raises(CIGraphError, match='recovery.*invariants'):
+        if consumer == 'references':
+            validate_backtrace_transition_references({row['id']: row for row in rows})
+        else:
+            _path_query(path_inputs)
+
+
+@pytest.mark.parametrize('mode', ['preserved', 'extra_recovery', 'reordered', 'no_recovery'])
+def test_rejection_invariants_preserve_valid_bounded_paths(path_inputs, composition, mode):
+    rows = path_inputs['backtrace']['transitions']
+    rows[1]['invariants'].append('INV-RETRY-OUTCOME-AUTHENTICATED')
+    if mode == 'no_recovery':
+        rows.pop()
+        path_inputs['required_transition_bindings'].pop('TR-003')
+        path_inputs['required_recovery_limits'].clear()
+        composition['payload']['relationships'][0]['contract'].update(successor='ST-OK', rejection='ST-FAIL', recovery='none')
+        path_inputs['compiled'] = compile_lifecycle_composition(**composition)
+    else:
+        rows[2]['invariants'].append('INV-RETRY-OUTCOME-AUTHENTICATED')
+        if mode == 'extra_recovery':
+            rows[2]['invariants'].append('INV-RETRY-LEASE-EXACT')
+        elif mode == 'reordered':
+            rows.reverse()
+    _refresh_path_digest(path_inputs)
+    before = copy.deepcopy(path_inputs)
+    result = _path_query(path_inputs)
+    assert result['recoveries_checked'] == (0 if mode == 'no_recovery' else 1)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert path_inputs == before

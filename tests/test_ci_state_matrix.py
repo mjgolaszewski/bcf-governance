@@ -630,3 +630,26 @@ def test_compatibility_authority_branch_and_population_controls(tmp_path, defect
     path.write_text(yaml.safe_dump(model, sort_keys=False))
     with pytest.raises(CIStateMatrixError, match=cause):
         validate_ci_state_matrix(repo, authored_only=True)
+
+
+
+@pytest.mark.parametrize('preserved', [False, True])
+def test_authored_recovery_preserves_rejection_invariants(tmp_path, preserved):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    success, rejection, retry = model['transitions'][:3]
+    success.update(kind='success', rejection_transition=rejection['id'])
+    rejection.update(kind='rejection', invariants=[*success['invariants'], 'INV-RT-018'])
+    rejection['from'] = success['from']
+    retry.update(kind='recovery', retry_of=success['id'], max_attempts=2,
+                 invariants=list(rejection['invariants'] if preserved else success['invariants']))
+    retry['from'], retry['to'] = rejection['to'], success['from']
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    if preserved:
+        result = validate_ci_state_matrix(repo, authored_only=True)
+        assert result['authority'] is False
+        assert result['execution_qualified'] is False
+    else:
+        with pytest.raises(CIStateMatrixError, match='recovery rejection invariants'):
+            validate_ci_state_matrix(repo, authored_only=True)

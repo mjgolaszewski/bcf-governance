@@ -2799,9 +2799,13 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths
+    - tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants
     - tests.test_ci_graph_composition::test_typed_paths_allow_only_bounded_recovery_outside_attempt_graph
     - tests.test_ci_graph_composition::test_typed_paths_allow_explicit_terminal_rejection_without_retry
     negative_controls:
+    - cause: recovery-drops-invariant-added-on-rejection-path
+      test: tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant
     - cause: same-attempt-cycle
       test: tests.test_ci_graph_composition::test_typed_paths_reject_incomplete_or_unbound_attempts[same-attempt-cycle]
     - cause: wrong-terminal-class
@@ -2811,6 +2815,7 @@ implementation_slices:
     - cause: boolean-retry-limit
       test: tests.test_ci_graph_composition::test_backtrace_schema_checks_opt_in_typed_paths[boolean-limit]
     remaining:
+    - Shared typed-reference validation now preserves rejection-path invariants through recovery; contract audits/issue-394/recovery-invariant-contract.json and evidence audits/issue-394/recovery-invariant-verification.json. Native authored validation uses the same owner; actual runtime recovery remains unqualified.
     - Actual backtrace enrichment, independent complete runtime effect/population reconstruction, guard authority and installed consumer proof remain
       required.
     - Prose retirement and workitem phase release/custody qualification remain blocked.

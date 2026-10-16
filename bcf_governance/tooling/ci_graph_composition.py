@@ -281,6 +281,8 @@ def validate_backtrace_transition_references(
                 if (rejection is None or rejection.get("kind") != "rejection"
                         or transition["from"] != rejection["to"] or transition["to"] != target["from"]):
                     raise CIGraphError("lifecycle path typed transition reference bypasses failed attempt")
+                if not set(rejection["invariants"]) <= set(transition["invariants"]):
+                    raise CIGraphError("lifecycle path typed transition reference loses recovery rejection invariants")
             checked += 1
     return checked
 
