@@ -903,3 +903,26 @@ def test_authored_semantic_ownership_rejects_before_lease_and_reconciliation(mon
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source ownership'))
     assert caught.value.__cause__ is failure
+
+
+@pytest.mark.parametrize("mode", ["pr", "workitem", "closure"])
+def test_nondefault_target_never_invokes_protected_merge_mutations(mode):
+    context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack",
+        repository="owner/repo", repository_id=17, pull_request_number=7,
+        pull_request_node_id="PR_exact7", provider_head_sha="2" * 40)
+    identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
+    authority = submit.SubmissionAuthority(mode, "P32-P0-01" if mode == "workitem" else None,
+        "direct_protected_main", "owner/repo", 17, "9" * 64)
+    api = SimpleNamespace(enable_pull_request_auto_merge=lambda *_a, **_k: pytest.fail("stacked target requested auto merge"),
+                          merge_clean_pull_request=lambda *_a, **_k: pytest.fail("stacked target requested normal merge"))
+    arguments = dict(provider_api=api, authority=authority, identity=identity,
+        pull_request={"number": 7, "node_id": "PR_exact7", "repository_id": 17},
+        prospective_frontier_sha256="4" * 64, context=context)
+    if mode != "pr":
+        with pytest.raises(ProspectiveValidationError, match="default-main terminal authority"):
+            submit._request_protected_auto_merge(**arguments)
+    else:
+        result, frontier = submit._request_protected_auto_merge(**arguments)
+        assert result["status"] == "provider_proof_required_no_default_main_authority"
+        assert frontier["state"] == "nondefault_base" and frontier["release_authority"] is False
+        assert frontier["action"]["kind"] == "observe_same_subject"

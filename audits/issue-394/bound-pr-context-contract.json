@@ -9,7 +9,12 @@
     "I03",
     "I05",
     "I21",
-    "I24"
+    "I22",
+    "AC06",
+    "AC07",
+    "AC10",
+    "AC12",
+    "AC30"
   ],
   "bounded_context": "ci_authority exact repository comparison context",
   "architectural_layer": "existing local PR identity owner, provider read adapter and submission/prospective consumers",
@@ -33,14 +38,19 @@
     "bcf_governance/tooling/ci_recovery_frontier.py",
     "bcf_governance/tooling/ci_graph_post_merge.py",
     "tests/test_ci_recovery_frontier.py",
-    "tests/test_ci_graph.py"
+    "tests/test_ci_graph.py",
+    "bcf_governance/tooling/ci_authority_prospective_lanes.py",
+    "bcf_governance/tooling/ci_graph_pr_evaluator.py",
+    "bcf_governance/tooling/ci_github_pr.py",
+    "bcf_governance/tooling/ci_github_pr_mutations.py",
+    "tests/test_ci_github_pr_authority.py"
   ],
   "invariant": "An authenticated bound PR supplies its exact base/head relationship; default branch is not a substitute for that relationship. Candidate-local proof never grants provider certification, protected-main or release authority.",
   "contract": [
-    "Extend the existing LocalPRContext owner rather than introduce a second base resolver, CLI intent flag or semantic registry. Preserve legacy unbound context serialization and existing public CLI grammar.",
+    "Extend the existing LocalPRContext owner rather than introduce a second base resolver, CLI intent flag or semantic registry. Preserve exact legacy local/non-provider unbound context serialization and existing public CLI grammar; newly authenticated GitHub absence additionally binds repository identity.",
     "Distinguish repository default branch, PR base branch and exact comparison SHA, provider-observed head and current local candidate. Newly authored descendants are not silently identical to an already observed provider head.",
     "Authenticate provider repository identity against the selected remote and complete open PR inventory; exactly one branch/repository match binds a PR. Duplicate, malformed, moved, wrong repository, wrong ref or unavailable bound facts reject before generation/proof/effects. Absence must be authenticated; provider errors never become an empty inventory.",
-    "Fetch and verify exact referenced Git objects and ancestry through the existing bounded immutable Git read owner. Preserve default-branch behavior for authenticated unbound and genuinely local non-provider repositories; unprovable GitHub identity cannot confer submit authority.",
+    "Fetch and verify exact referenced Git objects and ancestry through the existing immutable Git read retry owner. Attempt count is bounded; complete operation/runtime deadline envelopes remain an explicit qualification requirement. Preserve default-branch behavior for authenticated unbound and genuinely local non-provider repositories; unprovable GitHub identity cannot confer submit authority.",
     "Propagate the same comparison context to source checks, changelog, planning, local synthetic PR event, prospective proof, exact push, existing PR projection and late unchanged checks. A provider/local head advancement requires an explicit same-branch descendant transition and reauthentication at its consuming boundary.",
     "Preserve separate authority contexts: a feature-branch PR base does not grant protected-default-main, bounded/phase, controller or release authority. Existing repository protection and finalizer/evaluator owners retain their propositions. No force-push, blind retry or mutation inference.",
     "Existing PR reuse binds actual base ref/SHA rather than requiring every PR base equal repository default. Creation of an unbound PR continues to derive the default target. Protected merge requests remain independently gated by the actual target protection contract.",
@@ -49,7 +59,8 @@
     "Represent a bound nondefault PR as PR progress, never as the rendered future default-main bounded/phase proposition. Existing default-main graph projection remains unchanged. Derive this candidate projection from the authenticated comparison context, not caller intent.",
     "Extend the existing protected_merge closed state population with nondefault_base: exact paired base/default refs bind its identity; action is observe_same_subject, successor pr_pending, release authority false. It grants no auto-merge or normal-merge mutation. Existing default-target behavior and legacy evidence readability remain unchanged.",
     "When base/default refs are present, mutation-bearing protected_merge states require equality; nondefault_base requires inequality and both refs. Missing/partial/wrong context rejects. Canonical submit supplies these facts and never invokes protected mutation adapters for the nondefault target. A stacked PR can still publish exact candidate progress and require independent provider PR proof.",
-    "Installed controller/evaluator and source protection owners remain independent. No feature-branch base can replace protected default-main policy or confer lifecycle/release authority. Full consumer controls must prove this before integration."
+    "Installed controller/evaluator and source protection owners remain independent. No feature-branch base can replace protected default-main policy or confer lifecycle/release authority. Full consumer controls must prove this before integration.",
+    "Before integration, satisfy the explicit protected-default/evaluator source separation matrix in audits/issue-394/bound-pr-authority-context-research.json. Existing default-base guards cannot be removed without equivalent independent source qualification; preserve #425 regressions and immutable v2.3.4."
   ],
   "edge_conditions": [
     "authenticated unbound default-main candidate",

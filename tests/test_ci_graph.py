@@ -3648,3 +3648,26 @@ def test_component_minimum_floors_remain_nonsummable_job_constraints():
             {'id': 'route', 'timeout_minutes': 11, 'executor': {'kind': 'component_sequence',
                 'components': ['first', 'second']}}]}]}
     validate_component_job_timeouts(graph)
+
+
+def test_stacked_candidate_progress_cannot_claim_rendered_default_main_terminal():
+    from bcf_governance.tooling.ci_graph_post_merge import PostMergeEvaluation, candidate_post_merge_evaluation
+    from bcf_governance.tooling.local_pr_context import LocalPRContext
+    evaluation = PostMergeEvaluation("workitem", "P32-P0-01", "trusted_exact_main", "exact-main", "governance")
+    default = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
+    assert candidate_post_merge_evaluation(evaluation, context=default) is evaluation
+    bound = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack",
+        repository="owner/repository", repository_id=17, pull_request_number=7,
+        pull_request_node_id="PR_exact7", provider_head_sha="2" * 40)
+    projected = candidate_post_merge_evaluation(evaluation, context=bound)
+    assert (projected.mode, projected.target) == ("pr", None)
+    assert evaluation.mode == "workitem" and evaluation.target == "P32-P0-01"
+    assert (projected.lane, projected.workflow_id, projected.terminal_job_id) == (evaluation.lane, evaluation.workflow_id, evaluation.terminal_job_id)
+
+
+def test_nondefault_candidate_projection_rejects_unbound_context():
+    from bcf_governance.tooling.ci_graph_post_merge import PostMergeEvaluation, candidate_post_merge_evaluation
+    from bcf_governance.tooling.local_pr_context import LocalPRContext
+    evaluation = PostMergeEvaluation("closure", None, "trusted_exact_main", "exact-main", "governance")
+    with pytest.raises(CIGraphError, match="authenticated PR binding"):
+        candidate_post_merge_evaluation(evaluation, context=LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack"))

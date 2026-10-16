@@ -19,7 +19,7 @@ from .candidate_provider_recovery import (
     resolve_candidate_provider_recovery,
 )
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_post_merge import authored_candidate_title, authored_post_merge_scope, post_merge_evaluation
+from .ci_graph_post_merge import authored_candidate_title, authored_post_merge_scope, candidate_post_merge_evaluation, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
 from .github_protection import load_protection
 from .local_pr import (
@@ -203,7 +203,7 @@ def _canonical_inputs(
     provider_api: GitHubAPI,
     runner: Runner,
 ) -> SubmissionAuthority:
-    evaluation = post_merge_evaluation(validate_ci_graph(repo_root).graph)
+    evaluation = candidate_post_merge_evaluation(post_merge_evaluation(validate_ci_graph(repo_root).graph), context=context)
     if evaluation.lane == "direct_protected_main":
         repository, repository_id = _provider_repository(
             repo_root,
@@ -217,6 +217,8 @@ def _canonical_inputs(
         repository_id = _provider_repository_id(
             provider_api, repository=repository
         )
+    if context.repository is not None and (context.repository != repository or context.repository_id != repository_id):
+        raise ProspectiveValidationError("candidate context repository changed after binding")
     try:
         applicability = validate_ordinary_protection_submission(
             provider_api,
@@ -274,24 +276,35 @@ def _request_protected_auto_merge(
     identity: CandidateIdentity,
     pull_request: dict[str, Any],
     prospective_frontier_sha256: str,
+    context: LocalPRContext | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     if pull_request.get("repository_id") != authority.repository_id:
         raise ProspectiveValidationError(
             "candidate pull request repository identity changed after admission"
         )
+    merge_identity = {
+        "repository": authority.repository,
+        "repository_id": str(pull_request["repository_id"]),
+        "pull_request": str(pull_request["number"]),
+        "base_sha": identity.base_sha,
+        "head_sha": identity.commit_sha,
+        "tree_sha": identity.tree_sha,
+        "protection_sha256": authority.protection_sha256,
+    }
+    nondefault = context is not None and context.comparison_base_ref != context.default_branch
+    if context is not None and context.base_ref is not None:
+        merge_identity.update(base_ref=context.comparison_base_ref, default_branch=context.default_branch)
+    if nondefault and (authority.mode != "pr" or authority.target is not None):
+        raise ProspectiveValidationError("nondefault PR cannot carry default-main terminal authority")
     frontier = protected_merge_frontier(
-        identity={
-            "repository": authority.repository,
-            "repository_id": str(pull_request["repository_id"]),
-            "pull_request": str(pull_request["number"]),
-            "base_sha": identity.base_sha,
-            "head_sha": identity.commit_sha,
-            "tree_sha": identity.tree_sha,
-            "protection_sha256": authority.protection_sha256,
-        },
-        state="prospective_proved",
+        identity=merge_identity,
+        state="nondefault_base" if nondefault else "prospective_proved",
         certification_identity=f"prospective:{prospective_frontier_sha256}",
     )
+    if nondefault:
+        if frontier["action"]["kind"] != "observe_same_subject":
+            raise ProspectiveValidationError("nondefault PR did not select observation-only progress")
+        return {"status": "provider_proof_required_no_default_main_authority", "pull_request": pull_request["number"]}, frontier
     if frontier["action"]["kind"] != "request_provider_auto_merge":
         raise ProspectiveValidationError(
             "proved candidate frontier did not select protected auto-merge"
@@ -310,15 +323,7 @@ def _request_protected_auto_merge(
         ) from exc
     if result.get("status") == "certified_clean":
         frontier = protected_merge_frontier(
-            identity={
-                "repository": authority.repository,
-                "repository_id": str(pull_request["repository_id"]),
-                "pull_request": str(pull_request["number"]),
-                "base_sha": identity.base_sha,
-                "head_sha": identity.commit_sha,
-                "tree_sha": identity.tree_sha,
-                "protection_sha256": authority.protection_sha256,
-            },
+            identity=merge_identity,
             state="certified_mergeable",
             certification_identity=f"prospective:{prospective_frontier_sha256}",
         )
@@ -354,7 +359,7 @@ def submit_candidate(
     """Prove and push only the exact immutable candidate that passed the train."""
 
     root = repo_root.resolve()
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     identity = _candidate_identity(root, context, runner=runner)
     progress = []
     progress_started = time.monotonic_ns()
@@ -383,7 +388,7 @@ def submit_candidate(
             raise exc from observation_error
         raise
     emit('normalization', 'complete')
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     identity = _candidate_identity(root, context, runner=runner)
     emit('submission_authority', 'started')
     try:
@@ -453,6 +458,7 @@ def submit_candidate(
         initial_identity=identity,
         remote=remote,
         runner=runner,
+        provider_api=provider_api,
     )
     _push_exact_candidate(
         root, context=context, identity=identity, runner=runner
@@ -461,7 +467,10 @@ def submit_candidate(
         provider_api,
         repository=authority.repository,
         branch=context.head_ref,
-        base_ref=context.default_branch,
+        base_ref=context.comparison_base_ref,
+        repository_default_branch=context.default_branch,
+        bound_pull_request=({"number": context.pull_request_number, "node_id": context.pull_request_node_id}
+                            if context.pull_request_number is not None else None),
         base_sha=identity.base_sha,
         head_sha=identity.commit_sha,
         tree_sha=identity.tree_sha,
@@ -487,6 +496,7 @@ def submit_candidate(
         identity=identity,
         pull_request=pull_request,
         prospective_frontier_sha256=str(proved_frontier["frontier_sha256"]),
+        context=context,
     )
     provider_retry_submitted = execute_candidate_provider_recovery(
         provider_api,

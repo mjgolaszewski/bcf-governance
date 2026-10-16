@@ -504,7 +504,7 @@
     },
     "scripts/_bcf_runtime/candidate_provider_recovery.py": {
       "operation": "copy",
-      "sha256": "c95fec87d858b74b05218c68284cec1233b50c2bdf171a0707736f15c4896c9a"
+      "sha256": "a3b92fa04f6efcdd8ae279ac3a072767b68fe6251996d9c5cfb7cec8d1b1925b"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -552,11 +552,11 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "15a363b8dfeea5911c97162b32a98c788321e1582a2e666eb7e4fa96a3dfe049"
+      "sha256": "829b462b1a2cde36bd0ecd89f9e151e239bea212bda064006a4278b4cf3d5966"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
-      "sha256": "129fe0135b1245ad64350c05a805e8064c5f702e0fac46955c5914d8b3975e72"
+      "sha256": "4a8734525ef44a2093cd6c4f71f2993c8b6f3ac7b751298bc5c211d03a72757f"
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
@@ -800,7 +800,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "4e31f880c1989a41b9551a88d04b666e18a548ff677ce4488dcfa5cb4c7c2507"
+      "sha256": "11034141f11ac4b86dbe464448888a51e4f65e2b63c300d5a60dedf13a168312"
     },
     "scripts/_bcf_runtime/ci_graph_pr_evaluator.py": {
       "operation": "copy",
@@ -860,7 +860,7 @@
     },
     "scripts/_bcf_runtime/ci_recovery_frontier.py": {
       "operation": "copy",
-      "sha256": "19fd9e36ced0a3c96012234154217bb865b3b681f2766986b3e4bb2b13f44c39"
+      "sha256": "17c678df108175df22190b921deb1686ba719f4c3b91c7cd1fed6040cb1fc31d"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
@@ -1271,7 +1271,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "bf49c45316eec093239ce9bf034b14e4040d82bb68527490503dcc221fa44500"
+      "sha256": "9248572b20e3348e1f5e7219b005ebfc4d1bf5a32c24f98e63144ff21c3f4100"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1343,7 +1343,7 @@
     },
     "scripts/_bcf_runtime/prospective_candidate_identity.py": {
       "operation": "copy",
-      "sha256": "7e430b669add47129aaac419db0618284c7f0f3bcc9dac084860a4cf95a2b31a"
+      "sha256": "8dedc9f3f0375cf50fa1b3f3c82f90f47bf98574768f9f98f8d63867ff168db6"
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",

@@ -750,6 +750,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-bound-pr-comparison-context
     - separate-pipeline-clock-observation
   I04:
     requirement: Independent completeness. Trusted truth independently derives/verifies required claims, impact, exclusions, selected execution and reuse. A candidate
@@ -798,6 +799,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-bound-pr-comparison-context
     - authenticated-base-registry-reads
     - finite-provider-retry-bound
   I06:
@@ -1130,6 +1132,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
     - provider-authority-progress-and-exposure-frontier
     - unambiguous-authored-lifecycle-inputs
@@ -1164,6 +1167,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-bound-pr-comparison-context
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
     - terminal-proposition-binding
@@ -1876,6 +1880,8 @@ requirements:
       scenario: Cause-specific AC06 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - authenticated-bound-pr-comparison-context
   AC07:
     requirement: Wrong-subject/policy/controller/toolchain/repository or expired nightly proof cannot satisfy a current consumer.
     owner: evidence
@@ -1895,6 +1901,8 @@ requirements:
       scenario: Cause-specific AC07 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - authenticated-bound-pr-comparison-context
   AC08:
     requirement: Periodic red, missing/delayed/disabled/skipped run or expired source opens typed debt/finding/invalidation; no historical rewrite or fresh-proof
       assumption.
@@ -1956,6 +1964,8 @@ requirements:
       scenario: Cause-specific AC10 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - authenticated-bound-pr-comparison-context
   AC11:
     requirement: 'Provider 429/5xx/transient timeout versus 401/403/404, digest mismatch, artifact churn or wrong attempt: exact bounded retry/terminal classification;
       ambiguity is not an empty inventory.'
@@ -1997,6 +2007,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-bound-pr-comparison-context
     - compatibility-authority-separation
     - terminal-proposition-binding
     - typed-guard-preservation
@@ -2363,6 +2374,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
     - provider-authority-progress-and-exposure-frontier
     - unambiguous-authored-lifecycle-inputs
@@ -3920,3 +3932,72 @@ implementation_slices:
       machine-DAG retirement.
     - 'Canonical test inventory/semantic lock normalization and full governed qualification
       remain required; evidence: audits/issue-394/typed-deadline-envelope-verification.json.'
+
+  authenticated-bound-pr-comparison-context:
+    id: authenticated-bound-pr-comparison-context
+    workitem: P32-P0-02
+    scope: Isolated provider-bound local comparison and candidate-only nondefault PR progress; full protected-default evaluator/policy
+      and installed consumer separation remains blocking.
+    contract: audits/issue-394/bound-pr-context-contract.json
+    producer: bcf_governance/tooling/local_pr_context.py::resolve_local_pr_context
+    consumer: Existing prospective candidate selection, submit, late context checks, PR projection and provider retry;
+      nondefault protected-merge frontier observes only.
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_local_pr::test_bound_stacked_pr_context_uses_authenticated_base_instead_of_default
+    - tests.test_local_pr::test_bound_stacked_pr_synthetic_event_preserves_provider_base_ref
+    - tests.test_local_pr::test_bound_pr_local_descendant_keeps_distinct_provider_head
+    - tests.test_local_pr::test_authenticated_unbound_github_context_keeps_repository_identity
+    - tests.test_local_pr::test_local_unbound_context_serialization_remains_exactly_legacy
+    - tests.test_ci_candidate_pr::test_bound_stacked_pr_projection_separates_default_branch_and_actual_base
+    - tests.test_ci_graph::test_stacked_candidate_progress_cannot_claim_rendered_default_main_terminal
+    - tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_can_only_observe_and_never_confer_release
+    - tests.test_semantic_ownership::test_protected_merge_context_authorization_is_declared_and_causal
+    negative_controls:
+    - cause: unprovable-provider-binding-ambiguous
+      test: tests.test_local_pr::test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts[ambiguous]
+    - cause: unprovable-provider-binding-provider-failure
+      test: tests.test_local_pr::test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts[provider-failure]
+    - cause: unprovable-provider-binding-wrong-repository
+      test: tests.test_local_pr::test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts[wrong-repository]
+    - cause: unprovable-provider-binding-wrong-head
+      test: tests.test_local_pr::test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts[wrong-head]
+    - cause: unprovable-provider-binding-missing-base
+      test: tests.test_local_pr::test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts[missing-base]
+    - cause: binding-movement-or-incomplete-absence-fresh-base
+      test: tests.test_local_pr::test_bound_pr_discovery_rejects_movement_and_incomplete_absence[fresh-base]
+    - cause: binding-movement-or-incomplete-absence-fresh-head
+      test: tests.test_local_pr::test_bound_pr_discovery_rejects_movement_and_incomplete_absence[fresh-head]
+    - cause: binding-movement-or-incomplete-absence-fresh-node
+      test: tests.test_local_pr::test_bound_pr_discovery_rejects_movement_and_incomplete_absence[fresh-node]
+    - cause: binding-movement-or-incomplete-absence-missing-head-ref
+      test: tests.test_local_pr::test_bound_pr_discovery_rejects_movement_and_incomplete_absence[missing-head-ref]
+    - cause: binding-movement-or-incomplete-absence-closed-record
+      test: tests.test_local_pr::test_bound_pr_discovery_rejects_movement_and_incomplete_absence[closed-record]
+    - cause: binding-movement-or-incomplete-absence-missing-credential
+      test: tests.test_local_pr::test_bound_pr_discovery_rejects_movement_and_incomplete_absence[missing-credential]
+    - cause: nondefault-authority-context-missing-refs
+      test: tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_rejects_missing_context_and_mutation[missing-refs]
+    - cause: nondefault-authority-context-partial-refs
+      test: tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_rejects_missing_context_and_mutation[partial-refs]
+    - cause: nondefault-authority-context-actually-default
+      test: tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_rejects_missing_context_and_mutation[actually-default]
+    - cause: nondefault-authority-context-auto-merge
+      test: tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_rejects_missing_context_and_mutation[auto-merge]
+    - cause: nondefault-authority-context-normal-merge
+      test: tests.test_ci_recovery_frontier::test_nondefault_pr_frontier_rejects_missing_context_and_mutation[normal-merge]
+    - cause: nondefault-target-cannot-claim-workitem
+      test: tests.test_candidate_submit::test_nondefault_target_never_invokes_protected_merge_mutations[workitem]
+    - cause: nondefault-target-cannot-claim-closure
+      test: tests.test_candidate_submit::test_nondefault_target_never_invokes_protected_merge_mutations[closure]
+    - cause: provider-retarget-during-metadata-write
+      test: tests.test_ci_candidate_pr::test_bound_stacked_pr_rejects_base_retarget_in_metadata_response
+    remaining:
+    - Do not merge or activate this isolated partial implementation. Complete audits/issue-394/bound-pr-authority-context-research.json
+      first.
+    - Exact protected-default policy/evaluator source and semantic comparison base must remain distinct; preserve existing
+      runtime rejection until compatible trusted consumers prove the expanded context.
+    - Default-main source/target movement, merge-consumption target facts, candidate-aware pre-normalization intent and
+      all profile/adopter contexts remain unqualified.
+    - All whole requirements remain open; partial evidence audits/issue-394/bound-pr-context-progress.json.

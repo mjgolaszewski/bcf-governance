@@ -134,3 +134,28 @@ def test_controller_target_and_installation_cannot_silently_collapse() -> None:
     value["transition"]["artifact"]["commit_sha"] = "7" * 40  # type: ignore[index]
     with pytest.raises(RecoveryFrontierError, match="silently collapses"):
         controller_transition_frontier(value)
+
+
+def _nondefault_merge_identity():
+    return {**IDENTITY, "repository_id": "17", "pull_request": "7", "protection_sha256": "9" * 64,
+            "base_ref": "stack", "default_branch": "main"}
+
+
+def test_nondefault_pr_frontier_can_only_observe_and_never_confer_release():
+    result = protected_merge_frontier(identity=_nondefault_merge_identity(), state="nondefault_base", certification_identity="prospective:" + "4" * 64)
+    assert result["action"] == {"kind": "observe_same_subject", "owner": "ci_github_api.pull_request"}
+    assert result["successor"] == "pr_pending" and result["release_authority"] is False
+    assert result["identity"]["base_ref"] == "stack"
+
+
+@pytest.mark.parametrize("cause", ["missing-refs", "partial-refs", "actually-default", "auto-merge", "normal-merge"])
+def test_nondefault_pr_frontier_rejects_missing_context_and_mutation(cause):
+    identity = _nondefault_merge_identity(); state = "nondefault_base"
+    if cause == "missing-refs":
+        identity.pop("base_ref"); identity.pop("default_branch")
+    elif cause == "partial-refs": identity.pop("default_branch")
+    elif cause == "actually-default": identity["base_ref"] = "main"
+    elif cause == "auto-merge": state = "prospective_proved"
+    else: state = "certified_mergeable"
+    with pytest.raises(RecoveryFrontierError):
+        protected_merge_frontier(identity=identity, state=state, certification_identity="prospective:" + "4" * 64)

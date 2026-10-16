@@ -42,7 +42,9 @@ class API:
         assert values["node_id"] == "PR_exact7"
         assert values["expected_head_sha"] == HEAD
         self.updated += 1
-        return _pull(title=values["title"], body=values["body"])
+        result = copy.deepcopy(next(value for value in self.values if value["number"] == number))
+        result.update(title=values["title"], body=values["body"])
+        return result
 
 
 def _pull(*, title: str = "stale", body: str = "stale") -> dict:
@@ -408,3 +410,39 @@ def test_existing_candidate_pr_identity_projection_characterization(defect):
         with pytest.raises(ProspectiveValidationError) as observed:
             _validate(value, **arguments)
         assert str(observed.value) == message
+
+
+def test_bound_stacked_pr_projection_separates_default_branch_and_actual_base():
+    value = _pull(); value["base"]["ref"] = "stack"
+    api = API((value,))
+    result = ensure_candidate_pull_request(api, repository=REPOSITORY, branch="feature", base_ref="stack",
+        repository_default_branch="main", bound_pull_request={"number": 7, "node_id": "PR_exact7"},
+        base_sha=BASE, head_sha=HEAD, tree_sha=TREE, title="stacked", frontier_sha256="4" * 64)
+    assert result["base_sha"] == BASE and api.created == 0 and api.updated == 1
+
+
+@pytest.mark.parametrize("cause", ["missing", "replaced"])
+def test_bound_stacked_pr_cannot_create_or_join_a_replacement(cause):
+    value = _pull(); value["base"]["ref"] = "stack"
+    if cause == "replaced": value["node_id"] = "PR_replaced8"
+    api = API(() if cause == "missing" else (value,))
+    with pytest.raises(ProspectiveValidationError, match="previously bound"):
+        ensure_candidate_pull_request(api, repository=REPOSITORY, branch="feature", base_ref="stack",
+            repository_default_branch="main", bound_pull_request={"number": 7, "node_id": "PR_exact7"},
+            base_sha=BASE, head_sha=HEAD, tree_sha=TREE, title="stacked", frontier_sha256="4" * 64)
+    assert api.created == 0 and api.updated == 0
+
+
+def test_bound_stacked_pr_rejects_base_retarget_in_metadata_response():
+    class RetargetedAPI(API):
+        def update_pull_request_metadata(self, repository, number, **values):
+            result = super().update_pull_request_metadata(repository, number, **values)
+            result["base"]["ref"] = "main"
+            return result
+    value = _pull(); value["base"]["ref"] = "stack"
+    api = RetargetedAPI((value,))
+    with pytest.raises(ProspectiveValidationError, match="exact proved subject"):
+        ensure_candidate_pull_request(api, repository=REPOSITORY, branch="feature", base_ref="stack",
+            repository_default_branch="main", bound_pull_request={"number": 7, "node_id": "PR_exact7"},
+            base_sha=BASE, head_sha=HEAD, tree_sha=TREE, title="stacked", frontier_sha256="4" * 64)
+    assert api.created == 0 and api.updated == 1

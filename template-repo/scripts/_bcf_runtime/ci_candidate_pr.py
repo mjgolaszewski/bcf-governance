@@ -64,6 +64,8 @@ def ensure_candidate_pull_request(
     tree_sha: str,
     title: str,
     frontier_sha256: str,
+    repository_default_branch: str | None = None,
+    bound_pull_request: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Create or reuse the sole exact open PR for a proved candidate."""
 
@@ -73,7 +75,7 @@ def ensure_candidate_pull_request(
         not isinstance(repository_id, int)
         or isinstance(repository_id, bool)
         or repository_id < 1
-        or observed.get("default_branch") != base_ref
+        or observed.get("default_branch") != (base_ref if repository_default_branch is None else repository_default_branch)
         or not re.fullmatch(r"[a-f0-9]{64}", frontier_sha256)
     ):
         raise ProspectiveValidationError(
@@ -88,6 +90,12 @@ def ensure_candidate_pull_request(
         raise ProspectiveValidationError(
             "candidate branch has ambiguous open pull requests"
         )
+    if bound_pull_request is not None and (
+        len(matches) != 1
+        or matches[0].get("number") != bound_pull_request.get("number")
+        or matches[0].get("node_id") != bound_pull_request.get("node_id")
+    ):
+        raise ProspectiveValidationError("previously bound candidate PR identity changed")
     body = (
         "BCF canonical candidate submission.\n\n"
         f"- Base: `{base_sha}`\n"

@@ -118,7 +118,7 @@ class Result:
 def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_choice(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    context = SimpleNamespace()
+    context = prospective.LocalPRContext("origin", "main", BASE, HEAD, "feature")
     monkeypatch.setattr(
         candidate_identity, "resolve_local_pr_context", lambda *_args, **_kwargs: context
     )
@@ -586,16 +586,17 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
             "provider_api": kwargs["provider_api"],
         },
     )
+    read_api = object()
     report = prospective.run_prospective_train(
         tmp_path,
         **TRAIN,
         python_executable=Path("/python"),
         repository="owner/repo",
-        provider_api=object(),  # type: ignore[arg-type]
+        provider_api=read_api,  # type: ignore[arg-type]
     )
     assert report == {
         "repository": None,
-        "provider_api": None,
+        "provider_api": read_api,
         "local_execution_admission": {
             "status": "ready",
             "execution_id": "toolchain-only",

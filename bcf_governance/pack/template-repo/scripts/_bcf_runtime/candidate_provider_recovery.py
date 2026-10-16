@@ -392,7 +392,7 @@ def execute_candidate_provider_recovery(
         raise ProspectiveValidationError("candidate provider PR is already merged")
     observed_pr = _validate_candidate_pr(
         current_pr, repository_id=repository_id, branch=context.head_ref,
-        base_ref=context.default_branch, base_sha=candidate.base_sha, head_sha=candidate.commit_sha,
+        base_ref=context.comparison_base_ref, base_sha=candidate.base_sha, head_sha=candidate.commit_sha,
     )
     if observed_pr != dict(pull_request):
         raise ProspectiveValidationError("candidate provider PR identity changed")

@@ -12,7 +12,7 @@ import time
 from typing import Any, Callable, Mapping
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_post_merge import post_merge_evaluation
+from .ci_graph_post_merge import candidate_post_merge_evaluation, post_merge_evaluation
 from .ci_authority_pins import verify_provider_workflow_authority
 from .ci_controller_policy import graph_controller_policy_path
 from .ci_authority_prospective_lanes import (
@@ -110,6 +110,7 @@ def _confirm_unchanged(
     initial_identity: CandidateIdentity,
     remote: str,
     runner: Runner,
+    provider_api: GitHubAPI | None = None,
 ) -> None:
     """Reauthenticate through this module's injectable canonical resolvers."""
 
@@ -119,7 +120,8 @@ def _confirm_unchanged(
         initial_identity=initial_identity,
         remote=remote,
         runner=runner,
-        context_resolver=resolve_local_pr_context,
+        context_resolver=lambda root, **kwargs: resolve_local_pr_context(
+            root, provider_api=provider_api, **kwargs),
         identity_resolver=_candidate_identity,
     )
 
@@ -168,7 +170,7 @@ def _run_prospective_train(
     """Walk every knowable boundary while preserving provider-required authority."""
 
     root = repo_root.resolve()
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     effective_validation_lane = derive_local_validation_lane(
         root,
         context,
@@ -240,6 +242,7 @@ def _run_prospective_train(
             ]
         )
         evaluation, custody_contract = validate_controller_custody_graph(root, python_executable=python_executable)
+        evaluation = candidate_post_merge_evaluation(evaluation, context=context)
         post_merge_mode, post_merge_target = evaluation.mode, evaluation.target
         emit("fixed_point", "complete")
     except (
@@ -464,6 +467,7 @@ def _run_prospective_train(
                 initial_identity=identity,
                 remote=remote,
                 runner=runner,
+                provider_api=provider_api,
             )
             return report
 
@@ -655,6 +659,7 @@ def _run_prospective_train(
         initial_identity=identity,
         remote=remote,
         runner=runner,
+        provider_api=provider_api,
     )
     emit("prospective_train", "complete")
     validate_progress_stream(progress)
@@ -780,7 +785,7 @@ def run_prospective_train(
                     python_executable=python_executable,
                     execute_evidence=True,
                     repository=repository if lane == "trusted_exact_main" else None,
-                    provider_api=provider_api if lane == "trusted_exact_main" else None,
+                    provider_api=provider_api,
                     toolchain_identity=admission.as_dict(),
                     validation_lane=validation_lane,
                     runner=runner,
