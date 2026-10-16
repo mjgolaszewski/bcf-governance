@@ -164,6 +164,8 @@ def load_application_operations(
 ) -> ApplicationOperationRegistry:
     payload = _load_yaml(repo_root / OPERATIONS_PATH, expected_sha256=expected_sha256)
     _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=expected_sha256 is not None)
+    if expected_sha256 is not None:
+        _validate_operation_structure(payload)
     return ApplicationOperationRegistry(
         populations=tuple(payload["populations"]),
         operations=tuple(payload["operations"]),
@@ -705,7 +707,14 @@ def required_application_operation_population(
     if expected_registry_sha256 is None:
         raise SemanticAuthorityError("protected registry digest is required")
     registry = load_application_operations(repo_root, expected_sha256=expected_registry_sha256)
-    observations = _validate_operations(repo_root, registry.raw, inventory, consumer_owned_schema=True)
+    return _required_operation_population(repo_root, registry.raw, inventory, expected_registry_sha256)
+
+
+def _required_operation_population(
+    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], registry_sha256: str,
+) -> dict[str, Any]:
+    """Interpret a fresh factory capture; this internal query authenticates no inputs."""
+    observations = _validate_operations(repo_root, payload, inventory, consumer_owned_schema=True)
     rows = tuple(sorted(
         (row["operation"], row["kind"], row["entrypoint"], tuple(sorted(
             (port["classification"], port["target_kind"], port["symbol"])
@@ -714,7 +723,7 @@ def required_application_operation_population(
     ))
     return dict(authority=False, execution_qualified=False,
                 scope="protected_registry_public_operations_only",
-                registry_sha256=expected_registry_sha256, operations=rows)
+                registry_sha256=registry_sha256, operations=rows)
 
 
 def required_committed_application_operation_population(
@@ -726,6 +735,19 @@ def required_committed_application_operation_population(
     The consumer repository's protected policy subject is distinct from installed
     controller source. Object identity alone does not authenticate that subject.
     """
+    registry, identity = load_committed_application_operations(
+        repo_root, policy_commit_sha=policy_commit_sha, policy_tree_sha=policy_tree_sha,
+    )
+    result = _required_operation_population(repo_root, registry.raw, inventory, identity["registry_sha256"])
+    result["policy_subject"] = identity["subject"]
+    result["policy_blob_oid"] = identity["blob_oid"]
+    return result
+
+
+def load_committed_application_operations(
+    repo_root: Path, *, policy_commit_sha: str, policy_tree_sha: str,
+) -> tuple[ApplicationOperationRegistry, dict[str, Any]]:
+    """Capture policy before source work; caller authenticates consumer custody."""
     from .semantic_source_paths import committed_application_registry_identity
 
     try:
@@ -734,9 +756,5 @@ def required_committed_application_operation_population(
         )
     except (OSError, ValueError) as exc:
         raise SemanticAuthorityError(str(exc)) from exc
-    result = required_application_operation_population(
-        repo_root, inventory, expected_registry_sha256=identity["registry_sha256"],
-    )
-    result["policy_subject"] = identity["subject"]
-    result["policy_blob_oid"] = identity["blob_oid"]
-    return result
+    registry = load_application_operations(repo_root, expected_sha256=identity["registry_sha256"])
+    return registry, identity

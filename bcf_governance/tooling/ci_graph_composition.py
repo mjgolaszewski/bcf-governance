@@ -649,6 +649,15 @@ def validate_reconstructed_lifecycle_bindings(
             or population.get("completeness_qualified") is not False
             for population in catalogue.values()):
             raise CIGraphError("reconstructed binding requires initialization-aware source populations")
+    from .ci_graph_composition_operations import capture_public_operation_bindings, validate_public_operation_capture
+
+    capture = None
+    if operation_policy_subject is not None or required_public_operation_relationships is not None:
+        capture = capture_public_operation_bindings(
+            repo_root, policy_subject=operation_policy_subject,
+            required_relationships=required_public_operation_relationships,
+            relationship_roots={pair: _binding_operation_roots(contract) for pair, contract in reachable.items()},
+        )
     subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
     try:
         inventory = discover_python_source(
@@ -658,12 +667,15 @@ def validate_reconstructed_lifecycle_bindings(
         inventory = resolve_python_imports(repo_root, inventory, source_import_roots)
     except (SemanticInventoryError, OSError, TypeError, ValueError) as exc:
         raise CIGraphError(f"lifecycle binding exact source reconstruction failed: {exc}") from exc
+    public_operations = validate_public_operation_capture(repo_root, inventory, capture) if capture is not None else None
     result = validate_lifecycle_bindings(
         compiled, expected_source=expected_source, source_inventory=inventory,
         collected_selectors=collected_selectors, required_negative_controls=required_negative_controls,
         required_call_edges=required_call_edges, required_fact_bindings=required_fact_bindings,
         required_operation_calls=required_operation_calls,
     )
+    if public_operations is not None:
+        result["public_operation_bindings"] = public_operations
     result["source_reconstruction"] = {
         "subject": dict(subject),
         "population_sha256": hashlib.sha256(_bytes(inventory["source_population"])).hexdigest(),

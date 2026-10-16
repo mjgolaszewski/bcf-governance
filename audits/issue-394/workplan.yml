@@ -175,6 +175,8 @@ workitems:
     - bcf_governance/tooling/semantic_yaml.py
     - bcf_governance/tooling/semantic_authority_migrations.py
     - bcf_governance/tooling/ci_graph_composition.py
+    - bcf_governance/tooling/ci_graph_composition_operations.py
+    - bcf_governance/tooling/semantic_authority_operations.py
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
     - bcf_governance/tooling/semantic_ownership_inventory.py
     - bcf_governance/tooling/semantic_python_calls.py
@@ -3030,9 +3032,19 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle
+    - tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction
     - tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject
     - tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner
     negative_controls:
+    - cause: duplicate-protected-operation-identity-before-source-work
+      test: tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery
+    - cause: candidate-policy-substitution-before-source-work
+      test: tests.test_ci_graph_composition::test_dirty_public_policy_rejects_before_source_discovery
+    - cause: added-public-source-entry-with-retained-functions
+      test: tests.test_ci_graph_composition::test_added_public_source_entry_cannot_escape_lifecycle_population
     - cause: substituted-protected-source-subject-before-discovery
       test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[subject]
     - cause: missing-protected-operation-root-before-discovery
@@ -3048,6 +3060,7 @@ implementation_slices:
     - cause: caller-source-inventory-injection
       test: tests.test_ci_graph_composition::test_reconstructed_binding_accepts_no_caller_inventory
     remaining:
+    - Strict public-operation mode connects one captured consumer policy to complete declared public-operation relationships; independent policy and relationship-catalogue authorization plus actual provider-owned invocation remain open. Contract audits/issue-394/public-operation-lifecycle-contract.json; evidence audits/issue-394/public-operation-lifecycle-verification.json.
     - Actual protected provider-owned invocation must authenticate repository/context and independently reconstruct complete required populations; this dormant query does not authenticate caller-supplied expected context.
     - Complete runtime effects guard authority recovery execution profile installation and normative model adoption remain unqualified.
     - Canonical oracle normalization approved performance targets and independent terminal custody remain blocked.
@@ -3090,6 +3103,8 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle
+    - tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction
     - tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy
     - tests.test_semantic_protected_operations::test_ordinary_authored_factory_keeps_authored_schema
     - tests.test_semantic_protected_operations::test_protected_operations_are_source_derived_and_deterministic
@@ -3100,6 +3115,14 @@ implementation_slices:
     - tests.test_semantic_protected_operations::test_committed_policy_derives_digest_and_reuses_existing_population
     - tests.test_semantic_protected_operations::test_replacement_ref_cannot_change_committed_policy
     negative_controls:
+    - cause: duplicate-protected-operation-identity-before-source-work
+      test: tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery
+    - cause: candidate-policy-substitution-before-source-work
+      test: tests.test_ci_graph_composition::test_dirty_public_policy_rejects_before_source_discovery
+    - cause: added-public-source-entry-with-retained-functions
+      test: tests.test_ci_graph_composition::test_added_public_source_entry_cannot_escape_lifecycle_population
     - cause: candidate-schema-relaxes-protected-policy
       test: tests.test_semantic_protected_operations::test_permissive_candidate_schema_cannot_relax_protected_policy
     - cause: unavailable-trusted-schema-falls-back-to-candidate
@@ -3125,7 +3148,8 @@ implementation_slices:
     - cause: dynamic-public-entry-inventory
       test: tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[dynamic]
     remaining:
+    - Strict public-operation mode connects one captured consumer policy to complete declared public-operation relationships; independent policy and relationship-catalogue authorization plus actual provider-owned invocation remain open. Contract audits/issue-394/public-operation-lifecycle-contract.json; evidence audits/issue-394/public-operation-lifecycle-verification.json.
     - Protected schema interpretation uses the executing distribution; its runtime and schema custody must be authenticated independently before authority use. Local contract audits/issue-394/protected-operation-schema-contract.json and evidence audits/issue-394/protected-operation-schema-verification.json; no installed-adopter qualification claim.
     - Committed policy query derives the digest from exact Git bytes; protected caller must independently authenticate consumer repository policy authorization exact source population and provider context. Query observations never authenticate themselves. Contract audits/issue-394/committed-operation-policy-contract.json; local evidence audits/issue-394/committed-operation-policy-verification.json.
-    - Current snapshot observations do not establish ongoing filesystem freshness complete runtime effects or actual lifecycle relationship integration.
+    - Current snapshot observations do not establish ongoing filesystem freshness complete runtime effects or actual provider-owned lifecycle integration.
     - Canonical semantic lock/oracle normalization installed consumer qualification normative adoption performance and custody remain blocked.

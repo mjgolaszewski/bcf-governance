@@ -1308,3 +1308,47 @@ def test_public_policy_capture_is_not_reread_after_source_reconstruction(public_
     result = validate_reconstructed_lifecycle_bindings(**inputs)
     assert result['public_operation_bindings']['registry_sha256'] == digest
     assert len(reads) == 1
+
+
+def test_added_public_source_entry_cannot_escape_lifecycle_population(public_reconstructed_binding_inputs, composition):
+    import subprocess
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    root = inputs['repo_root']
+    source = root / 'runtime.py'
+    source.write_text(source.read_text().replace('COMMANDS = {"produce": produce}', 'COMMANDS = {"produce": produce, "other": produce}'))
+    def git(*args):
+        return subprocess.run(['git', *args], cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+    git('add', '.')
+    git('commit', '-qm', 'new public entry')
+    subject = dict(commit_sha=git('rev-parse', 'HEAD'), tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    identity = dict(inputs['expected_source'], **subject)
+    composition['expected_source'] = composition['payload']['source'] = identity
+    inputs['expected_source'] = identity
+    inputs['compiled'] = compile_lifecycle_composition(**composition)
+    inventory = resolve_python_imports(root, discover_python_source(root, source_subject=subject, call_contracts_version='1.0', initialization_contracts_version='1.0'))
+    inputs['required_operation_calls'] = {pair: {symbol: source_operation_call_population(symbol, inventory, include_initialization=True) for symbol in roots} for pair, roots in inputs['required_operation_calls'].items()}
+    with pytest.raises(CIGraphError, match='unclassified public application operations'):
+        validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+def test_duplicate_protected_operation_identity_rejects_before_source_discovery(public_reconstructed_binding_inputs, monkeypatch):
+    import subprocess
+    import yaml
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import semantic_ownership_inventory
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    payload = yaml.safe_load(policy.read_text())
+    payload['operations'].append(copy.deepcopy(payload['operations'][0]))
+    policy.write_text(yaml.safe_dump(payload))
+    def git(*args):
+        return subprocess.run(['git', *args], cwd=inputs['repo_root'], check=True, capture_output=True, text=True).stdout.strip()
+    git('add', '.')
+    git('commit', '-qm', 'duplicate policy identity')
+    inputs['operation_policy_subject'] = dict(commit_sha=git('rev-parse', 'HEAD'), tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', lambda *args, **kwargs: pytest.fail('source discovery before duplicate identity rejection'))
+    with pytest.raises(CIGraphError, match='operation IDs must be unique'):
+        owner.validate_reconstructed_lifecycle_bindings(**inputs)

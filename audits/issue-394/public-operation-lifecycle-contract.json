@@ -7,7 +7,7 @@
   },
   "phase": "P32",
   "workitem": "P32-P0-04",
-  "bounded_context": "governance_ci",
+  "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "query",
   "dependency_acceptance": "Extend existing reconstructed source and protected-public-operation slices after 04155d57 and faa99718. Remain dormant under bus 6870/6950; no provider invocation or normalization.",
