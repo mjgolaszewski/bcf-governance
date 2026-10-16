@@ -4,7 +4,7 @@ document:
   id: project-phase-31-hotfix05
   version: 1.0.0
   generated_at_utc: '2026-10-15T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-31-hotfix05.yml
 hotfix:
   id: P31-HF05
@@ -16,11 +16,20 @@ hotfix:
 execution_evidence:
   planned_commands:
   - .venv/bin/python -m pytest -q tests/test_install_governance_pack.py tests/test_install_release_custody.py
-    tests/test_runtime_custody.py tests/test_pack_sync.py
-  executed_commands: []
+    tests/test_runtime_custody.py tests/test_runtime_custody_operations.py tests/test_pack_sync.py
+  executed_commands:
+  - .venv/bin/python -m pytest -q tests/test_install_governance_pack.py tests/test_install_release_custody.py
+    tests/test_runtime_custody.py tests/test_runtime_custody_operations.py tests/test_pack_sync.py
   notes:
-  - record failing workflows, diagnosed root cause, remediation scope, and merge-back
-    status
+  - The v2.3.3 Racecar upgrade left an exact historical pack-owned runtime file
+    because the successor manifest authenticated active files but no retirement
+    identities.
+  - Schema-v2 pack manifests now derive content-addressed ordinary-adopter
+    retirements from authenticated Git history. Atomic upgrade custody removes
+    only exact admitted bytes and rejects drift, unsafe paths, undeclared
+    predecessor ownership, or incomplete promotion before adopter proof.
+  - Focused installer, runtime-custody, transaction-rollback, and pack-parity
+    validation passed with 123 tests.
 closeout_requirements:
   claims:
     required_suites_green:
