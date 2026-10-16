@@ -39,5 +39,25 @@
     "Generated workflow pins or frozen bytes",
     "Treating events as proof or agent-selected lifecycle intent"
   ],
-  "dependency_acceptance": "Foundation measurement construction only; no phase or requirement closure, activation or proof suppression."
+  "dependency_acceptance": "Foundation measurement construction only; no phase or requirement closure, activation or proof suppression.",
+  "affected_surface_matrix": [
+    {
+      "module": "bcf_governance/tooling/ci_authority_submit.py",
+      "context": "ci_authority",
+      "layer": "tooling",
+      "side": "command orchestration; existing authority actions unchanged"
+    },
+    {
+      "module": "bcf_governance/tooling/operational_observations.py",
+      "context": "operations",
+      "layer": "tooling",
+      "side": "pure query/value construction; existing progress owner reused"
+    },
+    {
+      "module": "schemas/operational-observation.schema.json",
+      "context": "operations",
+      "layer": "contract",
+      "side": "additive kind variant; legacy payloads retained"
+    }
+  ]
 }

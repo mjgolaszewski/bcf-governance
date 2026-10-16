@@ -34,11 +34,12 @@ class ProgressEvent:
     stage: str
     state: str
     monotonic_ms: int
+    kind: str = "prospective_progress"
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "schema_version": "1.0",
-            "kind": "prospective_progress",
+            "kind": self.kind,
             "authority": False,
             "execution_id": self.execution_id,
             "sequence": self.sequence,
@@ -49,19 +50,25 @@ class ProgressEvent:
 
 
 def progress_event(
-    *, execution_id: str, sequence: int, stage: str, state: str, monotonic_ms: int
+    *, execution_id: str, sequence: int, stage: str, state: str, monotonic_ms: int,
+    kind: str = "prospective_progress",
 ) -> dict[str, Any]:
+    if kind not in {"prospective_progress", "submission_progress"}:
+        raise OperationalObservationError("progress event kind is invalid")
     if not execution_id or not stage or state not in {"started", *_TERMINAL}:
         raise OperationalObservationError("progress event identity or state is invalid")
     if sequence < 1 or monotonic_ms < 0:
         raise OperationalObservationError("progress ordering is invalid")
-    return ProgressEvent(execution_id, sequence, stage, state, monotonic_ms).as_dict()
+    return ProgressEvent(execution_id, sequence, stage, state, monotonic_ms, kind).as_dict()
 
 
 def validate_progress_stream(events: Iterable[Mapping[str, Any]]) -> None:
     values = list(events)
     if not values:
         raise OperationalObservationError("progress stream is empty")
+    kinds = {item.get("kind") for item in values}
+    if len(kinds) != 1 or not kinds <= {"prospective_progress", "submission_progress"}:
+        raise OperationalObservationError("progress stream kind is not exact")
     execution_ids = {item.get("execution_id") for item in values}
     if len(execution_ids) != 1 or None in execution_ids:
         raise OperationalObservationError("progress stream execution identity is not exact")

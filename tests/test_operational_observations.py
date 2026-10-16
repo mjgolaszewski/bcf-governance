@@ -385,3 +385,24 @@ def test_provider_event_does_not_invent_workflow_context_policy(provider_snapsho
     result = _provider_timing(provider_snapshot, pipeline=pipeline, expected_event='pull_request')
     assert result['pipeline'] == pipeline
     assert result['authority'] is False
+
+
+def test_progress_kind_extension_preserves_legacy_bytes_and_rejects_unknown_kind():
+    from bcf_governance.tooling.operational_observations import progress_event, OperationalObservationError
+    args = dict(execution_id='exact', sequence=1, stage='normalization', state='started', monotonic_ms=0)
+    legacy = progress_event(**args)
+    assert legacy == progress_event(**args, kind='prospective_progress')
+    submission = progress_event(**args, kind='submission_progress')
+    assert submission == {**legacy, 'kind': 'submission_progress'}
+    validate_operational_observation(Path(__file__).parents[1], submission)
+    validate_progress_stream([submission])
+    with pytest.raises(OperationalObservationError, match='kind'):
+        progress_event(**args, kind='unknown_progress')
+
+
+@pytest.mark.parametrize('kind', ['submission_progress', 'unknown_progress'])
+def test_progress_stream_cannot_mix_or_accept_unknown_event_kinds(kind):
+    events = [progress_event(execution_id='same', sequence=1, stage='first', state='started', monotonic_ms=0),
+        {**progress_event(execution_id='same', sequence=2, stage='first', state='complete', monotonic_ms=1), 'kind': kind}]
+    with pytest.raises(OperationalObservationError, match='kind'):
+        validate_progress_stream(events)

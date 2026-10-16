@@ -3448,12 +3448,25 @@ implementation_slices:
     positive_tests:
     - tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[None]
     - tests.test_prospective_validation::test_provider_authority_progress_absent_when_no_provider_is_required
+    - tests.test_candidate_submit::test_submission_progress_separates_initial_and_normalized_subject_streams
+    - tests.test_operational_observations::test_progress_kind_extension_preserves_legacy_bytes_and_rejects_unknown_kind
     negative_controls:
     - cause: provider-workflow-controller-graph-or-transport-failure
       test: tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[controller]
     - cause: exposure-error-before-provider-work
       test: tests.test_prospective_validation::test_exposure_failure_stops_before_provider_authority_and_retains_cause
+    - cause: normalization-failure-must-retain-cause-and-stop-before-provider
+      test: tests.test_candidate_submit::test_submission_progress_retains_failed_stage_and_identical_error[ValueError-normalization]
+    - cause: provider-input-failure-must-retain-cause-and-stop-before-proof
+      test: tests.test_candidate_submit::test_submission_progress_retains_failed_stage_and_identical_error[OSError-submission_authority]
+    - cause: diagnostic-sink-masks-original-failure
+      test: tests.test_candidate_submit::test_submission_progress_sink_failure_cannot_replace_operation_failure[normalization]
+    - cause: mixed-execution-kinds-corrupt-progress-stream
+      test: tests.test_operational_observations::test_progress_stream_cannot_mix_or_accept_unknown_event_kinds[submission_progress]
+    - cause: unit-resource-isolation-must-preserve-real-exclusion
+      test: tests.test_prospective_validation::test_prospective_unit_namespace_retains_real_lease_exclusion
     remaining:
+    - 'Submission attribution follow-up: audits/issue-394/submission-progress-contract.json; verification audits/issue-394/submission-progress-verification.json. Separate kind and clock preserve existing prospective stream; no full command/CPU/wait certification.'
     - Existing full preflight exposure check remains mandatory; no proof reuse or suppression.
     - Early check follows necessary generation; not a claim that every authored contradiction
       is at its earliest possible boundary.

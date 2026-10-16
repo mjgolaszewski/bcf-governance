@@ -7,6 +7,7 @@ from pathlib import Path
 import hashlib
 import json
 import re
+import time
 from typing import Any, Callable
 
 from .ci_github_api import GitHubAPI
@@ -32,6 +33,7 @@ from .local_pr import (
     resolve_local_pr_context,
     run_prospective_train,
 )
+from .operational_observations import progress_event, validate_progress_stream
 from .ordinary_protection_projection import validate_ordinary_protection_submission
 from .local_execution_admission import local_gate_lease
 from .nested_cli_runtime import exact_nested_cli_command
@@ -350,21 +352,50 @@ def submit_candidate(
     root = repo_root.resolve()
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
-    _normalize_submission(
-        root,
-        python_executable=python_executable,
-        execution_id=identity.commit_sha,
-        semantic_intent=semantic_intent,
-        runner=runner,
-    )
+    progress = []
+    progress_started = time.monotonic_ns()
+    progress_identity = 'submission:' + identity.commit_sha
+
+    def emit(stage: str, state: str) -> None:
+        progress.append(progress_event(kind="submission_progress", execution_id=progress_identity, sequence=len(progress) + 1,
+            stage=stage, state=state, monotonic_ms=(time.monotonic_ns() - progress_started) // 1000000))
+        validate_progress_stream(progress)
+        if progress_sink is not None:
+            progress_sink(progress[-1])
+
+    emit('normalization', 'started')
+    try:
+        _normalize_submission(
+            root,
+            python_executable=python_executable,
+            execution_id=identity.commit_sha,
+            semantic_intent=semantic_intent,
+            runner=runner,
+        )
+    except (ValueError, OSError) as exc:
+        try:
+            emit('normalization', 'failed')
+        except Exception as observation_error:
+            raise exc from observation_error
+        raise
+    emit('normalization', 'complete')
     context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
-    authority = _canonical_inputs(
-        root,
-        context=context,
-        provider_api=provider_api,
-        runner=runner,
-    )
+    emit('submission_authority', 'started')
+    try:
+        authority = _canonical_inputs(
+            root,
+            context=context,
+            provider_api=provider_api,
+            runner=runner,
+        )
+    except (ValueError, OSError) as exc:
+        try:
+            emit('submission_authority', 'failed')
+        except Exception as observation_error:
+            raise exc from observation_error
+        raise
+    emit('submission_authority', 'complete')
     try:
         candidate_title = authored_candidate_title(
             root, mode=authority.mode, target=authority.target
