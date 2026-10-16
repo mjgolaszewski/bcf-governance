@@ -459,3 +459,26 @@ def test_protected_default_movement_during_bound_or_absence_discovery_rejects(au
     with pytest.raises(LocalPRError, match='protected default ref disagrees'):
         resolve_local_pr_context(fixture.repo, runner=fixture.runner)
     assert fixture.state['reads'].count('reference') == 2
+
+
+def test_late_protected_source_movement_rejects_with_unchanged_stacked_subject(authenticated_stacked_pr):
+    """Reauthenticate protected source even when semantic PR comparison is stable."""
+    from bcf_governance.tooling import local_pr
+    from bcf_governance.tooling.local_pr_context import ProspectiveValidationError
+
+    fixture = authenticated_stacked_pr
+    initial = resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    identity = local_pr._candidate_identity(fixture.repo, initial, runner=fixture.runner)
+    local_pr._confirm_unchanged(fixture.repo, initial_context=initial,
+        initial_identity=identity, remote='origin', runner=fixture.runner)
+    _git(fixture.repo, 'push', 'origin', f'{fixture.stack_base}:refs/heads/main')
+    fixture.state['default_reference'] = {'ref': 'refs/heads/main',
+        'object': {'type': 'commit', 'sha': fixture.stack_base}}
+    current = resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert (current.base_sha, current.head_sha, current.provider_head_sha) == (
+        initial.base_sha, initial.head_sha, initial.provider_head_sha)
+    assert current.protected_default_sha != initial.protected_default_sha
+    assert local_pr._candidate_identity(fixture.repo, current, runner=fixture.runner) == identity
+    with pytest.raises(ProspectiveValidationError, match='identity changed during validation'):
+        local_pr._confirm_unchanged(fixture.repo, initial_context=initial,
+            initial_identity=identity, remote='origin', runner=fixture.runner)

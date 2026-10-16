@@ -62,5 +62,33 @@
     "bus_cursor": 7489,
     "constraint": "Preserve immutable v2.3.4 and #425 result/base-identity regressions; semantic comparison may differ from protected evaluator/policy authority. No backport."
   },
-  "activation": "BLOCKED until all required source/consumer/authority proofs above pass; current isolated branch must not be merged as a completed feature."
+  "activation": "BLOCKED until all required source/consumer/authority proofs above pass; current isolated branch must not be merged as a completed feature.",
+  "recovery_disposition": {
+    "authority": false,
+    "source_checkpoint": "02672ac2deff651d4c813d6647853421f48757e5",
+    "historical_observations_preserved": true,
+    "bounded_followups": [
+      {
+        "area": "protected-default policy and ordinary executable source",
+        "evidence": "audits/issue-394/bound-pr-integrated-verification.json",
+        "limit": "focused source/graph/installed consumers; not complete lifecycle/runtime population"
+      },
+      {
+        "area": "candidate-aware normalization and provider comparison freshness",
+        "evidence": "audits/issue-394/bound-pr-integrated-verification.json",
+        "limit": "exact authored selectors and consuming-boundary controls; no independent whole requirement closure"
+      },
+      {
+        "area": "local proof cache context and consuming protected source movement",
+        "evidence": "audits/issue-394/bounded-context-diagnostics-verification.json",
+        "limit": "local nonauthoritative identity; exact installed affected suites only"
+      }
+    ],
+    "remaining": [
+      "Run canonical real pinned-adopter compatibility transaction; inputs prepared in bound-pr-pinned-adopter-preparation.json.",
+      "Independently qualify complete consumer matrix, authority paths and installed supported profile populations before integration.",
+      "No current source progress implies protected-main, phase/controller, activation, release or custody progress."
+    ],
+    "execution_dependency": "Heavy host lane reserved by Closure Engine7959 for maintenance427; actual handback awaited."
+  }
 }

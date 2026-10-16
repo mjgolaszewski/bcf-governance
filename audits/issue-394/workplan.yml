@@ -3977,6 +3977,8 @@ implementation_slices:
     - tests.test_prospective_validation::test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source
     - tests.test_ci_graph::test_v3_reference_graph_projects_proof_transport_and_planned_shards
     negative_controls:
+    - cause: protected-default-moved-with-stable-semantic-PR-subject
+      test: tests.test_local_pr::test_late_protected_source_movement_rejects_with_unchanged_stacked_subject
     - cause: cached-proof-context-base_ref
       test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[base_ref-other-stack]
     - cause: cached-proof-context-head_ref
@@ -4120,8 +4122,9 @@ implementation_slices:
       first.
     - Exact protected-default policy/evaluator source and semantic comparison base must remain distinct; preserve existing
       runtime rejection until compatible trusted consumers prove the expanded context.
-    - Default-main source/target movement, merge-consumption target facts, candidate-aware pre-normalization intent and
-      all profile/adopter contexts remain unqualified.
+    - Historical default-source freshness and candidate-aware normalization blockers have bounded source/installed follow-ups in
+      bound-pr-integrated-verification.json and bounded-context-diagnostics-verification.json; complete independent consumer
+      populations and real pinned-adopter qualification remain open.
     - All whole requirements remain open; partial evidence audits/issue-394/bound-pr-context-progress.json.
 
   source-distribution-admission:

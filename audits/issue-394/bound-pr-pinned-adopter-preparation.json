@@ -1,0 +1,53 @@
+{
+  "authority": false,
+  "candidate": "02672ac2deff651d4c813d6647853421f48757e5",
+  "inputs": [
+    {
+      "repository": "moranwm/tradeflow",
+      "repository_id": 1396203132,
+      "profile": "lite",
+      "default_branch": "main",
+      "commit": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+      "tree": "c6c6b001c765fbd30f12340620ee9eb9a8ff88aa",
+      "provider_ref_and_commit_tree_authenticated": true
+    },
+    {
+      "repository": "mjgolaszewski/racecar",
+      "repository_id": 1357342339,
+      "profile": "standard",
+      "default_branch": "main",
+      "commit": "38945f5aa3a90e0782cabb006c8c88a5463fcfbd",
+      "tree": "11b3a874b5c3b18c9a4b8e94a804b68b02790583",
+      "provider_ref_and_commit_tree_authenticated": true
+    },
+    {
+      "repository": "mjgolaszewski/AgentBus",
+      "repository_id": 1390225113,
+      "profile": "standard",
+      "default_branch": "main",
+      "commit": "cc7a407cec6d097b0d3bddd0e3528cb279116c92",
+      "tree": "ce0f241298870b09f1f64bc9f6b4128e01a8143e",
+      "provider_ref_and_commit_tree_authenticated": true
+    }
+  ],
+  "status": "inputs_pinned_qualification_not_run",
+  "maintained_roots_mutated": false,
+  "pinning_correction": "Initial local Racecar HEAD6889d0ca was not provider-readable (404); select and recheck provider default snapshots in disposable clones.",
+  "build": {
+    "subject": {
+      "commit_sha": "02672ac2deff651d4c813d6647853421f48757e5",
+      "tree_sha": "f36e8ea6d11a08a28726f014f24f3d6a07543081"
+    },
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "929053c2b6ebf02158b57a5c6cc21610225433ffdd3fe0c79ffb95c471746811",
+      "bcf_governance-2.5.0.tar.gz": "06792091ccb9be21c02e0faaeb413d0bec9af841218b678cbe795281fc6cf73d",
+      "SHA256SUMS": "498f320fe6c08eeb602561aee89f1317c12b6b6dbb063c7d306adc3337418538"
+    }
+  },
+  "execution_block": "Shared heavy lane reserved by Closure Engine7959 for maintenance427/2.3.5; actual handback pending.",
+  "remaining": [
+    "Run canonical qualify_release transaction against exact candidate assets and pinned disposable roots after capacity handback.",
+    "Record compatibility failures as remediation inputs, never publication authority.",
+    "Full bound-PR consumer matrix and independent CP07 acceptance remain open."
+  ]
+}
