@@ -624,6 +624,7 @@ def validate_reconstructed_lifecycle_bindings(
     required_fact_bindings: Mapping[Relationship, tuple[Mapping[str, str], ...]],
     required_operation_calls: Mapping[Relationship, Mapping[str, Mapping[str, Any]]],
     source_import_roots: tuple[str, ...] = (".",),
+    required_ci_graph: CompiledCIGraph | None = None,
     operation_policy_subject: Mapping[str, str] | None = None,
     required_public_operation_relationships: Mapping[str, frozenset[Relationship]] | None = None,
     required_effect_bindings: Mapping[tuple[str, str, str, str], frozenset[Relationship]] | None = None,
@@ -637,6 +638,9 @@ def validate_reconstructed_lifecycle_bindings(
         compiled, expected_source, collected_selectors, required_negative_controls,
         required_call_edges, required_fact_bindings, required_operation_calls,
     )
+    ci_coverage = validate_lifecycle_ci_edge_coverage(
+        compiled, compiled_graph=required_ci_graph, expected_source=expected_source,
+    ) if required_ci_graph is not None else None
     if required_operation_calls is None:
         raise CIGraphError("reconstructed binding requires complete operation populations")
     for pair, contract in reachable.items():
@@ -684,6 +688,8 @@ def validate_reconstructed_lifecycle_bindings(
         required_call_edges=required_call_edges, required_fact_bindings=required_fact_bindings,
         required_operation_calls=required_operation_calls,
     )
+    if ci_coverage is not None:
+        result["ci_edge_coverage"] = ci_coverage
     if public_operations is not None:
         result["public_operation_bindings"] = public_operations
     if required_effect_bindings is not None:

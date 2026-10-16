@@ -1664,6 +1664,7 @@ def nonempty_public_effect_inputs(public_reconstructed_binding_inputs, compositi
 def test_committed_public_port_reconstructs_end_to_end(nonempty_public_effect_inputs, composition, defect):
     from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
     inputs = nonempty_public_effect_inputs
+    inputs['required_ci_graph'] = composition['compiled_graph']
     if defect == 'omitted_compiled_effect':
         composition['payload']['relationships'][0]['contract']['effects'] = []
         composition['expected_effects'] = frozenset()
@@ -1675,6 +1676,7 @@ def test_committed_public_port_reconstructs_end_to_end(nonempty_public_effect_in
     before = copy.deepcopy(inputs)
     if defect is None:
         result = validate_reconstructed_lifecycle_bindings(**inputs)
+        assert result['ci_edge_coverage']['reachable_edges_checked'] == 1
         assert result['source_effect_bindings']['effects_checked'] == 1
         assert result['source_effect_bindings']['bindings'][0][:3] == ('release', 'build', 'verify')
         assert result['public_operation_bindings']['operations'][0][-1] == (('observation', 'function', 'runtime.py::declared_port'),)
@@ -1686,3 +1688,33 @@ def test_committed_public_port_reconstructs_end_to_end(nonempty_public_effect_in
         with pytest.raises(CIGraphError, match='effect (population|bindings)'):
             validate_reconstructed_lifecycle_bindings(**inputs)
     assert inputs == before
+
+
+
+def test_reconstructed_ci_coverage_delegates_to_existing_owner(reconstructed_binding_inputs, composition):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings, validate_lifecycle_ci_edge_coverage
+    inputs = reconstructed_binding_inputs
+    before = copy.deepcopy(inputs)
+    result = validate_reconstructed_lifecycle_bindings(**inputs, required_ci_graph=composition['compiled_graph'])
+    assert result['ci_edge_coverage'] == validate_lifecycle_ci_edge_coverage(inputs['compiled'], compiled_graph=composition['compiled_graph'], expected_source=inputs['expected_source'])
+    assert result['ci_edge_coverage']['reachable_edges_checked'] == 1
+    assert result['authority'] is False
+    assert inputs == before
+    assert 'ci_edge_coverage' not in validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('defect', ['missing_edge', 'stale_graph'])
+def test_reconstructed_ci_coverage_rejects_before_policy_and_source(public_reconstructed_binding_inputs, composition, monkeypatch, defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    from bcf_governance.tooling import semantic_ownership_inventory as source
+    from bcf_governance.tooling import ci_graph_composition_operations as operations
+    inputs, _, _ = public_reconstructed_binding_inputs
+    if defect == 'missing_edge':
+        composition['payload']['relationships'][0]['contract']['ci_edges'] = []
+        inputs['compiled'] = compile_lifecycle_composition(**composition)
+    else:
+        composition['compiled_graph'].graph_sha256 = 'f' * 64
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('late CI coverage rejection'))
+    monkeypatch.setattr(operations, 'capture_public_operation_bindings', lambda *a, **kw: pytest.fail('policy captured before CI coverage rejection'))
+    with pytest.raises(CIGraphError, match='CI edge coverage'):
+        validate_reconstructed_lifecycle_bindings(**inputs, required_ci_graph=composition['compiled_graph'])

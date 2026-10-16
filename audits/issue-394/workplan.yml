@@ -3242,10 +3242,14 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_reconstructed_ci_coverage_delegates_to_existing_owner
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end
     - tests.test_ci_graph_composition::test_complete_ci_edge_coverage_is_kernel_derived_stable_and_read_only
     - tests.test_ci_graph_composition::test_ci_edge_coverage_retains_all_context_bindings_without_double_count
     - tests.test_ci_graph_composition::test_empty_ci_edge_population_does_not_claim_runtime_qualification
     negative_controls:
+    - cause: incomplete-or-stale-ci-graph-before-policy-and-source-discovery
+      test: tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source
     - cause: omitted-canonical-edge-or-edge-and-test-pair
       test: tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate
     - cause: wrong-source-stale-population-or-integrity
@@ -3257,6 +3261,7 @@ implementation_slices:
     - cause: ungrounded-canonical-exclusion
       test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion
     remaining:
+    - Optional reconstructed-query integration invokes the same complete CI-reference owner before policy capture or source discovery; contract audits/issue-394/reconstructed-ci-coverage-contract.json and evidence audits/issue-394/reconstructed-ci-coverage-verification.json. Actual protected invocation remains unqualified.
     - Local verification is retained at audits/issue-394/ci-edge-coverage-verification.json; no full canonical or runtime qualification.
     - Caller must authenticate compiled CI graph source/repository/controller custody; this query does not authenticate expected_source
       or create runtime authority.
