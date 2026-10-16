@@ -801,3 +801,107 @@ def test_binding_rejects_incomplete_or_incompatible_operation_population(operati
 
 def test_legacy_binding_result_does_not_claim_operation_population_checks(binding_inputs):
     assert "operation_call_populations_checked" not in _validate_bindings(binding_inputs)
+
+
+@pytest.fixture
+def path_inputs(composition):
+    import hashlib
+
+    contract = composition["payload"]["relationships"][0]["contract"]
+    contract.update(successor="ST-OK", rejection="ST-FAIL", recovery="TR-003")
+    compiled = compile_lifecycle_composition(**composition)
+    pair = ("release", "build", "verify")
+    states = [dict(id=identity, owner="existing-owner", authority="none", terminal_class=kind)
+              for identity, kind in [("ST-START", "none"), ("ST-OK", "custody"), ("ST-FAIL", "blocked")]]
+    transitions = [
+        dict(id="TR-001", kind="success", **{"from": "ST-START", "to": "ST-OK"},
+             invariants=["INV-RT-001"], rejection_transition="TR-002"),
+        dict(id="TR-002", kind="rejection", **{"from": "ST-START", "to": "ST-FAIL"},
+             invariants=["INV-RT-001"]),
+        dict(id="TR-003", kind="recovery", **{"from": "ST-FAIL", "to": "ST-START"},
+             invariants=["INV-RT-001"], retry_of="TR-001", max_attempts=2),
+    ]
+    backtrace = dict(states=states, transitions=transitions)
+    return dict(compiled=compiled, backtrace=backtrace,
+                expected_backtrace_sha256=hashlib.sha256(json.dumps(backtrace, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
+                required_states={row["id"]: row["terminal_class"] for row in states},
+                required_transition_bindings={row["id"]: pair for row in transitions},
+                required_recovery_limits={"TR-003": 2})
+
+
+def _path_query(inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_lifecycle_paths
+
+    return validate_lifecycle_paths(**inputs)
+
+
+def _refresh_path_digest(inputs):
+    import hashlib
+
+    inputs["expected_backtrace_sha256"] = hashlib.sha256(json.dumps(
+        inputs["backtrace"], sort_keys=True, separators=(",", ":"), allow_nan=False
+    ).encode()).hexdigest()
+
+
+def test_typed_paths_allow_only_bounded_recovery_outside_attempt_graph(path_inputs):
+    before = copy.deepcopy(path_inputs)
+    result = _path_query(path_inputs)
+    assert result["authority"] is False
+    assert result["execution_qualified"] is False
+    assert result["transitions_checked"] == 3
+    assert result["recoveries_checked"] == 1
+    assert result["backtrace_sha256"] == path_inputs["expected_backtrace_sha256"]
+    assert path_inputs == before
+    path_inputs["backtrace"]["transitions"].reverse()
+    _refresh_path_digest(path_inputs)
+    assert _path_query(path_inputs)["transitions_checked"] == 3
+
+
+@pytest.mark.parametrize("defect", [
+    "missing-state", "duplicate-state", "wrong-terminal-class", "unknown-terminal-class",
+    "missing-transition", "duplicate-transition", "extra-binding", "missing-binding",
+    "wrong-relationship", "missing-recovery-limit", "wrong-recovery-limit", "boolean-limit",
+    "unbounded-recovery", "wrong-recovery-target", "wrong-recovery-source", "lost-invariant",
+    "unknown-rejection", "wrong-rejection-source", "untyped-transition", "unknown-destination",
+    "same-attempt-cycle", "wrong-source", "missing-state-population",
+])
+def test_typed_paths_reject_incomplete_or_unbound_attempts(path_inputs, defect):
+    model = path_inputs["backtrace"]
+    states = model["states"]
+    edges = model["transitions"]
+    if defect == "missing-state": states.pop()
+    elif defect == "duplicate-state": states.append(copy.deepcopy(states[0]))
+    elif defect == "wrong-terminal-class": states[1]["terminal_class"] = "workitem"
+    elif defect == "unknown-terminal-class": states[1]["terminal_class"] = "agent-decides"
+    elif defect == "missing-transition": edges.pop()
+    elif defect == "duplicate-transition": edges.append(copy.deepcopy(edges[0]))
+    elif defect == "extra-binding": path_inputs["required_transition_bindings"]["TR-004"] = ("release", "build", "verify")
+    elif defect == "missing-binding": path_inputs["required_transition_bindings"].pop("TR-002")
+    elif defect == "wrong-relationship": path_inputs["required_transition_bindings"]["TR-003"] = ("release", "verify", "build")
+    elif defect == "missing-recovery-limit": path_inputs["required_recovery_limits"].clear()
+    elif defect == "wrong-recovery-limit": edges[2]["max_attempts"] = 3
+    elif defect == "boolean-limit": edges[2]["max_attempts"] = True
+    elif defect == "unbounded-recovery": edges[2]["max_attempts"] = 0
+    elif defect == "wrong-recovery-target": edges[2]["to"] = "ST-OK"
+    elif defect == "wrong-recovery-source": edges[2]["from"] = "ST-START"
+    elif defect == "lost-invariant": edges[2]["invariants"] = []
+    elif defect == "unknown-rejection": edges[0]["rejection_transition"] = "TR-999"
+    elif defect == "wrong-rejection-source": edges[1]["from"] = "ST-OK"
+    elif defect == "untyped-transition": edges[1].pop("kind")
+    elif defect == "unknown-destination": edges[0]["to"] = "ST-UNKNOWN"
+    elif defect == "same-attempt-cycle": edges[1]["to"] = "ST-START"
+    elif defect == "missing-state-population": path_inputs["required_states"].clear()
+    _refresh_path_digest(path_inputs)
+    if defect == "wrong-source": path_inputs["expected_backtrace_sha256"] = "0" * 64
+    with pytest.raises(CIGraphError, match="lifecycle path"):
+        _path_query(path_inputs)
+
+
+@pytest.mark.parametrize("field,value", [("successor", "UNDECLARED"), ("rejection", "UNDECLARED"), ("recovery", "UNDECLARED")])
+def test_typed_paths_bind_every_composition_outcome(composition, path_inputs, field, value):
+    contract = composition["payload"]["relationships"][0]["contract"]
+    contract.update(successor="ST-OK", rejection="ST-FAIL", recovery="TR-003")
+    contract[field] = value
+    path_inputs["compiled"] = compile_lifecycle_composition(**composition)
+    with pytest.raises(CIGraphError, match="lifecycle path"):
+        _path_query(path_inputs)
