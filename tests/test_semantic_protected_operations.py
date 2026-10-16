@@ -118,3 +118,82 @@ def test_removing_registry_entry_and_source_entry_cannot_self_exempt(inputs):
 def test_protected_factory_preserves_legacy_decode(inputs):
     root, _, _, digest = inputs
     assert owner.load_application_operations(root).raw == owner.load_application_operations(root, expected_sha256=digest).raw
+
+
+@pytest.fixture
+def committed_inputs(inputs):
+    import subprocess
+
+    root, source, path, digest = inputs
+    def git(*args):
+        return subprocess.run(['git', *args], cwd=root, check=True, capture_output=True).stdout.decode().strip()
+    git('init', '-q')
+    git('config', 'user.name', 'Policy Test')
+    git('config', 'user.email', 'policy@example.invalid')
+    git('add', '.')
+    git('commit', '-qm', 'policy')
+    return inputs, git, dict(policy_commit_sha=git('rev-parse', 'HEAD'), policy_tree_sha=git('rev-parse', 'HEAD^{tree}'))
+
+
+def committed_run(committed_inputs):
+    inputs, git, subject = committed_inputs
+    root, source, path, digest = inputs
+    return owner.required_committed_application_operation_population(root, discover_python_source(root, files=[source]), **subject)
+
+
+def test_committed_policy_derives_digest_and_reuses_existing_population(committed_inputs):
+    inputs, git, subject = committed_inputs
+    result = committed_run(committed_inputs)
+    assert result['registry_sha256'] == inputs[3]
+    assert result['operations'] == run(inputs)['operations']
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert result['policy_subject'] == dict(commit_sha=subject['policy_commit_sha'], tree_sha=subject['policy_tree_sha'])
+
+
+def test_dirty_policy_cannot_supply_its_own_required_digest(committed_inputs, monkeypatch):
+    inputs, git, subject = committed_inputs
+    inputs[2].write_text(inputs[2].read_text() + '# candidate substitution\n')
+    monkeypatch.setattr(owner, '_validate_operations', lambda *args: pytest.fail('discovery before policy check'))
+    with pytest.raises(owner.SemanticAuthorityError, match='digest'):
+        committed_run(committed_inputs)
+
+
+@pytest.mark.parametrize('kind', ['missing', 'symlink', 'gitlink'])
+def test_committed_policy_requires_a_regular_blob(committed_inputs, kind):
+    inputs, git, subject = committed_inputs
+    root, source, path, digest = inputs
+    path.unlink()
+    if kind == 'symlink':
+        path.symlink_to('../outside.yml')
+    git('add', '-A')
+    if kind == 'gitlink':
+        git('update-index', '--add', '--cacheinfo', '160000,' + subject['policy_commit_sha'] + ',governance/application-operations.yml')
+    git('commit', '-qm', kind)
+    subject.update(policy_commit_sha=git('rev-parse', 'HEAD'), policy_tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    with pytest.raises(owner.SemanticAuthorityError, match='regular blob'):
+        committed_run(committed_inputs)
+
+
+@pytest.mark.parametrize('change', ['malformed', 'wrong_tree', 'unavailable'])
+def test_committed_policy_subject_rejects_before_population(committed_inputs, monkeypatch, change):
+    inputs, git, subject = committed_inputs
+    if change == 'malformed':
+        subject['policy_commit_sha'] = 'HEAD'
+    elif change == 'unavailable':
+        subject['policy_commit_sha'] = 'a' * 40
+    else:
+        subject['policy_tree_sha'] = git('rev-parse', 'HEAD:schemas')
+    monkeypatch.setattr(owner, '_validate_operations', lambda *args: pytest.fail('population before subject validation'))
+    with pytest.raises(owner.SemanticAuthorityError):
+        committed_run(committed_inputs)
+
+
+def test_replacement_ref_cannot_change_committed_policy(committed_inputs):
+    inputs, git, subject = committed_inputs
+    inputs[2].write_text(inputs[2].read_text() + '# replacement\n')
+    git('add', '.')
+    git('commit', '-qm', 'replacement')
+    git('replace', subject['policy_commit_sha'], git('rev-parse', 'HEAD'))
+    inputs[2].write_text(inputs[2].read_text().replace('# replacement\n', ''))
+    assert committed_run(committed_inputs)['registry_sha256'] == inputs[3]

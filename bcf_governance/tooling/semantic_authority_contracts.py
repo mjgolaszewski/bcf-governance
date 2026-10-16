@@ -706,3 +706,11 @@ def required_application_operation_population(
     return dict(authority=False, execution_qualified=False,
                 scope="protected_registry_public_operations_only",
                 registry_sha256=expected_registry_sha256, operations=rows)
+
+
+def required_committed_application_operation_population(
+    repo_root: Path, inventory: dict[str, Any], *,
+    policy_commit_sha: str, policy_tree_sha: str,
+) -> dict[str, Any]:
+    """Observe operations under a caller-authenticated committed policy subject."""
+    return {}
