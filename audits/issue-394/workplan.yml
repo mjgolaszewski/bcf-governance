@@ -3090,6 +3090,8 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy
+    - tests.test_semantic_protected_operations::test_ordinary_authored_factory_keeps_authored_schema
     - tests.test_semantic_protected_operations::test_protected_operations_are_source_derived_and_deterministic
     - tests.test_semantic_operation_deconstruction::test_actual_public_operation_observations_match_pre_deconstruction_bytes
     - tests.test_semantic_operation_deconstruction::test_legacy_operation_validator_alias_has_one_implementation
@@ -3098,6 +3100,10 @@ implementation_slices:
     - tests.test_semantic_protected_operations::test_committed_policy_derives_digest_and_reuses_existing_population
     - tests.test_semantic_protected_operations::test_replacement_ref_cannot_change_committed_policy
     negative_controls:
+    - cause: candidate-schema-relaxes-protected-policy
+      test: tests.test_semantic_protected_operations::test_permissive_candidate_schema_cannot_relax_protected_policy
+    - cause: unavailable-trusted-schema-falls-back-to-candidate
+      test: tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout
     - cause: candidate-selects-required-policy-digest
       test: tests.test_semantic_protected_operations::test_dirty_policy_cannot_supply_its_own_required_digest
     - cause: nonregular-or-absent-committed-policy
@@ -3119,6 +3125,7 @@ implementation_slices:
     - cause: dynamic-public-entry-inventory
       test: tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[dynamic]
     remaining:
+    - Protected schema interpretation uses the executing distribution; its runtime and schema custody must be authenticated independently before authority use. Local contract audits/issue-394/protected-operation-schema-contract.json and evidence audits/issue-394/protected-operation-schema-verification.json; no installed-adopter qualification claim.
     - Committed policy query derives the digest from exact Git bytes; protected caller must independently authenticate consumer repository policy authorization exact source population and provider context. Query observations never authenticate themselves. Contract audits/issue-394/committed-operation-policy-contract.json; local evidence audits/issue-394/committed-operation-policy-verification.json.
     - Current snapshot observations do not establish ongoing filesystem freshness complete runtime effects or actual lifecycle relationship integration.
     - Canonical semantic lock/oracle normalization installed consumer qualification normative adoption performance and custody remain blocked.

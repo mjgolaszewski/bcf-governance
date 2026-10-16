@@ -1,0 +1,31 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/protected-operation-schema-verification.json"
+  },
+  "status": "focused_checks_passed",
+  "contract_red_commit": "e3bab811",
+  "source_hashes": {
+    "bcf_governance/tooling/semantic_authority_contracts.py": "652acde315050b6a4d982f1e4d8b83ee7d5a5d5efa26674af0fc2ee6ba1f6db9",
+    "bcf_governance/tooling/semantic_authority_operations.py": "ea816895d481aacf85d17a99478a315055d031ab7f90f897a3af09e721849517",
+    "tests/test_semantic_protected_operations.py": "4ce75330f56d203e027a38153f57aa6c5287c26a0cc97ad939054366c608f34f",
+    "bcf_governance/pack/template-repo/schemas/application-operations.schema.json": "3b5b6133f7b2cba47fda6e50a3d45b0b046127dbfe36806ca3f08724408bee6a"
+  },
+  "red_controls": "Four actual failures: permissive candidate schema reached discovery with invalid semantic kind; absent, false and malformed candidate schemas rejected valid protected policy. Ordinary authored schema control passed.",
+  "tests": {
+    "focused": "33 protected-operation cases passed in 2.59s.",
+    "affected": "103 passed in 135.52s: protected schema/policy/blob controls, exact byte equality of 21 actual-self observations, compatibility/source-owner aliases, operation/effect/call/base controls, LOC/context/private runtime and pack parity.",
+    "static": "lint/typecheck passed",
+    "coverage": "coverage-schema-ok",
+    "pack": "canonical generator and --check passed"
+  },
+  "boundary": "Existing schema validator supports explicit executing-consumer mode. Protected factory and downstream validation both use it; ordinary authored validation retains repository schema semantics. Executing schema errors do not fall back to candidate files.",
+  "remaining": [
+    "Portable-layout tests simulate schema placement; these are not real installed-adopter qualification.",
+    "Protected caller must independently authenticate executing runtime/schema custody, consumer repository policy authorization, exact parser population and provider context. File location is not authority.",
+    "Actual lifecycle caller integration and complete edge/effect conformance remain open.",
+    "Canonical semantic lock and manifest normalization, normative adoption, performance and terminal custody remain held or unqualified."
+  ],
+  "whole_requirement_closure": false
+}

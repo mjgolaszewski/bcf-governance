@@ -9,7 +9,8 @@ from typing import Any
 
 
 def _validate_operations(
-    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any]
+    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], *,
+    consumer_owned_schema: bool = False,
 ) -> list[dict[str, Any]]:
     from .semantic_authority_contracts import (
         SemanticAuthorityError, READ_ONLY_KINDS, MUTATING_KINDS,
@@ -18,7 +19,7 @@ def _validate_operations(
         SemanticOperationEffectError,
     )
 
-    _schema(repo_root, "application-operations.schema.json", payload)
+    _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=consumer_owned_schema)
     populations = payload["populations"]
     population_ids = _validate_operation_structure(payload)
     discovered = {str(row["id"]): (

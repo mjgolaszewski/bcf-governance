@@ -244,3 +244,23 @@ def test_ordinary_authored_factory_keeps_authored_schema(inputs):
     (inputs[0] / 'schemas/application-operations.schema.json').write_text('false')
     with pytest.raises(owner.SemanticAuthorityError):
         owner.load_application_operations(inputs[0])
+
+
+@pytest.mark.parametrize('trusted_schema', ['valid', 'missing', 'malformed'])
+def test_protected_schema_resolves_from_executing_portable_layout(inputs, monkeypatch, tmp_path, trusted_schema):
+    installed = tmp_path / 'installed'
+    schema_root = installed / 'schemas'
+    schema_root.mkdir(parents=True)
+    schema = schema_root / 'application-operations.schema.json'
+    if trusted_schema == 'valid':
+        shutil.copy2(Path(__file__).parents[1] / 'schemas/application-operations.schema.json', schema)
+    elif trusted_schema == 'malformed':
+        schema.write_text('{invalid')
+    monkeypatch.setattr(owner, '__file__', str(installed / 'scripts/_bcf_runtime/semantic_authority_contracts.py'))
+    if trusted_schema == 'valid':
+        (inputs[0] / 'schemas/application-operations.schema.json').write_text('false')
+        assert len(run(inputs)['operations']) == 1
+    else:
+        # Valid candidate schema must not become fallback for missing trusted bytes.
+        with pytest.raises(owner.SemanticAuthorityError, match='cannot load schemas'):
+            run(inputs)

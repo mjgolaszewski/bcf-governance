@@ -121,9 +121,18 @@ def _load_yaml(path: Path, *, expected_sha256: str | None = None) -> dict[str, A
     return payload
 
 
-def _schema(repo_root: Path, name: str, payload: dict[str, Any]) -> None:
+def _schema(
+    repo_root: Path, name: str, payload: dict[str, Any], *, consumer_owned: bool = False,
+) -> None:
+    schema_root = repo_root / "schemas"
+    if consumer_owned:
+        source = Path(__file__).resolve()
+        schema_root = (
+            source.parents[1] / "pack/template-repo/schemas"
+            if source.parent.name == "tooling" else source.parents[2] / "schemas"
+        )
     try:
-        schema = json.loads((repo_root / "schemas" / name).read_text(encoding="utf-8"))
+        schema = json.loads((schema_root / name).read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise SemanticAuthorityError(f"cannot load schemas/{name}: {exc}") from exc
     errors = sorted(
@@ -154,7 +163,7 @@ def load_application_operations(
     repo_root: Path, *, expected_sha256: str | None = None,
 ) -> ApplicationOperationRegistry:
     payload = _load_yaml(repo_root / OPERATIONS_PATH, expected_sha256=expected_sha256)
-    _schema(repo_root, "application-operations.schema.json", payload)
+    _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=expected_sha256 is not None)
     return ApplicationOperationRegistry(
         populations=tuple(payload["populations"]),
         operations=tuple(payload["operations"]),
@@ -696,7 +705,7 @@ def required_application_operation_population(
     if expected_registry_sha256 is None:
         raise SemanticAuthorityError("protected registry digest is required")
     registry = load_application_operations(repo_root, expected_sha256=expected_registry_sha256)
-    observations = _validate_operations(repo_root, registry.raw, inventory)
+    observations = _validate_operations(repo_root, registry.raw, inventory, consumer_owned_schema=True)
     rows = tuple(sorted(
         (row["operation"], row["kind"], row["entrypoint"], tuple(sorted(
             (port["classification"], port["target_kind"], port["symbol"])
