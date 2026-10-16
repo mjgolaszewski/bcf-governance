@@ -542,6 +542,10 @@
       "operation": "copy",
       "sha256": "d7d57beed63bdd5f3f38c744384e681d57aae1ef2a6ed4f8646a1ace4302a653"
     },
+    "scripts/_bcf_runtime/ci_authority_prospective_truth.py": {
+      "operation": "copy",
+      "sha256": "9e942c9c712a2d5ec675f7d87431cb3acd5f25a2d801373bc33c0407b25c4e99"
+    },
     "scripts/_bcf_runtime/ci_authority_state.py": {
       "operation": "copy",
       "sha256": "bab5772b54aba781f3298a40063be3349183a108487d92b3c3b0874764d22d4d"
@@ -1267,7 +1271,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "a4b6f833e66785e94a7ebd29b1719d394ba5dc42a8337ee9fdc516b799996ef7"
+      "sha256": "bf49c45316eec093239ce9bf034b14e4040d82bb68527490503dcc221fa44500"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",

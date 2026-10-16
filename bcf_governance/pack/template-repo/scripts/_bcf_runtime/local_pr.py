@@ -39,6 +39,7 @@ from .evidence_workitem_lifecycle import (
 )
 from .governance_truth import TruthfulnessError, derive_truth
 from .preflight import PreflightError, _exposure_scan, _negative_control_targets, _semantic_ownership, run_preflight
+from .ci_authority_prospective_truth import require_truth as _require_truth
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -137,14 +138,6 @@ BOUNDARY_CHAIN = (
     "successor_or_release_eligibility",
 )
 
-
-def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any]:
-    if report.get("status") != "pass":
-        detail = ", ".join(str(value) for value in report.get("issues") or ())
-        raise ProspectiveValidationError(
-            f"{boundary} rejected candidate: {detail or 'truth failed'}"
-        )
-    return dict(report)
 
 
 def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None:
