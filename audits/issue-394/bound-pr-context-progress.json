@@ -89,5 +89,18 @@
     "seconds": 8.45,
     "scope": "Complete provider retry module; bound repository/number/node/partial/head-format contradictions reject before reads; default bound and legacy positives retained.",
     "intermediate_failure": "Positive control caught undefined regex reference; reused existing provider SHA validator and reran complete module."
+  },
+  "direct_protection_client": {
+    "red": {
+      "failed": 1,
+      "seconds": 0.8,
+      "cause": "supplied API omitted at existing context consumer"
+    },
+    "corrected": {
+      "passed": 38,
+      "seconds": 14.57,
+      "scope": "complete ordinary protection and local PR modules; unavailable context preserves failure and prevents protection consumption"
+    },
+    "integration": "still blocked on protected-default source/evaluator and remaining authority matrix"
   }
 }

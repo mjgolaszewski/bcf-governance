@@ -1303,7 +1303,7 @@
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",
-      "sha256": "56653d488309ce84b3cd0f396a187b069e8f6a0bfd6188e374dcc0fa782b7d06"
+      "sha256": "c4460d307077f703ad1b2a341785fc8aa4b904b9c8092b559c888e27c360d0c1"
     },
     "scripts/_bcf_runtime/pack_installation_scope.py": {
       "operation": "copy",
