@@ -1,0 +1,51 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/operation-validator-deconstruction-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/semantic_authority_contracts.py",
+  "dependency_acceptance": "Before further feature growth, characterize current public-operation observations and preserve them exactly. Current source owner is 783 lines against cap 800. No normative adoption or authority closure.",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_authority_contracts.py",
+    "bcf_governance/tooling/semantic_authority_operations.py",
+    "governance/canonical-representations.yml"
+  ],
+  "contract": [
+    "Move only the existing _validate_operations body to a same-context sibling; preserve its compatibility import from semantic_authority_contracts. No duplicate function implementation remains.",
+    "Reuse existing schema/population/structure/path/error and effect owners; local imports avoid a new module-load cycle. No policy or source interpretation changes.",
+    "Keep ApplicationOperationRegistry constructor/factory ownership and all public function signatures unchanged.",
+    "Capture byte-stable actual-self public-operation observations before source mutation and compare after extraction; preserve fixture positive and cause-specific rejection behavior.",
+    "Declare new authoritative source/mirror provenance through the existing canonical representation registry; regenerate only local pack parity through its owner. No semantic lock/workflow/pin/test-manifest normalization."
+  ],
+  "forbidden_surfaces": [
+    "feature addition during extraction",
+    "new truth/effect evaluator",
+    "changed CLI or authority boundaries",
+    "provider/adopter/installer/custody",
+    "canonical normalization"
+  ],
+  "expected_tests": [
+    "Exact before/after actual-self observation equality",
+    "Existing protected-operation/effect/migration/source controls",
+    "Direct compatibility alias remains callable",
+    "Source/package/template parity context membership LOC gates",
+    "Canonical semantic-lock blocker remains visible"
+  ],
+  "completion": "Characterization-led local deconstruction only; full canonical semantic conformance remains blocked until authorized normalization and independent custody.",
+  "before_characterization": {
+    "path": "audits/issue-394/operation-validator-before.json",
+    "sha256": "3608ae8615a244b64928672c2610635aa471a83301e16b4007c7641c650ac157",
+    "observations": 21,
+    "elapsed_seconds": 81.7,
+    "authority": false,
+    "source_module_sha256": "d8af49a6b8e0ee8e5f3e92abb188988f556eb23b766a8c216ebf4117f36167d4",
+    "qualification_limit": "Actual-self operation/effect observations only; no full semantic-lock or provider authority qualification."
+  }
+}

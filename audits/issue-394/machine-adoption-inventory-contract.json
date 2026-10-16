@@ -1,0 +1,32 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/machine-adoption-inventory-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "audit_query",
+  "operation_side": "query",
+  "dependency_acceptance": "Local contract research only; requires-workitem-closure:P32-P0-02 remains unresolved. No normative graph adoption or lifecycle activation.",
+  "targets": [
+    "audits/issue-394/collect_machine_adoption_inventory.py",
+    "audits/issue-394/actual-machine-adoption-inventory.json",
+    "tests/test_ci_state_matrix.py"
+  ],
+  "contract": [
+    "Invoke existing validate_ci_graph, edge_population_sha256 and authored validate_ci_state_matrix owners. Do not copy or reimplement CI reachability/exclusion semantics.",
+    "Retain exact source input hashes and canonical owner references, complete compiled pair counts, typed-field presence per actual legacy state/transition and independently unevaluated obligations.",
+    "Never turn field presence, native schema validation, legacy source labels or CI pair completeness into lifecycle/runtime/custody qualification.",
+    "Reproduction must be deterministic on unchanged source; no provider I/O, generated workflow writes or product policy changes.",
+    "Preserve existing actual model and its historical source envelope; inventory is nonauthoritative evidence only."
+  ],
+  "expected_tests": [
+    "Report uses current compiled owner graph/edge digests and populations.",
+    "Actual legacy states/transitions are inventoried exactly without inferred kinds or terminals.",
+    "Repeated collection returns byte-equivalent data without mutating inputs.",
+    "Missing/malformed actual backtrace still rejects through existing native owner."
+  ]
+}

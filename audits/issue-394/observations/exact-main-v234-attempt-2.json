@@ -1,0 +1,158 @@
+{
+  "document": {
+    "kind": "pipeline_timing_capture",
+    "path": "audits/issue-394/observations/exact-main-v234-attempt-2.json",
+    "authority": false
+  },
+  "producer": {
+    "commit_sha": "89935abe1f4688ed097687025e75b69e6c379409",
+    "function": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+    "source_sha256": "7780a57c01d34bb44897b8c19218ec82035fac73ef898b5515ef85991fa0fe6b"
+  },
+  "capture_policy": {
+    "source": "Authenticated exact-attempt GitHub API; complete single-page job population and stable terminal run/jobs reread.",
+    "endpoints": {
+      "run": "repos/mjgolaszewski/bcf-governance/actions/runs/38858875383/attempts/2",
+      "jobs": "repos/mjgolaszewski/bcf-governance/actions/runs/38858875383/attempts/2/jobs?per_page=100"
+    },
+    "workflow_path": ".github/workflows/bcf-exact-main.yml",
+    "context_binding": "Exact canonical v2.3.4 workflow role; event alone does not establish pipeline context.",
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "targets_frozen": false,
+    "eligible_optimization_baseline": false,
+    "scope": "Run-created through latest job completion/run update only; no custody or developer interruption clock. CPU and external waits unmeasured.",
+    "ineligibility": "Single maintenance run, no matched optimization cohort.",
+    "complete_job_population_reread_equal": true,
+    "terminal_run_reread_equal": true
+  },
+  "source_snapshot": {
+    "repository": {
+      "id": 1207503211,
+      "full_name": "mjgolaszewski/bcf-governance"
+    },
+    "run": {
+      "id": 38858875383,
+      "run_attempt": 2,
+      "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "event": "push",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:34:26Z",
+      "run_started_at": "2026-10-16T06:34:25Z",
+      "updated_at": "2026-10-16T06:58:44Z",
+      "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383"
+    },
+    "commit": {
+      "sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+    },
+    "jobs": {
+      "total_count": 8,
+      "jobs": [
+        {
+          "id": 116846098054,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Build independent exact-main trusted controller",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:34:29Z",
+          "completed_at": "2026-10-16T06:47:31Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116846098054",
+          "run_attempt": 2
+        },
+        {
+          "id": 116850037667,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Authenticate exact-main admission and publish pending authority",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:47:34Z",
+          "completed_at": "2026-10-16T06:55:13Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116850037667",
+          "run_attempt": 2
+        },
+        {
+          "id": 116852419179,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Run exact-main governance evidence / Validate governance front door",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:55:15Z",
+          "completed_at": "2026-10-16T06:57:49Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116852419179",
+          "run_attempt": 2
+        },
+        {
+          "id": 116853239523,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 3",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:10Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116853239523",
+          "run_attempt": 2
+        },
+        {
+          "id": 116853239524,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 1",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:10Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116853239524",
+          "run_attempt": 2
+        },
+        {
+          "id": 116853239528,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 2",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:14Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116853239528",
+          "run_attempt": 2
+        },
+        {
+          "id": 116853239715,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 0",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:10Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116853239715",
+          "run_attempt": 2
+        },
+        {
+          "id": 116853370355,
+          "run_id": 38858875383,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "name": "Run exact-main governance evidence / Verify exact-tree governance evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:58:17Z",
+          "completed_at": "2026-10-16T06:58:43Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383/job/116853370355",
+          "run_attempt": 2
+        }
+      ]
+    }
+  },
+  "observation": {
+    "authority": false,
+    "status": "rejected",
+    "reason": "provider timing snapshot run timestamp order is invalid",
+    "elapsed_ms": null
+  }
+}

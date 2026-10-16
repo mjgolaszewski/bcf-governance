@@ -407,3 +407,18 @@ def test_untrusted_event_cannot_enter_admission_order(tmp_path: Path) -> None:
 
     with pytest.raises(CICertificationError, match="not authenticated"):
         _material(tmp_path, snapshots=snapshots)
+
+
+@pytest.mark.parametrize("intent,kind,target", [('workitem', 'phase', 'P01-W01'), ('closure', 'workitem', 'P01'), ('workitem', 'workitem', 'P01'), ('pr', 'pull_request_progress', 'unbound'), ('workitem', 'workitem', 'P01-W01\n'), ('pr', 'pull_request_progress', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n')])
+def test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading(tmp_path, monkeypatch, intent, kind, target):
+    import bcf_governance.tooling.ci_authority_certification as implementation
+
+    authority, certification, session, report = _material(tmp_path)
+    report["evaluation_scope"] = {"intent": intent, "target": {"kind": kind, "id": target}}
+    _write_json(certification, report)
+    def forbidden(*args, **kwargs):
+        raise AssertionError("authenticated snapshot loading occurred before scope rejection")
+    monkeypatch.setattr(implementation, "load_authenticated_snapshots", forbidden)
+    with pytest.raises(CICertificationError, match="evaluation_scope"):
+        verify_ci_certification(REPO_ROOT, authority_path=authority,
+                                certification_path=certification, session_manifest_path=session)

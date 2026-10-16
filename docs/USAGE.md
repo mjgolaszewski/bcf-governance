@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.4/bcf_governance-2.3.4-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.5.0/bcf_governance-2.5.0-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -554,9 +554,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.4 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.4
+gh release download v2.5.0 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.5.0
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.4 --require-strict-validation
+  --release-assets /tmp/bcf-v2.5.0 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -627,15 +627,24 @@ instead of first appearing in remote CI.
 
 ### Semantic-intent submission and proof composition
 
-Use `bcf ci submit --repo-root . --intent pr` for governed in-progress changes,
-then use the same command with `--intent workitem` when the canonical lifecycle
-derives one authored-complete bounded target, or `--intent closure` after phase
-completion. The command derives the active bounded target, exact base, commit and tree,
-then owns the complete order from deterministic preflight through controller
-compatibility, evidence planning, certification-shape verification, post-merge
-truth projection, finalizer scope, publication boundary, and successor
-eligibility. It rechecks unchanged custody immediately before pushing the exact
-proved commit. The caller supplies semantic intent, not a sequence of validators.
+Use `bcf ci submit --repo-root .` for governed in-progress changes, bounded
+workitem completion, and phase completion. The command normalizes derived
+surfaces and derives the lifecycle intent, active bounded target, exact base,
+commit and tree from canonical state. It then owns the complete order from
+deterministic preflight through controller compatibility, evidence planning,
+certification-shape verification, post-merge truth projection, finalizer scope,
+publication boundary, and successor eligibility. It rechecks unchanged custody
+immediately before pushing the exact proved commit. An optional `--intent`
+assertion must agree with the derived intent.
+
+Start from a clean committed authored candidate. When derived projections need
+normalization, the reconciliation transaction proves them in an isolated shadow
+and commits the exact derived candidate before prospective proof. Trusted
+workflow changes retain their definition and authority commit pair.
+
+Prospective stage events are flushed as non-authoritative JSON on stderr while
+the command runs. The terminal result remains on stdout. Progress events are
+observations; provider certification still comes from the independent authority.
 
 Profile v3 plans by claim and execution group. Authenticated prior receipts retain
 their original bytes and provider custody; the candidate and main planners
@@ -816,8 +825,8 @@ clears the general artifact root.
 - `bcf ci local-pr`: exact local pull-request context and preflight.
 - `bcf ci submit`: derive the exact repository, bounded target, commit, and tree;
   execute the complete prospective train in canonical order; recheck immutable
-  custody; and push only the exact proved commit. Agents supply semantic intent,
-  not an ordered validation recipe.
+  custody; and push only the exact proved commit. Lifecycle intent comes from
+  canonical state; stage progress is emitted on stderr.
 - `bcf ci adopt github`: transactional GitHub reference-topology adoption.
 - `bcf truth`: evidence-derived lifecycle and release state.
 - `bcf doctor`: configuration and wiring diagnostics.

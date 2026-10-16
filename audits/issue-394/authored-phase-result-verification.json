@@ -1,0 +1,30 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/authored-phase-result-contract.json",
+  "subcontract": "audits/issue-394/tr-001-authored-subcontract.json",
+  "focused": {
+    "passed": 16,
+    "seconds": 1.15
+  },
+  "broad": {
+    "passed": 185,
+    "seconds": 43.89,
+    "scope": "Full preflight/native state-matrix plus LOC/context/private-runtime parity; final scoped source-call equality and input-schema checks included."
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "pack_parity": "passed",
+    "governance_yaml": "passed",
+    "coverage_schema": "passed; 82 requirements and 26 bounded slices"
+  },
+  "result": "Existing exact producer output has versioned schema; declared source consumers resolve to one actual producer through existing AST/import owners.",
+  "model_change": "One unqualified primitive descriptor only. No typed state/transition or normative authority activation.",
+  "constraints": [
+    "Result is authored consistency only, not authenticated subject, verified/closed truth or receipt.",
+    "Five declared consumers statically traced; protected independent population and runtime execution remain unqualified.",
+    "Full TR-001 and every necessary lifecycle edge/path must still close independently.",
+    "No provider/integration/installer/custody writes or canonical normalization."
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/public-operation-lifecycle-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend existing reconstructed source and protected-public-operation slices after 04155d57 and faa99718. Remain dormant under bus 6870/6950; no provider invocation or normalization.",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "bcf_governance/tooling/ci_graph_composition_operations.py",
+    "bcf_governance/tooling/semantic_authority_contracts.py",
+    "governance/canonical-representations.yml"
+  ],
+  "contract": [
+    "Strict public-operation mode requires both caller-authenticated consumer policy commit/tree and independent operation-to-relationship bindings; legacy query remains compatible and claims no public coverage.",
+    "Use existing Git identity query and canonical operation factory to capture registry exactly once before source reconstruction. Both factory and downstream validation use executing-consumer schema. No policy reread after source reconstruction.",
+    "Mapping keys exactly equal all protected registry operation IDs. Each operation maps to a nonempty immutable relationship set, and its entrypoint must occur in each mapped reachable contract through existing implementation/fact/terminal roots. Unknown relationships, omissions and empty mappings reject before AST work.",
+    "After exact source reconstruction, existing operation population/effect owner validates captured policy against source; existing lifecycle conformance validates all declarations/calls/facts/initialization populations. No second registry/effect/graph evaluator.",
+    "Return authority false and execution unqualified; policy subject/custody authentication remains protected caller responsibility. Source and policy subjects are distinct; controller source is never substituted for consumer policy."
+  ],
+  "expected_tests": [
+    "Positive strict coverage and unchanged legacy query",
+    "Incomplete/empty/unknown relationship mappings reject before source discovery",
+    "Missing one strict argument or malformed policy subject rejects before discovery",
+    "Dirty policy digest rejects before source discovery",
+    "Captured policy read once and reused despite path change after capture; no continued freshness claim",
+    "Added public source entry cannot escape existing closed operation population",
+    "Exact existing reconstructed-source and protected-operation controls; governance/schema/static/LOC/context/parity gates"
+  ],
+  "forbidden_surfaces": [
+    "new graph/effect evaluator",
+    "candidate derived protected mapping",
+    "provider/controller activation",
+    "normalization installer custody maintained adopters"
+  ],
+  "completion": "Local source/policy/lifecycle conformance query integration only; actual trusted provider-owned invocation and complete normative DAG adoption remain open."
+}

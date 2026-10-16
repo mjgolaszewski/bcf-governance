@@ -1,0 +1,115 @@
+{
+  "capture_policy": {
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "scope": "Successful local reconciliation command only; no complete PR/developer-interruption clock or optimization improvement is inferred."
+  },
+  "document": {
+    "authority": false,
+    "kind": "pipeline_timing_capture",
+    "path": "audits/issue-394/observations/reconcile-6f0ecc1d-attempt-1.json"
+  },
+  "observation": {
+    "authority": false,
+    "clock_basis": "monotonic_ms",
+    "clock_id": "local-reconcile-983866e68bee4b8094900467da0df3ef",
+    "cpu_ms": "unknown",
+    "elapsed_ms": 462112,
+    "end_ms": 462112,
+    "execution_sum_ms": 462112,
+    "execution_union_ms": 462112,
+    "external_wait_union_ms": 0,
+    "intervals": [
+      {
+        "clock_id": "local-reconcile-983866e68bee4b8094900467da0df3ef",
+        "end_ms": 462112,
+        "id": "canonical-reconcile",
+        "kind": "execution",
+        "start_ms": 0,
+        "status": "passed"
+      }
+    ],
+    "kind": "pipeline_timing",
+    "pipeline": "developer_interruption",
+    "repository": "mjgolaszewski/bcf-governance",
+    "repository_id": 1207503211,
+    "schema_version": "1.0",
+    "source_snapshot_sha256": "8763da427b7dab7c94966c9d22e6f4bf813c15c680f9c9dce301c3e9d397c5e6",
+    "start_ms": 0,
+    "subject": {
+      "commit_sha": "6f0ecc1d8d0b3c4ec2e468b3baea8dc855d344ba",
+      "tree_sha": "1800741277f3098376f5e0a01c60ec3b51406e74"
+    },
+    "uncovered_ms": 0
+  },
+  "producer": {
+    "authority": false,
+    "bcf_version": "2.5.0",
+    "clock_id": "local-reconcile-983866e68bee4b8094900467da0df3ef",
+    "command": [
+      ".venv/bin/bcf",
+      "reconcile",
+      "--repo-root",
+      ".",
+      "--apply"
+    ],
+    "commit_sha": "6f0ecc1d8d0b3c4ec2e468b3baea8dc855d344ba",
+    "elapsed_ms": 462112,
+    "end_commit_sha": "6d252aca5564ad42d6772e1cdd1cad7f831c4d28",
+    "end_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "end_tree_sha": "b58416b5a710a1e0fbb09ee411a2866f7c60657f",
+    "end_utc": "2026-10-15T22:13:40.558349+00:00",
+    "exit_code": 0,
+    "limitations": [
+      "One opaque local command window, not the full developer-interruption or PR pipeline.",
+      "Internal I/O and external wait are not separately instrumented; CPU and host contention are unknown.",
+      "One sample cannot establish p50/p95 improvement or certify an optimization."
+    ],
+    "python_version": [
+      3,
+      12,
+      11
+    ],
+    "scope": "canonical local reconciliation command only",
+    "start_utc": "2026-10-15T22:05:58.445703+00:00",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "b857d1281c8f92744e93a8ef931b1434bf7be1d6a376b48a72b21211fd3c5c63",
+    "tree_sha": "1800741277f3098376f5e0a01c60ec3b51406e74"
+  },
+  "retained_stderr": "",
+  "retained_stdout": "{\"authority_commit\": \"01ec7638c70caade2d30c779333f32a489a06a8e\", \"definition_commit\": \"5fdc7abbd3d6bc45906a858dc2e3fe5f30b8c5f8\", \"rounds\": 4, \"status\": \"committed_workflow_authority_transition\"}\n",
+  "source_snapshot": {
+    "authority": false,
+    "bcf_version": "2.5.0",
+    "clock_id": "local-reconcile-55550e5f1377431bb53ce240558f224f",
+    "command": [
+      ".venv/bin/bcf",
+      "reconcile",
+      "--repo-root",
+      ".",
+      "--apply"
+    ],
+    "commit_sha": "0e99bece17f649419674a7b6d9379a55b98e99e2",
+    "elapsed_ms": 894585,
+    "end_commit_sha": "01ec7638c70caade2d30c779333f32a489a06a8e",
+    "end_status_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "end_tree_sha": "b19db62f315ead01e2723f070de8a014e22f7afd",
+    "end_utc": "2026-10-15T21:33:00.473811+00:00",
+    "exit_code": 0,
+    "limitations": [
+      "One opaque local command window, not the full developer-interruption or PR pipeline.",
+      "Internal I/O and external wait are not separately instrumented; CPU and host contention are unknown.",
+      "One sample cannot establish p50/p95 improvement or certify an optimization."
+    ],
+    "python_version": [
+      3,
+      12,
+      11
+    ],
+    "scope": "canonical local reconciliation command only",
+    "start_utc": "2026-10-15T21:18:05.888580+00:00",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "3e45e1ffc3c43d57a27264e1fc8ae984ec7dd455ef33a11ec79624e51facdf59",
+    "tree_sha": "d906ebecf10823246e1bf00694df2d5cbff527ce"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "document": {
+    "kind": "active_edge_owner_reference_observation",
+    "path": "audits/issue-394/active-edge-owner-inventory.json",
+    "authority": false
+  },
+  "model_path": "spec/phase0/release-train-backtrace.yml",
+  "model_sha256": "9b80ff275aa89115c173ae07f686c3b23aadbd02256cd0c21172c99501a4135e",
+  "bindings": [
+    {
+      "edge_id": "AC-001",
+      "canonical_owner": "bcf_governance/tooling/release_receipts.py::build_trusted_release_receipt",
+      "classification": "resolved_executable_reference",
+      "authority": false
+    },
+    {
+      "edge_id": "AC-002",
+      "canonical_owner": "bcf_governance/tooling/ci_github_release.py::publish_certified_release",
+      "classification": "resolved_executable_reference",
+      "authority": false
+    },
+    {
+      "edge_id": "AC-003",
+      "canonical_owner": "release_custody_verification",
+      "classification": "unresolved_independent_custody_binding",
+      "authority": false,
+      "remaining": "Resolve exact independent terminal-custody producer/consumer and evidence; installer custody does not substitute."
+    },
+    {
+      "edge_id": "AC-004",
+      "canonical_owner": "bcf_governance/tooling/release_adopter_qualification.py::load_contract",
+      "classification": "resolved_executable_reference",
+      "authority": false
+    },
+    {
+      "edge_id": "AC-005",
+      "canonical_owner": "bcf_governance/tooling/release_adopter_qualification.py::qualify_release",
+      "classification": "resolved_executable_reference",
+      "authority": false
+    },
+    {
+      "edge_id": "AC-006",
+      "canonical_owner": "release_authority_exclusion",
+      "classification": "structural_policy_exclusion",
+      "authority": false,
+      "exclusion": "mutable_external_adopter_state_has_no_release_authority",
+      "publication_prerequisite": false
+    },
+    {
+      "edge_id": "AC-007",
+      "canonical_owner": "governance/release-qualification.yml",
+      "classification": "policy_report_reference",
+      "authority": false
+    }
+  ],
+  "qualification": "Source/policy reference observations only; no execution, complete authority-effect inventory or terminal custody proof."
+}

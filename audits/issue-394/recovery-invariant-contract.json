@@ -1,0 +1,39 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/recovery-invariant-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend existing typed-reference owner shared by native validation and strict path query; preserve untyped historical readability.",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "tests/test_ci_graph_composition.py",
+    "tests/test_ci_state_matrix.py"
+  ],
+  "contract": [
+    "A bounded recovery must retain invariants of both its original success attempt and its linked rejection transition.",
+    "Additional rejection invariants cannot disappear when returning to the attempt start. Recovery may retain additional invariants.",
+    "Keep existing guard equality, failed-attempt endpoints, independently approved retry bound, and concrete-attempt acyclicity.",
+    "A rejected terminal with recovery none may retain additional invariants without fabricating a retry. Legacy untyped transitions remain readable."
+  ],
+  "expected_tests": [
+    "Shared typed-reference owner rejects lost failure invariant.",
+    "Strict independently bound path query rejects the same loss.",
+    "Preserved extra rejection invariant permits bounded recovery.",
+    "Additional recovery invariants and transition reorder remain valid.",
+    "No-recovery rejection remains valid.",
+    "Native authored validation rejects lost rejection invariants before execution and accepts retained invariants."
+  ],
+  "forbidden_surfaces": [
+    "normative model mutation",
+    "authority/protection changes",
+    "workflow/manifest/lock normalization",
+    "provider/installer/custody writes"
+  ]
+}

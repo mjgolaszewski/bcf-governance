@@ -1,0 +1,40 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/committed-operation-policy-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Operation validator characterization-led extraction must pass before production mutation. Extend existing protected-public-operation-population slice; no new completion claim.",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_source_paths.py",
+    "bcf_governance/tooling/semantic_authority_contracts.py"
+  ],
+  "contract": [
+    "Mechanically acquire the fixed governance/application-operations.yml digest from a caller-authenticated exact same-repository policy commit/tree; controller source is not adopter policy authority.",
+    "Reuse exact Git subject validation and replacement-disabled object reads. Require one regular blob at the fixed path; missing policy, symlink, gitlink, wrong tree, unavailable objects and read failures reject. Capture original blob bytes once and verify Git blob identity before deriving SHA256.",
+    "Feed that derived digest into the existing required_application_operation_population owner; preserve original receipt/policy bytes and all existing population/effect checks. No parallel evaluator or candidate capability waiver.",
+    "The query remains authority false and execution unqualified. Exact object identity does not authenticate repository, provider context, policy authorization or continued working-tree freshness. Existing digest API remains compatible."
+  ],
+  "forbidden_surfaces": [
+    "provider authority invocation or activation",
+    "controller commit substituted for adopter policy subject",
+    "canonical normalization",
+    "installer/custody/maintained adopters",
+    "policy migration approval changes"
+  ],
+  "expected_tests": [
+    "Real Git policy subject with dirty candidate registry rejects before discovery",
+    "Exact committed registry derives expected digest and delegates existing population owner",
+    "Wrong tree and malformed identity reject before blob reads",
+    "Missing/symlink/gitlink/unavailable blob fail closed",
+    "Replacement refs cannot substitute committed policy",
+    "Legacy digest API unchanged"
+  ],
+  "completion": "Local mechanical policy identity acquisition only. Protected caller authentication and actual lifecycle admission remain open."
+}

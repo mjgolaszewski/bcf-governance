@@ -1,0 +1,57 @@
+{
+  "authority": false,
+  "kind": "terminal_proposition_binding_verification",
+  "source_parent": "3b4186fde9bff62e43b0c2cfc9d98790dcf3469f",
+  "files_sha256": {
+    "bcf_governance/tooling/evaluation_scope.py": "9928682f9f51209142521928ec0e85aed37cdc520ac3879ae0fa151414178362",
+    "schemas/ci-certification.schema.json": "1c5b2cf7f4ae49c18030be25ec1ff51622c4894810798e6f5afc86ea688169db",
+    "tests/test_evaluation_scope.py": "02e8dbe202f563d1a0f55c567c6387d2e01ff9e432859a47b5392f24ca700187",
+    "tests/test_ci_certification.py": "6f31ad3ec361f425212ee8b07d44a1af7ab618dc6025bc9a46fcf617817ff601"
+  },
+  "red_evidence": [
+    {
+      "commit": "381bb254",
+      "failed": 29,
+      "passed": 10,
+      "scope": "Native failure-authority intent/kind/target/terminal and schema contradictions"
+    },
+    {
+      "commit": "3b4186fd",
+      "failed": 8,
+      "passed": 2,
+      "scope": "Malformed target ID schema and authenticated snapshot allocation boundary"
+    }
+  ],
+  "final_affected_suite": {
+    "passed": 361,
+    "elapsed_seconds": 44.3,
+    "scope": [
+      "typed evaluation scopes",
+      "governance truth",
+      "controller",
+      "release",
+      "CI certification",
+      "CI authority",
+      "runtime parity",
+      "module size",
+      "context ownership"
+    ]
+  },
+  "checks": {
+    "governance_yaml": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "canonical_pack_manifest_check": "passed"
+  },
+  "compatibility": "Existing valid progress bounded phase and scopeless legacy certification tests pass; no public CLI shape changed.",
+  "constraints": [
+    "Known governed-oracle manifest refresh remains blocked and was not performed",
+    "No provider/adopter/PR/merge/installer/custody/authority-pin action",
+    "No actual DAG adoption or prose retirement",
+    "Independent installed controller/evaluator qualification and exact terminal custody remain required"
+  ],
+  "peer_authorization": [
+    6870,
+    6950
+  ]
+}

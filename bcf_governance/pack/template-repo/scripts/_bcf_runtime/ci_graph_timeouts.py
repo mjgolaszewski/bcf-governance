@@ -17,13 +17,15 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
     """Read the canonical gate timeout defaults and optional per-gate overrides."""
 
     path = repo_root / "governance/gate-contracts.yml"
-    if not path.is_file() or path.is_symlink():
+    if not path.exists() and not path.is_symlink():
         return LEGACY_GATE_TIMEOUT_SECONDS, {}
     try:
         registry = load_yaml_path(path)
     except GraphYAMLError as exc:
         raise CIGraphError(str(exc)) from exc
     policy = registry.get("execution_policy", {})
+    if not isinstance(policy, dict):
+        raise CIGraphError("gate execution timeout policy is invalid")
     default = policy.get("default_timeout_seconds", LEGACY_GATE_TIMEOUT_SECONDS)
     gates = registry.get("gates", {})
     if (
@@ -35,10 +37,16 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
         raise CIGraphError("gate execution timeout policy is invalid")
     overrides: dict[str, int] = {}
     for gate_id, raw in gates.items():
-        invocation = raw.get("invocation") if isinstance(raw, dict) else None
-        timeout = invocation.get("timeout_seconds") if isinstance(invocation, dict) else None
-        if timeout is None:
+        if not isinstance(raw, dict):
+            raise CIGraphError(f"gate {gate_id} timeout invocation contract is invalid")
+        if "invocation" not in raw:
             continue
+        invocation = raw["invocation"]
+        if not isinstance(invocation, dict):
+            raise CIGraphError(f"gate {gate_id} timeout invocation contract is invalid")
+        if "timeout_seconds" not in invocation:
+            continue
+        timeout = invocation["timeout_seconds"]
         if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout < 1:
             raise CIGraphError(f"gate {gate_id} execution timeout is invalid")
         overrides[str(gate_id)] = timeout

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import contextmanager, nullcontext
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -15,6 +16,7 @@ from bcf_governance.tooling.local_pr import (
 
 
 def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateIdentity]:
+    monkeypatch.setattr(submit, "_normalize_submission", lambda *_a, **_k: None, raising=False)
     context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
     identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
     monkeypatch.setattr(submit, "resolve_local_pr_context", lambda *_a, **_k: context)
@@ -115,7 +117,7 @@ def test_submit_owns_prospective_train_then_pushes_only_proved_sha(
 def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    _state(monkeypatch)
+    context, identity = _state(monkeypatch)
     monkeypatch.setattr(
         submit,
         "run_prospective_train",
@@ -135,7 +137,7 @@ def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
     monkeypatch.setattr(
         submit,
         "execute_candidate_provider_recovery",
-        lambda *_a, **kwargs: observed.append(kwargs["frontier"]) or True,
+        lambda *_a, **kwargs: observed.append(kwargs) or True,
     )
 
     result = submit.submit_candidate(
@@ -149,7 +151,11 @@ def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
 
     assert result["status"] == "provider_retry_submitted"
     assert result["provider_retry_submitted"] is True
-    assert observed == [frontier]
+    assert len(observed) == 1
+    assert observed[0]["frontier"] is frontier
+    assert observed[0]["candidate"] == identity
+    assert observed[0]["context"] == context
+    assert observed[0]["pull_request"] == result["pull_request"]
 
 
 def test_submit_rejects_wrong_intent_before_proof_or_push(
@@ -538,3 +544,228 @@ def test_submit_rejects_incomplete_proof_before_push(
             provider_api=object(),  # type: ignore[arg-type]
             runner=lambda *_a, **_k: pytest.fail("push ran after incomplete proof"),
         )
+
+
+def _normalization_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext(), raising=False)
+
+
+def test_submit_normalizes_before_capturing_the_proved_subject(monkeypatch, tmp_path):
+    context, old = _state(monkeypatch)
+    fresh = CandidateIdentity('4' * 40, '5' * 40, context.base_sha)
+    identities = iter([old, fresh])
+    trace = []
+    monkeypatch.setattr(submit, '_candidate_identity', lambda *_a, **_k: next(identities))
+    monkeypatch.setattr(submit, '_normalize_submission', lambda *_a, **_k: trace.append('normalize'))
+    monkeypatch.setattr(submit, '_confirm_unchanged', lambda *_a, **_k: None)
+    monkeypatch.setattr(submit, 'run_prospective_train', lambda *_a, **kw: trace.append(('prove', kw['subject_commit'])) or {'status': 'prospectively_admissible_provider_proof_required'})
+    def runner(argv, **_kwargs):
+        trace.append(('push', argv[3]))
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    result = submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), runner=runner)
+    assert trace == ['normalize', ('prove', fresh.commit_sha), ('push', fresh.commit_sha + ':refs/heads/feature')]
+    assert result['subject'] == fresh.as_dict()
+
+
+def test_fixed_point_submit_normalization_does_not_generate(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        trace.append(argv[-1])
+        assert argv[-1] == '--check'
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check']
+
+
+def test_dirty_submit_uses_canonical_normalization_then_rechecks(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        assert 'reconcile' in argv and '-I' in argv
+        assert ('--commit-derived' in argv) is (argv[-1] == '--apply')
+        trace.append(argv[-1])
+        return SimpleNamespace(returncode=1 if len(trace) == 1 else 0, stdout='', stderr='stale scope' if len(trace) == 1 else '')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check', '--apply', '--check']
+
+
+def test_normalization_failure_cannot_continue_to_proof_or_push(monkeypatch, tmp_path):
+    _state(monkeypatch)
+    def fail(*_args, **_kwargs):
+        raise ProspectiveValidationError('normalization failed')
+    monkeypatch.setattr(submit, '_normalize_submission', fail)
+    monkeypatch.setattr(submit, 'run_prospective_train', lambda *_a, **_k: pytest.fail('unproved continuation'))
+    with pytest.raises(ProspectiveValidationError, match='normalization failed'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), runner=lambda *_a, **_k: pytest.fail('push after failed normalization'))
+
+
+def test_authored_contradiction_rejects_before_any_normalization(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation.authored_phase_state import AuthoredPhaseStateError
+    _normalization_state(monkeypatch)
+    (tmp_path / 'plans').mkdir()
+    (tmp_path / 'plans/phase-ledger.yml').write_text('{}')
+    def reject(*_args):
+        raise AuthoredPhaseStateError('authored contradiction')
+    monkeypatch.setattr(submit, 'validate_authored_phase_state', reject, raising=False)
+    with pytest.raises(ProspectiveValidationError, match='authored contradiction'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('mutated contradiction'))
+
+
+def test_wrong_intent_assertion_cannot_generate(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda *_a: ('pr', None), raising=False)
+    with pytest.raises(ProspectiveValidationError, match='intent'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent='closure', runner=lambda *_a, **_k: pytest.fail('mutated wrong intent'))
+
+
+def test_busy_submit_cannot_normalize_another_active_train(monkeypatch, tmp_path):
+    from bcf_governance.tooling.local_execution_admission import LocalExecutionAdmissionError
+    _normalization_state(monkeypatch)
+    @contextmanager
+    def busy(*_args):
+        raise LocalExecutionAdmissionError('local_execution_busy_deferred')
+        yield
+    monkeypatch.setattr(submit, 'local_gate_lease', busy)
+    with pytest.raises(LocalExecutionAdmissionError, match='busy_deferred'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('mutated busy train'))
+
+
+def test_failed_canonical_apply_cannot_report_normalized(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        trace.append(argv[-1])
+        return SimpleNamespace(returncode=1, stdout='', stderr='partial normalization')
+    with pytest.raises(ProspectiveValidationError, match='partial normalization'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check', '--apply']
+
+
+def test_partial_canonical_apply_requires_a_verified_fixed_point(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    trace = []
+    def runner(argv, **_kwargs):
+        trace.append(argv[-1])
+        return SimpleNamespace(returncode=0 if argv[-1] == '--apply' else 1, stdout='', stderr='still dirty')
+    with pytest.raises(ProspectiveValidationError, match='did not converge'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert trace == ['--check', '--apply', '--check']
+
+
+def test_submit_forwards_existing_progress_without_conferring_authority(monkeypatch, tmp_path):
+    from bcf_governance.tooling.operational_observations import progress_event
+
+    _, identity = _state(monkeypatch)
+    event = progress_event(execution_id=identity.commit_sha, sequence=1, stage='evidence', state='started', monotonic_ms=0)
+    received = []
+    def incomplete_proof(*_args, **kwargs):
+        kwargs['progress_sink'](event)
+        return {'status': 'incomplete'}
+    monkeypatch.setattr(submit, 'run_prospective_train', incomplete_proof)
+    with pytest.raises(ProspectiveValidationError, match='complete prospective proof'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), progress_sink=received.append,
+                                runner=lambda *_a, **_k: pytest.fail('incomplete progress must not push'))
+    assert received == [event]
+    assert received[0]['authority'] is False
+
+
+def test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout(monkeypatch, tmp_path, capsys):
+    import json
+    from bcf_governance.tooling import ci_commands, ci_github_controller
+    from bcf_governance.tooling.operational_observations import progress_event
+
+    event = progress_event(execution_id='a' * 40, sequence=1, stage='evidence', state='started', monotonic_ms=0)
+    result = {'status': 'submitted', 'subject': {'commit_sha': 'a' * 40}}
+    monkeypatch.setattr(ci_commands, 'ensure_local_project_python', lambda *_a, **_k: Path('/python'))
+    monkeypatch.setattr(ci_github_controller, 'environment_api', lambda: object())
+    def observed_submit(*_args, **kwargs):
+        kwargs['progress_sink'](event)
+        return result
+    monkeypatch.setattr(ci_commands, 'submit_candidate', observed_submit)
+    ci_commands.main(['submit', '--repo-root', str(tmp_path), '--format', 'json'])
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == result
+    assert json.loads(captured.err) == event
+
+
+@pytest.mark.parametrize('defect', ['missing_target', 'partial_owner'])
+def test_submit_release_contradiction_rejects_before_lease_or_reconcile(monkeypatch, tmp_path, defect):
+    (tmp_path / 'manifest.yml').write_text('document:\n  version: 2.5.0\n')
+    if defect == 'missing_target':
+        (tmp_path / 'governance').mkdir()
+        (tmp_path / 'governance/public-contracts.yml').write_text('package:\n  version: 2.5.0\n')
+        (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n')
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('authored contradiction acquired lease'))
+    with pytest.raises(ProspectiveValidationError, match='release'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail('authored contradiction reached reconciliation'))
+
+
+def test_submit_invalid_runtime_version_rejects_before_admission(monkeypatch, tmp_path):
+    def malformed():
+        raise RuntimeError('BCF runtime version owner is malformed')
+    monkeypatch.setattr(submit, 'executing_runtime_version', malformed, raising=False)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('invalid runtime acquired lease'))
+    with pytest.raises(ProspectiveValidationError, match='runtime version'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail('invalid runtime reached reconciliation'))
+
+
+def test_submit_valid_release_target_uses_the_existing_fixed_point_check(monkeypatch, tmp_path):
+    version = submit.executing_runtime_version()
+    (tmp_path / 'manifest.yml').write_text(f'document:\n  version: {version}\n')
+    (tmp_path / 'governance').mkdir()
+    (tmp_path / 'governance/public-contracts.yml').write_text(f'package:\n  version: {version}\n')
+    (tmp_path / 'CHANGELOG.md').write_text(f'# Changelog\n\n## [Unreleased]\n\nRelease target: `{version}`\n')
+    _normalization_state(monkeypatch)
+    calls = []
+    def runner(argv, **_kwargs):
+        calls.append(argv[-1])
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert calls == ['--check']
+
+
+def test_submit_authored_machine_rejects_before_lease_or_reconcile(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation.ci_state_matrix import CIStateMatrixError
+
+    def reject(_root, **_kwargs):
+        raise CIStateMatrixError("machine-readable authored contradiction")
+
+    monkeypatch.setattr(submit, "validate_ci_state_matrix", reject, raising=False)
+    monkeypatch.setattr(submit, "local_gate_lease", lambda *_a: pytest.fail("authored machine contradiction acquired lease"))
+    with pytest.raises(ProspectiveValidationError, match="machine-readable authored contradiction"):
+        submit._normalize_submission(tmp_path, python_executable=Path("/python"), execution_id="2" * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail("authored machine contradiction reached reconciliation"))
+
+
+
+@pytest.mark.parametrize('defect', ['null_policy', 'null_timeout', 'dangling_symlink'])
+def test_submit_timeout_policy_rejects_before_lease_or_reconcile(monkeypatch, tmp_path, defect):
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    path = governance / 'gate-contracts.yml'
+    if defect == 'dangling_symlink':
+        path.symlink_to(tmp_path / 'absent-timeouts.yml')
+    elif defect == 'null_policy':
+        path.write_text('execution_policy: null\n')
+    else:
+        path.write_text('gates: {example: {invocation: {timeout_seconds: null}}}\n')
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('invalid timeout acquired lease'))
+    with pytest.raises(ProspectiveValidationError, match='timeout|regular nonsymlink'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail('invalid timeout reached reconciliation'))
+
+
+def test_submit_valid_timeout_policy_keeps_fixed_point_owner(monkeypatch, tmp_path):
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    (governance / 'gate-contracts.yml').write_text('execution_policy: {default_timeout_seconds: 2400}\n')
+    _normalization_state(monkeypatch)
+    calls = []
+    def runner(argv, **_kwargs):
+        calls.append(argv[-1])
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert calls == ['--check']

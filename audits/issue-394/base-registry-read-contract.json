@@ -1,0 +1,60 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/base-registry-read-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/semantic_authority_migrations.py::_git_yaml",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_authority_migrations.py",
+    "bcf_governance/tooling/semantic_yaml.py",
+    "tests/test_semantic_base_registry_reads.py"
+  ],
+  "dependency_acceptance": "Independent operation population reconstruction must not treat unavailable base evidence as absence. Isolated local corrective scope; no provider/adopter or installed authority activation.",
+  "contract": [
+    "Return None only after successful exact-tree path enumeration independently proves the requested base registry absent. Git object/read failures are typed blockers, never empty populations.",
+    "Disable Git replacement objects for base registry reads and absence checks; do not change the selected exact-base context or add retry/mutation.",
+    "A present registry must parse as a duplicate-free YAML mapping using the existing semantic_yaml owner. Null/scalar/list/malformed or duplicate mappings are not absence.",
+    "Add a text ingress to the existing unique-key YAML decoder and retain its file ingress as a delegate; no second parser or caller-authentication boolean.",
+    "Preserve true pre-adoption file absence and valid legacy mapping readability. Existing exact-base migration owner and migration authorization policy remain unchanged.",
+    "Reject missing/corrupt base evidence before migration registration writes and before any downstream authority consumer.",
+    "Preserve standard legacy YAML merge-key ordering and explicit override semantics while rejecting repeated explicit keys; enforce uniqueness before the existing SafeLoader merge expansion.",
+    "Full migration validation reuses the existing exact-base identity/ancestry owner before registry reads; tree objects and unrelated or unavailable commits cannot pose as the comparison base."
+  ],
+  "forbidden_surfaces": [
+    "new migration approval policy",
+    "new operation/effect evaluator",
+    "provider or release mutations",
+    "installer/adopter/custody",
+    "canonical normalization or authority pins"
+  ],
+  "expected_tests": [
+    "Reproduce nonexistent exact base silently disabling migration comparisons",
+    "Present base registry with failed read cannot become absence",
+    "True absent file remains None",
+    "Null/list/scalar/malformed/duplicate YAML reject",
+    "Git replacement cannot substitute base registry",
+    "Canonical unique file/text decoder parity",
+    "Operation retirement cannot hide behind unavailable base registry"
+  ],
+  "completion": "Affected behavioral/static/parity checks; protected provider/context authentication and complete lifecycle population conformance remain open.",
+  "local_execution": {
+    "contract_red_commits": [
+      "eb1a8e9b",
+      "5fdf5d41",
+      "fc9a14e1",
+      "bd768888"
+    ],
+    "final_focused": "35 passed in 120.25 seconds",
+    "static_parity": "governance-yaml-ok; lint/typecheck LOC/context/private-copy/pack and CLI effect checks passed",
+    "retained_global_blocker": "Interrupted overbroad suite after 379.25s: 25 pass, stale semantic lock failure, exit2. No full semantic-conformance claim and no manual lock normalization.",
+    "verification": "audits/issue-394/base-registry-read-verification.json",
+    "remaining": "Independent context/provider/population authentication actual normative model/profile adoption canonical lock/oracle normalization performance and custody remain open."
+  }
+}

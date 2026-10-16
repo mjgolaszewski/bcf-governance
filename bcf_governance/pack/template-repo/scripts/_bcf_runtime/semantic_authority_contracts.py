@@ -35,9 +35,10 @@ from .semantic_authority_migrations import (
 from .semantic_locking import atomic_write, render_lock_yaml, sha256_bytes, stable_payload_digest
 from .semantic_operation_effects import (
     SemanticOperationEffectError,
-    validate_operation_effects,
+    validated_operation_effect_inventory,
 )
-from .semantic_yaml import SemanticYAMLError, load_unique_mapping
+from .semantic_yaml import SemanticYAMLError, load_unique_mapping, load_unique_mapping_text
+from .semantic_authority_operations import _validate_operations
 
 
 FAMILIES_PATH = Path("governance/semantic-families.yml")
@@ -99,19 +100,39 @@ class RepresentationProvenance:
     exception_count: int
 
 
-def _load_yaml(path: Path) -> dict[str, Any]:
+def _load_yaml(path: Path, *, expected_sha256: str | None = None) -> dict[str, Any]:
+    if expected_sha256 is not None and (
+        not isinstance(expected_sha256, str) or len(expected_sha256) != 64
+        or any(value not in "0123456789abcdef" for value in expected_sha256)
+    ):
+        raise SemanticAuthorityError("protected registry digest is malformed")
     if not path.is_file() or path.is_symlink():
         raise SemanticAuthorityError(f"required semantic contract must be a regular file: {path}")
     try:
-        payload = load_unique_mapping(path)
-    except SemanticYAMLError as exc:
+        if expected_sha256 is None:
+            payload = load_unique_mapping(path)
+        else:
+            raw = path.read_bytes()
+            if sha256_bytes(raw) != expected_sha256:
+                raise SemanticAuthorityError("semantic registry differs from protected digest")
+            payload = load_unique_mapping_text(raw.decode("utf-8"))
+    except (OSError, UnicodeError, SemanticYAMLError) as exc:
         raise SemanticAuthorityError(f"cannot load {path}: {exc}") from exc
     return payload
 
 
-def _schema(repo_root: Path, name: str, payload: dict[str, Any]) -> None:
+def _schema(
+    repo_root: Path, name: str, payload: dict[str, Any], *, consumer_owned: bool = False,
+) -> None:
+    schema_root = repo_root / "schemas"
+    if consumer_owned:
+        source = Path(__file__).resolve()
+        schema_root = (
+            source.parents[1] / "pack/template-repo/schemas"
+            if source.parent.name == "tooling" else source.parents[2] / "schemas"
+        )
     try:
-        schema = json.loads((repo_root / "schemas" / name).read_text(encoding="utf-8"))
+        schema = json.loads((schema_root / name).read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         raise SemanticAuthorityError(f"cannot load schemas/{name}: {exc}") from exc
     errors = sorted(
@@ -138,9 +159,13 @@ def load_semantic_families(repo_root: Path) -> SemanticFamilyRegistry:
     )
 
 
-def load_application_operations(repo_root: Path) -> ApplicationOperationRegistry:
-    payload = _load_yaml(repo_root / OPERATIONS_PATH)
-    _schema(repo_root, "application-operations.schema.json", payload)
+def load_application_operations(
+    repo_root: Path, *, expected_sha256: str | None = None,
+) -> ApplicationOperationRegistry:
+    payload = _load_yaml(repo_root / OPERATIONS_PATH, expected_sha256=expected_sha256)
+    _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=expected_sha256 is not None)
+    if expected_sha256 is not None:
+        _validate_operation_structure(payload)
     return ApplicationOperationRegistry(
         populations=tuple(payload["populations"]),
         operations=tuple(payload["operations"]),
@@ -487,77 +512,6 @@ def _validate_operation_structure(
     return population_ids
 
 
-def _validate_operations(
-    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any]
-) -> list[dict[str, Any]]:
-    _schema(repo_root, "application-operations.schema.json", payload)
-    populations = payload["populations"]
-    population_ids = _validate_operation_structure(payload)
-    discovered = {str(row["id"]): (
-        _discover_population(repo_root, row, inventory) if row["adapter"] == "typescript_exports"
-        else _discover_population(repo_root, row)
-    ) for row in populations}
-    classified: dict[tuple[str, str], str] = {}
-    functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
-    observations: list[dict[str, Any]] = []
-    for operation in payload["operations"]:
-        population_id = str(operation["population"])
-        key = str(operation["population_key"])
-        slot = (population_id, key)
-        if slot in classified:
-            raise SemanticAuthorityError(
-                f"public operation {population_id}:{key} is multiply classified by {classified[slot]} and {operation['id']}"
-            )
-        classified[slot] = str(operation["id"])
-        actual_symbol = discovered[population_id].get(key)
-        if actual_symbol is None:
-            raise SemanticAuthorityError(f"operation {operation['id']} is stale; {population_id}:{key} is not discovered")
-        if operation["entrypoints"] != [actual_symbol]:
-            raise SemanticAuthorityError(
-                f"operation {operation['id']} entrypoints must exactly match discovered {actual_symbol}"
-            )
-        kind = str(operation["semantic_kind"])
-        mutates = bool(operation["authoritative_mutation"])
-        confers = bool(operation["authority_conferral"])
-        if kind in READ_ONLY_KINDS and (mutates or confers):
-            raise SemanticAuthorityError(f"{kind} operation {operation['id']} cannot mutate or confer authority")
-        if kind == "projection" and not operation["produces_projection"]:
-            raise SemanticAuthorityError(f"projection operation {operation['id']} must construct a read model")
-        if kind not in MUTATING_KINDS and (operation["allowed_mutation_ports"] or operation["allowed_authority_ports"]):
-            raise SemanticAuthorityError(f"non-mutating operation {operation['id']} cannot declare mutation or authority ports")
-        if mutates and not operation["allowed_mutation_ports"]:
-            raise SemanticAuthorityError(f"mutating operation {operation['id']} requires a declared mutation port")
-        if confers and not operation["allowed_authority_ports"]:
-            raise SemanticAuthorityError(f"authority operation {operation['id']} requires a declared authority port")
-        if operation["model_callable"] and confers:
-            raise SemanticAuthorityError(f"model-callable operation {operation['id']} cannot confer authority")
-        function = _function_for_entrypoint(repo_root, actual_symbol, functions)
-        if function is None:
-            raise SemanticAuthorityError(
-                f"operation {operation['id']} entrypoint is absent from the shared source inventory"
-            )
-        try:
-            write_count, authority_count = validate_operation_effects(
-                operation, str(function["symbol"]), inventory,
-                source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
-            )
-        except SemanticOperationEffectError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
-        observations.append({
-            "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
-            "write_effect_count": write_count, "authority_effect_count": authority_count,
-        })
-    missing = sorted(
-        f"{population_id}:{key}"
-        for population_id, entries in discovered.items()
-        for key in entries
-        if (population_id, key) not in classified
-    )
-    if missing:
-        raise SemanticAuthorityError("unclassified public application operations: " + ", ".join(missing))
-    return observations
-
-
 def collect_representation_provenance(
     repo_root: Path, registry: Registry, inventory: dict[str, Any]
 ) -> RepresentationProvenance:
@@ -740,3 +694,67 @@ def validate_application_operations(
     return _validate_operations(
         repo_root, load_application_operations(repo_root).raw, inventory
     )
+
+
+def required_application_operation_population(
+    repo_root: Path, inventory: dict[str, Any], *, expected_registry_sha256: str,
+) -> dict[str, Any]:
+    """Observe required operations; caller authenticates digest and source scope.
+
+    This explicit requirement is not waived by candidate capability switches.
+    Existing population and effect owners retain all interpretation semantics.
+    """
+    if expected_registry_sha256 is None:
+        raise SemanticAuthorityError("protected registry digest is required")
+    registry = load_application_operations(repo_root, expected_sha256=expected_registry_sha256)
+    return _required_operation_population(repo_root, registry.raw, inventory, expected_registry_sha256)
+
+
+def _required_operation_population(
+    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], registry_sha256: str,
+) -> dict[str, Any]:
+    """Interpret a fresh factory capture; this internal query authenticates no inputs."""
+    observations = _validate_operations(repo_root, payload, inventory, consumer_owned_schema=True)
+    rows = tuple(sorted(
+        (row["operation"], row["kind"], row["entrypoint"], tuple(sorted(
+            (port["classification"], port["target_kind"], port["symbol"])
+            for port in row["effect_ports"]
+        ))) for row in observations
+    ))
+    return dict(authority=False, execution_qualified=False,
+                scope="protected_registry_public_operations_only",
+                registry_sha256=registry_sha256, operations=rows)
+
+
+def required_committed_application_operation_population(
+    repo_root: Path, inventory: dict[str, Any], *,
+    policy_commit_sha: str, policy_tree_sha: str,
+) -> dict[str, Any]:
+    """Observe operations under a caller-authenticated committed policy subject.
+
+    The consumer repository's protected policy subject is distinct from installed
+    controller source. Object identity alone does not authenticate that subject.
+    """
+    registry, identity = load_committed_application_operations(
+        repo_root, policy_commit_sha=policy_commit_sha, policy_tree_sha=policy_tree_sha,
+    )
+    result = _required_operation_population(repo_root, registry.raw, inventory, identity["registry_sha256"])
+    result["policy_subject"] = identity["subject"]
+    result["policy_blob_oid"] = identity["blob_oid"]
+    return result
+
+
+def load_committed_application_operations(
+    repo_root: Path, *, policy_commit_sha: str, policy_tree_sha: str,
+) -> tuple[ApplicationOperationRegistry, dict[str, Any]]:
+    """Capture policy before source work; caller authenticates consumer custody."""
+    from .semantic_source_paths import committed_application_registry_identity
+
+    try:
+        identity = committed_application_registry_identity(
+            repo_root, commit_sha=policy_commit_sha, tree_sha=policy_tree_sha,
+        )
+    except (OSError, ValueError) as exc:
+        raise SemanticAuthorityError(str(exc)) from exc
+    registry = load_application_operations(repo_root, expected_sha256=identity["registry_sha256"])
+    return registry, identity

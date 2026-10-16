@@ -1,0 +1,42 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "path": "audits/issue-394/exact-source-population-verification.json",
+    "authority": false
+  },
+  "status": "focused_checks_passed",
+  "contract_red_commits": [
+    "7f98d74c",
+    "557cd523",
+    "79614574",
+    "09d79f37"
+  ],
+  "source_hashes": {
+    "bcf_governance/tooling/semantic_source_paths.py": "29291c4b52063018eb6b87867eb1df6d8b0a33f55ec5be3fa086f625eb61913e",
+    "bcf_governance/tooling/semantic_ownership_inventory.py": "64d1f4088ead420bb3c4aa900b8f8b16a04bc7f814a21d9ad415fee909c5cfc1",
+    "tests/test_semantic_source_paths.py": "e687e7e0c73920a97f8bcbafba52c173c6c4e8dbd3aede1847883c0c86867773"
+  },
+  "red_controls": {
+    "query_port": "9 actual failures after query ports staged: absent populations/deltas and invalid identities not rejected. Preliminary absent-attribute failures were not behavioral evidence.",
+    "empty_record": "1 failure and 17 passes demonstrated silently skipped empty Git record before decoder correction.",
+    "parser_binding": "7 failures with 18 passes after parser port staged; missing-only source was already fail-closed and its failure was diagnostic specificity, not unsafe parsing.",
+    "harness_exclusion": "One initial AST spy contaminated pytest traceback parsing and caused INTERNALERROR. Scoped restoration fixed the harness; the INTERNALERROR run is excluded.",
+    "order_and_disappearance": "2 actual failures before implementation: output depended on file order and raw FileNotFoundError escaped the exact-subject query."
+  },
+  "tests": {
+    "intermediate_combined": "99 passed in 96.42 seconds including CLI effect on the intermediate source.",
+    "final_affected": "100 passed in 5.20 seconds on final source: exact sources, retained characterization, call/initialization facts, operation population, module cap/context/private runtime and pack sync.",
+    "final_cli": "1 passed in 91.94 seconds on final unchanged source.",
+    "governance": "governance-yaml-ok",
+    "static": "lint/typecheck passed",
+    "pack": "canonical build_pack_manifest.py --check passed",
+    "coverage_inventory": "82 whole requirements remain not_executed; 17 bounded slices."
+  },
+  "remaining": [
+    "Protected lifecycle callers must bind authenticated repository/base/candidate state to exact Git subjects and independently handle deletions/unresolved paths.",
+    "No provider/repository authority, post-observation filesystem freshness or complete runtime effect interpretation is established.",
+    "Full normative DAG adoption/prose retirement, installed consumers and terminal custody remain unqualified.",
+    "Canonical governed test-manifest normalization remains held; known oracle failure is not suppressed."
+  ],
+  "whole_requirement_closure": false
+}

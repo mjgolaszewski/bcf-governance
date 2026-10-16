@@ -1,0 +1,471 @@
+document:
+  kind: issue_394_authenticated_provider_observations
+  path: audits/issue-394/baseline-observations.yml
+  status: observations_not_statistical_baseline
+  authority: false
+subject:
+  repository: mjgolaszewski/bcf-governance
+  repository_id: '1207503211'
+  commit_sha: 2d2d00b2f26a9e149aebd7efa548236abe7b16e9
+  tree_sha: 5d495765d9ae935b5e43425e2bf7c56b2b4646f9
+measurement_policy:
+  sample_unit: one exact predecessor subject; every listed attempt retained including failed or cancelled jobs
+  observed_fields: Authenticated provider workflow and attempt job timestamps; elapsed seconds are per-job elapsed time, not summed
+    wall-clock savings or CPU time
+  matched_cohorts: false
+  percentile_certification: false
+  targets_frozen: false
+  missing:
+  - matched cold/warm PR risk-class cohorts
+  - complete independently derived semantic critical-path timeline
+  - current isolated-adopter successful runtime observations
+  - dispatch-to-terminal-custody and merge-to-terminal-custody matched cohorts
+  - approved resource and performance budgets
+observations:
+- pipeline: exact_main
+  run_id: 38744874952
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38744874952/attempts/1
+  workflow_id: 346274480
+  event: push
+  jobs:
+  - id: 116455780251
+    name: Build independent exact-main trusted controller
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T13:41:42Z'
+    completed_at: '2026-10-15T13:56:06Z'
+    elapsed_seconds: 864.0
+  - id: 116462986725
+    name: Authenticate exact-main admission and publish pending authority
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T13:56:07Z'
+    completed_at: '2026-10-15T13:56:07Z'
+    elapsed_seconds: 0.0
+  - id: 116462987065
+    name: Run exact-main governance evidence
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T13:56:07Z'
+    completed_at: '2026-10-15T13:56:07Z'
+    elapsed_seconds: 0.0
+- pipeline: exact_main
+  run_id: 38744874952
+  attempt: 2
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38744874952/attempts/2
+  workflow_id: 346274480
+  event: push
+  jobs:
+  - id: 116480258005
+    name: Build independent exact-main trusted controller
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:29:59Z'
+    completed_at: '2026-10-15T14:39:47Z'
+    elapsed_seconds: 588.0
+  - id: 116485345979
+    name: Authenticate exact-main admission and publish pending authority
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:39:51Z'
+    completed_at: '2026-10-15T14:48:32Z'
+    elapsed_seconds: 521.0
+  - id: 116489911712
+    name: Run exact-main governance evidence / Validate governance front door
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:48:35Z'
+    completed_at: '2026-10-15T14:51:15Z'
+    elapsed_seconds: 160.0
+  - id: 116491348233
+    name: Run exact-main governance evidence / Evidence / Evidence shard 3
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:51:18Z'
+    completed_at: '2026-10-15T14:51:41Z'
+    elapsed_seconds: 23.0
+  - id: 116491348269
+    name: Run exact-main governance evidence / Evidence / Evidence shard 1
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:51:17Z'
+    completed_at: '2026-10-15T14:51:36Z'
+    elapsed_seconds: 19.0
+  - id: 116491348288
+    name: Run exact-main governance evidence / Evidence / Evidence shard 0
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:51:18Z'
+    completed_at: '2026-10-15T14:51:42Z'
+    elapsed_seconds: 24.0
+  - id: 116491348470
+    name: Run exact-main governance evidence / Evidence / Evidence shard 2
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:51:18Z'
+    completed_at: '2026-10-15T14:51:42Z'
+    elapsed_seconds: 24.0
+  - id: 116491588486
+    name: Run exact-main governance evidence / Verify exact-tree governance evidence
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:51:45Z'
+    completed_at: '2026-10-15T14:52:07Z'
+    elapsed_seconds: 22.0
+- pipeline: controller_rotation_initial
+  run_id: 38746960282
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38746960282/attempts/1
+  workflow_id: 368956359
+  event: workflow_run
+  jobs:
+  - id: 116463014829
+    name: Authorize protected routine controller transition
+    status: completed
+    conclusion: cancelled
+    started_at: '2026-10-15T13:56:12Z'
+    completed_at: '2026-10-15T14:06:14Z'
+    elapsed_seconds: 602.0
+  - id: 116468069856
+    name: Authenticate routine bootstrap inventory
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T14:06:15Z'
+    completed_at: '2026-10-15T14:06:15Z'
+    elapsed_seconds: 0.0
+  - id: 116468069937
+    name: Bootstrap routine controller / ${{ matrix.trusted_runner }}
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T14:06:15Z'
+    completed_at: '2026-10-15T14:06:15Z'
+    elapsed_seconds: 0.0
+  - id: 116468071079
+    name: Authenticate routine probe inventory
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T14:06:15Z'
+    completed_at: '2026-10-15T14:06:15Z'
+    elapsed_seconds: 0.0
+  - id: 116468071785
+    name: Probe routine controller / ${{ matrix.trusted_runner }}
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T14:06:15Z'
+    completed_at: '2026-10-15T14:06:15Z'
+    elapsed_seconds: 0.0
+  - id: 116468073095
+    name: Project the unique routine rotation outcome
+    status: completed
+    conclusion: failure
+    started_at: '2026-10-15T14:06:17Z'
+    completed_at: '2026-10-15T14:06:29Z'
+    elapsed_seconds: 12.0
+  - id: 116468073281
+    name: Promote routine controller / ${{ matrix.trusted_runner }}
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T14:06:16Z'
+    completed_at: '2026-10-15T14:06:15Z'
+    elapsed_seconds: -1.0
+  - id: 116468074151
+    name: Activate authenticated routine controller transition
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T14:06:16Z'
+    completed_at: '2026-10-15T14:06:15Z'
+    elapsed_seconds: -1.0
+- pipeline: controller_rotation_initial
+  run_id: 38746960282
+  attempt: 2
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38746960282/attempts/2
+  workflow_id: 368956359
+  event: workflow_run
+  jobs:
+  - id: 116468773298
+    name: Authorize protected routine controller transition
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:07:40Z'
+    completed_at: '2026-10-15T14:16:47Z'
+    elapsed_seconds: 547.0
+  - id: 116473484001
+    name: Bootstrap routine controller / bcf-trusted-control-1
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:16:50Z'
+    completed_at: '2026-10-15T14:17:35Z'
+    elapsed_seconds: 45.0
+  - id: 116473484084
+    name: Bootstrap routine controller / bcf-trusted-control-2
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:16:50Z'
+    completed_at: '2026-10-15T14:17:34Z'
+    elapsed_seconds: 44.0
+  - id: 116473882616
+    name: Authenticate routine bootstrap inventory
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:17:37Z'
+    completed_at: '2026-10-15T14:18:20Z'
+    elapsed_seconds: 43.0
+  - id: 116474265578
+    name: Probe routine controller / bcf-trusted-control-2
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:18:22Z'
+    completed_at: '2026-10-15T14:19:01Z'
+    elapsed_seconds: 39.0
+  - id: 116474265879
+    name: Probe routine controller / bcf-trusted-control-1
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:18:22Z'
+    completed_at: '2026-10-15T14:18:58Z'
+    elapsed_seconds: 36.0
+  - id: 116474610288
+    name: Authenticate routine probe inventory
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:19:03Z'
+    completed_at: '2026-10-15T14:19:41Z'
+    elapsed_seconds: 38.0
+  - id: 116474956258
+    name: Promote routine controller / bcf-trusted-control-1
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:19:43Z'
+    completed_at: '2026-10-15T14:20:25Z'
+    elapsed_seconds: 42.0
+  - id: 116474956489
+    name: Promote routine controller / bcf-trusted-control-2
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:19:43Z'
+    completed_at: '2026-10-15T14:20:25Z'
+    elapsed_seconds: 42.0
+  - id: 116475331544
+    name: Activate authenticated routine controller transition
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:20:28Z'
+    completed_at: '2026-10-15T14:21:10Z'
+    elapsed_seconds: 42.0
+  - id: 116475715882
+    name: Project the unique routine rotation outcome
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:21:12Z'
+    completed_at: '2026-10-15T14:21:26Z'
+    elapsed_seconds: 14.0
+- pipeline: controller_rotation_final
+  run_id: 38755247949
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38755247949/attempts/1
+  workflow_id: 368956359
+  event: workflow_run
+  jobs:
+  - id: 116491834810
+    name: Authorize protected routine controller transition
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:52:13Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: 520.0
+  - id: 116496380878
+    name: Bootstrap routine controller / ${{ matrix.trusted_runner }}
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T15:00:53Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: 0.0
+  - id: 116496382298
+    name: Authenticate routine bootstrap inventory
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T15:00:53Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: 0.0
+  - id: 116496382363
+    name: Probe routine controller / ${{ matrix.trusted_runner }}
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T15:00:53Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: 0.0
+  - id: 116496382940
+    name: Authenticate routine probe inventory
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T15:00:53Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: 0.0
+  - id: 116496383979
+    name: Project the unique routine rotation outcome
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:00:55Z'
+    completed_at: '2026-10-15T15:01:12Z'
+    elapsed_seconds: 17.0
+  - id: 116496384392
+    name: Promote routine controller / ${{ matrix.trusted_runner }}
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T15:00:54Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: -1.0
+  - id: 116496386493
+    name: Activate authenticated routine controller transition
+    status: completed
+    conclusion: skipped
+    started_at: '2026-10-15T15:00:54Z'
+    completed_at: '2026-10-15T15:00:53Z'
+    elapsed_seconds: -1.0
+- pipeline: exact_main_finalizer
+  run_id: 38755248166
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38755248166/attempts/1
+  workflow_id: 346274484
+  event: workflow_run
+  jobs:
+  - id: 116491834098
+    name: Reconstruct the newest same-admission exact-main evidence
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T14:52:13Z'
+    completed_at: '2026-10-15T15:01:11Z'
+    elapsed_seconds: 538.0
+- pipeline: release_authority
+  run_id: 38757132323
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38757132323/attempts/1
+  workflow_id: 331325235
+  event: workflow_dispatch
+  jobs:
+  - id: 116498409191
+    name: Observe provider-effective controller for non-authoritative release routing
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:04:49Z'
+    completed_at: '2026-10-15T15:13:49Z'
+    elapsed_seconds: 540.0
+  - id: 116503098105
+    name: Authorize newest certified exact main without candidate checkout
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:13:51Z'
+    completed_at: '2026-10-15T15:22:52Z'
+    elapsed_seconds: 541.0
+  - id: 116507755015
+    name: Build exact certified release bytes on a fresh hosted runner
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:22:54Z'
+    completed_at: '2026-10-15T15:23:27Z'
+    elapsed_seconds: 33.0
+- pipeline: release_verifier
+  run_id: 38759900012
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38759900012/attempts/1
+  workflow_id: 346919672
+  event: workflow_run
+  jobs:
+  - id: 116508095792
+    name: Execute token-free offline wheel and sdist verification
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:23:34Z'
+    completed_at: '2026-10-15T15:24:50Z'
+    elapsed_seconds: 76.0
+  - id: 116508791343
+    name: Authenticate runtime and exact assets then emit the sole trusted receipt
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:24:54Z'
+    completed_at: '2026-10-15T15:26:00Z'
+    elapsed_seconds: 66.0
+- pipeline: immutable_publication
+  run_id: 38760282864
+  attempt: 1
+  url: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38760282864/attempts/1
+  workflow_id: 346919671
+  event: workflow_run
+  jobs:
+  - id: 116509437412
+    name: Observe provider-effective controller for non-authoritative publication routing
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:26:08Z'
+    completed_at: '2026-10-15T15:34:19Z'
+    elapsed_seconds: 491.0
+  - id: 116513666873
+    name: Publish one exact idempotent transaction after governed qualification
+    status: completed
+    conclusion: success
+    started_at: '2026-10-15T15:34:22Z'
+    completed_at: '2026-10-15T15:43:16Z'
+    elapsed_seconds: 534.0
+
+additional_pipeline_captures:
+- path: audits/issue-394/observations/pr-426-attempt-1.json
+  run_id: 38856273908
+  attempt: 1
+  subject_commit: 4dec14dc15beecaa7416f302cc251fd9afbd3e06
+  classification: intervening_maintenance_PR_observation_not_matched_benchmark
+  source_snapshot_sha256: 6177af65cd62ad328fe3704244508e7d7901724ad0a0c05e0024cba3e755fa3f
+  elapsed_ms: 1753000
+  execution_union_ms: 1685000
+  execution_sum_ms: 1764000
+  uncovered_ms: 68000
+  cpu_ms: unknown
+  interpretation: All seven jobs retained. Source-derived intervals reproduce mechanically; terminal run and complete job
+    population rereads matched. External waits are unmeasured and uncovered time is unattributed. No matched comparison or
+    approved target.
+- path: audits/issue-394/observations/pr-421-attempt-1.json
+  run_id: 38779824523
+  attempt: 1
+  subject_commit: 1c4820835f3e1590d7f5c5602995ec4a31258980
+  classification: intervening_maintenance_PR_observation_not_matched_benchmark
+  elapsed_ms: 1652000
+  execution_union_ms: 1592000
+  execution_sum_ms: 1685000
+  uncovered_ms: 60000
+  cpu_ms: unknown
+  interpretation: One evidence producer took 1416 seconds while three evidence peers took 24 33 and 36 seconds; investigate after matched baselines and reviewed targets. Uncovered time is unattributed, not automatically provider queue or external wait.
+  authority: false
+
+local_command_observations:
+- path: audits/issue-394/observations/reconcile-ef142427-attempt-1.json
+  context: failed authored-state admission; original source remained unchanged
+- path: audits/issue-394/observations/reconcile-0e99bece-attempt-1.json
+  context: successful canonical projection and workflow authority transaction; opaque execution window with CPU and internal waits unmeasured
+- path: audits/issue-394/observations/reconcile-43c1763b-attempt-1.json
+  context: failed context-budget admission; original source remained unchanged
+- path: audits/issue-394/observations/reconcile-6f0ecc1d-attempt-1.json
+  context: successful post-deconstruction canonical projection and authority transaction; single opaque local command window
+- path: audits/issue-394/observations/reconcile-42536402-attempt-1.json
+  context: successful standalone file-only convergence; generated bytes await separate canonical candidate projection custody
+- path: audits/issue-394/observations/reconcile-42536402-attempt-2.json
+  context: canonical file-only candidate projection transaction committed 53e4f0ca from exact clean source 42536402
+local_command_limitations:
+- These are separate command windows, not matched eligible PR cohorts or complete developer-interruption clocks.
+- Preserve failed and successful observations; neither establishes p50/p95 or an approved resource/performance target.
+
+v234_captures:
+  subject:
+    commit_sha: d02f11ef3eafd99e451c1482c5d3403c2feefd03
+    tree_sha: 2b62137827a0bc73633ba0778d45887be3aa9be6
+  status: unmatched_maintenance_observations_only
+  authority: false
+  percentile_certification: false
+  observations:
+  - {path: audits/issue-394/observations/release-build-v234-attempt-1.json, elapsed_ms: 796000}
+  - {path: audits/issue-394/observations/release-verifier-v234-attempt-1.json, elapsed_ms: 174000}
+  - {path: audits/issue-394/observations/release-publisher-v234-attempt-1.json, elapsed_ms: 889000}
+  rejected:
+  - path: audits/issue-394/observations/exact-main-v234-attempt-2.json
+    cause: Provider run_started_at precedes created_at by one second; existing strict timing projection rejects.
+    disposition: Retain raw facts without clamping; no valid elapsed or percentile claim.
+  limits: Separate workflow windows are not dispatch-to-custody or merge-to-custody certification; CPU and external waits remain unmeasured.

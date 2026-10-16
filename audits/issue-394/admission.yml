@@ -1,0 +1,98 @@
+document:
+  kind: issue_394_predecessor_admission_observation
+  status: initial_baseline_validated_provider_refresh_pending
+  authority: false
+  path: audits/issue-394/admission.yml
+subject:
+  issue: https://github.com/mjgolaszewski/bcf-governance/issues/394
+  issue_updated_at: '2026-10-15T15:46:46Z'
+  issue_body_sha256: 7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e
+  repository: mjgolaszewski/bcf-governance
+  commit_sha: 2d2d00b2f26a9e149aebd7efa548236abe7b16e9
+  tree_sha: 5d495765d9ae935b5e43425e2bf7c56b2b4646f9
+closed_truth:
+  status: pass
+  effective_state: closed
+  provider_run: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38755248166
+  attempt: 1
+  artifact_id: 11982509920
+  artifact_name: bcf-exact-main-certification-38755248166-1
+  bundle_files_sha256:
+    ci-authority.json: 2ee0b4fe441b5d16b322c0f7df08b56fb67391af1a739bdc18a1dfcd45bb16f4
+    ci-certification.json: 0893ad1ae3f00acf2f9c2e8583073d53a2e560543864139baf0d6664b3395498
+    controller-custody.json: 157d94d79f059fef4a6de16dab817b710b6f1724914055a4a15b31983873d9e4
+    evidence-session.json: 3cf06c09133b4c643746439f0a84df0e4ee215563c1724a3a4e450e8305bb180
+    governance-truth.json: 3b76ccde16896363312a0b588be00516f436335afd26bece9708ce31142141ad
+    raw/governance.json: f0fdf5138041ee88325ccf3322afc9c98f155d4057ff5a2735cf4089fae9fcac
+immutable_custody:
+  verification_owner: bcf_governance/tooling/release_publication_transaction.py::inspect_release
+  observation:
+    assets:
+      SHA256SUMS: b0b983296b74bebcc48dc9a7df5aca3d08ffe4c3e9111b24878c9391e40433c2
+      bcf_governance-2.3.2-py3-none-any.whl: eab0fd8a3fc98ae316229e402e8b439ba28b3df3e3accf5a9eae26086d64996a
+      bcf_governance-2.3.2.tar.gz: 6c7b98f8ee11582cabd86cf571f1e4abb3063a9fd3544850d80601d7a3e007e3
+    commit_sha: 2d2d00b2f26a9e149aebd7efa548236abe7b16e9
+    draft: false
+    immutable: true
+    status: verified
+    tag: v2.3.2
+  verifier_run: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38759900012
+  verifier_attempt: 1
+  verifier_artifact_id: 11984239410
+  publisher_run: https://github.com/mjgolaszewski/bcf-governance/actions/runs/38760282864
+  publisher_attempt: 1
+qualification:
+  status: blocked
+  owner: bcf_governance/tooling/release_adopter_qualification.py::qualify_release
+  inputs: Exact immutable verifier assets and build manifest with isolated clean provider-default adopter source snapshots; no caller interpreter override
+  sources:
+  - commit_sha: f7e9166c40629ef0cfb62fea9529d8b878c40517
+    default_branch: main
+    id: tradeflow-lite
+    profile: lite
+    repository: moranwm/tradeflow
+    repository_id: 1396203132
+    tree_sha: c6c6b001c765fbd30f12340620ee9eb9a8ff88aa
+  - commit_sha: 38945f5aa3a90e0782cabb006c8c88a5463fcfbd
+    default_branch: main
+    id: racecar-standard-v3
+    profile: standard
+    repository: mjgolaszewski/racecar
+    repository_id: 1357342339
+    tree_sha: 11b3a874b5c3b18c9a4b8e94a804b68b02790583
+  - commit_sha: 774ea67d94ff227ae2a8ae1d2829da0b015a389c
+    default_branch: main
+    id: agentbus-standard-v3
+    profile: standard
+    repository: mjgolaszewski/AgentBus
+    repository_id: 1390225113
+    tree_sha: d7d050ec69bff7813677586611878864ec76cb2b
+  first_causal_failure: repository declares no interpreter dependency contract
+  first_consumer: ensure_local_project_python during qualification; retained stderr does not identify the adopter or stage
+  attribution_status: unproven
+  followup_source_review: Pinned TradeFlow f7e9166 declares a legacy governance requirements contract under the unchanged interpreter owner; pinned Racecar 38945f5 returns no contract. The earlier TradeFlow-before-install attribution is withdrawn.
+  complete_qualified_inventory: false
+  publication_authority: false
+intervening_changes:
+- source: https://github.com/mjgolaszewski/bcf-governance/pull/419
+  fact: Admitted v2.3.2 removed provider-default source resolution and collection-time source authentication; compatibility is local observation only
+  consequence: Issue source e96382f6 description is superseded for these owners; restoring mechanical selection is a residual, never an assertion that current main
+    still supplies it
+- source: https://github.com/mjgolaszewski/bcf-governance/issues/420
+  fact: PR 421 merged as 28d3b838 and fresh exact-main attempt 2 plus independent controller resolution verify P31 closure and ordinary-current custody
+  consequence: Integrated unchanged dependency-frontier fix and its regressions; frozen public release bytes remain at the original immutable subject
+  evidence: audits/issue-394/maintenance-admission.yml
+decision:
+  successor_admitted: false
+  initial_baseline_admission_validated: true
+  activation_scope: isolated_local_proposal_only
+  refresh_reason: Maintenance owner is deriving a minimal immutable patch so adopters can consume the admitted 420 fix; provider submission remains held.
+  canonical_phase_ids_derived:
+  - P32
+  - P33
+  - P34
+  - P35
+  canonical_active_phase_changed: true
+  production_changed: false
+  required_next_action: Retain optional compatibility and diagnostic residuals; complete local foundation work while awaiting patch custody, then rederive canonical IDs before provider submission
+  user_clarification: Follow current policy; carry the failure as a residual

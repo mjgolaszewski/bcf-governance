@@ -9,8 +9,9 @@ import yaml
 
 from .ci_authority_pins import CIAuthorityPinError, compiled_workflow_job_names
 from .ci_github import GithubReferenceError, authenticate_github_run
-from .ci_recovery_frontier import candidate_provider_frontier
-from .local_pr import ProspectiveValidationError
+from .ci_recovery_frontier import RecoveryFrontierError, candidate_provider_frontier
+from .ci_candidate_pr import _validate as _validate_candidate_pr
+from .local_pr import CandidateIdentity, LocalPRContext, ProspectiveValidationError
 
 
 GOVERNANCE_WORKFLOW = ".github/workflows/governance.yml"
@@ -26,6 +27,9 @@ _TRANSIENT_UPLOAD_MARKERS = (
 
 
 class CandidateProviderAPI(Protocol):
+    def pull_request(self, repository: str, number: object) -> dict[str, Any]: ...
+    def commit(self, repository: str, sha: str) -> dict[str, Any]: ...
+    def run(self, repository: str, run_id: str | int) -> dict[str, Any]: ...
     def repository(self, repository: str) -> dict[str, Any]: ...
     def workflow_runs(
         self, repository: str, workflow_id: str | int, *, head_sha: str, event: str
@@ -272,7 +276,6 @@ def resolve_candidate_provider_recovery(
         raise ProspectiveValidationError(
             f"protected-base workflow inventory is invalid: {exc}"
         ) from exc
-    jobs = api.jobs(repository, run_id, attempt=attempt)
     identity = {
         **common,
         "workflow_id": str(workflow_id),
@@ -282,6 +285,9 @@ def resolve_candidate_provider_recovery(
     }
     if selected.get("status") != "completed":
         return candidate_provider_frontier(identity=identity, state="active")
+    if selected.get("conclusion") not in ("success", "failure"):
+        return candidate_provider_frontier(identity=identity, state="terminal_failure")
+    jobs = api.jobs(repository, run_id, attempt=attempt)
     if selected.get("conclusion") == "success":
         completed = [
             job for job in jobs if str(job.get("name")) in expected_jobs
@@ -335,19 +341,85 @@ def resolve_candidate_provider_recovery(
 
 
 def execute_candidate_provider_recovery(
-    api: CandidateProviderAPI, *, repository: str, frontier: Mapping[str, Any]
+    api: CandidateProviderAPI, *, repository: str, frontier: Mapping[str, Any],
+    candidate: CandidateIdentity | None = None,
+    context: LocalPRContext | None = None,
+    pull_request: Mapping[str, Any] | None = None,
 ) -> bool:
-    """Execute only the exact rerun selected by a compiled recovery frontier."""
+    """Reauthenticate one proved candidate and current attempt before rerun.
 
-    if frontier.get("operation") != "candidate_provider":
+    The caller supplies independently captured proof context, never inferred
+    from a proposed frontier. Native provider reads rederive the only legal
+    retry; a digest alone cannot authorize it. Provider mutation conflicts and
+    unknown outcomes propagate without automatic POST replay.
+    """
+
+    if not isinstance(frontier, Mapping) or frontier.get("operation") != "candidate_provider":
         raise ProspectiveValidationError("candidate provider frontier is invalid")
     action = frontier.get("action")
     if not isinstance(action, Mapping):
         raise ProspectiveValidationError("candidate provider action is missing")
     if action.get("kind") != "rerun_exact_provider_workflow":
         return False
+    if (not isinstance(candidate, CandidateIdentity) or not isinstance(context, LocalPRContext)
+            or not isinstance(pull_request, Mapping)):
+        raise ProspectiveValidationError("candidate provider retry requires independently proved context")
+    pull_request = dict(pull_request)
     identity = frontier.get("identity")
     if not isinstance(identity, Mapping) or identity.get("repository") != repository:
         raise ProspectiveValidationError("candidate provider rerun identity is invalid")
-    api.rerun_workflow(repository, identity.get("run_id"))
+    try:
+        planned = candidate_provider_frontier(identity=identity, state="retryable_terminal_transport")
+    except RecoveryFrontierError as exc:
+        raise ProspectiveValidationError("candidate provider rerun frontier is malformed") from exc
+    if dict(frontier) != planned:
+        raise ProspectiveValidationError("candidate provider rerun frontier differs from canonical state")
+    identity = planned["identity"]
+    number = _positive(pull_request.get("number"), field="candidate provider PR")
+    repository_id = _positive(pull_request.get("repository_id"), field="candidate provider repository")
+    if (identity["base_sha"] != candidate.base_sha or identity["head_sha"] != candidate.commit_sha
+            or identity["tree_sha"] != candidate.tree_sha
+            or context.base_sha != candidate.base_sha or context.head_sha != candidate.commit_sha
+            or str(number) != str(identity["pull_request"])
+            or str(repository_id) != str(identity["repository_id"])
+            or pull_request.get("state") != "open"
+            or pull_request.get("base_sha") != candidate.base_sha
+            or pull_request.get("head_sha") != candidate.commit_sha
+            or _positive(identity["run_attempt"], field="candidate provider attempt") >= MAX_PROVIDER_ATTEMPTS):
+        raise ProspectiveValidationError("candidate provider retry contradicts independently proved context")
+    current_pr = api.pull_request(repository, number)
+    if current_pr.get("merged") is True:
+        raise ProspectiveValidationError("candidate provider PR is already merged")
+    observed_pr = _validate_candidate_pr(
+        current_pr, repository_id=repository_id, branch=context.head_ref,
+        base_ref=context.default_branch, base_sha=candidate.base_sha, head_sha=candidate.commit_sha,
+    )
+    if observed_pr != dict(pull_request):
+        raise ProspectiveValidationError("candidate provider PR identity changed")
+    commit = api.commit(repository, candidate.commit_sha)
+    tree = commit.get("tree")
+    if (commit.get("sha") != candidate.commit_sha or not isinstance(tree, Mapping)
+            or tree.get("sha") != candidate.tree_sha):
+        raise ProspectiveValidationError("candidate provider commit/tree identity changed")
+    fresh = resolve_candidate_provider_recovery(
+        api, repository=repository, pull_request=current_pr, base_sha=candidate.base_sha,
+        head_sha=candidate.commit_sha, tree_sha=candidate.tree_sha,
+    )
+    if fresh != planned:
+        raise ProspectiveValidationError("candidate provider retry state changed before consumption")
+    latest = api.run(repository, identity["run_id"])
+    latest_repository = latest.get("repository")
+    if (str(latest.get("id")) != str(identity["run_id"])
+            or str(latest.get("run_attempt")) != str(identity["run_attempt"])
+            or str(latest.get("workflow_id")) != str(identity["workflow_id"])
+            or latest.get("head_sha") != candidate.commit_sha
+            or latest.get("status") != "completed" or latest.get("conclusion") != "failure"
+            or latest.get("event") != "pull_request" or not isinstance(latest_repository, Mapping)
+            or str(latest_repository.get("id")) != str(repository_id)
+            or not _run_binds_pr(latest, pull_request=number,
+                                 base_sha=candidate.base_sha, head_sha=candidate.commit_sha)):
+        raise ProspectiveValidationError("candidate provider run/attempt changed at mutation boundary")
+    if dict(frontier) != planned:
+        raise ProspectiveValidationError("candidate provider retry plan changed during observation")
+    api.rerun_workflow(repository, identity["run_id"])
     return True

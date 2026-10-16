@@ -1,0 +1,206 @@
+document:
+  kind: issue_394_residual_inventory
+  status: source_and_requirement_review
+  authority: false
+  path: audits/issue-394/residuals.yml
+subject:
+  commit_sha: 2d2d00b2f26a9e149aebd7efa548236abe7b16e9
+  tree_sha: 5d495765d9ae935b5e43425e2bf7c56b2b4646f9
+scope: Historical requirements reconciled to exact current owners; not an exhaustive execution audit
+disposition_policy: SATISFIED requires exact qualified evidence; PARTIAL retains implemented propositions as regressions and assigns
+  only residuals; SUPERSEDED points to the continuing owner
+items:
+- id: 354.fail-fast
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/governance_validation/authored_phase_state.py
+  regression_surface: tests/test_reconcile_governance.py
+  evidence: P29/P30 authored-state owner exists; all-pipeline earliest-boundary instrumentation remains to qualify
+  residual_owner: P33-P0-01
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: 354.recovery
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_recovery_frontier.py
+  regression_surface: tests/test_ci_recovery_frontier.py
+  evidence: Bounded recovery owner exists; complete lifecycle effect composition and crash continuation remain
+  residual_owner: P33-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.1'
+  disposition: PARTIAL
+  owner: evidence
+  source: bcf_governance/tooling/affected_proof_closure.py
+  regression_surface: tests/test_affected_proof_closure.py
+  evidence: Three focused exact-subject and conservative-unknown regressions passed; full impact and real-adopter differential corpus
+    remain
+  residual_owner: P33-P0-03
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.2'
+  disposition: PARTIAL
+  owner: evidence
+  source: bcf_governance/tooling/evidence_scheduling.py
+  regression_surface: tests/test_evidence_splintering.py
+  evidence: Duration-aware exact splintering exists; placement of the unresolved remainder and measured end-to-end improvement remain
+  residual_owner: P33-P0-04
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.3'
+  disposition: PARTIAL
+  owner: profiles
+  source: bcf_governance/tooling/application_assurance_graph.py
+  regression_surface: tests/test_application_assurance_graph.py
+  evidence: Consumer-owned graph projection exists; adaptive installed capability and actual application selection proof remain
+  residual_owner: P33-P0-06
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.4'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_github_api.py
+  regression_surface: tests/test_ci_github_controller.py
+  evidence: Provider artifact enumeration exists; preserve bounded snapshot authentication and scope concurrent-churn regressions
+  residual_owner: P33-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.5'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_graph_controller_lifecycle.py
+  regression_surface: tests/test_ci_graph.py
+  evidence: Typed lifecycle states exist; full alternate terminal recovery and producer-consumer composition remain
+  residual_owner: P32-P0-03
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.6'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_authority_submit.py
+  regression_surface: tests/test_candidate_submit.py
+  evidence: Canonical submit owner exists; one tracked handoff and exact concurrent continuation remain to qualify
+  residual_owner: P33-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '343.7'
+  disposition: PARTIAL
+  owner: evidence
+  source: bcf_governance/tooling/evidence_storage_topology.py
+  regression_surface: tests/test_evidence_storage.py
+  evidence: Storage classification publication and cold resolution already exist under current owners; verify actual adoption and do
+    not rebuild storage
+  residual_owner: P33-P0-06
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '345.1'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/local_proof_bundles.py
+  regression_surface: tests/test_local_proof_bundles.py
+  evidence: Four focused exact reuse mismatch corruption and failed-producer regressions passed; complete provider handoff and per-adopter
+    residual reuse remain
+  residual_owner: P33-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '345.2'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/release_publication_transaction.py
+  regression_surface: tests/test_ci_github_release.py
+  evidence: Canonical immutable inspection verified exact v2.3.2 bytes and attestation presence; release/collector continuation and
+    all terminal timings remain
+  residual_owner: P35-P0-04
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '345.3'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_recovery_frontier.py
+  regression_surface: tests/test_ci_recovery_frontier.py
+  evidence: Existing typed recovery stays authoritative; full affected-scope recovery and ambiguous mutation corpus remain
+  residual_owner: P33-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '345.4'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_graph_post_merge.py
+  regression_surface: tests/test_ci_graph.py
+  evidence: Current lifecycle selection has Issue 420 non-prefix residual; defer fix ownership to existing agent and reauthenticate
+    admitted result
+  residual_owner: P32-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '345.5'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ordinary_protection_projection.py
+  regression_surface: tests/test_ordinary_protection_projection.py
+  evidence: Existing reviewed protection projection must remain unchanged by optimization; complete install/upgrade/rollback parity
+    remains
+  residual_owner: P33-P0-06
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '345.6'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_graph_pr_evaluator.py
+  regression_surface: tests/test_ci_graph.py
+  evidence: Protected evaluator behavior is present in P31 provider certification; new composition/selection must retain independently
+    derived populations
+  residual_owner: P32-P0-04
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '352'
+  disposition: SUPERSEDED
+  owner: evidence
+  source: bcf_governance/tooling/evidence_storage_topology.py
+  regression_surface: tests/test_evidence_storage.py
+  evidence: Historical storage work is carried into 343.7 and 354; only residual adoption and measurement are relevant
+  residual_owner: P33-P0-06
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '215'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/routine_controller_rotation.py
+  regression_surface: tests/test_routine_controller_rotation.py
+  evidence: Predecessor provider rotation completed under existing protocol; retain one-implementation-PR semantics and measure current
+    costs without inheriting historic performance claims
+  residual_owner: P35-P0-02
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: '298'
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_graph_edges.py
+  regression_surface: tests/test_ci_graph.py
+  evidence: Existing job-edge closure and workflow liveness are implemented; compose lifecycle/adopter/custody coverage and retain existing
+    edge closure rather than duplicate it
+  residual_owner: P32-P0-03
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: 394.provider-source-regression
+  disposition: PARTIAL
+  owner: evidence
+  source: bcf_governance/tooling/release_adopter_sources.py
+  regression_surface: tests/test_release_adopter_sources.py
+  evidence: PR 419 removed provider resolution; exact source inventory digest and profile regressions pass, but mechanical source selection
+    must be constructed as a compatibility capability without publication authority
+  residual_owner: P33-P0-05
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: 394.tradeflow-environment
+  disposition: PARTIAL
+  owner: validation
+  source: bcf_governance/tooling/interpreter_environment.py
+  regression_surface: tests/test_interpreter_environment.py
+  evidence: 'Retained predecessor qualification stderr says repository declares no interpreter dependency contract but identifies neither adopter nor stage. Pinned TradeFlow has a legacy requirements contract; the prior TradeFlow-before-install attribution is withdrawn. Current policy retains the compatibility failure as non-authoritative remediation input.'
+  residual_owner: P33-P0-06
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: 394.provider-deadline
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/ci_graph_timeouts.py
+  regression_surface: tests/test_ci_graph.py
+  evidence: Preserved provider-deadline branch is specification-only and supplies no admitted runtime fix; static component minima remain. Full measured envelopes and every sibling consumer remain required; source-bound research is retained in audits/issue-394/deadline-research.yml
+  residual_owner: P32-P0-05
+  consumer_adoption: Not inferred from source presence or issue closure; qualify exact installed consumer behavior independently
+- id: 394.nonfinite-provider-backoff
+  disposition: PARTIAL
+  owner: ci_authority
+  source: bcf_governance/tooling/provider_read.py
+  regression_surface: tests/test_provider_read.py
+  evidence: Four NaN headers reproduced the bounded-delay escape before correction; finite-number rejection now preserves valid boundaries. Local behavioral tests pass; governed train and installed qualification remain pending.
+  residual_owner: P32-P0-02
+  consumer_adoption: No predecessor or immutable maintenance bytes were changed; independent distribution qualification remains required.
+- id: 394.file-projection-custody
+  disposition: PARTIAL
+  owner: operations
+  source: bcf_governance/tooling/reconcile_authority_transition.py
+  regression_surface: tests/test_reconcile_governance.py
+  evidence: Standalone reconciliation intentionally leaves file-only projections for review. Canonical submission now requests exact clean-source shadow promotion through that same owner before subject recapture; local tests preserve workflow authority pairs, ordinary adopter absence, concurrency and rollback.
+  residual_owner: P32-P0-07
+  consumer_adoption: Full canonical submission and independent provider/distribution qualification remain pending; local commits grant no certification authority.

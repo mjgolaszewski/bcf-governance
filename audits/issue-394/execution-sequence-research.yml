@@ -1,0 +1,63 @@
+document:
+  kind: contract_research
+  path: audits/issue-394/execution-sequence-research.yml
+  authority: false
+  status: observations_only
+source_checkpoint: e0eed33ccc495bb3a1a2f57504519919ddc3f87f
+canonical_owners:
+- bcf_governance/tooling/ci_graph_post_merge.py::authored_post_merge_scope
+- bcf_governance/tooling/evidence_workitem_lifecycle.py::validate_bounded_target_successor
+current_proposal_observation:
+  first_admission_frontier:
+  - pr
+  - null
+  reason: bounded workitem target P32-P0-01 has ambiguous successors
+  interpretation: PR progress remains legal; it must not be relabelled as the intended
+    bounded successor-eligibility certification.
+proposed_logical_execution_order:
+- foundation.admission
+- foundation.residuals
+- foundation.submit-normalization
+- foundation.composition
+- foundation.conformance
+- foundation.deadlines
+- foundation.baseline
+authored_scope_cases:
+- authored_done_prefix: 1
+  derived_intent: workitem
+  derived_target_alias: foundation.admission
+- authored_done_prefix: 2
+  derived_intent: workitem
+  derived_target_alias: foundation.residuals
+- authored_done_prefix: 3
+  derived_intent: workitem
+  derived_target_alias: foundation.submit-normalization
+- authored_done_prefix: 4
+  derived_intent: workitem
+  derived_target_alias: foundation.composition
+- authored_done_prefix: 5
+  derived_intent: workitem
+  derived_target_alias: foundation.conformance
+- authored_done_prefix: 6
+  derived_intent: workitem
+  derived_target_alias: foundation.deadlines
+- authored_done_prefix: 7
+  derived_intent: workitem
+  derived_target_alias: foundation.baseline
+terminal_phase_scope:
+- closure
+- null
+research_parallelism: Baseline observations and contract research may overlap after
+  admitted predecessor/residual analysis while execution acceptance uses one native
+  bounded frontier. No second active phase is introduced.
+identifier_binding: Logical aliases only. Derive phase release and concrete workitem
+  bindings afresh after corrected immutable custody and current predecessor authentication.
+constraints:
+- 'Do not change the admitted #420 refusal of ambiguous fanout or select a target
+  manually.'
+- Early normalization lands before the larger composition feature; wire authored machine
+  consumers only when their compatible reader/schema lands.
+- An authored DONE prefix in this disposable fixture is not computed closed truth
+  or provider authority.
+- All source implementation and proof remain staged until canonical predecessor admission
+  and governed workitem dependency acceptance.

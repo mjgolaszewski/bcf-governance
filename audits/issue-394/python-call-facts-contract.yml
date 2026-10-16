@@ -1,0 +1,46 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/python-call-facts-contract.yml
+  status: planned
+  authority: false
+phase: P32
+workitem: P32-P0-04
+bounded_context: semantic_ownership
+architectural_layer: tooling
+operation_side: query
+dependency_acceptance: Behavior-preserving Python inventory deconstruction must pass canonical self-conformance before production feature mutation.
+canonical_owner: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+target_modules:
+- bcf_governance/tooling/semantic_ownership_inventory.py
+- bcf_governance/tooling/semantic_python_calls.py
+contract:
+- Add opt-in call_contracts_version 1.0 to the existing discovery query; default output remains exactly equal to the retained pre-deconstruction inventory.
+- Reject unsupported versions before any source read; do not alter tracked population discovery or import resolution.
+- Collect call expression identities and lexical argument slots during the existing AST visit; never execute source or create a second scanner.
+- Every call remains represented including dynamic and unresolved calls; source syntax is an observation and cannot establish purity or authority.
+- Hash argument expressions instead of emitting arbitrary literal values; retain explicit positional keyword starred and double-starred slots.
+- Bind an occurrence ordinal to repeated identical call expressions within each function; ordinals describe syntax rather than runtime execution counts.
+- Versioned facts are deterministic and detached; no receipt admission proof suppression lifecycle transition or policy decision consumes them in this slice.
+producer_consumer:
+  producer: Existing Python function/call visitor.
+  immediate_consumer: Source characterization and cause-specific tests only.
+  future_consumer: Protected independent lifecycle reverse conformance after separate acceptance.
+forbidden_surfaces: [runtime authority, active suppression, new effect truth engine, changed legacy inventory fields, provider dispatch, maintenance bytes, maintained adopters]
+expected_tests:
+- Default discovery remains identical to the retained characterization snapshot.
+- Opt-in facts cover each call and are stable across repeated discovery and harmless line movement.
+- Argument mutation changes its digest; secrets do not appear in added facts.
+- Positional keyword starred and double-starred arguments retain their exact syntax slots.
+- Repeated identical calls have distinct occurrence ordinals.
+- Unsupported versions reject before a missing source file is read.
+- Dynamic calls remain visible and unknown; metadata does not claim an authority effect.
+completion: Focused controls plus source/package parity architecture checks and canonical semantic self-conformance; full lifecycle completeness remains separately blocked.
+
+local_execution:
+  prerequisite: Canonically normalized deconstruction passed test_current_bcf_registry_is_conformant_and_report_is_compact on primary 6d252aca before this production feature mutation.
+  red_controls: Ten initial feature cases rejected the absent API before implementation.
+  focused: Sixty call-fact characterization method effect import and operation cases passed after implementation.
+  default_compatibility: Retained pre-deconstruction inventory snapshot unchanged.
+  qualification_limit: Same-parser source observations only; no independently complete effect interpretation installed-consumer or provider authority claim.
+  architecture: Ten pack-parity module-cap context-mapping CLI-effect and private-copy checks passed.
+  static_gates: Existing self-governance lint and typecheck gates passed; no third-party lint dependency was added.

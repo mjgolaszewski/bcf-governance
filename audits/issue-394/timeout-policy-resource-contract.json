@@ -1,0 +1,47 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/timeout-policy-resource-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-02",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Existing timeout-policy resource residual only; no P32-P0-05 full-envelope implementation or policy activation before its dependency closure.",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_timeouts.py",
+    "tests/test_ci_graph.py",
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "tests/test_candidate_submit.py",
+    "bcf_governance/tooling/scaffold_governance_artifacts.py",
+    "tests/test_reconcile_governance.py"
+  ],
+  "contract": [
+    "Legacy timeout defaults apply only when gate-contracts is genuinely absent.",
+    "Existing symlink, dangling symlink and non-file resources must reach the existing regular-file YAML owner and reject before graph rendering or allocation.",
+    "Preserve normal regular-file timeout defaults and overrides and genuine-absence compatibility.",
+    "This closes an early resource check only; complete provider/deadline composition and measurements remain unqualified.",
+    "Distinguish omitted timeout declarations from explicitly malformed policy, gate and invocation containers or explicit null timeout; reject typed errors before graph rendering.",
+    "Canonical submit calls this existing pure timeout-policy owner during authored admission before lease acquisition or reconciliation; preserve existing exception translation and reconciliation ownership.",
+    "Direct reconciliation authored admission and independently callable step factory must run the existing policy query before interpreter preparation or step actions; stage order, caching semantics and authority ownership remain unchanged."
+  ],
+  "expected_tests": [
+    "Existing symlink with larger timeout rejects.",
+    "Dangling symlink rejects.",
+    "Directory at gate contract path rejects.",
+    "Genuinely absent policy keeps legacy defaults.",
+    "Regular policy keeps exact declared timeout and overrides.",
+    "Malformed policy/gate/invocation containers and explicit null overrides reject through direct and graph consumers; omitted optional policy/invocation/timeout retains compatibility.",
+    "Real malformed policy resources/declarations reject canonical submission before local lease or reconciliation; valid policy still reaches existing fixed-point check.",
+    "Malformed timeout policy rejects before interpreter preparation or step construction in both check/apply CLI modes and direct step factory."
+  ],
+  "forbidden_surfaces": [
+    "full deadline feature or policy activation",
+    "workflow/authority pins",
+    "lock or test-manifest normalization",
+    "provider/installer/custody writes"
+  ]
+}
