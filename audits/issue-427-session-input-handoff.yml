@@ -30,3 +30,15 @@ observations:
   result: rejected_before_commit
   cause: changed_evidence_contract_requires_human_readable_state_matrix_update
   remediation: record_local_hosted_stale_session_and_foreign_output_transitions_in_state_matrix
+- stage: canonical_test_gate
+  result: 2367_passed_one_failed
+  cause: renderer_expands_repeated_profile_lists_beyond_101_KiB_by_319_bytes
+  retained_failure: git_common_dir/bcf/failure-bundles/62f2de4f82408421b204cacfdd7608cda5ffcdcf3ce9a5d98f3f2dd7b21a49c8
+  remediation_scope: lossless_existing_profile_renderer_sequence_sharing
+  target_modules: [bcf_governance/tooling/profile_yaml.py]
+  expected_tests: [tests/test_profile_yaml.py]
+  forbidden: [budget_increase, control_removal, changed_decoded_contract]
+- stage: renderer_focused_validation
+  before: two_failed_one_passed
+  after: three_passed
+  evidence: actual_contract_budget_lossless_types_and_deterministic_sequence_sharing

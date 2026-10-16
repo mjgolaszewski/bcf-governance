@@ -14,6 +14,8 @@ All notable changes to BCF Governance are recorded here. This file follows
   session before dependent gates run, including external local execution and
   transported CI sessions. Older repository receipts cannot replace current
   prerequisites; application findings and session identity checks stay enforced.
+- Kept rendered gate contracts within their existing context budget by sharing
+  repeated string sequences without changing decoded contract values.
 
 ## [2.3.4] - 2026-10-15
 

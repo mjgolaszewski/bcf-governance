@@ -2476,3 +2476,9 @@ stale-session discovery or receipt-copy recovery. Fresh and upgraded installed
 runtimes exercise this transition, with binding-disabled controls reproducing
 the foreign-session failure. The machine-readable owner is
 `same_session_evidence_input_transport` in the release-train backtrace.
+
+The added causal control must fit both authored and generated contract budgets.
+The existing profile renderer shares repeated string sequences as YAML aliases;
+decoded contracts, control inventory, and scalar types remain unchanged, and
+repeated rendering remains deterministic. Exceeding the existing budget rejects
+the candidate rather than increasing the budget or dropping controls.
