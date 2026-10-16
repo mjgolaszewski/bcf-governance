@@ -130,7 +130,8 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/residual-admitted-evidence.json
   foundation.composition:
     summary: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
     status: IN_PROGRESS
