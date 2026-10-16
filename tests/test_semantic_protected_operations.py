@@ -65,3 +65,56 @@ def test_public_population_changes_cannot_erase_required_operations(inputs, chan
         source.write_text('def work():\n    return 1\nCOMMANDS = dict(work=work)\n')
     with pytest.raises(owner.SemanticAuthorityError):
         run(inputs)
+
+
+def test_required_population_cannot_be_disabled_by_candidate_capabilities(inputs):
+    root, source, path, digest = inputs
+    (root / 'governance-profile.yml').write_text('semantic_capabilities: {application_operation_inventory: disabled}\n')
+    inventory = discover_python_source(root, files=[source])
+    assert owner.validate_application_operations(root, inventory) == []
+    result = owner.required_application_operation_population(root, inventory, expected_registry_sha256=digest)
+    assert len(result['operations']) == 1
+
+
+def test_registry_digest_and_decode_use_the_same_captured_bytes(inputs, monkeypatch):
+    root, source, path, digest = inputs
+    inventory = discover_python_source(root, files=[source])
+    real = Path.read_bytes
+    reads = []
+    def captured(candidate):
+        raw = real(candidate)
+        if candidate == path:
+            reads.append(candidate)
+            path.write_text('invalid after capture\n')
+        return raw
+    monkeypatch.setattr(Path, 'read_bytes', captured)
+    result = owner.required_application_operation_population(root, inventory, expected_registry_sha256=digest)
+    assert reads == [path]
+    assert result['registry_sha256'] == digest
+    assert result['operations'][0][0] == 'example.work.v1'
+
+
+def test_removing_registry_entry_and_source_entry_cannot_self_exempt(inputs):
+    root, source, path, _ = inputs
+    payload = yaml.safe_load(path.read_text())
+    extra = copy.deepcopy(payload['operations'][0])
+    extra.update(id='example.other.v1', population_key='other', entrypoints=['runtime.py::other'])
+    payload['operations'].append(extra)
+    path.write_text(yaml.safe_dump(payload, sort_keys=False))
+    protected_digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    source.write_text('def work():\n    return 1\ndef other():\n    return 2\nCOMMANDS = {"work": work, "other": other}\n')
+    inventory = discover_python_source(root, files=[source])
+    assert len(owner.required_application_operation_population(root, inventory, expected_registry_sha256=protected_digest)['operations']) == 2
+    payload['operations'].pop()
+    path.write_text(yaml.safe_dump(payload, sort_keys=False))
+    source.write_text('def work():\n    return 1\nCOMMANDS = {"work": work}\n')
+    inventory = discover_python_source(root, files=[source])
+    # Candidate-local structural/effect consistency alone accepts the smaller set.
+    assert len(owner._validate_operations(root, payload, inventory)) == 1
+    with pytest.raises(owner.SemanticAuthorityError, match='digest'):
+        owner.required_application_operation_population(root, inventory, expected_registry_sha256=protected_digest)
+
+
+def test_protected_factory_preserves_legacy_decode(inputs):
+    root, _, _, digest = inputs
+    assert owner.load_application_operations(root).raw == owner.load_application_operations(root, expected_sha256=digest).raw

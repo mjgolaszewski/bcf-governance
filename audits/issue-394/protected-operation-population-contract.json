@@ -40,5 +40,13 @@
     "Same captured bytes are parsed even if file changes after capture",
     "Legacy factory decode remains compatible"
   ],
-  "completion": "Focused behavioral/static/parity checks; actual protected context acquisition integration with lifecycle relationships and installed/provider authority remain required."
+  "completion": "Focused behavioral/static/parity checks; actual protected context acquisition integration with lifecycle relationships and installed/provider authority remain required.",
+  "local_execution": {
+    "contract_red_commit": "7247a5c0",
+    "affected": "81 passed in 7.09 seconds",
+    "cli_effect": "1 passed in 87.99 seconds",
+    "static_parity": "governance-yaml-ok; lint/typecheck LOC/context/private-copy/pack and canonical pack --check passed",
+    "verification": "audits/issue-394/protected-operation-population-verification.json",
+    "remaining": "Independent protected digest/source/context acquisition actual lifecycle integration complete effects installed consumers canonical lock/oracle normalization performance and custody remain open."
+  }
 }

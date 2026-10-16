@@ -171,6 +171,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/semantic_authority_contracts.py
     - bcf_governance/tooling/semantic_yaml.py
     - bcf_governance/tooling/semantic_authority_migrations.py
     - bcf_governance/tooling/ci_graph_composition.py
@@ -761,6 +762,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - protected-public-operation-population
     - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
@@ -950,6 +952,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - protected-public-operation-population
     - dormant-composition-and-static-bindings
   I14:
     requirement: Periodic drift stays separate. Scheduled observations create typed findings/invalidation for applicable future consumers. They cannot retroactively
@@ -1479,6 +1482,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - protected-public-operation-population
     - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
@@ -1811,6 +1815,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - protected-public-operation-population
     - authenticated-base-registry-reads
     - dormant-composition-and-static-bindings
   AC06:
@@ -2027,6 +2032,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - protected-public-operation-population
     - authenticated-base-registry-reads
     - reconstructed-lifecycle-source-binding
     - exact-committed-source-population
@@ -3074,3 +3080,32 @@ implementation_slices:
     - Exact local Git identity and ancestry are not independent provider context authentication; existing migration approval semantics are unchanged.
     - Independent complete operation/effect population acquisition and actual protected lifecycle invocation remain unqualified.
     - Canonical semantic lock and test-manifest normalization remain held; no normative adoption performance installed-consumer or custody closure.
+  protected-public-operation-population:
+    id: protected-public-operation-population
+    workitem: P32-P0-04
+    scope: Existing operation registry/effect owner closes public source populations under a protected registry byte digest; no candidate capability opt-out or new evaluator.
+    contract: audits/issue-394/protected-operation-population-contract.json
+    producer: bcf_governance/tooling/semantic_authority_contracts.py::load_application_operations
+    consumer: bcf_governance/tooling/semantic_authority_contracts.py::required_application_operation_population
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_semantic_protected_operations::test_protected_operations_are_source_derived_and_deterministic
+    - tests.test_semantic_protected_operations::test_protected_factory_preserves_legacy_decode
+    negative_controls:
+    - cause: caller-registry-substitution-before-discovery
+      test: tests.test_semantic_protected_operations::test_registry_substitution_rejects_before_discovery
+    - cause: removed-source-and-registry-entry-self-exemption
+      test: tests.test_semantic_protected_operations::test_removing_registry_entry_and_source_entry_cannot_self_exempt
+    - cause: candidate-capability-disables-required-population
+      test: tests.test_semantic_protected_operations::test_required_population_cannot_be_disabled_by_candidate_capabilities
+    - cause: registry-reread-after-identity-capture
+      test: tests.test_semantic_protected_operations::test_registry_digest_and_decode_use_the_same_captured_bytes
+    - cause: unclassified-public-source-entry
+      test: tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[added]
+    - cause: dynamic-public-entry-inventory
+      test: tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[dynamic]
+    remaining:
+    - Protected caller must independently authenticate the expected registry digest exact parser source population and provider/repository context; query observations never authenticate themselves.
+    - Current snapshot observations do not establish ongoing filesystem freshness complete runtime effects or actual lifecycle relationship integration.
+    - Canonical semantic lock/oracle normalization installed consumer qualification normative adoption performance and custody remain blocked.

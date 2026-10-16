@@ -37,7 +37,7 @@ from .semantic_operation_effects import (
     SemanticOperationEffectError,
     validated_operation_effect_inventory,
 )
-from .semantic_yaml import SemanticYAMLError, load_unique_mapping
+from .semantic_yaml import SemanticYAMLError, load_unique_mapping, load_unique_mapping_text
 
 
 FAMILIES_PATH = Path("governance/semantic-families.yml")
@@ -99,12 +99,23 @@ class RepresentationProvenance:
     exception_count: int
 
 
-def _load_yaml(path: Path) -> dict[str, Any]:
+def _load_yaml(path: Path, *, expected_sha256: str | None = None) -> dict[str, Any]:
+    if expected_sha256 is not None and (
+        not isinstance(expected_sha256, str) or len(expected_sha256) != 64
+        or any(value not in "0123456789abcdef" for value in expected_sha256)
+    ):
+        raise SemanticAuthorityError("protected registry digest is malformed")
     if not path.is_file() or path.is_symlink():
         raise SemanticAuthorityError(f"required semantic contract must be a regular file: {path}")
     try:
-        payload = load_unique_mapping(path)
-    except SemanticYAMLError as exc:
+        if expected_sha256 is None:
+            payload = load_unique_mapping(path)
+        else:
+            raw = path.read_bytes()
+            if sha256_bytes(raw) != expected_sha256:
+                raise SemanticAuthorityError("semantic registry differs from protected digest")
+            payload = load_unique_mapping_text(raw.decode("utf-8"))
+    except (OSError, UnicodeError, SemanticYAMLError) as exc:
         raise SemanticAuthorityError(f"cannot load {path}: {exc}") from exc
     return payload
 
@@ -138,8 +149,10 @@ def load_semantic_families(repo_root: Path) -> SemanticFamilyRegistry:
     )
 
 
-def load_application_operations(repo_root: Path) -> ApplicationOperationRegistry:
-    payload = _load_yaml(repo_root / OPERATIONS_PATH)
+def load_application_operations(
+    repo_root: Path, *, expected_sha256: str | None = None,
+) -> ApplicationOperationRegistry:
+    payload = _load_yaml(repo_root / OPERATIONS_PATH, expected_sha256=expected_sha256)
     _schema(repo_root, "application-operations.schema.json", payload)
     return ApplicationOperationRegistry(
         populations=tuple(payload["populations"]),
@@ -745,3 +758,26 @@ def validate_application_operations(
     return _validate_operations(
         repo_root, load_application_operations(repo_root).raw, inventory
     )
+
+
+def required_application_operation_population(
+    repo_root: Path, inventory: dict[str, Any], *, expected_registry_sha256: str,
+) -> dict[str, Any]:
+    """Observe required operations; caller authenticates digest and source scope.
+
+    This explicit requirement is not waived by candidate capability switches.
+    Existing population and effect owners retain all interpretation semantics.
+    """
+    if expected_registry_sha256 is None:
+        raise SemanticAuthorityError("protected registry digest is required")
+    registry = load_application_operations(repo_root, expected_sha256=expected_registry_sha256)
+    observations = _validate_operations(repo_root, registry.raw, inventory)
+    rows = tuple(sorted(
+        (row["operation"], row["kind"], row["entrypoint"], tuple(sorted(
+            (port["classification"], port["target_kind"], port["symbol"])
+            for port in row["effect_ports"]
+        ))) for row in observations
+    ))
+    return dict(authority=False, execution_qualified=False,
+                scope="protected_registry_public_operations_only",
+                registry_sha256=expected_registry_sha256, operations=rows)
