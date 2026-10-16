@@ -1122,6 +1122,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - unambiguous-authored-lifecycle-inputs
     - timeout-policy-resource-admission
     - authenticated-base-registry-reads
     - derived-comparison-context-before-preflight-work
@@ -2339,6 +2340,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - unambiguous-authored-lifecycle-inputs
     - timeout-policy-resource-admission
     - derived-comparison-context-before-preflight-work
   AC31:
@@ -3327,3 +3329,29 @@ implementation_slices:
     - Full provider deadline composition, authenticated timing, installed consumers and no-avoidable-allocation measurements
       remain unqualified.
     - No P32-P0-05 dependency closure or policy activation is claimed; canonical normalization and terminal custody remain open.
+  unambiguous-authored-lifecycle-inputs:
+    id: unambiguous-authored-lifecycle-inputs
+    workitem: P32-P0-04
+    scope: Existing authored lifecycle read boundary shares strict YAML decoding across readiness, computed workitem truth and
+      legacy telemetry; duplicate keys and invalid resources reject before proof resolution.
+    contract: audits/issue-394/lifecycle-input-conformance-contract.json
+    producer: bcf_governance/tooling/evidence_workitem_lifecycle.py::_authored_yaml
+    consumer: Existing readiness checks, workitem_observation and lifecycle_projection
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_governance_truth::test_unambiguous_authored_done_does_not_supply_verified_truth
+    negative_controls:
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary
+    - cause: invalid-workitem-file-resource-in-all-three-consumers
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources
+    - cause: complex-yaml-key-remains-typed-lifecycle-input-error
+      test: tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed
+    - cause: unsupported-key-rejected-at-existing-strict-decoder
+      test: tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys
+    remaining:
+    - Evidence audits/issue-394/lifecycle-input-conformance-verification.json covers local authored input conformance only;
+      no provider authenticity or custody claim.
+    - Legacy telemetry labels are preserved and do not substitute for computed verified/closed truth.
+    - Complete lifecycle runtime effects, installed consumers, canonical normalization and terminal custody remain unqualified.

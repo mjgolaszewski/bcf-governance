@@ -11,11 +11,10 @@ from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping
 
-import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
 
 from .evidence_workitem_lifecycle import (
-    WorkitemContractError,
+    WorkitemContractError, _authored_yaml,
     validate_workitem_dependencies,
 )
 
@@ -257,7 +256,13 @@ def amplification_observation(
 def lifecycle_projection(repo_root: Path) -> dict[str, Any]:
     """Derive current workitem frontier and retained predecessor from canonical state."""
 
-    ledger = yaml.safe_load((repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
+    def authored(path: Path) -> dict[str, Any]:
+        try:
+            return _authored_yaml(path)
+        except WorkitemContractError as exc:
+            raise OperationalObservationError(str(exc)) from exc
+
+    ledger = authored(repo_root / "plans/phase-ledger.yml")
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
     if not isinstance(active, dict):
         raise OperationalObservationError("active phase is missing")
@@ -265,7 +270,7 @@ def lifecycle_projection(repo_root: Path) -> dict[str, Any]:
     workitems_path = active.get("workitems")
     if not isinstance(phase_id, str) or not isinstance(workitems_path, str):
         raise OperationalObservationError("active phase identity is incomplete")
-    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
+    payload = authored(repo_root / workitems_path)
     workitems = payload.get("workitems") if isinstance(payload, dict) else None
     if not isinstance(workitems, list) or not workitems:
         raise OperationalObservationError("active workitem inventory is empty")

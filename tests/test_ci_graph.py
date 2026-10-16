@@ -3620,3 +3620,10 @@ def test_gate_timeout_policy_preserves_omitted_optional_declarations(tmp_path, d
     governance.mkdir()
     (governance / 'gate-contracts.yml').write_text(yaml.safe_dump(declaration))
     assert gate_timeout_contract(tmp_path) == (1800, {})
+
+
+@pytest.mark.parametrize('content', [b'? [unsupported, key]\n: value\n', b'? {unsupported: key}\n: value\n'])
+def test_strict_yaml_decoder_types_invalid_complex_mapping_keys(content):
+    from bcf_governance.tooling.ci_graph_yaml import GraphYAMLError, load_yaml_bytes
+    with pytest.raises(GraphYAMLError, match='mapping key must be hashable'):
+        load_yaml_bytes(content, source='authored-fixture.yml')

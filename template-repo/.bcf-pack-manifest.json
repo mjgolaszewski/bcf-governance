@@ -832,7 +832,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_yaml.py": {
       "operation": "copy",
-      "sha256": "f5bfbea710319a5b505d1707b180d4e966856ad9bdde10190cf7cb335f59b564"
+      "sha256": "f3e2fbfd53f8fa9e71bbfa348d64765da4e3594813d645843603048d65951ad4"
     },
     "scripts/_bcf_runtime/ci_pr_transition.py": {
       "operation": "copy",
@@ -1000,7 +1000,7 @@
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
-      "sha256": "d5954ae233be169c64b69ed6d1161a2d6c7c78a233556aa630f0eef5e566d3c3"
+      "sha256": "6e2d57053d139f3afcc707b9e040ed487b6f338456ffcfada34be8e2cf787213"
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
@@ -1279,7 +1279,7 @@
     },
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
-      "sha256": "4e559b8a258f8fdf17c7c0aede23efb27e437233a78a3fc444cbdee33e1fc425"
+      "sha256": "7780a57c01d34bb44897b8c19218ec82035fac73ef898b5515ef85991fa0fe6b"
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",
