@@ -1,0 +1,51 @@
+{
+  "authority": false,
+  "kind": "provider_retry_consumption_verification",
+  "source_parent": "fac9141e85b53a2441ce1b44a79022b8535fa461",
+  "files_sha256": {
+    "bcf_governance/tooling/candidate_provider_recovery.py": "c95fec87d858b74b05218c68284cec1233b50c2bdf171a0707736f15c4896c9a",
+    "bcf_governance/tooling/ci_authority_submit.py": "b69a875193d8280bf616741edd0bed6a79b6cb20e4cdeef456f0f079173dca67",
+    "tests/test_candidate_provider_recovery.py": "36d515eca29974416bc905b6ddfd4688a873a60ff4a82a876468579f79b2bc0a",
+    "tests/test_candidate_submit.py": "8a52637f4f1a1d6c5b251876ae5f8187b7eedca71f80c88a185bc16e0db7004d"
+  },
+  "red_evidence": {
+    "behavioral_commit": "fac9141e",
+    "failed": 30,
+    "passed": 6,
+    "port_staging": "Optional context signature and existing API protocol ports only; original unsafe execution behavior retained for this red run.",
+    "preliminary_missing_keyword_failures": "not counted as behavioral evidence",
+    "input_mutation_interleaving": {
+      "authority": false,
+      "working_source_sha256": "91f153502c3f9bbf70fc6d7ca6a57b03c4534a83a0e748f0c064c742530855c6",
+      "description": "Uncommitted bounded retry implementation before final detached-plan guard; one mutation-interleaving regression failed with DID NOT RAISE."
+    }
+  },
+  "final_affected_suite": {
+    "passed": 103,
+    "elapsed_seconds": 130.06,
+    "scope": [
+      "provider recovery",
+      "closed recovery frontier",
+      "canonical submission",
+      "CLI effects",
+      "runtime parity",
+      "module size",
+      "context ownership"
+    ]
+  },
+  "tightened_final_interleaving_diagnostic": "passed separately after requiring the exact plan-changed diagnostic; production source unchanged",
+  "checks": {
+    "governance_yaml": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "canonical_pack_manifest_check": "passed"
+  },
+  "compatibility": "Canonical CLI supplies new internal context mechanically; no public CLI shape changed; nonmutating legacy frontiers remain readable.",
+  "remaining": [
+    "Known canonical oracle/test-manifest normalization remains held",
+    "Atomic provider compare-and-mutate and distributed operation leases are unqualified",
+    "Durable unknown-outcome journaling and outcome authentication under delayed provider visibility remain required",
+    "No independent installed consumer/provider execution or terminal custody qualification"
+  ],
+  "no_provider_mutation_in_tests": true
+}

@@ -117,7 +117,7 @@ def test_submit_owns_prospective_train_then_pushes_only_proved_sha(
 def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    _state(monkeypatch)
+    context, identity = _state(monkeypatch)
     monkeypatch.setattr(
         submit,
         "run_prospective_train",
@@ -137,7 +137,7 @@ def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
     monkeypatch.setattr(
         submit,
         "execute_candidate_provider_recovery",
-        lambda *_a, **kwargs: observed.append(kwargs["frontier"]) or True,
+        lambda *_a, **kwargs: observed.append(kwargs) or True,
     )
 
     result = submit.submit_candidate(
@@ -151,7 +151,11 @@ def test_submit_executes_only_the_recovery_frontier_selected_provider_retry(
 
     assert result["status"] == "provider_retry_submitted"
     assert result["provider_retry_submitted"] is True
-    assert observed == [frontier]
+    assert len(observed) == 1
+    assert observed[0]["frontier"] is frontier
+    assert observed[0]["candidate"] == identity
+    assert observed[0]["context"] == context
+    assert observed[0]["pull_request"] == result["pull_request"]
 
 
 def test_submit_rejects_wrong_intent_before_proof_or_push(

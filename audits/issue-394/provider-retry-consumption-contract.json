@@ -35,7 +35,8 @@
     "Only completed failure with existing exact transient-upload proof can select retry; cancellation timeout unknown or other terminal conclusions stop before job reads",
     "Mutation conflict/response loss propagates without blind POST retry; next canonical invocation reobserves provider state",
     "Legacy nonmutating observe/stop frontiers remain readable without new context; missing context cannot authorize mutation",
-    "No claim of atomic provider compare-and-mutate or full concurrent transaction qualification; remaining race must retain safe conflict/uncertainty semantics"
+    "No claim of atomic provider compare-and-mutate or full concurrent transaction qualification; remaining race must retain safe conflict/uncertainty semantics",
+    "Capture a detached canonical plan identity and PR projection before I/O; reject caller plan mutation at the final boundary and never retarget a validated rerun"
   ],
   "tests": [
     "Bare forged frontier rejects before provider reads",
@@ -49,5 +50,5 @@
     "Cancellation and timeout cannot be reanimated as transport retry"
   ],
   "peer_scope": 6870,
-  "completion_limit": "Local bounded recovery correction only; canonical normalization, installed consumer and independent provider custody qualification remain pending."
+  "completion_limit": "Local bounded recovery correction only; canonical normalization, installed consumer and independent provider custody qualification remain pending. Durable outcome journaling under delayed provider visibility is not implemented by this slice."
 }

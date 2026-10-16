@@ -287,6 +287,8 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/ci_authority_submit.py
+    - bcf_governance/tooling/candidate_provider_recovery.py
     - bcf_governance/tooling/local_proof_bundles.py
     - bcf_governance/tooling/provider_reuse_closure.py
     - bcf_governance/tooling/ci_recovery_frontier.py
@@ -1019,6 +1021,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - terminal-proposition-binding
     - publication-metadata-revalidation
   I18:
@@ -1078,6 +1081,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - canonical-submit-normalization
   I21:
     requirement: Earliest-valid rejection. Every deterministic obligation names the earliest boundary at which its authentic inputs and required authority are available.
@@ -1100,6 +1104,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - terminal-proposition-binding
     - typed-guard-preservation
     - typed-reference-before-allocation
@@ -1127,6 +1132,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - terminal-proposition-binding
   I23:
     requirement: Composed semantic closure. Extend existing `CompiledCIGraph`/`EdgeContract` ownership through lifecycle, facts, costs, recovery, release/adopter
@@ -1197,6 +1203,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - publication-metadata-revalidation
     - canonical-submit-normalization
   I26:
@@ -1906,6 +1913,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - finite-provider-retry-bound
   AC12:
     requirement: Bounded workitem/phase/exact-main/ordinary-current/no-transition/pending-rotation/recovery/release/custody permutations preserve exact distinct authority.
@@ -2107,6 +2115,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-retry-consumption
     - publication-metadata-revalidation
     - canonical-submit-normalization
   AC22:
@@ -2836,3 +2845,35 @@ implementation_slices:
     remaining:
     - Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.
     - No local proposition or static terminal predicate authenticates provider custody or closes the whole train.
+  authenticated-provider-retry-consumption:
+    id: authenticated-provider-retry-consumption
+    workitem: P33-P0-02
+    scope: Local regression prototype binds exact proved candidate context and fresh provider retry evidence at consumption, with no blind mutation
+      replay.
+    contract: audits/issue-394/provider-retry-consumption-contract.json
+    producer: Existing candidate PR proof context and native provider recovery resolver
+    consumer: bcf_governance/tooling/candidate_provider_recovery.py::execute_candidate_provider_recovery
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_candidate_provider_recovery::test_transient_terminal_upload_selects_one_exact_provider_rerun
+    - tests.test_candidate_provider_recovery::test_exact_retry_is_not_repeated_after_provider_attempt_advances
+    - tests.test_candidate_submit::test_submit_executes_only_the_recovery_frontier_selected_provider_retry
+    negative_controls:
+    - cause: caller-plan-mutation-at-final-read
+      test: tests.test_candidate_provider_recovery::test_retry_plan_cannot_change_during_final_provider_observation
+    - cause: self-consistent-forged-run
+      test: tests.test_candidate_provider_recovery::test_retry_executor_rejects_unbound_frontier_before_mutation[run]
+    - cause: context-before-provider-reads
+      test: tests.test_candidate_provider_recovery::test_invalid_retry_context_rejects_before_provider_reads[candidate]
+    - cause: late-attempt-movement
+      test: tests.test_candidate_provider_recovery::test_retry_executor_reauthenticates_exact_attempt_at_consumption[last-attempt]
+    - cause: cancelled-run-not-reanimated
+      test: tests.test_candidate_provider_recovery::test_nonfailure_terminal_state_never_selects_transport_retry[cancelled]
+    - cause: lost-post-response
+      test: tests.test_candidate_provider_recovery::test_response_loss_never_blindly_repeats_rerun_mutation
+    remaining:
+    - No atomic provider compare-and-mutate or distributed operation lease is established.
+    - Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement
+      fixture does not certify all ambiguity recovery.
+    - Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked.

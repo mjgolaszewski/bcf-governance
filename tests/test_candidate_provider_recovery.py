@@ -254,7 +254,7 @@ def test_retry_executor_rejects_unbound_frontier_before_mutation(defect):
     assert provider.reruns == []
 
 
-@pytest.mark.parametrize("defect", ["head", "base", "branch", "node", "repository", "closed", "merged", "commit", "tree"])
+@pytest.mark.parametrize("defect", ["head", "base", "branch", "base-branch", "node", "repository", "closed", "merged", "commit", "tree"])
 def test_retry_executor_rejects_current_subject_movement(defect):
     provider = Provider()
     frontier = _resolve(provider)
@@ -265,6 +265,7 @@ def test_retry_executor_rejects_current_subject_movement(defect):
         if defect == "head": value["head"]["sha"] = "5" * 40
         elif defect == "base": value["base"]["sha"] = "5" * 40
         elif defect == "branch": value["head"]["ref"] = "foreign"
+        elif defect == "base-branch": value["base"]["ref"] = "foreign"
         elif defect == "node": value["node_id"] = "PR_foreign"
         elif defect == "repository": value["head"]["repo"]["id"] = 99
         elif defect == "closed": value["state"] = "closed"
@@ -346,3 +347,81 @@ def test_observation_or_terminal_rejection_precedes_job_inventory(status, conclu
         raise AssertionError("job inventory allocated before terminal eligibility")
     provider.jobs = forbidden
     assert _resolve(provider)["state"] == expected
+
+
+@pytest.mark.parametrize("defect", ["hash", "context", "candidate", "pr", "exhausted"])
+def test_invalid_retry_context_rejects_before_provider_reads(defect):
+    provider = Provider()
+    frontier = _resolve(provider)
+    overrides = {}
+    if defect == "hash": frontier["frontier_sha256"] = "0" * 64
+    elif defect == "context": overrides["context"] = None
+    elif defect == "candidate": overrides["candidate"] = CandidateIdentity(HEAD, "5" * 40, BASE)
+    elif defect == "pr": overrides["pull_request"] = {**PROVED_PR, "number": 8}
+    else:
+        frontier = candidate_provider_frontier(identity={**frontier["identity"], "run_attempt": "2"},
+                                                state="retryable_terminal_transport")
+    def forbidden(*args, **kwargs):
+        raise AssertionError("provider read before deterministic context rejection")
+    provider.pull_request = forbidden
+    with pytest.raises(ProspectiveValidationError, match="candidate provider"):
+        _execute(provider, frontier, **overrides)
+    assert provider.reruns == []
+
+
+@pytest.mark.parametrize("port", ["pull_request", "commit", "repository", "workflow_runs", "workflow", "content", "jobs", "check_run_annotations", "artifacts", "run"])
+def test_recovery_read_failure_never_falls_through_to_mutation(port):
+    provider = Provider()
+    frontier = _resolve(provider)
+    def failed(*args, **kwargs):
+        raise RuntimeError("provider observation unavailable")
+    setattr(provider, port, failed)
+    with pytest.raises(RuntimeError, match="observation unavailable"):
+        _execute(provider, frontier)
+    assert provider.reruns == []
+
+
+@pytest.mark.parametrize("field", ["id", "workflow", "repository", "event", "status", "conclusion", "pr", "base"])
+def test_latest_run_identity_is_closed_before_rerun_mutation(field):
+    provider = Provider()
+    frontier = _resolve(provider)
+    original = provider.run
+    def changed(*args):
+        value = original(*args)
+        if field == "id": value["id"] = 999
+        elif field == "workflow": value["workflow_id"] = 999
+        elif field == "repository": value["repository"] = {"id": 999}
+        elif field == "event": value["event"] = "workflow_dispatch"
+        elif field == "status": value["status"] = "queued"
+        elif field == "conclusion": value["conclusion"] = "cancelled"
+        elif field == "pr": value["pull_requests"][0]["number"] = 8
+        else: value["pull_requests"][0]["base"]["sha"] = "5" * 40
+        return value
+    provider.run = changed
+    with pytest.raises(ProspectiveValidationError, match="candidate provider"):
+        _execute(provider, frontier)
+    assert provider.reruns == []
+
+
+
+def test_retry_plan_cannot_change_during_final_provider_observation():
+    provider = Provider()
+    frontier = _resolve(provider)
+    original = provider.run
+    class ConcurrentPlanChange(dict):
+        def get(self, key, *args):
+            value = super().get(key, *args)
+            if key == "base":
+                # Deterministically interleave an input update after the final
+                # run identity checks, before the original executor reads its
+                # mutation target again. This is not a real provider mutation.
+                frontier["identity"]["run_id"] = "999"
+            return value
+    def observe(*args):
+        value = original(*args)
+        value["pull_requests"][0] = ConcurrentPlanChange(value["pull_requests"][0])
+        return value
+    provider.run = observe
+    with pytest.raises(ProspectiveValidationError, match="plan changed during observation"):
+        _execute(provider, frontier)
+    assert provider.reruns == []

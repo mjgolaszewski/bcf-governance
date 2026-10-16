@@ -424,6 +424,9 @@ def submit_candidate(
         provider_api,
         repository=authority.repository,
         frontier=provider_frontier,
+        candidate=identity,
+        context=context,
+        pull_request=pull_request,
     )
     return {
         "status": (

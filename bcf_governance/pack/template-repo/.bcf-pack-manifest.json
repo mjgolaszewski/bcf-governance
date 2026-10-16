@@ -496,7 +496,7 @@
     },
     "scripts/_bcf_runtime/candidate_provider_recovery.py": {
       "operation": "copy",
-      "sha256": "3ace4b3899ea9d9649b47d8b02523d847a2ea84bb9a3e5696dcc31dfea6128ec"
+      "sha256": "c95fec87d858b74b05218c68284cec1233b50c2bdf171a0707736f15c4896c9a"
     },
     "scripts/_bcf_runtime/check_governance_exposure.py": {
       "operation": "copy",
@@ -540,7 +540,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "4b587c3357698c276947dd438c624e35a970b25653605df6349f976593050692"
+      "sha256": "b69a875193d8280bf616741edd0bed6a79b6cb20e4cdeef456f0f079173dca67"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
