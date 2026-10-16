@@ -2723,6 +2723,9 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_lifecycle_views_match_retained_characterization
+    - tests.test_ci_graph_composition::test_lifecycle_renderer_keeps_public_identity_guard_before_formatting
+    - tests.test_ci_graph_composition::test_lifecycle_view_bytes_keep_existing_source_owner
     - tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function
     - tests.test_ci_state_matrix::test_active_receipt_owner_is_registered_factory_called_by_real_collector
     - tests.test_ci_state_matrix::test_active_qualification_owners_follow_existing_command_and_loader_calls

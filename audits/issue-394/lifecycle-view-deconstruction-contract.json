@@ -17,13 +17,13 @@
     "governance/canonical-representations.yml"
   ],
   "contract": [
-    "Move only render_lifecycle_composition implementation into a same-context pure view delegate. Preserve its root-module compatibility alias and all signatures.",
-    "Reuse existing compiled identity and canonical byte owners through local imports; no second compiler, schema or truth owner.",
+    "Move only pure formatting to a private same-context delegate. Preserve public root function/signature/docstring/source identity and its existing identity-validation call before delegation; do not duplicate validation.",
+    "Reuse existing canonical byte owner through local import. No second compiler, schema or truth owner.",
     "Capture bound/contract/machine view bytes for the existing deterministic complete-field fixture before source mutation; require exact equality after extraction plus existing escaping/reordering/roundtrip controls.",
     "Regenerate portable/source/schema parity only through pack owner; no canonical lock/test-manifest/workflow/pin normalization."
   ],
   "expected_tests": [
-    "Three-view byte characterization and legacy alias identity",
+    "Three-view byte characterization; unchanged actual compiler/projection source conformance; public identity guard precedes private formatting.",
     "Existing render/machine/roundtrip/escaping tests",
     "LOC/context/private runtime/pack parity and static/governance validation"
   ],
@@ -39,5 +39,6 @@
     "view_artifact": "audits/issue-394/lifecycle-views-before.json",
     "artifact_sha256": "f186b7877adaf2d1d45f1470988d9db427f9a54224fc97a5dd3e94e23a39697c",
     "scope": "All three views of existing deterministic fixture; synthetic source envelopes, not provider/runtime proof."
-  }
+  },
+  "source_binding_adjustment": "An initial direct alias extraction failed the actual source-conformance test. Kept the existing public source front door and guard instead; no consumer expectation was weakened or rewritten."
 }

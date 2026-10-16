@@ -1386,3 +1386,30 @@ def test_lifecycle_views_match_retained_characterization(composition):
     assert retained['authority'] is False
     assert retained['qualification'] == 'synthetic_fixture_projection_only'
     assert {view: render_lifecycle_composition(compiled, view=view) for view in ('bound', 'contract', 'machine')} == retained['views']
+
+
+def test_lifecycle_renderer_keeps_public_identity_guard_before_formatting(composition, monkeypatch):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import ci_graph_composition_views as views
+    compiled = compile_lifecycle_composition(**composition)
+    seen = []
+    def formatter(*args, **kwargs):
+        seen.append('formatted')
+        return 'view'
+    monkeypatch.setattr(views, '_render_lifecycle_composition', formatter)
+    assert owner.render_lifecycle_composition(compiled) == 'view'
+    assert seen == ['formatted']
+    seen.clear()
+    compiled['authority'] = True
+    with pytest.raises(CIGraphError, match='identity'):
+        owner.render_lifecycle_composition(compiled)
+    assert seen == []
+
+
+def test_lifecycle_view_bytes_keep_existing_source_owner():
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    files = [ROOT / 'bcf_governance/tooling/ci_graph_composition.py', ROOT / 'bcf_governance/tooling/ci_graph_composition_views.py']
+    inventory = resolve_python_imports(ROOT, discover_python_source(ROOT, files=files, call_contracts_version='1.0'))
+    view = next(row for row in inventory['functions'] if row['symbol'] == 'bcf_governance/tooling/ci_graph_composition_views.py::_render_lifecycle_composition')
+    calls = {row['called_symbol'] for row in view['calls']}
+    assert 'bcf_governance/tooling/ci_graph_composition.py::_bytes' in calls

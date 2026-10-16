@@ -1,0 +1,42 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "path": "audits/issue-394/lifecycle-view-deconstruction-verification.json",
+    "authority": false
+  },
+  "status": "focused_checks_passed_with_canonical_blocker",
+  "characterization_commit": "70d488f7",
+  "source_hashes": {
+    "bcf_governance/tooling/ci_graph_composition.py": "2412f16ee30bc3398fee7f19327ccfb45190f092b83398e1e6cba58b594bc631",
+    "bcf_governance/tooling/ci_graph_composition_views.py": "3dc9b46f41d03dc551bf3f0c453656ea30a97f95263c7f9df8a9eb5ddfb6899c",
+    "tests/test_ci_graph_composition.py": "4db92d743bf9059e1278198d2296ae0a14919d446e0d769edaee6b2bee8a4cc4"
+  },
+  "baseline": {
+    "artifact": "audits/issue-394/lifecycle-views-before.json",
+    "sha256": "f186b7877adaf2d1d45f1470988d9db427f9a54224fc97a5dd3e94e23a39697c",
+    "scope": "Bound/contract/machine views of synthetic complete-field fixture, not execution or provider authority."
+  },
+  "tests": {
+    "before": "25 view/render/machine/projection cases passed in0.49s before source extraction.",
+    "initial_extraction": "228 passed, 2 failed in14.75s: retained oracle blocker plus actual source-binding consumer of root renderer definition. Did not weaken or rewrite that test; retained public root/front-door guard and delegated only formatting.",
+    "final": "229 passed, 1 retained oracle failure in16.60s: full composition, exact three-view characterization, source owner/front-door guard, LOC/context/private copy and pack.",
+    "static": "lint/typecheck passed",
+    "pack": "canonical generator and --check passed"
+  },
+  "preserved": [
+    "All non-renderer kernel code is byte-identical, ignoring trailing whitespace at extraction boundary.",
+    "Public source identity, argument AST, docstring and identity-before-formatting behavior remain unchanged.",
+    "All three retained view bytes match; no duplicate validation or compiler."
+  ],
+  "loc": {
+    "before": 756,
+    "owner_after": 704,
+    "private_view_delegate": 73
+  },
+  "remaining": [
+    "Canonical oracle/semantic-lock normalization remains held.",
+    "CI-edge population coverage feature has not been added during extraction.",
+    "No normative adoption, source/runtime completeness, installed-consumer, performance or custody proof."
+  ],
+  "whole_requirement_closure": false
+}

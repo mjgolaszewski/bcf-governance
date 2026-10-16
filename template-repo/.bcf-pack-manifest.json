@@ -728,11 +728,15 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "482ae9f48bb9a372f1e197b725e6d4e142d96dd294be1ebf18b2eaf7d50f45af"
+      "sha256": "2412f16ee30bc3398fee7f19327ccfb45190f092b83398e1e6cba58b594bc631"
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
       "sha256": "c7c9f70b643265d6a3339a966eb7b19ffb468899e9d0b529540640c5f1e13b06"
+    },
+    "scripts/_bcf_runtime/ci_graph_composition_views.py": {
+      "operation": "copy",
+      "sha256": "3dc9b46f41d03dc551bf3f0c453656ea30a97f95263c7f9df8a9eb5ddfb6899c"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
