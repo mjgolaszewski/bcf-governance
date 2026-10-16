@@ -10,9 +10,9 @@
     "issue_updated_at": "2026-10-15T15:46:46Z",
     "issue_body_sha256": "7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e",
     "local_head": "ddb35d6c0c13c9b92f5d7d197ea858fee25863b5",
-    "worktree": "/docker/bcf-394-composition-bindings",
     "workplan_sha256": "a1e42d7197c3ad55fbc1ef491df6db919cb63fc1bdb0f4f22d8b73760c56a5aa",
-    "working_tree_is_dirty": true
+    "working_tree_is_dirty": true,
+    "workspace_role": "isolated_issue_394_construction"
   },
   "status": "in_progress_isolated_construction_integration_held",
   "target_version": "2.5.0",
