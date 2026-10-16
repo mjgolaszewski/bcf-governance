@@ -972,6 +972,11 @@ the missing derivation is a product defect and execution stops at that owner.
 | bound PR pending | exact provider repository/PR/base/head/merge relationship, required checks and protection contract | observe the same immutable subject until a typed terminal edge exists | pending with no mutation authority | merge attempt, evidence relabel, check substitution, unrelated rerun |
 | bound PR certified and mergeable | exact provider PR/base/head/tree, authenticated certification, protection and allowed merge methods | derive and execute the sole legal protected merge operation | exact merged commit/tree and exact-main successor | caller-selected merge method, destructive ancestry, stale certification, bypass actor or missing required context |
 | prospectively proved PR with native auto-merge | exact provider repository/PR node/base/head/tree, canonical protection digest, repository auto-merge capability and merge-commit method | idempotently enable the provider setting when absent and bind `MERGE` auto-merge to the exact PR node | provider waits for the ordinary protected certification and performs one normal merge commit | manual merge timing, squash/rebase choice, bypass, moved head/base, duplicate PR, token retained after request |
+| native auto-merge response is successful | closed GraphQL object with exact non-null data, no errors, exact PR node/number and `MERGE` request | authenticate the complete response before consuming it | typed `enabled` result bound to the exact PR | interpreting partial data, mixed data/errors, a different PR, or another merge method as success |
+| native auto-merge response has null/partial data or any GraphQL error | complete provider response plus the exact operation idempotency key and immutable PR identity | classify a typed provider rejection and reread the same exact PR before any retry or alternate action | committed, same-pending, certified-clean, moved/conflicting, or fail-closed unknown state | language-level null dereference, omitted error inventory, blind replay, error-text-selected authority, or success inferred from HTTP 200 |
+| exact PR remains pending and provider still permits auto-merge after an unknown result | same repository/PR/base/head/tree, same operation key, absent auto-merge request, incomplete required checks | retry the identical auto-merge mutation at most once | native pending auto-merge or typed terminal rejection | new operation identity, changed merge method, unbounded retry, or candidate-selected continuation |
+| exact PR is already certified clean before native auto-merge can be enabled | exact repository/PR/base/head/tree, authenticated required certification, provider `CLEAN` mergeability proving no protected condition remains unmet, and allowed merge-commit method | derive the existing `certified_mergeable` frontier and request one exact normal merge commit with only exact head SHA and `merge` method; independently reread the merged PR and bind the resulting merge commit | exact merged subject enters exact-main; no bypass, override, or candidate authority is introduced | retrying an impossible auto-merge request, administrator override, any unmet protected condition, stale certification, squash/rebase, moved subject, or treating clean as generic inapplicable |
+| normal protected merge result is null, partial, conflicting, or uncertain | exact mutation identity, pre-state and authenticated post-mutation PR reread | classify committed/not-committed/conflict without relabeling evidence; retry only an exact idempotent not-committed edge allowed by the frontier | exact merged result or typed noncertifying stop | trusting response prose, reporting submission success before reread, merging a different head, or bypassing protection |
 | certified predecessor with direct successor active | ordered workitem dependency, predecessor `DONE` plus authenticated bounded certification, direct successor `IN_PROGRESS` or `BLOCKED` | select PR-progress for the active successor; preserve predecessor custody without recertifying it | successor candidate remains nonterminal until it is authored `DONE` | repeatedly targeting predecessor, treating unrelated active work as the successor, or inferring parent-phase closure |
 | authored bounded-workitem closeout | direct successor changes from `IN_PROGRESS` to `DONE`, every predecessor is `DONE`, phase remains active, and the successor after the target remains unopened | derive `workitem:<exact-id>` from the canonical lifecycle and mechanically project that scope through graph, workflows, authority, truth, finalizer and publisher | authenticated bounded closure may make only the direct successor eligible; phase and release authority remain absent | stale PR-progress graph, operator-selected target, skipped predecessor, phase closure, unrelated successor eligibility, bounded status published as exact-main or release certification |
 | bound PR base advanced | exact provider base/head/merge base, candidate tree, certification subject and changed dependency closure | derive reconstruction/rebase or a typed superseded result; invalidate only subject- or base-bound proof | new exact candidate requiring the affected proof frontier | blind update-branch, stale proof reuse, ancestry destruction, ambiguous merge relationship |
@@ -991,6 +996,48 @@ the missing derivation is a product defect and execution stops at that owner.
 | adopter qualification | exact candidate or immutable release bytes, adopter profile and repository identity | treat the BCF self-release matrix guard as typed not-applicable, then perform non-destructive install/upgrade and canonical proof | attributed compatibility observation only | self repository missing its matrix, cross-repository mutation, different bytes, adopter report treated as BCF authority |
 | release-bound adopter candidate qualification | exact clean candidate commit/tree and pack digest, exact clean adopter commit/tree, predecessor immutable runtime-lock digest | canonical installer selects the typed non-authoritative qualification operation, projects exact candidate runtime custody, then runs the ordinary adopter proof path | attributed prepublication observation only; release and publication authority remain absent | ordinary local upgrade, release-custody claim, missing or dirty identity, mixed candidate bytes, unexplained lock removal, qualification marker committed as release custody |
 | adopter install transaction promotes generated graph | validated adopter graph plus exact current and retired generated workflow inventory | transaction allowlist derives from the graph renderer owner; final graph parity is checked inside rollback custody | promoted target equals the validated shadow | hand-maintained workflow paths, shadow-only success, partial promotion, unrelated workflow mutation |
+
+### Protected-merge provider-result state machine
+
+```text
+EXACT_PROSPECTIVELY_PROVED_PR
+  -> READ_EXACT_PR_AND_PROTECTION
+     -> PENDING_REQUIREMENTS + AUTO_MERGE_ENABLEABLE
+        -> ENABLE_NATIVE_AUTO_MERGE
+           -> CLOSED_GRAPHQL_SUCCESS -> AUTHENTICATE_EXACT_REQUEST -> PENDING_PROVIDER_MERGE
+           -> NULL/PARTIAL/ERROR/TRANSPORT_UNKNOWN
+              -> REREAD_SAME_EXACT_PR
+                 -> AUTO_MERGE_BOUND -> COMMITTED_REQUEST
+                 -> SAME_PENDING_ENABLEABLE -> ONE_IDENTICAL_RETRY
+                 -> CERTIFIED_CLEAN + NO_UNMET_PROTECTED_CONDITION -> ONE_EXACT_NORMAL_MERGE
+                 -> MOVED/CONFLICTING/AMBIGUOUS -> STOP_NONCERTIFYING
+     -> AUTO_MERGE_ALREADY_BOUND_TO_MERGE -> IDEMPOTENT_PENDING_PROVIDER_MERGE
+     -> CERTIFIED_CLEAN + NO_UNMET_PROTECTED_CONDITION
+        -> ONE_EXACT_NORMAL_MERGE
+           -> REREAD_MERGED_PR_AND_MERGE_COMMIT -> EXACT_MAIN
+           -> UNKNOWN -> REREAD_BEFORE_ANY_RETRY
+     -> MISSING_CERTIFICATION / WRONG SUBJECT / NONEMPTY_OR_REDACTED_BYPASS
+        -> STOP_NONCERTIFYING
+```
+
+The GraphQL transport boundary is not the semantic result boundary. HTTP 200,
+`data: null`, partial data, mixed data and errors, malformed errors, and exact
+success data are distinct closed inputs. The canonical result classifier owns
+that distinction before downstream code may dereference a field or choose an
+action. Provider error prose never grants authority. Only authenticated current
+PR state selects one continuation. A PR that became `CLEAN` before native
+auto-merge could be enabled is not retried as if requirements were pending: the
+existing `certified_mergeable` frontier may select one normal merge-commit
+request only after exact required certification, provider-clean protection
+satisfaction, allowed merge method, and immutable subject are reauthenticated;
+the mutation contains no bypass or override input. The merge result is
+then reread and bound to exact-main. Any missing, redacted, moved, conflicting,
+or unclassified state stops without merge or retry.
+
+The complete producer/consumer edges are machine-readable in
+`protected_merge_provider_result_contract` in
+`spec/phase0/release-train-backtrace.yml`; prose does not define an additional
+lane.
 
 ### P30 workitem DAG
 
