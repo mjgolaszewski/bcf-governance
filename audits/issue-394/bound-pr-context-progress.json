@@ -76,5 +76,12 @@
       "cause": "Legacy test metadata adapter fabricated a main-target response for a stack-target metadata update",
       "disposition": "Fixture now preserves actual prior semantic identity; added explicit retarget-response rejection control. Production final response validation remains unchanged."
     }
-  ]
+  ],
+  "new_metadata_red_controls": {
+    "failed": 5,
+    "passed": 1,
+    "elapsed_seconds": 1.59,
+    "scope": "Repository/name/PR-number/node/partial-binding contradictions reached provider reads before rejection; real existing fixture methods, not missing-interface failures.",
+    "pending": "Implementation and full retry regression."
+  }
 }
