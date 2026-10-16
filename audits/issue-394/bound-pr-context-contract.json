@@ -6,10 +6,10 @@
   "requirements": [
     "343.5",
     "354.recovery",
-    "I01",
-    "I02",
-    "I04",
-    "I11"
+    "I03",
+    "I05",
+    "I21",
+    "I24"
   ],
   "bounded_context": "ci_authority exact repository comparison context",
   "architectural_layer": "existing local PR identity owner, provider read adapter and submission/prospective consumers",
