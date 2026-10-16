@@ -12,12 +12,63 @@
     "governance_yaml": "passed",
     "lint": "passed",
     "typecheck": "passed",
-    "architecture_context_membership": "passed"
+    "architecture_context_membership": "passed",
+    "authored_semantic_ownership": "passed"
   },
   "scope": "Same committed source owner and source stability boundary; resolved transport calls plus lexical read candidates, not runtime effect qualification.",
   "remaining": [
-    "Exact committed population snapshot and native checks pending.",
+    "Independent runtime receiver binding, dynamic effects and total body-read deadlines remain required.",
     "Seven previously observed provider response.read sites have no qualified total wall-clock read bounds.",
     "P32-P0-03 dependency unresolved; no deadline activation, new implementation slice or whole requirement closure."
-  ]
+  ],
+  "committed_population": {
+    "subject": {
+      "commit_sha": "fd098c409677060d78780b330f7d436ca02c07d2",
+      "tree_sha": "1664efeb03a1a8aa4820336da45a363a9171d70d"
+    },
+    "snapshot_sha256": "ecd2d0b5e36a0bd95de333fc01e75a4de6eca8f5f5945a0e368748e0fe53f09e",
+    "source_files_checked": 1107,
+    "source_file_population_sha256": "c67226ba6db56309a80ac8321432b74bc810dd3788794e94fff4ce58c8b60eec",
+    "counts": {
+      "resolved_transport_call": 22,
+      "lexical_read_candidate": 175
+    },
+    "observed_response_reads": [
+      {
+        "consumer": "bcf_governance/tooling/ci_github_api.py::GitHubAPI._upload_bytes",
+        "line": 127,
+        "expression_sha256": "3988421a5a7320c94e7202ccfa2ad643fb996fdef6b203ad6421a3faf2a7739b"
+      },
+      {
+        "consumer": "bcf_governance/tooling/ci_github_transport.py::request_bytes",
+        "line": 99,
+        "expression_sha256": "6bfa9c06bd9c6d4714600f5b9949e050f9fbade6bcad7c5e41c99f7c6f38509b"
+      },
+      {
+        "consumer": "bcf_governance/tooling/ci_github_transport.py::request_json",
+        "line": 57,
+        "expression_sha256": "8d12e9ec83314f0009f316032076a2c9ebe739b70b53c3f75c22a93b92cc25a9"
+      },
+      {
+        "consumer": "bcf_governance/tooling/evidence_storage_github_api.py::GitHubEvidenceAPI._download_endpoint",
+        "line": 248,
+        "expression_sha256": "2dab9fcc26a62ffdf3c7da7172f623818c7a20449855e70088dc39f464997393"
+      },
+      {
+        "consumer": "bcf_governance/tooling/evidence_storage_github_api.py::GitHubEvidenceAPI.upload_evidence_asset",
+        "line": 162,
+        "expression_sha256": "3988421a5a7320c94e7202ccfa2ad643fb996fdef6b203ad6421a3faf2a7739b"
+      },
+      {
+        "consumer": "bcf_governance/tooling/governance_install/release_custody.py::ReadOnlyReleaseProvider._get",
+        "line": 89,
+        "expression_sha256": "7a18a77160bc780f8155a1d40d3041b7f51dfc4e92d9283e643dcf87c66f2ce6"
+      },
+      {
+        "consumer": "bcf_governance/tooling/protection_inspection_client.py::ProtectionInspectionClient._request",
+        "line": 79,
+        "expression_sha256": "ddc3f6bb2db3a72b481418b36c576a4da13bc096fdfa08134c805fca4cc59392"
+      }
+    ]
+  }
 }
