@@ -1019,3 +1019,40 @@ def test_backtrace_schema_rejects_invalid_guard_references(defect):
     else: row.pop("kind")
     with pytest.raises(ValidationError):
         validator.validate(model)
+
+
+@pytest.fixture
+def initialization_binding_inputs(operation_call_binding_inputs, tmp_path):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+    source = tmp_path / 'runtime.py'
+    source.write_text('initialize()\n' + source.read_text())
+    inventory = discover_python_source(tmp_path, files=[source], call_contracts_version='1.0', initialization_contracts_version='1.0')
+    operation_call_binding_inputs['source_inventory'] = inventory
+    roots = operation_call_binding_inputs['required_operation_calls'][('release', 'build', 'verify')]
+    operation_call_binding_inputs['required_operation_calls'] = {
+        ('release', 'build', 'verify'): {
+            root: source_operation_call_population(root, inventory, include_initialization=True) for root in roots
+        }
+    }
+    return operation_call_binding_inputs
+
+
+def test_lifecycle_binding_checks_source_initialization_population(initialization_binding_inputs):
+    result = _validate_bindings(initialization_binding_inputs)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert result['operation_call_populations_checked'] == 3
+
+
+@pytest.mark.parametrize('defect', ['removed_module', 'changed_site', 'removed_unknown'])
+def test_lifecycle_binding_rejects_initialization_omission_or_substitution(initialization_binding_inputs, defect):
+    rows = initialization_binding_inputs['source_inventory']['module_initializers']
+    if defect == 'removed_module':
+        rows.clear()
+    elif defect == 'changed_site':
+        rows[0]['sites'][0]['expression_sha256'] = '0' * 64
+    else:
+        rows[0]['unresolved'].clear()
+    with pytest.raises(CIGraphError, match='operation call population'):
+        _validate_bindings(initialization_binding_inputs)

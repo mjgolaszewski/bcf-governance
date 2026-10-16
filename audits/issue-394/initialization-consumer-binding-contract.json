@@ -14,7 +14,9 @@
   "dependency_acceptance": "Initialization source observations must pass behavioral/schema/default compatibility and source/package parity checks before consumer mutation. Complete requires-workitem-closure:P32-P0-03 remains unmet and blocks normative adoption.",
   "target_modules": [
     "bcf_governance/tooling/semantic_operation_effects.py",
-    "tests/test_semantic_operation_call_population.py"
+    "tests/test_semantic_operation_call_population.py",
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "tests/test_ci_graph_composition.py"
   ],
   "contract": [
     "Add an explicit include_initialization keyword to the existing read-only operation population query; default result remains exactly unchanged.",
@@ -22,7 +24,8 @@
     "Require exactly one initializer row for every already-discovered Python source file. Reject missing/duplicate/unbound rows and duplicate site identities; bind results to the existing source file hash inventory.",
     "Retain all module sites conservatively rather than inferring that disconnected module effects are unrelated; unknown import/native/implicit/dynamic effects prevent execution or completeness qualification.",
     "Return deterministic immutable tuples for source module/site/unknown observations. Do not infer runtime call closure, claim impact, suppression, provider authority or actual complete source coverage.",
-    "Protected caller remains responsible for authenticating parser, exact source population and source file bytes; candidate-provided inventories never authenticate themselves."
+    "Protected caller remains responsible for authenticating parser, exact source population and source file bytes; candidate-provided inventories never authenticate themselves.",
+    "Existing lifecycle binding derives the observation scope from its protected expected operation population and compares exact source-produced initialization tuples; candidate facts cannot choose a weaker expected scope. Legacy protected populations remain readable."
   ],
   "forbidden_surfaces": [
     "normative DAG adoption",
