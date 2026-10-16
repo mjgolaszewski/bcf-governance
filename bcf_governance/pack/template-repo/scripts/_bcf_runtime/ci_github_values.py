@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from typing import Any, Mapping
 from urllib.parse import quote, urlparse
 
 
@@ -72,3 +73,46 @@ def sha(value: object, *, field: str) -> str:
             f"{field} must be an exact 40-character Git SHA"
         )
     return text
+
+
+def candidate_pull_request_identity(
+    value: Mapping[str, Any],
+    *,
+    repository_id: int,
+    branch: str,
+    base_ref: str,
+    base_sha: str,
+    head_sha: str,
+) -> dict[str, Any]:
+    head = value.get("head")
+    base = value.get("base")
+    if not isinstance(head, Mapping) or not isinstance(base, Mapping):
+        raise GitHubValueError("candidate pull request identity is incomplete")
+    head_repo = head.get("repo")
+    base_repo = base.get("repo")
+    if (
+        value.get("state") != "open"
+        or not isinstance(value.get("number"), int)
+        or isinstance(value.get("number"), bool)
+        or int(value["number"]) < 1
+        or not re.fullmatch(r"PR_[A-Za-z0-9_-]+", str(value.get("node_id", "")))
+        or head.get("ref") != branch
+        or head.get("sha") != head_sha
+        or base.get("ref") != base_ref
+        or base.get("sha") != base_sha
+        or not isinstance(head_repo, Mapping)
+        or not isinstance(base_repo, Mapping)
+        or head_repo.get("id") != repository_id
+        or base_repo.get("id") != repository_id
+    ):
+        raise GitHubValueError(
+            "candidate pull request does not bind the exact proved subject"
+        )
+    return {
+        "number": int(value["number"]),
+        "node_id": str(value["node_id"]),
+        "state": "open",
+        "repository_id": repository_id,
+        "base_sha": base_sha,
+        "head_sha": head_sha,
+    }

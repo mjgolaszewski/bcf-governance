@@ -219,6 +219,8 @@ def test_local_pr_context_retries_only_identical_transient_remote_read(
             return SimpleNamespace(returncode=0, stdout="", stderr="")
         if command[1:3] == ["branch", "--show-current"]:
             return SimpleNamespace(returncode=0, stdout="feature\n", stderr="")
+        if command[1:3] == ["remote", "get-url"]:
+            return SimpleNamespace(returncode=0, stdout="file:///fixture.git\n", stderr="")
         raise AssertionError(command)
 
     monkeypatch.setattr("bcf_governance.tooling.local_pr_context.time.sleep", lambda _value: None)
@@ -369,3 +371,46 @@ def test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts(authenti
         fixture.state["pulls"][0]["base"]["sha"] = ""
     with pytest.raises(LocalPRError):
         resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+
+
+def test_bound_pr_local_descendant_keeps_distinct_provider_head(authenticated_stacked_pr):
+    fixture = authenticated_stacked_pr
+    (fixture.repo / "source.py").write_text("VALUE = 4\n")
+    _git(fixture.repo, "add", "source.py")
+    _git(fixture.repo, "commit", "-m", "new local candidate")
+    candidate = _git(fixture.repo, "rev-parse", "HEAD")
+    context = resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert context.head_sha == candidate and context.provider_head_sha == fixture.head
+    assert context.base_sha == fixture.stack_base and context.comparison_base_ref == "stack"
+
+
+def test_authenticated_unbound_github_context_keeps_repository_identity(authenticated_stacked_pr):
+    fixture = authenticated_stacked_pr
+    fixture.state["pulls"] = []
+    context = resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert context.base_sha == fixture.default_base and context.comparison_base_ref == "main"
+    assert context.repository == "owner/repository" and context.repository_id == 17
+    assert context.pull_request_number is None
+
+
+@pytest.mark.parametrize("cause", ["fresh-base", "fresh-head", "fresh-node", "missing-head-ref", "closed-record", "missing-credential"])
+def test_bound_pr_discovery_rejects_movement_and_incomplete_absence(authenticated_stacked_pr, monkeypatch, cause):
+    import copy
+    fixture = authenticated_stacked_pr
+    if cause.startswith("fresh-"):
+        fixture.state["current"] = copy.deepcopy(fixture.state["current"])
+        if cause == "fresh-base": fixture.state["current"]["base"]["sha"] = "8" * 40
+        elif cause == "fresh-head": fixture.state["current"]["head"]["sha"] = "9" * 40
+        else: fixture.state["current"]["node_id"] = "PR_moved8"
+    elif cause == "missing-head-ref": fixture.state["pulls"][0]["head"].pop("ref")
+    elif cause == "closed-record": fixture.state["pulls"][0]["state"] = "closed"
+    else: monkeypatch.delenv("GITHUB_TOKEN")
+    with pytest.raises(LocalPRError):
+        resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+
+
+def test_local_unbound_context_serialization_remains_exactly_legacy(tmp_path):
+    repo, base = _repository(tmp_path)
+    context = resolve_local_pr_context(repo)
+    assert context.as_dict() == {"remote": "origin", "default_branch": "main", "base_sha": base,
+                                 "head_sha": _git(repo, "rev-parse", "HEAD"), "head_ref": "feature"}

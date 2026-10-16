@@ -11,7 +11,13 @@ from pathlib import Path
 import subprocess
 import tempfile
 import time
-from typing import Callable, Iterator
+from typing import Any, Callable, Iterator, Mapping
+from urllib.parse import urlparse
+
+from .ci_github_api import GitHubAPI
+from .ci_github_values import (
+    GitHubValueError, candidate_pull_request_identity, remote_repository, sha,
+)
 
 from .governance_install.runtime_custody import (
     RuntimeCustodyError,
@@ -54,9 +60,19 @@ class LocalPRContext:
     base_sha: str
     head_sha: str
     head_ref: str
+    base_ref: str | None = None
+    repository: str | None = None
+    repository_id: int | None = None
+    pull_request_number: int | None = None
+    pull_request_node_id: str | None = None
+    provider_head_sha: str | None = None
 
-    def as_dict(self) -> dict[str, str]:
-        return asdict(self)
+    def as_dict(self) -> dict[str, Any]:
+        return {key: value for key, value in asdict(self).items() if value is not None}
+
+    @property
+    def comparison_base_ref(self) -> str:
+        return self.default_branch if self.base_ref is None else self.base_ref
 
 
 @dataclass(frozen=True)
@@ -131,10 +147,94 @@ def _checked_remote_read(runner: Runner, command: list[str], *, cwd: Path) -> st
     raise AssertionError("bounded remote read loop did not terminate")
 
 
+def _bound_pr_projection(value: Mapping[str, Any], *, repository_id: int, branch: str) -> dict[str, Any]:
+    """Check a provider observation through the shared candidate identity owner."""
+    head, base = value.get("head"), value.get("base")
+    if not isinstance(head, Mapping) or not isinstance(base, Mapping):
+        raise LocalPRError("bound PR provider identity is incomplete")
+    for endpoint in (head, base):
+        repository = endpoint.get("repo")
+        if not isinstance(repository, Mapping) or type(repository.get("id")) is not int:
+            raise LocalPRError("bound PR provider repository identity is incomplete")
+    base_ref = base.get("ref")
+    if not isinstance(base_ref, str) or not base_ref or base_ref == branch:
+        raise LocalPRError("bound PR provider base ref is invalid")
+    base_sha = sha(base.get("sha"), field="bound PR base")
+    head_sha = sha(head.get("sha"), field="bound PR head")
+    if {base_sha, head_sha} & {"0" * 40}:
+        raise LocalPRError("bound PR provider subject is zero")
+    projection = candidate_pull_request_identity(
+        value, repository_id=repository_id, branch=branch,
+        base_ref=base_ref, base_sha=base_sha, head_sha=head_sha,
+    )
+    return {**projection, "base_ref": base_ref}
+
+
+def _bound_pr_context(
+    repo_root: Path, *, remote: str, default_branch: str, head_ref: str,
+    head_sha: str, runner: Runner, provider_api: GitHubAPI | None,
+) -> dict[str, Any] | None:
+    """Authenticate branch binding; unavailable GitHub facts never mean no PR."""
+    remote_url = _checked(runner, ["git", "remote", "get-url", remote], cwd=repo_root)
+    try:
+        repository = remote_repository(remote_url)
+    except GitHubValueError as exc:
+        if urlparse(remote_url).hostname in {"github.com", "ssh.github.com"} or remote_url.startswith("git@github.com:"):
+            raise LocalPRError("local PR remote GitHub identity is invalid") from exc
+        return None
+    api = provider_api if provider_api is not None else GitHubAPI(
+        token=os.environ.get("GITHUB_TOKEN", ""),
+        api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"))
+    observed_repository = api.repository(repository)
+    repository_id = observed_repository.get("id")
+    if (type(repository_id) is not int or repository_id < 1
+            or observed_repository.get("full_name") != repository
+            or observed_repository.get("default_branch") != default_branch):
+        raise LocalPRError("local PR provider repository does not match selected remote")
+    if head_ref == "detached-head":
+        raise LocalPRError("bound PR discovery requires an exact local branch")
+    matches = []
+    for value in api.pull_requests(repository, state="open"):
+        head = value.get("head")
+        if (not isinstance(head, Mapping) or not isinstance(head.get("ref"), str)
+                or not head["ref"] or value.get("state") != "open"):
+            raise LocalPRError("open PR inventory has an incomplete head or state")
+        if head.get("ref") != head_ref:
+            continue
+        head_repository = head.get("repo")
+        if not isinstance(head_repository, Mapping) or type(head_repository.get("id")) is not int:
+            raise LocalPRError("open PR inventory cannot resolve the head repository")
+        if head_repository["id"] == repository_id:
+            matches.append(_bound_pr_projection(value, repository_id=repository_id, branch=head_ref))
+    if len(matches) > 1:
+        raise LocalPRError("local branch has ambiguous open PR bindings")
+    if not matches:
+        return {"repository": repository, "repository_id": repository_id}
+    binding = matches[0]
+    for ref, expected in ((binding["base_ref"], binding["base_sha"]), (head_ref, binding["head_sha"])):
+        _checked(runner, ["git", "check-ref-format", "--branch", ref], cwd=repo_root)
+        tracking = f"refs/remotes/{remote}/{ref}"
+        _checked_remote_read(runner, ["git", "fetch", "--no-tags", remote, f"refs/heads/{ref}:{tracking}"], cwd=repo_root)
+        actual = _checked(runner, ["git", "rev-parse", "--verify", tracking], cwd=repo_root)
+        if actual != expected:
+            raise LocalPRError("bound PR ref moved between provider observation and Git fetch")
+    if runner(["git", "merge-base", "--is-ancestor", binding["head_sha"], head_sha], cwd=repo_root).returncode:
+        raise LocalPRError("local candidate is not the observed PR head or its descendant")
+    current = _bound_pr_projection(api.pull_request(repository, binding["number"]),
+                                   repository_id=repository_id, branch=head_ref)
+    if current != binding:
+        raise LocalPRError("bound PR identity moved during local discovery")
+    return {"base_ref": binding["base_ref"], "base_sha": binding["base_sha"],
+            "repository": repository, "repository_id": repository_id,
+            "pull_request_number": binding["number"], "pull_request_node_id": binding["node_id"],
+            "provider_head_sha": binding["head_sha"]}
+
+
 def resolve_local_pr_context(
-    repo_root: Path, *, remote: str = "origin", runner: Runner = _run
+    repo_root: Path, *, remote: str = "origin", runner: Runner = _run,
+    provider_api: GitHubAPI | None = None,
 ) -> LocalPRContext:
-    """Resolve/fetch remote default branch and prove current HEAD descends from it."""
+    """Bind the exact provider PR base, or authenticated unbound default branch."""
 
     repo_root = repo_root.resolve()
     symbolic = _checked_remote_read(
@@ -156,13 +256,21 @@ def resolve_local_pr_context(
     )
     base_sha = _checked(runner, ["git", "rev-parse", "--verify", remote_ref], cwd=repo_root)
     head_sha = _checked(runner, ["git", "rev-parse", "--verify", "HEAD"], cwd=repo_root)
+    head_ref = _checked(runner, ["git", "branch", "--show-current"], cwd=repo_root) or "detached-head"
+    try:
+        binding = _bound_pr_context(repo_root, remote=remote, default_branch=default_branch,
+                                   head_ref=head_ref, head_sha=head_sha, runner=runner, provider_api=provider_api)
+    except ValueError as exc:
+        raise LocalPRError(str(exc)) from exc
+    if binding is not None:
+        base_sha = binding.pop("base_sha", base_sha)
     ancestry = runner(
         ["git", "merge-base", "--is-ancestor", base_sha, head_sha], cwd=repo_root
     )
     if ancestry.returncode != 0:
-        raise LocalPRError("current HEAD does not descend from the fetched default branch")
-    head_ref = _checked(runner, ["git", "branch", "--show-current"], cwd=repo_root) or "detached-head"
-    return LocalPRContext(remote, default_branch, base_sha, head_sha, head_ref)
+        detail = "bound PR comparison base" if binding and binding.get("base_ref") else "default branch"
+        raise LocalPRError(f"current HEAD does not descend from the fetched {detail}")
+    return LocalPRContext(remote, default_branch, base_sha, head_sha, head_ref, **(binding or {}))
 
 
 def _pr_environment_values(
@@ -180,7 +288,7 @@ def _pr_environment_values(
         "BCF_ENFORCE_PR_CHANGELOG": "true",
         "BCF_PR_BASE_SHA": context.base_sha,
         "BCF_VALIDATION_LANE": validation_lane.value,
-        "GITHUB_BASE_REF": context.default_branch,
+        "GITHUB_BASE_REF": context.comparison_base_ref,
         "GITHUB_EVENT_NAME": "pull_request",
         "GITHUB_HEAD_REF": context.head_ref,
         "GITHUB_SHA": context.head_sha,
@@ -205,7 +313,7 @@ def run_local_pr_validation(
     context = resolve_local_pr_context(repo_root, remote=remote, runner=runner)
     event = {
         "pull_request": {
-            "base": {"ref": context.default_branch, "sha": context.base_sha},
+            "base": {"ref": context.comparison_base_ref, "sha": context.base_sha},
             "head": {"ref": context.head_ref, "sha": context.head_sha},
         },
         "repository": {"default_branch": context.default_branch},

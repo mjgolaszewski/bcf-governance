@@ -1,0 +1,37 @@
+{
+  "authority": false,
+  "status": "isolated_incomplete_construction",
+  "contract": "audits/issue-394/bound-pr-context-contract.json",
+  "initial_failures": {
+    "behavioral": 7,
+    "seconds": 3.43
+  },
+  "characterization_before_extraction": {
+    "cases": 13,
+    "seconds": 0.87,
+    "scope": "Existing PR projection output and failure messages"
+  },
+  "current_tests": {
+    "passed": 59,
+    "seconds": 5.9,
+    "scope": "Complete local PR and candidate PR modules; includes bound stack, descendant, movement, ambiguous/error/missing credential and legacy serialization cases"
+  },
+  "additional_control": {
+    "failure": "Missing head ref was incorrectly treated as absence",
+    "before": {
+      "passed": 25,
+      "failed": 1,
+      "seconds": 5.57
+    },
+    "correction": "Reject incomplete open PR head/ref/state before filtering for absence."
+  },
+  "static": "Native lint and typecheck pass; canonical pack generator ran.",
+  "remaining": [
+    "Complete provider API propagation through prospective/submit/late unchanged checks.",
+    "Existing PR projection must separate actual base ref from repository default and bind prior PR identity.",
+    "Provider retry, protection, merge and release contexts must consume exact context with independent authority rejection.",
+    "Full forward/reverse source/effect conformance, profile/adopter qualification and canonical successor evidence."
+  ],
+  "integration": "Do not merge or activate this partial resolver subset into primary in-flight attempt 5.",
+  "whole_requirement_closure": false
+}

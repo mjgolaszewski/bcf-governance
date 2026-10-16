@@ -6,6 +6,7 @@ import re
 from typing import Any, Mapping, Protocol
 
 from .local_pr import ProspectiveValidationError
+from .ci_github_values import GitHubValueError, candidate_pull_request_identity
 
 
 class CandidatePRAPI(Protocol):
@@ -43,38 +44,13 @@ def _validate(
     base_sha: str,
     head_sha: str,
 ) -> dict[str, Any]:
-    head = value.get("head")
-    base = value.get("base")
-    if not isinstance(head, Mapping) or not isinstance(base, Mapping):
-        raise ProspectiveValidationError("candidate pull request identity is incomplete")
-    head_repo = head.get("repo")
-    base_repo = base.get("repo")
-    if (
-        value.get("state") != "open"
-        or not isinstance(value.get("number"), int)
-        or isinstance(value.get("number"), bool)
-        or int(value["number"]) < 1
-        or not re.fullmatch(r"PR_[A-Za-z0-9_-]+", str(value.get("node_id", "")))
-        or head.get("ref") != branch
-        or head.get("sha") != head_sha
-        or base.get("ref") != base_ref
-        or base.get("sha") != base_sha
-        or not isinstance(head_repo, Mapping)
-        or not isinstance(base_repo, Mapping)
-        or head_repo.get("id") != repository_id
-        or base_repo.get("id") != repository_id
-    ):
-        raise ProspectiveValidationError(
-            "candidate pull request does not bind the exact proved subject"
+    try:
+        return candidate_pull_request_identity(
+            value, repository_id=repository_id, branch=branch,
+            base_ref=base_ref, base_sha=base_sha, head_sha=head_sha,
         )
-    return {
-        "number": int(value["number"]),
-        "node_id": str(value["node_id"]),
-        "state": "open",
-        "repository_id": repository_id,
-        "base_sha": base_sha,
-        "head_sha": head_sha,
-    }
+    except GitHubValueError as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
 
 
 def ensure_candidate_pull_request(
