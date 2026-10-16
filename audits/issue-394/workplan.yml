@@ -1122,6 +1122,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - timeout-policy-resource-admission
     - authenticated-base-registry-reads
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
@@ -2338,6 +2339,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - timeout-policy-resource-admission
     - derived-comparison-context-before-preflight-work
   AC31:
     requirement: Empty execution remainder still undergoes independent required-claim/reuse verification and emits legitimate stable terminal status; no empty matrix
@@ -3279,3 +3281,23 @@ implementation_slices:
     - Normative trusted consumer must require this conformance before claiming complete CI integration; legacy partial compilation
       alone claims no such completeness.
     - Canonical normalization installed profiles approved performance budgets and immutable terminal custody remain open.
+  timeout-policy-resource-admission:
+    id: timeout-policy-resource-admission
+    workitem: P32-P0-02
+    scope: Existing timeout-policy resource admission rejects invalid present resources before graph rendering instead of selecting
+      legacy defaults; genuine absence remains compatible.
+    contract: audits/issue-394/timeout-policy-resource-contract.json
+    producer: bcf_governance/tooling/ci_graph_timeouts.py::gate_timeout_contract
+    consumer: bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph::test_gate_timeout_policy_keeps_absence_and_regular_file_contracts
+    negative_controls:
+    - cause: invalid-present-timeout-resource-before-graph-rendering
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource
+    remaining:
+    - Evidence audits/issue-394/timeout-policy-resource-verification.json proves local policy and graph consumers only.
+    - Full provider deadline composition, authenticated timing, installed consumers and no-avoidable-allocation measurements
+      remain unqualified.
+    - No P32-P0-05 dependency closure or policy activation is claimed; canonical normalization and terminal custody remain open.

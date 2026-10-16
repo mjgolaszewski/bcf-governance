@@ -17,7 +17,7 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
     """Read the canonical gate timeout defaults and optional per-gate overrides."""
 
     path = repo_root / "governance/gate-contracts.yml"
-    if not path.is_file() or path.is_symlink():
+    if not path.exists() and not path.is_symlink():
         return LEGACY_GATE_TIMEOUT_SECONDS, {}
     try:
         registry = load_yaml_path(path)

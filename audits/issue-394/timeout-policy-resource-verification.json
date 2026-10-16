@@ -1,0 +1,36 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/timeout-policy-resource-contract.json",
+  "red": {
+    "failed": 3,
+    "passed": 1,
+    "seconds": 0.63
+  },
+  "focused": {
+    "passed": 9,
+    "seconds": 1.13,
+    "resources": [
+      "symlink",
+      "dangling symlink",
+      "directory",
+      "fifo"
+    ]
+  },
+  "broad": {
+    "passed": 145,
+    "seconds": 46.77,
+    "scope": "Full CI graph plus LOC/context/private-runtime parity; before adding two FIFO parameter cases."
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "pack_parity": "passed",
+    "governance_yaml": "passed",
+    "coverage_schema": "passed; 82 requirements; 24 bounded slices"
+  },
+  "constraints": [
+    "Existing early resource validation only; full deadline envelopes remain unimplemented and dependency-gated.",
+    "No provider, installer or custody writes, no runtime/installed qualification."
+  ]
+}

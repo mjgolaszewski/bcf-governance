@@ -3552,3 +3552,39 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
         "automation_dependency_versions_and_changelog",
     }
     assert report["mechanical_findings"] == []
+
+
+
+@pytest.mark.parametrize('consumer', ['policy', 'graph'])
+@pytest.mark.parametrize('resource', ['symlink', 'dangling_symlink', 'directory', 'fifo'])
+def test_gate_timeout_policy_does_not_default_over_invalid_resource(tmp_path, resource, consumer):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    if consumer == 'graph':
+        _write_graph(tmp_path)
+    governance = tmp_path / 'governance'
+    governance.mkdir(exist_ok=True)
+    path = governance / 'gate-contracts.yml'
+    if resource == 'directory':
+        path.mkdir()
+    elif resource == 'fifo':
+        os.mkfifo(path)
+    else:
+        target = tmp_path / 'declared-timeouts.yml'
+        if resource == 'symlink':
+            target.write_text('execution_policy: {default_timeout_seconds: 7200}\n')
+        path.symlink_to(target)
+    with pytest.raises(CIGraphError, match='regular nonsymlink file'):
+        if consumer == 'graph':
+            validate_ci_graph(tmp_path)
+        else:
+            gate_timeout_contract(tmp_path)
+
+
+def test_gate_timeout_policy_keeps_absence_and_regular_file_contracts(tmp_path):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    assert gate_timeout_contract(tmp_path) == (1800, {})
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    path = governance / 'gate-contracts.yml'
+    path.write_text('execution_policy: {default_timeout_seconds: 7200}\ngates: {example: {invocation: {timeout_seconds: 9000}}}\n')
+    assert gate_timeout_contract(tmp_path) == (7200, {'example': 9000})
