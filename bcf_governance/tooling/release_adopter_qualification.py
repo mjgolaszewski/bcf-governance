@@ -535,6 +535,17 @@ def qualify_release(
         )
         for item in contract["required_adopters"]
     )
+    for source in sources:
+        try:
+            require_adopter_profile(supplied[source.repository], source)
+        except AdopterSourceError as exc:
+            raise ReleaseQualificationError(str(exc)) from exc
+        if source.repository in adopter_pythons:
+            python = adopter_pythons[source.repository]
+            if not python.is_file() or not os.access(python, os.X_OK):
+                raise ReleaseQualificationError(
+                    f"adopter interpreter is unavailable: {source.repository}"
+                )
     environment = dict(os.environ)
     reports: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:

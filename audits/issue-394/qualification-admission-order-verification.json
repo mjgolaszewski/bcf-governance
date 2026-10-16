@@ -1,0 +1,41 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "contracts": [
+    "23a8be38",
+    "f06819b5"
+  ],
+  "red_controls_commit": "3fb4f551",
+  "red_before_fix": {
+    "failed": 4,
+    "passed": 1,
+    "cause": "Wrong/missing last profile and missing/nonexecutable last interpreter reached first controller allocation."
+  },
+  "checks": {
+    "qualification_and_sources": {
+      "passed": 45,
+      "elapsed_seconds": 1.56
+    },
+    "valid_profile_consumer_rechecks": "Source roots and isolated clone roots each checked once in canonical order using real profile parser.",
+    "governance_yaml": "passed after checkpoint-only memory compaction",
+    "authored_semantic_ownership": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_module_size": "passed;774lines",
+    "architecture_context_membership": "passed",
+    "pack_and_exact_references": {
+      "passed": 9,
+      "elapsed_seconds": 38.18
+    }
+  },
+  "public_contract_change": false,
+  "publication_authority": false,
+  "remaining": [
+    "Exact package/installed checks pending.",
+    "One canonical real-adopter qualification queued after actual maintenance then AgentBus terminals.",
+    "All82 whole requirements, approved targets, foundation closure and final custody remain open."
+  ],
+  "verification_history": [
+    "Initial native governance rejected MEMORY at28.5KiB against28KiB cap. Three recent checkpoint summaries compacted into audit/phase citations; full historical evidence retained. Final MEMORY28146bytes, native validation passes; cap unchanged."
+  ]
+}

@@ -482,9 +482,14 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     profiles: dict[str, str] = {}
     source_trees: dict[str, str] = {}
     calls: list[list[str]] = []
+    profile_checks: list[tuple[Path, str]] = []
+    original_profile_check = qualification.require_adopter_profile
     for index, item in enumerate(contract["required_adopters"], start=1):
         root = tmp_path / item["id"]
         root.mkdir()
+        (root / 'governance-profile.yml').write_text(
+            f"profile:\n  selected: {item['profile']}\n", encoding='utf-8',
+        )
         python = root / ".venv/bin/python"
         python.parent.mkdir(parents=True)
         python.write_text("#!/bin/sh\n", encoding="utf-8")
@@ -539,7 +544,10 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         return ""
 
     monkeypatch.setenv("GITHUB_TOKEN", "observation-only")
-    monkeypatch.setattr(qualification, "require_adopter_profile", lambda *_args: None)
+    def check_profile(root, source):
+        original_profile_check(root, source)
+        profile_checks.append((root, source.id))
+    monkeypatch.setattr(qualification, "require_adopter_profile", check_profile)
     monkeypatch.setattr(qualification, "_source_identity", source_identity)
     monkeypatch.setattr(qualification, "_run", run)
     monkeypatch.setattr(
@@ -563,6 +571,10 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         output=tmp_path / "receipt.json",
     )
 
+    ids = [item['id'] for item in contract['required_adopters']]
+    assert [identifier for _, identifier in profile_checks] == ids + ids
+    assert all(root == tmp_path / identifier for root, identifier in profile_checks[:len(ids)])
+    assert all(root != tmp_path / identifier for root, identifier in profile_checks[len(ids):])
     assert receipt["subject"] == {
         "repository": release_identity[0],
         "commit_sha": release_identity[1],
