@@ -12,6 +12,7 @@ import hashlib
 import html
 import json
 import re
+from pathlib import Path
 from typing import Any, Iterable, Mapping, TYPE_CHECKING
 
 from jsonschema import Draft202012Validator
@@ -586,6 +587,20 @@ def validate_lifecycle_bindings(
     if required_operation_calls is not None:
         result["operation_call_populations_checked"] = operation_populations_checked
     return result
+
+
+
+def validate_reconstructed_lifecycle_bindings(
+    repo_root: Path, *, compiled: dict[str, Any], expected_source: Mapping[str, str],
+    collected_selectors: frozenset[str],
+    required_negative_controls: Mapping[Relationship, Mapping[str, str]],
+    required_call_edges: Mapping[Relationship, frozenset[tuple[str, str]]],
+    required_fact_bindings: Mapping[Relationship, tuple[Mapping[str, str], ...]],
+    required_operation_calls: Mapping[Relationship, Mapping[str, Mapping[str, Any]]],
+    source_import_roots: tuple[str, ...] = (".",),
+) -> dict[str, Any]:
+    """Reconstruct exact source inputs; caller authenticates protected context."""
+    return {}
 
 
 def render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "bound") -> str:

@@ -1056,3 +1056,86 @@ def test_lifecycle_binding_rejects_initialization_omission_or_substitution(initi
         rows[0]['unresolved'].clear()
     with pytest.raises(CIGraphError, match='operation call population'):
         _validate_bindings(initialization_binding_inputs)
+
+
+@pytest.fixture
+def reconstructed_binding_inputs(operation_call_binding_inputs, composition, tmp_path):
+    import subprocess
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+
+    def git(*args):
+        return subprocess.run(['git', *args], cwd=tmp_path, check=True, capture_output=True, text=True).stdout.strip()
+    git('init', '-q')
+    git('config', 'user.name', 'Binding Test')
+    git('config', 'user.email', 'binding@example.invalid')
+    git('add', 'runtime.py')
+    git('commit', '-qm', 'source')
+    identity = dict(composition['expected_source'], commit_sha=git('rev-parse', 'HEAD'), tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    composition['expected_source'] = identity
+    composition['payload']['source'] = identity
+    inputs = operation_call_binding_inputs
+    inputs['compiled'] = compile_lifecycle_composition(**composition)
+    inputs['expected_source'] = identity
+    subject = {key: identity[key] for key in ('commit_sha', 'tree_sha')}
+    inventory = resolve_python_imports(tmp_path, discover_python_source(tmp_path, source_subject=subject, call_contracts_version='1.0', initialization_contracts_version='1.0'))
+    pair = ('release', 'build', 'verify')
+    inputs['required_operation_calls'] = {pair: {
+        root: source_operation_call_population(root, inventory, include_initialization=True)
+        for root in inputs['required_operation_calls'][pair]
+    }}
+    inputs.pop('source_inventory')
+    inputs['repo_root'] = tmp_path
+    return inputs
+
+
+def test_reconstructed_source_binding_uses_exact_protected_subject(reconstructed_binding_inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+
+    before = copy.deepcopy(reconstructed_binding_inputs)
+    result = validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert result['operation_call_populations_checked'] == 3
+    assert result['source_reconstruction']['subject'] == {
+        key: before['expected_source'][key] for key in ('commit_sha', 'tree_sha')
+    }
+    assert len(result['source_reconstruction']['population_sha256']) == 64
+    assert reconstructed_binding_inputs == before
+
+
+@pytest.mark.parametrize('defect', ['subject', 'root', 'scope', 'catalogue'])
+def test_reconstructed_binding_rejects_invalid_inputs_before_discovery(reconstructed_binding_inputs, monkeypatch, defect):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import semantic_ownership_inventory as source
+
+    inputs = reconstructed_binding_inputs
+    populations = inputs['required_operation_calls'][('release', 'build', 'verify')]
+    root = next(iter(populations))
+    if defect == 'subject':
+        inputs['expected_source'] = dict(inputs['expected_source'], commit_sha='a' * 40)
+    elif defect == 'root':
+        populations.pop(root)
+    elif defect == 'scope':
+        populations[root]['scope'] = 'discovered_python_functions_only'
+    else:
+        populations[root] = None
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('source discovered before rejecting malformed protected input'))
+    with pytest.raises(CIGraphError):
+        owner.validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('defect', ['dirty', 'untracked', 'missing'])
+def test_reconstructed_binding_rejects_source_movement(reconstructed_binding_inputs, defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+
+    inputs = reconstructed_binding_inputs
+    path = inputs['repo_root'] / 'runtime.py'
+    if defect == 'dirty':
+        path.write_text(path.read_text() + '\nhidden()\n')
+    elif defect == 'untracked':
+        (path.parent / 'extra.py').write_text('hidden()\n')
+    else:
+        path.unlink()
+    with pytest.raises(CIGraphError, match='source'):
+        validate_reconstructed_lifecycle_bindings(**inputs)
