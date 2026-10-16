@@ -3280,7 +3280,7 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
         if str(step.get("uses", "")).startswith("actions/checkout@")
     ]
     assert checkout_refs == [
-        "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
+        "${{ github.workflow_sha }}",
         "${{ github.event.workflow_run.head_sha }}",
     ]
     candidate_checkout = next(
@@ -3671,3 +3671,17 @@ def test_nondefault_candidate_projection_rejects_unbound_context():
     evaluation = PostMergeEvaluation("closure", None, "trusted_exact_main", "exact-main", "governance")
     with pytest.raises(CIGraphError, match="authenticated PR binding"):
         candidate_post_merge_evaluation(evaluation, context=LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack"))
+
+
+@pytest.mark.parametrize("source", ["${{ github.event.workflow_run.pull_requests[0].base.sha }}", "${{ github.event.workflow_run.head_sha }}"])
+def test_ordinary_evaluator_rejects_untrusted_executable_checkout(tmp_path: Path, source: str) -> None:
+    graph = build_reference_ci_graph(
+        project_id="v3-fixture", profile="standard", profile_contract_version="3.0",
+        gates=["governance-validate", "test", "contract-test", "runtime-smoke"],
+        candidate_labels=["ubuntu-24.04"], trusted_labels=["self-hosted", "fixture-trusted"],
+        candidate_hosted=True, trusted_hosted=False,
+    )
+    graph["step_components"]["checkout-protected-pr-base"]["with"]["ref"] = source
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="invalid exact checkout/controller contract"):
+        validate_ci_graph(tmp_path)
