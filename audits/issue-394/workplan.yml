@@ -1063,6 +1063,8 @@ requirements:
       scenario: Cause-specific I18 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-authority-progress-and-exposure-frontier
   I19:
     requirement: Adopter parity. Self-managed BCF, Lite, Standard-v3, Regulated, Python-only and mixed toolchains retain their own requirements. The same product
       semantics must be installable; BCF-self controller/release/toolchain fixtures cannot be imposed on ordinary consumers.
@@ -1126,6 +1128,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-authority-progress-and-exposure-frontier
     - unambiguous-authored-lifecycle-inputs
     - timeout-policy-resource-admission
     - authenticated-base-registry-reads
@@ -2351,6 +2354,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-authority-progress-and-exposure-frontier
     - unambiguous-authored-lifecycle-inputs
     - timeout-policy-resource-admission
     - derived-comparison-context-before-preflight-work
@@ -3420,3 +3424,31 @@ implementation_slices:
     - Full lifecycle population, normative adoption, admission and terminal custody
       remain separate gates.
     - 'Verification: audits/issue-394/lifecycle-schema-binding-verification.json.'
+
+  provider-authority-progress-and-exposure-frontier:
+    id: provider-authority-progress-and-exposure-frontier
+    workitem: P32-P0-06
+    scope: Expose required provider workflow/controller authentication through existing
+      non-authoritative progress; reject exposure through existing query after fixed-point
+      generation and before expensive provider work.
+    contract: audits/issue-394/provider-authority-progress-contract.json
+    producer: bcf_governance/tooling/local_pr.py::_run_prospective_train
+    consumer: Existing progress sink and canonical submission caller; existing preflight
+      exposure owner retained
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[None]
+    - tests.test_prospective_validation::test_provider_authority_progress_absent_when_no_provider_is_required
+    negative_controls:
+    - cause: provider-workflow-controller-graph-or-transport-failure
+      test: tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[controller]
+    - cause: exposure-error-before-provider-work
+      test: tests.test_prospective_validation::test_exposure_failure_stops_before_provider_authority_and_retains_cause
+    remaining:
+    - Existing full preflight exposure check remains mandatory; no proof reuse or suppression.
+    - Early check follows necessary generation; not a claim that every authored contradiction
+      is at its earliest possible boundary.
+    - Progress is not certification, receipt, deadline sufficiency or full timing attribution.
+    - 'Verification: audits/issue-394/provider-authority-progress-verification.json;
+      all whole requirements remain open.'

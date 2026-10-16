@@ -342,7 +342,7 @@
     },
     "schemas/operational-observation.schema.json": {
       "operation": "copy",
-      "sha256": "08126e61459db413b41fc4b3094cad512d911e7f789b11ed3b277edf8e478e75"
+      "sha256": "e36be2afc0206d75e4f8ea8abedf21fd5e1cb33020c9c9a9c477250022830450"
     },
     "schemas/phase-history.schema.json": {
       "operation": "copy",
@@ -1263,7 +1263,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "cdd4373f1afc42c2454cd7e94b2de96255ad7f2eb500ab8526c8d61b4ab3252c"
+      "sha256": "eea8855dbf4e74742091bdd5151c1ce509cb0f40203dffec906c278e2928067d"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
