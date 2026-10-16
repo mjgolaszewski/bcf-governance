@@ -25,7 +25,8 @@
     "Retain all module sites conservatively rather than inferring that disconnected module effects are unrelated; unknown import/native/implicit/dynamic effects prevent execution or completeness qualification.",
     "Return deterministic immutable tuples for source module/site/unknown observations. Do not infer runtime call closure, claim impact, suppression, provider authority or actual complete source coverage.",
     "Protected caller remains responsible for authenticating parser, exact source population and source file bytes; candidate-provided inventories never authenticate themselves.",
-    "Existing lifecycle binding derives the observation scope from its protected expected operation population and compares exact source-produced initialization tuples; candidate facts cannot choose a weaker expected scope. Legacy protected populations remain readable."
+    "Existing lifecycle binding derives the observation scope from its protected expected operation population and compares exact source-produced initialization tuples; candidate facts cannot choose a weaker expected scope. Legacy protected populations remain readable.",
+    "After the existing source file and entrypoint identities are available, reject malformed initialization facts before traversing the function closure."
   ],
   "forbidden_surfaces": [
     "normative DAG adoption",

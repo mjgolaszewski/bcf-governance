@@ -150,3 +150,10 @@ def test_source_initialization_change_is_observed_without_removing_functions(tmp
     changed = population('initialize(2)\ndef root():\n    pass\n')
     assert first['functions'] == changed['functions']
     assert first['module_initializers'] != changed['module_initializers']
+
+
+def test_invalid_initialization_rejects_before_function_closure_traversal(initialization_inventory):
+    initialization_inventory['module_initializers'].clear()
+    initialization_inventory['functions'][0]['calls'] = None
+    with pytest.raises(SemanticOperationEffectError, match='initialization'):
+        source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
