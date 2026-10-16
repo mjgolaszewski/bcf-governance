@@ -11,6 +11,7 @@ from dataclasses import asdict
 import hashlib
 import html
 import json
+import re
 from typing import Any, Iterable, Mapping, TYPE_CHECKING
 
 from jsonschema import Draft202012Validator
@@ -241,6 +242,15 @@ def validate_backtrace_transition_references(
     This is structural conformance, never guard or recovery authority.
     """
 
+    for transition in transitions.values():
+        if "guard_refs" not in transition:
+            continue
+        guards = transition["guard_refs"]
+        if (not isinstance(guards, list) or not guards
+                or any(not isinstance(value, str) or re.fullmatch(r"sha256:[a-f0-9]{64}", value) is None
+                       for value in guards)
+                or len(set(guards)) != len(guards)):
+            raise CIGraphError("lifecycle path guard reference population is malformed or duplicated")
     checked = 0
     for transition in transitions.values():
         for field, source_kind, target_kind in (
@@ -254,6 +264,10 @@ def validate_backtrace_transition_references(
             if (target is None or target["id"] == transition["id"]
                     or transition.get("kind") != source_kind or target.get("kind") != target_kind):
                 raise CIGraphError("lifecycle path typed transition reference is undeclared self-referential or wrong-kind")
+            if ("guard_refs" in transition or "guard_refs" in target) and (
+                set(transition.get("guard_refs", [])) != set(target.get("guard_refs", []))
+            ):
+                raise CIGraphError("lifecycle path typed transition reference loses guard obligations")
             if field == "rejection_transition":
                 if (transition["from"] != target["from"]
                         or not set(transition["invariants"]) <= set(target["invariants"])):
@@ -358,6 +372,7 @@ def validate_lifecycle_paths(
     recoveries = {key: row for key, row in transitions.items() if row["kind"] == "recovery"}
     if not isinstance(required_recovery_limits, Mapping) or recoveries.keys() != required_recovery_limits.keys():
         raise CIGraphError("lifecycle path independent recovery population differs")
+    guard_obligations_checked = 0
     successes: dict[Relationship, str] = {}
     claimed_rejections: set[str] = set()
     claimed_recoveries: set[str] = set()
@@ -369,6 +384,13 @@ def validate_lifecycle_paths(
             raise CIGraphError("lifecycle path success population is ambiguous")
         successes[pair] = identity
         contract = reachable[pair]
+        expected_guards = {
+            "sha256:" + hashlib.sha256(_bytes(guard)).hexdigest()
+            for guard in contract["guards"]
+        }
+        if set(row.get("guard_refs", [])) != expected_guards:
+            raise CIGraphError("lifecycle path compiled guard obligation population differs")
+        guard_obligations_checked += len(expected_guards)
         rejection_id = row.get("rejection_transition")
         rejection = transitions.get(rejection_id) if isinstance(rejection_id, str) else None
         if (rejection is None or rejection["kind"] != "rejection"
@@ -426,6 +448,7 @@ def validate_lifecycle_paths(
         "composition_sha256": compiled["composition_sha256"],
         "backtrace_sha256": digest, "states_checked": len(states),
         "transitions_checked": len(transitions), "recoveries_checked": len(recoveries),
+        "guard_obligations_checked": guard_obligations_checked,
     }
 
 

@@ -409,7 +409,7 @@
     },
     "schemas/release-train-backtrace.schema.json": {
       "operation": "copy",
-      "sha256": "94eab2f62f619d1f864de231bea96927d18c01d9689aa00f142c9cae2b581821"
+      "sha256": "02c08e72c64911cd99303ae6cbe1da5bbf2f8ca5db8677ddf6d63171b38b90b9"
     },
     "schemas/repo-cleanup-contract.schema.json": {
       "operation": "copy",
@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "d691544163e0390dec792c20882bb2354efb085c41412edcdd22e5b395fb71be"
+      "sha256": "4c0ca96e50d7d277282363c1886107ea788e33ad9ff83897d1df5ce5a2f64bd8"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",

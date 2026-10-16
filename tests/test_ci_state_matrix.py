@@ -219,3 +219,25 @@ def test_authored_reference_guard_rejects_lost_guard_obligation(field, defect):
     else: changed["guard_refs"] *= 2
     with pytest.raises(CIStateMatrixError, match="guard"):
         _validate_backtrace_references(model)
+
+
+@pytest.mark.parametrize("changed", [False, True])
+def test_authored_only_recovery_preserves_declared_guard_before_allocation(tmp_path, changed):
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    model = yaml.safe_load(path.read_text())
+    success, rejected, recovery = model["transitions"][:3]
+    refs = ["sha256:" + "a" * 64]
+    success.update(kind="success", rejection_transition=rejected["id"], guard_refs=list(refs))
+    rejected.update(kind="rejection", guard_refs=list(refs), invariants=list(success["invariants"]))
+    rejected["from"] = success["from"]
+    recovery.update(kind="recovery", retry_of=success["id"], max_attempts=2,
+                    guard_refs=list(refs), invariants=list(success["invariants"]))
+    recovery["from"], recovery["to"] = rejected["to"], success["from"]
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    assert validate_ci_state_matrix(repo, authored_only=True)["authority"] is False
+    if changed: recovery["guard_refs"] = ["sha256:" + "b" * 64]
+    else: recovery.pop("guard_refs")
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    with pytest.raises(CIStateMatrixError, match="guard"):
+        validate_ci_state_matrix(repo, authored_only=True)

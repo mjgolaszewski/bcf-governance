@@ -1003,3 +1003,19 @@ def test_typed_paths_cannot_omit_a_compiled_guard_obligation(path_inputs, compos
     contract["guards"].append(added)
     path_inputs["compiled"] = compile_lifecycle_composition(**composition)
     assert _path_query(path_inputs)["guard_obligations_checked"] == 2
+
+
+@pytest.mark.parametrize("defect", ["malformed", "duplicate", "empty", "missing-kind"])
+def test_backtrace_schema_rejects_invalid_guard_references(defect):
+    schema = json.loads((ROOT / "schemas/release-train-backtrace.schema.json").read_text())
+    model = load_yaml_path(ROOT / "spec/phase0/release-train-backtrace.yml")
+    row = model["transitions"][0]
+    row.update(kind="rejection", guard_refs=["sha256:" + "a" * 64])
+    validator = Draft202012Validator(schema)
+    validator.validate(model)
+    if defect == "malformed": row["guard_refs"] = ["arbitrary guard"]
+    elif defect == "duplicate": row["guard_refs"] *= 2
+    elif defect == "empty": row["guard_refs"] = []
+    else: row.pop("kind")
+    with pytest.raises(ValidationError):
+        validator.validate(model)

@@ -255,6 +255,16 @@
           "max_attempts": {
             "type": "integer",
             "minimum": 1
+          },
+          "guard_refs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^sha256:[a-f0-9]{64}$"
+            },
+            "description": "Content references to canonical compiled fact_id/check guard objects; no second authored guard catalog."
           }
         },
         "allOf": [
@@ -293,7 +303,12 @@
               ]
             }
           }
-        ]
+        ],
+        "dependentRequired": {
+          "guard_refs": [
+            "kind"
+          ]
+        }
       }
     },
     "bounded_workitem_frontier_contract": {

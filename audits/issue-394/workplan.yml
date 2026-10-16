@@ -1096,6 +1096,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-guard-preservation
     - typed-reference-before-allocation
     - publication-metadata-revalidation
     - early-active-phase-schema
@@ -1141,6 +1142,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-guard-preservation
     - typed-lifecycle-path-binding
     - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
@@ -1389,6 +1391,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-guard-preservation
     - typed-reference-before-allocation
     - typed-lifecycle-path-binding
     - dormant-composition-and-static-bindings
@@ -1850,6 +1853,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-guard-preservation
     - typed-reference-before-allocation
     - typed-lifecycle-path-binding
     - dormant-composition-and-static-bindings
@@ -1912,6 +1916,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-guard-preservation
     - typed-lifecycle-path-binding
   AC13:
     requirement: Self/Lite/Standard-v3/Regulated plus pure/mixed toolchains retain actual adopter requirements and installation/projection parity.
@@ -2771,3 +2776,28 @@ implementation_slices:
     remaining:
     - Canonical test-manifest normalization is required before governed oracle closure.
     - Independent guard/effect populations, installed consumer behavior, complete typed model adoption and terminal custody remain unqualified.
+  typed-guard-preservation:
+    id: typed-guard-preservation
+    workitem: P32-P0-03
+    scope: Content references to existing compiled fact/check guards survive every declared rejection and recovery; no new guard catalog or runtime
+      truth.
+    contract: audits/issue-394/typed-guard-preservation-contract.json
+    producer: Existing compiled lifecycle relationship guards
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_paths and shared authored transition reference owner
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_typed_paths_cannot_omit_a_compiled_guard_obligation
+    negative_controls:
+    - cause: compiled-guard-population-omitted
+      test: tests.test_ci_graph_composition::test_typed_paths_reject_dropped_or_poisoned_guard_references[missing-all]
+    - cause: recovery-guard-changed-before-allocation
+      test: tests.test_ci_state_matrix::test_authored_only_recovery_preserves_declared_guard_before_allocation[True]
+    - cause: recovery-guard-dropped-before-allocation
+      test: tests.test_ci_state_matrix::test_authored_only_recovery_preserves_declared_guard_before_allocation[False]
+    - cause: duplicate-guard-reference
+      test: tests.test_ci_graph_composition::test_typed_paths_reject_dropped_or_poisoned_guard_references[duplicate]
+    remaining:
+    - Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations
+      remain unqualified.
+    - Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required.
