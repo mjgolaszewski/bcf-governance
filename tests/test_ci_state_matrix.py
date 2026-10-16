@@ -513,3 +513,46 @@ def test_active_qualification_owners_follow_existing_command_and_loader_calls():
     command_calls = {call['called_symbol'] for row in inventory['functions'] if row['symbol'].startswith(modules[0] + '::') for call in row['calls']}
     assert harness in command_calls
     assert loader in {call['called_symbol'] for call in functions[harness]['calls']}
+
+
+@pytest.mark.parametrize('defect', ['missing_exclusion', 'false_exclusion', 'effect', 'producer', 'direct', 'indirect', 'failure', 'recovery', 'unknown_exclusion', 'duplicate_pair'])
+def test_compatibility_cannot_enter_release_authority_paths(tmp_path, defect):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    edges = model['adopter_compatibility_observation']['edges']
+    boundary = next(row for row in edges if row['id'] == 'AC-006')
+    if defect == 'missing_exclusion':
+        edges.remove(boundary)
+    elif defect == 'false_exclusion':
+        boundary['exclusion'] = 'arbitrary_candidate_waiver'
+    elif defect == 'effect':
+        boundary['authority_effect'] = 'immutable_release_publication'
+    elif defect == 'producer':
+        boundary['producer'] = 'compatibility_harness'
+    else:
+        added = copy.deepcopy(next(row for row in edges if row['id'] == 'AC-007'))
+        added['id'] = 'AC-TEST'
+        added['failure_transition'] = 'test_rejected'
+        added['recovery_transition'] = 'test_retry'
+        if defect == 'duplicate_pair':
+            pass
+        elif defect == 'unknown_exclusion':
+            added['to'] = 'trusted_release_receipt'
+            added['exclusion'] = 'arbitrary_candidate_waiver'
+        elif defect == 'direct':
+            added['to'] = 'trusted_release_receipt'
+        elif defect == 'indirect':
+            added['from'] = 'remediation_backlog'
+            added['to'] = 'trusted_release_receipt'
+        elif defect == 'failure':
+            added['from'] = next(row for row in edges if row['id'] == 'AC-005')['failure_transition']
+            added['to'] = 'immutable_publication'
+        else:
+            added['from'] = next(row for row in edges if row['id'] == 'AC-005')['recovery_transition']
+            added['to'] = 'independent_custody_verifier'
+        edges.append(added)
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    cause = 'non-authoritative.*authority' if defect in {'direct', 'indirect', 'failure', 'recovery'} else ('pair' if defect == 'duplicate_pair' else 'exclusion')
+    with pytest.raises(CIStateMatrixError, match=cause):
+        validate_ci_state_matrix(repo, authored_only=True)
