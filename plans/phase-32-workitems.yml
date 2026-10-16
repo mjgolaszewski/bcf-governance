@@ -90,7 +90,7 @@ workitems:
 - id: P32-P0-06
   priority: P0
   status: IN_PROGRESS
-  summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
+  summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets using naturally occurring governed provider runs plus controlled isolated local/adopter trials
   acceptance:
   - requires-workitem-closure:P32-P0-01
   - requires-workitem-closure:P32-P0-02

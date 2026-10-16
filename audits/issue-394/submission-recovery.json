@@ -42,5 +42,13 @@
     "source_admission": "already_in_ancestry",
     "residual_admitted_evidence": "recovered_by_merge",
     "bound_pr_context": "isolated_unfinished"
+  },
+  "subsequent_transaction": {
+    "source_commit": "3519822033c94e997d5cab4eaa547359991e42a2",
+    "normalized_commit": "67825aacdad4e62a96af4933db7c76219c5da464",
+    "terminal": "failed_closed_provider_inventory_stability",
+    "evidence": "audits/issue-394/recovered-submission-terminal.json",
+    "original_attempt_six_outcome_unchanged": true,
+    "new_retry_launched": false
   }
 }

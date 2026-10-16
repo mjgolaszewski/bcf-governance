@@ -2438,6 +2438,8 @@ measurement_policy:
   - planner overhead
   - compute storage API and complexity budgets
   reporting:
+  - user-selected collection uses governed provider runs as they occur plus controlled isolated local and pinned-adopter trials
+  - authenticate exact subject and clock then freeze matched cohorts before percentile claims
   - actual nonoverlapping critical paths
   - BCF-controlled and total elapsed time including waits
   - matched cold and warm cohorts with exact identities counts variance exclusions
