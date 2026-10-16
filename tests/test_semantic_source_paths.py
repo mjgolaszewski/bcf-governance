@@ -74,3 +74,65 @@ def test_source_delta_retains_removed_and_changed_python_population(repo):
     assert result['changed'] == ()
     assert result['base']['python_blobs'][0][0] == 'nested/root.py'
     assert result['candidate']['python_blobs'][0][0] == 'replacement.py'
+
+
+def test_unusual_paths_and_executable_mode_are_preserved(repo):
+    name = 'nested/space\tnewline\nλ.py'
+    (repo / name).write_text('pass\n')
+    (repo / name).chmod(0o755)
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'unusual path')
+    result = source.committed_python_source_population(repo, **subject(repo))
+    assert (name, '100755', git(repo, 'rev-parse', f'HEAD:{name}')) in result['python_blobs']
+
+
+def test_symlinks_and_gitlinks_are_unresolved_even_without_python_suffix(repo):
+    base = subject(repo)
+    (repo / 'alias.py').symlink_to('../outside.py')
+    (repo / 'directory_alias').symlink_to('../outside_directory')
+    git(repo, 'add', '.')
+    git(repo, 'update-index', '--add', '--cacheinfo', '160000,' + base['commit_sha'] + ',vendor')
+    git(repo, 'commit', '-qm', 'unresolved entries')
+    result = source.committed_python_source_population(repo, **subject(repo))
+    assert {row[:2] for row in result['unresolved_entries']} == {
+        ('alias.py', '120000'), ('directory_alias', '120000'), ('vendor', '160000')
+    }
+    assert [row[0] for row in result['python_blobs']] == ['nested/root.py']
+    assert source.committed_python_source_delta(repo, base=base, candidate=subject(repo))['unresolved_changed'] is True
+
+
+def test_git_replacement_cannot_substitute_the_source_subject(repo):
+    original = subject(repo)
+    oid = git(repo, 'rev-parse', 'HEAD:nested/root.py')
+    (repo / 'nested/root.py').write_text('substituted()\n')
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'replacement')
+    replacement = subject(repo)
+    git(repo, 'replace', original['commit_sha'], replacement['commit_sha'])
+    assert git(repo, 'rev-parse', original['commit_sha'] + '^{tree}') == replacement['tree_sha']
+    result = source.committed_python_source_population(repo, **original)
+    assert result['python_blobs'] == (('nested/root.py', '100644', oid),)
+
+
+def test_source_content_and_mode_change_are_retained(repo):
+    base = subject(repo)
+    (repo / 'nested/root.py').write_text('changed()\n')
+    (repo / 'nested/root.py').chmod(0o755)
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'changed')
+    result = source.committed_python_source_delta(repo, base=base, candidate=subject(repo))
+    assert result['changed'] == ('nested/root.py',)
+    assert result['added'] == result['removed'] == ()
+
+
+@pytest.mark.parametrize('record', [b'\0', b'malformed\0', b'100644 blob ' + b'a' * 40 + b'\t../escape.py\0', b'100644 blob ' + b'a' * 40 + b'\tbad\xff.py\0', b'100644 blob ' + b'a' * 40 + b'\tx.py'])
+def test_malformed_tree_population_rejects_instead_of_narrowing(repo, monkeypatch, record):
+    identity = subject(repo)
+    real = source.subprocess.run
+    def forged(args, **kwargs):
+        if 'ls-tree' in args:
+            return subprocess.CompletedProcess(args, 0, record, b'')
+        return real(args, **kwargs)
+    monkeypatch.setattr(source.subprocess, 'run', forged)
+    with pytest.raises(ValueError, match='tree'):
+        source.committed_python_source_population(repo, **identity)

@@ -23,7 +23,8 @@
     "Retain every regular Python blob with its exact mode and object identity; retain all symlink/gitlink entries as unresolved, including names without a Python suffix. Never follow or execute them.",
     "Preserve exact UTF-8 paths including spaces tabs and newlines; reject malformed or unsafe records.",
     "Add base/candidate population comparison that retains complete source snapshots and explicit added/removed/changed Python paths and unresolved entry changes. No deletion can disappear solely because candidate source inventory omits it.",
-    "These local Git observations never authenticate provider repository identity or authority and cannot interpret effects, approve retirement or authorize proof suppression. Protected caller must bind repository/subject and independently handle all unresolved entries."
+    "These local Git observations never authenticate provider repository identity or authority and cannot interpret effects, approve retirement or authorize proof suppression. Protected caller must bind repository/subject and independently handle all unresolved entries.",
+    "Empty interior tree records are malformed, distinct from a genuinely empty Git tree, and reject during decoding."
   ],
   "forbidden_surfaces": [
     "new source parser or effect evaluator",
