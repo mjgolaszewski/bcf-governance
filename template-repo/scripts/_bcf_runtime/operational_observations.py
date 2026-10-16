@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -78,9 +81,11 @@ def _timestamp(value: object) -> datetime | None:
         return None
     try:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
-    except ValueError:
+        if parsed.tzinfo is None:
+            return None
+        return parsed.astimezone(timezone.utc)
+    except (ValueError, OverflowError):
         return None
-    return parsed.astimezone(timezone.utc)
 
 
 def _latency(start: datetime | None, end: datetime | None) -> int | str:
@@ -312,3 +317,76 @@ def validate_operational_observation(
         raise OperationalObservationError(
             "operational observation is invalid: " + errors[0].message
         )
+
+
+def provider_attempt_timing_observation(
+    source_snapshot: Mapping[str, Any], *, expected_run_id: int,
+    expected_attempt: int, pipeline: str,
+) -> dict[str, Any]:
+    """Project retained provider facts; caller authenticates capture and endpoint.
+
+    This checks snapshot conformance, not provider custody or job-attempt origin.
+    The caller must bind the complete job response to its exact attempt endpoint.
+    Missing, unsupported or ambiguous facts cannot become timing certification.
+    """
+    def reject(message: str) -> None:
+        raise OperationalObservationError("provider timing snapshot " + message)
+
+    def milliseconds(value: Any) -> int:
+        parsed = _timestamp(value)
+        if parsed is None or parsed.microsecond % 1000:
+            reject("timestamp is absent or outside the qualified clock")
+        delta = parsed - datetime(1970, 1, 1, tzinfo=timezone.utc)
+        return delta.days * 86400000 + delta.seconds * 1000 + delta.microseconds // 1000
+
+    if any(type(value) is not int or value < 1 for value in (expected_run_id, expected_attempt)):
+        reject("expected attempt identity is invalid")
+    try:
+        repository, run, commit, population = (
+            source_snapshot[key] for key in ("repository", "run", "commit", "jobs")
+        )
+        if any(not isinstance(value, Mapping) for value in (repository, run, commit, population)):
+            reject("record population is malformed")
+        if (type(run["id"]) is not int or run["id"] != expected_run_id
+                or type(run["run_attempt"]) is not int or run["run_attempt"] != expected_attempt
+                or run["head_sha"] != commit["sha"] or run["status"] != "completed"):
+            reject("run attempt or subject is unbound or nonterminal")
+        jobs = population["jobs"]
+        if (not isinstance(jobs, list) or type(population["total_count"]) is not int
+                or population["total_count"] != len(jobs)):
+            reject("job population is incomplete")
+        clock = f"github:{repository['id']}:run:{expected_run_id}:attempt:{expected_attempt}"
+        start = milliseconds(run["created_at"])
+        end = milliseconds(run["updated_at"])
+        begun = milliseconds(run["run_started_at"])
+        if not start <= begun <= end:
+            reject("run timestamp order is invalid")
+        statuses = {"success": "passed", "failure": "failed", "timed_out": "failed",
+                    "cancelled": "cancelled", "skipped": "skipped"}
+        intervals = []
+        for job in jobs:
+            if (not isinstance(job, Mapping) or type(job["id"]) is not int or job["id"] < 1
+                    or type(job["run_id"]) is not int or job["run_id"] != expected_run_id
+                    or job["head_sha"] != commit["sha"] or job["status"] != "completed"
+                    or ("run_attempt" in job and (type(job["run_attempt"]) is not int
+                                                 or job["run_attempt"] != expected_attempt))):
+                reject("job identity is unbound or nonterminal")
+            if job["conclusion"] not in statuses:
+                reject("job conclusion is unsupported")
+            left, right = milliseconds(job["started_at"]), milliseconds(job["completed_at"])
+            end = max(end, right)
+            intervals.append(dict(id=str(job["id"]), clock_id=clock, kind="execution",
+                                  status=statuses[job["conclusion"]], start_ms=left, end_ms=right))
+        digest = hashlib.sha256(json.dumps(
+            source_snapshot, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        ).encode()).hexdigest()
+        return pipeline_timing_observation(
+            repository=repository["full_name"], repository_id=repository["id"],
+            source_snapshot_sha256=digest, commit_sha=commit["sha"], tree_sha=commit["tree_sha"],
+            pipeline=pipeline, clock_id=clock, clock_basis="provider_utc_ms",
+            start_ms=start, end_ms=end, intervals=intervals,
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        if isinstance(exc, OperationalObservationError):
+            raise
+        raise OperationalObservationError(f"provider timing snapshot is malformed: {exc}") from exc

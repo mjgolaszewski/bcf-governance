@@ -1,0 +1,25 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/baseline-measurement-slice.yml",
+  "naive_clock_red": {
+    "failed": 3,
+    "seconds": 0.74,
+    "behavior": "Timezone-free provider facts manufactured 1000 ms durations through ambient timezone conversion."
+  },
+  "verification": {
+    "passed": 61,
+    "seconds": 1.25,
+    "scope": "Full operational observations plus LOC/context/private-runtime parity",
+    "lint": "passed",
+    "typecheck": "passed",
+    "governance_yaml": "passed",
+    "coverage_schema": "passed",
+    "pack_parity": "passed"
+  },
+  "constraints": [
+    "Snapshot projection is not provider authentication or job-attempt custody; caller authenticates exact response endpoint and expected run/attempt.",
+    "No matched cohort, percentile, approved target, full lifecycle timeline or performance certification.",
+    "No provider/controller mutation or installer/custody writes."
+  ]
+}

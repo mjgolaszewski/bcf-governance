@@ -249,3 +249,97 @@ def test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks(
     validate_operational_observation(root, value)
     assert value['elapsed_ms'] != value['execution_sum_ms']
     assert value['cpu_ms'] == 'unknown'
+
+
+
+@pytest.fixture
+def provider_snapshot():
+    import json
+    return json.loads((Path(__file__).resolve().parents[1] / 'audits/issue-394/observations/pr-421-attempt-1.json').read_text())['source_snapshot']
+
+
+def _provider_timing(snapshot, **overrides):
+    from bcf_governance.tooling.operational_observations import provider_attempt_timing_observation
+    args = dict(expected_run_id=38779824523, expected_attempt=1, pipeline='pr')
+    args.update(overrides)
+    return provider_attempt_timing_observation(snapshot, **args)
+
+
+def test_provider_snapshot_projection_matches_retained_intervals(provider_snapshot):
+    import copy,json
+    retained = json.loads((Path(__file__).resolve().parents[1] / 'audits/issue-394/observations/pr-421-attempt-1.json').read_text())
+    before = copy.deepcopy(provider_snapshot)
+    assert _provider_timing(provider_snapshot) == retained['observation']
+    assert provider_snapshot == before
+
+
+@pytest.mark.parametrize('defect', ['run', 'attempt', 'head', 'job_run', 'job_head', 'count', 'duplicate', 'running', 'missing_time', 'naive_time', 'unknown_conclusion'])
+def test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts(provider_snapshot, defect):
+    snapshot = provider_snapshot
+    row = snapshot['jobs']['jobs'][0]
+    if defect == 'run': snapshot['run']['id'] += 1
+    elif defect == 'attempt': snapshot['run']['run_attempt'] += 1
+    elif defect == 'head': snapshot['commit']['sha'] = 'f' * 40
+    elif defect == 'job_run': row['run_id'] += 1
+    elif defect == 'job_head': row['head_sha'] = 'f' * 40
+    elif defect == 'count': snapshot['jobs']['total_count'] += 1
+    elif defect == 'duplicate':
+        snapshot['jobs']['jobs'].append(dict(row))
+        snapshot['jobs']['total_count'] += 1
+    elif defect == 'running': row['status'] = 'in_progress'
+    elif defect == 'missing_time': row['completed_at'] = None
+    elif defect == 'naive_time': row['started_at'] = row['started_at'].removesuffix('Z')
+    elif defect == 'unknown_conclusion': row['conclusion'] = 'invented'
+    with pytest.raises(OperationalObservationError):
+        _provider_timing(snapshot)
+
+
+@pytest.mark.parametrize('conclusion,status', [('failure','failed'), ('timed_out','failed'), ('cancelled','cancelled'), ('skipped','skipped')])
+def test_provider_snapshot_projection_retains_non_success(provider_snapshot, conclusion, status):
+    provider_snapshot['jobs']['jobs'][0]['conclusion'] = conclusion
+    result = _provider_timing(provider_snapshot)
+    assert next(row for row in result['intervals'] if row['id'] == str(provider_snapshot['jobs']['jobs'][0]['id']))['status'] == status
+    assert result['authority'] is False
+    assert result['cpu_ms'] == 'unknown'
+
+
+@pytest.mark.parametrize('field,unknown', [('created_at','provider_queue_ms'), ('started_at','execution_ms'), ('completed_at','execution_ms')])
+def test_provider_naive_clock_is_unknown(field, unknown):
+    job = dict(id=9, created_at='2026-01-01T00:00:00Z', started_at='2026-01-01T00:00:01Z', completed_at='2026-01-01T00:00:02Z')
+    job[field] = job[field].removesuffix('Z')
+    assert provider_queue_observation(repository='owner/repo', run_id=7, run_attempt=2, job=job)[unknown] == 'unknown'
+
+
+
+@pytest.mark.parametrize('defect', ['job_attempt', 'boolean_expected', 'boolean_count', 'submillisecond', 'reversed_job', 'nonterminal_run', 'malformed_snapshot'])
+def test_provider_snapshot_projection_rejects_other_clock_and_identity_edges(provider_snapshot, defect):
+    snapshot = provider_snapshot
+    args = {}
+    if defect == 'job_attempt': snapshot['jobs']['jobs'][0]['run_attempt'] = 2
+    elif defect == 'boolean_expected': args['expected_attempt'] = True
+    elif defect == 'boolean_count': snapshot['jobs']['total_count'] = True
+    elif defect == 'submillisecond': snapshot['jobs']['jobs'][0]['started_at'] = '2026-10-15T17:44:25.000001Z'
+    elif defect == 'reversed_job':
+        row = snapshot['jobs']['jobs'][0]
+        row['started_at'], row['completed_at'] = row['completed_at'], row['started_at']
+    elif defect == 'nonterminal_run': snapshot['run']['status'] = 'in_progress'
+    elif defect == 'malformed_snapshot': snapshot = None
+    with pytest.raises(OperationalObservationError):
+        _provider_timing(snapshot, **args)
+
+
+def test_provider_snapshot_zero_jobs_and_explicit_offsets_remain_honest(provider_snapshot):
+    import copy
+    from datetime import datetime, timedelta, timezone
+    before = _provider_timing(provider_snapshot)
+    shifted = copy.deepcopy(provider_snapshot)
+    for row in shifted['jobs']['jobs']:
+        for field in ['started_at','completed_at']:
+            parsed = datetime.fromisoformat(row[field].replace('Z','+00:00'))
+            row[field] = parsed.astimezone(timezone(timedelta(hours=2))).isoformat()
+    assert _provider_timing(shifted)['intervals'] == before['intervals']
+    provider_snapshot['jobs'] = dict(total_count=0, jobs=[])
+    empty = _provider_timing(provider_snapshot)
+    assert empty['execution_union_ms'] == 0
+    assert empty['uncovered_ms'] == empty['elapsed_ms']
+    assert empty['cpu_ms'] == 'unknown'

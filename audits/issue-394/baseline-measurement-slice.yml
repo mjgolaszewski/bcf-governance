@@ -33,3 +33,11 @@ remaining:
 - Authenticated independent end-to-end custody and developer-interruption measurements.
 
 ownership_correction: Existing canonical source membership places operational_observations.py in operations; evidence is its measurement consumer, not a second source owner.
+
+provider_projection_followup:
+  contract:
+  - Add an opt-in pure provider-attempt snapshot projection through existing pipeline_timing_observation.
+  - Require caller-authenticated expected run/attempt and exact repository commit/tree; verify every job run/head and complete declared job count.
+  - Derive all intervals and statuses from retained raw timestamps/conclusions; reject missing nonterminal unknown-conclusion or naive timestamps rather than inventing time or success.
+  - Reject naive clock inputs in the shared existing timestamp reader; preserve missing-as-unknown behavior.
+  - Retained captures remain observations only, never matched baselines or authority. No provider I/O is added to product code.
