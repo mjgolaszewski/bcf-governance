@@ -112,6 +112,7 @@ workitems:
     architectural_layer: tooling
     operation_side: query
     target_modules:
+    - bcf_governance/tooling/release_adopter_qualification.py
     - bcf_governance/tooling/affected_proof_closure.py
     - bcf_governance/tooling/evidence_scheduling.py
     forbidden_surfaces:
@@ -1696,6 +1697,7 @@ requirements:
     workitem: dormant.projection
     contract_owner: governance/public-contracts.yml
     implementation_targets:
+    - bcf_governance/tooling/release_adopter_qualification.py
     - bcf_governance/tooling/governance_install/ci_graph.py
     - bcf_governance/tooling/install_governance_pack.py
     producer: dormant.projection
@@ -1708,6 +1710,9 @@ requirements:
       scenario: Cause-specific CP07 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - exact-wheel-dependency-origins
+
   CP08:
     requirement: 'Safe absence: old/malformed/missing declarations are mechanically migrated with proof or yield a typed blocker; no silent capability loss or inferred
       permissions.'
@@ -4276,3 +4281,46 @@ implementation_slices:
     remaining:
     - Full independently enumerated deterministic-failure and consumer populations remain unproved.
     - Exact installed parity, canonical normalization and provider/adopter admission remain required.
+
+  exact-wheel-dependency-origins:
+    id: exact-wheel-dependency-origins
+    workitem: P32-P0-02
+    scope: Derive active exact-wheel dependency origins before controller allocation, retaining exact installed-origin and dependency probes; no whole real-adopter acceptance.
+    contract: audits/issue-394/nested-runtime-dependency-contract.json
+    producer: bcf_governance/tooling/release_adopter_qualification.py::_required_dependency_roots
+    consumer: bcf_governance/tooling/release_adopter_qualification.py::_exact_release_runtime
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_release_adopter_qualification::test_nested_runtime_projects_actual_required_distribution_origins_before_allocation[headers-1.0]
+    - tests.test_release_adopter_qualification::test_nested_runtime_projects_actual_required_distribution_origins_before_allocation[headers-1.0-post1]
+    - tests.test_release_adopter_qualification::test_nested_runtime_projects_actual_required_distribution_origins_before_allocation[legacy-1.0]
+    - tests.test_release_adopter_qualification::test_nested_runtime_projects_actual_required_distribution_origins_before_allocation[legacy-1.0-post1]
+    negative_controls:
+    - cause: dependency-origin-missing-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[missing]
+    - cause: dependency-origin-version-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[version]
+    - cause: dependency-origin-unsafe-root-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[unsafe-root]
+    - cause: dependency-origin-direct-url-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[direct-url]
+    - cause: dependency-origin-identity-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[identity]
+    - cause: dependency-origin-ambiguous-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[ambiguous]
+    - cause: dependency-origin-invalid-requirement-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[invalid-requirement]
+    - cause: dependency-origin-unknown-extra-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[unknown-extra]
+    - cause: dependency-origin-distribution-identity-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[distribution-identity]
+    - cause: dependency-origin-malformed-headers-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[malformed-headers]
+    - cause: dependency-origin-wheel-python-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[wheel-python]
+    - cause: dependency-origin-dependency-python-before-allocation
+      test: tests.test_release_adopter_qualification::test_required_dependency_origins_reject_before_runtime_allocation[dependency-python]
+    remaining:
+    - Exact installed nested projection and new canonical real pinned-adopter transaction remain required.
+    - Entire independent consumer/failure populations, targets and custody remain open; no CP07 closure.

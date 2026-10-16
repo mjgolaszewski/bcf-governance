@@ -27,6 +27,11 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Derive nested qualification dependency roots from exact wheel requirements
+  and installed origins, including active transitive and legacy dependencies.
+  Reject incompatible identities, versions, Python constraints and unsafe roots
+  before allocating a fresh controller.
+
 - Run generated-pack and rendered-budget admission after exposure checks and
   before costly local control qualification, preserving canonical generation
   prerequisites and every later required check.

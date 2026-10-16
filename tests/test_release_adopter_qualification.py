@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import venv
+import zipfile
 
 import pytest
 
@@ -76,14 +77,30 @@ def test_qualification_cli_ignores_ambient_provider_workflow_identity(
     assert observed["producer"] == PRODUCER
 
 
+def _installed_distribution(name, version, root, *, requires=(), extras=(), metadata_name=None):
+    from email.message import Message
+    from types import SimpleNamespace
+    info=Message(); info['Metadata-Version']='2.1'; info['Name']=name if metadata_name is None else metadata_name; info['Version']=version
+    for extra in extras:info['Provides-Extra']=extra
+    for required in requires:info['Requires-Dist']=required
+    return SimpleNamespace(version=version,requires=requires,metadata=info,locate_file=lambda _:root)
+
+
+def _metadata_wheel(path: Path) -> None:
+    version = path.name.split('-')[1]
+    with zipfile.ZipFile(path, 'w') as archive:
+        archive.writestr(f'bcf_governance-{version}.dist-info/METADATA',
+            f'Metadata-Version: 2.1\nName: bcf-governance\nVersion: {version}\n')
+
+
 def _assets(root: Path) -> dict[str, str]:
     names = {
         "bcf_governance-2.2.1-py3-none-any.whl": b"wheel",
         "bcf_governance-2.2.1.tar.gz": b"sdist",
     }
     for name, data in names.items():
-        (root / name).write_bytes(data)
-    digests = {name: hashlib.sha256(data).hexdigest() for name, data in names.items()}
+        _metadata_wheel(root / name) if name.endswith(".whl") else (root / name).write_bytes(data)
+    digests = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
     (root / "SHA256SUMS").write_text(
         "".join(f"{digest}  {name}\n" for name, digest in sorted(digests.items())),
         encoding="utf-8",
@@ -258,7 +275,7 @@ def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     wheel = tmp_path / "bcf_governance-2.2.1-py3-none-any.whl"
-    wheel.write_bytes(b"wheel")
+    _metadata_wheel(wheel)
     controller = tmp_path / "controller"
     calls: list[tuple[list[str], dict[str, str] | None]] = []
 
@@ -329,7 +346,7 @@ def test_exact_release_runtime_rejects_shadowing_or_incompatible_dependencies(
     message: str,
 ) -> None:
     wheel = tmp_path / "bcf_governance-2.2.1-py3-none-any.whl"
-    wheel.write_bytes(b"wheel")
+    _metadata_wheel(wheel)
     controller = tmp_path / "controller"
     observation: dict[str, object] = {
         "distribution_root": str(controller),
@@ -711,3 +728,66 @@ def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
     for mutation in mutations:
         with pytest.raises(ReleaseQualificationError):
             validate_qualification_receipt(mutation, **kwargs)
+
+
+@pytest.mark.parametrize('needed_version',['1.0','1.0-post1'])
+@pytest.mark.parametrize('dependency_source',['headers','legacy'])
+def test_nested_runtime_projects_actual_required_distribution_origins_before_allocation(tmp_path, monkeypatch, needed_version, dependency_source):
+    import importlib.metadata as metadata
+    from types import SimpleNamespace
+    import zipfile
+    wheel = tmp_path/'bcf_governance-2.5.0-py3-none-any.whl'
+    with zipfile.ZipFile(wheel,'w') as archive:
+        archive.writestr('bcf_governance-2.5.0.dist-info/METADATA',
+            'Metadata-Version: 2.1\nName: bcf-governance\nVersion: 2.5.0\nRequires-Dist: needed[feature]>=1\n')
+    immediate=tmp_path/'immediate'; immediate.mkdir()
+    needed=tmp_path/'needed'; needed.mkdir()
+    transitive=tmp_path/'transitive'; transitive.mkdir()
+    monkeypatch.setattr(qualification.sysconfig,'get_paths',lambda:{'purelib':str(immediate)})
+    def distribution(name):
+        if name=='needed':
+            result=_installed_distribution(name,needed_version,needed,requires=['child>=2; extra == "feature"','unrelated; python_version < "0"'],extras=['feature'])
+            if dependency_source=='legacy':del result.metadata['Requires-Dist']
+            return result
+        if name=='child':return _installed_distribution(name,'2.0',transitive,requires=['needed[feature]>=1'])
+        if name=='packaging':return _installed_distribution(name,'26.0',immediate)
+        pytest.fail('unrelated distribution queried: '+name)
+    monkeypatch.setattr(metadata,'distribution',distribution)
+    controller=tmp_path/'controller'; calls=[]
+    def run(argv, **_kwargs):
+        calls.append(list(argv))
+        if list(argv)[1:3]==['-P','-c']:
+            return json.dumps({'distribution_root':str(controller),'executable':str(controller/'bin/python'),
+                'module_file':str(controller/'bcf_governance/__init__.py'),'requirements':[],'version':'2.5.0'})
+        return ''
+    monkeypatch.setattr(qualification,'_run',run)
+    _exact_release_runtime(wheel,controller,version='2.5.0',cwd=tmp_path,environment={})
+    projected=(controller/'lib'/f'python{sys.version_info.major}.{sys.version_info.minor}'/'site-packages/bcf-admitted-runtime.pth').read_text().splitlines()
+    assert projected==sorted(map(str,[immediate,needed,transitive]))
+
+
+@pytest.mark.parametrize('defect',['missing','version','unsafe-root','direct-url','identity','ambiguous','invalid-requirement','unknown-extra','distribution-identity','malformed-headers','wheel-python','dependency-python'])
+def test_required_dependency_origins_reject_before_runtime_allocation(tmp_path,monkeypatch,defect):
+    from types import SimpleNamespace
+    wheel=tmp_path/'bcf_governance-2.5.0-py3-none-any.whl'
+    required='needed>=1'
+    if defect=='unknown-extra':required='needed[unknown]>=1'
+    if defect=='direct-url':required='needed @ https://example.invalid/needed.whl'
+    if defect=='invalid-requirement':required='not a requirement @@@'
+    with zipfile.ZipFile(wheel,'w') as archive:
+        archive.writestr('bcf_governance-2.5.0.dist-info/METADATA',
+            'Metadata-Version: 2.1\nName: '+('other' if defect=='identity' else 'bcf-governance')+
+            '\nVersion: 2.5.0\n'+('Requires-Python: >=1000\n' if defect=='wheel-python' else '')+('bad header\n' if defect=='malformed-headers' else '')+'Requires-Dist: '+required+'\n')
+        if defect=='ambiguous':archive.writestr('other.dist-info/METADATA','Name: other\nVersion: 2.5.0\n')
+    origin=tmp_path/('unsafe\nroot' if defect=='unsafe-root' else 'dependencies');origin.mkdir()
+    def distribution(name):
+        if defect=='missing' and name=='needed':raise qualification.metadata.PackageNotFoundError(name)
+        observed = _installed_distribution(name,'0.5' if defect=='version' and name=='needed' else '26.0',origin,
+            metadata_name='other' if defect=='distribution-identity' else name)
+        if defect=='dependency-python':observed.metadata['Requires-Python']='>=1000'
+        return observed
+    monkeypatch.setattr(qualification.metadata,'distribution',distribution)
+    monkeypatch.setattr(qualification,'_run',lambda *_a,**_k:pytest.fail('invalid origins allocated runtime'))
+    with pytest.raises(ReleaseQualificationError,match='dependency origins are invalid'):
+        _exact_release_runtime(wheel,tmp_path/'controller',version='2.5.0',cwd=tmp_path,environment={})
+    assert not (tmp_path/'controller').exists()

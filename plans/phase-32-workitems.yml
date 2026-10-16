@@ -29,6 +29,7 @@ workitems:
   status: IN_PROGRESS
   summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
   acceptance:
+  - Derive exact qualification dependency origins and reject incompatible inputs before controller allocation; preserve independent child probes
   - Bind returned provider commit and ref identity to exact request subjects before authority consumption
   - requires-workitem-closure:P32-P0-01
   - Commit complete affected-surface contract and executable bindings before production changes
