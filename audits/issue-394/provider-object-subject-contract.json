@@ -1,0 +1,33 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-02",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "authenticated_query_ingress_and_consumption",
+  "targets": [
+    "bcf_governance/tooling/ci_github_api.py",
+    "bcf_governance/tooling/ci_github_pr.py",
+    "tests/test_ci_github_controller.py",
+    "tests/test_ci_github_pr_authority.py"
+  ],
+  "observed": "GitHubAPI.reference and commit require dictionary responses but do not bind returned ref or commit SHA to their exact requested selectors. Nondefault PR comparison consumer checks object SHA/type but ignores returned ref name.",
+  "contract": [
+    "Validate returned full reference name equals refs/ plus the exact requested selector at the existing shared GitHub API ingress; no caller guessing from a matching object SHA.",
+    "Validate returned commit SHA equals the exact requested commit at the same existing ingress before tree consumers can use it.",
+    "Require exact returned comparison ref name again at the nondefault PR consumption boundary alongside existing commit type and object SHA checks.",
+    "Missing or contradictory identity fails closed in the existing error family before consuming proof or authority; no retry broadening, mutation, fallback, extra provider calls or response rewriting.",
+    "Successful response dictionaries and request grammar remain unchanged; generic ref tags retain existing object-type semantics.",
+    "Preserve default PR/protected-source separation and immutable release bytes."
+  ],
+  "verification": [
+    "Positive shared ingress retains original exact response object with one identical request.",
+    "Missing/wrong ref and commit identity reject with one read and no fallback.",
+    "Nondefault PR finalizer rejects a wrong/missing ref name even when object SHA matches comparison base.",
+    "Affected controller, PR, release and installed boundary checks; exact mirrors and native governance/architecture checks."
+  ],
+  "limits": [
+    "Does not prove complete independent authority/failure populations or grant train/release acceptance.",
+    "No changes to live maintenance source or submitted bytes."
+  ]
+}
