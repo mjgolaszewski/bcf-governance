@@ -28,7 +28,9 @@
     "Empty interior tree records are malformed, distinct from a genuinely empty Git tree, and reject during decoding.",
     "Existing Python discovery accepts an optional exact source_subject, compares its full discovered file population to the exact tree, and authenticates each raw source blob plus executable mode before ast.parse. Reject unknown tree entries and population gaps before parsing.",
     "No caller-selected file subset can narrow the exact-subject population. Dirty or untracked source and subject/tree substitutions reject. Default discovery remains unchanged.",
-    "The returned source_population observation binds the exact Git tree and each parser input; it never authenticates provider or repository authority, continued filesystem freshness or full runtime effects."
+    "The returned source_population observation binds the exact Git tree and each parser input; it never authenticates provider or repository authority, continued filesystem freshness or full runtime effects.",
+    "Exact-subject discovery normalizes equivalent complete file populations to canonical path order; caller file order cannot choose output bytes.",
+    "Source read/stat disappearance after population discovery yields a typed source blocker before parsing; default legacy exception behavior remains unchanged."
   ],
   "forbidden_surfaces": [
     "new source parser or effect evaluator",

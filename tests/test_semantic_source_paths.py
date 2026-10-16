@@ -178,3 +178,60 @@ def test_discovery_rejects_source_mismatch_before_parsing(repo, monkeypatch, def
         patches.setattr(inventory.ast, 'parse', forbidden)
         with pytest.raises(inventory.SemanticInventoryError, match='source'):
             inventory.discover_python_source(repo, files=files, source_subject=identity)
+
+
+def test_committed_tree_object_cannot_be_used_as_a_commit(repo):
+    identity = subject(repo)
+    with pytest.raises(ValueError, match='commit'):
+        source.committed_python_source_population(repo, **dict(identity, commit_sha=identity['tree_sha']))
+
+
+def test_wrong_tree_rejects_before_population_enumeration(repo, monkeypatch):
+    identity = subject(repo)
+    real = source.subprocess.run
+    def guarded(args, **kwargs):
+        if 'ls-tree' in args:
+            raise AssertionError('tree enumerated before subject verification')
+        return real(args, **kwargs)
+    monkeypatch.setattr(source.subprocess, 'run', guarded)
+    with pytest.raises(ValueError, match='tree'):
+        source.committed_python_source_population(repo, **dict(identity, tree_sha='0' * 40))
+
+
+def test_empty_committed_python_population_is_not_execution_authority(repo):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+
+    (repo / 'nested/root.py').unlink()
+    git(repo, 'add', '-A')
+    git(repo, 'commit', '-qm', 'no Python files')
+    inventory = discover_python_source(repo, source_subject=subject(repo))
+    assert inventory['files'] == []
+    assert inventory['source_population']['python_blobs'] == ()
+    assert inventory['source_population']['execution_qualified'] is False
+    assert inventory['authority'] is False
+
+
+def test_exact_subject_output_does_not_depend_on_caller_file_order(repo):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+
+    extra = repo / 'extra.py'
+    extra.write_text('def extra():\n    pass\n')
+    git(repo, 'add', '.')
+    git(repo, 'commit', '-qm', 'two files')
+    paths = [repo / 'nested/root.py', extra]
+    identity = subject(repo)
+    assert discover_python_source(repo, files=paths, source_subject=identity) == discover_python_source(repo, files=list(reversed(paths)), source_subject=identity)
+
+
+def test_source_disappearing_after_population_discovery_is_a_typed_blocker(repo, monkeypatch):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, SemanticInventoryError
+
+    identity = subject(repo)
+    real = Path.read_bytes
+    def vanished(path):
+        if path == repo / 'nested/root.py':
+            raise FileNotFoundError('source vanished after discovery')
+        return real(path)
+    monkeypatch.setattr(Path, 'read_bytes', vanished)
+    with pytest.raises(SemanticInventoryError, match='source'):
+        discover_python_source(repo, source_subject=identity)
