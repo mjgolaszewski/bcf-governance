@@ -12,20 +12,23 @@
   "targets": [
     "bcf_governance/tooling/ci_authority_submit.py",
     "tests/test_candidate_submit.py",
-    "schemas/operational-observation.schema.json"
+    "schemas/operational-observation.schema.json",
+    "bcf_governance/tooling/operational_observations.py"
   ],
   "contract": [
     "Bracket existing normalization and canonical authority-input operations with existing operational progress event owner; preserve operation order and exact arguments.",
     "Use a separate submission:<initial commit> execution identity and independent sequence/monotonic origin. Never mingle this stream with prospective exact-normalized-subject progress or claim one clock across streams.",
     "Retain started/complete and cause-specific failed events for known ValueError/OSError taxonomy; re-raise the identical exception without retry or fallback.",
     "Progress remains authority false, is optional through the existing sink, and cannot replace normalized source recapture or provider proof. Preserve final response shape and existing prospective stream forwarding.",
-    "The clock starts only after initial candidate identity; it is stage attribution, not complete command/CPU/wait or percentile certification."
+    "The clock starts only after initial candidate identity; it is stage attribution, not complete command/CPU/wait or percentile certification.",
+    "Use distinct submission_progress event kind so existing prospective_progress collectors still receive their original single exact-subject stream. Extend the existing progress owner with a closed optional kind parameter whose default preserves old bytes."
   ],
   "expected_tests": [
     "Success events bracket normalization and authority before prospective execution; normalized subject still used.",
     "Normalization/authority ValueError and OSError preserve identical exception and stop before next stage or push.",
     "Separate execution identities and individually valid monotonic/sequence streams; sink absent compatibility.",
-    "Existing submission/normalization/observations/architecture/parity and actual operation characterization."
+    "Existing submission/normalization/observations/architecture/parity and actual operation characterization.",
+    "Filtering prospective_progress retains exactly the original event object/stream; default owner bytes unchanged and unknown progress kinds reject."
   ],
   "forbidden_surfaces": [
     "Live submission checkout or transaction",
