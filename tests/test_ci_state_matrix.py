@@ -317,7 +317,7 @@ def test_noncomparison_context_does_not_invent_a_local_merge_base(tmp_path, monk
         validate_ci_state_matrix(repo)
 
 
-@pytest.mark.parametrize('defect', ['origin', 'pr', 'direct_caller', 'missing_caller', 'event', 'invocation', 'symbolic', 'unavailable', 'nonancestor'])
+@pytest.mark.parametrize('defect', ['origin', 'pr', 'direct_caller', 'missing_caller', 'wrong_caller', 'event', 'invocation', 'symbolic', 'zero', 'unavailable', 'nonancestor'])
 def test_invalid_comparison_context_rejects_before_diff(tmp_path, monkeypatch, defect):
     from bcf_governance.tooling.governance_validation import ci_state_matrix as matrix
 
@@ -332,12 +332,17 @@ def test_invalid_comparison_context_rejects_before_diff(tmp_path, monkeypatch, d
         monkeypatch.setenv('BCF_CALLER_COMPARISON_BASE_SHA', base)
     elif defect == 'missing_caller':
         monkeypatch.setenv('BCF_INVOCATION_KIND', 'reusable_call')
+    elif defect == 'wrong_caller':
+        _comparison_environment(monkeypatch, base, invocation='reusable_call')
+        monkeypatch.setenv('BCF_CALLER_COMPARISON_BASE_SHA', 'a' * 40)
     elif defect == 'event':
         monkeypatch.setenv('GITHUB_EVENT_NAME', 'push')
     elif defect == 'invocation':
         monkeypatch.setenv('BCF_INVOCATION_KIND', '')
     elif defect == 'symbolic':
         _comparison_environment(monkeypatch, 'HEAD')
+    elif defect == 'zero':
+        _comparison_environment(monkeypatch, '0' * 40)
     elif defect == 'unavailable':
         _comparison_environment(monkeypatch, 'f' * 40)
     else:
@@ -380,9 +385,9 @@ def test_invalid_comparison_stops_real_preflight_before_session_allocation(tmp_p
     trace = []
     evidence = tmp_path / 'evidence'
     before = _git(repo, 'status', '--porcelain')
-    with pytest.raises(CIStateMatrixError, match='comparison'):
+    with pytest.raises(ValueError, match='comparison'):
         preflight.run_preflight(repo, mode='pr', python_executable=Path(sys.executable), artifact_root=evidence, trace=trace.append)
-    assert trace == ['git-state', 'authored-phase-state', 'ci-state-matrix']
+    assert trace == ['git-state', 'pr-context']
     assert not evidence.exists()
     assert _git(repo, 'status', '--porcelain') == before
 
@@ -394,3 +399,10 @@ def test_authored_only_is_structural_without_comparison_authority(tmp_path, monk
     assert report['status'] == 'authored_structurally_valid'
     assert report['authority'] is False
     assert report['execution_qualified'] is False
+
+
+def test_matching_bare_local_comparison_assertion_is_preserved(tmp_path, monkeypatch):
+    repo = _repo(tmp_path)
+    base = _git(repo, 'rev-parse', 'origin/main')
+    monkeypatch.setenv('BCF_COMPARISON_BASE_SHA', base)
+    assert validate_ci_state_matrix(repo)['comparison_base'] == base

@@ -50,5 +50,17 @@
     "Malformed/missing/unavailable context rejects without fallback",
     "Existing machine backtrace and local/adopter behavior remain intact"
   ],
-  "completion": "Focused behavioral/front-door/parity/static checks; full lifecycle adoption/provider authority and whole-requirement closure remain unqualified."
+  "completion": "Focused behavioral/front-door/parity/static checks; full lifecycle adoption/provider authority and whole-requirement closure remain unqualified.",
+  "local_execution": {
+    "contract_red_commits": [
+      "6d2a8bfa",
+      "5e9c2c03",
+      "9c2ef93a"
+    ],
+    "final_behavioral": "150 state-matrix/preflight/submit cases passed in 24.71s; 12 additional/overlapping provenance cases passed in 1.83s.",
+    "architecture": "10 LOC/context/private-copy/pack/CLI-effect cases passed in 91.93s.",
+    "static": "governance-yaml-ok; lint/typecheck and canonical pack --check passed.",
+    "verification": "audits/issue-394/state-comparison-context-verification.json",
+    "remaining": "Environment consistency is not independent provider authentication; no complete DAG/effect/installed-consumer/performance/custody or canonical oracle closure."
+  }
 }

@@ -649,6 +649,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/preflight.py
     - bcf_governance/tooling/governance_validation/authored_phase_state.py
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
     - bcf_governance/tooling/ci_authority_submit.py
@@ -1082,6 +1083,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
     - canonical-submit-normalization
   I21:
@@ -1105,6 +1107,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
     - terminal-proposition-binding
     - typed-guard-preservation
@@ -1133,6 +1136,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
     - terminal-proposition-binding
   I23:
@@ -2295,6 +2299,8 @@ requirements:
       scenario: Cause-specific AC30 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - derived-comparison-context-before-preflight-work
   AC31:
     requirement: Empty execution remainder still undergoes independent required-claim/reuse verification and emits legitimate stable terminal status; no empty matrix
       implies green.
@@ -2968,3 +2974,31 @@ implementation_slices:
     - Protected lifecycle consumers must independently bind authenticated repository/base/candidate context to these exact-subject queries and handle removals and unresolved entries.
     - Provider authority continued filesystem freshness complete runtime effect interpretation and installed consumer qualification are not established by local Git observations.
     - Canonical test-manifest normalization actual normative DAG adoption and whole-requirement closure remain blocked.
+  derived-comparison-context-before-preflight-work:
+    id: derived-comparison-context-before-preflight-work
+    workitem: P32-P0-07
+    scope: Existing state-matrix and preflight fronts derive comparison through the existing context owner; raw local values are assertions only and invalid context rejects before downstream deterministic work.
+    contract: audits/issue-394/state-comparison-context-contract.json
+    producer: bcf_governance/tooling/governance_validation/preflight_repository_context.py::pr_context
+    consumer: bcf_governance/tooling/preflight.py::run_preflight
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_state_matrix::test_valid_comparison_context_preserves_changed_contract_requirement[pull_request-direct_event]
+    - tests.test_ci_state_matrix::test_noncomparison_context_does_not_invent_a_local_merge_base[schedule]
+    - tests.test_ci_state_matrix::test_matching_bare_local_comparison_assertion_is_preserved
+    negative_controls:
+    - cause: caller-head-substitution-hides-changed-contract
+      test: tests.test_ci_state_matrix::test_substituted_comparison_head_cannot_hide_changed_contract
+    - cause: bare-local-base-override
+      test: tests.test_ci_state_matrix::test_bare_local_comparison_assertion_cannot_choose_a_new_base
+    - cause: invalid-context-before-matrix-decoding
+      test: tests.test_ci_state_matrix::test_invalid_comparison_rejects_before_matrix_decoding
+    - cause: invalid-context-before-preflight-session-allocation
+      test: tests.test_ci_state_matrix::test_invalid_comparison_stops_real_preflight_before_session_allocation
+    - cause: invalid-context-before-authored-and-runtime-work
+      test: tests.test_preflight::test_invalid_comparison_context_rejects_before_authored_or_runtime_work
+    remaining:
+    - Environment consistency and local Git ancestry do not authenticate provider repository/head authority; protected producer custody remains independently required.
+    - Full earliest-boundary latency and downstream-work measurements across every pipeline and installed consumer remain unqualified.
+    - Canonical test-manifest normalization normative DAG adoption and whole-requirement closure remain blocked.

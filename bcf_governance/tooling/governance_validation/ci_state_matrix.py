@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator, SchemaError
 from ..ci_graph_composition import validate_backtrace_transition_references
 from ..ci_graph_errors import CIGraphError
 from ..ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .preflight_repository_context import pr_context
 
 
 class CIStateMatrixError(ValueError):
@@ -42,9 +43,22 @@ def _git(repo_root: Path, *args: str) -> str | None:
 
 def _comparison_base(repo_root: Path) -> str | None:
     declared = os.environ.get("BCF_COMPARISON_BASE_SHA", "")
-    if declared:
-        return declared
-    return _git(repo_root, "merge-base", "HEAD", "origin/main")
+    context_keys = (
+        "BCF_PROVIDER_EVENT", "GITHUB_EVENT_NAME", "BCF_INVOCATION_KIND",
+        "BCF_ORIGIN_COMPARISON_BASE_SHA", "BCF_CALLER_COMPARISON_BASE_SHA", "BCF_PR_BASE_SHA",
+    )
+    if any(os.environ.get(key) for key in context_keys):
+        event = os.environ.get("BCF_PROVIDER_EVENT") or os.environ.get("GITHUB_EVENT_NAME")
+        mode = "release" if event in {"push", "schedule", "workflow_dispatch"} else "pr"
+        try:
+            context = pr_context(repo_root, mode)
+        except ValueError as exc:
+            raise CIStateMatrixError(f"CI comparison context is invalid: {exc}") from exc
+        return context["base_sha"] if context["applicable"] else None
+    derived = _git(repo_root, "merge-base", "HEAD", "origin/main")
+    if declared and declared != derived:
+        raise CIStateMatrixError("CI comparison assertion differs from derived local base")
+    return derived
 
 
 def _transition_contract(path: str) -> bool:
@@ -181,6 +195,7 @@ def validate_ci_state_matrix(repo_root: Path, *, authored_only: bool = False) ->
             "execution_qualified": False,
             "machine_backtrace": _validate_machine_backtrace(repo_root),
         }
+    base = _comparison_base(repo_root)
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
@@ -189,7 +204,6 @@ def validate_ci_state_matrix(repo_root: Path, *, authored_only: bool = False) ->
     if missing:
         raise CIStateMatrixError("CI state matrix lacks required coverage: " + ", ".join(missing))
     machine = _validate_machine_backtrace(repo_root)
-    base = _comparison_base(repo_root)
     if base is None:
         return {
             "status": "covered", "comparison_base": None, "changed_contracts": [],

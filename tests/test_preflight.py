@@ -38,6 +38,8 @@ def _stub_authored_phase_state_for_unit_fixtures(
         lambda _: {"phase_id": "P00", "paths": []},
     )
     monkeypatch.setattr(preflight, "validate_ci_state_matrix", lambda _: {"status": "covered"})
+    # Later-gate unit fixtures have no provider context; real context controls are separate.
+    monkeypatch.setattr(preflight, "_pr_context", lambda *_: {"applicable": False})
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -667,7 +669,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
 
     assert calls == [
         "git-state",
-        "authored-phase-state",
+        "pr-context",        "authored-phase-state",
         "ci-state-matrix",
         "structural-limits",
         "bounded-target",
@@ -679,7 +681,6 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "governance",
         "self-workflows",
         "workflow-authority",
-        "pr-context",
         "self-controller",
         "negative-controls",
         "semantic-ownership",
@@ -741,7 +742,7 @@ def test_context_budget_failure_precedes_evidence_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits"]
+    assert calls == ["git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits"]
 
 
 def test_required_pr_changelog_fails_before_structural_or_expensive_validation(
@@ -772,7 +773,7 @@ def test_required_pr_changelog_fails_before_structural_or_expensive_validation(
 
     assert calls == [
         "git-state",
-        "authored-phase-state",
+        "pr-context",        "authored-phase-state",
         "ci-state-matrix",
         "pr-changelog",
     ]
@@ -996,7 +997,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
 
     assert calls == [
         "git-state",
-        "authored-phase-state",
+        "pr-context",        "authored-phase-state",
         "ci-state-matrix",
         "structural-limits",
         "syntax",
@@ -1145,7 +1146,7 @@ def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
             prior_transport_dir=transport_dir,
             artifact_root=tmp_path / "evidence", trace=calls.append,
         )
-    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "prior-transport"]
+    assert calls == ["git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "prior-transport"]
 
 
 def test_explicit_controller_authority_cannot_compete_with_prior_transport(
@@ -1200,7 +1201,7 @@ def test_interpreter_failure_prevents_session_allocation(
         )
 
     assert calls == [
-        "git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
+        "git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
     ]
 
 
@@ -1233,7 +1234,7 @@ def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
             trace=calls.append,
         )
     assert calls == [
-        "git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
+        "git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
     ]
 
 
@@ -1263,7 +1264,7 @@ def test_deterministic_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax"]
+    assert calls == ["git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax"]
 
 
 def _copy_current_authored_phase_state(repo: Path) -> dict:

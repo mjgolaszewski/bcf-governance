@@ -540,6 +540,7 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
+    pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
     authored_phase_state = step(
         "authored-phase-state", lambda: validate_authored_phase_state(repo_root)
     )
@@ -612,7 +613,6 @@ def run_preflight(
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
     )
-    pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
     self_controller = step(
         "self-controller",
         lambda: _self_controller(
