@@ -31,6 +31,10 @@ from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
 REPO_ROOT = Path(__file__).resolve().parents[1]
 INSTALLER = REPO_ROOT / "scripts" / "install_governance_pack.py"
 DOCTOR = REPO_ROOT / "scripts" / "doctor_governance_pack.py"
+HISTORICAL_RELEASE_QUALIFICATION_COMMIT = "1bc71c747dda9e22c66ae2e878a3ed64b4189ab1"
+HISTORICAL_RELEASE_QUALIFICATION_PATH = (
+    "scripts/_bcf_runtime/ci_github_release_qualification.py"
+)
 
 
 def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
@@ -134,6 +138,20 @@ def _run_installer(
         text=True,
         input=input_text,
     )
+
+
+def _historical_release_qualification_bytes() -> bytes:
+    return subprocess.run(
+        [
+            "git",
+            "show",
+            f"{HISTORICAL_RELEASE_QUALIFICATION_COMMIT}:template-repo/"
+            f"{HISTORICAL_RELEASE_QUALIFICATION_PATH}",
+        ],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
 
 
 def _run_installed_validator(
@@ -1436,6 +1454,62 @@ def test_pack_manifest_rejects_unknown_installation_scope(tmp_path: Path) -> Non
 
     with pytest.raises(ValueError, match="invalid installation scope"):
         installer._pack_manifest_entries(tmp_path)
+
+
+def test_pack_manifest_rejects_active_retirement_overlap(tmp_path: Path) -> None:
+    installer = _load_installer_module()
+    path = tmp_path / "a.txt"
+    path.write_text("a\n", encoding="utf-8")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    (tmp_path / ".bcf-pack-manifest.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "2.0",
+                "files": {
+                    "a.txt": {"sha256": digest, "operation": "copy"}
+                },
+                "generated": [],
+                "retired_files": {"a.txt": [digest]},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="both active and retired"):
+        installer._pack_manifest_entries(tmp_path)
+
+
+def test_upgrade_retires_exact_historical_pack_residue(tmp_path: Path) -> None:
+    target = tmp_path / "retired-runtime"
+    _run_installer(target, "--profile", "lite", "--skip-validation")
+    retired = target / HISTORICAL_RELEASE_QUALIFICATION_PATH
+    retired.parent.mkdir(parents=True, exist_ok=True)
+    retired.write_bytes(_historical_release_qualification_bytes())
+    assert hashlib.sha256(retired.read_bytes()).hexdigest() == (
+        "7dff42728249979f34b887fe3e71174049d4937f7931ed0bb3d5c04ba4538a38"
+    )
+
+    result = _run_installer(target, "--upgrade", "--skip-validation")
+
+    assert result.returncode == 0
+    assert not retired.exists()
+
+
+def test_upgrade_rejects_unknown_bytes_at_retired_pack_path(tmp_path: Path) -> None:
+    target = tmp_path / "retired-runtime-drift"
+    _run_installer(target, "--profile", "lite", "--skip-validation")
+    retired = target / HISTORICAL_RELEASE_QUALIFICATION_PATH
+    retired.parent.mkdir(parents=True, exist_ok=True)
+    retired.write_bytes(b"adopter-owned or unexplained bytes\n")
+    before = retired.read_bytes()
+
+    result = _run_installer(
+        target, "--upgrade", "--skip-validation", check=False
+    )
+
+    assert result.returncode == 1
+    assert "retired BCF runtime has unexplained bytes" in result.stderr
+    assert retired.read_bytes() == before
 
 
 def test_transaction_interrupt_restores_all_touched_files_byte_identically(

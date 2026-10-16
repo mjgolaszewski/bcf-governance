@@ -6,6 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-10-15
+
+### Fixed
+
+- Made adopter upgrades retire exact historical governance-pack files through
+  a mechanically derived, content-addressed successor manifest. Unknown drift,
+  consumer-owned bytes, unsafe paths, and incomplete transaction promotion
+  fail before proof allocation; active runtime and custody remain exact.
+
 ## [2.3.3] - 2026-10-15
 
 ### Fixed

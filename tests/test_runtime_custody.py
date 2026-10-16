@@ -22,7 +22,13 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _lock(repo: Path, *, files: dict[str, str], preserved: dict[str, str]) -> Path:
+def _lock(
+    repo: Path,
+    *,
+    files: dict[str, str],
+    preserved: dict[str, str],
+    adaptations: dict[str, dict[str, str]] | None = None,
+) -> Path:
     path = repo / "governance/bcf-runtime-lock.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
@@ -41,7 +47,7 @@ def _lock(repo: Path, *, files: dict[str, str], preserved: dict[str, str]) -> Pa
                 "wheel_sha256": "b" * 64,
                 "source_archive_sha256": "c" * 64,
                 "checksum_manifest_sha256": "d" * 64,
-                "official_installer_adaptations": {},
+                "official_installer_adaptations": adaptations or {},
                 "files": files,
                 "preserved_consumer_files": preserved,
             }
@@ -113,6 +119,32 @@ def test_normalized_exact_custody_partitions_runtime_and_consumer_bytes(
     assert tuple(snapshot.runtime_owned) == ("scripts/_bcf_runtime/tool.py",)
     assert tuple(snapshot.consumer_preserved) == ("governance/ci-graph.yml",)
     assert snapshot.deletion_authorized is False
+
+
+def test_runtime_custody_rejects_orphan_installer_adaptation(tmp_path: Path) -> None:
+    runtime = tmp_path / "scripts/_bcf_runtime/tool.py"
+    runtime.parent.mkdir(parents=True)
+    runtime.write_text("runtime\n", encoding="utf-8")
+    relative = runtime.relative_to(tmp_path).as_posix()
+    installed = _digest(runtime)
+    _lock(
+        tmp_path,
+        files={relative: installed},
+        preserved={},
+        adaptations={
+            relative: {
+                "released_sha256": "a" * 64,
+                "installed_sha256": "b" * 64,
+                "reason": "fixture",
+            }
+        },
+    )
+
+    with pytest.raises(RuntimeCustodyError) as raised:
+        inspect_runtime_custody(tmp_path, schema_path=SCHEMA)
+
+    assert raised.value.failure is RuntimeCustodyFailure.SCHEMA_INVALID
+    assert "adaptation does not match runtime ownership" in raised.value.detail
 
 
 def test_candidate_qualification_is_exact_and_explicitly_nonauthoritative(

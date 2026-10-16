@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 import hashlib
 import json
@@ -69,6 +69,7 @@ class RuntimeCustodySnapshot:
     legacy_overlap: tuple[str, ...]
     provenance_claim: dict[str, object]
     lock_bytes: bytes | None
+    installer_adaptations: dict[str, tuple[str, str]] = field(default_factory=dict)
 
     @property
     def deletion_authorized(self) -> bool:
@@ -313,6 +314,17 @@ def inspect_runtime_custody(
             paths=contradictory,
         )
 
+    installer_adaptations: dict[str, tuple[str, str]] = {}
+    for path, adaptation in sorted(payload["official_installer_adaptations"].items()):
+        released = adaptation["released_sha256"]
+        installed = adaptation["installed_sha256"]
+        if path not in runtime_owned or runtime_owned[path] != installed:
+            raise RuntimeCustodyError(
+                RuntimeCustodyFailure.SCHEMA_INVALID,
+                detail="official installer adaptation does not match runtime ownership",
+            )
+        installer_adaptations[path] = (released, installed)
+
     # Consumer preservation wins exact legacy overlap. The normalized producer
     # must not claim those paths as runtime-owned in its successor receipt.
     normalized_runtime = {
@@ -351,4 +363,9 @@ def inspect_runtime_custody(
         legacy_overlap=overlap,
         provenance_claim={key: payload[key] for key in provenance_keys if key in payload},
         lock_bytes=lock_bytes,
+        installer_adaptations={
+            path: value
+            for path, value in installer_adaptations.items()
+            if path in normalized_runtime
+        },
     )

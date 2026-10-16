@@ -18,6 +18,7 @@ import yaml
 from bcf_governance import __version__
 from bcf_governance.tooling.governance_install import release_custody
 from bcf_governance.tooling.governance_install.runtime_custody import (
+    RuntimeCustodySnapshot,
     RuntimeCustodyState,
     inspect_runtime_custody,
 )
@@ -37,6 +38,24 @@ TEMPLATE_ROOT = REPO_ROOT / "bcf_governance/pack/template-repo"
 COMMIT = "a" * 40
 TAG_OBJECT = "b" * 40
 PREDECESSOR_COMMIT = "deedeced7a30858eba720eaaee0160a2383fc807"
+
+
+def _snapshot(
+    *,
+    owned: dict[str, str] | None = None,
+    preserved: dict[str, str] | None = None,
+    adaptations: dict[str, tuple[str, str]] | None = None,
+) -> RuntimeCustodySnapshot:
+    return RuntimeCustodySnapshot(
+        state=RuntimeCustodyState.NORMALIZED_EXACT,
+        version="2.3.3",
+        runtime_owned=owned or {},
+        consumer_preserved=preserved or {},
+        legacy_overlap=(),
+        provenance_claim={},
+        lock_bytes=b"{}",
+        installer_adaptations=adaptations or {},
+    )
 
 
 def _install_exact_predecessor(target: Path, source_root: Path) -> None:
@@ -715,6 +734,90 @@ def test_authenticated_upgrade_normalizes_exact_legacy_overlap(
     assert successor.consumer_preserved == {relative: digest}
 
 
+def test_runtime_retirement_planner_preserves_consumer_owned_path(
+    tmp_path: Path,
+) -> None:
+    relative = "scripts/_bcf_runtime/retired.py"
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"consumer bytes\n")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    assert release_custody._plan_runtime_retirements(
+        tmp_path,
+        snapshot=_snapshot(preserved={relative: digest}),
+        active_paths=frozenset(),
+        retired_files={relative: (digest,)},
+        upgrade=True,
+    ) == {}
+
+
+def test_runtime_retirement_planner_rejects_undeclared_predecessor_path(
+    tmp_path: Path,
+) -> None:
+    relative = "scripts/_bcf_runtime/retired.py"
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"owned bytes\n")
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    with pytest.raises(
+        release_custody.ReleaseCustodyError,
+        match="does not retire predecessor runtime path",
+    ):
+        release_custody._plan_runtime_retirements(
+            tmp_path,
+            snapshot=_snapshot(owned={relative: digest}),
+            active_paths=frozenset(),
+            retired_files={},
+            upgrade=True,
+        )
+
+
+def test_runtime_retirement_planner_accepts_exact_installer_adaptation(
+    tmp_path: Path,
+) -> None:
+    relative = "scripts/_bcf_runtime/retired.py"
+    released_digest = hashlib.sha256(b"{{PROJECT_NAME}}\n").hexdigest()
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"Adopter Project\n")
+    installed_digest = hashlib.sha256(path.read_bytes()).hexdigest()
+
+    assert release_custody._plan_runtime_retirements(
+        tmp_path,
+        snapshot=_snapshot(
+            owned={relative: installed_digest},
+            adaptations={relative: (released_digest, installed_digest)},
+        ),
+        active_paths=frozenset(),
+        retired_files={relative: (released_digest,)},
+        upgrade=True,
+    ) == {relative: installed_digest}
+
+
+def test_runtime_retirement_planner_rejects_symlink(tmp_path: Path) -> None:
+    relative = "scripts/_bcf_runtime/retired.py"
+    external = tmp_path / "external.py"
+    external.write_bytes(b"historical bytes\n")
+    path = tmp_path / relative
+    path.parent.mkdir(parents=True)
+    path.symlink_to(external)
+    digest = hashlib.sha256(external.read_bytes()).hexdigest()
+
+    with pytest.raises(
+        release_custody.ReleaseCustodyError,
+        match="not one regular file",
+    ):
+        release_custody._plan_runtime_retirements(
+            tmp_path,
+            snapshot=_snapshot(),
+            active_paths=frozenset(),
+            retired_files={relative: (digest,)},
+            upgrade=True,
+        )
+
+
 def test_upgrade_rolls_back_runtime_and_lock_when_custody_projection_fails(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -731,8 +834,13 @@ def test_upgrade_rolls_back_runtime_and_lock_when_custody_projection_fails(
     )
     runtime_path = target / "scripts/_bcf_runtime/install_governance_pack.py"
     runtime_path.write_text("old runtime\n", encoding="utf-8")
-    before = (runtime_path.read_bytes(), lock_path.read_bytes())
-    custody = release_custody.UpgradeReleaseCustody(None, {})
+    retired = target / "scripts/_bcf_runtime/retired.py"
+    retired.write_bytes(b"historical runtime\n")
+    retired_digest = hashlib.sha256(retired.read_bytes()).hexdigest()
+    before = (runtime_path.read_bytes(), lock_path.read_bytes(), retired.read_bytes())
+    custody = release_custody.UpgradeReleaseCustody(
+        None, {}, retirements={retired.relative_to(target).as_posix(): retired_digest}
+    )
     monkeypatch.setattr(
         "bcf_governance.tooling.install_governance_pack.prepare_upgrade_release_custody",
         lambda *_args, **_kwargs: custody,
@@ -757,4 +865,4 @@ def test_upgrade_rolls_back_runtime_and_lock_when_custody_projection_fails(
             ]
         )
 
-    assert (runtime_path.read_bytes(), lock_path.read_bytes()) == before
+    assert (runtime_path.read_bytes(), lock_path.read_bytes(), retired.read_bytes()) == before

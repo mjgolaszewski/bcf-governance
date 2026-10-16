@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 
 
@@ -81,6 +82,53 @@ def _sync_packaged_template(source: Path, destination: Path) -> None:
         shutil.copy2(source / relative, target)
 
 
+def _historical_retirements(active: set[str]) -> dict[str, list[str]]:
+    """Derive all retired ordinary-adopter bytes from authenticated Git history."""
+
+    relative = "template-repo/.bcf-pack-manifest.json"
+    history = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "log", "--format=%H", "--", relative],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if history.returncode or not history.stdout.split():
+        raise RuntimeError("pack retirement history is unavailable")
+    observed: dict[str, set[str]] = {}
+    for commit in history.stdout.split():
+        result = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "show", f"{commit}:{relative}"],
+            capture_output=True,
+            check=False,
+        )
+        if result.returncode:
+            raise RuntimeError("pack retirement history cannot be read")
+        try:
+            payload = json.loads(result.stdout)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("pack retirement history is invalid") from exc
+        if not isinstance(payload, dict) or not isinstance(payload.get("files"), dict):
+            raise RuntimeError("pack retirement history lacks a file inventory")
+        for path, entry in payload["files"].items():
+            if (
+                isinstance(entry, dict)
+                and entry.get("installation_scope", "ordinary_adopter")
+                == "ordinary_adopter"
+                and isinstance(entry.get("sha256"), str)
+            ):
+                observed.setdefault(path, set()).add(entry["sha256"])
+        for path, digests in payload.get("retired_files", {}).items():
+            if isinstance(digests, list):
+                observed.setdefault(path, set()).update(
+                    digest for digest in digests if isinstance(digest, str)
+                )
+    return {
+        path: sorted(digests)
+        for path, digests in sorted(observed.items())
+        if path not in active
+    }
+
+
 def build(template_root: Path) -> dict[str, object]:
     self_only = self_authority_pack_surfaces(REPO_ROOT)
     files = {
@@ -118,13 +166,14 @@ def build(template_root: Path) -> dict[str, object]:
         and path.suffix != ".pyc"
     }
     return {
-        "schema_version": "1.0",
+        "schema_version": "2.0",
         "files": files,
         "generated": [
             {"path_template": "plans/phase-{NN}-plan.yml", "operation": "generate"},
             {"path_template": "plans/phase-{NN}-workitems.yml", "operation": "generate"},
             {"path_template": "phases/phase-{NN}-log.yml", "operation": "generate"},
         ],
+        "retired_files": _historical_retirements(set(files)),
     }
 
 

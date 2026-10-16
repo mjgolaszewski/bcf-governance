@@ -154,6 +154,23 @@ def test_complete_pack_manifest_check() -> None:
         assert actual == expected
 
 
+def test_pack_manifest_carries_content_addressed_historical_retirements() -> None:
+    payload = json.loads(
+        (REPO_ROOT / "template-repo/.bcf-pack-manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    retirements = payload["retired_files"]
+    relative = "scripts/_bcf_runtime/ci_github_release_qualification.py"
+
+    assert payload["schema_version"] == "2.0"
+    assert not set(payload["files"]) & set(retirements)
+    assert "7dff42728249979f34b887fe3e71174049d4937f7931ed0bb3d5c04ba4538a38" in (
+        retirements[relative]
+    )
+    assert all(values == sorted(set(values)) for values in retirements.values())
+
+
 def test_generated_version_surfaces_match_authoritative_version() -> None:
     manifest = yaml.safe_load(_read_text("manifest.yml"))
     assert manifest["document"]["version"] == __version__

@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "a9c33e0f3aa4692d357b1adc010a284124eb1b34902a334c2f2dabc782d42424"
+      "sha256": "30713b5f0e1e46a418fa947e0c801d84170c2224fa88265b4820c851b8144dac"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -1030,6 +1030,10 @@
       "operation": "copy",
       "sha256": "0918c84dec4f828028653cce566f713d86651147860b1ce6b0be08878b72fd60"
     },
+    "scripts/_bcf_runtime/governance_install/pack_manifest.py": {
+      "operation": "copy",
+      "sha256": "6b4bd62bbe4e3f279b6a97b821a576a10f6bfb93a188c77836566d3fa9b4cdbc"
+    },
     "scripts/_bcf_runtime/governance_install/phase.py": {
       "operation": "copy",
       "sha256": "04bc68273ffea6b21f38c4a4c49427c9dfdaa5dfadb0ce35c3d14320684214b9"
@@ -1040,7 +1044,7 @@
     },
     "scripts/_bcf_runtime/governance_install/release_custody.py": {
       "operation": "copy",
-      "sha256": "4db3ef881518e872dff504a561ff94a4451ec94d81cfbe652668b3fbf3d0c410"
+      "sha256": "9d919d61cb5e237ce4b17caa35678345c955d7f69f812570a259d3df627c37ff"
     },
     "scripts/_bcf_runtime/governance_install/reporting.py": {
       "operation": "copy",
@@ -1048,7 +1052,7 @@
     },
     "scripts/_bcf_runtime/governance_install/runtime_custody.py": {
       "operation": "copy",
-      "sha256": "a670d4a7a53a3c3f57f1b18494b0f9e9a24876a38ebff3c19857756726f96e9f"
+      "sha256": "d425e0bcf427d5371190b0465098cb09d200bd359e3287d3fdd311bfc51fc034"
     },
     "scripts/_bcf_runtime/governance_install/runtime_custody_operations.py": {
       "operation": "copy",
@@ -1199,7 +1203,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "7e9e8e59cc860a7631283a98be167566d381b73640b763de18abf4e0c7720fb8"
+      "sha256": "0f399598fccb1a6cf027352b97783308202b045fee41d786a002992378f2bcf6"
     },
     "scripts/_bcf_runtime/interpreter_contract_projection.py": {
       "operation": "copy",
@@ -1640,5 +1644,26 @@
       "path_template": "phases/phase-{NN}-log.yml"
     }
   ],
-  "schema_version": "1.0"
+  "retired_files": {
+    "scripts/_bcf_runtime/ci_github_release_qualification.py": [
+      "4960706ee68abb7f0143350fc8925fe94c0448066265a6e466817115976440ae",
+      "7dff42728249979f34b887fe3e71174049d4937f7931ed0bb3d5c04ba4538a38",
+      "d4669009ed0b064989919642c0c2d5d20959c979bf16e54e21d7fba1109ac1ae",
+      "d773af6e934e8d66f7ac60ebc3729ad5dd9c6e76e228a494213fe2284bbf486f"
+    ],
+    "scripts/_bcf_runtime/ci_prospective_telemetry.py": [
+      "7bb6d555ab073f37b279acf663602911edce5611688eb2e75228f646f223f6f3"
+    ],
+    "scripts/_bcf_runtime/local_producer_workspaces.py": [
+      "52df9dbf284cb63579e2c84f51593c389aae2793af93f553dfc6a9213cdd0d63",
+      "66eb6327cd06676537c7cb3edbbc4ae43caab1f8f0b8f0019619439bbb0ebed0"
+    ],
+    "scripts/_bcf_runtime/preflight_negative_controls.py": [
+      "25b5a7349819d62de3514852ffbecd26204521247c064a44088c05c9e3b21707"
+    ],
+    "scripts/_bcf_runtime/prospective_telemetry.py": [
+      "dd87a27ed69ac0aadd88afc7d3e88e25fe3934086d1059a7fa7a977defdd53c7"
+    ]
+  },
+  "schema_version": "2.0"
 }

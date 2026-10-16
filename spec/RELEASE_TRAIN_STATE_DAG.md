@@ -1886,6 +1886,7 @@ retired paths are disjoint.
 | Path remains active in the successor inventory | active entry wins; retirement overlap is a malformed manifest | normal copy/preserve/generate semantics | delete-then-copy ambiguity |
 | Path is authenticated consumer-preserved custody | preserve it and reject a conflicting retirement | consumer ownership remains exact | BCF reclaiming adopter-owned bytes |
 | Predecessor runtime lock owns a path absent from the successor | require the successor retirement inventory to contain that exact path/digest | exact atomic retirement | interpreting lock omission as deletion authority |
+| Predecessor lock owns installer-adapted bytes whose released digest is retired | authenticate that the adaptation path is runtime-owned, its installed digest equals the owned and observed bytes, and its released digest is in the successor retirement inventory | exact atomic retirement while preserving the released-to-installed custody chain | deleting transformed bytes from path history alone, accepting an orphan adaptation, or trusting an installed digest that differs from the owned file |
 | Promotion or final validation fails | restore every exact pre-transaction byte | no partial install or deletion | shadow-only success or incomplete rollback |
 | Fresh install has no retired residue | no retirement action | normal fresh install | scanning unrelated files |
 | Fresh-install destination already contains retired residue | reject destination conflict | no implicit upgrade or cleanup | silently converting fresh install into mutation authority |
