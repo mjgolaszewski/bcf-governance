@@ -2465,6 +2465,7 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_state_matrix::test_actual_machine_adoption_inventory_references_existing_owners_without_qualification
     - tests.test_ci_graph_composition::test_valid_composition_has_no_authority_and_is_byte_stable
     - tests.test_semantic_python_inventory_characterization::test_python_inventory_matches_pre_deconstruction_characterization
     - tests.test_ci_graph_composition::test_binding_conformance_uses_existing_source_and_pytest_collection_owners
@@ -2475,6 +2476,8 @@ implementation_slices:
     - tests.test_semantic_operation_inventory::test_validated_inventory_preserves_port_classes_and_legacy_counts
     - tests.test_ci_graph_composition::test_discovered_source_authority_port_survives_candidate_effect_omission
     negative_controls:
+    - cause: invalid-or-moving-native-model-before-adoption-inventory
+      test: tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs
     - cause: source-call-mutation-hidden-by-inventory
       test: tests.test_semantic_python_inventory_characterization::test_python_inventory_characterization_observes_source_call_mutation
     - cause: deleted-edge-and-test
@@ -2542,6 +2545,7 @@ implementation_slices:
     - cause: orphan-fact-verifier
       test: tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[verifier]
     remaining:
+    - Reproducible actual-source inventory audits/issue-394/actual-machine-adoption-inventory.json references the existing compiled CI owner and records actual legacy typed-field gaps; recipe audits/issue-394/collect_machine_adoption_inventory.py. Counts and native schema validity confer no lifecycle/runtime qualification.
     - Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.
     - Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required.
   canonical-submit-normalization:

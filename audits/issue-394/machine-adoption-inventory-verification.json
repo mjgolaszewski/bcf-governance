@@ -1,0 +1,40 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/machine-adoption-inventory-contract.json",
+  "artifact": "audits/issue-394/actual-machine-adoption-inventory.json",
+  "focused": {
+    "passed": 3,
+    "seconds": 4.93
+  },
+  "broad": {
+    "passed": 100,
+    "seconds": 37.76,
+    "scope": "Full native CI state-matrix suite including source inventory controls."
+  },
+  "observed": {
+    "workflows": 18,
+    "jobs": 41,
+    "ci_ordered_pairs": 1640,
+    "ci_reachable_contracts": 113,
+    "ci_exclusions": 1527,
+    "states": 16,
+    "declared_terminal_classes": 0,
+    "transitions": 15,
+    "declared_transition_kinds": 0,
+    "primitives": 23
+  },
+  "qualification": "Local source observation only; no normative adoption, proof execution or custody claim.",
+  "constraints": [
+    "Historical backtrace source envelope is retained, not authenticated as current successor admission.",
+    "Independent lifecycle populations, complete typed contracts, runtime effects and exact source/test/control bindings remain unqualified.",
+    "No new CI graph/ontology or product authority; collector references existing compiled edge population instead of copying contracts.",
+    "No provider, workflow, installer, custody or maintained adopter mutation."
+  ],
+  "checks": {
+    "governance_yaml": "passed",
+    "coverage_schema": "passed; 82 requirements and 25 bounded slices",
+    "lint": "passed",
+    "typecheck": "passed"
+  }
+}

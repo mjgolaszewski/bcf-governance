@@ -653,3 +653,60 @@ def test_authored_recovery_preserves_rejection_invariants(tmp_path, preserved):
     else:
         with pytest.raises(CIStateMatrixError, match='recovery rejection invariants'):
             validate_ci_state_matrix(repo, authored_only=True)
+
+
+def _machine_inventory_collector():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location('issue394_inventory', ROOT / 'audits/issue-394/collect_machine_adoption_inventory.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_actual_machine_adoption_inventory_references_existing_owners_without_qualification():
+    from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+    from bcf_governance.tooling.ci_graph_composition import edge_population_sha256
+    from bcf_governance.tooling.ci_graph_yaml import load_yaml_path
+    collector = _machine_inventory_collector()
+    paths = [ROOT / 'spec/phase0/release-train-backtrace.yml', ROOT / 'governance/ci-graph.yml']
+    before = {path: path.read_bytes() for path in paths}
+    observed = collector.collect(ROOT)
+    compiled = validate_ci_graph(ROOT)
+    model = load_yaml_path(paths[0])
+    assert observed['canonical_ci']['graph_sha256'] == compiled.graph_sha256
+    assert observed['canonical_ci']['edge_population_sha256'] == edge_population_sha256(compiled)
+    assert observed['canonical_ci']['ordered_pair_count'] == len(compiled.edge_contracts)
+    assert observed['canonical_ci']['reachable_count'] == sum(edge.reachable for edge in compiled.edge_contracts)
+    assert {row['id'] for row in observed['backtrace']['states']} == {row['id'] for row in model['states']}
+    assert {row['id'] for row in observed['backtrace']['transitions']} == {row['id'] for row in model['transitions']}
+    for state in observed['backtrace']['states']:
+        original = next(row for row in model['states'] if row['id'] == state['id'])
+        assert state['terminal_class_declared'] == ('terminal_class' in original)
+        assert state['declared_terminal_class'] == original.get('terminal_class')
+    assert observed['authority'] is False
+    assert observed['execution_qualified'] is False
+    assert observed['normative_adoption_qualified'] is False
+    assert observed['independently_unevaluated']
+    assert collector.collect(ROOT) == observed
+    assert {path: path.read_bytes() for path in paths} == before
+
+
+@pytest.mark.parametrize('defect', ['invalid_model', 'changed_during_collection'])
+def test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs(tmp_path, monkeypatch, defect):
+    collector = _machine_inventory_collector()
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    if defect == 'invalid_model':
+        model = yaml.safe_load(path.read_text())
+        model['adopter_compatibility_observation']['publication_prerequisite'] = True
+        path.write_text(yaml.safe_dump(model))
+    else:
+        original = collector.validate_ci_state_matrix
+        def change(*args, **kwargs):
+            result = original(*args, **kwargs)
+            path.write_text(path.read_text() + '\n# moved\n')
+            return result
+        monkeypatch.setattr(collector, 'validate_ci_state_matrix', change)
+    monkeypatch.setattr(collector, 'validate_ci_graph', lambda *a: pytest.fail('invalid native model reached graph compilation'))
+    with pytest.raises(CIStateMatrixError, match='publication prerequisite|changed during inventory'):
+        collector.collect(repo)
