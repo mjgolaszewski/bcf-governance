@@ -2499,8 +2499,10 @@ implementation_slices:
     - tests.test_semantic_operation_inventory::test_validated_inventory_preserves_port_classes_and_legacy_counts
     - tests.test_ci_graph_composition::test_discovered_source_authority_port_survives_candidate_effect_omission
     negative_controls:
-    - cause: invalid-or-moving-native-model-before-adoption-inventory
-      test: tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs
+    - cause: invalid-or-moving-native-model-before-adoption-inventory:case:[changed_during_collection]
+      test: tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs[changed_during_collection]
+    - cause: invalid-or-moving-native-model-before-adoption-inventory:case:[invalid_model]
+      test: tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs[invalid_model]
     - cause: source-call-mutation-hidden-by-inventory
       test: tests.test_semantic_python_inventory_characterization::test_python_inventory_characterization_observes_source_call_mutation
     - cause: deleted-edge-and-test
@@ -2642,26 +2644,83 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
-    - tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent
-    - tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy
-    - tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks
+    - tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[adopter-workflow_dispatch]
+    - tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[controller-workflow_run]
+    - tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[exact_main-push]
+    - tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[periodic-schedule]
+    - tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[release-workflow_dispatch]
+    - tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy[adopter]
+    - tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy[controller]
+    - tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks[pr-421-attempt-1.json]
+    - tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks[pr-426-attempt-1.json]
     - tests.test_operational_observations::test_provider_snapshot_projection_matches_retained_intervals
-    - tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success
+    - tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[cancelled-cancelled]
+    - tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[failure-failed]
+    - tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[skipped-skipped]
+    - tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[timed_out-failed]
     - tests.test_operational_observations::test_provider_snapshot_zero_jobs_and_explicit_offsets_remain_honest
     - tests.test_operational_observations::test_pipeline_timing_keeps_parallel_elapsed_separate_from_sum_and_cpu
     - tests.test_operational_observations::test_pipeline_timing_retains_waits_gaps_cancellation_and_supersession
     - tests.test_operational_observations::test_pipeline_timing_is_deterministic_detached_and_schema_valid
     negative_controls:
-    - cause: workflow-window-cannot-claim-unobserved-custody-or-interruption-endpoints
-      test: tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints
-    - cause: absent-or-independent-policy-mismatched-event-before-clock-reconstruction
-      test: tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts
-    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction
-      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts
-    - cause: provider-clock-or-identity-type-ambiguity
-      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges
-    - cause: naive-provider-time-cannot-acquire-ambient-authority
-      test: tests.test_operational_observations::test_provider_naive_clock_is_unknown
+    - cause: workflow-window-cannot-claim-unobserved-custody-or-interruption-endpoints:case:[developer_interruption]
+      test: tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[developer_interruption]
+    - cause: workflow-window-cannot-claim-unobserved-custody-or-interruption-endpoints:case:[dispatch_to_custody]
+      test: tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[dispatch_to_custody]
+    - cause: workflow-window-cannot-claim-unobserved-custody-or-interruption-endpoints:case:[merge_to_custody]
+      test: tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[merge_to_custody]
+    - cause: workflow-window-cannot-claim-unobserved-custody-or-interruption-endpoints:case:[publication_to_custody]
+      test: tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[publication_to_custody]
+    - cause: absent-or-independent-policy-mismatched-event-before-clock-reconstruction:case:[empty_event]
+      test: tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[empty_event]
+    - cause: absent-or-independent-policy-mismatched-event-before-clock-reconstruction:case:[malformed_expected_event]
+      test: tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[malformed_expected_event]
+    - cause: absent-or-independent-policy-mismatched-event-before-clock-reconstruction:case:[missing_event]
+      test: tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[missing_event]
+    - cause: absent-or-independent-policy-mismatched-event-before-clock-reconstruction:case:[wrong_expected_event]
+      test: tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[wrong_expected_event]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[attempt]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[attempt]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[count]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[count]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[duplicate]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[duplicate]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[head]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[head]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[job_head]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[job_head]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[job_run]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[job_run]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[missing_time]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[missing_time]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[naive_time]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[naive_time]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[run]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[run]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[running]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[running]
+    - cause: raw-provider-snapshot-identity-population-or-clock-contradiction:case:[unknown_conclusion]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[unknown_conclusion]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[boolean_count]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[boolean_count]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[boolean_expected]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[boolean_expected]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[job_attempt]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[job_attempt]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[malformed_snapshot]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[malformed_snapshot]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[nonterminal_run]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[nonterminal_run]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[reversed_job]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[reversed_job]
+    - cause: provider-clock-or-identity-type-ambiguity:case:[submillisecond]
+      test: tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[submillisecond]
+    - cause: naive-provider-time-cannot-acquire-ambient-authority:case:[completed_at-execution_ms]
+      test: tests.test_operational_observations::test_provider_naive_clock_is_unknown[completed_at-execution_ms]
+    - cause: naive-provider-time-cannot-acquire-ambient-authority:case:[created_at-provider_queue_ms]
+      test: tests.test_operational_observations::test_provider_naive_clock_is_unknown[created_at-provider_queue_ms]
+    - cause: naive-provider-time-cannot-acquire-ambient-authority:case:[started_at-execution_ms]
+      test: tests.test_operational_observations::test_provider_naive_clock_is_unknown[started_at-execution_ms]
     - cause: mixed-clock
       test: tests.test_operational_observations::test_pipeline_timing_rejects_ambiguous_or_invalid_intervals[mixed_clock]
     - cause: wrong-subject-or-window
@@ -2783,7 +2842,10 @@ implementation_slices:
     - tests.test_ci_graph_composition::test_lifecycle_views_match_retained_characterization
     - tests.test_ci_graph_composition::test_lifecycle_renderer_keeps_public_identity_guard_before_formatting
     - tests.test_ci_graph_composition::test_lifecycle_view_bytes_keep_existing_source_owner
-    - tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function
+    - tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-001]
+    - tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-002]
+    - tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-004]
+    - tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-005]
     - tests.test_ci_state_matrix::test_active_receipt_owner_is_registered_factory_called_by_real_collector
     - tests.test_ci_state_matrix::test_active_qualification_owners_follow_existing_command_and_loader_calls
     - tests.test_ci_state_matrix::test_actual_backtrace_declares_every_active_primitive
@@ -2792,10 +2854,14 @@ implementation_slices:
     - tests.test_ci_state_matrix::test_changed_ci_contract_requires_same_candidate_matrix_update
     - tests.test_ci_state_matrix::test_matrix_guard_is_self_required_and_adopter_inapplicable
     negative_controls:
-    - cause: rejected-historical-provider-design-reactivated-as-authority
-      test: tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority
-    - cause: undeclared-active-primitive-reference
-      test: tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references
+    - cause: rejected-historical-provider-design-reactivated-as-authority:case:[False]
+      test: tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority[False]
+    - cause: rejected-historical-provider-design-reactivated-as-authority:case:[True]
+      test: tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority[True]
+    - cause: undeclared-active-primitive-reference:case:[adopter_compatibility_observation]
+      test: tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references[adopter_compatibility_observation]
+    - cause: undeclared-active-primitive-reference:case:[bounded_workitem_frontier_contract]
+      test: tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references[bounded_workitem_frontier_contract]
     - cause: duplicated-typed-state-id
       test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[duplicate_state]
     - cause: undeclared-state-reference
@@ -2848,13 +2914,19 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
-    - tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths
-    - tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants
+    - tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[extra_recovery]
+    - tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[no_recovery]
+    - tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[preserved]
+    - tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[reordered]
+    - tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants[False]
+    - tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants[True]
     - tests.test_ci_graph_composition::test_typed_paths_allow_only_bounded_recovery_outside_attempt_graph
     - tests.test_ci_graph_composition::test_typed_paths_allow_explicit_terminal_rejection_without_retry
     negative_controls:
-    - cause: recovery-drops-invariant-added-on-rejection-path
-      test: tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant
+    - cause: recovery-drops-invariant-added-on-rejection-path:case:[paths]
+      test: tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant[paths]
+    - cause: recovery-drops-invariant-added-on-rejection-path:case:[references]
+      test: tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant[references]
     - cause: same-attempt-cycle
       test: tests.test_ci_graph_composition::test_typed_paths_reject_incomplete_or_unbound_attempts[same-attempt-cycle]
     - cause: wrong-terminal-class
@@ -3119,36 +3191,88 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
-    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[None]
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[invented_crosswalk]
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[omitted_compiled_effect]
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[omitted_crosswalk]
     - tests.test_ci_graph_composition::test_reconstructed_zero_effects_close_existing_schema
-    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner
-    - tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects
+    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[None]
+    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[extra]
+    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[missing]
+    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[second_entrypoint]
+    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[wrong_effect]
+    - tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects[1.0]
+    - tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects[1.1]
     - tests.test_ci_graph_composition::test_reconstructed_binding_passes_import_roots_to_exact_discovery
     - tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle
     - tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction
     - tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject
     - tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner
     negative_controls:
-    - cause: deterministic-effect-declaration-contradiction-before-source-discovery
-      test: tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery
+    - cause: deterministic-effect-declaration-contradiction-before-source-discovery:case:[changed_symbol]
+      test: tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[changed_symbol]
+    - cause: deterministic-effect-declaration-contradiction-before-source-discovery:case:[invented_binding]
+      test: tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[invented_binding]
+    - cause: deterministic-effect-declaration-contradiction-before-source-discovery:case:[missing_binding]
+      test: tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[missing_binding]
+    - cause: deterministic-effect-declaration-contradiction-before-source-discovery:case:[missing_compiled]
+      test: tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[missing_compiled]
     - cause: matching-declaration-omissions-cannot-erase-actual-source-port
       test: tests.test_ci_graph_composition::test_matching_effect_omissions_cannot_erase_actual_source
     - cause: fabricated-compiled-effect-absent-from-captured-source
       test: tests.test_ci_graph_composition::test_reconstructed_effects_reject_fabricated_compiled_effect
     - cause: strict-effects-without-protected-policy-before-discovery
       test: tests.test_ci_graph_composition::test_reconstructed_effects_require_protected_policy_before_discovery
-    - cause: effect-context-outside-protected-operation-before-discovery
-      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery
-    - cause: ambiguous-or-empty-import-path-population-before-ast
-      test: tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse
-    - cause: invalid-declared-import-resource-before-source-work
-      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[empty_context]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[empty_context]
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[malformed_port]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[malformed_port]
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[mutable_context]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[mutable_context]
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[unknown_context]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_context]
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[unknown_kind]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_kind]
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[unknown_operation]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_operation]
+    - cause: effect-context-outside-protected-operation-before-discovery:case:[unknown_role]
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_role]
+    - cause: ambiguous-or-empty-import-path-population-before-ast:case:[ambiguous]
+      test: tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse[ambiguous]
+    - cause: ambiguous-or-empty-import-path-population-before-ast:case:[empty]
+      test: tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse[empty]
+    - cause: invalid-declared-import-resource-before-source-work:case:[roots0]
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots0]
+    - cause: invalid-declared-import-resource-before-source-work:case:[roots1]
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots1]
+    - cause: invalid-declared-import-resource-before-source-work:case:[roots2]
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots2]
+    - cause: invalid-declared-import-resource-before-source-work:case:[roots3]
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots3]
+    - cause: invalid-declared-import-resource-before-source-work:case:[roots4]
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots4]
+    - cause: invalid-declared-import-resource-before-source-work:case:[roots5]
+      test: tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots5]
     - cause: invalid-import-resource-before-protected-policy-capture
       test: tests.test_ci_graph_composition::test_import_resource_rejection_precedes_public_policy_capture
     - cause: duplicate-protected-operation-identity-before-source-work
       test: tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery
-    - cause: missing-or-unbound-public-operation-relationship-before-source-work
-      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[empty]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[empty]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[missing_mapping]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[missing_mapping]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[missing_policy]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[missing_policy]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[omission]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[omission]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[unknown_pair]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[unknown_pair]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[wrong_entrypoint]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_entrypoint]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[wrong_operation]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_operation]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[wrong_subject]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_subject]
     - cause: candidate-policy-substitution-before-source-work
       test: tests.test_ci_graph_composition::test_dirty_public_policy_rejects_before_source_discovery
     - cause: added-public-source-entry-with-retained-functions
@@ -3215,7 +3339,9 @@ implementation_slices:
     positive_tests:
     - tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle
     - tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction
-    - tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy
+    - tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy[None]
+    - tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy[false]
+    - tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy[{malformed]
     - tests.test_semantic_protected_operations::test_ordinary_authored_factory_keeps_authored_schema
     - tests.test_semantic_protected_operations::test_protected_operations_are_source_derived_and_deterministic
     - tests.test_semantic_operation_deconstruction::test_actual_public_operation_observations_match_pre_deconstruction_bytes
@@ -3227,24 +3353,52 @@ implementation_slices:
     negative_controls:
     - cause: duplicate-protected-operation-identity-before-source-work
       test: tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery
-    - cause: missing-or-unbound-public-operation-relationship-before-source-work
-      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[empty]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[empty]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[missing_mapping]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[missing_mapping]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[missing_policy]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[missing_policy]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[omission]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[omission]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[unknown_pair]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[unknown_pair]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[wrong_entrypoint]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_entrypoint]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[wrong_operation]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_operation]
+    - cause: missing-or-unbound-public-operation-relationship-before-source-work:case:[wrong_subject]
+      test: tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_subject]
     - cause: candidate-policy-substitution-before-source-work
       test: tests.test_ci_graph_composition::test_dirty_public_policy_rejects_before_source_discovery
     - cause: added-public-source-entry-with-retained-functions
       test: tests.test_ci_graph_composition::test_added_public_source_entry_cannot_escape_lifecycle_population
     - cause: candidate-schema-relaxes-protected-policy
       test: tests.test_semantic_protected_operations::test_permissive_candidate_schema_cannot_relax_protected_policy
-    - cause: unavailable-trusted-schema-falls-back-to-candidate
-      test: tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout
+    - cause: unavailable-trusted-schema-falls-back-to-candidate:case:[malformed]
+      test: tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout[malformed]
+    - cause: unavailable-trusted-schema-falls-back-to-candidate:case:[missing]
+      test: tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout[missing]
+    - cause: unavailable-trusted-schema-falls-back-to-candidate:case:[valid]
+      test: tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout[valid]
     - cause: candidate-selects-required-policy-digest
       test: tests.test_semantic_protected_operations::test_dirty_policy_cannot_supply_its_own_required_digest
-    - cause: nonregular-or-absent-committed-policy
-      test: tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob
-    - cause: mismatched-or-unavailable-policy-subject
-      test: tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population
-    - cause: unavailable-or-substituted-policy-blob
-      test: tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks
+    - cause: nonregular-or-absent-committed-policy:case:[gitlink]
+      test: tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob[gitlink]
+    - cause: nonregular-or-absent-committed-policy:case:[missing]
+      test: tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob[missing]
+    - cause: nonregular-or-absent-committed-policy:case:[symlink]
+      test: tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob[symlink]
+    - cause: mismatched-or-unavailable-policy-subject:case:[malformed]
+      test: tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population[malformed]
+    - cause: mismatched-or-unavailable-policy-subject:case:[unavailable]
+      test: tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population[unavailable]
+    - cause: mismatched-or-unavailable-policy-subject:case:[wrong_tree]
+      test: tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population[wrong_tree]
+    - cause: unavailable-or-substituted-policy-blob:case:[substituted]
+      test: tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks[substituted]
+    - cause: unavailable-or-substituted-policy-blob:case:[unavailable]
+      test: tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks[unavailable]
     - cause: caller-registry-substitution-before-discovery
       test: tests.test_semantic_protected_operations::test_registry_substitution_rejects_before_discovery
     - cause: removed-source-and-registry-entry-self-exemption
@@ -3274,14 +3428,48 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
-    - tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery
+    - tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery[False]
+    - tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery[True]
+    - tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery[failure_report]
     negative_controls:
-    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path
-      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths
-    - cause: authority-effect-claim-on-observational-or-intermediate-edge
-      test: tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels
-    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population
-      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[direct]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[direct]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[duplicate_pair]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[duplicate_pair]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[effect]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[effect]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[failure]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[failure]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[false_exclusion]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[false_exclusion]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[indirect]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[indirect]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[missing_exclusion]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[missing_exclusion]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[producer]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[producer]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[recovery]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[recovery]
+    - cause: forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path:case:[unknown_exclusion]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[unknown_exclusion]
+    - cause: authority-effect-claim-on-observational-or-intermediate-edge:case:[authority_marker]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels[authority_marker]
+    - cause: authority-effect-claim-on-observational-or-intermediate-edge:case:[indirect_marker]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels[indirect_marker]
+    - cause: authority-effect-claim-on-observational-or-intermediate-edge:case:[unknown_effect]
+      test: tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels[unknown_effect]
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population:case:[cancelled]
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[cancelled]
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population:case:[consumer]
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[consumer]
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population:case:[cycle]
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[cycle]
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population:case:[deep_failure]
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[deep_failure]
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population:case:[missing_custody]
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[missing_custody]
+    - cause: unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population:case:[unavailable]
+      test: tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[unavailable]
     remaining:
     - Consumer policy populations must execute under independently authenticated trusted runtime; this local authored check does
       not authenticate its caller or source.
@@ -3301,23 +3489,38 @@ implementation_slices:
     authority: false
     positive_tests:
     - tests.test_ci_graph_composition::test_reconstructed_ci_coverage_delegates_to_existing_owner
-    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[None]
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[invented_crosswalk]
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[omitted_compiled_effect]
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[omitted_crosswalk]
     - tests.test_ci_graph_composition::test_complete_ci_edge_coverage_is_kernel_derived_stable_and_read_only
     - tests.test_ci_graph_composition::test_ci_edge_coverage_retains_all_context_bindings_without_double_count
     - tests.test_ci_graph_composition::test_empty_ci_edge_population_does_not_claim_runtime_qualification
     negative_controls:
-    - cause: incomplete-or-stale-ci-graph-before-policy-and-source-discovery
-      test: tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source
-    - cause: omitted-canonical-edge-or-edge-and-test-pair
-      test: tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate
-    - cause: wrong-source-stale-population-or-integrity
-      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity
+    - cause: incomplete-or-stale-ci-graph-before-policy-and-source-discovery:case:[missing_edge]
+      test: tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source[missing_edge]
+    - cause: incomplete-or-stale-ci-graph-before-policy-and-source-discovery:case:[stale_graph]
+      test: tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source[stale_graph]
+    - cause: omitted-canonical-edge-or-edge-and-test-pair:case:[edge_and_tests]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate[edge_and_tests]
+    - cause: omitted-canonical-edge-or-edge-and-test-pair:case:[second_edge]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate[second_edge]
+    - cause: wrong-source-stale-population-or-integrity:case:[graph]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity[graph]
+    - cause: wrong-source-stale-population-or-integrity:case:[integrity]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity[integrity]
+    - cause: wrong-source-stale-population-or-integrity:case:[source]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity[source]
     - cause: candidate-resealed-unreachable-reference
       test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_resealed_unreachable_reference
     - cause: duplicate-canonical-edge-pair
       test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_duplicate_canonical_pairs
-    - cause: ungrounded-canonical-exclusion
-      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion
+    - cause: ungrounded-canonical-exclusion:case:[False]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion[False]
+    - cause: ungrounded-canonical-exclusion:case:[None]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion[None]
+    - cause: ungrounded-canonical-exclusion:case:[]
+      test: tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion[]
     remaining:
     - Optional reconstructed-query integration invokes the same complete CI-reference owner before policy capture or source discovery; contract audits/issue-394/reconstructed-ci-coverage-contract.json and evidence audits/issue-394/reconstructed-ci-coverage-verification.json. Actual protected invocation remains unqualified.
     - Local verification is retained at audits/issue-394/ci-edge-coverage-verification.json; no full canonical or runtime qualification.
@@ -3340,17 +3543,83 @@ implementation_slices:
     authority: false
     positive_tests:
     - tests.test_candidate_submit::test_submit_valid_timeout_policy_keeps_fixed_point_owner
-    - tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations
+    - tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations[declaration0]
+    - tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations[declaration1]
+    - tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations[declaration2]
     - tests.test_ci_graph::test_gate_timeout_policy_keeps_absence_and_regular_file_contracts
     negative_controls:
-    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction
-      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps
-    - cause: malformed-timeout-policy-before-canonical-submit-lease-and-reconciliation
-      test: tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile
-    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults
-      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations
-    - cause: invalid-present-timeout-resource-before-graph-rendering
-      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[dangling_symlink---apply]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[dangling_symlink---apply]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[dangling_symlink---check]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[dangling_symlink---check]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[dangling_symlink-factory]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[dangling_symlink-factory]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[null_policy---apply]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_policy---apply]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[null_policy---check]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_policy---check]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[null_policy-factory]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_policy-factory]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[null_timeout---apply]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_timeout---apply]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[null_timeout---check]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_timeout---check]
+    - cause: malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction:case:[null_timeout-factory]
+      test: tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_timeout-factory]
+    - cause: malformed-timeout-policy-before-canonical-submit-lease-and-reconciliation:case:[dangling_symlink]
+      test: tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile[dangling_symlink]
+    - cause: malformed-timeout-policy-before-canonical-submit-lease-and-reconciliation:case:[null_policy]
+      test: tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile[null_policy]
+    - cause: malformed-timeout-policy-before-canonical-submit-lease-and-reconciliation:case:[null_timeout]
+      test: tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile[null_timeout]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration0-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration0-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration0-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration0-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration1-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration1-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration1-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration1-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration2-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration2-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration2-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration2-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration3-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration3-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration3-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration3-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration4-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration4-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration4-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration4-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration5-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration5-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration5-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration5-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration6-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration6-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration6-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration6-policy]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration7-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration7-graph]
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults:case:[declaration7-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration7-policy]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[dangling_symlink-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[dangling_symlink-graph]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[dangling_symlink-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[dangling_symlink-policy]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[directory-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[directory-graph]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[directory-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[directory-policy]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[fifo-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[fifo-graph]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[fifo-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[fifo-policy]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[symlink-graph]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[symlink-graph]
+    - cause: invalid-present-timeout-resource-before-graph-rendering:case:[symlink-policy]
+      test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[symlink-policy]
     remaining:
     - Evidence audits/issue-394/timeout-policy-resource-verification.json proves local policy, graph and canonical submit authored consumers only.
     - Full provider deadline composition, authenticated timing, installed consumers and no-avoidable-allocation measurements
@@ -3369,14 +3638,46 @@ implementation_slices:
     positive_tests:
     - tests.test_governance_truth::test_unambiguous_authored_done_does_not_supply_verified_truth
     negative_controls:
-    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution
-      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary
-    - cause: invalid-workitem-file-resource-in-all-three-consumers
-      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources
-    - cause: complex-yaml-key-remains-typed-lifecycle-input-error
-      test: tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed
-    - cause: unsupported-key-rejected-at-existing-strict-decoder
-      test: tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution:case:[duplicate_phase-computed]
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_phase-computed]
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution:case:[duplicate_phase-projection]
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_phase-projection]
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution:case:[duplicate_phase-readiness]
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_phase-readiness]
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution:case:[duplicate_status-computed]
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_status-computed]
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution:case:[duplicate_status-projection]
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_status-projection]
+    - cause: duplicate-active-phase-or-workitem-status-before-proof-resolution:case:[duplicate_status-readiness]
+      test: tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_status-readiness]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[dangling_symlink-computed]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[dangling_symlink-computed]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[dangling_symlink-projection]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[dangling_symlink-projection]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[dangling_symlink-readiness]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[dangling_symlink-readiness]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[directory-computed]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[directory-computed]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[directory-projection]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[directory-projection]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[directory-readiness]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[directory-readiness]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[symlink-computed]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[symlink-computed]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[symlink-projection]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[symlink-projection]
+    - cause: invalid-workitem-file-resource-in-all-three-consumers:case:[symlink-readiness]
+      test: tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[symlink-readiness]
+    - cause: complex-yaml-key-remains-typed-lifecycle-input-error:case:[computed]
+      test: tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed[computed]
+    - cause: complex-yaml-key-remains-typed-lifecycle-input-error:case:[projection]
+      test: tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed[projection]
+    - cause: complex-yaml-key-remains-typed-lifecycle-input-error:case:[readiness]
+      test: tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed[readiness]
+    - cause: 'unsupported-key-rejected-at-existing-strict-decoder:case:[? [unsupported, key]\n: value\n]'
+      test: 'tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys[? [unsupported, key]\n: value\n]'
+    - cause: 'unsupported-key-rejected-at-existing-strict-decoder:case:[? {unsupported: key}\n: value\n]'
+      test: 'tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys[? {unsupported: key}\n: value\n]'
     remaining:
     - Evidence audits/issue-394/lifecycle-input-conformance-verification.json covers local authored input conformance only;
       no provider authenticity or custody claim.
@@ -3396,8 +3697,34 @@ implementation_slices:
     - tests.test_preflight::test_authored_phase_result_has_typed_contract_without_changing_producer
     - tests.test_preflight::test_authored_phase_result_primitive_and_real_consumers_have_one_source_owner
     negative_controls:
-    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result
-      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[absolute_path]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[absolute_path]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[authority]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[authority]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[closed]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[closed]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[empty_build]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[empty_build]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[missing_build]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_build]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[missing_hotfixes]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_hotfixes]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[missing_paths]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_paths]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[missing_phase]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_phase]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[reordered_paths]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[reordered_paths]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[short_paths]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[short_paths]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[traversal_path]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[traversal_path]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[verified]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[verified]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[wrong_hotfix_type]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[wrong_hotfix_type]
+    - cause: incomplete-mistyped-path-substituted-or-authority-promoted-result:case:[wrong_phase_type]
+      test: tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[wrong_phase_type]
     remaining:
     - Schema is a declaration/conformance contract; current consumers retain existing producer success/error behavior, not a
       new mandatory runtime result validator.
@@ -3422,10 +3749,40 @@ implementation_slices:
     authority: false
     positive_tests:
     - tests.test_ci_graph_composition::test_reconstructed_schema_binding_captures_exact_committed_resources
-    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[anchor]
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[catalog_relative]
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[dynamic]
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[internal]
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[nested_id]
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[recursive]
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[ref_shaped_data]
     negative_controls:
-    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI
-      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[ambiguous_id]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[ambiguous_id]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[bad_json]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[bad_json]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[bad_meta]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[bad_meta]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[duplicate_json]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[duplicate_json]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[missing_catalog]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[missing_catalog]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[missing_file]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[missing_file]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[missing_relationship]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[missing_relationship]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[shadow_catalog_uri]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[shadow_catalog_uri]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[swapped]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[swapped]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[symlink]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[symlink]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[unknown_anchor]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[unknown_anchor]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[unknown_ref]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[unknown_ref]
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI:case:[wrong_digest]
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[wrong_digest]
     remaining:
     - Caller must authenticate protected complete catalog and exact repository subject;
       no producer codec execution or independent installed authority qualification.

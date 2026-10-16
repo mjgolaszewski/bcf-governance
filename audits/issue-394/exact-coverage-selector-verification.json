@@ -1,0 +1,29 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/exact-coverage-selector-contract.json",
+  "migration": "audits/issue-394/exact-coverage-selector-migration.json",
+  "qualified_collection": {
+    "nodes": 3317,
+    "expanded_bare_groups": 49,
+    "expanded_exact_cases": 237
+  },
+  "checks": {
+    "focused": {
+      "passed": 15,
+      "failed": 1,
+      "seconds": 13.86,
+      "scope": "Coverage schema, unmapped/missing bindings, preservation migration and exact pre-generation source collection plus unchanged governed oracle.",
+      "failure": "Research branch generated manifest lacks 16 exact newly added selectors; all resolve through current qualified collection. Canonical reconciliation still required."
+    },
+    "governance_yaml": "passed",
+    "lint": "passed"
+  },
+  "diagnosis_correction": "Exact oracle still failed on canonically normalized a7b49713. Authored bare parameterized references, not only stale generated manifests, caused that persistent failure. Earlier broad stale-manifest attribution was incorrect.",
+  "constraints": [
+    "The current exact collection check catches authored references before generation/provider work in development verification; automatic production front-door integration remains required.",
+    "All original whole requirement identities/statuses and 30 bounded slices preserved; no behavior/authority activation.",
+    "No generated manifest edit or weaker oracle matching.",
+    "Attempt 3 deliberately cancelled during immutable provider reads after exact defect reproduction; retained separately without provider failure or custody claim."
+  ]
+}
