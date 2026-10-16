@@ -111,8 +111,10 @@ def _validate_comparison_ref(
     api: GitHubAPI, repository: str, *, branch: str, expected_sha: str,
 ) -> None:
     """Authenticate current ref separately from a potentially stale PR response."""
-    reference = api.reference(repository, f"heads/{branch}").get("object")
-    if not isinstance(reference, dict) or reference.get("type") != "commit" or reference.get("sha") != expected_sha:
+    observed = api.reference(repository, f"heads/{branch}")
+    reference = observed.get("object")
+    if (observed.get("ref") != f"refs/heads/{branch}" or not isinstance(reference, dict)
+            or reference.get("type") != "commit" or reference.get("sha") != expected_sha):
         raise GitHubControllerError("PR comparison reference is not exact or current")
 
 

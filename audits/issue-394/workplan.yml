@@ -3962,6 +3962,8 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_github_controller::test_provider_object_exact_subject_preserves_response_and_single_read[reference]
+    - tests.test_ci_github_controller::test_provider_object_exact_subject_preserves_response_and_single_read[commit]
     - tests.test_local_proof_bundles::test_proof_context_is_deterministic_detached_and_legacy_compatible
     - tests.test_prospective_validation::test_prospective_cache_identity_receives_resolved_context_and_lane
     - tests.test_ci_github_pr_authority::test_bound_pr_evaluator_and_publisher_separate_comparison_from_protected_source
@@ -3985,6 +3987,18 @@ implementation_slices:
     - tests.test_prospective_validation::test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source
     - tests.test_ci_graph::test_v3_reference_graph_projects_proof_transport_and_planned_shards
     negative_controls:
+    - cause: provider-missing-reference-identity
+      test: tests.test_ci_github_controller::test_provider_object_subject_contradiction_rejects_at_shared_ingress[missing-reference]
+    - cause: provider-missing-commit-identity
+      test: tests.test_ci_github_controller::test_provider_object_subject_contradiction_rejects_at_shared_ingress[missing-commit]
+    - cause: provider-wrong-reference-identity
+      test: tests.test_ci_github_controller::test_provider_object_subject_contradiction_rejects_at_shared_ingress[wrong-reference]
+    - cause: provider-wrong-commit-identity
+      test: tests.test_ci_github_controller::test_provider_object_subject_contradiction_rejects_at_shared_ingress[wrong-commit]
+    - cause: comparison-ref-name-missing
+      test: tests.test_ci_github_pr_authority::test_bound_pr_finalizer_rejects_contradictory_ref_name_with_matching_object[None]
+    - cause: comparison-ref-name-contradictory
+      test: tests.test_ci_github_pr_authority::test_bound_pr_finalizer_rejects_contradictory_ref_name_with_matching_object[refs/heads/other]
     - cause: protected-default-moved-with-stable-semantic-PR-subject
       test: tests.test_local_pr::test_late_protected_source_movement_rejects_with_unchanged_stacked_subject
     - cause: cached-proof-context-base_ref

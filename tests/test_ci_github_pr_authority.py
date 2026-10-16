@@ -466,7 +466,7 @@ class BoundPRAuthorityAPI(FakePRAuthorityAPI):
         if ref == 'heads/main':
             return {'object': {'type': 'commit', 'sha': self.main_sha}}
         if ref == 'heads/' + self.base_ref:
-            return {'object': {'type': 'commit', 'sha': self.ref_sha}}
+            return {'ref': 'refs/' + ref, 'object': {'type': 'commit', 'sha': self.ref_sha}}
         return super().reference(repository, ref)
 
     def commit(self, repository, sha):
@@ -564,3 +564,21 @@ def test_nondefault_pr_cannot_consume_default_main_transition_equivalence(tmp_pa
         finalizer_run_id=50, finalizer_run_attempt=1, output_root=tmp_path / 'bundle')
     assert value['computed_state'] == 'successful'
     assert value['evaluator']['comparison']['branch'] == 'stack'
+
+
+@pytest.mark.parametrize('ref_name', [None, 'refs/heads/other'])
+def test_bound_pr_finalizer_rejects_contradictory_ref_name_with_matching_object(tmp_path, ref_name):
+    api = BoundPRAuthorityAPI()
+    original = api.reference
+    def observed(repository, ref):
+        result = original(repository, ref)
+        if ref == 'heads/stack':
+            if ref_name is None: result.pop('ref', None)
+            else: result['ref'] = ref_name
+        return result
+    api.reference = observed
+    with pytest.raises(GitHubControllerError, match='comparison reference'):
+        finalize_pr(api, repository=REPOSITORY,
+            event={'workflow_run': {'id': 30, 'run_attempt': 1}},
+            finalizer_run_id=50, finalizer_run_attempt=1, output_root=tmp_path/'rejected')
+    assert not (tmp_path/'rejected').exists()

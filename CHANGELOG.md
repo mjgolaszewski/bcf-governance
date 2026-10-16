@@ -27,6 +27,10 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Reject provider commit/ref responses whose returned identity contradicts the
+  exact requested subject. Bound PR comparison checks also require the exact
+  returned ref name even when the object SHA matches.
+
 - Reject missing PR changelog deltas before normalization allocation using the
   resolved comparison base and canonical candidate scope. Stacked-base changes
   and ambient validation flags cannot substitute for the leaf PR obligation.

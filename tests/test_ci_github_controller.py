@@ -2610,3 +2610,47 @@ def test_repository_inventory_schema_error_is_not_retried_as_instability(monkeyp
         api.repository_artifacts('owner/repo')
     assert len(calls) == 1
     assert getattr(caught.value.__cause__, 'attempt_outcomes', ()) == ()
+
+
+@pytest.mark.parametrize('kind', ['reference', 'commit'])
+@pytest.mark.parametrize('defect', ['missing', 'wrong'])
+def test_provider_object_subject_contradiction_rejects_at_shared_ingress(monkeypatch, kind, defect):
+    api = GitHubAPI(token='fixture')
+    calls = []
+    selector = 'heads/stack' if kind == 'reference' else '1' * 40
+    field = 'ref' if kind == 'reference' else 'sha'
+    response = {'object': {'type': 'commit', 'sha': '1' * 40}} if kind == 'reference' else {'tree': {'sha': '2' * 40}}
+    if defect == 'wrong': response[field] = 'refs/heads/other' if kind == 'reference' else '3' * 40
+    def request(method, path):
+        calls.append((method, path))
+        return response
+    monkeypatch.setattr(api, '_request', request)
+    with pytest.raises(GitHubAPIError, match='does not match requested'):
+        getattr(api, kind)('owner/repo', selector)
+    assert len(calls) == 1 and calls[0][0] == 'GET'
+
+
+@pytest.mark.parametrize('kind', ['reference', 'commit'])
+def test_provider_object_exact_subject_preserves_response_and_single_read(monkeypatch, kind):
+    api = GitHubAPI(token='fixture')
+    calls = []
+    selector = 'heads/stack' if kind == 'reference' else '1' * 40
+    response = {'ref': 'refs/heads/stack', 'object': {'type': 'commit', 'sha': '1' * 40}} if kind == 'reference' else {'sha': selector, 'tree': {'sha': '2' * 40}}
+    def request(method, path):
+        calls.append((method, path))
+        return response
+    monkeypatch.setattr(api, '_request', request)
+    assert getattr(api, kind)('owner/repo', selector) is response
+    assert calls == [('GET', '/repos/owner/repo/git/' + ('ref/heads/stack' if kind == 'reference' else 'commits/' + selector))]
+
+
+def test_shared_reference_subject_validation_preserves_annotated_tag_objects(monkeypatch):
+    api = GitHubAPI(token='fixture')
+    response = {'ref': 'refs/tags/v2.5.0', 'object': {'type': 'tag', 'sha': '1' * 40}}
+    calls = []
+    def request(method, path):
+        calls.append((method, path))
+        return response
+    monkeypatch.setattr(api, '_request', request)
+    assert api.reference('owner/repo', 'tags/v2.5.0') is response
+    assert calls == [('GET', '/repos/owner/repo/git/ref/tags/v2.5.0')]
