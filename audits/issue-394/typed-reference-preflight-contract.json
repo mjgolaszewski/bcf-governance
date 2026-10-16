@@ -1,0 +1,36 @@
+{
+  "document": {
+    "kind": "implementation_contract",
+    "path": "audits/issue-394/typed-reference-preflight-contract.json",
+    "authority": false
+  },
+  "bounded_context": "governance_validation",
+  "layer": "application_query",
+  "side": "query",
+  "workitem_alias": "foundation.submit-normalization",
+  "targets": [
+    "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
+    "tests/test_ci_state_matrix.py",
+    "canonical private runtime copies through pack owner"
+  ],
+  "forbidden": [
+    "actual backtrace/prose adoption",
+    "installer/custody release bytes",
+    "workflow authority pins",
+    "provider or adopter operations"
+  ],
+  "defect": "Optional typed transition references have schema shape but are not resolved by earliest authored backtrace reference checking.",
+  "contract": [
+    "Resolve rejection_transition and retry_of against the same complete transition identity set already checked for duplicates",
+    "Reject missing referenced transition before downstream allocation",
+    "Reject self-reference or declared wrong source/target kind for the typed relation",
+    "Legacy untyped transitions without new references remain readable",
+    "Retain existing later independent complete path checks; structural reference validation is not authority or runtime qualification"
+  ],
+  "expected_tests": [
+    "Dangling rejection and retry references reject in authored_only mode",
+    "Self-references and wrong typed targets reject with cause-specific reference errors",
+    "Existing authored-only projection deferral and all current-model controls remain valid"
+  ],
+  "peer_authorization": 6870
+}
