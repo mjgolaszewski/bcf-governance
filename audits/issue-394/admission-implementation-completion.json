@@ -1,0 +1,186 @@
+{
+  "document": {
+    "kind": "bounded_workitem_implementation_completion_observation",
+    "path": "audits/issue-394/admission-implementation-completion.json",
+    "authority": false
+  },
+  "workitem": "P32-P0-01",
+  "authored_disposition": "implementation_done_scoped_verification_pending",
+  "computed_workitem_state": "not_claimed_verified_or_closed",
+  "contract": "audits/issue-394/admission-closeout-contract.json",
+  "scope": "Authentication of exact predecessor admission at successor activation; not successor certification or current provider freshness.",
+  "predecessor_observation": "audits/issue-394/v234-successor-admission.json",
+  "subject": {
+    "repository": "mjgolaszewski/bcf-governance",
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+    "tag": "v2.3.4"
+  },
+  "offline_predecessor_recomputation": {
+    "authority": false,
+    "execution_qualified": false,
+    "verification": {
+      "status": "pass",
+      "computed_state": "certified",
+      "admission_ordinal": 38858875383002001,
+      "selected_attempts": [
+        {
+          "producer_id": "governance",
+          "run_attempt": 2
+        }
+      ],
+      "reasons": [],
+      "certification_sha256": "fbafafc457753764544079ed4f5c55c5f7cfa6ccd3a2447a21a9c60bda951324",
+      "session_manifest_sha256": "f9fb8db826f4970223a2e23932b7cc23dfe1627f3257a0d5d2388073d8b998f6",
+      "raw_snapshot_sha256": {
+        "governance": "8d76369ca06d1447170ebdb6604c99a7325226cbd8ba3d5beb29ece9b8c59b23"
+      },
+      "evaluation_scope": {
+        "intent": "closure",
+        "target": {
+          "id": "P31",
+          "kind": "phase"
+        }
+      },
+      "certified_proposition": {
+        "authorizes": [],
+        "conclusion": "success",
+        "eligible_successors": [],
+        "predicate": "phase_closed",
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "target": {
+          "id": "P31",
+          "kind": "phase"
+        }
+      }
+    },
+    "closed_phases": [
+      "P31"
+    ],
+    "manifest_files_checked": 6,
+    "owner_source": "exact admitted v2.3.4 checkout",
+    "limits": [
+      "Offline recomputation of retained authenticated predecessor bytes; no fresh provider/controller authority or successor proof."
+    ]
+  },
+  "immutable_asset_hashes": {
+    "SHA256SUMS": "1c29a86add2e50e8315c084cc7d168172822882d85866a84a73a425d8e9b2c9d",
+    "bcf_governance-2.3.4-py3-none-any.whl": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
+    "bcf_governance-2.3.4.tar.gz": "9fe8cddee2e81f451f0bece4b28cbdf71b0ef715fbf23503ff8dcfce2f454b10"
+  },
+  "archive_source_parity": {
+    "tracked_package_files_checked": 689,
+    "python_files_checked": 579,
+    "wheel_and_sdist_all_bytes_equal_committed_regular_git_blobs": true,
+    "population_sha256": "fc2b6c52de8ae787b270529bea93739630982b037149059beba6bc1fe744d034",
+    "baseline_pack_owner_check": "passed; .github/scripts/build_pack_manifest.py --check on exact d02f11ef source"
+  },
+  "source_integration": {
+    "construction_commit_sha": "462ee650c9dba599a65880fa140b4acc8f9ce831",
+    "admitted_baseline_ancestor_verified": true,
+    "verification": "git merge-base --is-ancestor passed"
+  },
+  "controller_and_evaluator": {
+    "basis": "Original authenticated installed-controller query and exact published wheel; all package bytes additionally reverified against admitted source.",
+    "retained_observation": {
+      "controller_commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "controller_bundle_sha256": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba"
+    },
+    "fresh_provider_state_claimed": false
+  },
+  "adopter_policy": {
+    "path": "governance/release-qualification.yml",
+    "sha256": "cd6c56c84e82861c24de6c34ea212e48071ca49723fc25b82afc9520c3e6e9f5",
+    "qualification_authority": "local_non_authoritative",
+    "product_failure": "typed_remediation_input_no_publication_effect",
+    "operator_disposition": "Follow current policy; carry optional compatibility/interpreter failure as residual. No successful optional observation invented."
+  },
+  "controls": {
+    "passed": 54,
+    "seconds": 20.46,
+    "qualified_runtime": "isolated worktree project environment through local_execution_admission owner",
+    "exact_nodes": [
+      "tests.test_ci_certification::test_admission_workflow_is_bound_to_canonical_authority",
+      "tests.test_ci_certification::test_authenticated_snapshots_normalize_and_truth_recomputes_certified",
+      "tests.test_ci_certification::test_failed_report_reason_is_independently_recomputed",
+      "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[closure-workitem-P01]",
+      "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[pr-pull_request_progress-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\\n]",
+      "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[pr-pull_request_progress-unbound]",
+      "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[workitem-phase-P01-W01]",
+      "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[workitem-workitem-P01-W01\\n]",
+      "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[workitem-workitem-P01]",
+      "tests.test_ci_certification::test_later_admitted_failure_revokes_earlier_success",
+      "tests.test_ci_certification::test_moved_commit_or_tree_is_obsolete[aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-dddddddddddddddddddddddddddddddddddddddd-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-cccccccccccccccccccccccccccccccccccccccc]",
+      "tests.test_ci_certification::test_moved_commit_or_tree_is_obsolete[bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb-cccccccccccccccccccccccccccccccccccccccc-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-cccccccccccccccccccccccccccccccccccccccc]",
+      "tests.test_ci_certification::test_normalized_report_cannot_diverge_from_provider_state",
+      "tests.test_ci_certification::test_session_subject_and_producer_inventory_are_bound",
+      "tests.test_ci_certification::test_snapshot_bytes_are_hash_bound",
+      "tests.test_ci_certification::test_snapshots_must_agree_on_admission_authority",
+      "tests.test_ci_certification::test_untrusted_event_cannot_enter_admission_order",
+      "tests.test_ci_github_release::test_release_inspection_accepts_only_exact_immutable_attested_provider_state",
+      "tests.test_ci_github_release::test_release_inspection_binds_optional_expected_body",
+      "tests.test_ci_github_release::test_release_inspection_rejects_noncanonical_metadata[name-foreign name]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_noncanonical_metadata[prerelease-True]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_noncanonical_metadata[tag_name-v0.7.2]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_provider_custody_mutants[changed-asset-assets are not exact]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_provider_custody_mutants[draft-immutable and non-draft]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_provider_custody_mutants[lightweight-annotated]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_provider_custody_mutants[missing-attestation-lacks attestation]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_provider_custody_mutants[mutable-immutable releases]",
+      "tests.test_ci_github_release::test_release_inspection_rejects_provider_custody_mutants[signed-unsigned policy]",
+      "tests.test_controller_custody::test_cheap_custody_preflight_executes_real_no_transition_consumer",
+      "tests.test_controller_custody::test_controller_artifact_materialization_is_terminal_scope_exact",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>0]",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>1]",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>2]",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>3]",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>4]",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>5]",
+      "tests.test_controller_custody::test_controller_custody_rejects_substitution_or_ambiguity[<lambda>6]",
+      "tests.test_controller_custody::test_effective_controller_custody_preserves_complete_provider_identity",
+      "tests.test_controller_custody::test_prospective_chain_executes_every_producer_shape_and_consumer_route",
+      "tests.test_controller_custody::test_prospective_chain_rejects_an_unowned_downstream_permutation",
+      "tests.test_controller_custody::test_prospective_chain_rejects_artifact_selection_before_typed_authorization",
+      "tests.test_controller_custody::test_prospective_chain_rejects_authorize_condition_leaking_to_bootstrap",
+      "tests.test_controller_custody::test_prospective_chain_rejects_mixed_automation_and_rotation_triggers",
+      "tests.test_controller_custody::test_prospective_chain_rejects_publisher_without_exact_finalizer_custody",
+      "tests.test_controller_custody::test_prospective_chain_rejects_unbound_finalizer_custody_transport",
+      "tests.test_controller_custody::test_prospective_chain_rejects_unclosed_recovery_custody_lane[<lambda>-producer lane is ambiguous or missing0]",
+      "tests.test_controller_custody::test_prospective_chain_rejects_unclosed_recovery_custody_lane[<lambda>-producer lane is ambiguous or missing1]",
+      "tests.test_controller_custody::test_prospective_chain_rejects_unclosed_recovery_custody_lane[<lambda>-recovery custody exclusion is not closed]",
+      "tests.test_controller_custody::test_prospective_chain_rejects_unconditional_controller_bundle_production[build-trusted-controller]",
+      "tests.test_controller_custody::test_prospective_chain_rejects_unconditional_controller_bundle_production[upload-trusted-controller]",
+      "tests.test_controller_custody::test_standalone_custody_authenticates_exact_provider_artifact",
+      "tests.test_controller_custody::test_standalone_custody_rejects_substituted_provider_contract[digest]",
+      "tests.test_controller_custody::test_standalone_custody_rejects_substituted_provider_contract[inventory]",
+      "tests.test_controller_custody::test_standalone_custody_rejects_substituted_provider_contract[subject]"
+    ],
+    "scope": "Existing certificate recomputation/substitution and custody identity/immutability/tag/attestation/metadata controls; mocked provider cases are not fresh live failures."
+  },
+  "remaining_constraints": [
+    "Independent P32-P0-01 verified/closed truth still requires governed evidence on exact successor source; DONE and this observation confer no authority.",
+    "All 82 whole Issue 394 requirements remain open; no complete machine DAG adoption, performance budget, installed optimized consumer or successor custody.",
+    "Optional adopter compatibility/interpreter failure remains a nonauthoritative residual under unchanged policy and user disposition.",
+    "Mutable provider/controller authority must be freshly authenticated at each actual execution boundary; primary attempt 4 remains on unmodified earlier candidate."
+  ],
+  "citation_schema_controls": {
+    "initial_failed": 2,
+    "initial_passed": 2,
+    "final_focused_passed": 13,
+    "final_seconds": 6.36,
+    "scope": "DONE requires a citation; citation objects cannot confer authority; legacy in-progress empty citations remain valid; existing whole inventory schema controls retained.",
+    "post_report_checks": {
+      "passed": 14,
+      "seconds": 5.9,
+      "scope": "Completion citations, existing whole inventory schema and original selector/cause preservation."
+    }
+  },
+  "local_metadata_validation": {
+    "governance_yaml": "passed",
+    "exposure_scan": "passed",
+    "lint": "passed"
+  }
+}

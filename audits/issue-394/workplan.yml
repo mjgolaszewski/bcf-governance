@@ -77,7 +77,7 @@ stages:
 workitems:
   foundation.admission:
     summary: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
-    status: IN_PROGRESS
+    status: DONE
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
     architectural_layer: tooling
@@ -101,7 +101,8 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/admission-implementation-completion.json
   foundation.residuals:
     summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
     status: IN_PROGRESS
