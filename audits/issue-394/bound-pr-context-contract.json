@@ -64,7 +64,8 @@
     "Installed controller/evaluator and source protection owners remain independent. No feature-branch base can replace protected default-main policy or confer lifecycle/release authority. Full consumer controls must prove this before integration.",
     "Before integration, satisfy the explicit protected-default/evaluator source separation matrix in audits/issue-394/bound-pr-authority-context-research.json. Existing default-base guards cannot be removed without equivalent independent source qualification; preserve #425 regressions and immutable v2.3.4.",
     "Consume new bound context metadata atomically before provider retry reads: exact repository/ID, PR number/node and complete base/provider-head binding must agree with the independently proved PR projection; malformed or partial binding rejects without normalization, read or mutation. Legacy unbound context remains readable.",
-    "Direct protection prospective admission must pass its supplied authenticated read API unchanged to the existing comparison context owner. No implicit environment-client substitution; provider errors preserve cause and stop before protection validation."
+    "Direct protection prospective admission must pass its supplied authenticated read API unchanged to the existing comparison context owner. No implicit environment-client substitution; provider errors preserve cause and stop before protection validation.",
+    "Capture protected-default commit/tree independently of comparison base for authenticated GitHub contexts. Require provider exact refs/heads/default commit agreement with the fetched immutable Git object before and after bound/absence discovery; malformed, moved or wrong-type refs reject. Preserve five-field genuinely local legacy serialization. These observations alone confer no policy/evaluator authority; downstream separation and movement controls remain required."
   ],
   "edge_conditions": [
     "authenticated unbound default-main candidate",

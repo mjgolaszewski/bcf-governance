@@ -414,3 +414,13 @@ def test_local_unbound_context_serialization_remains_exactly_legacy(tmp_path):
     context = resolve_local_pr_context(repo)
     assert context.as_dict() == {"remote": "origin", "default_branch": "main", "base_sha": base,
                                  "head_sha": _git(repo, "rev-parse", "HEAD"), "head_ref": "feature"}
+
+
+def test_bound_stacked_context_retains_distinct_protected_default_subject(authenticated_stacked_pr):
+    fixture = authenticated_stacked_pr
+    context = resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert context.base_sha == fixture.stack_base
+    assert getattr(context, 'protected_default_sha', None) == fixture.default_base
+    expected_tree = subprocess.check_output(['git', 'rev-parse', fixture.default_base + '^{tree}'], cwd=fixture.repo, text=True).strip()
+    assert context.protected_default_tree == expected_tree
+    assert context.as_dict()['protected_default_sha'] != context.as_dict()['base_sha']
