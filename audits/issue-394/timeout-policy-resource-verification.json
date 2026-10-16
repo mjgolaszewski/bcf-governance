@@ -32,5 +32,51 @@
   "constraints": [
     "Existing early resource validation only; full deadline envelopes remain unimplemented and dependency-gated.",
     "No provider, installer or custody writes, no runtime/installed qualification."
-  ]
+  ],
+  "declaration_followup": {
+    "red": {
+      "failed": 16,
+      "passed": 3,
+      "seconds": 2.33
+    },
+    "focused": {
+      "passed": 28,
+      "seconds": 0.83
+    },
+    "broad": {
+      "passed": 166,
+      "seconds": 48.06,
+      "scope": "Full graph, LOC/context and private-runtime parity."
+    },
+    "behavior": "Nonmapping policy/gate/invocation and explicit null timeout raise CIGraphError. Omitted optional declarations retain defaults.",
+    "checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "pack_parity": "passed"
+    }
+  },
+  "canonical_submit_followup": {
+    "red": {
+      "failed": 3,
+      "passed": 1,
+      "seconds": 0.57
+    },
+    "focused": {
+      "passed": 4,
+      "seconds": 0.36
+    },
+    "behavior": "Canonical submit invokes existing pure timeout query during authored admission before leasing or reconciliation. Existing exception translation and fixed-point owner remain.",
+    "combined_verification": {
+      "passed": 198,
+      "seconds": 125.01,
+      "scope": "Full candidate submit, full CI graph, LOC/context/private-runtime parity and actual BCF public-operation characterization; all 21 observations byte-identical."
+    },
+    "checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "coverage_schema": "passed",
+      "pack_parity": "passed",
+      "governance_yaml": "passed"
+    }
+  }
 }

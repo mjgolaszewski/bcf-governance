@@ -688,3 +688,34 @@ def test_submit_authored_machine_rejects_before_lease_or_reconcile(monkeypatch, 
     with pytest.raises(ProspectiveValidationError, match="machine-readable authored contradiction"):
         submit._normalize_submission(tmp_path, python_executable=Path("/python"), execution_id="2" * 40, semantic_intent=None,
                                      runner=lambda *_a, **_k: pytest.fail("authored machine contradiction reached reconciliation"))
+
+
+
+@pytest.mark.parametrize('defect', ['null_policy', 'null_timeout', 'dangling_symlink'])
+def test_submit_timeout_policy_rejects_before_lease_or_reconcile(monkeypatch, tmp_path, defect):
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    path = governance / 'gate-contracts.yml'
+    if defect == 'dangling_symlink':
+        path.symlink_to(tmp_path / 'absent-timeouts.yml')
+    elif defect == 'null_policy':
+        path.write_text('execution_policy: null\n')
+    else:
+        path.write_text('gates: {example: {invocation: {timeout_seconds: null}}}\n')
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('invalid timeout acquired lease'))
+    with pytest.raises(ProspectiveValidationError, match='timeout|regular nonsymlink'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
+                                     runner=lambda *_a, **_k: pytest.fail('invalid timeout reached reconciliation'))
+
+
+def test_submit_valid_timeout_policy_keeps_fixed_point_owner(monkeypatch, tmp_path):
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    (governance / 'gate-contracts.yml').write_text('execution_policy: {default_timeout_seconds: 2400}\n')
+    _normalization_state(monkeypatch)
+    calls = []
+    def runner(argv, **_kwargs):
+        calls.append(argv[-1])
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
+    assert calls == ['--check']

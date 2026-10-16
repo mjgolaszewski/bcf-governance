@@ -3588,3 +3588,35 @@ def test_gate_timeout_policy_keeps_absence_and_regular_file_contracts(tmp_path):
     path = governance / 'gate-contracts.yml'
     path.write_text('execution_policy: {default_timeout_seconds: 7200}\ngates: {example: {invocation: {timeout_seconds: 9000}}}\n')
     assert gate_timeout_contract(tmp_path) == (7200, {'example': 9000})
+
+
+
+@pytest.mark.parametrize('consumer', ['policy', 'graph'])
+@pytest.mark.parametrize('declaration', [
+    {'execution_policy': None}, {'execution_policy': []}, {'execution_policy': 'default'},
+    {'gates': {'example': None}}, {'gates': {'example': []}},
+    {'gates': {'example': {'invocation': None}}},
+    {'gates': {'example': {'invocation': []}}},
+    {'gates': {'example': {'invocation': {'timeout_seconds': None}}}},
+])
+def test_gate_timeout_policy_rejects_explicit_malformed_declarations(tmp_path, consumer, declaration):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    if consumer == 'graph':
+        _write_graph(tmp_path)
+    governance = tmp_path / 'governance'
+    governance.mkdir(exist_ok=True)
+    (governance / 'gate-contracts.yml').write_text(yaml.safe_dump(declaration))
+    with pytest.raises(CIGraphError, match='gate .*timeout'):
+        if consumer == 'graph':
+            validate_ci_graph(tmp_path)
+        else:
+            gate_timeout_contract(tmp_path)
+
+
+@pytest.mark.parametrize('declaration', [{}, {'gates': {'example': {}}}, {'gates': {'example': {'invocation': {}}}}])
+def test_gate_timeout_policy_preserves_omitted_optional_declarations(tmp_path, declaration):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    (governance / 'gate-contracts.yml').write_text(yaml.safe_dump(declaration))
+    assert gate_timeout_contract(tmp_path) == (1800, {})

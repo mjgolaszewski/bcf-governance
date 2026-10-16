@@ -3288,16 +3288,22 @@ implementation_slices:
       legacy defaults; genuine absence remains compatible.
     contract: audits/issue-394/timeout-policy-resource-contract.json
     producer: bcf_governance/tooling/ci_graph_timeouts.py::gate_timeout_contract
-    consumer: bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph
+    consumer: Canonical submit authored admission in ci_authority_submit.py::_normalize_submission and ci_graph_contracts.py::validate_ci_graph
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_candidate_submit::test_submit_valid_timeout_policy_keeps_fixed_point_owner
+    - tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations
     - tests.test_ci_graph::test_gate_timeout_policy_keeps_absence_and_regular_file_contracts
     negative_controls:
+    - cause: malformed-timeout-policy-before-canonical-submit-lease-and-reconciliation
+      test: tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile
+    - cause: explicit-malformed-timeout-declarations-cannot-select-defaults
+      test: tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations
     - cause: invalid-present-timeout-resource-before-graph-rendering
       test: tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource
     remaining:
-    - Evidence audits/issue-394/timeout-policy-resource-verification.json proves local policy and graph consumers only.
+    - Evidence audits/issue-394/timeout-policy-resource-verification.json proves local policy, graph and canonical submit authored consumers only.
     - Full provider deadline composition, authenticated timing, installed consumers and no-avoidable-allocation measurements
       remain unqualified.
     - No P32-P0-05 dependency closure or policy activation is claimed; canonical normalization and terminal custody remain open.
