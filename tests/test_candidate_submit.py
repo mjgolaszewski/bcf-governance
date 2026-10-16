@@ -926,3 +926,55 @@ def test_nondefault_target_never_invokes_protected_merge_mutations(mode):
         assert result["status"] == "provider_proof_required_no_default_main_authority"
         assert frontier["state"] == "nondefault_base" and frontier["release_authority"] is False
         assert frontier["action"]["kind"] == "observe_same_subject"
+
+
+@pytest.mark.parametrize('asserted,valid', [('pr', True), ('closure', False)])
+def test_bound_pr_normalization_assertion_uses_candidate_scope(monkeypatch, tmp_path, asserted, valid):
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda *_a: ('closure', 'P32'))
+    context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'leaf', base_ref='stack',
+        repository='owner/repo', repository_id=17, pull_request_number=7,
+        pull_request_node_id='PR_node', provider_head_sha='2' * 40)
+    calls = []
+    @contextmanager
+    def lease(*_args):
+        calls.append('lease')
+        yield
+    monkeypatch.setattr(submit, 'local_gate_lease', lease)
+    def run(*_args, **_kwargs):
+        calls.append('reconcile')
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    if valid:
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+            semantic_intent=asserted, runner=run, context=context)
+        assert calls == ['lease', 'reconcile']
+    else:
+        with pytest.raises(ProspectiveValidationError, match='intent'):
+            submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+                semantic_intent=asserted, runner=run, context=context)
+        assert calls == []
+
+
+def test_submit_supplies_authenticated_context_to_normalization(monkeypatch, tmp_path):
+    context, _identity = _state(monkeypatch)
+    def normalize(*_args, **kwargs):
+        assert kwargs['context'] is context
+        raise RuntimeError('normalization context observed')
+    monkeypatch.setattr(submit, '_normalize_submission', normalize)
+    with pytest.raises(RuntimeError, match='normalization context observed'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object())
+
+
+@pytest.mark.parametrize('field', ['repository', 'repository_id', 'pull_request_number', 'pull_request_node_id', 'provider_head_sha'])
+def test_bound_pr_normalization_rejects_incomplete_binding_before_lease(monkeypatch, tmp_path, field):
+    from dataclasses import replace
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda *_a: ('closure', 'P32'))
+    context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'leaf', base_ref='stack',
+        repository='owner/repo', repository_id=17, pull_request_number=7,
+        pull_request_node_id='PR_node', provider_head_sha='2' * 40)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('lease before valid binding'))
+    with pytest.raises(ProspectiveValidationError, match='authenticated PR binding'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+            semantic_intent='pr', runner=lambda *_a, **_k: pytest.fail('reconcile before binding'),
+            context=replace(context, **{field: None}))

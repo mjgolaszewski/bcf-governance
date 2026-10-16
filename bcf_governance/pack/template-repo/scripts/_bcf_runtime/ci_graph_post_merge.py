@@ -72,13 +72,23 @@ def candidate_post_merge_evaluation(
     The caller supplies the independently resolved local/provider context. This
     candidate projection does not change the compiled default-main workflow.
     """
-    if context.comparison_base_ref == context.default_branch:
+    mode, target = candidate_semantic_scope(evaluation.mode, evaluation.target, context=context)
+    if (mode, target) == (evaluation.mode, evaluation.target):
         return evaluation
+    return replace(evaluation, mode=mode, target=target)
+
+
+def candidate_semantic_scope(
+    mode: str, target: str | None, *, context: LocalPRContext,
+) -> tuple[str, str | None]:
+    """Project one authenticated comparison context without requiring generated state."""
+    if context.comparison_base_ref == context.default_branch:
+        return mode, target
     if (not context.repository or type(context.repository_id) is not int
             or type(context.pull_request_number) is not int
             or not context.pull_request_node_id or not context.provider_head_sha):
         raise CIGraphError("nondefault candidate lacks its authenticated PR binding")
-    return replace(evaluation, mode="pr", target=None)
+    return "pr", None
 
 
 def _strings(value: Any) -> tuple[str, ...]:

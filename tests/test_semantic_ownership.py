@@ -371,3 +371,25 @@ def test_protected_merge_context_authorization_is_declared_and_causal():
     without = dataclasses.replace(selected, entries=(dataclasses.replace(entry, raw=removed),))
     violations = scan.evaluate_discovery(discovered, without)['violations']
     assert any(v['kind'] == 'downstream_normalization' and v['symbol'] == consumer for v in violations)
+
+
+def test_normalization_context_authorization_is_declared_and_causal():
+    registry = load_registry(REPO_ROOT)
+    semantic_id = 'governance.local-pr-context.v1'
+    entry = next(row for row in registry.entries if row.semantic_id == semantic_id)
+    consumer = 'bcf_governance/tooling/ci_authority_submit.py::_normalize_submission'
+    assert consumer in entry.raw['declared_consumer_layers_and_sinks']['authorization']
+    assert consumer not in entry.authorized_constructors | entry.authorized_delegates
+    assert entry.raw['narrow_suppressions'] == []
+    files = [REPO_ROOT / 'bcf_governance/tooling/local_pr_context.py',
+             REPO_ROOT / 'bcf_governance/tooling/ci_authority_submit.py']
+    discovered = inventory.discover_python_source(REPO_ROOT, files=files)
+    selected = dataclasses.replace(registry, entries=(entry,))
+    assert not [v for v in scan.evaluate_discovery(discovered, selected)['violations']
+                if v['kind'] == 'downstream_normalization' and v['symbol'] == consumer]
+    import copy
+    removed = copy.deepcopy(entry.raw)
+    removed['declared_consumer_layers_and_sinks']['authorization'].remove(consumer)
+    without = dataclasses.replace(selected, entries=(dataclasses.replace(entry, raw=removed),))
+    violations = scan.evaluate_discovery(discovered, without)['violations']
+    assert any(v['kind'] == 'downstream_normalization' and v['symbol'] == consumer for v in violations)

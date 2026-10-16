@@ -552,7 +552,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "829b462b1a2cde36bd0ecd89f9e151e239bea212bda064006a4278b4cf3d5966"
+      "sha256": "a7c04f89b6ed84d80063479c8f1be72672343b1c2944ef573d0c9bc3fc588b2b"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -800,7 +800,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
-      "sha256": "11034141f11ac4b86dbe464448888a51e4f65e2b63c300d5a60dedf13a168312"
+      "sha256": "1b92c6d3e314d4eecb073e5c23cacef9e0c7096e7e8ca537c1cc55508273665d"
     },
     "scripts/_bcf_runtime/ci_graph_pr_evaluator.py": {
       "operation": "copy",

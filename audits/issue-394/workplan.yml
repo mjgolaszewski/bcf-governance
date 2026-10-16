@@ -3945,6 +3945,9 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_candidate_submit::test_bound_pr_normalization_assertion_uses_candidate_scope[pr-True]
+    - tests.test_candidate_submit::test_submit_supplies_authenticated_context_to_normalization
+    - tests.test_semantic_ownership::test_normalization_context_authorization_is_declared_and_causal
     - tests.test_candidate_provider_recovery::test_retry_preserves_exact_bound_default_context
     - tests.test_local_pr::test_bound_stacked_pr_context_uses_authenticated_base_instead_of_default
     - tests.test_local_pr::test_bound_stacked_pr_synthetic_event_preserves_provider_base_ref
@@ -3961,6 +3964,18 @@ implementation_slices:
     - tests.test_prospective_validation::test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source
     - tests.test_ci_graph::test_v3_reference_graph_projects_proof_transport_and_planned_shards
     negative_controls:
+    - cause: nondefault-protected-intent-assertion
+      test: tests.test_candidate_submit::test_bound_pr_normalization_assertion_uses_candidate_scope[closure-False]
+    - cause: normalization-binding-missing-repository
+      test: tests.test_candidate_submit::test_bound_pr_normalization_rejects_incomplete_binding_before_lease[repository]
+    - cause: normalization-binding-missing-repository_id
+      test: tests.test_candidate_submit::test_bound_pr_normalization_rejects_incomplete_binding_before_lease[repository_id]
+    - cause: normalization-binding-missing-pull_request_number
+      test: tests.test_candidate_submit::test_bound_pr_normalization_rejects_incomplete_binding_before_lease[pull_request_number]
+    - cause: normalization-binding-missing-pull_request_node_id
+      test: tests.test_candidate_submit::test_bound_pr_normalization_rejects_incomplete_binding_before_lease[pull_request_node_id]
+    - cause: normalization-binding-missing-provider_head_sha
+      test: tests.test_candidate_submit::test_bound_pr_normalization_rejects_incomplete_binding_before_lease[provider_head_sha]
     - cause: finalizer-executes-comparison-base
       test: tests.test_ci_graph::test_ordinary_evaluator_rejects_untrusted_executable_checkout[finalizer-comparison-base]
     - cause: finalizer-executes-candidate-head

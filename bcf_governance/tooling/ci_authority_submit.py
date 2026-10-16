@@ -19,7 +19,7 @@ from .candidate_provider_recovery import (
     resolve_candidate_provider_recovery,
 )
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_post_merge import authored_candidate_title, authored_post_merge_scope, candidate_post_merge_evaluation, post_merge_evaluation
+from .ci_graph_post_merge import authored_candidate_title, authored_post_merge_scope, candidate_post_merge_evaluation, candidate_semantic_scope, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
 from .github_protection import load_protection
 from .local_pr import (
@@ -57,6 +57,7 @@ def _normalize_submission(
     execution_id: str,
     semantic_intent: str | None,
     runner: Runner,
+    context: LocalPRContext | None = None,
 ) -> None:
     """Settle derived state before consuming its submission authority projection."""
 
@@ -70,10 +71,14 @@ def _normalize_submission(
         validate_authored_release_target(root, version)
         gate_timeout_contract(root)
         validate_ci_state_matrix(root, authored_only=True)
-        if semantic_intent is not None and semantic_intent != authored_post_merge_scope(root)[0]:
-            raise ProspectiveValidationError(
-                "submitted semantic intent does not match the authored lifecycle intent"
-            )
+        if semantic_intent is not None:
+            mode, target = authored_post_merge_scope(root)
+            if context is not None:
+                mode, target = candidate_semantic_scope(mode, target, context=context)
+            if semantic_intent != mode:
+                raise ProspectiveValidationError(
+                    "submitted semantic intent does not match the authored lifecycle intent"
+                )
         validate_authored_test_reference_inventories(root, python_executable=python_executable)
         validate_authored_semantic_ownership(root)
     except ValueError as exc:
@@ -380,6 +385,7 @@ def submit_candidate(
             execution_id=identity.commit_sha,
             semantic_intent=semantic_intent,
             runner=runner,
+            context=context,
         )
     except (ValueError, OSError) as exc:
         try:
