@@ -37,3 +37,20 @@ def test_scalar_sharing_is_deterministic_local_and_preserves_yaml_types() -> Non
     assert render_profile_surface(copy.deepcopy(payload), width=4096) == first
     assert yaml.safe_dump(payload) == ordinary
     assert len(first) < len(ordinary)
+
+
+def test_equal_string_list_facts_share_projection_independent_of_input_aliases():
+    values = ["lite", "standard", "regulated"]
+    independent = {"first": list(values), "second": list(values), "ordered": list(reversed(values)),
+                   "duplicates": ["lite", "lite", "standard"], "typed": ["true", True, "7", 7, None]}
+    shared = {**independent, "first": values, "second": values}
+    before = copy.deepcopy(independent)
+    rendered = render_profile_surface(independent, width=4096)
+    observed = yaml.safe_load(rendered)
+    assert observed == independent == before
+    assert observed["first"] is observed["second"]
+    assert observed["first"] is not observed["ordered"]
+    assert render_profile_surface(shared, width=4096) == rendered
+    assert render_profile_surface(yaml.safe_load(rendered), width=4096) == rendered
+    render_profile_surface({"unrelated": ["standard", "regulated"]}, width=120)
+    assert render_profile_surface(independent, width=4096) == rendered
