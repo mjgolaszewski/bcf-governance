@@ -1,0 +1,32 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/reconstructed-effect-contract.json",
+  "red": {
+    "passed": 2,
+    "failed": 3,
+    "seconds": 1.22,
+    "api_port_present": true
+  },
+  "verification": {
+    "passed": 251,
+    "failed": 1,
+    "seconds": 14.8,
+    "failure": "Existing canonical manifest oracle absent; normalization held; no skip or weakening.",
+    "lint": "passed",
+    "typecheck": "passed",
+    "pack_parity": "passed",
+    "coverage_schema": "passed; 82 requirements and 23 bounded slices",
+    "final_focused": {
+      "passed": 17,
+      "seconds": 1.98,
+      "includes": "known effect roles and kinds rejected before AST; repeated entrypoints share exact port identities"
+    },
+    "governance_yaml": "passed"
+  },
+  "constraints": [
+    "Static protected-public-operation effects only; caller authenticates policy and source identities.",
+    "No normative model adoption, installed consumer qualification, activation or custody.",
+    "Existing semantic-lock and test-manifest normalization remains held."
+  ]
+}

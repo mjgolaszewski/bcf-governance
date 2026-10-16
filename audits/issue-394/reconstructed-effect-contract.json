@@ -1,0 +1,38 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/reconstructed-effect-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "bcf_governance/tooling/ci_graph_composition_operations.py",
+    "tests/test_ci_graph_composition.py"
+  ],
+  "contract": [
+    "Optional strict effect crosswalk requires captured protected public-operation policy before source discovery.",
+    "Project validated operation rows through existing lifecycle_effect_population; reject missing or extra ports and context bindings outside protected operation relationships.",
+    "Compare exact reconstructed static effect population with compiled lifecycle effects. Empty effects are valid under existing 1.0/1.1 schemas.",
+    "Legacy calls remain unchanged. Static source conformance confers no execution or provider authority."
+  ],
+  "expected_tests": [
+    "zero-effect compilation",
+    "reconstructed zero-effect success",
+    "fabricated compiled effect rejection",
+    "strict effect mode without protected policy rejects before discovery"
+  ],
+  "forbidden_surfaces": [
+    "workflow pins",
+    "semantic lock",
+    "test manifests",
+    "provider writes",
+    "installer and custody",
+    "normative model adoption"
+  ]
+}

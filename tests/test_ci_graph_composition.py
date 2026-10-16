@@ -1533,3 +1533,95 @@ def test_ci_edge_coverage_retains_all_context_bindings_without_double_count(comp
     result = _check_ci_coverage(composition)
     assert result['reachable_edges_checked'] == 1
     assert result['ci_edge_bindings'] == (('build:produce', 'verify:consume', (('controller', 'build', 'verify'), ('release', 'build', 'verify'))),)
+
+
+@pytest.mark.parametrize('version', ['1.0', '1.1'])
+def test_zero_source_effects_compile_without_fabricated_effects(composition, version):
+    composition['payload']['schema_version'] = version
+    if version == '1.1':
+        composition['payload'].pop('source')
+    composition['payload']['relationships'][0]['contract']['effects'] = []
+    composition['expected_effects'] = frozenset()
+    assert compile_lifecycle_composition(**composition)['authority'] is False
+
+
+def test_reconstructed_effects_reject_fabricated_compiled_effect(public_reconstructed_binding_inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs, _, _ = public_reconstructed_binding_inputs
+    with pytest.raises(CIGraphError, match='reconstructed.*effect population'):
+        validate_reconstructed_lifecycle_bindings(**inputs, required_effect_bindings={})
+
+
+def test_reconstructed_zero_effects_close_existing_schema(public_reconstructed_binding_inputs, composition):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs, _, _ = public_reconstructed_binding_inputs
+    composition['payload']['relationships'][0]['contract']['effects'] = []
+    composition['expected_effects'] = frozenset()
+    inputs['compiled'] = compile_lifecycle_composition(**composition)
+    result = validate_reconstructed_lifecycle_bindings(**inputs, required_effect_bindings={})
+    assert result['source_effect_bindings']['effects_checked'] == 0
+    assert result['source_effect_bindings']['authority'] is False
+    assert result['execution_qualified'] is False
+
+
+def test_reconstructed_effects_require_protected_policy_before_discovery(reconstructed_binding_inputs, monkeypatch):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    import bcf_governance.tooling.semantic_ownership_inventory as source
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('late policy rejection'))
+    with pytest.raises(CIGraphError, match='effect binding requires protected public operations'):
+        validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs, required_effect_bindings={})
+
+
+@pytest.mark.parametrize('defect', [None, 'missing', 'extra', 'wrong_effect', 'second_entrypoint'])
+def test_reconstructed_nonempty_effect_population_uses_existing_owner(composition, effect_population_inputs, defect):
+    from bcf_governance.tooling.ci_graph_composition_operations import validate_reconstructed_effects
+    effects = _effect_population(effect_population_inputs)
+    composition['expected_effects'] = effects
+    composition['payload']['relationships'][0]['contract']['effects'] = [next(iter(effects))[-1]]
+    compiled = compile_lifecycle_composition(**composition)
+    port = ('authority', 'function', 'publisher.py::publish')
+    rows = [('release.publish.v1', 'command', 'publisher.py::main', (port,))]
+    bindings = dict(effect_population_inputs['effect_bindings'])
+    if defect == 'missing':
+        bindings.clear()
+    elif defect == 'extra':
+        bindings[('release.publish.v1', 'mutation', 'call', 'invented')] = frozenset({('release', 'build', 'verify')})
+    elif defect == 'wrong_effect':
+        rows = [('release.publish.v1', 'command', 'publisher.py::main', ())]
+    elif defect == 'second_entrypoint':
+        rows.append(('release.publish.v1', 'command', 'publisher.py::alternate', (port,)))
+    if defect in {None, 'second_entrypoint'}:
+        before = copy.deepcopy((compiled, rows, bindings))
+        result = validate_reconstructed_effects(compiled, {'operations': rows}, bindings)
+        assert result['effects_checked'] == 1
+        assert result['authority'] is False
+        assert (compiled, rows, bindings) == before
+    else:
+        with pytest.raises(CIGraphError, match='effect bindings'):
+            validate_reconstructed_effects(compiled, {'operations': rows}, bindings)
+
+
+@pytest.mark.parametrize('defect', ['unknown_operation', 'unknown_context', 'empty_context', 'mutable_context', 'malformed_port', 'unknown_role', 'unknown_kind'])
+def test_reconstructed_effect_contexts_reject_before_discovery(public_reconstructed_binding_inputs, monkeypatch, defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    import bcf_governance.tooling.semantic_ownership_inventory as source
+    inputs, _, _ = public_reconstructed_binding_inputs
+    key = ('example.produce.v1', 'authority', 'function', 'runtime.py::produce')
+    pairs = frozenset({('release', 'build', 'verify')})
+    if defect == 'unknown_operation':
+        key = ('unknown', *key[1:])
+    elif defect == 'unknown_context':
+        pairs = frozenset({('controller', 'build', 'verify')})
+    elif defect == 'empty_context':
+        pairs = frozenset()
+    elif defect == 'mutable_context':
+        pairs = set(pairs)
+    elif defect == 'malformed_port':
+        key = key[:3]
+    elif defect == 'unknown_role':
+        key = (key[0], 'invented', *key[2:])
+    elif defect == 'unknown_kind':
+        key = (*key[:2], 'invented', key[3])
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('late context rejection'))
+    with pytest.raises(CIGraphError, match='effect binding context'):
+        validate_reconstructed_lifecycle_bindings(**inputs, required_effect_bindings={key: pairs})

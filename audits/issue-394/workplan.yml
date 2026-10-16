@@ -3065,12 +3065,21 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_reconstructed_zero_effects_close_existing_schema
+    - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner
+    - tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects
     - tests.test_ci_graph_composition::test_reconstructed_binding_passes_import_roots_to_exact_discovery
     - tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle
     - tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction
     - tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject
     - tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner
     negative_controls:
+    - cause: fabricated-compiled-effect-absent-from-captured-source
+      test: tests.test_ci_graph_composition::test_reconstructed_effects_reject_fabricated_compiled_effect
+    - cause: strict-effects-without-protected-policy-before-discovery
+      test: tests.test_ci_graph_composition::test_reconstructed_effects_require_protected_policy_before_discovery
+    - cause: effect-context-outside-protected-operation-before-discovery
+      test: tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery
     - cause: ambiguous-or-empty-import-path-population-before-ast
       test: tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse
     - cause: invalid-declared-import-resource-before-source-work
@@ -3100,6 +3109,7 @@ implementation_slices:
     - cause: caller-source-inventory-injection
       test: tests.test_ci_graph_composition::test_reconstructed_binding_accepts_no_caller_inventory
     remaining:
+    - Strict optional source-effect conformance now connects captured validated operation rows through existing lifecycle_effect_population; contract audits/issue-394/reconstructed-effect-contract.json and evidence audits/issue-394/reconstructed-effect-verification.json. Protected invocation and full runtime effects remain unqualified.
     - Source-independent import resource checks run before policy capture and AST; path populations are checked before AST and the resolver revalidates afterward. Contract audits/issue-394/import-root-preflight-contract.json; evidence audits/issue-394/import-root-preflight-verification.json. This does not establish continued filesystem freshness.
     - Strict public-operation mode connects one captured consumer policy to complete declared public-operation relationships; independent policy and relationship-catalogue authorization plus actual provider-owned invocation remain open. Contract audits/issue-394/public-operation-lifecycle-contract.json; evidence audits/issue-394/public-operation-lifecycle-verification.json.
     - Actual protected provider-owned invocation must authenticate repository/context and independently reconstruct complete required populations; this dormant query does not authenticate caller-supplied expected context.

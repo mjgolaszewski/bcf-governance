@@ -626,6 +626,7 @@ def validate_reconstructed_lifecycle_bindings(
     source_import_roots: tuple[str, ...] = (".",),
     operation_policy_subject: Mapping[str, str] | None = None,
     required_public_operation_relationships: Mapping[str, frozenset[Relationship]] | None = None,
+    required_effect_bindings: Mapping[tuple[str, str, str, str], frozenset[Relationship]] | None = None,
 ) -> dict[str, Any]:
     """Reconstruct exact source inputs; caller authenticates protected context."""
     from .semantic_ownership_inventory import (
@@ -662,6 +663,10 @@ def validate_reconstructed_lifecycle_bindings(
             required_relationships=required_public_operation_relationships,
             relationship_roots={pair: _binding_operation_roots(contract) for pair, contract in reachable.items()},
         )
+    if required_effect_bindings is not None:
+        from .ci_graph_composition_operations import validate_effect_binding_contexts
+
+        validate_effect_binding_contexts(required_effect_bindings, capture)
     subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
     try:
         inventory = discover_python_source(
@@ -681,6 +686,12 @@ def validate_reconstructed_lifecycle_bindings(
     )
     if public_operations is not None:
         result["public_operation_bindings"] = public_operations
+    if required_effect_bindings is not None:
+        from .ci_graph_composition_operations import validate_reconstructed_effects
+
+        result["source_effect_bindings"] = validate_reconstructed_effects(
+            compiled, public_operations, required_effect_bindings,
+        )
     result["source_reconstruction"] = {
         "subject": dict(subject),
         "population_sha256": hashlib.sha256(_bytes(inventory["source_population"])).hexdigest(),

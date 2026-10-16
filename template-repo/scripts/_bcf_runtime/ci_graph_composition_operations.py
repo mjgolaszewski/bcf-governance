@@ -56,3 +56,54 @@ def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any]
     except SemanticAuthorityError as exc:
         raise CIGraphError(f"public operation source conformance failed: {exc}") from exc
     return dict(metadata, **population)
+
+
+def validate_effect_binding_contexts(bindings, capture):
+    """Close protected port contexts before source discovery; ports resolve later."""
+    if capture is None:
+        raise CIGraphError("effect binding requires protected public operations")
+    if not isinstance(bindings, Mapping):
+        raise CIGraphError("source effect bindings require a protected mapping")
+    relationships = dict(capture[1]["bindings"])
+    for port, pairs in bindings.items():
+        if (not isinstance(port, tuple) or len(port) != 4
+                or any(not isinstance(value, str) or not value for value in port)
+                or port[1] not in {"mutation", "authority", "observation"}
+                or port[2] not in {"function", "call"}
+                or port[0] not in relationships or not isinstance(pairs, frozenset)
+                or not pairs or any(pair not in relationships[port[0]] for pair in pairs)):
+            raise CIGraphError("source effect binding context differs from protected public operation")
+
+
+def validate_reconstructed_effects(compiled, public_operations, bindings):
+    """Project validated source rows through the existing effect population owner."""
+    from .ci_graph_composition import lifecycle_effect_population
+
+    effects = set()
+    observed_ports = set()
+    for operation, _, entrypoint, ports in public_operations["operations"]:
+        keys = {(operation, *port) for port in ports}
+        observed_ports.update(keys)
+        observation = dict(
+            operation=operation, entrypoint=entrypoint,
+            effect_ports=[dict(classification=role, target_kind=kind, symbol=symbol)
+                          for role, kind, symbol in ports],
+            write_effect_count=sum(role == "mutation" for role, _, _ in ports),
+            authority_effect_count=sum(role == "authority" for role, _, _ in ports),
+        )
+        effects.update(lifecycle_effect_population(
+            [observation], expected_entrypoints={operation: entrypoint},
+            effect_bindings={key: bindings[key] for key in keys if key in bindings},
+        ))
+    if observed_ports != bindings.keys():
+        raise CIGraphError("reconstructed source effect bindings omit or invent ports")
+    compiled_effects = {
+        (row["context"], row["producer"], row["consumer"], effect)
+        for row in compiled["relationships"] if row["contract"] is not None
+        for effect in row["contract"]["effects"]
+    }
+    if effects != compiled_effects:
+        raise CIGraphError("reconstructed source effect population differs from compiled lifecycle")
+    return dict(authority=False, execution_qualified=False,
+                scope="protected_public_operation_static_effects_only",
+                effects_checked=len(effects), bindings=tuple(sorted(effects)))
