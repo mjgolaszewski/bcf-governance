@@ -1467,6 +1467,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - opt-in-python-initialization-facts
     - dormant-composition-and-static-bindings
     - opt-in-python-call-facts
     - source-operation-call-population
@@ -2009,6 +2010,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - opt-in-python-initialization-facts
     - dormant-composition-and-static-bindings
     - authored-machine-backtrace-validation
     - opt-in-python-call-facts
@@ -2877,3 +2879,28 @@ implementation_slices:
     - Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement
       fixture does not certify all ambiguity recovery.
     - Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked.
+  opt-in-python-initialization-facts:
+    id: opt-in-python-initialization-facts
+    workitem: P32-P0-04
+    scope: Possible Python initialization syntax from the existing parsed AST; deferred bodies excluded and implicit execution uncertainty retained. No independently complete runtime effect claim.
+    contract: audits/issue-394/python-initialization-contract.json
+    producer: bcf_governance/tooling/semantic_python_calls.py::initialization_facts
+    consumer: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_semantic_python_initialization::test_initialization_excludes_deferred_bodies_and_retains_definition_effects
+    - tests.test_semantic_python_initialization::test_default_inventory_and_existing_function_facts_are_unchanged
+    negative_controls:
+    - cause: unsupported-initialization-version-before-source-read
+      test: tests.test_semantic_python_initialization::test_unknown_initialization_version_rejects_before_reads[2.0]
+    - cause: authority-elevation-and-malformed-source-identities
+      test: tests.test_semantic_python_initialization::test_initialization_schema_rejects_authority_and_malformed_sites
+    - cause: deferred-body-misclassification-and-hidden-import-uncertainty
+      test: tests.test_semantic_python_initialization::test_imports_annotations_and_deferred_expressions_remain_conservative
+    - cause: changed-call-expression
+      test: tests.test_semantic_python_initialization::test_initialization_identity_is_stable_and_literal_values_are_not_emitted
+    remaining:
+    - Independent protected complete source scope and runtime effect interpretation including implicit native dynamic and cross-language execution remain unqualified.
+    - No downstream lifecycle consumer binding or installed-consumer qualification uses these possible-site facts.
+    - Canonical test-manifest normalization and full governed acceptance remain blocked.

@@ -274,3 +274,102 @@ class _FunctionVisitor(ast.NodeVisitor):
             "decorators": self.decorators,
             "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
         }
+
+
+class _InitializationVisitor(ast.NodeVisitor):
+    def __init__(self) -> None:
+        self.sites: list[dict[str, Any]] = []
+        self.unresolved: list[dict[str, Any]] = []
+        self.occurrences: dict[tuple[str, str], int] = {}
+
+    def site(self, node: ast.AST, kind: str, **fields: Any) -> None:
+        digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+        key = (kind, digest)
+        occurrence = self.occurrences.get(key, 0)
+        self.occurrences[key] = occurrence + 1
+        self.sites.append(dict(kind=kind, expression_sha256=digest,
+                               occurrence=occurrence, line=getattr(node, 'lineno', 0),
+                               **fields))
+
+    def unknown(self, node: ast.AST, reason: str) -> None:
+        self.unresolved.append(dict(reason=reason, line=getattr(node, 'lineno', 0)))
+
+    def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
+        self.site(node, 'call', call_name=_call_name(node))
+        self.unknown(node, 'call_execution_and_dispatch')
+        self.generic_visit(node)
+
+    def visit_Import(self, node: ast.Import) -> None:  # noqa: N802
+        self.site(node, 'import')
+        self.unknown(node, 'import_execution')
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
+        self.visit_Import(node)  # type: ignore[arg-type]
+
+    def decorators(self, nodes: list[ast.expr]) -> None:
+        for node in nodes:
+            self.visit(node)
+            self.site(node, 'decorator_application')
+            self.unknown(node, 'implicit_decorator_execution')
+
+    def annotation(self, node: ast.expr | None) -> None:
+        if node is not None:
+            self.site(node, 'annotation')
+            self.unknown(node, 'annotation_evaluation')
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
+        self.decorators(node.decorator_list)
+        for value in [*node.args.defaults, *node.args.kw_defaults]:
+            if value is not None:
+                self.visit(value)
+        for arg in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs,
+                    *([node.args.vararg] if node.args.vararg else []),
+                    *([node.args.kwarg] if node.args.kwarg else [])]:
+            self.annotation(arg.annotation)
+        self.annotation(node.returns)
+        if getattr(node, 'type_params', []):
+            self.unknown(node, 'type_parameter_evaluation')
+        # The function body is deferred, including nested definitions and imports.
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802
+        self.visit_FunctionDef(node)  # type: ignore[arg-type]
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:  # noqa: N802
+        self.decorators(node.decorator_list)
+        for value in [*node.bases, *[keyword.value for keyword in node.keywords]]:
+            self.visit(value)
+        for statement in node.body:
+            self.visit(statement)
+        self.site(node, 'class_construction')
+        self.unknown(node, 'metaclass_and_implicit_class_hooks')
+        if getattr(node, 'type_params', []):
+            self.unknown(node, 'type_parameter_evaluation')
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:  # noqa: N802
+        for value in [*node.args.defaults, *node.args.kw_defaults]:
+            if value is not None:
+                self.visit(value)
+        self.unknown(node, 'deferred_expression')
+
+    def visit_GeneratorExp(self, node: ast.GeneratorExp) -> None:  # noqa: N802
+        # Only the outermost iterable expression is evaluated at creation.
+        self.visit(node.generators[0].iter)
+        self.unknown(node, 'deferred_expression')
+
+    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
+        self.visit(node.target)
+        if node.value is not None:
+            self.visit(node.value)
+        self.annotation(node.annotation)
+
+
+def initialization_facts(tree: ast.Module, *, path: str) -> dict[str, Any]:
+    """Retain possible sites; unknown dispatch prevents any completeness claim."""
+    visitor = _InitializationVisitor()
+    visitor.visit(tree)
+    return dict(path=path, authority=False, execution_qualified=False,
+                completeness_qualified=False,
+                limitations=['implicit_protocol_effects_not_enumerated',
+                             'external_native_dynamic_execution_not_resolved'],
+                scope='possible_python_initialization_syntax',
+                sites=visitor.sites, unresolved=visitor.unresolved)

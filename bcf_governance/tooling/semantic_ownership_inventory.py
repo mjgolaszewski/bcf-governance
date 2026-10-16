@@ -27,6 +27,7 @@ from .semantic_python_annotation_identity import (
 )
 from .semantic_source_paths import candidate_source_files
 from .semantic_python_calls import (
+    initialization_facts,
     DYNAMIC_CALLS as DYNAMIC_CALLS,
     NORMALIZERS as NORMALIZERS,
     PRIMITIVES as PRIMITIVES,
@@ -202,10 +203,13 @@ def _endpoint_facts(tree: ast.Module, path: str) -> list[dict[str, Any]]:
 def discover_python_source(
     repo_root: Path, files: list[Path] | None = None,
     *, call_contracts_version: str | None = None,
+    initialization_contracts_version: str | None = None,
 ) -> dict[str, Any]:
     """Parse the tracked population without consulting semantic declarations."""
     if call_contracts_version is not None and call_contracts_version != "1.0":
         raise SemanticInventoryError("unsupported Python call contract version")
+    if initialization_contracts_version is not None and initialization_contracts_version != "1.0":
+        raise SemanticInventoryError("unsupported Python initialization contract version")
     repo_root = repo_root.resolve()
     paths = files if files is not None else tracked_python_files(repo_root)
     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
@@ -215,6 +219,7 @@ def discover_python_source(
     endpoints: list[dict[str, Any]] = []
     import_rows: list[dict[str, Any]] = []
     class_rows: list[dict[str, Any]] = []
+    initializers: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -224,6 +229,8 @@ def discover_python_source(
             raise SemanticInventoryError(
                 f"tracked Python source cannot be parsed: {relative}: {exc}"
             ) from exc
+        if initialization_contracts_version is not None:
+            initializers.append(initialization_facts(tree, path=relative))
         file_rows.append({"path": relative, "sha256": hashlib.sha256(raw).hexdigest()})
         local_types = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
         types.extend(f"{relative}::{name}" for name in sorted(local_types))
@@ -287,6 +294,9 @@ def discover_python_source(
 
     if call_contracts_version is not None:
         inventory.update(call_contracts_version=call_contracts_version, authority=False)
+    if initialization_contracts_version is not None:
+        inventory.update(initialization_contracts_version=initialization_contracts_version,
+                         module_initializers=initializers, authority=False)
     return inventory
 
 
