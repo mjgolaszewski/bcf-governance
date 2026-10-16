@@ -44,7 +44,8 @@
     "bcf_governance/tooling/ci_github_pr.py",
     "bcf_governance/tooling/ci_github_pr_mutations.py",
     "tests/test_ci_github_pr_authority.py",
-    "tests/test_candidate_provider_recovery.py"
+    "tests/test_candidate_provider_recovery.py",
+    "tests/test_ordinary_protection_projection.py"
   ],
   "invariant": "An authenticated bound PR supplies its exact base/head relationship; default branch is not a substitute for that relationship. Candidate-local proof never grants provider certification, protected-main or release authority.",
   "contract": [
@@ -62,7 +63,8 @@
     "When base/default refs are present, mutation-bearing protected_merge states require equality; nondefault_base requires inequality and both refs. Missing/partial/wrong context rejects. Canonical submit supplies these facts and never invokes protected mutation adapters for the nondefault target. A stacked PR can still publish exact candidate progress and require independent provider PR proof.",
     "Installed controller/evaluator and source protection owners remain independent. No feature-branch base can replace protected default-main policy or confer lifecycle/release authority. Full consumer controls must prove this before integration.",
     "Before integration, satisfy the explicit protected-default/evaluator source separation matrix in audits/issue-394/bound-pr-authority-context-research.json. Existing default-base guards cannot be removed without equivalent independent source qualification; preserve #425 regressions and immutable v2.3.4.",
-    "Consume new bound context metadata atomically before provider retry reads: exact repository/ID, PR number/node and complete base/provider-head binding must agree with the independently proved PR projection; malformed or partial binding rejects without normalization, read or mutation. Legacy unbound context remains readable."
+    "Consume new bound context metadata atomically before provider retry reads: exact repository/ID, PR number/node and complete base/provider-head binding must agree with the independently proved PR projection; malformed or partial binding rejects without normalization, read or mutation. Legacy unbound context remains readable.",
+    "Direct protection prospective admission must pass its supplied authenticated read API unchanged to the existing comparison context owner. No implicit environment-client substitution; provider errors preserve cause and stop before protection validation."
   ],
   "edge_conditions": [
     "authenticated unbound default-main candidate",
