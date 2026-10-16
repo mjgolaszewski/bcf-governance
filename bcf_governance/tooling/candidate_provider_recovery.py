@@ -10,7 +10,7 @@ import yaml
 from .ci_authority_pins import CIAuthorityPinError, compiled_workflow_job_names
 from .ci_github import GithubReferenceError, authenticate_github_run
 from .ci_recovery_frontier import candidate_provider_frontier
-from .local_pr import ProspectiveValidationError
+from .local_pr import CandidateIdentity, LocalPRContext, ProspectiveValidationError
 
 
 GOVERNANCE_WORKFLOW = ".github/workflows/governance.yml"
@@ -26,6 +26,9 @@ _TRANSIENT_UPLOAD_MARKERS = (
 
 
 class CandidateProviderAPI(Protocol):
+    def pull_request(self, repository: str, number: object) -> dict[str, Any]: ...
+    def commit(self, repository: str, sha: str) -> dict[str, Any]: ...
+    def run(self, repository: str, run_id: str | int) -> dict[str, Any]: ...
     def repository(self, repository: str) -> dict[str, Any]: ...
     def workflow_runs(
         self, repository: str, workflow_id: str | int, *, head_sha: str, event: str
@@ -335,7 +338,10 @@ def resolve_candidate_provider_recovery(
 
 
 def execute_candidate_provider_recovery(
-    api: CandidateProviderAPI, *, repository: str, frontier: Mapping[str, Any]
+    api: CandidateProviderAPI, *, repository: str, frontier: Mapping[str, Any],
+    candidate: CandidateIdentity | None = None,
+    context: LocalPRContext | None = None,
+    pull_request: Mapping[str, Any] | None = None,
 ) -> bool:
     """Execute only the exact rerun selected by a compiled recovery frontier."""
 
