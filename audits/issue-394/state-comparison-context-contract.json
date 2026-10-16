@@ -1,0 +1,50 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/state-comparison-context-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-07",
+  "bounded_context": "validation",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/governance_validation/ci_state_matrix.py::_comparison_base",
+  "dependency_acceptance": "Existing structural/backtrace/reference front-door controls remain regressions. Provider/integration holds remain; isolated correction of deterministic lifecycle admission defect only.",
+  "target_modules": [
+    "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
+    "tests/test_ci_state_matrix.py"
+  ],
+  "contract": [
+    "Do not accept a caller comparison SHA as authority over the existing event-owned comparison projection. Reuse preflight_repository_context.pr_context; no second comparison evaluator.",
+    "When provider/comparison context metadata is present, validate it through the existing owner and derive the base or typed noncomparison disposition. No fallback after invalid explicit context.",
+    "For bare local comparison assertions without event metadata, derive the existing local merge base and require the assertion to match; symbolic malformed unavailable or different assertions block before diff.",
+    "Reject mismatched origin/PR/caller bases invalid invocation or event and unavailable/nonancestor subjects before change enumeration.",
+    "Preserve local context-free merge-base behavior and existing structural machine-backtrace checks; no provider authority from environment consistency alone.",
+    "Retain comparison-free schedule/dispatch semantics only as declared by the existing context owner.",
+    "Preserve adopter inapplicability authored-only generation ordering required provider statuses and the pending prose-to-machine retirement decision."
+  ],
+  "producer_consumer": {
+    "producer": "Existing canonical comparison projection and preflight_repository_context.pr_context",
+    "consumer": "Existing state-matrix guard before costly preflight/reconciliation boundaries"
+  },
+  "forbidden_surfaces": [
+    "new context evaluator",
+    "protection changes",
+    "prose DAG retirement",
+    "provider dispatch",
+    "installer/adopter/custody",
+    "workflow/pin/semantic-lock/test-manifest normalization"
+  ],
+  "expected_tests": [
+    "Reproduce changed CI contract hidden by substituted comparison head",
+    "PR/push/reusable-call exact provenance mismatches reject before diff",
+    "Bare local assertion must match derived merge base",
+    "Valid direct/reusable contexts retain coverage requirements",
+    "Schedule/dispatch with no comparison do not invent a merge base; injected identities reject",
+    "Malformed/missing/unavailable context rejects without fallback",
+    "Existing machine backtrace and local/adopter behavior remain intact"
+  ],
+  "completion": "Focused behavioral/front-door/parity/static checks; full lifecycle adoption/provider authority and whole-requirement closure remain unqualified."
+}

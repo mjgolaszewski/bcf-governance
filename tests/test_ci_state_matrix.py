@@ -241,3 +241,31 @@ def test_authored_only_recovery_preserves_declared_guard_before_allocation(tmp_p
     path.write_text(yaml.safe_dump(model, sort_keys=False))
     with pytest.raises(CIStateMatrixError, match="guard"):
         validate_ci_state_matrix(repo, authored_only=True)
+
+
+def test_substituted_comparison_head_cannot_hide_changed_contract(tmp_path, monkeypatch):
+    repo = _repo(tmp_path)
+    base = _git(repo, 'rev-parse', 'HEAD')
+    (repo / 'bcf_governance/tooling/preflight.py').write_text('VALUE = 2\n')
+    _git(repo, 'add', '.')
+    _git(repo, 'commit', '-m', 'contract change without matrix')
+    head = _git(repo, 'rev-parse', 'HEAD')
+    for name, value in {
+        'BCF_PROVIDER_EVENT': 'pull_request', 'GITHUB_EVENT_NAME': 'pull_request',
+        'BCF_INVOCATION_KIND': 'direct_event', 'BCF_COMPARISON_BASE_SHA': head,
+        'BCF_ORIGIN_COMPARISON_BASE_SHA': base, 'BCF_PR_BASE_SHA': base,
+        'BCF_CALLER_COMPARISON_BASE_SHA': '',
+    }.items():
+        monkeypatch.setenv(name, value)
+    with pytest.raises(CIStateMatrixError, match='comparison'):
+        validate_ci_state_matrix(repo)
+
+
+def test_bare_local_comparison_assertion_cannot_choose_a_new_base(tmp_path, monkeypatch):
+    repo = _repo(tmp_path)
+    (repo / 'bcf_governance/tooling/preflight.py').write_text('VALUE = 2\n')
+    _git(repo, 'add', '.')
+    _git(repo, 'commit', '-m', 'contract change without matrix')
+    monkeypatch.setenv('BCF_COMPARISON_BASE_SHA', _git(repo, 'rev-parse', 'HEAD'))
+    with pytest.raises(CIStateMatrixError, match='comparison'):
+        validate_ci_state_matrix(repo)
