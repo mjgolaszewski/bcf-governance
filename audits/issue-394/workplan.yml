@@ -2713,9 +2713,16 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_state_matrix::test_actual_backtrace_declares_every_active_primitive
+    - tests.test_ci_state_matrix::test_actual_backtrace_binds_all_retained_p26_primitive_owners
+    - tests.test_ci_state_matrix::test_retained_primitive_references_resolve_current_schema_and_source
     - tests.test_ci_state_matrix::test_changed_ci_contract_requires_same_candidate_matrix_update
     - tests.test_ci_state_matrix::test_matrix_guard_is_self_required_and_adopter_inapplicable
     negative_controls:
+    - cause: rejected-historical-provider-design-reactivated-as-authority
+      test: tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority
+    - cause: undeclared-active-primitive-reference
+      test: tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references
     - cause: duplicated-typed-state-id
       test: tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[duplicate_state]
     - cause: undeclared-state-reference
@@ -2731,6 +2738,7 @@ implementation_slices:
     - cause: machine-contradiction-before-lease
       test: tests.test_candidate_submit::test_submit_authored_machine_rejects_before_lease_or_reconcile
     remaining:
+    - Six missing P26 names and exact canonical/executable references are present in the machine model; resolution is not runtime qualification. Rejected provider-coupled source transaction remains excluded. Contract audits/issue-394/primitive-backtrace-contract.json; evidence audits/issue-394/primitive-backtrace-verification.json.
     - Complete independent protected context populations actual effect interpretation recovery and installed-consumer conformance are not established by authored structural checks.
     - Prose retirement generated dependency views and exact terminal custody remain blocked.
   early-active-phase-schema:

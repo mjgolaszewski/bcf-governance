@@ -408,7 +408,7 @@ def test_matching_bare_local_comparison_assertion_is_preserved(tmp_path, monkeyp
     assert validate_ci_state_matrix(repo)['comparison_base'] == base
 
 
-@pytest.mark.parametrize('consumer', ['adopter_source_transaction', 'adopter_compatibility_observation', 'bounded_workitem_frontier_contract'])
+@pytest.mark.parametrize('consumer', ['adopter_compatibility_observation', 'bounded_workitem_frontier_contract'])
 def test_all_primitive_consumers_reject_undeclared_references(tmp_path, consumer):
     repo = _repo(tmp_path)
     path = repo / 'spec/phase0/release-train-backtrace.yml'
@@ -422,10 +422,10 @@ def test_all_primitive_consumers_reject_undeclared_references(tmp_path, consumer
         validate_ci_state_matrix(repo, authored_only=True)
 
 
-def test_actual_backtrace_declares_every_consumed_primitive():
+def test_actual_backtrace_declares_every_active_primitive():
     model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
     declared = {row['id'] for row in model['primitives']}
-    consumed = set(model['adopter_source_transaction']['primitives']) | set(model['adopter_compatibility_observation']['primitives']) | {model['bounded_workitem_frontier_contract']['primitive']}
+    consumed = set(model['adopter_compatibility_observation']['primitives']) | {model['bounded_workitem_frontier_contract']['primitive']}
     assert consumed <= declared
 
 
@@ -437,3 +437,42 @@ def test_actual_backtrace_binds_all_retained_p26_primitive_owners():
     for row in retained['primitives']:
         assert bindings[row['id']]['canonical_reference'] == row['canonical_owner']
         assert bindings[row['id']]['executable_owner'] == row['executable_owner']
+
+
+def test_retained_primitive_references_resolve_current_schema_and_source():
+    import json
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+    model = yaml.safe_load((ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    retained = yaml.safe_load((ROOT / 'audits/bcf-2.1-p26-invariant-ownership.yml').read_text())['primitives']
+    names = {row['id'] for row in retained}
+    rows = [row for row in model['primitives'] if row['canonical_name'] in names]
+    modules = sorted({ROOT / row['executable_owner'].partition('::')[0] for row in rows})
+    functions = {row['symbol'] for row in discover_python_source(ROOT, files=modules)['functions']}
+    for row in rows:
+        path, _, fragment = row['canonical_reference'].partition('#')
+        raw = (ROOT / path).read_text()
+        value = json.loads(raw) if path.endswith('.json') else yaml.safe_load(raw)
+        for key in filter(None, fragment.split('/')):
+            value = value[key.replace('~1', '/').replace('~0', '~')]
+        assert value is not None
+        module, separator, function = row['executable_owner'].partition('::')
+        assert (ROOT / module).is_file()
+        if separator:
+            assert row['executable_owner'] in functions
+
+
+@pytest.mark.parametrize('normative', [False, True])
+def test_rejected_provider_design_cannot_become_active_primitive_authority(tmp_path, normative):
+    repo = _repo(tmp_path)
+    path = repo / 'spec/phase0/release-train-backtrace.yml'
+    model = yaml.safe_load(path.read_text())
+    model['adopter_source_transaction']['normative'] = normative
+    model['adopter_source_transaction']['primitives'].append('PRIM-HISTORICAL-UNIMPLEMENTED')
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    if normative:
+        with pytest.raises(CIStateMatrixError, match='schema violation'):
+            validate_ci_state_matrix(repo, authored_only=True)
+    else:
+        result = validate_ci_state_matrix(repo, authored_only=True)
+        assert result['authority'] is False
+        assert result['execution_qualified'] is False

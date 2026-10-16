@@ -34,15 +34,15 @@ invariants:
 - {id: INV-RT-017, statement: topology tests derive exact current job and component membership from canonical graph ownership and never preserve a hand-maintained cardinality after a governed node is added or removed, basis: spec/RELEASE_TRAIN_STATE_DAG.md#rule-34}
 - {id: INV-RT-018, statement: bounded workitem intent derives only from the validated dependency DAG and cannot be suppressed or broadened by unrelated list order or lifecycle state, basis: spec/RELEASE_TRAIN_STATE_DAG.md#integrated-workitem-dependency-frontier-state-machine}
 primitives:
-- {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005]}
-- {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002]}
-- {id: PRIM-EXEC-GROUP, canonical_name: ExecutionGroupIdentity, owner: governance/gate-contracts.yml#claim_model/execution_groups, invariants: [INV-RT-002]}
-- {id: PRIM-DEPENDENCY, canonical_name: DependencyClosure, owner: bcf_governance/tooling/evidence_planning.py, invariants: [INV-RT-002, INV-RT-011]}
-- {id: PRIM-RECEIPT, canonical_name: EvidenceReceipt, owner: bcf_governance/tooling/truth_receipts.py, invariants: [INV-RT-001, INV-RT-005]}
-- {id: PRIM-REUSE, canonical_name: ApplicabilityDecision, owner: bcf_governance/tooling/evidence_reuse_attestations.py, invariants: [INV-RT-011]}
-- {id: PRIM-AUTHORITY, canonical_name: AuthorityIdentity, owner: bcf_governance/tooling/ci_authority_contracts.py, invariants: [INV-RT-004, INV-RT-008, INV-RT-009]}
-- {id: PRIM-LIFECYCLE, canonical_name: LifecycleState, owner: bcf_governance/tooling/governance_truth.py, invariants: [INV-RT-007]}
-- {id: PRIM-RECOVERY, canonical_name: RecoveryAuthority, owner: bcf_governance/tooling/ci_graph_controller_lifecycle.py, invariants: [INV-RT-012]}
+- {id: PRIM-SUBJECT, canonical_name: SubjectIdentity, owner: schemas/evidence-receipt.schema.json, invariants: [INV-RT-001, INV-RT-005], canonical_reference: schemas/evidence-receipt.schema.json#properties/subject, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts'}
+- {id: PRIM-CLAIM, canonical_name: ClaimIdentity, owner: governance/gate-contracts.yml#claim_model/claims, invariants: [INV-RT-002], canonical_reference: governance/gate-contracts.yml#claim_model/claims, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_claim_model'}
+- {id: PRIM-EXEC-GROUP, canonical_name: ExecutionGroupIdentity, owner: governance/gate-contracts.yml#claim_model/execution_groups, invariants: [INV-RT-002], canonical_reference: governance/gate-contracts.yml#claim_model/execution_groups, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_claim_model'}
+- {id: PRIM-DEPENDENCY, canonical_name: DependencyClosure, owner: bcf_governance/tooling/evidence_planning.py, invariants: [INV-RT-002, INV-RT-011], canonical_reference: schemas/evidence-receipt.schema.json#/$defs/dependencyManifest, executable_owner: 'bcf_governance/tooling/evidence_planning.py::build_dependency_manifest'}
+- {id: PRIM-RECEIPT, canonical_name: EvidenceReceipt, owner: bcf_governance/tooling/truth_receipts.py, invariants: [INV-RT-001, INV-RT-005], canonical_reference: schemas/evidence-receipt.schema.json, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts'}
+- {id: PRIM-REUSE, canonical_name: ApplicabilityDecision, owner: bcf_governance/tooling/evidence_reuse_attestations.py, invariants: [INV-RT-011], canonical_reference: schemas/reuse-attestation.schema.json#properties/decision, executable_owner: 'bcf_governance/tooling/evidence_reuse_attestations.py::compose_reuse_attestations'}
+- {id: PRIM-AUTHORITY, canonical_name: AuthorityIdentity, owner: bcf_governance/tooling/ci_authority_contracts.py, invariants: [INV-RT-004, INV-RT-008, INV-RT-009], canonical_reference: schemas/reuse-attestation.schema.json#/$defs/authorityIdentity, executable_owner: bcf_governance/tooling/ci_authority_contracts.py}
+- {id: PRIM-LIFECYCLE, canonical_name: LifecycleState, owner: bcf_governance/tooling/governance_truth.py, invariants: [INV-RT-007], canonical_reference: schemas/phase-ledger.schema.json#properties/active_phase/properties/lifecycle_status, executable_owner: bcf_governance/tooling/governance_truth.py}
+- {id: PRIM-RECOVERY, canonical_name: RecoveryAuthority, owner: bcf_governance/tooling/ci_graph_controller_lifecycle.py, invariants: [INV-RT-012], canonical_reference: schemas/recovery-reentry-authorization.schema.json, executable_owner: bcf_governance/tooling/ci_graph_controller_lifecycle.py}
 - {id: PRIM-CI-GRAPH, canonical_name: governance.ci-graph-compilation.v1, owner: bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph, invariants: [INV-RT-003, INV-RT-010]}
 - {id: PRIM-CI-EDGE, canonical_name: EdgeContract, owner: bcf_governance/tooling/ci_graph_edges.py::compile_edge_contracts, invariants: [INV-RT-003, INV-RT-006]}
 - {id: PRIM-ADOPTER-REPOSITORY, canonical_name: AdopterRepositoryIdentity, owner: governance/release-qualification.yml, invariants: [INV-RT-001, INV-RT-005, INV-RT-013]}
@@ -51,6 +51,12 @@ primitives:
 - {id: PRIM-RELEASE-ASSET-INVENTORY, canonical_name: ReleaseAssetInventory, owner: bcf_governance/tooling/release_asset_inventory.py, invariants: [INV-RT-001, INV-RT-005, INV-RT-008, INV-RT-014]}
 - {id: PRIM-ADOPTER-COMPATIBILITY-OBSERVATION, canonical_name: AdopterCompatibilityObservation, owner: governance/release-qualification.yml, invariants: [INV-RT-004, INV-RT-005, INV-RT-013, INV-RT-015]}
 - {id: PRIM-WORKITEM-FRONTIER, canonical_name: BoundedWorkitemFrontier, owner: bcf_governance/tooling/ci_graph_post_merge.py::authored_post_merge_scope, invariants: [INV-RT-003, INV-RT-006, INV-RT-007, INV-RT-018]}
+- {id: PRIM-TREE, canonical_name: TreeIdentity, owner: schemas/evidence-receipt.schema.json#properties/subject/properties/tree_sha, invariants: [INV-RT-001, INV-RT-004, INV-RT-005], canonical_reference: schemas/evidence-receipt.schema.json#properties/subject/properties/tree_sha, executable_owner: 'bcf_governance/tooling/truth_receipts.py::load_receipts'}
+- {id: PRIM-EXEC-PROVENANCE, canonical_name: ExecutionProvenance, owner: schemas/reuse-attestation.schema.json#/$defs/executionProvenance, invariants: [INV-RT-001, INV-RT-004, INV-RT-005, INV-RT-011], canonical_reference: schemas/reuse-attestation.schema.json#/$defs/executionProvenance, executable_owner: bcf_governance/tooling/ci_authority_certification.py}
+- {id: PRIM-QUALIFICATION, canonical_name: Qualification, owner: schemas/evidence-receipt.schema.json#/$defs/qualification, invariants: [INV-RT-002, INV-RT-005, INV-RT-011], canonical_reference: schemas/evidence-receipt.schema.json#/$defs/qualification, executable_owner: 'bcf_governance/tooling/evidence_claims.py::claim_receipt_fields'}
+- {id: PRIM-EVIDENCE-REFERENCE, canonical_name: EvidenceReference, owner: schemas/reuse-attestation.schema.json#/$defs/evidenceReference, invariants: [INV-RT-001, INV-RT-005, INV-RT-011], canonical_reference: schemas/reuse-attestation.schema.json#/$defs/evidenceReference, executable_owner: 'bcf_governance/tooling/evidence_planning.py::load_prior_receipts'}
+- {id: PRIM-INVALIDATION-REASON, canonical_name: InvalidationReason, owner: schemas/reuse-attestation.schema.json#/$defs/invalidationReason, invariants: [INV-RT-005, INV-RT-011, INV-RT-012], canonical_reference: schemas/reuse-attestation.schema.json#/$defs/invalidationReason, executable_owner: 'bcf_governance/tooling/evidence_reuse_attestations.py::_rejection_reasons'}
+- {id: PRIM-REUSE-ATTESTATION, canonical_name: ReuseAttestation, owner: schemas/reuse-attestation.schema.json, invariants: [INV-RT-001, INV-RT-002, INV-RT-004, INV-RT-005, INV-RT-011], canonical_reference: schemas/reuse-attestation.schema.json, executable_owner: 'bcf_governance/tooling/evidence_reuse_attestations.py::compose_reuse_attestations'}
 states:
 - {id: ST-INTENT, owner: ci_graph_post_merge, authority: none}
 - {id: ST-PREFLIGHT, owner: governance_validation.runner, authority: structural}
@@ -181,5 +187,5 @@ exclusions:
 - {id: EX-006, reason: recovery_cannot_bypass_failed_authority, invariant: INV-RT-012}
 validation_status:
   mechanically_proven_existing: [PRIM-CI-EDGE]
-  reconstructed_requires_agent_validation: [invariants, states, transitions, release_train_edges, exclusions]
+  reconstructed_requires_agent_validation: [invariants, primitives, states, transitions, release_train_edges, exclusions]
   adoption_blocker: no transition may become normative until implementation owner positive test cause-specific negative test terminal consumer and recovery are independently traced
