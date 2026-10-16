@@ -1139,3 +1139,25 @@ def test_reconstructed_binding_rejects_source_movement(reconstructed_binding_inp
         path.unlink()
     with pytest.raises(CIGraphError, match='source'):
         validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('defect', ['expected_source', 'required_negative_controls', 'required_call_edges', 'required_fact_bindings', 'collected_selectors', 'fact_value', 'control_value', 'authority', 'call_endpoint'])
+def test_reconstructed_binding_rejects_malformed_declarations_before_io(reconstructed_binding_inputs, monkeypatch, defect):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import semantic_ownership_inventory as source
+
+    inputs = reconstructed_binding_inputs
+    pair = ('release', 'build', 'verify')
+    if defect in {'expected_source', 'required_negative_controls', 'required_call_edges', 'required_fact_bindings', 'collected_selectors'}:
+        inputs[defect] = None
+    elif defect == 'fact_value':
+        inputs['required_fact_bindings'][pair] = 1
+    elif defect == 'control_value':
+        inputs['required_negative_controls'][pair] = 1
+    elif defect == 'call_endpoint':
+        inputs['required_call_edges'][pair] = frozenset({('runtime.py::unbound', 'runtime.py::verify')})
+    else:
+        next(iter(inputs['required_operation_calls'][pair].values()))['authority'] = True
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('source read before malformed declaration rejection'))
+    with pytest.raises(CIGraphError):
+        owner.validate_reconstructed_lifecycle_bindings(**inputs)

@@ -24,7 +24,8 @@
     "Delegate all effect/fact/call/test/control conformance to the existing validate_lifecycle_bindings owner; do not introduce another evaluator.",
     "Return detached source subject/population digest/import-root observations with authority false and execution_qualified false. No provider repository authority or complete runtime effect interpretation is inferred.",
     "Dirty missing substituted extra or unresolved source inputs block; no fallback to a caller-authored inventory. Protected caller still authenticates repository/context and all expected populations.",
-    "Extract existing source-independent population/fact/test/control declaration checks into one shared pure helper used by both binding queries; reject those contradictions before reconstruction I/O."
+    "Extract existing source-independent population/fact/test/control declaration checks into one shared pure helper used by both binding queries; reject those contradictions before reconstruction I/O.",
+    "Malformed protected mapping/fact/control/selector declarations, unbound call endpoints and authority-bearing observation catalogues reject with CIGraphError before source I/O."
   ],
   "forbidden_surfaces": [
     "normative DAG activation",
