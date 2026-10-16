@@ -1066,6 +1066,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - strict-timing-capture-acceptance
     - provider-authority-progress-and-exposure-frontier
   I19:
     requirement: Adopter parity. Self-managed BCF, Lite, Standard-v3, Regulated, Python-only and mixed toolchains retain their own requirements. The same product
@@ -3942,3 +3943,69 @@ implementation_slices:
     - Canonical normalization and exact successor evidence remain required; static declarations never establish actual built archive bytes.
     - Immutable attempt-five failure capture retained at audits/issue-394/observations/submit-1e1d9252-attempt-5.json.
     - Full installed consumer qualification, approved measurements, actual machine composition and independent terminal custody remain open; all 82 whole requirements stay open.
+
+  strict-timing-capture-acceptance:
+    id: strict-timing-capture-acceptance
+    workitem: P32-P0-06
+    scope: Pure retained-capture acceptance query validates duplicate-free finite JSON,
+      exact source/clock/stream bindings and recomputed timing before baseline inclusion.
+    contract: audits/issue-394/capture-acceptance-contract.json
+    producer: bcf_governance/tooling/operational_observations.py::validate_timing_capture
+    consumer: future baseline cohort collector; query does not grant authentication
+      or performance authority
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[pr-421-attempt-1.json]
+    - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[pr-426-attempt-1.json]
+    - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[reconcile-b976db49-attempt-1.json]
+    - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[reconcile-0e99bece-attempt-1.json]
+    negative_controls:
+    - cause: source-digest
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[source-digest]
+    - cause: commit
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[commit]
+    - cause: tree
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[tree]
+    - cause: clock
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[clock]
+    - cause: stdout
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[stdout]
+    - cause: stderr
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[stderr]
+    - cause: missing-stream
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[missing-stream]
+    - cause: authority
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[authority]
+    - cause: derived-time
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[derived-time]
+    - cause: source-conflict
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[source-conflict]
+    - cause: duplicate-keys
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_ambiguous_or_unqualified_json[duplicate-keys]
+    - cause: nan
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_ambiguous_or_unqualified_json[nan]
+    - cause: infinity
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_ambiguous_or_unqualified_json[infinity]
+    - cause: overflow
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_ambiguous_or_unqualified_json[overflow]
+    - cause: incomplete
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_ambiguous_or_unqualified_json[incomplete]
+    - cause: reconcile-42536402-attempt-1.json
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_original_stale_inherited_snapshots[reconcile-42536402-attempt-1.json]
+    - cause: reconcile-42536402-attempt-2.json
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_original_stale_inherited_snapshots[reconcile-42536402-attempt-2.json]
+    - cause: reconcile-6f0ecc1d-attempt-1.json
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_original_stale_inherited_snapshots[reconcile-6f0ecc1d-attempt-1.json]
+    - cause: source-authority
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[source-authority]
+    - cause: provider-undeclared-stream
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[provider-undeclared-stream]
+    - cause: provider-missing-stream
+      test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[provider-missing-stream]
+    remaining:
+    - Wire into any future cohort collection before accepted persistence or statistics;
+      no aggregation path exists yet.
+    - Independently authenticate provider/source custody and freeze matched measurement
+      protocol and approved budgets.
+    - Whole I18 and all train acceptance remain open.

@@ -406,3 +406,68 @@ def test_progress_stream_cannot_mix_or_accept_unknown_event_kinds(kind):
         {**progress_event(execution_id='same', sequence=2, stage='first', state='complete', monotonic_ms=1), 'kind': kind}]
     with pytest.raises(OperationalObservationError, match='kind'):
         validate_progress_stream(events)
+
+
+def _retained_timing_capture(name):
+    import json
+    return json.loads((Path(__file__).resolve().parents[1] / 'audits/issue-394/observations' / name).read_text())
+
+
+@pytest.mark.parametrize('name', ['pr-421-attempt-1.json', 'pr-426-attempt-1.json', 'reconcile-b976db49-attempt-1.json', 'reconcile-0e99bece-attempt-1.json'])
+def test_capture_acceptance_recomputes_retained_provider_and_local_observations(name):
+    import json
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    capture = _retained_timing_capture(name)
+    before = json.dumps(capture, sort_keys=True)
+    assert validate_timing_capture(Path(__file__).resolve().parents[1], before) == capture['observation']
+    assert json.dumps(capture, sort_keys=True) == before
+
+
+@pytest.mark.parametrize('cause', ['source-digest', 'commit', 'tree', 'clock', 'stdout', 'stderr', 'missing-stream', 'authority', 'derived-time', 'source-conflict'])
+def test_capture_acceptance_rejects_corruption_before_baseline(cause):
+    import json
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    capture = _retained_timing_capture('reconcile-b976db49-attempt-1.json')
+    if cause == 'source-digest': capture['observation']['source_snapshot_sha256'] = '0' * 64
+    elif cause in {'commit', 'tree'}: capture['observation']['subject'][cause + '_sha'] = '0' * 40
+    elif cause == 'clock': capture['observation']['clock_id'] = 'different-clock'
+    elif cause == 'stdout': capture['retained_stdout'] += 'poison'
+    elif cause == 'stderr': capture['retained_stderr'] += 'poison'
+    elif cause == 'missing-stream': del capture['retained_stdout']
+    elif cause == 'authority': capture['observation']['authority'] = True
+    elif cause == 'derived-time': capture['observation']['elapsed_ms'] += 1
+    elif cause == 'source-conflict': capture['source_snapshot'] = {**capture['producer'], 'clock_id': 'stale-clock'}
+    with pytest.raises(OperationalObservationError):
+        validate_timing_capture(Path(__file__).resolve().parents[1], json.dumps(capture))
+
+
+@pytest.mark.parametrize('raw', ['{"authority": false, "authority": true}', '{"duration": NaN}', '{"duration": Infinity}', '{"duration": 1e999}', '{}'], ids=['duplicate-keys', 'nan', 'infinity', 'overflow', 'incomplete'])
+def test_capture_acceptance_rejects_ambiguous_or_unqualified_json(raw):
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    with pytest.raises(OperationalObservationError):
+        validate_timing_capture(Path(__file__).resolve().parents[1], raw)
+
+
+@pytest.mark.parametrize('name', ['reconcile-42536402-attempt-1.json', 'reconcile-42536402-attempt-2.json', 'reconcile-6f0ecc1d-attempt-1.json'])
+def test_capture_acceptance_rejects_original_stale_inherited_snapshots(name):
+    import json
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    capture = _retained_timing_capture(name)
+    with pytest.raises(OperationalObservationError):
+        validate_timing_capture(Path(__file__).resolve().parents[1], json.dumps(capture))
+
+
+@pytest.mark.parametrize('cause', ['source-authority', 'provider-undeclared-stream', 'provider-missing-stream'])
+def test_capture_acceptance_rejects_self_consistent_unqualified_metadata(cause):
+    import json, hashlib
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    capture = _retained_timing_capture('pr-426-attempt-1.json')
+    if cause == 'source-authority':
+        capture['source_snapshot']['authority'] = True
+        capture['observation']['source_snapshot_sha256'] = hashlib.sha256(json.dumps(capture['source_snapshot'], sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    elif cause == 'provider-undeclared-stream':
+        capture['retained_stdout'] = 'unbound'
+    else:
+        capture['producer']['stdout_sha256'] = hashlib.sha256(b'missing').hexdigest()
+    with pytest.raises(OperationalObservationError):
+        validate_timing_capture(Path(__file__).resolve().parents[1], json.dumps(capture))

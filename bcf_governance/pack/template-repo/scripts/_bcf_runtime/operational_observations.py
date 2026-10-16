@@ -413,3 +413,83 @@ def provider_attempt_timing_observation(
         if isinstance(exc, OperationalObservationError):
             raise
         raise OperationalObservationError(f"provider timing snapshot is malformed: {exc}") from exc
+
+
+def validate_timing_capture(repo_root: Path, raw: str | bytes) -> dict[str, Any]:
+    """Check retained capture integrity without conferring source authentication.
+
+    Accepting a capture proves its internal binding and timing arithmetic only.
+    Provider custody, cohort matching and target approval remain separate facts.
+    The original bytes are neither rewritten nor repaired by this pure query.
+    """
+    def reject(message: str) -> None:
+        raise OperationalObservationError("timing capture " + message)
+
+    def pairs(values: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in values:
+            if key in result:
+                reject("contains duplicate JSON keys")
+            result[key] = value
+        return result
+
+    try:
+        capture = json.loads(raw, object_pairs_hook=pairs,
+            parse_constant=lambda _value: reject("contains nonfinite JSON"))
+        # Also reject finite-looking literals overflowing to infinity (1e999).
+        json.dumps(capture, allow_nan=False)
+        if not isinstance(capture, dict):
+            reject("must be an object")
+        observation = capture['observation']
+        if not isinstance(observation, dict):
+            reject("observation is absent")
+        for node in (capture, capture.get('document', {}), capture.get('producer', {}), observation):
+            if not isinstance(node, dict) or ('authority' in node and node['authority'] is not False):
+                reject("cannot claim authority")
+        source = capture.get('source_snapshot', capture.get('producer'))
+        if not isinstance(source, dict):
+            reject("source representation is missing")
+        if 'authority' in source and source['authority'] is not False:
+            reject("source cannot claim authority")
+        digest = hashlib.sha256(json.dumps(source, sort_keys=True,
+            separators=(',', ':'), allow_nan=False).encode()).hexdigest()
+        if observation['source_snapshot_sha256'] != digest:
+            reject("source digest disagrees with retained bytes")
+        if 'run' in source:
+            projected = provider_attempt_timing_observation(source,
+                expected_run_id=source['run']['id'], expected_attempt=source['run']['run_attempt'],
+                pipeline=observation['pipeline'])
+            if projected != observation:
+                reject("provider projection disagrees with observation")
+        else:
+            if observation['subject'] != {'commit_sha': source['commit_sha'], 'tree_sha': source['tree_sha']}:
+                reject("source subject disagrees with observation")
+            if source['clock_id'] != observation['clock_id'] or source['elapsed_ms'] != observation['elapsed_ms']:
+                reject("source clock or duration disagrees with observation")
+            producer = capture.get('producer', {})
+            if 'clock_id' in producer and any(producer.get(key) != source.get(key) for key in
+                    ('commit_sha', 'tree_sha', 'clock_id', 'elapsed_ms', 'stdout_sha256', 'stderr_sha256')):
+                reject("producer and source capture facts disagree")
+            if any(not isinstance(source.get(stream + '_sha256'), str) for stream in ('stdout', 'stderr')):
+                reject("local stream digests missing")
+        for stream in ('stdout', 'stderr'):
+            field = stream + '_sha256'
+            declarations = [node[field] for node in (source, capture.get('producer', {})) if field in node]
+            retained = capture.get('retained_' + stream)
+            if declarations or retained is not None:
+                if not declarations or not isinstance(retained, str):
+                    reject("retained stream bytes or digest missing")
+                if any(hashlib.sha256(retained.encode()).hexdigest() != expected for expected in declarations):
+                    reject("retained stream digest disagrees with bytes")
+        fields = ('repository', 'repository_id', 'source_snapshot_sha256', 'pipeline',
+            'clock_id', 'clock_basis', 'start_ms', 'end_ms', 'intervals')
+        recomputed = pipeline_timing_observation(**{field: observation[field] for field in fields},
+            **observation['subject'])
+        if recomputed != observation:
+            reject("derived timing disagrees with observation")
+        validate_operational_observation(repo_root, observation)
+        return recomputed
+    except OperationalObservationError:
+        raise
+    except (ValueError, TypeError, KeyError, UnicodeError) as exc:
+        raise OperationalObservationError("timing capture is malformed or incomplete") from exc
