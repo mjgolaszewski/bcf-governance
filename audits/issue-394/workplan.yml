@@ -1178,6 +1178,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-lifecycle-schema-bindings
     - authored-phase-result-contract
     - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
@@ -1414,6 +1415,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-lifecycle-schema-bindings
     - authored-phase-result-contract
     - dormant-composition-and-static-bindings
   F03:
@@ -1496,6 +1498,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-lifecycle-schema-bindings
     - authored-phase-result-contract
     - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
@@ -2055,6 +2058,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-lifecycle-schema-bindings
     - canonical-ci-edge-reference-coverage
     - compatibility-authority-separation
     - protected-public-operation-population
@@ -3389,3 +3393,26 @@ implementation_slices:
       open.
     - Evidence audits/issue-394/authored-phase-result-verification.json; no proof/closure/custody authority from schema or primitive
       presence.
+
+  exact-committed-lifecycle-schema-bindings:
+    id: exact-committed-lifecycle-schema-bindings
+    workitem: P32-P0-04
+    scope: Dormant exact committed schema identities and closed offline reference catalog;
+      reject contradictory protected bindings before AST work.
+    contract: audits/issue-394/lifecycle-schema-binding-contract.json
+    producer: bcf_governance/tooling/semantic_source_paths.py::committed_regular_blob_capture
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_reconstructed_lifecycle_bindings
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_reconstructed_schema_binding_captures_exact_committed_resources
+    - tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources
+    negative_controls:
+    - cause: wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI
+      test: tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast
+    remaining:
+    - Caller must authenticate protected complete catalog and exact repository subject;
+      no producer codec execution or independent installed authority qualification.
+    - Full lifecycle population, normative adoption, admission and terminal custody
+      remain separate gates.
+    - 'Verification: audits/issue-394/lifecycle-schema-binding-verification.json.'

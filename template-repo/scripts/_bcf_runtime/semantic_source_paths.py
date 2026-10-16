@@ -144,13 +144,19 @@ def committed_python_source_delta(
                 unresolved_changed=before["unresolved_entries"] != after["unresolved_entries"])
 
 
-def committed_application_registry_identity(
-    repo_root: Path, *, commit_sha: str, tree_sha: str,
-) -> dict[str, Any]:
-    """Observe fixed consumer policy bytes; caller authenticates the subject."""
+def _capture_committed_regular_blob(
+    repo_root: Path, *, commit_sha: str, tree_sha: str, path: str, label: str,
+) -> tuple[dict[str, Any], bytes]:
+    if (not isinstance(path, str) or not path or "\\" in path or "\0" in path
+            or PurePosixPath(path).is_absolute()
+            or any(part in {"", ".", ".."} for part in path.split("/"))):
+        raise ValueError("committed source path must be canonical and repository relative")
+    try:
+        path.encode("utf-8")
+    except UnicodeError as exc:
+        raise ValueError("committed source path is not UTF-8") from exc
     subject = dict(commit_sha=commit_sha, tree_sha=tree_sha)
     _validate_committed_subject(repo_root, subject)
-    path = "governance/application-operations.yml"
     record = _committed_git(repo_root, "--literal-pathspecs", "ls-tree", "-z", "--full-tree", tree_sha, "--", path)
     try:
         entry, terminator = record.split(b"\0")
@@ -161,9 +167,31 @@ def committed_application_registry_identity(
                 or re.fullmatch(r"[a-f0-9]{40}", oid) is None):
             raise ValueError("invalid record")
     except (ValueError, UnicodeError) as exc:
-        raise ValueError("committed application policy must be one regular blob") from exc
+        raise ValueError(f"{label} must be one regular blob") from exc
     raw = _committed_git(repo_root, "cat-file", "blob", oid)
     if hashlib.sha1(f"blob {len(raw)}\0".encode() + raw).hexdigest() != oid:
-        raise ValueError("committed application policy blob identity differs")
+        raise ValueError(f"{label} blob identity differs")
     return dict(authority=False, execution_qualified=False, subject=subject,
-                path=path, blob_oid=oid, registry_sha256=hashlib.sha256(raw).hexdigest())
+                path=path, blob_oid=oid, sha256=hashlib.sha256(raw).hexdigest()), raw
+
+
+
+def committed_regular_blob_capture(
+    repo_root: Path, *, commit_sha: str, tree_sha: str, path: str,
+) -> tuple[dict[str, Any], bytes]:
+    """Capture exact regular source bytes; caller authenticates repository/subject."""
+    return _capture_committed_regular_blob(
+        repo_root, commit_sha=commit_sha, tree_sha=tree_sha, path=path, label="committed source",
+    )
+
+
+def committed_application_registry_identity(
+    repo_root: Path, *, commit_sha: str, tree_sha: str,
+) -> dict[str, Any]:
+    """Observe fixed consumer policy bytes; caller authenticates the subject."""
+    identity, _ = _capture_committed_regular_blob(
+        repo_root, commit_sha=commit_sha, tree_sha=tree_sha,
+        path="governance/application-operations.yml", label="committed application policy",
+    )
+    identity["registry_sha256"] = identity.pop("sha256")
+    return identity

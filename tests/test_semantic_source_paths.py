@@ -235,3 +235,22 @@ def test_source_disappearing_after_population_discovery_is_a_typed_blocker(repo,
     monkeypatch.setattr(Path, 'read_bytes', vanished)
     with pytest.raises(SemanticInventoryError, match='source'):
         discover_python_source(repo, source_subject=identity)
+
+
+
+def test_committed_regular_blob_capture_preserves_exact_bytes_and_policy_identity(repo):
+    import hashlib
+    identity = subject(repo)
+    metadata, raw = source.committed_regular_blob_capture(repo, path='non_python.txt', **identity)
+    assert raw == b'other'
+    assert metadata['sha256'] == hashlib.sha256(raw).hexdigest()
+    assert metadata['subject'] == identity
+    assert metadata['authority'] is False
+    (repo / 'non_python.txt').unlink()
+    assert source.committed_regular_blob_capture(repo, path='non_python.txt', **identity) == (metadata, raw)
+
+
+@pytest.mark.parametrize('path', ['', '/non_python.txt', '../non_python.txt', './non_python.txt', 'nested/../non_python.txt', 'nested//root.py', 'nested\\root.py', 'missing.json'])
+def test_committed_regular_blob_capture_rejects_unsafe_or_absent_paths(repo, path):
+    with pytest.raises(ValueError):
+        source.committed_regular_blob_capture(repo, path=path, **subject(repo))

@@ -627,6 +627,8 @@ def validate_reconstructed_lifecycle_bindings(
     required_operation_calls: Mapping[Relationship, Mapping[str, Mapping[str, Any]]],
     source_import_roots: tuple[str, ...] = (".",),
     required_ci_graph: CompiledCIGraph | None = None,
+    required_schema_bindings: Mapping[Relationship, Mapping[str, str]] | None = None,
+    required_schema_catalog: Mapping[str, Mapping[str, str]] | None = None,
     operation_policy_subject: Mapping[str, str] | None = None,
     required_public_operation_relationships: Mapping[str, frozenset[Relationship]] | None = None,
     required_effect_bindings: Mapping[tuple[str, str, str, str], frozenset[Relationship]] | None = None,
@@ -662,6 +664,14 @@ def validate_reconstructed_lifecycle_bindings(
         raise CIGraphError(f"lifecycle binding exact source reconstruction failed: {exc}") from exc
     from .ci_graph_composition_operations import capture_public_operation_bindings, validate_public_operation_capture
 
+    schema_capture = None
+    if required_schema_bindings is not None or required_schema_catalog is not None:
+        from .ci_graph_composition_schemas import capture_lifecycle_schema_bindings
+
+        schema_capture = capture_lifecycle_schema_bindings(
+            repo_root, compiled=compiled, expected_source=expected_source,
+            required_bindings=required_schema_bindings, schema_catalog=required_schema_catalog,
+        )
     capture = None
     if operation_policy_subject is not None or required_public_operation_relationships is not None:
         capture = capture_public_operation_bindings(
@@ -690,6 +700,8 @@ def validate_reconstructed_lifecycle_bindings(
         required_call_edges=required_call_edges, required_fact_bindings=required_fact_bindings,
         required_operation_calls=required_operation_calls,
     )
+    if schema_capture is not None:
+        result["schema_bindings"] = schema_capture
     if ci_coverage is not None:
         result["ci_edge_coverage"] = ci_coverage
     if public_operations is not None:

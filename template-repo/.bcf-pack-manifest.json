@@ -732,11 +732,15 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "b573f3b4f323a03a16a0534eb0feed629c257a694e6716a52c4969a5ed353145"
+      "sha256": "d4eea8cd407fee5fa045755c99cf50c14e53c2004ad43d10aa554eebc9148b3d"
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
       "sha256": "9a89f29fdff66c4842cba03691df5bb5c9edfb8d75d49d3b61f1ba2f3b8b80af"
+    },
+    "scripts/_bcf_runtime/ci_graph_composition_schemas.py": {
+      "operation": "copy",
+      "sha256": "c397191cfb172dca087f26db83332a5f35930c74e641b5c7047efceecff2107a"
     },
     "scripts/_bcf_runtime/ci_graph_composition_views.py": {
       "operation": "copy",
@@ -1555,7 +1559,7 @@
     },
     "scripts/_bcf_runtime/semantic_source_paths.py": {
       "operation": "copy",
-      "sha256": "7b46b3f387360b9377bdaff07fa6b8e4fa9ce7296d3f0fc8ec99b46721fd9a45"
+      "sha256": "7f35ea6035f8db71f13f4ba637b03d326b616439cbf89a8c204732244b98518c"
     },
     "scripts/_bcf_runtime/semantic_typescript_effects.mjs": {
       "operation": "copy",

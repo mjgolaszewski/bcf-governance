@@ -1792,3 +1792,107 @@ def test_rejection_invariants_preserve_valid_bounded_paths(path_inputs, composit
     assert result['authority'] is False
     assert result['execution_qualified'] is False
     assert path_inputs == before
+
+
+@pytest.fixture
+def schema_reconstructed_inputs(reconstructed_binding_inputs, composition):
+    import hashlib, subprocess
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+    inputs = reconstructed_binding_inputs
+    root = inputs['repo_root']
+    (root / 'schemas').mkdir()
+    pair = ('release', 'build', 'verify')
+    contract = composition['payload']['relationships'][0]['contract']
+    refs = {field: contract[field] for field in ['input_schema','output_schema']}
+    catalog = {ref: dict(path='schemas/'+ref, sha256='0'*64) for ref in refs.values()}
+    for row in catalog.values():
+        (root / row['path']).write_text('{"type":"object"}\n')
+    inputs['required_schema_bindings'] = {pair: refs}
+    inputs['required_schema_catalog'] = catalog
+    def commit(*, rederive=True):
+        def git(*args):
+            return subprocess.run(['git',*args],cwd=root,check=True,capture_output=True,text=True).stdout.strip()
+        git('add','-A')
+        git('commit','--allow-empty','-qm','schema source')
+        subject = dict(commit_sha=git('rev-parse','HEAD'),tree_sha=git('rev-parse','HEAD^{tree}'))
+        inputs['expected_source'] = dict(inputs['expected_source'],**subject)
+        composition['expected_source'] = composition['payload']['source'] = inputs['expected_source']
+        inputs['compiled'] = compile_lifecycle_composition(**composition)
+        for row in catalog.values():
+            path = root / row['path']
+            if path.is_file() and not path.is_symlink(): row['sha256'] = hashlib.sha256(path.read_bytes()).hexdigest()
+        if not rederive:
+            return
+        inventory = resolve_python_imports(root, discover_python_source(root,source_subject=subject,call_contracts_version='1.0',initialization_contracts_version='1.0'))
+        inputs['required_operation_calls'] = {pair:{symbol:source_operation_call_population(symbol,inventory,include_initialization=True) for symbol in inputs['required_operation_calls'][pair]}}
+    commit()
+    return inputs,commit
+
+
+def test_reconstructed_schema_binding_captures_exact_committed_resources(schema_reconstructed_inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs,_ = schema_reconstructed_inputs
+    before = copy.deepcopy(inputs)
+    result = validate_reconstructed_lifecycle_bindings(**inputs)
+    assert result['schema_bindings']['schemas_checked'] == 2
+    assert result['schema_bindings']['references_checked'] == 0
+    assert result['schema_bindings']['authority'] is False
+    assert result['execution_qualified'] is False
+    assert validate_reconstructed_lifecycle_bindings(**inputs) == result
+    legacy = {key:value for key,value in inputs.items() if key not in {'required_schema_bindings','required_schema_catalog'}}
+    assert 'schema_bindings' not in validate_reconstructed_lifecycle_bindings(**legacy)
+    assert inputs == before
+
+
+@pytest.mark.parametrize('defect',['swapped','missing_relationship','missing_catalog','wrong_digest','missing_file','symlink','bad_json','duplicate_json','bad_meta','unknown_ref','unknown_anchor','ambiguous_id','shadow_catalog_uri'])
+def test_reconstructed_schema_contradictions_reject_before_ast(schema_reconstructed_inputs,monkeypatch,defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    from bcf_governance.tooling import semantic_ownership_inventory as source
+    inputs,commit = schema_reconstructed_inputs
+    catalog = inputs['required_schema_catalog']
+    root = inputs['repo_root']
+    paths = [root / row['path'] for row in catalog.values()]
+    if defect == 'swapped':
+        row = next(iter(inputs['required_schema_bindings'].values()))
+        row['input_schema'],row['output_schema'] = row['output_schema'],row['input_schema']
+    elif defect == 'missing_relationship': inputs['required_schema_bindings'] = {}
+    elif defect == 'missing_catalog': inputs['required_schema_catalog'] = None
+    elif defect == 'wrong_digest': next(iter(catalog.values()))['sha256']='f'*64
+    else:
+        if defect == 'missing_file': paths[0].unlink()
+        elif defect == 'symlink':
+            paths[0].unlink(); paths[0].symlink_to(paths[1].name)
+        elif defect == 'bad_json': paths[0].write_text('{bad')
+        elif defect == 'duplicate_json': paths[0].write_text('{"type":"object","type":"string"}')
+        elif defect == 'bad_meta': paths[0].write_text('{"type":17}')
+        elif defect == 'unknown_ref': paths[0].write_text('{"$ref":"https://unavailable.invalid/schema"}')
+        elif defect == 'unknown_anchor': paths[0].write_text('{"$ref":"#missing"}')
+        elif defect == 'ambiguous_id':
+            for path in paths: path.write_text('{"$id":"https://example.invalid/same","type":"object"}')
+        elif defect == 'shadow_catalog_uri':
+            paths[0].write_text(json.dumps({'$id':'https://bcf.invalid/'+next(iter(list(catalog.values())[1:]))['path'],'type':'object'}))
+        commit(rederive=defect != 'symlink')
+    monkeypatch.setattr(source,'discover_python_source',lambda *a,**kw:pytest.fail('schema contradiction reached AST'))
+    with pytest.raises(CIGraphError,match='schema'):
+        validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('case',['internal','catalog_relative','nested_id','anchor','dynamic','ref_shaped_data','recursive'])
+def test_reconstructed_schema_reference_closure_uses_dialect_resources(schema_reconstructed_inputs,case):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs,commit = schema_reconstructed_inputs
+    paths = [inputs['repo_root']/row['path'] for row in inputs['required_schema_catalog'].values()]
+    schema = {'type':'object'}
+    if case == 'internal': schema={'$defs':{'value':{'type':'string'}},'$ref':'#/$defs/value'}
+    elif case == 'catalog_relative': schema={'$ref':paths[1].name}
+    elif case == 'nested_id': schema={'$defs':{'part':{'$id':'nested/part','type':'string'}},'$ref':'nested/part'}
+    elif case == 'anchor': schema={'$defs':{'part':{'$anchor':'part','type':'string'}},'$ref':'#part'}
+    elif case == 'dynamic': schema={'$dynamicAnchor':'node','type':'object','properties':{'child':{'$dynamicRef':'#node'}}}
+    elif case == 'ref_shaped_data': schema={'const':{'$ref':'https://not-a-schema.invalid'},'examples':[{'$ref':'https://not-a-schema.invalid'}]}
+    elif case == 'recursive': schema={'type':'object','properties':{'child':{'$ref':'#'}}}
+    paths[0].write_text(json.dumps(schema));commit()
+    result = validate_reconstructed_lifecycle_bindings(**inputs)['schema_bindings']
+    assert result['references_checked'] == (0 if case == 'ref_shaped_data' else 1)
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
