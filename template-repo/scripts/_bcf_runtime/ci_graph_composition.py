@@ -670,7 +670,7 @@ def validate_reconstructed_lifecycle_bindings(
     if required_effect_bindings is not None:
         from .ci_graph_composition_operations import validate_effect_binding_contexts
 
-        validate_effect_binding_contexts(required_effect_bindings, capture)
+        validate_effect_binding_contexts(required_effect_bindings, capture, compiled)
     subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
     try:
         inventory = discover_python_source(

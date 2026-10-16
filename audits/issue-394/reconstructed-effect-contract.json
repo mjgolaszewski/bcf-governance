@@ -19,7 +19,8 @@
     "Optional strict effect crosswalk requires captured protected public-operation policy before source discovery.",
     "Project validated operation rows through existing lifecycle_effect_population; reject missing or extra ports and context bindings outside protected operation relationships.",
     "Compare exact reconstructed static effect population with compiled lifecycle effects. Empty effects are valid under existing 1.0/1.1 schemas.",
-    "Legacy calls remain unchanged. Static source conformance confers no execution or provider authority."
+    "Legacy calls remain unchanged. Static source conformance confers no execution or provider authority.",
+    "Compare the well-formed protected crosswalk with compiled effects before source discovery; retain independent actual-source equality afterward so matching omissions cannot self-exempt."
   ],
   "expected_tests": [
     "zero-effect compilation",
@@ -27,7 +28,8 @@
     "fabricated compiled effect rejection",
     "strict effect mode without protected policy rejects before discovery",
     "Committed public operation with a reachable observation port reconstructs through the full query without a caller inventory.",
-    "Removing candidate effects, omitting source-port crosswalk, or inventing ports rejects with the independent source and protected policy unchanged."
+    "Removing candidate effects, omitting source-port crosswalk, or inventing ports rejects with the independent source and protected policy unchanged.",
+    "Missing compiled effect, missing crosswalk port, invented port and changed port reject before AST; simultaneous declaration omissions still reject after independent source reconstruction."
   ],
   "forbidden_surfaces": [
     "workflow pins",

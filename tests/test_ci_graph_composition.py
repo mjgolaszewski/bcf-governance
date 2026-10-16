@@ -1718,3 +1718,38 @@ def test_reconstructed_ci_coverage_rejects_before_policy_and_source(public_recon
     monkeypatch.setattr(operations, 'capture_public_operation_bindings', lambda *a, **kw: pytest.fail('policy captured before CI coverage rejection'))
     with pytest.raises(CIGraphError, match='CI edge coverage'):
         validate_reconstructed_lifecycle_bindings(**inputs, required_ci_graph=composition['compiled_graph'])
+
+
+
+@pytest.mark.parametrize('defect', ['missing_compiled', 'missing_binding', 'invented_binding', 'changed_symbol'])
+def test_effect_declaration_contradictions_reject_before_discovery(nonempty_public_effect_inputs, composition, monkeypatch, defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    import bcf_governance.tooling.semantic_ownership_inventory as source
+    inputs = nonempty_public_effect_inputs
+    bindings = inputs['required_effect_bindings']
+    if defect == 'missing_compiled':
+        composition['payload']['relationships'][0]['contract']['effects'] = []
+        composition['expected_effects'] = frozenset()
+        inputs['compiled'] = compile_lifecycle_composition(**composition)
+    elif defect == 'missing_binding':
+        bindings.clear()
+    elif defect == 'invented_binding':
+        bindings[('example.produce.v1', 'observation', 'call', 'invented')] = frozenset({('release', 'build', 'verify')})
+    else:
+        key, pairs = next(iter(bindings.items()))
+        bindings.clear()
+        bindings[(*key[:3], 'runtime.py::invented')] = pairs
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('late effect declaration rejection'))
+    with pytest.raises(CIGraphError, match='reconstructed.*effect population'):
+        validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+def test_matching_effect_omissions_cannot_erase_actual_source(nonempty_public_effect_inputs, composition):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs = nonempty_public_effect_inputs
+    inputs['required_effect_bindings'] = {}
+    composition['payload']['relationships'][0]['contract']['effects'] = []
+    composition['expected_effects'] = frozenset()
+    inputs['compiled'] = compile_lifecycle_composition(**composition)
+    with pytest.raises(CIGraphError, match='source effect bindings'):
+        validate_reconstructed_lifecycle_bindings(**inputs)

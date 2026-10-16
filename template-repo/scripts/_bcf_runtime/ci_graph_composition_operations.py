@@ -58,7 +58,7 @@ def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any]
     return dict(metadata, **population)
 
 
-def validate_effect_binding_contexts(bindings, capture):
+def validate_effect_binding_contexts(bindings, capture, compiled):
     """Close protected port contexts before source discovery; ports resolve later."""
     if capture is None:
         raise CIGraphError("effect binding requires protected public operations")
@@ -73,6 +73,20 @@ def validate_effect_binding_contexts(bindings, capture):
                 or port[0] not in relationships or not isinstance(pairs, frozenset)
                 or not pairs or any(pair not in relationships[port[0]] for pair in pairs)):
             raise CIGraphError("source effect binding context differs from protected public operation")
+
+    from .ci_graph_composition import _bytes
+
+    declared = {(*pair, _bytes(port).decode()) for port, pairs in bindings.items() for pair in pairs}
+    if declared != _compiled_effect_population(compiled):
+        raise CIGraphError("reconstructed declared effect population differs from compiled lifecycle")
+
+
+def _compiled_effect_population(compiled):
+    return {
+        (row["context"], row["producer"], row["consumer"], effect)
+        for row in compiled["relationships"] if row["contract"] is not None
+        for effect in row["contract"]["effects"]
+    }
 
 
 def validate_reconstructed_effects(compiled, public_operations, bindings):
@@ -97,11 +111,7 @@ def validate_reconstructed_effects(compiled, public_operations, bindings):
         ))
     if observed_ports != bindings.keys():
         raise CIGraphError("reconstructed source effect bindings omit or invent ports")
-    compiled_effects = {
-        (row["context"], row["producer"], row["consumer"], effect)
-        for row in compiled["relationships"] if row["contract"] is not None
-        for effect in row["contract"]["effects"]
-    }
+    compiled_effects = _compiled_effect_population(compiled)
     if effects != compiled_effects:
         raise CIGraphError("reconstructed source effect population differs from compiled lifecycle")
     return dict(authority=False, execution_qualified=False,

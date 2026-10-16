@@ -39,5 +39,30 @@
       "invented crosswalk"
     ],
     "initial_fixture_correction": "The initial fixture declared an unreachable port and was correctly rejected by the existing producer. Added an actual call in produce and committed those source bytes; no production change or assertion relaxation."
+  },
+  "earliest_declaration_check": {
+    "red": {
+      "failed": 4,
+      "passed": 1,
+      "seconds": 1.9
+    },
+    "focused": {
+      "passed": 18,
+      "seconds": 3.0
+    },
+    "broad": {
+      "passed": 265,
+      "failed": 1,
+      "seconds": 17.06,
+      "failure": "Existing held manifest-oracle failure"
+    },
+    "behavior": "Compare protected crosswalk and compiled effects before AST; retain later actual-source population comparison. Shared private compiled effect projection serves both checks; no second source parser.",
+    "actual_self_characterization": {
+      "passed": 1,
+      "seconds": 82.59,
+      "population": "All 21 actual BCF public-operation observations match retained pre-deconstruction bytes."
+    },
+    "governance_yaml": "passed",
+    "coverage_schema": "passed"
   }
 }

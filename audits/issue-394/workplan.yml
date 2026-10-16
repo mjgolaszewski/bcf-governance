@@ -3075,6 +3075,10 @@ implementation_slices:
     - tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject
     - tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner
     negative_controls:
+    - cause: deterministic-effect-declaration-contradiction-before-source-discovery
+      test: tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery
+    - cause: matching-declaration-omissions-cannot-erase-actual-source-port
+      test: tests.test_ci_graph_composition::test_matching_effect_omissions_cannot_erase_actual_source
     - cause: fabricated-compiled-effect-absent-from-captured-source
       test: tests.test_ci_graph_composition::test_reconstructed_effects_reject_fabricated_compiled_effect
     - cause: strict-effects-without-protected-policy-before-discovery
