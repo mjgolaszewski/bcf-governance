@@ -29,7 +29,13 @@
       "passed": 9,
       "elapsed_seconds": 43.87
     },
-    "governance_yaml": "passed"
+    "governance_yaml": "passed",
+    "isolated_installed_affected_and_downstream": {
+      "passed": 204,
+      "elapsed_seconds": 29.4,
+      "origins": "package/context/proof/submit/subject asserted exact installed",
+      "runtime_admission": "existing exact release runtime owner"
+    }
   },
   "preserved": [
     "Ordinary local resolver accepts tracked/untracked edited trees without mutating their files.",
@@ -38,12 +44,34 @@
     "local_pr.py remains within unchanged800-line module cap."
   ],
   "remaining": [
-    "Exact installed qualification and complete independent failure/consumer populations.",
+    "Exact installed qualification for stated204 cases passes; complete independent failure/consumer populations remain open.",
     "No whole requirement, activation or full-goal completion claim."
   ],
   "prior_fixture_run": {
     "passed": 160,
     "failed": 5,
     "cause": "Synthetic non-Git roots lacked newly required clean-root admission; original scope/provider assertions retained with explicit boundary fixture stubs. Real-Git clean/dirty matrix validates actual admission."
+  },
+  "exact_build": {
+    "authority": false,
+    "commit": "947382d7e85037838320af7338eeb358d8906508",
+    "tree": "37339fa828368d4928133c3f7bce486a2e4981e8",
+    "python_files_equal": 597,
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "21539d4c075291ca397e055ee21c51679c6cba7373c9cbb6477851ea8c1a3e63",
+      "bcf_governance-2.5.0.tar.gz": "df6a440f26f73186b684bf4b841faed7ab2e11231407180e133c54ad16da26f2"
+    }
+  },
+  "exact_package_data_parity": {
+    "authority": false,
+    "source_commit": "947382d7e85037838320af7338eeb358d8906508",
+    "tracked_package_files": 712,
+    "missing_wheel": [],
+    "missing_sdist": [],
+    "different": [],
+    "extra_wheel": [],
+    "extra_sdist": [],
+    "wheel_package_files": 712,
+    "sdist_package_files": 712
   }
 }
