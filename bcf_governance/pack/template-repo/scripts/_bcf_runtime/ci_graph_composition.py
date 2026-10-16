@@ -229,6 +229,168 @@ def _validate_compiled_identity(compiled: dict[str, Any]) -> None:
 
 
 
+
+def validate_lifecycle_paths(
+    compiled: dict[str, Any],
+    *,
+    backtrace: dict[str, Any],
+    expected_source: Mapping[str, str],
+    expected_backtrace_sha256: str,
+    required_states: Mapping[str, str],
+    required_transition_bindings: Mapping[str, Relationship],
+    required_recovery_limits: Mapping[str, int],
+) -> dict[str, Any]:
+    """Bind dormant paths to the existing backtrace and protected populations.
+
+    The protected consumer authenticates the backtrace digest and independently
+    reconstructs states, terminal classes, transition bindings and retry limits.
+    This query neither invents those populations nor authenticates its caller.
+    Legacy composition remains readable; untyped backtraces cannot pass here.
+    Static path closure does not qualify runtime guards, effects or authority.
+    """
+
+    _validate_compiled_identity(compiled)
+    if not isinstance(expected_source, Mapping) or compiled["source"] != dict(expected_source):
+        raise CIGraphError("lifecycle path compiled source identity differs")
+    if not isinstance(backtrace, Mapping):
+        raise CIGraphError("lifecycle path backtrace is invalid")
+    try:
+        digest = hashlib.sha256(_bytes(backtrace)).hexdigest()
+    except (TypeError, ValueError) as exc:
+        raise CIGraphError("lifecycle path backtrace is not canonical data") from exc
+    if digest != expected_backtrace_sha256:
+        raise CIGraphError("lifecycle path backtrace source identity differs")
+    classes = {"none", "workitem", "phase", "release", "custody", "blocked"}
+    if (
+        not isinstance(required_states, Mapping) or not required_states
+        or any(not isinstance(key, str) or not key or not isinstance(value, str) or value not in classes
+               for key, value in required_states.items())
+    ):
+        raise CIGraphError("lifecycle path independent state population is invalid")
+    state_rows = backtrace.get("states")
+    transition_rows = backtrace.get("transitions")
+    if not isinstance(state_rows, list) or not isinstance(transition_rows, list):
+        raise CIGraphError("lifecycle path state or transition population is invalid")
+    states: dict[str, Mapping[str, Any]] = {}
+    for row in state_rows:
+        if not isinstance(row, Mapping) or not isinstance(row.get("id"), str):
+            raise CIGraphError("lifecycle path state identity is invalid")
+        identity = row["id"]
+        if identity in states or identity not in required_states:
+            raise CIGraphError("lifecycle path state population is duplicated or unbound")
+        if row.get("terminal_class") != required_states[identity]:
+            raise CIGraphError("lifecycle path terminal classification differs")
+        states[identity] = row
+    if states.keys() != required_states.keys():
+        raise CIGraphError("lifecycle path state population is incomplete")
+    reachable = {
+        (row["context"], row["producer"], row["consumer"]): row["contract"]
+        for row in compiled["relationships"] if row["contract"] is not None
+    }
+    if not isinstance(required_transition_bindings, Mapping) or not required_transition_bindings:
+        raise CIGraphError("lifecycle path independent transition population is absent")
+    for identity, pair in required_transition_bindings.items():
+        if (not isinstance(identity, str) or not identity or not isinstance(pair, tuple)
+                or len(pair) != 3 or any(not isinstance(v, str) for v in pair)
+                or pair not in reachable):
+            raise CIGraphError("lifecycle path transition relationship is unbound")
+    transitions: dict[str, Mapping[str, Any]] = {}
+    for row in transition_rows:
+        if not isinstance(row, Mapping) or not isinstance(row.get("id"), str):
+            raise CIGraphError("lifecycle path transition identity is invalid")
+        identity = row["id"]
+        if identity in transitions or identity not in required_transition_bindings:
+            raise CIGraphError("lifecycle path transition population is duplicated or unbound")
+        if (not isinstance(row.get("kind"), str)
+                or row["kind"] not in {"success", "rejection", "recovery"}
+                or not isinstance(row.get("from"), str) or row["from"] not in states
+                or not isinstance(row.get("to"), str) or row["to"] not in states):
+            raise CIGraphError("lifecycle path transition kind or state reference is unbound")
+        invariants = row.get("invariants")
+        if (not isinstance(invariants, list) or not invariants
+                or any(not isinstance(v, str) or not v for v in invariants)
+                or len(set(invariants)) != len(invariants)):
+            raise CIGraphError("lifecycle path transition invariants are invalid")
+        transitions[identity] = row
+    if transitions.keys() != required_transition_bindings.keys():
+        raise CIGraphError("lifecycle path transition population is incomplete")
+    recoveries = {key: row for key, row in transitions.items() if row["kind"] == "recovery"}
+    if not isinstance(required_recovery_limits, Mapping) or recoveries.keys() != required_recovery_limits.keys():
+        raise CIGraphError("lifecycle path independent recovery population differs")
+    successes: dict[Relationship, str] = {}
+    claimed_rejections: set[str] = set()
+    claimed_recoveries: set[str] = set()
+    for identity, row in transitions.items():
+        if row["kind"] != "success":
+            continue
+        pair = required_transition_bindings[identity]
+        if pair in successes:
+            raise CIGraphError("lifecycle path success population is ambiguous")
+        successes[pair] = identity
+        contract = reachable[pair]
+        rejection_id = row.get("rejection_transition")
+        rejection = transitions.get(rejection_id) if isinstance(rejection_id, str) else None
+        if (rejection is None or rejection["kind"] != "rejection"
+                or required_transition_bindings[rejection_id] != pair
+                or rejection["from"] != row["from"] or rejection_id in claimed_rejections
+                or required_states[rejection["to"]] != "blocked"
+                or not set(row["invariants"]) <= set(rejection["invariants"])):
+            raise CIGraphError("lifecycle path rejection is absent ambiguous or unbound")
+        claimed_rejections.add(rejection_id)
+        if contract["successor"] != row["to"] or contract["rejection"] != rejection["to"]:
+            raise CIGraphError("lifecycle path composition outcome is unbound")
+        recovery_id = contract["recovery"]
+        if recovery_id == "none":
+            continue
+        recovery = recoveries.get(recovery_id)
+        if (recovery is None or recovery_id in claimed_recoveries
+                or required_transition_bindings[recovery_id] != pair
+                or recovery.get("retry_of") != identity
+                or recovery["from"] != rejection["to"] or recovery["to"] != row["from"]
+                or not set(row["invariants"]) <= set(recovery["invariants"])):
+            raise CIGraphError("lifecycle path recovery does not preserve its failed attempt")
+        limit = recovery.get("max_attempts")
+        approved = required_recovery_limits[recovery_id]
+        if (isinstance(limit, bool) or not isinstance(limit, int) or limit < 1
+                or isinstance(approved, bool) or not isinstance(approved, int)
+                or limit != approved):
+            raise CIGraphError("lifecycle path recovery attempt limit is unbound")
+        claimed_recoveries.add(recovery_id)
+    if successes.keys() != reachable.keys():
+        raise CIGraphError("lifecycle path successful relationship population is incomplete")
+    if claimed_rejections != {key for key, row in transitions.items() if row["kind"] == "rejection"}:
+        raise CIGraphError("lifecycle path rejection population is incomplete")
+    if claimed_recoveries != recoveries.keys():
+        raise CIGraphError("lifecycle path recovery population is incomplete")
+    # Removing bounded inter-attempt recovery must leave an acyclic attempt.
+    outgoing: dict[str, list[str]] = {key: [] for key in states}
+    indegree = {key: 0 for key in states}
+    for row in transitions.values():
+        if row["kind"] == "recovery":
+            continue
+        if required_states[row["from"]] != "none":
+            raise CIGraphError("lifecycle path terminal has an outgoing attempt edge")
+        outgoing[row["from"]].append(row["to"])
+        indegree[row["to"]] += 1
+    ready = [key for key in states if not indegree[key]]
+    visited = 0
+    while ready:
+        node = ready.pop()
+        visited += 1
+        for successor in outgoing[node]:
+            indegree[successor] -= 1
+            if not indegree[successor]:
+                ready.append(successor)
+    if visited != len(states):
+        raise CIGraphError("lifecycle path concrete attempt contains a cycle")
+    return {
+        "authority": False, "execution_qualified": False,
+        "composition_sha256": compiled["composition_sha256"],
+        "backtrace_sha256": digest, "states_checked": len(states),
+        "transitions_checked": len(transitions), "recoveries_checked": len(recoveries),
+    }
+
+
 def validate_lifecycle_bindings(
     compiled: dict[str, Any],
     *,

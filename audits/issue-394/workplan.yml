@@ -1014,6 +1014,8 @@ requirements:
       scenario: Cause-specific I17 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - publication-metadata-revalidation
   I18:
     requirement: 'Observations have no truth authority. Timing, cache hits, historical failure frequency, queue waits, costs and predicted critical paths may influence
       ordering/placement only after correctness is established. They cannot waive proof or grant permission; explain/report artifacts remain `authority: false`.'
@@ -1093,6 +1095,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - publication-metadata-revalidation
     - early-active-phase-schema
     - canonical-submit-normalization
   I22:
@@ -1136,6 +1139,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-lifecycle-path-binding
     - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
   I24:
@@ -1181,6 +1185,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - publication-metadata-revalidation
     - canonical-submit-normalization
   I26:
     requirement: Safe parallelism. Readiness requires satisfied semantic dependencies, producer/artifact availability, valid authority and compatible resources. Independent
@@ -1382,6 +1387,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-lifecycle-path-binding
     - dormant-composition-and-static-bindings
     - authored-machine-backtrace-validation
   F04:
@@ -1841,6 +1847,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-lifecycle-path-binding
     - dormant-composition-and-static-bindings
   AC10:
     requirement: Base/head/policy movement between plan, dispatch and finalizer creates an explicit new subject or rejection; in-flight bytes never change silently.
@@ -1900,6 +1907,8 @@ requirements:
       scenario: Cause-specific AC12 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - typed-lifecycle-path-binding
   AC13:
     requirement: Self/Lite/Standard-v3/Regulated plus pure/mixed toolchains retain actual adopter requirements and installation/projection parity.
     owner: installation
@@ -2079,6 +2088,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - publication-metadata-revalidation
     - canonical-submit-normalization
   AC22:
     requirement: 'Required same-session prerequisite versus equivalent historical proof: reuse permitted only where the canonical dependency contract allows it.'
@@ -2685,3 +2695,51 @@ implementation_slices:
     remaining:
     - Full retained historical phase population and all source/package/profile/runtime earliest boundaries remain unqualified.
     - These local controls grant no computed verified or closed truth and no provider authority.
+  typed-lifecycle-path-binding:
+    id: typed-lifecycle-path-binding
+    workitem: P32-P0-03
+    scope: Dormant typed state terminal and bounded recovery references through the existing backtrace; no model adoption or runtime authority.
+    contract: audits/issue-394/typed-path-binding-contract.json
+    producer: Existing authenticated backtrace and independently retained state transition and limit populations
+    consumer: bcf_governance/tooling/ci_graph_composition.py::validate_lifecycle_paths
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_graph_composition::test_typed_paths_allow_only_bounded_recovery_outside_attempt_graph
+    - tests.test_ci_graph_composition::test_typed_paths_allow_explicit_terminal_rejection_without_retry
+    negative_controls:
+    - cause: same-attempt-cycle
+      test: tests.test_ci_graph_composition::test_typed_paths_reject_incomplete_or_unbound_attempts[same-attempt-cycle]
+    - cause: wrong-terminal-class
+      test: tests.test_ci_graph_composition::test_typed_paths_reject_incomplete_or_unbound_attempts[wrong-terminal-class]
+    - cause: unbound-recovery
+      test: tests.test_ci_graph_composition::test_typed_paths_bind_every_composition_outcome[recovery-UNDECLARED]
+    - cause: boolean-retry-limit
+      test: tests.test_ci_graph_composition::test_backtrace_schema_checks_opt_in_typed_paths[boolean-limit]
+    remaining:
+    - Actual backtrace enrichment, independent complete runtime effect/population reconstruction, guard authority and installed consumer proof remain
+      required.
+    - Prose retirement and workitem phase release/custody qualification remain blocked.
+  publication-metadata-revalidation:
+    id: publication-metadata-revalidation
+    workitem: P33-P0-02
+    scope: Existing exact publication transaction metadata revalidated before mutation and all final verification paths; preserved response-loss
+      continuation.
+    contract: audits/issue-394/publication-metadata-fix-contract.json
+    producer: Exact native publication transaction and provider observations
+    consumer: bcf_governance/tooling/release_publication_transaction.py::publish_release
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_github_release::test_publication_continues_after_lost_mutation_response[publish]
+    - tests.test_ci_github_release::test_release_publication_is_read_only_when_exact_release_already_exists
+    negative_controls:
+    - cause: metadata-before-mutation
+      test: tests.test_ci_github_release::test_publication_rejects_metadata_movement_before_publish[body-foreign notes]
+    - cause: metadata-at-publication
+      test: tests.test_ci_github_release::test_publication_rejects_metadata_movement_at_publish[body-foreign notes]
+    - cause: integer-draft-before-tag
+      test: tests.test_ci_github_release::test_publication_rejects_untyped_draft_before_tag_mutation[1]
+    remaining:
+    - Concurrent invocation qualification, installed consumer parity, exact provider custody and complete release/adopter continuation remain unqualified.
+    - No provider or successor admission authority is derived from local fixture evidence.

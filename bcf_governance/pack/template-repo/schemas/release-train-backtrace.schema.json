@@ -169,6 +169,16 @@
           "authority": {
             "type": "string",
             "minLength": 1
+          },
+          "terminal_class": {
+            "enum": [
+              "none",
+              "workitem",
+              "phase",
+              "release",
+              "custody",
+              "blocked"
+            ]
           }
         }
       }
@@ -226,8 +236,64 @@
           "rejection": {
             "type": "string",
             "minLength": 1
+          },
+          "kind": {
+            "enum": [
+              "success",
+              "rejection",
+              "recovery"
+            ]
+          },
+          "rejection_transition": {
+            "type": "string",
+            "pattern": "^TR-[0-9]{3}$"
+          },
+          "retry_of": {
+            "type": "string",
+            "pattern": "^TR-[0-9]{3}$"
+          },
+          "max_attempts": {
+            "type": "integer",
+            "minimum": 1
           }
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "success"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "rejection_transition"
+              ]
+            }
+          },
+          {
+            "if": {
+              "required": [
+                "kind"
+              ],
+              "properties": {
+                "kind": {
+                  "const": "recovery"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "retry_of",
+                "max_attempts"
+              ]
+            }
+          }
+        ]
       }
     },
     "bounded_workitem_frontier_contract": {

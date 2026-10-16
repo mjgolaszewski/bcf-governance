@@ -31,7 +31,8 @@
     "All concrete attempt edges excluding bounded recovery are acyclic",
     "Terminal classes distinguish workitem phase release custody blocked and nonterminal; candidate state labels cannot choose classification",
     "Reject missing duplicate unbound wrong-source and ambiguous populations before rendering/allocation",
-    "Output authority false and execution_qualified false; static binding cannot qualify runtime authority or full lifecycle completeness"
+    "Output authority false and execution_qualified false; static binding cannot qualify runtime authority or full lifecycle completeness",
+    "Require the compiled composition source envelope to match the independently authenticated expected source before path acceptance"
   ],
   "tests": [
     "Bounded recovery cycle accepted; same attempt cycle rejected",

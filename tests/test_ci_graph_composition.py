@@ -822,7 +822,7 @@ def path_inputs(composition):
              invariants=["INV-RT-001"], retry_of="TR-001", max_attempts=2),
     ]
     backtrace = dict(states=states, transitions=transitions)
-    return dict(compiled=compiled, backtrace=backtrace,
+    return dict(compiled=compiled, expected_source=dict(composition["expected_source"]), backtrace=backtrace,
                 expected_backtrace_sha256=hashlib.sha256(json.dumps(backtrace, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()).hexdigest(),
                 required_states={row["id"]: row["terminal_class"] for row in states},
                 required_transition_bindings={row["id"]: pair for row in transitions},
@@ -865,7 +865,7 @@ def test_typed_paths_allow_only_bounded_recovery_outside_attempt_graph(path_inpu
     "unknown-rejection", "wrong-rejection-source", "untyped-transition", "unknown-destination",
     "same-attempt-cycle", "wrong-source", "missing-state-population",
 ])
-def test_typed_paths_reject_incomplete_or_unbound_attempts(path_inputs, defect):
+def test_typed_paths_reject_incomplete_or_unbound_attempts(path_inputs, composition, defect):
     model = path_inputs["backtrace"]
     states = model["states"]
     edges = model["transitions"]
@@ -889,11 +889,16 @@ def test_typed_paths_reject_incomplete_or_unbound_attempts(path_inputs, defect):
     elif defect == "wrong-rejection-source": edges[1]["from"] = "ST-OK"
     elif defect == "untyped-transition": edges[1].pop("kind")
     elif defect == "unknown-destination": edges[0]["to"] = "ST-UNKNOWN"
-    elif defect == "same-attempt-cycle": edges[1]["to"] = "ST-START"
+    elif defect == "same-attempt-cycle":
+        edges[0]["to"] = "ST-START"
+        composition["payload"]["relationships"][0]["contract"].update(
+            successor="ST-START", rejection="ST-FAIL", recovery="TR-003")
+        path_inputs["compiled"] = compile_lifecycle_composition(**composition)
     elif defect == "missing-state-population": path_inputs["required_states"].clear()
     _refresh_path_digest(path_inputs)
     if defect == "wrong-source": path_inputs["expected_backtrace_sha256"] = "0" * 64
-    with pytest.raises(CIGraphError, match="lifecycle path"):
+    match = "concrete attempt contains a cycle" if defect == "same-attempt-cycle" else "lifecycle path"
+    with pytest.raises(CIGraphError, match=match):
         _path_query(path_inputs)
 
 
@@ -905,3 +910,47 @@ def test_typed_paths_bind_every_composition_outcome(composition, path_inputs, fi
     path_inputs["compiled"] = compile_lifecycle_composition(**composition)
     with pytest.raises(CIGraphError, match="lifecycle path"):
         _path_query(path_inputs)
+
+
+@pytest.mark.parametrize("defect", ["model-list", "states-null", "transitions-null", "bad-terminal-catalogue", "untyped-state", "bad-kind", "wrong-compiled-source"])
+def test_typed_paths_reject_malformed_protected_inputs(path_inputs, defect):
+    if defect == "wrong-compiled-source": path_inputs["expected_source"]["commit_sha"] = "f" * 40
+    elif defect == "model-list": path_inputs["backtrace"] = []
+    elif defect == "states-null": path_inputs["backtrace"]["states"] = None
+    elif defect == "transitions-null": path_inputs["backtrace"]["transitions"] = None
+    elif defect == "bad-terminal-catalogue": path_inputs["required_states"]["ST-OK"] = []
+    elif defect == "untyped-state": path_inputs["backtrace"]["states"][0].pop("terminal_class")
+    elif defect == "bad-kind": path_inputs["backtrace"]["transitions"][0]["kind"] = []
+    _refresh_path_digest(path_inputs)
+    with pytest.raises(CIGraphError, match="lifecycle path"):
+        _path_query(path_inputs)
+
+
+def test_typed_paths_allow_explicit_terminal_rejection_without_retry(path_inputs, composition):
+    path_inputs["backtrace"]["transitions"].pop()
+    path_inputs["required_transition_bindings"].pop("TR-003")
+    path_inputs["required_recovery_limits"].clear()
+    composition["payload"]["relationships"][0]["contract"].update(
+        successor="ST-OK", rejection="ST-FAIL", recovery="none")
+    path_inputs["compiled"] = compile_lifecycle_composition(**composition)
+    _refresh_path_digest(path_inputs)
+    assert _path_query(path_inputs)["recoveries_checked"] == 0
+
+
+@pytest.mark.parametrize("defect", ["terminal", "kind", "missing-rejection", "missing-retry", "boolean-limit", "zero-limit"])
+def test_backtrace_schema_checks_opt_in_typed_paths(defect):
+    schema = json.loads((ROOT / "schemas/release-train-backtrace.schema.json").read_text())
+    model = load_yaml_path(ROOT / "spec/phase0/release-train-backtrace.yml")
+    validator = Draft202012Validator(schema)
+    validator.validate(model)
+    transition = model["transitions"][0]
+    if defect == "terminal": model["states"][0]["terminal_class"] = "agent-decides"
+    elif defect == "kind": transition["kind"] = "unknown"
+    elif defect == "missing-rejection": transition["kind"] = "success"
+    else:
+        transition.update(kind="recovery", max_attempts=2)
+        if defect != "missing-retry": transition["retry_of"] = "TR-001"
+        if defect == "boolean-limit": transition["max_attempts"] = True
+        elif defect == "zero-limit": transition["max_attempts"] = 0
+    with pytest.raises(ValidationError):
+        validator.validate(model)
