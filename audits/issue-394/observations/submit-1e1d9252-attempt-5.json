@@ -1,0 +1,225 @@
+{
+  "authority": false,
+  "command": [
+    "bcf",
+    "ci",
+    "submit",
+    "--repo-root",
+    "."
+  ],
+  "subject_before": {
+    "commit_sha": "1e1d9252c58ddc370d00e004a410bf00922ec48d",
+    "tree_sha": "310daaede1ed1f6bf2390d6e1f14c3207a0311d6"
+  },
+  "subject_after": {
+    "commit_sha": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+    "tree_sha": "1aa3d854794220f71a3dc7475fe5fca1b9789828"
+  },
+  "started_at": "2026-10-16T11:56:17.070791+00:00",
+  "ended_at": "2026-10-16T12:57:35.551398+00:00",
+  "elapsed_ms": 3678480,
+  "returncode": 1,
+  "progress": [
+    {
+      "authority": false,
+      "execution_id": "submission:1e1d9252c58ddc370d00e004a410bf00922ec48d",
+      "kind": "submission_progress",
+      "monotonic_ms": 0,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "normalization",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:1e1d9252c58ddc370d00e004a410bf00922ec48d",
+      "kind": "submission_progress",
+      "monotonic_ms": 873134,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "normalization",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:1e1d9252c58ddc370d00e004a410bf00922ec48d",
+      "kind": "submission_progress",
+      "monotonic_ms": 875652,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "submission_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:1e1d9252c58ddc370d00e004a410bf00922ec48d",
+      "kind": "submission_progress",
+      "monotonic_ms": 876684,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "submission_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 4,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "fixed_point",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 5965,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "fixed_point",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6036,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "exposure",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6553,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "exposure",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6554,
+      "schema_version": "1.0",
+      "sequence": 5,
+      "stage": "negative_controls",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 30503,
+      "schema_version": "1.0",
+      "sequence": 6,
+      "stage": "negative_controls",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 30504,
+      "schema_version": "1.0",
+      "sequence": 7,
+      "stage": "semantic_ownership",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 160265,
+      "schema_version": "1.0",
+      "sequence": 8,
+      "stage": "semantic_ownership",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 160266,
+      "schema_version": "1.0",
+      "sequence": 9,
+      "stage": "provider_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 691222,
+      "schema_version": "1.0",
+      "sequence": 10,
+      "stage": "provider_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 691222,
+      "schema_version": "1.0",
+      "sequence": 11,
+      "stage": "preflight",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 905926,
+      "schema_version": "1.0",
+      "sequence": 12,
+      "stage": "preflight",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 1126732,
+      "schema_version": "1.0",
+      "sequence": 13,
+      "stage": "evidence",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "b1c8a39933f1ae6078ed13ac0cff9bf1ca59f4db",
+      "kind": "prospective_progress",
+      "monotonic_ms": 2793307,
+      "schema_version": "1.0",
+      "sequence": 14,
+      "stage": "evidence",
+      "state": "failed"
+    }
+  ],
+  "limits": [
+    "Command window includes reconciliation and external waits; CPU is unmeasured.",
+    "Credential lookup and initial Git checks precede measured command launch.",
+    "Unmatched single execution; no percentile or improvement certification."
+  ],
+  "capture_sha256": "ab02051e7a61cbfec25709284f476346790d4a734fc85a8ce2cc759fbc0d8eb2",
+  "failure_disposition": {
+    "producer": "test",
+    "failure_bundle_sha256": "eb2f80ffacf00370aee90c4fd021cb94aaae990bfeb9541901e2444f657e7f95",
+    "failed_tests": [
+      "tests.test_interpreter_environment::test_repository_bootstrap_requirements_are_a_mechanical_projection",
+      "tests.test_profile_yaml::test_current_gate_contract_renders_inside_existing_context_budget",
+      "tests.test_release_artifacts::test_built_sdist_contains_every_governed_source_file"
+    ],
+    "causes": [
+      "Exact dependency assertion omitted intentionally declared referencing; actual interpreter projection verification passed.",
+      "Renderer expanded shared profile lists; rendered 103516 bytes exceeds unchanged 103424-byte cap.",
+      "MANIFEST.in audits patterns omit Python source; both governed audit collectors absent from built sdist."
+    ],
+    "scope": "Failed local producer; no push, provider certification, phase closure or custody."
+  }
+}
