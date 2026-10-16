@@ -263,7 +263,8 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/v234-pr-log-supplement.json
   dormant.early-checks:
     summary: Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
     status: TODO

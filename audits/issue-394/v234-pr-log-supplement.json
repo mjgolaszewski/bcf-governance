@@ -1,0 +1,187 @@
+{
+  "authority": false,
+  "kind": "historical_provider_timing_supplement",
+  "version": "2.3.4",
+  "run_id": 38856273908,
+  "attempt": 1,
+  "subject": {
+    "commit_sha": "4dec14dc15beecaa7416f302cc251fd9afbd3e06",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+  },
+  "original_capture": "audits/issue-394/observations/pr-426-attempt-1.json",
+  "original_review": "audits/issue-394/v234-provider-timing-review.json",
+  "source_archive": {
+    "authority": false,
+    "run_id": 38856273908,
+    "attempt": 1,
+    "endpoint": "repos/mjgolaszewski/bcf-governance/actions/runs/38856273908/attempts/1/logs",
+    "returncode": 0,
+    "bytes": 84508,
+    "sha256": "34557c93040e91017c5a9cce041d96d53aab794cc955bc0fa7e42419fb18fe1e",
+    "zip_valid": true,
+    "members": [
+      {
+        "name": "0_Verify exact-tree governance evidence.txt",
+        "bytes": 134016
+      },
+      {
+        "name": "Verify exact-tree governance evidence/system.txt",
+        "bytes": 606
+      },
+      {
+        "name": "1_Evidence _ Evidence shard 0.txt",
+        "bytes": 56381
+      },
+      {
+        "name": "Evidence _ Evidence shard 0/system.txt",
+        "bytes": 592
+      },
+      {
+        "name": "2_Evidence _ Evidence shard 1.txt",
+        "bytes": 56368
+      },
+      {
+        "name": "Evidence _ Evidence shard 1/system.txt",
+        "bytes": 592
+      },
+      {
+        "name": "3_Evidence _ Evidence shard 2.txt",
+        "bytes": 56370
+      },
+      {
+        "name": "Evidence _ Evidence shard 2/system.txt",
+        "bytes": 592
+      },
+      {
+        "name": "4_Evidence _ Evidence shard 3.txt",
+        "bytes": 56180
+      },
+      {
+        "name": "Evidence _ Evidence shard 3/system.txt",
+        "bytes": 592
+      },
+      {
+        "name": "5_Validate governance front door.txt",
+        "bytes": 46862
+      },
+      {
+        "name": "Validate governance front door/system.txt",
+        "bytes": 593
+      }
+    ]
+  },
+  "artifact": {
+    "authority": false,
+    "artifact_id": 12027709516,
+    "endpoint": "repos/mjgolaszewski/bcf-governance/actions/artifacts/12027709516/zip",
+    "returncode": 0,
+    "bytes": 1255030,
+    "sha256": "a812a3acebe45e02ee872726bc8100585ef862faad94fb9d2655e11ab250b846"
+  },
+  "provider_jobs": {
+    "total_count": 7,
+    "execution_log_jobs": 6,
+    "status_only_job": "bcf/pr-certification"
+  },
+  "test_receipt": {
+    "member_sha256": "b38280989de166ddf1d71d31e70189955512263d6dfe91d8349ef3e4720727e8",
+    "subject": {
+      "binding": "exact_tree",
+      "commit_sha": "a26983e8c36e37a44e819e07f8e21c558545455a",
+      "execution_tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+      "status_porcelain_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tracked_clean": true,
+      "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+      "untracked_clean": true
+    },
+    "started_at": "2026-10-16T05:34:58.791255Z",
+    "timestamp": "2026-10-16T05:59:29.304456Z",
+    "elapsed_seconds": 1470.513201
+  },
+  "combined_junit": {
+    "sha256": "a2fe6c78ec2f0e71a3bcd71604d5f4e81d7a711f444e520e248ef10bc84a77e3",
+    "tests": 2361,
+    "suite_seconds": 3241.99,
+    "top_cases": [
+      {
+        "name": "tests.test_semantic_authority::test_scan_builds_the_python_inventory_once",
+        "seconds": 154.271
+      },
+      {
+        "name": "tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe",
+        "seconds": 95.775
+      },
+      {
+        "name": "tests.test_installed_evidence_storage::test_combined_installed_consumer_uses_real_compiler_and_durable_runtime[fresh]",
+        "seconds": 94.186
+      },
+      {
+        "name": "tests.test_installed_evidence_storage::test_combined_installed_consumer_uses_real_compiler_and_durable_runtime[upgrade]",
+        "seconds": 94.15
+      },
+      {
+        "name": "tests.test_semantic_authority::test_multiply_classified_operation_is_rejected",
+        "seconds": 93.319
+      },
+      {
+        "name": "tests.test_semantic_ownership::test_primary_semantic_violation_precedes_derived_lock_freshness",
+        "seconds": 91.947
+      },
+      {
+        "name": "tests.test_semantic_authority::test_bcf_declares_every_semantic_family_and_public_operation_once",
+        "seconds": 91.833
+      },
+      {
+        "name": "tests.test_semantic_ownership::test_current_bcf_registry_is_conformant_and_report_is_compact",
+        "seconds": 89.532
+      },
+      {
+        "name": "tests.test_profile_contract_v2::test_bcf_standard_v2_promotion_fits_declared_context_budgets",
+        "seconds": 80.58
+      },
+      {
+        "name": "tests.test_semantic_authority::test_source_population_cannot_be_evaded_by_path_placement",
+        "seconds": 60.448
+      }
+    ]
+  },
+  "workers": [
+    {
+      "member": "splinter-0.junit.xml",
+      "sha256": "420373d24d28c33960dea6104b83c0887e8b8fc1d010d1b1972f61fe09392c9c",
+      "suite_seconds": 770.933,
+      "tests": 591
+    },
+    {
+      "member": "splinter-1.junit.xml",
+      "sha256": "6d026382c30e05afce169611a1261ef8b02693be1c4f8905170931cfd5d27cc9",
+      "suite_seconds": 883.901,
+      "tests": 590
+    },
+    {
+      "member": "splinter-2.junit.xml",
+      "sha256": "004cdcd0c36097916330815dc1e1335f57be12ea79b5945e009c1881b933540d",
+      "suite_seconds": 632.88,
+      "tests": 590
+    },
+    {
+      "member": "splinter-3.junit.xml",
+      "sha256": "fc49576a1aee5fa21590dd145408fb6bd08e50e6af63e7be769ac7925e28b2f8",
+      "suite_seconds": 954.276,
+      "tests": 590
+    }
+  ],
+  "limitations": [
+    "Original partial log capture remains unchanged; this exact-attempt archive supplements it.",
+    "Provider run commit and evidence receipt commit differ; exact tree equality observed, not commit equivalence or receipt authority.",
+    "Combined report includes worker populations; never sum combined and worker durations or call the combined sum wall-clock time.",
+    "Case/worker times are historical individual observations with unknown resource/cache covariance; no matched cohorts, p50/p95, approved targets or performance certification.",
+    "No current provider admission, adopter qualification or acceptance closure follows from historical artifacts."
+  ],
+  "checks": {
+    "original_strict_timing_capture": "passed without modifying retained original",
+    "provider_subject_tree": "authenticated commit endpoint equals retained capture tree",
+    "artifact_run_attempt_and_tree": "consistent; receipt commit distinguished",
+    "governance_yaml": "passed"
+  }
+}
