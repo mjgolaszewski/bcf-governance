@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Opt-in Python initialization syntax facts 1.0; observations only",
+  "type": "object",
+  "required": [
+    "language",
+    "initialization_contracts_version",
+    "authority",
+    "module_initializers"
+  ],
+  "properties": {
+    "language": {
+      "const": "python"
+    },
+    "initialization_contracts_version": {
+      "const": "1.0"
+    },
+    "authority": {
+      "const": false
+    },
+    "module_initializers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "path",
+          "authority",
+          "execution_qualified",
+          "scope",
+          "sites",
+          "unresolved"
+        ],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "authority": {
+            "const": false
+          },
+          "execution_qualified": {
+            "const": false
+          },
+          "scope": {
+            "const": "possible_python_initialization_syntax"
+          },
+          "sites": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "kind",
+                "expression_sha256",
+                "occurrence",
+                "line"
+              ],
+              "properties": {
+                "kind": {
+                  "enum": [
+                    "call",
+                    "import",
+                    "decorator_application",
+                    "class_construction",
+                    "annotation"
+                  ]
+                },
+                "expression_sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "occurrence": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "call_name": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "allOf": [
+                {
+                  "if": {
+                    "properties": {
+                      "kind": {
+                        "const": "call"
+                      }
+                    }
+                  },
+                  "then": {
+                    "required": [
+                      "call_name"
+                    ]
+                  },
+                  "else": {
+                    "not": {
+                      "required": [
+                        "call_name"
+                      ]
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "unresolved": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "reason",
+                "line"
+              ],
+              "properties": {
+                "reason": {
+                  "enum": [
+                    "call_execution_and_dispatch",
+                    "import_execution",
+                    "implicit_decorator_execution",
+                    "annotation_evaluation",
+                    "type_parameter_evaluation",
+                    "metaclass_and_implicit_class_hooks",
+                    "deferred_expression"
+                  ]
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
