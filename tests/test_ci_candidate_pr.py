@@ -384,3 +384,27 @@ def test_nonclean_pr_cannot_reach_normal_merge_mutation() -> None:
             expected_head_sha=HEAD,
         )
     assert api.requests == []
+
+
+@pytest.mark.parametrize("defect", [None, "state", "number-bool", "number-zero", "node", "head", "base", "head-ref", "base-ref", "head-sha", "base-sha", "head-repository", "base-repository"])
+def test_existing_candidate_pr_identity_projection_characterization(defect):
+    from bcf_governance.tooling.ci_candidate_pr import _validate
+    value = _pull()
+    if defect == "state": value["state"] = "closed"
+    elif defect == "number-bool": value["number"] = True
+    elif defect == "number-zero": value["number"] = 0
+    elif defect == "node": value["node_id"] = "unbound"
+    elif defect in {"head", "base"}: value[defect] = None
+    elif defect in {"head-ref", "base-ref"}: value[defect.split("-")[0]]["ref"] = "wrong"
+    elif defect in {"head-sha", "base-sha"}: value[defect.split("-")[0]]["sha"] = "9" * 40
+    elif defect in {"head-repository", "base-repository"}: value[defect.split("-")[0]]["repo"]["id"] = 99
+    arguments = dict(repository_id=REPOSITORY_ID, branch="feature", base_ref="main", base_sha=BASE, head_sha=HEAD)
+    if defect is None:
+        assert _validate(value, **arguments) == {"number": 7, "node_id": "PR_exact7", "state": "open",
+            "repository_id": REPOSITORY_ID, "base_sha": BASE, "head_sha": HEAD}
+    else:
+        message = ("candidate pull request identity is incomplete" if defect in {"head", "base"}
+                   else "candidate pull request does not bind the exact proved subject")
+        with pytest.raises(ProspectiveValidationError) as observed:
+            _validate(value, **arguments)
+        assert str(observed.value) == message
