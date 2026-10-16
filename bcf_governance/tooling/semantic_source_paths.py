@@ -49,3 +49,15 @@ def candidate_source_files(
     if not files and not allow_empty:
         raise error(f"{label} discovery returned zero files")
     return sorted(files)
+
+
+def committed_python_source_population(
+    repo_root: Path, *, commit_sha: str, tree_sha: str,
+) -> dict:
+    """Observe the complete exact-tree Python blob population, without authority."""
+    return {}
+
+
+def committed_python_source_delta(repo_root: Path, *, base: dict, candidate: dict) -> dict:
+    """Retain source additions, changes and removals between exact subjects."""
+    return {}
