@@ -1462,3 +1462,18 @@ def test_authored_phase_state_requires_active_triplet_schema(tmp_path: Path) -> 
     (repo / "schemas/phase-log.schema.json").unlink()
     with pytest.raises(AuthoredPhaseStateError, match="phase-log.schema.json"):
         validate_authored_phase_state(repo)
+
+
+def test_invalid_comparison_context_rejects_before_authored_or_runtime_work(tmp_path, monkeypatch):
+    repo = _committed_repo(tmp_path, 'source.py', 'pass\n')
+    calls = []
+    def invalid(*args):
+        raise ValueError('comparison origin differs')
+    monkeypatch.setattr(preflight, '_pr_context', invalid)
+    monkeypatch.setattr(preflight, 'validate_authored_phase_state', lambda *_: pytest.fail('authored state visited before invalid comparison'))
+    monkeypatch.setattr(preflight, '_syntax_checks', lambda *_: pytest.fail('syntax visited before invalid comparison'))
+    monkeypatch.setattr(preflight, 'allocate_session', lambda *a, **kw: pytest.fail('allocated after invalid comparison'))
+    with pytest.raises(ValueError, match='comparison origin'):
+        preflight.run_preflight(repo, mode='pr', python_executable=Path(sys.executable), artifact_root=tmp_path / 'evidence', trace=calls.append)
+    assert calls == ['git-state', 'pr-context']
+    assert not (tmp_path / 'evidence').exists()

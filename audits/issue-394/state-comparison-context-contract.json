@@ -9,12 +9,14 @@
   "workitem": "P32-P0-07",
   "bounded_context": "validation",
   "architectural_layer": "tooling",
-  "operation_side": "query",
+  "operation_side": "command_and_query",
   "canonical_owner": "bcf_governance/tooling/governance_validation/ci_state_matrix.py::_comparison_base",
   "dependency_acceptance": "Existing structural/backtrace/reference front-door controls remain regressions. Provider/integration holds remain; isolated correction of deterministic lifecycle admission defect only.",
   "target_modules": [
     "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
-    "tests/test_ci_state_matrix.py"
+    "tests/test_ci_state_matrix.py",
+    "bcf_governance/tooling/preflight.py",
+    "tests/test_preflight.py"
   ],
   "contract": [
     "Do not accept a caller comparison SHA as authority over the existing event-owned comparison projection. Reuse preflight_repository_context.pr_context; no second comparison evaluator.",
@@ -24,7 +26,8 @@
     "Preserve local context-free merge-base behavior and existing structural machine-backtrace checks; no provider authority from environment consistency alone.",
     "Retain comparison-free schedule/dispatch semantics only as declared by the existing context owner.",
     "Preserve adopter inapplicability authored-only generation ordering required provider statuses and the pending prose-to-machine retirement decision.",
-    "For full matrix checks, reject invalid comparison context immediately after adopter/authored-only applicability, before prose/schema decoding; authored-only validation remains independent of event context."
+    "For full matrix checks, reject invalid comparison context immediately after adopter/authored-only applicability, before prose/schema decoding; authored-only validation remains independent of event context.",
+    "Canonical preflight for self and ordinary adopters invokes its existing comparison-context step immediately after clean Git identity, before authored-state syntax interpreter workflow gates or session allocation. No extra mode or caller override is introduced."
   ],
   "producer_consumer": {
     "producer": "Existing canonical comparison projection and preflight_repository_context.pr_context",

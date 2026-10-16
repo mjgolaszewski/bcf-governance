@@ -16,6 +16,17 @@ from bcf_governance.tooling.governance_validation.ci_state_matrix import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def isolated_comparison_environment(monkeypatch):
+    # Disposable Git fixtures are independent of the invoking provider's subject.
+    for name in (
+        'BCF_PROVIDER_EVENT', 'GITHUB_EVENT_NAME', 'BCF_INVOCATION_KIND',
+        'BCF_COMPARISON_BASE_SHA', 'BCF_ORIGIN_COMPARISON_BASE_SHA',
+        'BCF_CALLER_COMPARISON_BASE_SHA', 'BCF_PR_BASE_SHA',
+    ):
+        monkeypatch.delenv(name, raising=False)
+
+
 def _git(repo: Path, *args: str) -> str:
     return subprocess.run(
         ["git", *args], cwd=repo, capture_output=True, text=True, check=True
@@ -353,3 +364,33 @@ def test_invalid_comparison_rejects_before_matrix_decoding(tmp_path, monkeypatch
     monkeypatch.setattr(matrix, '_validate_machine_backtrace', lambda *_: pytest.fail('matrix decoded before comparison rejection'))
     with pytest.raises(CIStateMatrixError, match='comparison'):
         validate_ci_state_matrix(repo)
+
+
+def test_invalid_comparison_stops_real_preflight_before_session_allocation(tmp_path, monkeypatch):
+    import sys
+    from bcf_governance.tooling import preflight
+
+    repo = _repo(tmp_path)
+    base = _git(repo, 'rev-parse', 'HEAD')
+    _comparison_environment(monkeypatch, base)
+    monkeypatch.setenv('BCF_ORIGIN_COMPARISON_BASE_SHA', 'a' * 40)
+    # The fixture has no phase ledger; keep the real Git and state-matrix checks.
+    monkeypatch.setattr(preflight, 'validate_authored_phase_state', lambda _: {})
+    monkeypatch.setattr(preflight, 'allocate_session', lambda *a, **kw: pytest.fail('session allocated after invalid comparison'))
+    trace = []
+    evidence = tmp_path / 'evidence'
+    before = _git(repo, 'status', '--porcelain')
+    with pytest.raises(CIStateMatrixError, match='comparison'):
+        preflight.run_preflight(repo, mode='pr', python_executable=Path(sys.executable), artifact_root=evidence, trace=trace.append)
+    assert trace == ['git-state', 'authored-phase-state', 'ci-state-matrix']
+    assert not evidence.exists()
+    assert _git(repo, 'status', '--porcelain') == before
+
+
+def test_authored_only_is_structural_without_comparison_authority(tmp_path, monkeypatch):
+    repo = _repo(tmp_path)
+    _comparison_environment(monkeypatch, 'HEAD')
+    report = validate_ci_state_matrix(repo, authored_only=True)
+    assert report['status'] == 'authored_structurally_valid'
+    assert report['authority'] is False
+    assert report['execution_qualified'] is False
