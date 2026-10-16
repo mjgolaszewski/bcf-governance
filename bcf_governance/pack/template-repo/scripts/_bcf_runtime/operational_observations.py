@@ -321,13 +321,15 @@ def validate_operational_observation(
 
 def provider_attempt_timing_observation(
     source_snapshot: Mapping[str, Any], *, expected_run_id: int,
-    expected_attempt: int, pipeline: str,
+    expected_attempt: int, pipeline: str, expected_event: str | None = None,
 ) -> dict[str, Any]:
     """Project retained provider facts; caller authenticates capture and endpoint.
 
     This checks snapshot conformance, not provider custody or job-attempt origin.
     The caller must bind the complete job response to its exact attempt endpoint.
     Missing, unsupported or ambiguous facts cannot become timing certification.
+    Context intent requires protected workflow policy; an event alone does not
+    distinguish controller, exact-main, release, adopter or periodic work.
     """
     def reject(message: str) -> None:
         raise OperationalObservationError("provider timing snapshot " + message)
@@ -351,6 +353,15 @@ def provider_attempt_timing_observation(
                 or type(run["run_attempt"]) is not int or run["run_attempt"] != expected_attempt
                 or run["head_sha"] != commit["sha"] or run["status"] != "completed"):
             reject("run attempt or subject is unbound or nonterminal")
+        if pipeline not in PIPELINE_CLOCKS or pipeline in {
+            "publication_to_custody", "dispatch_to_custody", "merge_to_custody", "developer_interruption",
+        }:
+            reject("workflow context requires unobserved clock endpoints")
+        event = run.get("event")
+        if (not isinstance(event, str) or not event.strip()
+                or (expected_event is not None and (not isinstance(expected_event, str)
+                    or not expected_event.strip() or event != expected_event))):
+            reject("workflow context contradicts provider event identity")
         jobs = population["jobs"]
         if (not isinstance(jobs, list) or type(population["total_count"]) is not int
                 or population["total_count"] != len(jobs)):

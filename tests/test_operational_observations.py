@@ -347,3 +347,41 @@ def test_provider_snapshot_zero_jobs_and_explicit_offsets_remain_honest(provider
     assert empty['execution_union_ms'] == 0
     assert empty['uncovered_ms'] == empty['elapsed_ms']
     assert empty['cpu_ms'] == 'unknown'
+
+
+
+@pytest.mark.parametrize('pipeline', ['publication_to_custody', 'dispatch_to_custody', 'merge_to_custody', 'developer_interruption'])
+def test_provider_attempt_cannot_claim_unobserved_clock_endpoints(provider_snapshot, pipeline, monkeypatch):
+    monkeypatch.setattr("bcf_governance.tooling.operational_observations._timestamp",
+                        lambda *a: pytest.fail("unobserved context reached clock reconstruction"))
+    with pytest.raises(OperationalObservationError, match='context'):
+        _provider_timing(provider_snapshot, pipeline=pipeline)
+
+
+@pytest.mark.parametrize('defect', ['wrong_expected_event', 'malformed_expected_event', 'missing_event', 'empty_event'])
+def test_provider_attempt_context_must_match_explicit_event_facts(provider_snapshot, defect, monkeypatch):
+    monkeypatch.setattr("bcf_governance.tooling.operational_observations._timestamp",
+                        lambda *a: pytest.fail("invalid event reached clock reconstruction"))
+    args = {}
+    if defect == 'wrong_expected_event': args['expected_event'] = 'push'
+    elif defect == 'malformed_expected_event': args['expected_event'] = True
+    elif defect == 'missing_event': provider_snapshot['run'].pop('event')
+    else: provider_snapshot['run']['event'] = ''
+    with pytest.raises(OperationalObservationError, match='context'):
+        _provider_timing(provider_snapshot, **args)
+
+
+@pytest.mark.parametrize('pipeline,event', [('exact_main','push'), ('controller','workflow_run'), ('release','workflow_dispatch'), ('adopter','workflow_dispatch'), ('periodic','schedule')])
+def test_provider_attempt_retains_protected_non_pr_context_intent(provider_snapshot, pipeline, event):
+    provider_snapshot['run']['event'] = event
+    result = _provider_timing(provider_snapshot, pipeline=pipeline)
+    assert result['pipeline'] == pipeline
+    assert result['authority'] is False
+    assert result['cpu_ms'] == 'unknown'
+
+
+@pytest.mark.parametrize('pipeline', ['controller', 'adopter'])
+def test_provider_event_does_not_invent_workflow_context_policy(provider_snapshot, pipeline):
+    result = _provider_timing(provider_snapshot, pipeline=pipeline, expected_event='pull_request')
+    assert result['pipeline'] == pipeline
+    assert result['authority'] is False

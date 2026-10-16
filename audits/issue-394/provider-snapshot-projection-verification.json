@@ -37,5 +37,33 @@
     "percentile_certification": false,
     "governance_yaml": "passed",
     "coverage_schema": "passed"
+  },
+  "context_followup": {
+    "initial_red": {
+      "failed": 8,
+      "passed": 5,
+      "seconds": 0.31,
+      "valid_failures": 6,
+      "withdrawn_expectations": 2,
+      "correction": "PR event does not uniquely classify workflow context; initial PR/controller and push/PR inference rules were withdrawn. Protected caller owns context intent; optional expected event is compared exactly."
+    },
+    "broad": {
+      "passed": 77,
+      "seconds": 0.69,
+      "scope": "Full observations plus LOC/context/private-runtime parity; retained PR captures unchanged."
+    },
+    "early_boundary_controls": {
+      "passed": 8,
+      "seconds": 0.23,
+      "behavior": "Context/event contradictions reject before timestamp reconstruction."
+    },
+    "checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "governance_yaml": "passed",
+      "coverage_schema": "passed",
+      "pack_parity": "passed"
+    },
+    "remaining": "Provider/endpoint authentication and complete protected workflow context binding remain caller obligations; custody/interruption windows require independent endpoint facts."
   }
 }

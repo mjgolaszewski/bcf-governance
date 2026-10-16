@@ -41,3 +41,10 @@ provider_projection_followup:
   - Derive all intervals and statuses from retained raw timestamps/conclusions; reject missing nonterminal unknown-conclusion or naive timestamps rather than inventing time or success.
   - Reject naive clock inputs in the shared existing timestamp reader; preserve missing-as-unknown behavior.
   - Retained captures remain observations only, never matched baselines or authority. No provider I/O is added to product code.
+
+provider_context_followup:
+  contract:
+  - A complete provider workflow-attempt window cannot claim publication/dispatch/merge-to-custody or developer-interruption endpoints absent from its snapshot. Those contexts require separately authenticated endpoint facts through the generic timing owner.
+  - Missing event identity rejects. Optional caller-authenticated expected event must match exactly; event alone does not classify workflow intent.
+  - All workflow context assignment remains caller-owned protected workflow policy. PR events may run trusted controllers or adopter workflows; never invent a global event-to-context mapping.
+  - Preserve exact bytes of existing valid PR captures and keep observations nonauthoritative.
