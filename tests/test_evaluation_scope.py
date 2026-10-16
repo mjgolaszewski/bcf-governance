@@ -15,6 +15,7 @@ from bcf_governance.tooling.evaluation_scope import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SUBJECT = {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
+TARGET_KINDS = tuple(json.loads((ROOT / "schemas/ci-certification.schema.json").read_text())["$defs"]["evaluationTarget"]["properties"]["kind"]["enum"])
 
 
 def _report(intent="closure", status="pass", closed=True):
@@ -43,7 +44,7 @@ def test_bounded_proposition_never_authorizes_failed_evaluation(status, closed):
 
 
 @pytest.mark.parametrize("intent", list(EvaluationIntent))
-@pytest.mark.parametrize("kind", ["pull_request_progress", "workitem", "phase"])
+@pytest.mark.parametrize("kind", TARGET_KINDS)
 def test_proposition_decoder_binds_intent_to_canonical_target_kind(intent, kind):
     report = _report(intent.value)
     canonical = report["evaluation_scope"]["target"]["kind"]
@@ -103,7 +104,7 @@ def test_terminal_predicate_preserves_valid_certification_without_truth_status()
 
 
 @pytest.mark.parametrize("intent", list(EvaluationIntent))
-@pytest.mark.parametrize("kind", ["pull_request_progress", "workitem", "phase"])
+@pytest.mark.parametrize("kind", TARGET_KINDS)
 def test_certification_scope_schema_matches_canonical_intent_owner(intent, kind):
     schema = json.loads((ROOT / "schemas/ci-certification.schema.json").read_text())
     scope = _report(intent.value)["evaluation_scope"]
@@ -115,3 +116,20 @@ def test_certification_scope_schema_matches_canonical_intent_owner(intent, kind)
     else:
         with pytest.raises(ValidationError):
             validator.validate(scope)
+
+
+@pytest.mark.parametrize("intent", list(EvaluationIntent))
+def test_every_canonical_intent_has_schema_valid_target(intent):
+    schema = json.loads((ROOT / "schemas/ci-certification.schema.json").read_text())
+    validator = Draft202012Validator({"$defs": schema["$defs"], "$ref": "#/$defs/evaluationScope"})
+    validator.validate(_report(intent.value)["evaluation_scope"])
+
+
+@pytest.mark.parametrize("intent,target", [('workitem', 'P01'), ('pr', 'unbound'), ('workitem', 'P01-W01\n'), ('pr', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n')])
+def test_certification_schema_rejects_noncanonical_target_identity(intent, target):
+    schema = json.loads((ROOT / "schemas/ci-certification.schema.json").read_text())
+    scope = _report(intent)["evaluation_scope"]
+    scope["target"]["id"] = target
+    validator = Draft202012Validator({"$defs": schema["$defs"], "$ref": "#/$defs/evaluationScope"})
+    with pytest.raises(ValidationError):
+        validator.validate(scope)
