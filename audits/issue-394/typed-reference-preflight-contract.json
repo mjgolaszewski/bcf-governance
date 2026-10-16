@@ -11,7 +11,8 @@
   "targets": [
     "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
     "tests/test_ci_state_matrix.py",
-    "canonical private runtime copies through pack owner"
+    "canonical private runtime copies through pack owner",
+    "bcf_governance/tooling/ci_graph_composition.py"
   ],
   "forbidden": [
     "actual backtrace/prose adoption",
@@ -25,7 +26,9 @@
     "Reject missing referenced transition before downstream allocation",
     "Reject self-reference or declared wrong source/target kind for the typed relation",
     "Legacy untyped transitions without new references remain readable",
-    "Retain existing later independent complete path checks; structural reference validation is not authority or runtime qualification"
+    "Retain existing later independent complete path checks; structural reference validation is not authority or runtime qualification",
+    "The existing composition owner owns one shared typed reference/topology check; authored preflight delegates instead of maintaining a second rule engine",
+    "Rejection references retain original start and invariants; recovery references return from the rejected state to original start and preserve invariants"
   ],
   "expected_tests": [
     "Dangling rejection and retry references reject in authored_only mode",

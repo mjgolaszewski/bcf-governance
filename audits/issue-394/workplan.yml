@@ -645,6 +645,7 @@ workitems:
     operation_side: contract_then_command_and_query
     target_modules:
     - bcf_governance/tooling/governance_validation/authored_phase_state.py
+    - bcf_governance/tooling/governance_validation/ci_state_matrix.py
     - bcf_governance/tooling/ci_authority_submit.py
     - bcf_governance/tooling/reconcile_authority_transition.py
     - bcf_governance/tooling/scaffold_governance_artifacts.py
@@ -1095,6 +1096,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-reference-before-allocation
     - publication-metadata-revalidation
     - early-active-phase-schema
     - canonical-submit-normalization
@@ -1387,6 +1389,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-reference-before-allocation
     - typed-lifecycle-path-binding
     - dormant-composition-and-static-bindings
     - authored-machine-backtrace-validation
@@ -1847,6 +1850,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - typed-reference-before-allocation
     - typed-lifecycle-path-binding
     - dormant-composition-and-static-bindings
   AC10:
@@ -2743,3 +2747,27 @@ implementation_slices:
     remaining:
     - Concurrent invocation qualification, installed consumer parity, exact provider custody and complete release/adopter continuation remain unqualified.
     - No provider or successor admission authority is derived from local fixture evidence.
+  typed-reference-before-allocation:
+    id: typed-reference-before-allocation
+    workitem: P32-P0-07
+    scope: Shared typed transition reference/topology checks moved to authored-only backtrace validation before allocation; no full path or runtime
+      authority claim.
+    contract: audits/issue-394/typed-reference-preflight-contract.json
+    producer: bcf_governance/tooling/ci_graph_composition.py::validate_backtrace_transition_references
+    consumer: bcf_governance/tooling/governance_validation/ci_state_matrix.py::_validate_backtrace_references
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_state_matrix::test_authored_backtrace_accepts_declared_typed_transition_references[True]
+    negative_controls:
+    - cause: missing-typed-retry
+      test: tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[missing-retry_of]
+    - cause: self-typed-rejection
+      test: tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[self-rejection_transition]
+    - cause: recovery-source-bypass
+      test: tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[wrong-source-retry_of]
+    - cause: recovery-invariant-loss
+      test: tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[lost-invariant-retry_of]
+    remaining:
+    - Canonical test-manifest normalization is required before governed oracle closure.
+    - Independent guard/effect populations, installed consumer behavior, complete typed model adoption and terminal custody remain unqualified.

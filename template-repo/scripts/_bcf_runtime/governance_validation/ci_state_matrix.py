@@ -10,6 +10,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator, SchemaError
 
+from ..ci_graph_composition import validate_backtrace_transition_references
+from ..ci_graph_errors import CIGraphError
 from ..ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 
@@ -76,9 +78,14 @@ def _validate_backtrace_references(payload: dict[str, Any]) -> None:
     for row in [*payload["primitives"], *payload["transitions"]]:
         if set(row["invariants"]) - populations["invariants"]:
             raise CIStateMatrixError("machine-readable backtrace has an undeclared invariant reference")
+    transitions = {row["id"]: row for row in payload["transitions"]}
     for transition in payload["transitions"]:
         if {transition["from"], transition["to"]} - populations["states"]:
             raise CIStateMatrixError("machine-readable backtrace has an undeclared state reference")
+    try:
+        validate_backtrace_transition_references(transitions)
+    except CIGraphError as exc:
+        raise CIStateMatrixError(f"machine-readable backtrace {exc}") from exc
     active_primitives = set(payload["adopter_compatibility_observation"]["primitives"])
     active_primitives.add(payload["bounded_workitem_frontier_contract"]["primitive"])
     if active_primitives - populations["primitives"]:

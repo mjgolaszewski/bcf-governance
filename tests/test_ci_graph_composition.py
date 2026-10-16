@@ -954,3 +954,11 @@ def test_backtrace_schema_checks_opt_in_typed_paths(defect):
         elif defect == "zero-limit": transition["max_attempts"] = 0
     with pytest.raises(ValidationError):
         validator.validate(model)
+
+
+@pytest.mark.parametrize("field,index", [("rejection_transition", 0), ("retry_of", 2)])
+def test_typed_paths_reject_nonstring_transition_references(path_inputs, field, index):
+    path_inputs["backtrace"]["transitions"][index][field] = []
+    _refresh_path_digest(path_inputs)
+    with pytest.raises(CIGraphError, match="typed transition reference"):
+        _path_query(path_inputs)

@@ -145,7 +145,7 @@ def test_authored_machine_mode_defers_prose_projection_checks(tmp_path: Path) ->
 
 
 @pytest.mark.parametrize("field", ["rejection_transition", "retry_of"])
-@pytest.mark.parametrize("defect", ["missing", "self", "wrong-kind"])
+@pytest.mark.parametrize("defect", ["missing", "self", "wrong-kind", "wrong-source", "lost-invariant"])
 def test_authored_backtrace_rejects_unbound_typed_transition_reference(tmp_path, field, defect):
     repo = _repo(tmp_path)
     path = repo / "spec/phase0/release-train-backtrace.yml"
@@ -155,11 +155,46 @@ def test_authored_backtrace_rejects_unbound_typed_transition_reference(tmp_path,
     if field == "retry_of": source["max_attempts"] = 2
     if defect == "missing": source[field] = "TR-999"
     elif defect == "self": source[field] = source["id"]
-    else:
+    elif defect == "wrong-kind":
         source[field] = target["id"]
         target["kind"] = "recovery" if field == "rejection_transition" else "rejection"
         if target["kind"] == "recovery":
             target.update(retry_of=model["transitions"][2]["id"], max_attempts=2)
+    else:
+        source[field] = target["id"]
+        target["kind"] = "rejection" if field == "rejection_transition" else "success"
+        if field == "rejection_transition":
+            target["from"] = source["from"]
+            target["invariants"] = list(source["invariants"])
+            if defect == "wrong-source": target["from"] = source["to"]
+            else: target["invariants"] = ["INV-RT-018"]
+        else:
+            rejected = model["transitions"][2]
+            target["rejection_transition"] = rejected["id"]
+            rejected.update(kind="rejection", invariants=list(target["invariants"]))
+            rejected["from"] = target["from"]
+            source.update(invariants=list(target["invariants"]))
+            source["from"], source["to"] = rejected["to"], target["from"]
+            if defect == "wrong-source": source["from"] = target["from"]
+            else: source["invariants"] = ["INV-RT-018"]
     path.write_text(yaml.safe_dump(model, sort_keys=False))
     with pytest.raises(CIStateMatrixError, match="typed transition reference"):
         validate_ci_state_matrix(repo, authored_only=True)
+
+
+@pytest.mark.parametrize("recovery", [False, True])
+def test_authored_backtrace_accepts_declared_typed_transition_references(tmp_path, recovery):
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    model = yaml.safe_load(path.read_text())
+    success, rejection, retry = model["transitions"][:3]
+    success.update(kind="success", rejection_transition=rejection["id"])
+    rejection.update(kind="rejection", invariants=list(success["invariants"]))
+    rejection["from"] = success["from"]
+    if recovery:
+        retry.update(kind="recovery", retry_of=success["id"], max_attempts=2, invariants=list(success["invariants"]))
+        retry["from"], retry["to"] = rejection["to"], success["from"]
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    result = validate_ci_state_matrix(repo, authored_only=True)
+    assert result["authority"] is False
+    assert result["execution_qualified"] is False

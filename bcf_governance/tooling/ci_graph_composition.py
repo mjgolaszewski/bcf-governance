@@ -230,6 +230,46 @@ def _validate_compiled_identity(compiled: dict[str, Any]) -> None:
 
 
 
+
+def validate_backtrace_transition_references(
+    transitions: Mapping[str, Mapping[str, Any]],
+) -> int:
+    """Resolve declared typed references through their existing single owner.
+
+    Callers validate schema, duplicate identities and state populations first.
+    Legacy rows without typed references retain their original readability.
+    This is structural conformance, never guard or recovery authority.
+    """
+
+    checked = 0
+    for transition in transitions.values():
+        for field, source_kind, target_kind in (
+            ("rejection_transition", "success", "rejection"),
+            ("retry_of", "recovery", "success"),
+        ):
+            if field not in transition:
+                continue
+            reference = transition[field]
+            target = transitions.get(reference) if isinstance(reference, str) else None
+            if (target is None or target["id"] == transition["id"]
+                    or transition.get("kind") != source_kind or target.get("kind") != target_kind):
+                raise CIGraphError("lifecycle path typed transition reference is undeclared self-referential or wrong-kind")
+            if field == "rejection_transition":
+                if (transition["from"] != target["from"]
+                        or not set(transition["invariants"]) <= set(target["invariants"])):
+                    raise CIGraphError("lifecycle path typed transition reference loses rejection start or invariants")
+            else:
+                if not set(target["invariants"]) <= set(transition["invariants"]):
+                    raise CIGraphError("lifecycle path typed transition reference loses recovery invariants")
+                rejected_id = target.get("rejection_transition")
+                rejection = transitions.get(rejected_id) if isinstance(rejected_id, str) else None
+                if (rejection is None or rejection.get("kind") != "rejection"
+                        or transition["from"] != rejection["to"] or transition["to"] != target["from"]):
+                    raise CIGraphError("lifecycle path typed transition reference bypasses failed attempt")
+            checked += 1
+    return checked
+
+
 def validate_lifecycle_paths(
     compiled: dict[str, Any],
     *,
@@ -314,6 +354,7 @@ def validate_lifecycle_paths(
         transitions[identity] = row
     if transitions.keys() != required_transition_bindings.keys():
         raise CIGraphError("lifecycle path transition population is incomplete")
+    validate_backtrace_transition_references(transitions)
     recoveries = {key: row for key, row in transitions.items() if row["kind"] == "recovery"}
     if not isinstance(required_recovery_limits, Mapping) or recoveries.keys() != required_recovery_limits.keys():
         raise CIGraphError("lifecycle path independent recovery population differs")
@@ -332,9 +373,8 @@ def validate_lifecycle_paths(
         rejection = transitions.get(rejection_id) if isinstance(rejection_id, str) else None
         if (rejection is None or rejection["kind"] != "rejection"
                 or required_transition_bindings[rejection_id] != pair
-                or rejection["from"] != row["from"] or rejection_id in claimed_rejections
-                or required_states[rejection["to"]] != "blocked"
-                or not set(row["invariants"]) <= set(rejection["invariants"])):
+                or rejection_id in claimed_rejections
+                or required_states[rejection["to"]] != "blocked"):
             raise CIGraphError("lifecycle path rejection is absent ambiguous or unbound")
         claimed_rejections.add(rejection_id)
         if contract["successor"] != row["to"] or contract["rejection"] != rejection["to"]:
@@ -345,9 +385,7 @@ def validate_lifecycle_paths(
         recovery = recoveries.get(recovery_id)
         if (recovery is None or recovery_id in claimed_recoveries
                 or required_transition_bindings[recovery_id] != pair
-                or recovery.get("retry_of") != identity
-                or recovery["from"] != rejection["to"] or recovery["to"] != row["from"]
-                or not set(row["invariants"]) <= set(recovery["invariants"])):
+                or recovery.get("retry_of") != identity):
             raise CIGraphError("lifecycle path recovery does not preserve its failed attempt")
         limit = recovery.get("max_attempts")
         approved = required_recovery_limits[recovery_id]
