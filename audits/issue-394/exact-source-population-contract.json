@@ -14,7 +14,8 @@
   "dependency_acceptance": "Existing source initialization producer and consumer controls passed at d1fc7913/72d6b566; complete requires-workitem-closure:P32-P0-03 remains unmet and forbids normative adoption.",
   "target_modules": [
     "bcf_governance/tooling/semantic_source_paths.py",
-    "tests/test_semantic_source_paths.py"
+    "tests/test_semantic_source_paths.py",
+    "bcf_governance/tooling/semantic_ownership_inventory.py"
   ],
   "contract": [
     "Add a read-only exact committed Python source population query to the existing source-path owner; retain legacy candidate discovery unchanged.",
@@ -24,7 +25,10 @@
     "Preserve exact UTF-8 paths including spaces tabs and newlines; reject malformed or unsafe records.",
     "Add base/candidate population comparison that retains complete source snapshots and explicit added/removed/changed Python paths and unresolved entry changes. No deletion can disappear solely because candidate source inventory omits it.",
     "These local Git observations never authenticate provider repository identity or authority and cannot interpret effects, approve retirement or authorize proof suppression. Protected caller must bind repository/subject and independently handle all unresolved entries.",
-    "Empty interior tree records are malformed, distinct from a genuinely empty Git tree, and reject during decoding."
+    "Empty interior tree records are malformed, distinct from a genuinely empty Git tree, and reject during decoding.",
+    "Existing Python discovery accepts an optional exact source_subject, compares its full discovered file population to the exact tree, and authenticates each raw source blob plus executable mode before ast.parse. Reject unknown tree entries and population gaps before parsing.",
+    "No caller-selected file subset can narrow the exact-subject population. Dirty or untracked source and subject/tree substitutions reject. Default discovery remains unchanged.",
+    "The returned source_population observation binds the exact Git tree and each parser input; it never authenticates provider or repository authority, continued filesystem freshness or full runtime effects."
   ],
   "forbidden_surfaces": [
     "new source parser or effect evaluator",

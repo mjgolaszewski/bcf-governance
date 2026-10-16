@@ -204,6 +204,7 @@ def discover_python_source(
     repo_root: Path, files: list[Path] | None = None,
     *, call_contracts_version: str | None = None,
     initialization_contracts_version: str | None = None,
+    source_subject: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """Parse the tracked population without consulting semantic declarations."""
     if call_contracts_version is not None and call_contracts_version != "1.0":

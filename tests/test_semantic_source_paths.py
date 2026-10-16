@@ -136,3 +136,45 @@ def test_malformed_tree_population_rejects_instead_of_narrowing(repo, monkeypatc
     monkeypatch.setattr(source.subprocess, 'run', forged)
     with pytest.raises(ValueError, match='tree'):
         source.committed_python_source_population(repo, **identity)
+
+
+def test_discovery_binds_exact_tree_and_preserves_default_output(repo):
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+
+    identity = subject(repo)
+    default = discover_python_source(repo)
+    assert discover_python_source(repo, source_subject=None) == default
+    exact = discover_python_source(repo, source_subject=identity)
+    assert exact['source_population'] == source.committed_python_source_population(repo, **identity)
+    for key, value in default.items():
+        assert exact[key] == value
+    assert exact['authority'] is False
+
+
+@pytest.mark.parametrize('defect', ['dirty', 'missing', 'untracked', 'wrong_mode', 'subset', 'symlink'])
+def test_discovery_rejects_source_mismatch_before_parsing(repo, monkeypatch, defect):
+    from bcf_governance.tooling import semantic_ownership_inventory as inventory
+
+    identity = subject(repo)
+    files = None
+    if defect == 'dirty':
+        (repo / 'nested/root.py').write_text('changed()\n')
+    elif defect == 'missing':
+        (repo / 'nested/root.py').unlink()
+    elif defect == 'untracked':
+        (repo / 'untracked.py').write_text('extra()\n')
+    elif defect == 'wrong_mode':
+        (repo / 'nested/root.py').chmod(0o755)
+    elif defect == 'subset':
+        files = []
+    else:
+        (repo / 'alias').symlink_to('../outside')
+        git(repo, 'add', '.')
+        git(repo, 'commit', '-qm', 'symlink')
+        identity = subject(repo)
+    def forbidden(*args, **kwargs):
+        raise AssertionError('source parsed before exact-subject rejection')
+    with monkeypatch.context() as patches:
+        patches.setattr(inventory.ast, 'parse', forbidden)
+        with pytest.raises(inventory.SemanticInventoryError, match='source'):
+            inventory.discover_python_source(repo, files=files, source_subject=identity)
