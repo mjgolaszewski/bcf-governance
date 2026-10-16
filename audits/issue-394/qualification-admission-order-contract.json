@@ -5,7 +5,7 @@
     "authority": false,
     "status": "planned"
   },
-  "workitem": "P32-P0-07",
+  "workitem": "P32-P0-02",
   "bounded_context": "evidence",
   "architectural_layer": "tooling",
   "operation_side": "command admission using existing source/profile owners",
@@ -29,5 +29,6 @@
     "Workflow or authority pins",
     "Maintained adopter checkouts"
   ],
-  "remaining": "Full installed consumer qualification and all whole Issue394 acceptance remain required."
+  "remaining": "Full installed consumer qualification and all whole Issue394 acceptance remain required.",
+  "workitem_disposition": "Real-adopter residual owner; supports the earliest-valid admission objective without claiming normalization workitem closure."
 }
