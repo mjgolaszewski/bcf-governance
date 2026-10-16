@@ -6,6 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+## [2.3.5] - 2026-10-16
+
+### Fixed
+
+- Bound declared canonical receipt-directory inputs to the validated current
+  session before dependent gates run, including external local execution and
+  transported CI sessions. Older repository receipts cannot replace current
+  prerequisites; application findings and session identity checks stay enforced.
+- Kept rendered gate contracts within their existing context budget by sharing
+  repeated string sequences without changing decoded contract values.
+
 ## [2.3.4] - 2026-10-15
 
 ### Fixed

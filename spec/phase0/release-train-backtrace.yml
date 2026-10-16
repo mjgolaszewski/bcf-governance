@@ -296,6 +296,16 @@ exclusions:
 - {id: EX-004, reason: bounded_certification_has_no_release_authority, invariant: INV-RT-008}
 - {id: EX-005, reason: candidate_authority_cannot_mutate_controller_or_release, invariant: INV-RT-004}
 - {id: EX-006, reason: recovery_cannot_bypass_failed_authority, invariant: INV-RT-012}
+same_session_evidence_input_transport:
+  issue: 427
+  canonical_owner: bcf_governance/tooling/governance_evidence.py::capture_gate
+  namespace: .artifacts/bcf/sessions
+  rule: after_session_subject_and_output_binding_resolve_declared_canonical_session_inputs_to_the_exact_bound_session
+  contexts: [external_local_prospective_session, transported_hosted_session]
+  preserve: [gate_contract, required_environment_names, producer_order, session_manifest, receipt_identity, finding_requirements, unrelated_workspace_inputs]
+  reject_before_execution: [foreign_session_output, wrong_subject_session, unsafe_session_manifest]
+  forbidden: [repository_session_fallback, stale_session_discovery, application_specific_environment_names, receipt_copy_workaround]
+  regression: tests/test_governance_evidence.py::test_dependent_gate_consumes_exact_current_session_inputs
 validation_status:
   mechanically_proven_existing: [PRIM-CI-EDGE]
   reconstructed_requires_agent_validation: [invariants, states, transitions, release_train_edges, exclusions]

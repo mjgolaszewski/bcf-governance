@@ -2462,3 +2462,23 @@ violation; characterization precedes it; one governed change extracts at most
 one coherent existing responsibility; public CLI, authority, evidence,
 ordering, failures, and source/package/template parity remain compatible; and
 replaced code is deleted. No extraction may create a new agent-selected stage.
+
+### Issue 427 current-session input handoff
+
+For local prospective and downloaded hosted evidence, capture first validates
+the session manifest, exact subject, and producer output binding. It then binds
+required environment inputs naming the canonical session namespace to that
+validated session root. The dependent gate consumes the current producer's
+receipts even when an older successful session for the same subject exists.
+Foreign output/session bindings reject before execution; unrelated workspace
+inputs and application findings retain their existing semantics. There is no
+stale-session discovery or receipt-copy recovery. Fresh and upgraded installed
+runtimes exercise this transition, with binding-disabled controls reproducing
+the foreign-session failure. The machine-readable owner is
+`same_session_evidence_input_transport` in the release-train backtrace.
+
+The added causal control must fit both authored and generated contract budgets.
+The existing profile renderer shares repeated string sequences as YAML aliases;
+decoded contracts, control inventory, and scalar types remain unchanged, and
+repeated rendering remains deterministic. Exceeding the existing budget rejects
+the candidate rather than increasing the budget or dropping controls.

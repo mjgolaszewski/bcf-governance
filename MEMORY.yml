@@ -20,6 +20,7 @@ memory_retention_policy:
   stale_entry_handling: [mark_deprecated_before_removal, preserve_replacement_reference_when_available]
 environment_facts:
   current_repo_state:
+  - P31-HF06 repairs issue 427 for maintenance 2.3.5 by binding canonical dependent receipt inputs to the exact validated session; installed fresh and upgraded consumer regressions pass, while protected certification and immutable custody remain pending.
   - P24 and immutable v1.3.0 are historical; plans/phase-history.yml and release custody audits own those facts.
   - P25 and its certified 2.0.0 baseline are historical; release_15 was superseded without publication or a tag.
   - P26 P27 and P28 are closed by exact-main truth; immutable v2.1.0 release 397498080 is published from certified commit 407c82fdaaad73a96c700e30b09d06dba44b90e7 and audits/v2.1.0-release-custody.yml owns exact custody.

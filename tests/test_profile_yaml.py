@@ -37,3 +37,13 @@ def test_scalar_sharing_is_deterministic_local_and_preserves_yaml_types() -> Non
     assert render_profile_surface(copy.deepcopy(payload), width=4096) == first
     assert yaml.safe_dump(payload) == ordinary
     assert len(first) < len(ordinary)
+
+
+def test_equal_string_sequences_share_without_changing_decoded_contract() -> None:
+    payload = {f"claim_{index}": ["normal", "regulated", "self"] for index in range(20)}
+    before = copy.deepcopy(payload)
+    rendered = render_profile_surface(payload, width=4096)
+
+    assert yaml.safe_load(rendered) == payload == before
+    assert len(rendered) < 500
+    assert render_profile_surface(copy.deepcopy(payload), width=4096) == rendered
