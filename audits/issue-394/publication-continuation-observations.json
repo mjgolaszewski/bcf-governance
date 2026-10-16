@@ -1,0 +1,75 @@
+{
+  "authority": false,
+  "kind": "publication_continuation_observation",
+  "source_checkpoint": "a4c0cce4e6c327ddaef9e40fbc19df1f0c469ef8",
+  "canonical_owner": "bcf_governance/tooling/release_publication_transaction.py::publish_release",
+  "source_sha256": "57187c0880bd554436fc2706a850638521f45f7f6f69fd6788bb13c0b689a866",
+  "fixture_sha256": "7f3b8957017b082bb18170c6bf23a0c619dfb3664b88f023fc733b00ac424d54",
+  "cases": [
+    {
+      "crash_after": "draft",
+      "first_invocation": "stopped_on_uncertainty",
+      "resume_status": "verified",
+      "resume_decision": "published",
+      "prior_mutations": [
+        "annotated-tag",
+        "tag-reference",
+        "draft"
+      ],
+      "new_mutations": [
+        "asset:bcf_governance-0.7.1-py3-none-any.whl",
+        "asset:bcf_governance-0.7.1.tar.gz",
+        "asset:SHA256SUMS",
+        "publish"
+      ],
+      "duplicate_mutations": false
+    },
+    {
+      "crash_after": "upload",
+      "first_invocation": "stopped_on_uncertainty",
+      "resume_status": "verified",
+      "resume_decision": "published",
+      "prior_mutations": [
+        "annotated-tag",
+        "tag-reference",
+        "draft",
+        "asset:bcf_governance-0.7.1-py3-none-any.whl"
+      ],
+      "new_mutations": [
+        "asset:bcf_governance-0.7.1.tar.gz",
+        "asset:SHA256SUMS",
+        "publish"
+      ],
+      "duplicate_mutations": false
+    },
+    {
+      "crash_after": "publish",
+      "first_invocation": "stopped_on_uncertainty",
+      "resume_status": "verified",
+      "resume_decision": "already_published",
+      "prior_mutations": [
+        "annotated-tag",
+        "tag-reference",
+        "draft",
+        "asset:bcf_governance-0.7.1-py3-none-any.whl",
+        "asset:bcf_governance-0.7.1.tar.gz",
+        "asset:SHA256SUMS",
+        "publish"
+      ],
+      "new_mutations": [],
+      "duplicate_mutations": false
+    }
+  ],
+  "focused_existing_tests": {
+    "publication": 11,
+    "creation_conflict_and_inspection": 8
+  },
+  "scope": "Isolated in-memory provider fixtures and temporary assets only; no actual provider mutation, real custody certification, concurrency qualification, or complete continuation claim.",
+  "remaining": [
+    "Concurrent identical caller join/observe or rejection",
+    "Exact producer custody for every continuation input",
+    "Adopter and dispatch transaction continuation",
+    "Cause-specific production regression controls for lost responses across every reachable mutation",
+    "Full dynamic and mixed-toolchain effect closure"
+  ]
+}
