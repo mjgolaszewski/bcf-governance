@@ -915,9 +915,17 @@ def test_stale_pack_manifest_fails_before_evidence(
     template.mkdir(parents=True)
     (template / "owned.txt").write_text("current\n", encoding="utf-8")
     (template / ".bcf-pack-manifest.json").write_text(
-        '{"files":{"owned.txt":{"operation":"copy","sha256":"'
-        + "0" * 64
-        + '"}}}\n',
+        json.dumps(
+            {
+                "files": {
+                    "owned.txt": {"operation": "copy", "sha256": "0" * 64}
+                },
+                "generated": [],
+                "retired_files": {},
+                "schema_version": "2.0",
+            }
+        )
+        + "\n",
         encoding="utf-8",
     )
     monkeypatch.setattr(preflight, "_git_state", lambda _: {})

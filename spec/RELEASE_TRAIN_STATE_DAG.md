@@ -2428,6 +2428,34 @@ Retention remains historical observation only. It cannot create evidence,
 certification, successor eligibility, or release authority, and a caller may
 not repair the generated history entry by hand.
 
+### Cause-specific negative-control fixture reachability
+
+A negative control proves its declared detector only when its baseline satisfies
+every earlier closed schema and identity contract. The fixture then applies one
+named mutation and must reach the earliest authoritative consumer that owns the
+intended rejection. An unrelated earlier failure is typed oracle drift, not a
+passing control, and may not be repaired by renaming the expected diagnostic or
+weakening production validation.
+
+```text
+invariant
+  every declared mutation reaches and is killed by its named production detector
+    -> primitive
+       CauseSpecificNegativeControl(schema version, valid baseline digest,
+       mutation identity, production owner, intended rejection class)
+      -> contract
+         current closed schema -> schema-valid baseline -> one exact mutation ->
+         earliest production consumer -> cause-specific rejection before cost
+        -> producer
+           canonical fixture builder and focused mutation control
+          -> consumers
+             production preflight, evidence-allocation sentinel, mutation registry
+```
+
+Malformed, obsolete, multiply mutated, or caller-relabelled fixtures are
+structurally excluded. Their rejection cannot stand in for the security or
+freshness proposition named by the control.
+
 Issue 346 applies as a construction constraint, not another phase or command.
 An extraction is permitted only for a measured ownership, dependency, or LOC
 violation; characterization precedes it; one governed change extracts at most

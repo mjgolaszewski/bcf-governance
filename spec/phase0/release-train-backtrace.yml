@@ -200,6 +200,23 @@ protected_merge_provider_result_contract:
   - {id: PMRX-002, reason: a_clean_certified_pr_is_not_a_pending_auto_merge_pr}
   - {id: PMRX-003, reason: direct_normal_merge_is_unreachable_without_exact_certification_provider_clean_mergeability_allowed_merge_commit_and_an_override_free_exact_mutation}
   - {id: PMRX-004, reason: provider_error_text_alone_cannot_select_retry_merge_or_success}
+negative_control_fixture_reachability_contract:
+  normative: true
+  primitive: PRIM-CAUSE-SPECIFIC-NEGATIVE-CONTROL
+  canonical_owner: tests/test_preflight.py::test_stale_pack_manifest_fails_before_evidence
+  inputs: [current_closed_input_schema, exact_single_mutation, intended_rejection_class, earliest_authoritative_consumer]
+  outputs: [schema_valid_adversarial_fixture, observed_cause_specific_rejection, typed_oracle_drift]
+  states:
+  - {id: NFR-001, state: fixture_is_valid_except_for_exact_declared_mutation, result: execute_intended_consumer_and_require_cause_specific_rejection, authority: test_observation_only}
+  - {id: NFR-002, state: fixture_is_rejected_by_an_earlier_unrelated_schema_or_identity_invariant, result: classify_oracle_fixture_stale_and_fail_the_control, authority: none}
+  - {id: NFR-003, state: production_accepts_the_exact_declared_mutation, result: fail_the_control_for_missing_detector, authority: none}
+  - {id: NFR-004, state: production_rejects_the_declared_mutation_at_the_intended_earliest_boundary, result: cause_specific_control_pass, authority: test_observation_only}
+  edge_contracts:
+  - {id: NFRE-001, from: canonical_input_schema, to: adversarial_fixture_builder, producer: current_closed_schema_contract, consumer: focused_negative_control, required: [all_required_fields, no_unknown_fields, exact_valid_baseline, one_declared_mutation], identity_binding: [schema_version, fixture_digest, mutation_id, intended_rejection], earliest_rejection: focused_test_setup, reject: [obsolete_minimal_fixture, malformed_baseline, multiple_mutations, caller_relabelled_error]}
+  - {id: NFRE-002, from: adversarial_fixture_builder, to: earliest_authoritative_consumer, producer: focused_negative_control, consumer: production_preflight, required: [schema_valid_baseline, exact_mutation, session_allocation_sentinel], identity_binding: [mutation_id, production_owner, rejection_class], earliest_rejection: before_expensive_evidence_allocation, reject: [earlier_unrelated_failure_as_proof, regex_only_rename, weakened_production_validation, session_allocation]}
+  exclusions:
+  - {id: NFRX-001, reason: an_unrelated_earlier_failure_does_not_kill_the_declared_mutation}
+  - {id: NFRX-002, reason: fixture_repair_cannot_weaken_or_reorder_production_validation}
 adopter_source_transaction:
   normative: false
   status: rejected_provider_coupled_design

@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: 90d0fcdabf8dac675b287e3c261a9aa2fc9a5bd13d8590e0030b0d40b2084906
-  after_sha256: d6e11a655e04d894ccd1d479877270d1a55aba167f1d763371a6329fbf0807a7
+  after_sha256: 4e9942b0a3ec7696d048323da161e4526212477fae62c1b64e2468d01a2ca7b1
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

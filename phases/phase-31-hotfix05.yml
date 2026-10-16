@@ -47,6 +47,14 @@ execution_evidence:
   - The protected-merge response and submission frontier focused suite passed
     with 32 tests, including null, partial, mixed error/data, moved subject,
     provider-clean, blocked, and unknown-result permutations.
+  - >-
+    The first exact self prospective train passed fixed-point and preflight and
+    three complete test splinters; its sole failure was a stale negative-control
+    fixture whose pre-2.0 pack-manifest shape no longer reached the intended
+    digest-mismatch detector. The fixture now satisfies the current closed 2.0
+    schema, mutates only the owned-file digest, and proves the mismatch rejects
+    before evidence-session allocation. Production preflight behavior is
+    unchanged.
 closeout_requirements:
   claims:
     required_suites_green:
