@@ -269,3 +269,87 @@ def test_bare_local_comparison_assertion_cannot_choose_a_new_base(tmp_path, monk
     monkeypatch.setenv('BCF_COMPARISON_BASE_SHA', _git(repo, 'rev-parse', 'HEAD'))
     with pytest.raises(CIStateMatrixError, match='comparison'):
         validate_ci_state_matrix(repo)
+
+
+def _comparison_environment(monkeypatch, base, *, event='pull_request', invocation='direct_event'):
+    values = {
+        'BCF_PROVIDER_EVENT': event, 'GITHUB_EVENT_NAME': event,
+        'BCF_INVOCATION_KIND': invocation, 'BCF_COMPARISON_BASE_SHA': base,
+        'BCF_ORIGIN_COMPARISON_BASE_SHA': base,
+        'BCF_PR_BASE_SHA': base if event == 'pull_request' else '',
+        'BCF_CALLER_COMPARISON_BASE_SHA': base if invocation == 'reusable_call' else '',
+    }
+    for key, value in values.items():
+        monkeypatch.setenv(key, value)
+
+
+@pytest.mark.parametrize('event,invocation', [('pull_request', 'direct_event'), ('push', 'direct_event'), ('pull_request', 'reusable_call'), ('push', 'reusable_call')])
+def test_valid_comparison_context_preserves_changed_contract_requirement(tmp_path, monkeypatch, event, invocation):
+    repo = _repo(tmp_path)
+    base = _git(repo, 'rev-parse', 'HEAD')
+    _comparison_environment(monkeypatch, base, event=event, invocation=invocation)
+    (repo / 'bcf_governance/tooling/preflight.py').write_text('VALUE = 2\n')
+    with pytest.raises(CIStateMatrixError, match='same-candidate state matrix'):
+        validate_ci_state_matrix(repo)
+    with (repo / 'spec/RELEASE_TRAIN_STATE_DAG.md').open('a') as stream:
+        stream.write('\nContext-specific coverage.\n')
+    assert validate_ci_state_matrix(repo)['comparison_base'] == base
+
+
+@pytest.mark.parametrize('event', ['schedule', 'workflow_dispatch'])
+def test_noncomparison_context_does_not_invent_a_local_merge_base(tmp_path, monkeypatch, event):
+    repo = _repo(tmp_path)
+    _comparison_environment(monkeypatch, '', event=event)
+    assert validate_ci_state_matrix(repo)['comparison_base'] is None
+    monkeypatch.setenv('BCF_COMPARISON_BASE_SHA', _git(repo, 'rev-parse', 'HEAD'))
+    with pytest.raises(CIStateMatrixError, match='comparison'):
+        validate_ci_state_matrix(repo)
+
+
+@pytest.mark.parametrize('defect', ['origin', 'pr', 'direct_caller', 'missing_caller', 'event', 'invocation', 'symbolic', 'unavailable', 'nonancestor'])
+def test_invalid_comparison_context_rejects_before_diff(tmp_path, monkeypatch, defect):
+    from bcf_governance.tooling.governance_validation import ci_state_matrix as matrix
+
+    repo = _repo(tmp_path)
+    base = _git(repo, 'rev-parse', 'HEAD')
+    _comparison_environment(monkeypatch, base)
+    if defect == 'origin':
+        monkeypatch.setenv('BCF_ORIGIN_COMPARISON_BASE_SHA', 'a' * 40)
+    elif defect == 'pr':
+        monkeypatch.setenv('BCF_PR_BASE_SHA', 'a' * 40)
+    elif defect == 'direct_caller':
+        monkeypatch.setenv('BCF_CALLER_COMPARISON_BASE_SHA', base)
+    elif defect == 'missing_caller':
+        monkeypatch.setenv('BCF_INVOCATION_KIND', 'reusable_call')
+    elif defect == 'event':
+        monkeypatch.setenv('GITHUB_EVENT_NAME', 'push')
+    elif defect == 'invocation':
+        monkeypatch.setenv('BCF_INVOCATION_KIND', '')
+    elif defect == 'symbolic':
+        _comparison_environment(monkeypatch, 'HEAD')
+    elif defect == 'unavailable':
+        _comparison_environment(monkeypatch, 'f' * 40)
+    else:
+        tree = _git(repo, 'rev-parse', 'HEAD^{tree}')
+        unrelated = _git(repo, 'commit-tree', tree, '-m', 'unrelated')
+        _comparison_environment(monkeypatch, unrelated)
+    real = matrix._git
+    def guarded(root, *args):
+        if args and args[0] == 'diff':
+            raise AssertionError('diff executed before context rejection')
+        return real(root, *args)
+    monkeypatch.setattr(matrix, '_git', guarded)
+    with pytest.raises(CIStateMatrixError, match='comparison'):
+        validate_ci_state_matrix(repo)
+
+
+def test_invalid_comparison_rejects_before_matrix_decoding(tmp_path, monkeypatch):
+    from bcf_governance.tooling.governance_validation import ci_state_matrix as matrix
+
+    repo = _repo(tmp_path)
+    base = _git(repo, 'rev-parse', 'HEAD')
+    _comparison_environment(monkeypatch, base)
+    monkeypatch.setenv('BCF_ORIGIN_COMPARISON_BASE_SHA', 'a' * 40)
+    monkeypatch.setattr(matrix, '_validate_machine_backtrace', lambda *_: pytest.fail('matrix decoded before comparison rejection'))
+    with pytest.raises(CIStateMatrixError, match='comparison'):
+        validate_ci_state_matrix(repo)

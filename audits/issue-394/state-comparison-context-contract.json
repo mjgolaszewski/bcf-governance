@@ -23,7 +23,8 @@
     "Reject mismatched origin/PR/caller bases invalid invocation or event and unavailable/nonancestor subjects before change enumeration.",
     "Preserve local context-free merge-base behavior and existing structural machine-backtrace checks; no provider authority from environment consistency alone.",
     "Retain comparison-free schedule/dispatch semantics only as declared by the existing context owner.",
-    "Preserve adopter inapplicability authored-only generation ordering required provider statuses and the pending prose-to-machine retirement decision."
+    "Preserve adopter inapplicability authored-only generation ordering required provider statuses and the pending prose-to-machine retirement decision.",
+    "For full matrix checks, reject invalid comparison context immediately after adopter/authored-only applicability, before prose/schema decoding; authored-only validation remains independent of event context."
   ],
   "producer_consumer": {
     "producer": "Existing canonical comparison projection and preflight_repository_context.pr_context",
