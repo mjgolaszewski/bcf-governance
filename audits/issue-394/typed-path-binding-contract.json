@@ -1,0 +1,44 @@
+{
+  "document": {
+    "kind": "implementation_contract",
+    "path": "audits/issue-394/typed-path-binding-contract.json",
+    "authority": false
+  },
+  "bounded_context": "ci_graph",
+  "layer": "application_query",
+  "side": "query",
+  "workitem_alias": "foundation.composition",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "tests/test_ci_graph_composition.py",
+    "schemas/release-train-backtrace.schema.json",
+    "canonical private runtime/schema copies through pack owner"
+  ],
+  "forbidden": [
+    "new authored lifecycle registry",
+    "actual normative backtrace activation",
+    "provider or adopter mutation",
+    "installer/custody/release bytes",
+    "authority pins/workflows"
+  ],
+  "contract": [
+    "Add an explicit dormant path query; legacy compilation and binding outputs remain unchanged",
+    "Consume the existing canonical backtrace states/transitions and a protected exact canonical digest",
+    "Require independent complete state-to-terminal-class and transition-to-relationship populations plus exact recovery limits",
+    "Every reachable relationship has one successful transition and its rejection; every transition binds a reachable relationship",
+    "Successor and rejection strings resolve to exact declared destination states; recovery resolves to the exact declared recovery transition or explicit none",
+    "Recovery starts at its rejected destination and returns to the original attempt start, preserves original invariants, and has the independently approved finite attempt limit",
+    "All concrete attempt edges excluding bounded recovery are acyclic",
+    "Terminal classes distinguish workitem phase release custody blocked and nonterminal; candidate state labels cannot choose classification",
+    "Reject missing duplicate unbound wrong-source and ambiguous populations before rendering/allocation",
+    "Output authority false and execution_qualified false; static binding cannot qualify runtime authority or full lifecycle completeness"
+  ],
+  "tests": [
+    "Bounded recovery cycle accepted; same attempt cycle rejected",
+    "Undeclared successor/recovery/terminal identities rejected",
+    "Missing/extra transition/state/relationship populations rejected",
+    "Wrong recovery target/invariant/limit rejected",
+    "Legacy results unchanged and current untyped backtrace remains unqualified"
+  ],
+  "dependency_acceptance": "Local dormant implementation only; admission and complete forward/reverse conformance remain unresolved."
+}
