@@ -889,3 +889,17 @@ def test_authored_coverage_rejects_before_lease_reconciliation_and_provider(monk
     with pytest.raises(ProspectiveValidationError, match='reference inventory contains bare'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid inventory'))
+
+
+def test_authored_semantic_ownership_rejects_before_lease_and_reconciliation(monkeypatch, tmp_path):
+    from bcf_governance.tooling.semantic_ownership_registry import SemanticOwnershipRegistryError
+    _normalization_state(monkeypatch)
+    failure = SemanticOwnershipRegistryError('authored semantic ownership failed: downstream_normalization:retry')
+    def reject(*_a, **_k):
+        raise failure
+    monkeypatch.setattr(submit, 'validate_authored_semantic_ownership', reject, raising=False)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('leased before source ownership rejection'))
+    with pytest.raises(ProspectiveValidationError, match='downstream_normalization') as caught:
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
+            semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source ownership'))
+    assert caught.value.__cause__ is failure

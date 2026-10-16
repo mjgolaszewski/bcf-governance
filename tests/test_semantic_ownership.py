@@ -287,3 +287,65 @@ def test_repository_wide_mode_requires_every_discovered_type() -> None:
         and value["symbol"] == unregistered
         for value in report["violations"]
     )
+
+
+def test_retry_executor_context_authorization_is_declared_and_causal():
+    registry = load_registry(REPO_ROOT)
+    semantic_id = 'governance.local-pr-context.v1'
+    entry = next(row for row in registry.entries if row.semantic_id == semantic_id)
+    consumer = 'bcf_governance/tooling/candidate_provider_recovery.py::execute_candidate_provider_recovery'
+    assert consumer in entry.raw['declared_consumer_layers_and_sinks']['authorization']
+    assert consumer not in entry.authorized_constructors | entry.authorized_delegates
+    assert entry.raw['narrow_suppressions'] == []
+    files = [REPO_ROOT / 'bcf_governance/tooling/local_pr_context.py',
+             REPO_ROOT / 'bcf_governance/tooling/candidate_provider_recovery.py']
+    discovered = inventory.discover_python_source(REPO_ROOT, files=files)
+    selected = dataclasses.replace(registry, entries=(entry,))
+    assert not [v for v in scan.evaluate_discovery(discovered, selected)['violations']
+                if v['kind'] == 'downstream_normalization' and v['symbol'] == consumer]
+    import copy
+    removed = copy.deepcopy(entry.raw)
+    removed['declared_consumer_layers_and_sinks']['authorization'].remove(consumer)
+    without = dataclasses.replace(selected, entries=(dataclasses.replace(entry, raw=removed),))
+    violations = scan.evaluate_discovery(discovered, without)['violations']
+    assert any(v['kind'] == 'downstream_normalization' and v['symbol'] == consumer for v in violations)
+
+
+def test_authored_semantic_scan_checks_ownership_without_generated_lock(tmp_path, monkeypatch):
+    (tmp_path / 'governance').mkdir()
+    (tmp_path / 'governance/canonical-representations.yml').write_text('declared')
+    sentinel = ({}, {}, {}, object())
+    monkeypatch.setattr(scan, '_discover_ownership_inputs', lambda root, **kwargs: sentinel, raising=False)
+    monkeypatch.setattr(scan, 'evaluate_discovery', lambda *args: {'verdict': 'conformant', 'blocking_violation_count': 0, 'violations': []})
+    monkeypatch.setattr(scan, 'validate_semantic_authority', lambda *_a, **_k: pytest.fail('checked stale generated lock before generation'))
+    report = scan.validate_authored_semantic_ownership(tmp_path)
+    assert report['authority'] is False and report['execution_qualified'] is False
+    assert report['scope'] == 'authored_python_semantic_ownership_only'
+
+
+def test_authored_semantic_scan_rejects_unregistered_source_consumer(tmp_path, monkeypatch):
+    (tmp_path / 'governance').mkdir()
+    (tmp_path / 'governance/canonical-representations.yml').write_text('declared')
+    monkeypatch.setattr(scan, '_discover_ownership_inputs', lambda root, **kwargs: ({}, {}, {}, object()), raising=False)
+    monkeypatch.setattr(scan, 'evaluate_discovery', lambda *args: {'verdict': 'non_conformant',
+        'blocking_violation_count': 1, 'violations': [{'kind': 'downstream_normalization', 'symbol': 'actual::consumer', 'blocking': True}]})
+    with pytest.raises(SemanticOwnershipRegistryError, match='downstream_normalization:actual::consumer'):
+        scan.validate_authored_semantic_ownership(tmp_path)
+
+
+def test_authored_python_scope_preserves_full_registry_and_needs_no_typescript_toolchain(monkeypatch):
+    registry = load_registry(REPO_ROOT)
+    python_entry = next(entry for entry in registry.entries if entry.raw['canonical_type']['language'] == 'python')
+    ts_entry = dataclasses.replace(python_entry, semantic_id='fixture.typescript',
+        canonical_symbol='src/domain.ts::Message', raw={'canonical_type': {'language': 'typescript'}})
+    mixed = dataclasses.replace(registry, entries=(python_entry, ts_entry))
+    python = {'files': [], 'functions': [], 'constructors': [], 'normalizations': [], 'types': []}
+    monkeypatch.setattr(scan, 'discover_python_source', lambda root: python)
+    monkeypatch.setattr(scan, 'load_registry', lambda root: mixed)
+    monkeypatch.setattr(scan, 'resolve_python_imports', lambda root, data, roots: data)
+    monkeypatch.setattr(scan, 'tracked_typescript_files', lambda *_a: pytest.fail('required unavailable TypeScript before admission'))
+    monkeypatch.setattr(scan, 'discover_source', lambda *_a, **_k: pytest.fail('compiled TypeScript before toolchain admission'))
+    _, observed, typescript, qualified = scan._discover_ownership_inputs(REPO_ROOT, python_only=True)
+    assert observed is python and typescript == {}
+    assert qualified.entries == (python_entry,)
+    assert mixed.entries == (python_entry, ts_entry)

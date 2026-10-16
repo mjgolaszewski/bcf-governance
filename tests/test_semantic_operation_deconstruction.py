@@ -10,7 +10,7 @@ ROOT = Path(__file__).parents[1]
 
 
 def test_actual_public_operation_observations_match_pre_deconstruction_bytes():
-    expected = (ROOT / 'audits/issue-394/operation-validator-v234-integration.json').read_bytes()
+    expected = (ROOT / 'audits/issue-394/operation-validator-semantic-admission.json').read_bytes()
     inventory = discover_python_source(ROOT)
     observed = contracts.validate_application_operations(ROOT, inventory)
     assert len(observed) == 21
@@ -50,3 +50,21 @@ def test_admitted_operation_golden_retains_every_prior_port_and_only_adds_protec
     operation['write_effect_count'] += 1
     assert json.loads((ROOT / 'audits/issue-394/operation-validator-v234-integration.json').read_bytes()) == expected
     assert any(port['symbol'].endswith('::local_gate_lease') for port in operation['effect_ports'])
+
+
+def test_semantic_admission_observation_preserves_all_prior_operations_and_authority_ports():
+    import copy
+    import hashlib
+    import yaml
+    prior = (ROOT / 'audits/issue-394/operation-validator-v234-integration.json').read_bytes()
+    assert hashlib.sha256(prior).hexdigest() == '1be9eda2bd1786f462946c30203a16725479d707d74e9b23605ef39cbc6020a5'
+    expected = copy.deepcopy(json.loads(prior))
+    operation = next(row for row in expected if row['operation'] == 'governance.cli.ci.v1')
+    port = 'bcf_governance/tooling/semantic_ownership_scan.py::validate_authored_semantic_ownership'
+    operation['effect_ports'].append({'classification': 'observation', 'symbol': port, 'target_kind': 'function'})
+    assert json.loads((ROOT / 'audits/issue-394/operation-validator-semantic-admission.json').read_bytes()) == expected
+    registry = yaml.safe_load((ROOT / 'governance/application-operations.yml').read_text())
+    declaration = next(row for row in registry['operations'] if row['id'] == 'governance.cli.ci.v1')
+    assert port in declaration['non_authoritative_output_effects']
+    assert port not in declaration['allowed_mutation_ports'] + declaration['allowed_authority_ports']
+    assert operation['write_effect_count'] == 12 and operation['authority_effect_count'] == 0

@@ -1761,3 +1761,18 @@ def test_prospective_unit_namespace_retains_real_lease_exclusion():
         with pytest.raises(LocalExecutionAdmissionError, match='local_execution_busy_deferred: active=' + HEAD):
             with local_gate_lease(BASE):
                 pytest.fail('unit namespace admitted overlapping host gate')
+
+
+def test_semantic_ownership_failure_rejects_before_provider_and_preserves_cause(monkeypatch, tmp_path):
+    _front_door(monkeypatch, [])
+    events = []
+    failure = prospective.PreflightError('semantic ownership preflight failed: downstream_normalization:retry')
+    def reject(*_a):
+        raise failure
+    monkeypatch.setattr(prospective, '_semantic_ownership', reject, raising=False)
+    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *_a, **_k: pytest.fail('provider reached before semantic rejection'))
+    with pytest.raises(prospective.ProspectiveValidationError, match='downstream_normalization') as caught:
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
+            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
+    assert caught.value.__cause__ is failure
+    assert [(e['stage'], e['state']) for e in events[-2:]] == [('semantic_ownership', 'started'), ('semantic_ownership', 'failed')]

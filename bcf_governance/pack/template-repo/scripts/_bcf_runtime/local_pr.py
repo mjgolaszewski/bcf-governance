@@ -38,7 +38,7 @@ from .evidence_workitem_lifecycle import (
     validate_evaluation_authored_ready,
 )
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, _exposure_scan, _negative_control_targets, run_preflight
+from .preflight import PreflightError, _exposure_scan, _negative_control_targets, _semantic_ownership, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -297,7 +297,11 @@ def _run_prospective_train(
             authority_applicability = ordinary_authority_applicability(policy_identity)
         except ProspectiveLaneError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
-    for stage, check in (("exposure", _exposure_scan), ("negative_controls", _negative_control_targets)):
+    for stage, check in (
+        ("exposure", _exposure_scan),
+        ("negative_controls", _negative_control_targets),
+        ("semantic_ownership", _semantic_ownership),
+    ):
         emit(stage, "started")
         try:
             check(root)

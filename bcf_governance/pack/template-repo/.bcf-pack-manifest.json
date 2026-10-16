@@ -548,7 +548,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "e190bcf5a39f62ca1f78f51697ccf89ff7188403c1a7c5b0f878f7d9bdab434e"
+      "sha256": "15a363b8dfeea5911c97162b32a98c788321e1582a2e666eb7e4fa96a3dfe049"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -1267,7 +1267,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "47f9672f8184cf72efb426a4d7357600bac5bf26b0e1f5765a8c198d623e29ec"
+      "sha256": "a4b6f833e66785e94a7ebd29b1719d394ba5dc42a8337ee9fdc516b799996ef7"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1539,7 +1539,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_scan.py": {
       "operation": "copy",
-      "sha256": "4338f1dd55f033b453cdd461677d8b5dfc95b9b8139ea9c54652e15e07e38e1f"
+      "sha256": "801c20ac0eade9d9d08459ed198924e529e23f07a32464cd2c34c42ed0ea2e08"
     },
     "scripts/_bcf_runtime/semantic_ownership_typescript.mjs": {
       "operation": "copy",

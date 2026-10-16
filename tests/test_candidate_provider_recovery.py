@@ -425,3 +425,14 @@ def test_retry_plan_cannot_change_during_final_provider_observation():
     with pytest.raises(ProspectiveValidationError, match="plan changed during observation"):
         _execute(provider, frontier)
     assert provider.reruns == []
+
+
+@pytest.mark.parametrize('field,value', [('base_sha', ' ' + BASE), ('head_sha', HEAD + ' '),
+    ('default_branch', ' main '), ('head_ref', ' feature ')], ids=['base', 'head', 'default-branch', 'branch'])
+def test_retry_executor_never_repairs_independently_proved_context(field, value):
+    from dataclasses import replace
+    provider = Provider()
+    frontier = _resolve(provider)
+    with pytest.raises(ProspectiveValidationError, match='candidate provider|candidate pull request'):
+        _execute(provider, frontier, context=replace(CONTEXT, **{field: value}))
+    assert provider.reruns == []

@@ -7,6 +7,7 @@ Licensed under the MIT License.
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 import hashlib
 import json
 import subprocess
@@ -306,17 +307,38 @@ def _git(repo_root: Path, expression: str) -> str:
     return result.stdout.strip() if result.returncode == 0 else "unavailable"
 
 
+def _discover_ownership_inputs(repo_root: Path, *, python_only: bool = False):
+    inventory = discover_python_source(repo_root)
+    typescript_files = [] if python_only else tracked_typescript_files(repo_root)
+    registry = load_registry(repo_root)
+    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
+    if python_only:
+        qualified = replace(registry, entries=tuple(entry for entry in registry.entries
+            if entry.raw.get('canonical_type', {}).get('language') == 'python'))
+        return inventory, inventory, {}, qualified
+    return discover_source(repo_root, python_inventory=inventory, typescript_files=typescript_files,
+                           registry=registry, resolve_imports=False)
+
+
+def validate_authored_semantic_ownership(repo_root: Path) -> dict[str, Any]:
+    """Reject Python ownership defects without claiming complete toolchain proof."""
+    scope = dict(authority=False, execution_qualified=False, scope='authored_python_semantic_ownership_only')
+    if not (repo_root / 'governance/canonical-representations.yml').is_file():
+        return dict(scope, verdict='not_applicable')
+    _, inventory, _, registry = _discover_ownership_inputs(repo_root.resolve(), python_only=True)
+    evaluation = evaluate_discovery(inventory, registry)
+    if evaluation['verdict'] != 'conformant':
+        first = next((row for row in evaluation['violations'] if row.get('blocking')), {})
+        raise SemanticOwnershipRegistryError(
+            f"authored semantic ownership failed: {first.get('kind', 'unknown')}:{first.get('symbol', 'unknown')}"
+        )
+    return {**scope, **evaluation}
+
+
 def run_scan(repo_root: Path) -> dict[str, Any]:
     """Discover the exact source first, then make declarations available."""
     repo_root = repo_root.resolve()
-    inventory = discover_python_source(repo_root)
-    typescript_files = tracked_typescript_files(repo_root)
-    registry = load_registry(repo_root)
-    inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
-    combined, inventory, typescript_inventory, registry = discover_source(
-        repo_root, python_inventory=inventory, typescript_files=typescript_files,
-        registry=registry, resolve_imports=False,
-    )
+    combined, inventory, typescript_inventory, registry = _discover_ownership_inputs(repo_root)
     traces = build_endpoint_traces(
         inventory, typescript_inventory,
         browser_contract_roots=tuple(sorted({

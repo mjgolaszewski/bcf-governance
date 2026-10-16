@@ -2488,6 +2488,10 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_semantic_ownership::test_retry_executor_context_authorization_is_declared_and_causal
+    - tests.test_semantic_ownership::test_authored_semantic_scan_checks_ownership_without_generated_lock
+    - tests.test_semantic_ownership::test_authored_python_scope_preserves_full_registry_and_needs_no_typescript_toolchain
+    - tests.test_semantic_operation_deconstruction::test_semantic_admission_observation_preserves_all_prior_operations_and_authority_ports
     - tests.test_ci_state_matrix::test_actual_machine_adoption_inventory_references_existing_owners_without_qualification
     - tests.test_ci_graph_composition::test_valid_composition_has_no_authority_and_is_byte_stable
     - tests.test_semantic_python_inventory_characterization::test_python_inventory_matches_pre_deconstruction_characterization
@@ -2500,6 +2504,12 @@ implementation_slices:
     - tests.test_ci_graph_composition::test_discovered_source_authority_port_survives_candidate_effect_omission
     - tests.test_test_manifests::test_authored_reference_inventory_uses_exact_collection_before_generated_manifest
     negative_controls:
+    - cause: unregistered-consumer-before-normalization-lease
+      test: tests.test_candidate_submit::test_authored_semantic_ownership_rejects_before_lease_and_reconciliation
+    - cause: complete-semantic-failure-before-provider
+      test: tests.test_prospective_validation::test_semantic_ownership_failure_rejects_before_provider_and_preserves_cause
+    - cause: authored-source-ownership-violation
+      test: tests.test_semantic_ownership::test_authored_semantic_scan_rejects_unregistered_source_consumer
     - cause: invalid-or-moving-native-model-before-adoption-inventory:case:[changed_during_collection]
       test: tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs[changed_during_collection]
     - cause: invalid-or-moving-native-model-before-adoption-inventory:case:[invalid_model]
@@ -2581,6 +2591,7 @@ implementation_slices:
     - cause: generated-manifest-must-still-reject-after-generation
       test: tests.test_test_manifests::test_preflight_reference_inventory_uses_same_exact_manifest_owner
     remaining:
+    - 'Semantic admission follow-up contract: audits/issue-394/semantic-admission-frontier-contract.json. Early Python-only checks are nonauthoritative and do not replace complete mixed-toolchain/generated-state or runtime conformance. Canonical normalization and successor evidence remain required.'
     - 'Early exact-reference admission: audits/issue-394/early-coverage-admission-contract.json and early-coverage-admission-verification.json. Applicability only; independent completeness and installed trusted policy remain unqualified.'
     - Reproducible actual-source inventory audits/issue-394/actual-machine-adoption-inventory.json references the existing compiled CI owner and records actual legacy typed-field gaps; recipe audits/issue-394/collect_machine_adoption_inventory.py. Counts and native schema validity confer no lifecycle/runtime qualification.
     - Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.
@@ -3064,6 +3075,14 @@ implementation_slices:
     - tests.test_candidate_provider_recovery::test_exact_retry_is_not_repeated_after_provider_attempt_advances
     - tests.test_candidate_submit::test_submit_executes_only_the_recovery_frontier_selected_provider_retry
     negative_controls:
+    - cause: noncanonical-context-base-must-not-be-repaired
+      test: tests.test_candidate_provider_recovery::test_retry_executor_never_repairs_independently_proved_context[base]
+    - cause: noncanonical-context-head-must-not-be-repaired
+      test: tests.test_candidate_provider_recovery::test_retry_executor_never_repairs_independently_proved_context[head]
+    - cause: noncanonical-context-default-branch-must-not-be-repaired
+      test: tests.test_candidate_provider_recovery::test_retry_executor_never_repairs_independently_proved_context[default-branch]
+    - cause: noncanonical-context-branch-must-not-be-repaired
+      test: tests.test_candidate_provider_recovery::test_retry_executor_never_repairs_independently_proved_context[branch]
     - cause: caller-plan-mutation-at-final-read
       test: tests.test_candidate_provider_recovery::test_retry_plan_cannot_change_during_final_provider_observation
     - cause: self-consistent-forged-run
