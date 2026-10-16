@@ -107,6 +107,15 @@ def _protection(api: GitHubAPI, repository: str, main: MainIdentity) -> dict[str
     )
 
 
+def _validate_comparison_ref(
+    api: GitHubAPI, repository: str, *, branch: str, expected_sha: str,
+) -> None:
+    """Authenticate current ref separately from a potentially stale PR response."""
+    reference = api.reference(repository, f"heads/{branch}").get("object")
+    if not isinstance(reference, dict) or reference.get("type") != "commit" or reference.get("sha") != expected_sha:
+        raise GitHubControllerError("PR comparison reference is not exact or current")
+
+
 def _evaluator_identity(
     api: GitHubAPI,
     *,
@@ -116,7 +125,16 @@ def _evaluator_identity(
     base_sha: str,
     base_branch: str,
 ) -> dict[str, Any]:
-    if base_sha != main.checkout_sha or base_branch != main.default_branch:
+    comparison = None
+    if base_branch != main.default_branch:
+        _validate_comparison_ref(api, repository, branch=base_branch, expected_sha=base_sha)
+        tree = api.commit(repository, base_sha).get("tree")
+        if not isinstance(tree, dict):
+            raise GitHubControllerError("PR comparison tree is missing")
+        comparison = {"commit_sha": exact_sha(base_sha, field="PR comparison SHA"),
+            "tree_sha": exact_sha(tree.get("sha"), field="PR comparison tree SHA"), "branch": base_branch}
+        base_sha, base_branch = main.checkout_sha, main.default_branch
+    elif base_sha != main.checkout_sha:
         raise GitHubControllerError(
             "PR evaluator base is not the current protected default branch"
         )
@@ -176,7 +194,7 @@ def _evaluator_identity(
         raise GitHubControllerError(
             "PR evaluator source differs from the reviewed protection contract"
         )
-    return {
+    identity = {
         "mode": mode,
         "base": {
             "commit_sha": base_sha,
@@ -203,6 +221,10 @@ def _evaluator_identity(
         "protected_paths": list(PROTECTED_EVALUATOR_PATHS),
         "check": {"context": CHECK_CONTEXT, "publisher_app_id": CHECK_APP_ID},
     }
+
+    if comparison is not None:
+        identity["comparison"] = comparison
+    return identity
 
 
 def _authenticate_candidate_run(
@@ -508,7 +530,7 @@ def finalize_pr(
     by_id = {item["id"]: item for item in producers}
     package = by_id.get("package")
     governance = by_id.get("governance")
-    if isinstance(package, dict) and isinstance(governance, dict):
+    if base_branch == main.default_branch and isinstance(package, dict) and isinstance(governance, dict):
         transition = transition_is_applicable(
             api,
             repository=repository,
@@ -533,6 +555,11 @@ def finalize_pr(
                 governance_state=governance,
             )
             producers = [equivalent if item["id"] == "package" else item for item in producers]
+    if (_current_pr(api, repository, pr_number) != (head_sha, head_branch, base_sha, base_branch)
+            or resolve_main(api, repository) != main):
+        raise GitHubControllerError("PR comparison or protected source moved during finalization")
+    if base_branch != main.default_branch:
+        _validate_comparison_ref(api, repository, branch=base_branch, expected_sha=base_sha)
     states = {item["state"] for item in producers}
     computed = "failed" if "failed" in states else "pending" if "pending" in states else "successful"
     observation = {
@@ -645,7 +672,7 @@ def publish_pr(
     if not isinstance(subject, dict):
         raise GitHubControllerError("PR certification subject is missing")
     pr_number = positive_int(observation.get("pull_request"), field="pull request number")
-    head_sha, _, base_sha, base_branch = _current_pr(api, repository, pr_number)
+    head_sha, head_branch, base_sha, base_branch = _current_pr(api, repository, pr_number)
     if subject.get("commit_sha") != head_sha:
         raise GitHubControllerError("PR certification subject is not the current pull request head")
     protection = _protection(api, repository, main)
@@ -689,6 +716,11 @@ def publish_pr(
         trusted_publisher=True,
     )
     if decision.publish:
+        if (_current_pr(api, repository, pr_number) != (head_sha, head_branch, base_sha, base_branch)
+                or resolve_main(api, repository) != main):
+            raise GitHubControllerError("PR comparison or protected source moved before publication")
+        if base_branch != main.default_branch:
+            _validate_comparison_ref(api, repository, branch=base_branch, expected_sha=base_sha)
         status = "in_progress" if states[computed] is StatusConclusion.PENDING else "completed"
         conclusion = None if status == "in_progress" else states[computed].value
         created = api.create_check_run(

@@ -3945,6 +3945,8 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_github_pr_authority::test_bound_pr_evaluator_and_publisher_separate_comparison_from_protected_source
+    - tests.test_ci_github_pr_authority::test_nondefault_pr_cannot_consume_default_main_transition_equivalence
     - tests.test_candidate_submit::test_bound_pr_normalization_assertion_uses_candidate_scope[pr-True]
     - tests.test_candidate_submit::test_submit_supplies_authenticated_context_to_normalization
     - tests.test_semantic_ownership::test_normalization_context_authorization_is_declared_and_causal
@@ -3964,6 +3966,26 @@ implementation_slices:
     - tests.test_prospective_validation::test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source
     - tests.test_ci_graph::test_v3_reference_graph_projects_proof_transport_and_planned_shards
     negative_controls:
+    - cause: provider-comparison-reference-moved-evaluator
+      test: tests.test_ci_github_pr_authority::test_bound_pr_evaluator_rejects_bad_comparison_before_producers[reference-moved]
+    - cause: provider-comparison-invalid-tree-evaluator
+      test: tests.test_ci_github_pr_authority::test_bound_pr_evaluator_rejects_bad_comparison_before_producers[invalid-tree]
+    - cause: provider-comparison-comparison-finalizer
+      test: tests.test_ci_github_pr_authority::test_bound_pr_finalizer_rejects_movement_during_producer_reads[comparison]
+    - cause: provider-comparison-protected-source-finalizer
+      test: tests.test_ci_github_pr_authority::test_bound_pr_finalizer_rejects_movement_during_producer_reads[protected-source]
+    - cause: provider-comparison-comparison-ref-finalizer
+      test: tests.test_ci_github_pr_authority::test_bound_pr_finalizer_rejects_movement_during_producer_reads[comparison-ref]
+    - cause: provider-comparison-retarget-publisher
+      test: tests.test_ci_github_pr_authority::test_bound_pr_publisher_rejects_changed_context_before_write[retarget]
+    - cause: provider-comparison-base-publisher
+      test: tests.test_ci_github_pr_authority::test_bound_pr_publisher_rejects_changed_context_before_write[base]
+    - cause: provider-comparison-late-base-publisher
+      test: tests.test_ci_github_pr_authority::test_bound_pr_publisher_rejects_changed_context_before_write[late-base]
+    - cause: provider-comparison-late-protected-source-publisher
+      test: tests.test_ci_github_pr_authority::test_bound_pr_publisher_rejects_changed_context_before_write[late-protected-source]
+    - cause: provider-comparison-late-ref-publisher
+      test: tests.test_ci_github_pr_authority::test_bound_pr_publisher_rejects_changed_context_before_write[late-ref]
     - cause: nondefault-protected-intent-assertion
       test: tests.test_candidate_submit::test_bound_pr_normalization_assertion_uses_candidate_scope[closure-False]
     - cause: normalization-binding-missing-repository
