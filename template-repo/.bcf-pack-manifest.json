@@ -314,7 +314,7 @@
     },
     "schemas/gate-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "398d5b7b1e1bc3ac80a3c57385433f2cefb1b12f19eadb929a5d69ee356bb21d"
+      "sha256": "6fa68155b5c581204b82305fd647e31a656d2b8c5a6f4afa871cbaac4f12ae0a"
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
@@ -548,7 +548,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "de8c76ebc5f8933de7bd8744a7b96005e8818629344a464851ccd6aeadacb19c"
+      "sha256": "e190bcf5a39f62ca1f78f51697ccf89ff7188403c1a7c5b0f878f7d9bdab434e"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -1188,7 +1188,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
-      "sha256": "c325d9ab10f77aaae7c694a60a3849230afd57fa9f14aedfb9717840be5ffc83"
+      "sha256": "eee95a0930ad228e521e2d4bcb3106c919530892f76577e4a4c6b20b5d0a726f"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_repository_context.py": {
       "operation": "copy",
@@ -1583,7 +1583,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "7d49af1865771afe1dbd5fab536ed195db30c2c5a903c4591a9ae2b4928d7769"
+      "sha256": "686d53eb892a27ae4db59c4bd152d06debe1df7ac0422b6b9e51531bc104592b"
     },
     "scripts/_bcf_runtime/test_splinter_proofs.py": {
       "operation": "copy",

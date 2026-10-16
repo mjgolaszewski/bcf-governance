@@ -11,6 +11,7 @@ from typing import Any
 
 import yaml  # type: ignore[import-untyped]
 
+from .ci_graph_yaml import GraphYAMLError, load_yaml_bytes
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .evidence_execution import _selected_python
 from .local_execution_admission import project_python_environment
@@ -315,6 +316,123 @@ def collect_nodes(
             repo_root, gate_id, python_executable=python_executable
         ).normalized_nodes
     )
+
+
+
+def _reference_inventory_path(repo_root: Path, relative: object) -> Path:
+    if (not isinstance(relative, str) or not relative or '\\' in relative or '\0' in relative
+            or Path(relative).as_posix() != relative):
+        raise TestManifestError('reference inventory path is malformed')
+    path = _safe_manifest_path(repo_root, relative)
+    parts = Path(relative).parts
+    if (not path.is_file() or any(repo_root.joinpath(*parts[:i]).is_symlink()
+                                 for i in range(1, len(parts) + 1))):
+        raise TestManifestError('reference inventory must be a regular non-symlink file')
+    return path
+
+
+def _reference_inventory_records(repo_root: Path):
+    """Read only the applicability references declared by existing test owners."""
+    snapshots = {}
+    def read(relative):
+        raw = _reference_inventory_path(repo_root, relative).read_bytes()
+        snapshots[relative] = raw
+        return load_yaml_bytes(raw, source=relative)
+    try:
+        legacy = _load_yaml(repo_root / 'governance/gate-contracts.yml')
+        legacy_gates = legacy.get('gates')
+        if not isinstance(legacy_gates, dict):
+            raise TestManifestError('reference inventories require gate mappings')
+        declared = False
+        for gate in legacy_gates.values():
+            evidence = gate.get('evidence') if isinstance(gate, dict) else None
+            contract = evidence.get('test_contract') if isinstance(evidence, dict) else None
+            declared = declared or isinstance(contract, dict) and 'reference_inventories' in contract
+        if not declared:
+            return [], {}
+        registry = read('governance/gate-contracts.yml')
+        gates = registry.get('gates') if isinstance(registry, dict) else None
+        if not isinstance(gates, dict):
+            raise TestManifestError('reference inventories require gate mappings')
+        records = []
+        paths = set()
+        for gate_id, gate in gates.items():
+            evidence = gate.get('evidence') if isinstance(gate, dict) else None
+            contract = evidence.get('test_contract') if isinstance(evidence, dict) else None
+            if not isinstance(contract, dict) or 'reference_inventories' not in contract:
+                continue
+            declarations = contract['reference_inventories']
+            if not isinstance(declarations, list) or not declarations:
+                raise TestManifestError('reference inventory declarations must be nonempty')
+            for descriptor in declarations:
+                if (not isinstance(descriptor, dict) or set(descriptor) != {'path', 'format'}
+                        or descriptor['format'] != 'implementation_slice_bindings.v1'):
+                    raise TestManifestError('reference inventory descriptor is malformed')
+                relative = descriptor['path']
+                payload = read(relative)
+                if relative in paths:
+                    raise TestManifestError('reference inventory has duplicate producer ownership')
+                paths.add(relative)
+                bindings = payload.get('implementation_slices') if isinstance(payload, dict) else None
+                if not isinstance(bindings, dict) or not bindings:
+                    raise TestManifestError('reference inventory has no implementation slices')
+                nodes = []
+                for identity, binding in bindings.items():
+                    if not isinstance(identity, str) or not identity or not isinstance(binding, dict):
+                        raise TestManifestError('reference inventory slice is malformed')
+                    positive, negative = binding.get('positive_tests'), binding.get('negative_controls')
+                    if (not isinstance(positive, list) or not positive
+                            or any(not isinstance(node, str) or not node for node in positive)
+                            or len(positive) != len(set(positive))
+                            or not isinstance(negative, list) or not negative):
+                        raise TestManifestError('reference inventory tests or controls are malformed')
+                    causes = set()
+                    nodes.extend(positive)
+                    for control in negative:
+                        if (not isinstance(control, dict)
+                                or any(not isinstance(control.get(key), str) or not control[key]
+                                       for key in ('cause', 'test'))
+                                or control['cause'] in causes):
+                            raise TestManifestError('reference inventory negative control is malformed')
+                        causes.add(control['cause'])
+                        nodes.append(control['test'])
+                records.append((str(gate_id), relative, nodes))
+        return records, snapshots
+    except (OSError, GraphYAMLError, TestManifestError, yaml.YAMLError) as exc:
+        raise TestManifestError(f'reference inventory inputs are invalid: {exc}') from exc
+
+
+def _validate_reference_inventory_records(repo_root, records, snapshots, manifest_index) -> dict[str, Any]:
+    try:
+        for relative, original in snapshots.items():
+            if _reference_inventory_path(repo_root, relative).read_bytes() != original:
+                raise TestManifestError('reference inventory inputs changed during collection')
+    except OSError as exc:
+        raise TestManifestError('reference inventory inputs changed or became unreadable') from exc
+    for gate_id, relative, nodes in records:
+        try:
+            producer = manifest_index.resolve(nodes, preferred_gate=gate_id)
+            if producer != gate_id:
+                raise TestManifestError('test references belong to a different producer')
+        except TestManifestError as exc:
+            raise TestManifestError(f'reference inventory {relative} for {gate_id}: {exc}') from exc
+    return dict(authority=False, execution_qualified=False, inventories_checked=len(records),
+                nodes_checked=sum(len(nodes) for _, _, nodes in records))
+
+
+def validate_declared_test_reference_inventories(repo_root: Path, *, manifest_index) -> dict[str, Any]:
+    """Check exact references against generated manifests; never expand aliases."""
+    records, snapshots = _reference_inventory_records(repo_root)
+    return _validate_reference_inventory_records(repo_root, records, snapshots, manifest_index)
+
+
+def validate_authored_test_reference_inventories(repo_root: Path, *, python_executable) -> dict[str, Any]:
+    """Reject authored reference defects before any derived-file mutation."""
+    records, snapshots = _reference_inventory_records(repo_root)
+    gates = list(dict.fromkeys(gate_id for gate_id, _, _ in records))
+    maps = collect_selector_maps(repo_root, gates, python_executable=python_executable) if gates else {}
+    index = OracleManifestIndex(tuple((gate, frozenset(value.normalized_nodes)) for gate, value in maps.items()))
+    return _validate_reference_inventory_records(repo_root, records, snapshots, index)
 
 
 def declared_test_gates(repo_root: Path) -> list[str]:

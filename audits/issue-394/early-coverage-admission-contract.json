@@ -22,7 +22,7 @@
     },
     {
       "module": "bcf_governance/tooling/governance_validation/preflight_negative_controls.py",
-      "context": "governance",
+      "context": "validation",
       "side": "existing oracle applicability query"
     }
   ],

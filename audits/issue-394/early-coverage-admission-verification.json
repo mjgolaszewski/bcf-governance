@@ -1,0 +1,65 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/early-coverage-admission-contract.json",
+  "source_sha256": {
+    "bcf_governance/tooling/test_manifests.py": "686d53eb892a27ae4db59c4bd152d06debe1df7ac0422b6b9e51531bc104592b",
+    "bcf_governance/tooling/ci_authority_submit.py": "e190bcf5a39f62ca1f78f51697ccf89ff7188403c1a7c5b0f878f7d9bdab434e",
+    "bcf_governance/tooling/governance_validation/preflight_negative_controls.py": "eee95a0930ad228e521e2d4bcb3106c919530892f76577e4a4c6b20b5d0a726f",
+    "schemas/gate-contracts.schema.json": "6fa68155b5c581204b82305fd647e31a656d2b8c5a6f4afa871cbaac4f12ae0a",
+    "governance/gate-contracts.yml": "46e7022e0897e04ffda47aaec7f0baa14a34dc617dc7df4a572c6193435d503c"
+  },
+  "history": [
+    "Initial 17 API/schema applicability controls failed because the declared inventory API was absent; these are interface red controls, not claimed legacy behavioral regressions.",
+    "Four subsequent controls reproduced actual missing preflight rejection, two moving-input acceptances and normalization lease before coverage validation. All 21 focused controls then passed in 1.85 seconds.",
+    "Initial broader run: 160 passes/two failures (genuine generated manifest drift and 95-byte context-budget excess).",
+    "Shared 19 identical profile sequences via YAML anchor with decoded semantics independently equal under strict and existing loaders; original 101 KiB cap unchanged. Budget-specific prior-transport control then passed.",
+    "Legacy absence with YAML merge input initially failed due unnecessary strict parsing. Legacy opt-out now retains existing parser semantics, while declared reference inventories remain strict."
+  ],
+  "broad_final": {
+    "passed": 162,
+    "failed": 1,
+    "seconds": 28.62,
+    "failure": "Exact generated manifest drift for newly added tests/parameterized audit inventory; canonical owner normalization required. No exclusion."
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "governance_yaml": "passed",
+    "coverage_schema": "passed",
+    "exposure_scan": "passed",
+    "pack_parity": "passed"
+  },
+  "gate_contract_data_dedup": {
+    "authority": false,
+    "path": "governance/gate-contracts.yml",
+    "before_bytes": 103519,
+    "after_bytes": 103295,
+    "unchanged_budget_bytes": 103424,
+    "shared_profile_sequences": 19,
+    "before_sha256": "41b2e1d5b7f0332f49ef426e832aebf9e13df4c62b5dac20e1f401650656dec4",
+    "after_sha256": "46e7022e0897e04ffda47aaec7f0baa14a34dc617dc7df4a572c6193435d503c",
+    "decoded_semantics_equal_under": [
+      "existing strict YAML owner",
+      "PyYAML safe loader"
+    ],
+    "limits": "Serialization deduplication only; no profile, gate, claim or policy value changed."
+  },
+  "final_characterization": {
+    "passed": 4,
+    "seconds": 80.62,
+    "scope": "Actual 21-operation byte golden, LOC, context and private-copy parity on final production source."
+  },
+  "constraints": [
+    "This validates reference applicability only; it does not authenticate independent required populations, proof execution, normative lifecycle completeness, installed consumers or custody.",
+    "Strict opted-in inventory metadata binds exact existing producer; no bare selector expansion, manifest rewrite or agent choice.",
+    "All 82 whole requirements remain open across unchanged 30 bounded slices.",
+    "No live provider submission until final source checks and canonical admission."
+  ],
+  "actual_self_inventory": {
+    "inventories_checked": 1,
+    "reference_occurrences_checked": 538,
+    "authority": false,
+    "execution_qualified": false
+  }
+}

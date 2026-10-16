@@ -2498,6 +2498,7 @@ implementation_slices:
     - tests.test_ci_graph_composition::test_machine_contract_bytes_are_stable_across_subjects_and_order
     - tests.test_semantic_operation_inventory::test_validated_inventory_preserves_port_classes_and_legacy_counts
     - tests.test_ci_graph_composition::test_discovered_source_authority_port_survives_candidate_effect_omission
+    - tests.test_test_manifests::test_authored_reference_inventory_uses_exact_collection_before_generated_manifest
     negative_controls:
     - cause: invalid-or-moving-native-model-before-adoption-inventory:case:[changed_during_collection]
       test: tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs[changed_during_collection]
@@ -2569,7 +2570,18 @@ implementation_slices:
       test: tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[producer]
     - cause: orphan-fact-verifier
       test: tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[verifier]
+    - cause: bare-parameterized-reference-must-not-be-expanded-by-admission
+      test: tests.test_test_manifests::test_reference_inventory_never_expands_a_bare_parameterized_reference
+    - cause: coverage-contradiction-before-lease-and-reconciliation
+      test: tests.test_candidate_submit::test_authored_coverage_rejects_before_lease_reconciliation_and_provider
+    - cause: changed-inventory-during-collection
+      test: tests.test_test_manifests::test_reference_inventory_input_movement_during_collection_blocks[references.yml]
+    - cause: references-cannot-switch-proof-producer
+      test: tests.test_test_manifests::test_reference_inventory_cannot_switch_to_another_producer
+    - cause: generated-manifest-must-still-reject-after-generation
+      test: tests.test_test_manifests::test_preflight_reference_inventory_uses_same_exact_manifest_owner
     remaining:
+    - 'Early exact-reference admission: audits/issue-394/early-coverage-admission-contract.json and early-coverage-admission-verification.json. Applicability only; independent completeness and installed trusted policy remain unqualified.'
     - Reproducible actual-source inventory audits/issue-394/actual-machine-adoption-inventory.json references the existing compiled CI owner and records actual legacy typed-field gaps; recipe audits/issue-394/collect_machine_adoption_inventory.py. Counts and native schema validity confer no lifecycle/runtime qualification.
     - Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.
     - Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required.

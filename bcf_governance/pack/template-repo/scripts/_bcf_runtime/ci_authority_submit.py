@@ -38,6 +38,7 @@ from .ordinary_protection_projection import validate_ordinary_protection_submiss
 from .local_execution_admission import local_gate_lease
 from .nested_cli_runtime import exact_nested_cli_command
 from .release_version_projection import validate_authored_release_target
+from .test_manifests import validate_authored_test_reference_inventories
 from .runtime_capacity import executing_runtime_version
 from .ci_graph_timeouts import gate_timeout_contract
 from .governance_validation.authored_phase_state import validate_authored_phase_state
@@ -72,6 +73,7 @@ def _normalize_submission(
             raise ProspectiveValidationError(
                 "submitted semantic intent does not match the authored lifecycle intent"
             )
+        validate_authored_test_reference_inventories(root, python_executable=python_executable)
     except ValueError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     with local_gate_lease(execution_id):

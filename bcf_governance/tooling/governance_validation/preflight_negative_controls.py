@@ -12,7 +12,9 @@ from ..yaml_mutations import (
     replace_yaml_value_bytes,
     typed_mutation_value,
 )
-from ..test_manifests import TestManifestError, oracle_manifest_index
+from ..test_manifests import (
+    TestManifestError, oracle_manifest_index, validate_declared_test_reference_inventories,
+)
 from ..negative_control_execution import (
     NegativeControlCommandError,
     test_node_oracle_lane,
@@ -33,6 +35,7 @@ def stale_negative_control_oracles(repo_root: Path) -> list[str]:
         raise NegativeControlPreflightError("gate contract registry has no gate mappings")
     try:
         manifest_index = oracle_manifest_index(repo_root)
+        validate_declared_test_reference_inventories(repo_root, manifest_index=manifest_index)
     except TestManifestError as exc:
         raise NegativeControlPreflightError(str(exc)) from exc
     stale_oracles: list[str] = []

@@ -61,7 +61,7 @@ claim_model:
         toolchain: [&id011 toolchain]
         trust: [&id025 workflows]
       qualification_scope: &id009 detector
-      profiles: [normal, &id010 regulated, self]
+      profiles: &profiles [normal, &id010 regulated, self]
       whole_tree: true
     governance-exposure-clean:
       truth: tracked content contains no forbidden local or private exposure
@@ -74,7 +74,7 @@ claim_model:
         toolchain: []
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
       whole_tree: true
     source-syntax-format:
       truth: tracked Python parses and tracked content has no prohibited trailing whitespace
@@ -87,7 +87,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     semantic-ownership-valid:
       truth: every declared canonical representation has exactly one authorized semantic owner
       execution_group: *id006
@@ -99,7 +99,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-context-membership:
       truth: production modules belong to exactly one bounded context
       execution_group: &id015 python-tests
@@ -111,7 +111,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-cqrs-side:
       truth: declared operations preserve command query separation
       execution_group: *id015
@@ -123,7 +123,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-duplication:
       truth: source and governed runtime mirrors remain exact
       execution_group: *id015
@@ -147,7 +147,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-layer-membership:
       truth: production modules belong to exactly one declared layer
       execution_group: *id015
@@ -159,7 +159,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-module-size:
       truth: production modules satisfy the declared size limit
       execution_group: *id015
@@ -171,7 +171,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-router-thinness:
       truth: transport and CLI wrappers remain thin
       execution_group: *id015
@@ -183,7 +183,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     architecture-test:
       truth: declared source roots match packaged implementation boundaries
       execution_group: *id015
@@ -195,7 +195,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     contract-test:
       truth: public contracts and adapters satisfy their declared executable tests
       execution_group: *id015
@@ -207,7 +207,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     test:
       truth: the declared test population passes
       execution_group: *id015
@@ -219,7 +219,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: subject
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     python-compile-version-contract:
       truth: Python sources compile and the package declares its version assignment
       execution_group: python-compile-version
@@ -231,7 +231,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     security-secret-scan:
       truth: tracked text contains no declared secret markers
       execution_group: secret-scan
@@ -243,7 +243,7 @@ claim_model:
         toolchain: []
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
       whole_tree: true
     security-dependency-audit:
       truth: the exact installed declared dependency closure is mutually consistent and has no vulnerability reported by the pinned freshness-bound advisory scanner
@@ -256,7 +256,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     security-sbom:
       truth: the declared dependency set has a deterministic SBOM
       execution_group: sbom
@@ -268,7 +268,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     unsafe-subprocess-static:
       truth: tracked Python contains no unsafe shell subprocess invocation
       execution_group: unsafe-subprocess
@@ -280,7 +280,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
     runtime-smoke:
       truth: source version and CLI execute in the declared environment
       execution_group: *id005
@@ -292,7 +292,7 @@ claim_model:
         toolchain: [*id011]
         trust: []
       qualification_scope: *id009
-      profiles: [normal, *id010, self]
+      profiles: *profiles
 gates:
   architecture-context-membership:
     invocation: {argv: [python3, &id029 .github/scripts/run_self_governance_gate.py, *id013], cwd: ., env: {}, required_env: []}
@@ -574,7 +574,7 @@ gates:
     - {id: evidence-input-reference-owner-must-fail, mutation: {path: *id095, yaml_path: 'representations[semantic_id=governance.evidence-input-reference.v1].authorized_constructors_and_factories', value: [*id096]}, oracle: {kind: *id091, exit_codes: [1], stream: stderr, regex: governance.evidence-input-reference.v1 owner must be an authorized constructor}}
   test:
     invocation: {argv: [python3, *id029, test], cwd: ., env: {}, required_env: [], timeout_seconds: 2400}
-    evidence: {kind: *id030, test_contract: {junit_xml: .artifacts/junit/test.xml, selectors: ['@test_roots'], expected_node_manifest: governance/test-manifests/test.txt, expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: *id031, splinter: {algorithm: stable_lpt_v1, max_splinters: 4, minimum_cpus: 2, report: .artifacts/junit/test.partition.json}}}
+    evidence: {kind: *id030, test_contract: {junit_xml: .artifacts/junit/test.xml, selectors: ['@test_roots'], expected_node_manifest: governance/test-manifests/test.txt, reference_inventories: [{path: audits/issue-394/workplan.yml, format: implementation_slice_bindings.v1}], expected_nodes_mode: exact, min_collected: 1, min_executed: 1, max_skipped: 0, artifact_binding: *id031, splinter: {algorithm: stable_lpt_v1, max_splinters: 4, minimum_cpus: 2, report: .artifacts/junit/test.partition.json}}}
     negative_controls:
     - {id: test-behavior-must-fail, mutation: {path: *id099, yaml_path: required_artifacts.readme.contract, value: broken_readme}, oracle: {kind: *id033, node_ids: [*id100]}}
     - {id: prior-candidate-subject-must-fail, mutation: {path: bcf_governance/tooling/prior_evidence_transport.py, search: inventory_subject_sha = candidate.checkout_sha, replace: inventory_subject_sha = source_main.checkout_sha}, oracle: {kind: *id033, node_ids: ['tests.test_prior_evidence_transport::test_transport_uses_candidate_inventory']}}

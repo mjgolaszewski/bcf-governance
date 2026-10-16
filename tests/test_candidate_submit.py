@@ -547,6 +547,7 @@ def test_submit_rejects_incomplete_proof_before_push(
 
 
 def _normalization_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories', lambda *_a, **_k: None)
     monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext(), raising=False)
 
 
@@ -875,3 +876,16 @@ def test_submission_progress_sink_failure_stops_before_next_authority_boundary(m
     if state == 'complete':
         expected.append(stage)
     assert trace == expected
+
+
+def test_authored_coverage_rejects_before_lease_reconciliation_and_provider(monkeypatch, tmp_path):
+    from bcf_governance.tooling.test_manifests import TestManifestError
+    _normalization_state(monkeypatch)
+    def reject(root, *, python_executable):
+        assert root == tmp_path and python_executable == Path('/python')
+        raise TestManifestError('reference inventory contains bare parameterized selector')
+    monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories', reject, raising=False)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('leased before coverage check'))
+    with pytest.raises(ProspectiveValidationError, match='reference inventory contains bare'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
+            semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid inventory'))
