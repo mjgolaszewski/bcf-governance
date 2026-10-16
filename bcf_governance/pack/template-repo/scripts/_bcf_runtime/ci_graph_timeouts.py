@@ -13,6 +13,16 @@ LEGACY_GATE_TIMEOUT_SECONDS = 1800
 LEGACY_HEADROOM_SECONDS = 60
 
 
+def quantized_deadline_ms(*, bounded_work_ms: int, setup_ms: int, cleanup_ms: int,
+                          measured_lower_bound_ms: int, headroom_ms: int) -> int:
+    """Compose supplied bounds; authentication/qualification belongs to consumers."""
+    values = (bounded_work_ms, setup_ms, cleanup_ms, measured_lower_bound_ms, headroom_ms)
+    if any(type(value) is not int or value < 0 for value in values):
+        raise CIGraphError("deadline bounds must be nonnegative integer milliseconds")
+    required = max(bounded_work_ms + setup_ms + cleanup_ms, measured_lower_bound_ms) + headroom_ms
+    return ((required + 59999) // 60000) * 60000
+
+
 def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
     """Read the canonical gate timeout defaults and optional per-gate overrides."""
 
@@ -69,7 +79,8 @@ def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
                 continue
             maximum = max(overrides.get(str(gate), default) for gate in executor["gates"])
             available = int(job["timeout_minutes"]) * 60
-            required = maximum + headroom
+            required = quantized_deadline_ms(bounded_work_ms=maximum * 1000, setup_ms=0,
+                cleanup_ms=0, measured_lower_bound_ms=0, headroom_ms=headroom * 1000) // 1000
             if available < required:
                 raise CIGraphError(
                     f"CI graph evidence job {job['id']} timeout {available}s cannot contain "
@@ -91,7 +102,9 @@ def validate_component_job_timeouts(graph: dict[str, Any]) -> None:
                 if minimum is None:
                     continue
                 available = int(job["timeout_minutes"])
-                if available < int(minimum):
+                required = quantized_deadline_ms(bounded_work_ms=int(minimum) * 60000, setup_ms=0,
+                    cleanup_ms=0, measured_lower_bound_ms=0, headroom_ms=0) // 60000
+                if available < required:
                     raise CIGraphError(
                         f"CI graph job {workflow['id']}/{job['id']} timeout "
                         f"{available}m cannot contain component {component_id} minimum "

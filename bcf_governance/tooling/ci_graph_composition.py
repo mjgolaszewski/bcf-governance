@@ -18,6 +18,7 @@ from typing import Any, Iterable, Mapping, TYPE_CHECKING
 from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError
+from .ci_graph_composition_costs import validate_lifecycle_deadline_bindings
 from .semantic_operation_effects import (
     SemanticOperationEffectError, source_operation_call_population,
 )
