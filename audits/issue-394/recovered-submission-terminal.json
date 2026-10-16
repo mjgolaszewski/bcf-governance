@@ -1,0 +1,200 @@
+{
+  "authority": false,
+  "kind": "recovered_submission_terminal_observation",
+  "subject_before": {
+    "commit_sha": "3519822033c94e997d5cab4eaa547359991e42a2",
+    "tree_sha": "e2c67eb786a4dbc8c85ecd9ccb389c852b0ef253"
+  },
+  "subject_after": {
+    "commit_sha": "67825aacdad4e62a96af4933db7c76219c5da464",
+    "tree_sha": "0ae74b7466c40c56a5675feb5fd6a06bc335b0a3"
+  },
+  "started_at": "2026-10-16T15:29:14.044846+00:00",
+  "ended_at": "2026-10-16T16:00:54.553213+00:00",
+  "elapsed_ms": 1900508,
+  "returncode": 1,
+  "capture_sha256": "483aa51bc384387d0672821272b6dc6edd4e212f1f7eb8b94f4ca3263f76036e",
+  "raw_log_sha256": "7d678c5755130ebc17521a468a268a1fd13946870e2379460333bed09402e2b6",
+  "progress": [
+    {
+      "authority": false,
+      "execution_id": "submission:3519822033c94e997d5cab4eaa547359991e42a2",
+      "kind": "submission_progress",
+      "monotonic_ms": 0,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "normalization",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:3519822033c94e997d5cab4eaa547359991e42a2",
+      "kind": "submission_progress",
+      "monotonic_ms": 1100865,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "normalization",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:3519822033c94e997d5cab4eaa547359991e42a2",
+      "kind": "submission_progress",
+      "monotonic_ms": 1647719,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "submission_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:3519822033c94e997d5cab4eaa547359991e42a2",
+      "kind": "submission_progress",
+      "monotonic_ms": 1649096,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "submission_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 4,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "fixed_point",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 5931,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "fixed_point",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6000,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "exposure",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6513,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "exposure",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 6514,
+      "schema_version": "1.0",
+      "sequence": 5,
+      "stage": "negative_controls",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 32441,
+      "schema_version": "1.0",
+      "sequence": 6,
+      "stage": "negative_controls",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 32442,
+      "schema_version": "1.0",
+      "sequence": 7,
+      "stage": "semantic_ownership",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 173508,
+      "schema_version": "1.0",
+      "sequence": 8,
+      "stage": "semantic_ownership",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 173508,
+      "schema_version": "1.0",
+      "sequence": 9,
+      "stage": "source_distribution",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 174732,
+      "schema_version": "1.0",
+      "sequence": 10,
+      "stage": "source_distribution",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 174733,
+      "schema_version": "1.0",
+      "sequence": 11,
+      "stage": "provider_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "67825aacdad4e62a96af4933db7c76219c5da464",
+      "kind": "prospective_progress",
+      "monotonic_ms": 242360,
+      "schema_version": "1.0",
+      "sequence": 12,
+      "stage": "provider_authority",
+      "state": "failed"
+    }
+  ],
+  "result": "failed_closed_before_behavioral_evidence_or_provider_mutation",
+  "failure": "GitHubAPIError: repository artifact inventory changed or did not stabilize across bounded reads",
+  "cause_chain": [
+    "routine_controller_provider._active_receipts",
+    "GitHubAPI.repository_artifacts",
+    "complete_repository_artifacts"
+  ],
+  "coordination": {
+    "same_owner_paused_after_normalization": true,
+    "lease_free_during_pause": true,
+    "same_owner_resumed_after_AgentBus_release": true,
+    "submission_progress_gap_ms": 546854,
+    "gap_is_not_pure_cpu_or_proof_time": true
+  },
+  "remaining": [
+    "Original attempt six remains separately classified interrupted unpromoted normalization; this is a new captured recovery transaction.",
+    "No unchanged retry initiated; exact normalized primary source remains preserved.",
+    "Original failed provider payloads unavailable; a subsequent stable diagnostic does not identify original cause.",
+    "Capture is not a matched performance baseline or a whole requirement pass."
+  ]
+}

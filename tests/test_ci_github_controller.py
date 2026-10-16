@@ -2573,3 +2573,40 @@ def test_installation_repository_inventory_rejects_unhandled_pagination() -> Non
 
     with pytest.raises(GitHubAPIError, match="exceeds one authenticated page"):
         PaginatedAPI(token="test").installation_repositories()
+
+
+@pytest.mark.parametrize('case,expected_calls', [('pagination', 8), ('metadata', 4)])
+def test_repository_inventory_failure_retains_bounded_attempt_diagnostics(monkeypatch, case, expected_calls):
+    api = GitHubAPI(token='test')
+    calls = []
+    def request(method, path, **_kwargs):
+        calls.append(path)
+        if case == 'pagination':
+            page = 2 if 'page=2' in path else 1
+            return {'total_count': 101 if page == 1 else 102,
+                'artifacts': [{'id': n} for n in range(1, 101)] if page == 1 else [{'id': 101}, {'id': 102}]}
+        return {'total_count': 1, 'artifacts': [{'id': 1, 'digest': str(len(calls)), 'private_marker': 'never-dump-provider-objects'}]}
+    monkeypatch.setattr(api, '_request', request)
+    with pytest.raises(GitHubAPIError, match='did not stabilize') as caught:
+        api.repository_artifacts('owner/repo')
+    outcomes = caught.value.__cause__.attempt_outcomes
+    assert len(calls) == expected_calls
+    assert len(outcomes) == 4
+    if case == 'pagination':
+        assert all('changed during pagination' in outcome for outcome in outcomes)
+    else:
+        assert sum('changed between complete snapshots' in outcome for outcome in outcomes) == 3
+    assert 'never-dump-provider-objects' not in str(caught.value)
+
+
+def test_repository_inventory_schema_error_is_not_retried_as_instability(monkeypatch):
+    api = GitHubAPI(token='test')
+    calls = []
+    def request(*args, **_kwargs):
+        calls.append(args)
+        return {'total_count': True, 'artifacts': []}
+    monkeypatch.setattr(api, '_request', request)
+    with pytest.raises(GitHubAPIError, match='bounded exact object list') as caught:
+        api.repository_artifacts('owner/repo')
+    assert len(calls) == 1
+    assert getattr(caught.value.__cause__, 'attempt_outcomes', ()) == ()

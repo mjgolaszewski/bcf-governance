@@ -2437,11 +2437,6 @@ additional_regressions:
   source: audits/issue-394/submit-normalization-slice.yml
 measurement_policy:
   status: requires_review_after_baseline_before_optimization
-  collection_strategy:
-    user_selected: governed_provider_runs_plus_controlled_isolated_local_adopter_trials
-    provider_runs: collect_as_they_occur_including_available_v2_3_4_CI_logs
-    controlled_trials: isolated_local_and_pinned_adopter_trials
-    qualification: authenticate_exact_subject_and_clock_then_freeze_matched_cohorts_before_percentile_claims
   proposed_pr:
     p50_improvement_percent: 25
     p95_improvement_percent: 20
@@ -2455,6 +2450,8 @@ measurement_policy:
   - planner overhead
   - compute storage API and complexity budgets
   reporting:
+  - user-selected collection uses governed provider runs as they occur plus controlled isolated local and pinned-adopter trials
+  - authenticate exact subject and clock then freeze matched cohorts before percentile claims
   - actual nonoverlapping critical paths
   - BCF-controlled and total elapsed time including waits
   - matched cold and warm cohorts with exact identities counts variance exclusions
@@ -3859,6 +3856,12 @@ implementation_slices:
     - tests.test_candidate_submit::test_submission_progress_separates_initial_and_normalized_subject_streams
     - tests.test_operational_observations::test_progress_kind_extension_preserves_legacy_bytes_and_rejects_unknown_kind
     negative_controls:
+    - cause: bounded-pagination-instability-retains-cause
+      test: tests.test_ci_github_controller::test_repository_inventory_failure_retains_bounded_attempt_diagnostics[pagination-8]
+    - cause: bounded-relevant-object-churn-retains-cause
+      test: tests.test_ci_github_controller::test_repository_inventory_failure_retains_bounded_attempt_diagnostics[metadata-4]
+    - cause: malformed-inventory-is-not-retryable-churn
+      test: tests.test_ci_github_controller::test_repository_inventory_schema_error_is_not_retried_as_instability
     - cause: provider-workflow-controller-graph-or-transport-failure
       test: tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[controller]
     - cause: exposure-error-before-provider-work
@@ -3951,6 +3954,8 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_local_proof_bundles::test_proof_context_is_deterministic_detached_and_legacy_compatible
+    - tests.test_prospective_validation::test_prospective_cache_identity_receives_resolved_context_and_lane
     - tests.test_ci_github_pr_authority::test_bound_pr_evaluator_and_publisher_separate_comparison_from_protected_source
     - tests.test_ci_github_pr_authority::test_nondefault_pr_cannot_consume_default_main_transition_equivalence
     - tests.test_candidate_submit::test_bound_pr_normalization_assertion_uses_candidate_scope[pr-True]
@@ -3972,6 +3977,24 @@ implementation_slices:
     - tests.test_prospective_validation::test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source
     - tests.test_ci_graph::test_v3_reference_graph_projects_proof_transport_and_planned_shards
     negative_controls:
+    - cause: cached-proof-context-base_ref
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[base_ref-other-stack]
+    - cause: cached-proof-context-head_ref
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[head_ref-other-leaf]
+    - cause: cached-proof-context-pull_request_number
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[pull_request_number-8]
+    - cause: cached-proof-context-pull_request_node_id
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[pull_request_node_id-PR_other]
+    - cause: cached-proof-context-provider_head_sha
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[provider_head_sha-8888888888888888888888888888888888888888]
+    - cause: cached-proof-context-protected_default_sha
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[protected_default_sha-9999999999999999999999999999999999999999]
+    - cause: cached-proof-context-protected_default_tree
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[protected_default_tree-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa]
+    - cause: cached-proof-context-repository_id
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[repository_id-18]
+    - cause: cached-proof-context-validation_lane
+      test: tests.test_local_proof_bundles::test_changed_comparison_context_cannot_restore_previous_local_proof[validation_lane-isolated_candidate_qualification]
     - cause: provider-comparison-reference-moved-evaluator
       test: tests.test_ci_github_pr_authority::test_bound_pr_evaluator_rejects_bad_comparison_before_producers[reference-moved]
     - cause: provider-comparison-invalid-tree-evaluator

@@ -1876,3 +1876,22 @@ def test_source_distribution_failure_rejects_before_provider_and_preserves_cause
             repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
     assert caught.value.__cause__ is failure
     assert [(e['stage'], e['state']) for e in events[-2:]] == [('source_distribution', 'started'), ('source_distribution', 'failed')]
+
+
+def test_prospective_cache_identity_receives_resolved_context_and_lane(monkeypatch, tmp_path):
+    trace = []
+    _front_door(monkeypatch, trace)
+    context = LocalPRContext('origin', 'main', BASE, HEAD, 'feature', protected_default_sha=BASE, protected_default_tree=BASE_TREE)
+    monkeypatch.setattr(prospective, 'resolve_local_pr_context', lambda *_a, **_k: context)
+    monkeypatch.setattr(prospective, 'run_preflight', lambda *_a, **_k: {'status': 'pass', 'self_controller': 24,
+        'verification_plan': {'execution_dag': {'nodes': [{'id': 'test', 'producer': 'test', 'depends_on': []}], 'edges': []}}})
+    monkeypatch.setattr(prospective, 'planned_gate_targets', lambda *_a, **_k: ('test',))
+    monkeypatch.setattr(prospective, 'validate_controller_custody_graph', lambda *_a, **_k: (_evaluation(), {'status': 'proved', 'custody_state': 'ordinary_executable_controller'}))
+    monkeypatch.setattr(prospective, 'ordinary_authority_applicability', lambda *_a: 'bootstrap_provider_authority_absent')
+    def identity(**kwargs):
+        assert kwargs['comparison_context'] == {**context.as_dict(), 'validation_lane': 'provider_pr'}
+        raise RuntimeError('proof context observed')
+    monkeypatch.setattr(prospective, 'proof_identity', identity)
+    with pytest.raises(RuntimeError, match='proof context observed'):
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'),
+            repository='owner/repo', runner=_runner)

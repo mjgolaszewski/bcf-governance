@@ -510,7 +510,7 @@ def _run_prospective_train(
                         "authority": dict(controller_authority or {}),
                         "custody": custody_contract,
                     },
-                    policy=policy_identity,
+                    policy=policy_identity, comparison_context={**context.as_dict(), "validation_lane": effective_validation_lane.value},
                     toolchain=dict(toolchain_identity or {}),
                     python_executable=python_executable,
                 )

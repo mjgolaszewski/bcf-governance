@@ -388,7 +388,7 @@
     },
     "schemas/proof-bundle.schema.json": {
       "operation": "copy",
-      "sha256": "4439084a5186ecaeaccff913662db3e7e16ac102f58ea60f65bb9f27b17ded00"
+      "sha256": "8da9ec2a5b33b13fea763bc8fe36238dcf08d0d158fff8ac30b369f767478be2"
     },
     "schemas/prospective-train-telemetry.schema.json": {
       "operation": "copy",
@@ -604,7 +604,7 @@
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
-      "sha256": "7d8fc81735173578d7be670f66ae80cb1fb35a5ea84e2d1dffec0296ab79b4d6"
+      "sha256": "8907450dddf6266d2c7ec76d37527a73f13aa3433c301e58206f2038b52c7280"
     },
     "scripts/_bcf_runtime/ci_github_artifacts.py": {
       "operation": "copy",
@@ -1275,7 +1275,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "17adce6cd0756eabdf200255f67c9e254eed0f128d16741be5e074c21bb6fb21"
+      "sha256": "3b2e1804fb8a9e74b6ab4b2015c517bb11f86d0c9c6ce94b9f041ba2ec2915f9"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1283,7 +1283,7 @@
     },
     "scripts/_bcf_runtime/local_proof_bundles.py": {
       "operation": "copy",
-      "sha256": "514bcc3434f12f84e966926f7e8167c8470535c4626f2e27372f20359b0cee71"
+      "sha256": "8452f48d64f325fdc1381e2d027c2b03a2861621193e86a70d32640ae559d608"
     },
     "scripts/_bcf_runtime/migrate_contracts.py": {
       "operation": "copy",

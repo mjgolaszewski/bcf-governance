@@ -1,0 +1,41 @@
+{
+  "authority": false,
+  "status": "affected_checks_passed_full_acceptance_open",
+  "contracts": [
+    "9d2fff3f",
+    "45646979"
+  ],
+  "checks": {
+    "affected_cache_prospective_controller_pr_authority": {
+      "passed": 207,
+      "elapsed_seconds": 9.04
+    },
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_module_size": "passed",
+    "architecture_context_membership": "passed",
+    "governance_yaml": "passed"
+  },
+  "inventory": {
+    "bounded_attempt_outcomes_preserved": true,
+    "read_budget_unchanged": true,
+    "success_output_unchanged": true,
+    "subsequent_read_only_diagnostic": {
+      "requests": 78,
+      "result": "stable_complete_inventory",
+      "original_failure_cause": "unknown_original_payloads_not_retained"
+    }
+  },
+  "proof_context": {
+    "new_front_door_identity": "canonical_resolved_context_plus_validation_lane",
+    "legacy_shape": "preserved_when_optional_context_absent",
+    "changed_context": "cache_miss_requires_applicable_proof",
+    "authority": "local_non_authoritative"
+  },
+  "remaining": [
+    "Independent complete consumer and runtime-effect conformance.",
+    "Installed parity on these exact changes, canonical normalization and provider admission.",
+    "Real isolated consumer acceptance, approved matched performance targets and custody.",
+    "All82 whole requirements remain open."
+  ]
+}
