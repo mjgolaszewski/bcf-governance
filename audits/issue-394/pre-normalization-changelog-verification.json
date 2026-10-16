@@ -17,7 +17,18 @@
     "lint": "passed",
     "typecheck": "passed",
     "architecture_module_size": "passed",
-    "architecture_context_membership": "passed"
+    "architecture_context_membership": "passed",
+    "isolated_installed_submission_prospective": {
+      "passed": 124,
+      "elapsed_seconds": 5.38,
+      "package_and_submission_module_origins": "asserted_exact_installed_runtime",
+      "runtime_admission": "existing_exact_release_runtime_owner"
+    },
+    "workplan_schema_exact_references": {
+      "passed": 2,
+      "elapsed_seconds": 16.95
+    },
+    "governance_yaml": "passed"
   },
   "scope": [
     "positive exact PR delta for default/stacked comparisons",
@@ -28,8 +39,18 @@
   ],
   "limits": [
     "Complete deterministic failure population and earliest-safe-boundary conformance remain open.",
-    "Exact installed parity for this source change and independent complete consumer acceptance remain required.",
+    "Installed parity for stated124 cases passes; independent complete consumer acceptance remains required.",
     "No successor heavy train started while maintenance427 owns the lane.",
     "No phase/controller/release/custody authority or whole requirement closure conferred."
-  ]
+  ],
+  "exact_build": {
+    "authority": false,
+    "commit": "49706521bd30b2a0e9fa3ff73777c54373e4c4aa",
+    "tree": "cfc80d5d7a2e21ae79f0f75ab7950e6b045ade7f",
+    "python_files_equal": 597,
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "01b6195ab6e9a7e359a2a241157a8bd5d2d5288e81c4bb8f7a818619afc762e5",
+      "bcf_governance-2.5.0.tar.gz": "b15e6ed46115e29c279f5e9eb36fa61927f439a7d140f41199894096c03eb322"
+    }
+  }
 }
