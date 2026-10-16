@@ -51,5 +51,18 @@
     "Git failures and malformed records fail closed",
     "Legacy candidate discovery unchanged"
   ],
-  "completion": "Behavioral plus architecture/parity/static checks; independent parser byte binding, runtime effect interpretation and installed consumer authority remain required."
+  "completion": "Behavioral plus architecture/parity/static checks; independent parser byte binding, runtime effect interpretation and installed consumer authority remain required.",
+  "local_execution": {
+    "contract_red_commits": [
+      "7f98d74c",
+      "557cd523",
+      "79614574",
+      "09d79f37"
+    ],
+    "final_affected": "100 passed in 5.20 seconds",
+    "final_cli_effect": "1 passed in 91.94 seconds",
+    "governance_static_parity": "governance-yaml-ok; lint/typecheck and canonical pack --check passed",
+    "verification": "audits/issue-394/exact-source-population-verification.json",
+    "remaining": "Protected provider/repository/base/candidate binding, runtime effect interpretation, actual lifecycle adoption, canonical oracle normalization and installed consumer/custody qualification remain open."
+  }
 }

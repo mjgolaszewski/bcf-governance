@@ -757,6 +757,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-source-population
     - dormant-composition-and-static-bindings
   I05:
     requirement: Conservative ambiguity. Unknown imports/reflection/generated inputs/fixtures/cross-language/configuration/environment/security/trust effects expand
@@ -1467,6 +1468,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-source-population
     - initialization-operation-consumer-binding
     - opt-in-python-initialization-facts
     - dormant-composition-and-static-bindings
@@ -2011,6 +2013,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - exact-committed-source-population
     - initialization-operation-consumer-binding
     - opt-in-python-initialization-facts
     - dormant-composition-and-static-bindings
@@ -2933,3 +2936,35 @@ implementation_slices:
     - Protected caller must independently authenticate the complete parser/source population and exact bytes; facts and this query cannot authenticate themselves.
     - Implicit native external dynamic and cross-language runtime effect interpretation and actual installed consumer conformance remain unqualified.
     - Canonical test-manifest normalization normative DAG adoption and whole-requirement closure remain blocked.
+  exact-committed-source-population:
+    id: exact-committed-source-population
+    workitem: P32-P0-04
+    scope: Existing source owner inventories exact Git Python blobs and explicit removals; existing parser authenticates its complete selected population and raw bytes/mode before parsing. Provider/repository authority remains external.
+    contract: audits/issue-394/exact-source-population-contract.json
+    producer: bcf_governance/tooling/semantic_source_paths.py::committed_python_source_population
+    consumer: bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_semantic_source_paths::test_exact_population_uses_committed_blobs_without_executing_source
+    - tests.test_semantic_source_paths::test_discovery_binds_exact_tree_and_preserves_default_output
+    - tests.test_semantic_source_paths::test_unusual_paths_and_executable_mode_are_preserved
+    negative_controls:
+    - cause: symbolic-source-subject-before-git
+      test: tests.test_semantic_source_paths::test_nonexact_subject_rejects_before_git[HEAD]
+    - cause: wrong-source-tree-before-enumeration
+      test: tests.test_semantic_source_paths::test_wrong_tree_rejects_before_population_enumeration
+    - cause: replacement-source-object
+      test: tests.test_semantic_source_paths::test_git_replacement_cannot_substitute_the_source_subject
+    - cause: removed-source-module
+      test: tests.test_semantic_source_paths::test_source_delta_retains_removed_and_changed_python_population
+    - cause: unresolved-symlink-or-submodule
+      test: tests.test_semantic_source_paths::test_symlinks_and_gitlinks_are_unresolved_even_without_python_suffix
+    - cause: dirty-source-before-parsing
+      test: tests.test_semantic_source_paths::test_discovery_rejects_source_mismatch_before_parsing[dirty]
+    - cause: source-subset-before-parsing
+      test: tests.test_semantic_source_paths::test_discovery_rejects_source_mismatch_before_parsing[subset]
+    remaining:
+    - Protected lifecycle consumers must independently bind authenticated repository/base/candidate context to these exact-subject queries and handle removals and unresolved entries.
+    - Provider authority continued filesystem freshness complete runtime effect interpretation and installed consumer qualification are not established by local Git observations.
+    - Canonical test-manifest normalization actual normative DAG adoption and whole-requirement closure remain blocked.

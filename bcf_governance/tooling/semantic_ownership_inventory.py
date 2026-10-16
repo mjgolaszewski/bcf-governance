@@ -9,6 +9,7 @@ from __future__ import annotations
 import ast
 import copy
 import hashlib
+import stat
 from pathlib import Path
 from pathlib import PurePosixPath
 from typing import Any
@@ -25,7 +26,7 @@ from .semantic_python_annotation_identity import (
     external_import_identity,
     resolve_annotation_identities,
 )
-from .semantic_source_paths import candidate_source_files
+from .semantic_source_paths import candidate_source_files, committed_python_source_population
 from .semantic_python_calls import (
     initialization_facts,
     DYNAMIC_CALLS as DYNAMIC_CALLS,
@@ -212,7 +213,28 @@ def discover_python_source(
     if initialization_contracts_version is not None and initialization_contracts_version != "1.0":
         raise SemanticInventoryError("unsupported Python initialization contract version")
     repo_root = repo_root.resolve()
-    paths = files if files is not None else tracked_python_files(repo_root)
+    population = None
+    if source_subject is not None:
+        try:
+            if not isinstance(source_subject, dict):
+                raise ValueError("source subject must be a mapping")
+            population = committed_python_source_population(repo_root, **source_subject)
+        except (TypeError, ValueError) as exc:
+            raise SemanticInventoryError("exact source population subject is invalid") from exc
+        if population["unresolved_entries"]:
+            raise SemanticInventoryError("exact source population contains unresolved links or submodules")
+    paths = files if files is not None else tracked_python_files(repo_root, allow_empty=population is not None)
+    expected_blobs = {} if population is None else {
+        row[0]: (row[1], row[2]) for row in population["python_blobs"]
+    }
+    if population is not None:
+        try:
+            observed_paths = [_relative(repo_root, path) for path in paths]
+        except ValueError as exc:
+            raise SemanticInventoryError("exact source population escapes repository") from exc
+        if len(observed_paths) != len(set(observed_paths)) or set(observed_paths) != expected_blobs.keys():
+            raise SemanticInventoryError("exact source file population differs from committed tree")
+        paths = sorted(paths, key=lambda path: _relative(repo_root, path))
     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
     file_rows: list[dict[str, str]] = []
     functions: list[dict[str, Any]] = []
@@ -223,7 +245,21 @@ def discover_python_source(
     initializers: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
-        raw = path.read_bytes()
+        try:
+            raw = path.read_bytes()
+        except OSError as exc:
+            if population is None:
+                raise
+            raise SemanticInventoryError("exact source file is unavailable before parsing") from exc
+        if population is not None:
+            mode, expected_oid = expected_blobs[relative]
+            observed_oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+            try:
+                executable = bool(path.stat().st_mode & stat.S_IXUSR)
+            except OSError as exc:
+                raise SemanticInventoryError("exact source file mode is unavailable before parsing") from exc
+            if observed_oid != expected_oid or executable != (mode == "100755"):
+                raise SemanticInventoryError("exact source bytes or executable mode differ from committed tree")
         try:
             tree = ast.parse(raw.decode("utf-8"), filename=relative)
         except (UnicodeDecodeError, SyntaxError) as exc:
@@ -298,6 +334,8 @@ def discover_python_source(
     if initialization_contracts_version is not None:
         inventory.update(initialization_contracts_version=initialization_contracts_version,
                          module_initializers=initializers, authority=False)
+    if population is not None:
+        inventory.update(source_population=population, authority=False)
     return inventory
 
 
