@@ -23,5 +23,10 @@
   ],
   "limits": [
     "Complete independent authority/consumer populations and canonical real-adopter qualification remain open."
-  ]
+  ],
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "dependency_origin_query_before_controller_command",
+  "canonical_owner": "bcf_governance/tooling/release_adopter_qualification.py::_exact_release_runtime",
+  "scope_clarification": "Canonical workitem foundation.residuals and existing release qualification owner supply context/layer; explicit fields retained before production commit."
 }
