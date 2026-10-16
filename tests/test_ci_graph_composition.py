@@ -1199,3 +1199,112 @@ def test_shared_binding_checks_preserve_legacy_sequence_call_edges(binding_input
         for pair, edges in binding_inputs['required_call_edges'].items()
     }
     assert _validate_bindings(binding_inputs) == original
+
+
+@pytest.fixture
+def public_reconstructed_binding_inputs(reconstructed_binding_inputs, composition):
+    import hashlib
+    import subprocess
+    import yaml
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+
+    inputs = reconstructed_binding_inputs
+    root = inputs['repo_root']
+    source = root / 'runtime.py'
+    source.write_text(source.read_text() + '\nCOMMANDS = {"produce": produce}\n')
+    operation = dict(id='example.produce.v1', population='cli', population_key='produce', family='example', bounded_context='example', entrypoints=['runtime.py::produce'], semantic_kind='query', authoritative_read=True, authoritative_mutation=False, authority_conferral=False, produces_projection=False, model_callable=False, allowed_mutation_ports=[], allowed_authority_ports=[], non_authoritative_output_effects=[])
+    payload = dict(schema_version='1.0', document=dict(kind='application_operation_registry', id='example-operations', version='1.0.0', status='active', path='governance/application-operations.yml'), populations=[dict(id='cli', adapter='python_mapping', source='runtime.py', symbol='COMMANDS', public_only=True)], operations=[operation], migrations=[])
+    policy = root / 'governance/application-operations.yml'
+    policy.parent.mkdir()
+    policy.write_text(yaml.safe_dump(payload))
+    def git(*args):
+        return subprocess.run(['git', *args], cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+    git('add', '.')
+    git('commit', '-qm', 'public policy')
+    subject = dict(commit_sha=git('rev-parse', 'HEAD'), tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    identity = dict(inputs['expected_source'], **subject)
+    composition['expected_source'] = composition['payload']['source'] = identity
+    inputs['expected_source'] = identity
+    inputs['compiled'] = compile_lifecycle_composition(**composition)
+    inventory = resolve_python_imports(root, discover_python_source(root, source_subject=subject, call_contracts_version='1.0', initialization_contracts_version='1.0'))
+    pair = ('release', 'build', 'verify')
+    inputs['required_operation_calls'] = {pair: {symbol: source_operation_call_population(symbol, inventory, include_initialization=True) for symbol in inputs['required_operation_calls'][pair]}}
+    inputs['operation_policy_subject'] = subject
+    inputs['required_public_operation_relationships'] = {'example.produce.v1': frozenset({pair})}
+    return inputs, policy, hashlib.sha256(policy.read_bytes()).hexdigest()
+
+
+def test_public_operations_bind_to_reconstructed_lifecycle(public_reconstructed_binding_inputs):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    before = copy.deepcopy(inputs)
+    result = validate_reconstructed_lifecycle_bindings(**inputs)
+    assert result['public_operation_bindings']['operations_checked'] == 1
+    assert result['public_operation_bindings']['registry_sha256'] == digest
+    assert result['authority'] is False
+    assert result['execution_qualified'] is False
+    assert inputs == before
+
+
+@pytest.mark.parametrize('defect', ['omission', 'empty', 'unknown_pair', 'wrong_operation', 'missing_policy', 'missing_mapping', 'wrong_subject', 'wrong_entrypoint'])
+def test_public_operation_declarations_reject_before_source_discovery(public_reconstructed_binding_inputs, monkeypatch, defect):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import semantic_ownership_inventory
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    mapping = inputs['required_public_operation_relationships']
+    if defect == 'omission':
+        mapping.clear()
+    elif defect == 'empty':
+        mapping['example.produce.v1'] = frozenset()
+    elif defect == 'unknown_pair':
+        mapping['example.produce.v1'] = frozenset({('other', 'build', 'verify')})
+    elif defect == 'wrong_operation':
+        mapping['other.operation'] = mapping.pop('example.produce.v1')
+    elif defect == 'missing_policy':
+        inputs['operation_policy_subject'] = None
+    elif defect == 'missing_mapping':
+        inputs['required_public_operation_relationships'] = None
+    elif defect == 'wrong_subject':
+        inputs['operation_policy_subject']['commit_sha'] = 'HEAD'
+    else:
+        import subprocess
+        import yaml
+        payload = yaml.safe_load(policy.read_text())
+        payload['operations'][0]['entrypoints'] = ['runtime.py::declared_port']
+        policy.write_text(yaml.safe_dump(payload))
+        def git(*args):
+            return subprocess.run(['git', *args], cwd=inputs['repo_root'], check=True, capture_output=True, text=True).stdout.strip()
+        git('add', '.')
+        git('commit', '-qm', 'unbound policy endpoint')
+        inputs['operation_policy_subject'] = dict(commit_sha=git('rev-parse', 'HEAD'), tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', lambda *args, **kwargs: pytest.fail('source discovery before public-policy rejection'))
+    with pytest.raises(CIGraphError):
+        owner.validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+def test_dirty_public_policy_rejects_before_source_discovery(public_reconstructed_binding_inputs, monkeypatch):
+    from bcf_governance.tooling import ci_graph_composition as owner
+    from bcf_governance.tooling import semantic_ownership_inventory
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    policy.write_text(policy.read_text() + '# substitution\n')
+    monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', lambda *args, **kwargs: pytest.fail('source discovery before digest rejection'))
+    with pytest.raises(CIGraphError, match='digest'):
+        owner.validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+def test_public_policy_capture_is_not_reread_after_source_reconstruction(public_reconstructed_binding_inputs, monkeypatch):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs, policy, digest = public_reconstructed_binding_inputs
+    real = Path.read_bytes
+    reads = []
+    def read(path):
+        raw = real(path)
+        if path == policy:
+            reads.append(raw)
+            path.write_text('poisoned after capture')
+        return raw
+    monkeypatch.setattr(Path, 'read_bytes', read)
+    result = validate_reconstructed_lifecycle_bindings(**inputs)
+    assert result['public_operation_bindings']['registry_sha256'] == digest
+    assert len(reads) == 1

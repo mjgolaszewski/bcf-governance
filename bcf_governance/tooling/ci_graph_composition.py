@@ -624,6 +624,8 @@ def validate_reconstructed_lifecycle_bindings(
     required_fact_bindings: Mapping[Relationship, tuple[Mapping[str, str], ...]],
     required_operation_calls: Mapping[Relationship, Mapping[str, Mapping[str, Any]]],
     source_import_roots: tuple[str, ...] = (".",),
+    operation_policy_subject: Mapping[str, str] | None = None,
+    required_public_operation_relationships: Mapping[str, frozenset[Relationship]] | None = None,
 ) -> dict[str, Any]:
     """Reconstruct exact source inputs; caller authenticates protected context."""
     from .semantic_ownership_inventory import (
