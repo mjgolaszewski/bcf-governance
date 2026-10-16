@@ -1,0 +1,46 @@
+{
+  "document": {
+    "kind": "implementation_contract",
+    "path": "audits/issue-394/terminal-proposition-binding-contract.json",
+    "authority": false
+  },
+  "bounded_context": "evaluation_scope",
+  "layer": "domain_query",
+  "side": "query",
+  "workitem_alias": "foundation.composition",
+  "targets": [
+    "bcf_governance/tooling/evaluation_scope.py",
+    "schemas/ci-certification.schema.json",
+    "tests/test_evaluation_scope.py",
+    "canonical private runtime/schema copies through pack owner"
+  ],
+  "forbidden": [
+    "installer/custody/release-byte changes",
+    "workflow authority pins",
+    "provider/adopter actions",
+    "fix/v2.3.4-runtime-retirement",
+    "actual DAG adoption"
+  ],
+  "defects": [
+    "Failed evaluation with closed target emits successor authority that its own verifier rejects",
+    "Proposition decoder accepts mismatched evaluation intent and target kind"
+  ],
+  "contract": [
+    "Derive and validate target kind using existing evaluation_scope owner in producer and verifier; do not create a second target policy",
+    "Failed evaluation never authorizes successors even when one target is closed",
+    "Invalid target shape/kind/PR subject fails before proposition production or consumption",
+    "Terminal phase predicate requires exact typed phase target and no bounded successor authority; malformed inputs return false",
+    "Existing valid progress/workitem/phase and scopeless legacy certification contracts remain readable",
+    "Certification schema rejects intent/target-kind contradictions before snapshot/provider allocation; tests derive valid matrix from existing owner",
+    "No local proposition or pure terminal predicate independently authenticates custody or provider authority"
+  ],
+  "tests": [
+    "Closed/open target crossed with pass/fail evaluations",
+    "All intent/target-kind permutations at source owner and certification schema",
+    "Wrong PR subject empty/malformed target and wrong bounded identity",
+    "Producer-to-verifier round trip for valid positive and failed propositions",
+    "Bounded/progress/phase terminal distinction and malformed terminal envelopes",
+    "Existing governance truth controller and release suites"
+  ],
+  "dependency_acceptance": "Isolated terminal-binding correction under peer 6870; admission and canonical oracle normalization remain blocked."
+}
