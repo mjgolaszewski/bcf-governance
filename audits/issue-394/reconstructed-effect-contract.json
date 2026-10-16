@@ -25,7 +25,9 @@
     "zero-effect compilation",
     "reconstructed zero-effect success",
     "fabricated compiled effect rejection",
-    "strict effect mode without protected policy rejects before discovery"
+    "strict effect mode without protected policy rejects before discovery",
+    "Committed public operation with a reachable observation port reconstructs through the full query without a caller inventory.",
+    "Removing candidate effects, omitting source-port crosswalk, or inventing ports rejects with the independent source and protected policy unchanged."
   ],
   "forbidden_surfaces": [
     "workflow pins",

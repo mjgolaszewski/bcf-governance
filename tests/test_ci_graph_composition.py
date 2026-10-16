@@ -1625,3 +1625,64 @@ def test_reconstructed_effect_contexts_reject_before_discovery(public_reconstruc
     monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail('late context rejection'))
     with pytest.raises(CIGraphError, match='effect binding context'):
         validate_reconstructed_lifecycle_bindings(**inputs, required_effect_bindings={key: pairs})
+
+
+@pytest.fixture
+def nonempty_public_effect_inputs(public_reconstructed_binding_inputs, composition):
+    import subprocess
+    import yaml
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+    inputs, policy, _ = public_reconstructed_binding_inputs
+    payload = yaml.safe_load(policy.read_text())
+    payload['operations'][0]['non_authoritative_output_effects'] = ['runtime.py::declared_port']
+    policy.write_text(yaml.safe_dump(payload))
+    root = inputs['repo_root']
+    source = root / 'runtime.py'
+    source.write_text(source.read_text().replace('    return b"assets"', '    declared_port()\n    return b"assets"'))
+    def git(*args):
+        return subprocess.run(['git', *args], cwd=root, check=True, capture_output=True, text=True).stdout.strip()
+    git('add', 'governance/application-operations.yml', 'runtime.py')
+    git('commit', '-qm', 'declare protected observation port')
+    subject = dict(commit_sha=git('rev-parse', 'HEAD'), tree_sha=git('rev-parse', 'HEAD^{tree}'))
+    inputs['expected_source'] = dict(inputs['expected_source'], **subject)
+    inputs['operation_policy_subject'] = subject
+    pair = ('release', 'build', 'verify')
+    port = ('example.produce.v1', 'observation', 'function', 'runtime.py::declared_port')
+    encoded = json.dumps(port, sort_keys=True, separators=(',', ':'))
+    composition['expected_source'] = composition['payload']['source'] = inputs['expected_source']
+    composition['payload']['relationships'][0]['contract']['effects'] = [encoded]
+    composition['expected_effects'] = frozenset({(*pair, encoded)})
+    inputs['compiled'] = compile_lifecycle_composition(**composition)
+    inputs['required_effect_bindings'] = {port: frozenset({pair})}
+    inventory = resolve_python_imports(root, discover_python_source(root, source_subject=subject, call_contracts_version='1.0', initialization_contracts_version='1.0'))
+    inputs['required_operation_calls'] = {pair: {symbol: source_operation_call_population(symbol, inventory, include_initialization=True) for symbol in inputs['required_operation_calls'][pair]}}
+    return inputs
+
+
+@pytest.mark.parametrize('defect', [None, 'omitted_compiled_effect', 'omitted_crosswalk', 'invented_crosswalk'])
+def test_committed_public_port_reconstructs_end_to_end(nonempty_public_effect_inputs, composition, defect):
+    from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
+    inputs = nonempty_public_effect_inputs
+    if defect == 'omitted_compiled_effect':
+        composition['payload']['relationships'][0]['contract']['effects'] = []
+        composition['expected_effects'] = frozenset()
+        inputs['compiled'] = compile_lifecycle_composition(**composition)
+    elif defect == 'omitted_crosswalk':
+        inputs['required_effect_bindings'] = {}
+    elif defect == 'invented_crosswalk':
+        inputs['required_effect_bindings'][('example.produce.v1', 'observation', 'call', 'invented')] = frozenset({('release', 'build', 'verify')})
+    before = copy.deepcopy(inputs)
+    if defect is None:
+        result = validate_reconstructed_lifecycle_bindings(**inputs)
+        assert result['source_effect_bindings']['effects_checked'] == 1
+        assert result['source_effect_bindings']['bindings'][0][:3] == ('release', 'build', 'verify')
+        assert result['public_operation_bindings']['operations'][0][-1] == (('observation', 'function', 'runtime.py::declared_port'),)
+        assert result['source_reconstruction']['subject'] == inputs['operation_policy_subject']
+        assert result['authority'] is False
+        assert result['execution_qualified'] is False
+        assert validate_reconstructed_lifecycle_bindings(**inputs) == result
+    else:
+        with pytest.raises(CIGraphError, match='effect (population|bindings)'):
+            validate_reconstructed_lifecycle_bindings(**inputs)
+    assert inputs == before

@@ -28,5 +28,16 @@
     "Static protected-public-operation effects only; caller authenticates policy and source identities.",
     "No normative model adoption, installed consumer qualification, activation or custody.",
     "Existing semantic-lock and test-manifest normalization remains held."
-  ]
+  ],
+  "end_to_end_static_evidence": {
+    "passed": 4,
+    "seconds": 1.42,
+    "scope": "Committed synthetic public operation, protected policy capture, exact Git source reconstruction, actual reachable observation port, source call population comparison, compiled effect comparison. Not runtime or installed consumer evidence.",
+    "negative_controls": [
+      "omitted compiled effect",
+      "omitted crosswalk",
+      "invented crosswalk"
+    ],
+    "initial_fixture_correction": "The initial fixture declared an unreachable port and was correctly rejected by the existing producer. Added an actual call in produce and committed those source bytes; no production change or assertion relaxation."
+  }
 }

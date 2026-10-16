@@ -3065,6 +3065,7 @@ implementation_slices:
     status: focused_tests_passed
     authority: false
     positive_tests:
+    - tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end
     - tests.test_ci_graph_composition::test_reconstructed_zero_effects_close_existing_schema
     - tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner
     - tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects
