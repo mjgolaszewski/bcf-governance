@@ -12,7 +12,8 @@
     "Resolve, validate and deterministically sort roots before allocating a fresh controller; reject unavailable/unsafe roots with the existing typed error.",
     "Nested projections must retain dependencies physically installed outside the immediate parent prefix. No manual pip repair, extra dependency installation, provider mutation or weakened probe.",
     "Do not project unrelated editable/project distributions or guess roots from sys.path; validate wheel identity and dependency versions/markers/extras before allocation.",
-    "Missing, contradictory, ambiguous wheel metadata and unverifiable direct-URL dependencies fail closed without provisioning or extra installation."
+    "Missing, contradictory, ambiguous wheel metadata and unverifiable direct-URL dependencies fail closed without provisioning or extra installation.",
+    "Validate candidate and installed dependency Requires-Python declarations against the invoking interpreter, which creates the controller, before allocation; retain the independent child probe and pip compatibility checks."
   ],
   "cause": "Canonical7f82a29f qualification omitted packaging because sysconfig did not include its actual admitted distribution origin.",
   "verification": [
