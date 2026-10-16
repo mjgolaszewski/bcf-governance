@@ -1,0 +1,78 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-02",
+  "continuing_workitem": "P33-P0-01",
+  "requirements": [
+    "343.5",
+    "354.recovery",
+    "I01",
+    "I02",
+    "I04",
+    "I11"
+  ],
+  "bounded_context": "ci_authority exact repository comparison context",
+  "architectural_layer": "existing local PR identity owner, provider read adapter and submission/prospective consumers",
+  "operation_side": "authenticated query before qualification or mutation",
+  "targets": [
+    "bcf_governance/tooling/local_pr_context.py",
+    "bcf_governance/tooling/prospective_candidate_identity.py",
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "bcf_governance/tooling/ci_candidate_pr.py",
+    "bcf_governance/tooling/local_pr.py",
+    "bcf_governance/tooling/ci_commands.py",
+    "tests/test_local_pr.py",
+    "tests/test_candidate_submit.py",
+    "tests/test_ci_candidate_pr.py",
+    "tests/test_prospective_validation.py",
+    "governance/canonical-representations.yml",
+    "spec/phase0/release-train-backtrace.yml"
+  ],
+  "invariant": "An authenticated bound PR supplies its exact base/head relationship; default branch is not a substitute for that relationship. Candidate-local proof never grants provider certification, protected-main or release authority.",
+  "contract": [
+    "Extend the existing LocalPRContext owner rather than introduce a second base resolver, CLI intent flag or semantic registry. Preserve legacy unbound context serialization and existing public CLI grammar.",
+    "Distinguish repository default branch, PR base branch and exact comparison SHA, provider-observed head and current local candidate. Newly authored descendants are not silently identical to an already observed provider head.",
+    "Authenticate provider repository identity against the selected remote and complete open PR inventory; exactly one branch/repository match binds a PR. Duplicate, malformed, moved, wrong repository, wrong ref or unavailable bound facts reject before generation/proof/effects. Absence must be authenticated; provider errors never become an empty inventory.",
+    "Fetch and verify exact referenced Git objects and ancestry through the existing bounded immutable Git read owner. Preserve default-branch behavior for authenticated unbound and genuinely local non-provider repositories; unprovable GitHub identity cannot confer submit authority.",
+    "Propagate the same comparison context to source checks, changelog, planning, local synthetic PR event, prospective proof, exact push, existing PR projection and late unchanged checks. A provider/local head advancement requires an explicit same-branch descendant transition and reauthentication at its consuming boundary.",
+    "Preserve separate authority contexts: a feature-branch PR base does not grant protected-default-main, bounded/phase, controller or release authority. Existing repository protection and finalizer/evaluator owners retain their propositions. No force-push, blind retry or mutation inference.",
+    "Existing PR reuse binds actual base ref/SHA rather than requiring every PR base equal repository default. Creation of an unbound PR continues to derive the default target. Protected merge requests remain independently gated by the actual target protection contract.",
+    "All existing concrete success/error serialization must remain compatible in unchanged unbound contexts. Changes to previously rejected or unprovable states are additive safety behavior; any unavoidable valid public contract break blocks activation pending explicit migration/version decision.",
+    "Remain isolated from live canonical attempt 5. Do not merge or activate an incomplete subset that changes local base while leaving consumers on default-branch assumptions."
+  ],
+  "edge_conditions": [
+    "authenticated unbound default-main candidate",
+    "bound main PR exact head/base",
+    "bound stacked PR feature base",
+    "new local descendant over existing provider head",
+    "unrelated or rewritten local head",
+    "provider base advances during discovery or proof",
+    "provider head advances during discovery or proof",
+    "multiple matching PRs",
+    "same branch name in a different fork/repository",
+    "closed/reopened or changed target PR",
+    "provider transient versus terminal read failure",
+    "malformed/missing/zero SHA or repository identity",
+    "exact fetch returns different or absent object",
+    "offline local repository unbound",
+    "GitHub binding unavailable without authenticated facts",
+    "post-normalization local candidate changed with stable PR binding",
+    "crash/ambiguous push result authenticated before continuation",
+    "stacked merge has no protected-main or release authority"
+  ],
+  "expected_tests": [
+    "Real Git local fixture with mocked authenticated GitHub read producer: stacked PR base differs from default and must be consumed unchanged.",
+    "Actual local synthetic PR event uses the same bound base ref/head/sha.",
+    "Cause-specific moved/ambiguous/wrong repository/failed discovery/fetch/ancestry controls stop before reconciliation, proof, push or PR mutation.",
+    "Unbound local compatibility, all existing provider recovery and candidate lifecycle tests; final actual operation characterization and source/package/template parity.",
+    "Complete consumer matrix and independent required population before adoption; no whole-requirement closure from narrow resolver tests."
+  ],
+  "forbidden_surfaces": [
+    "Primary in-flight transaction source and other agent worktrees",
+    "Maintained adopter repositories and frozen release bytes",
+    "Caller-selected ordinary target/base/merge method",
+    "Invented authenticated booleans or provider facts copied into authoritative source",
+    "Treating read-only observation as merge/release authorization"
+  ],
+  "dependency_acceptance": "Isolated foundation residual correction after exact admitted baseline evidence; full P02 closure and later dormant activation remain pending. All 82 whole issue requirements remain open."
+}
