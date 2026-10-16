@@ -1,0 +1,753 @@
+{
+  "schema_version": "1.0",
+  "kind": "compiled_job_deadline_inventory",
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "compiled_job_deadlines_and_declared_component_floors_only",
+  "producer": {
+    "recipe_sha256": "31da41c248c2f77aa71e67b173cdaabe0b9c6a32cd8b8f2b4acb7c975b9f2e70",
+    "compiler_owner": "bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph"
+  },
+  "subject": {
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+  },
+  "compiled_graph_sha256": "51406037d8246f0b3d47f0875869ccf2b850b05713fd633d49d8981103903a2d",
+  "committed_inputs_sha256": {
+    "governance/automation-producers.yml": "74c02575f7599f9e4a82cacc60f6d60692ee81dd1f7bec20441e6b375cf77cce",
+    "governance/ci-extensions/bcf-automation.yml": "6b24745f6af1398569df189dd2183f0ecf3dcdb4b8bee3cb42970432add60900",
+    "governance/ci-extensions/bcf-break-glass-recovery.yml": "831341d3ee3167c559aa83fd2eec5aea8adf94e6a5149c13b7c11c39ee3da874",
+    "governance/ci-extensions/bcf-evidence-storage.yml": "41e40dad457efc53292249a211575505e9d6021d73d3fee2e52c4e9eede68eea",
+    "governance/ci-extensions/bcf-release.yml": "1d11327a41f93d5077ee5cc2b35876361475800a4391008c31e4c6ed013e27f3",
+    "governance/ci-extensions/bcf-trusted-control.yml": "750cd322494c26215cb5c5ec5aef9d6745fa8aeba0e67fb359346ee27a8bf5f5",
+    "governance/ci-graph.yml": "51406037d8246f0b3d47f0875869ccf2b850b05713fd633d49d8981103903a2d",
+    "governance/evidence-storage.yml": "e7616b0c43cc0106779b5bab99ec9c1e5e8d30cbc51bff57a3698cb82454fdaa",
+    "governance/github-protection.yml": "5f8c6fcd0d569e17050f694571474faa0f7538d12a5d11cc51891cf01c59a53a",
+    "governance/public-contracts.yml": "d742ca253303c9243b72ddede7231b8898230cd9e3f631592b5b3f1c13aa066d",
+    "governance/self-governance-policy.yml": "bd3e900ee31a1c65a220423d365a5496ff69724ee1d75621d8a4d03f352adc96",
+    "schemas/ci-graph.schema.json": "f31b97e7645722a1865399603b24b4e955ad34382ea6c56e54d01f3cacea0399"
+  },
+  "jobs": [
+    {
+      "workflow": "authority-canary",
+      "job": "admit",
+      "timeout_minutes": 2,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "canary-admit"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "authority-canary",
+      "job": "observe",
+      "timeout_minutes": 2,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "canary-observe"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "authority-canary",
+      "job": "producer-a",
+      "timeout_minutes": 2,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "canary-producer-a"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "authority-canary",
+      "job": "producer-b",
+      "timeout_minutes": 2,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "canary-producer-b"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "automation-admission",
+      "job": "admit",
+      "timeout_minutes": 3,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "automation-admit"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "automation-reconcile",
+      "job": "reconcile",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "create-automation-app-token",
+          "automation-reconcile"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "break-glass-recovery",
+      "job": "build",
+      "timeout_minutes": 15,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "install-governance",
+          "create-recovery-app-token",
+          "recovery-authorize-build",
+          "recovery-build-controller",
+          "recovery-bind-build",
+          "upload-recovery-build"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "break-glass-recovery",
+      "job": "install",
+      "timeout_minutes": 15,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "install-governance",
+          "create-recovery-app-token",
+          "recovery-resolve-build",
+          "download-recovery-build",
+          "recovery-install",
+          "upload-recovery-install"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "break-glass-recovery",
+      "job": "probe",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "install-governance",
+          "create-recovery-app-token",
+          "recovery-probe"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "break-glass-recovery",
+      "job": "receipt",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "install-governance",
+          "create-recovery-app-token",
+          "recovery-finalize",
+          "upload-recovery-receipt"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "activate",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-controller",
+          "download-routine-probed",
+          "stage-promoted-routine-controller",
+          "setup-routine-active-directory",
+          "activate-routine-transition",
+          "upload-routine-active",
+          "upload-routine-active-callback-source"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "advance-bootstrap",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-controller",
+          "download-routine-authorized",
+          "stage-routine-controller",
+          "setup-routine-installing-directory",
+          "advance-routine-bootstrap",
+          "upload-routine-installing"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "advance-probe",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-controller",
+          "download-routine-installing",
+          "stage-probed-routine-controller",
+          "setup-routine-probed-directory",
+          "advance-routine-probe",
+          "upload-routine-probed"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "authorize",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-trigger-controller-custody",
+          "project-custody-controller-route",
+          "setup-routine-decision-directory",
+          "setup-routine-authorized-directory",
+          "authorize-routine-transition",
+          "upload-routine-decision",
+          "stage-routine-authorization-controller",
+          "materialize-routine-transition",
+          "upload-routine-authorized"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "bootstrap",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-controller",
+          "download-routine-authorized",
+          "stage-routine-controller",
+          "install-routine-controller"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "outcome",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-inapplicable-outcome",
+          "download-routine-decision-outcome",
+          "download-routine-active-outcome",
+          "upload-routine-outcome"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "probe",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-controller",
+          "download-routine-installing",
+          "stage-probed-routine-controller",
+          "install-probed-routine-controller"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "controller-rotation",
+      "job": "promote",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-routine-controller",
+          "download-routine-probed",
+          "stage-promoted-routine-controller",
+          "install-promoted-routine-controller"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "evidence-storage-qualification",
+      "job": "publish-evidence-input",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "durable_publish",
+        "source": "evidence-storage-qualification-source",
+        "reference": "evidence-storage-qualification-reference"
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "evidence-storage-qualification",
+      "job": "reconstruct-evidence-input",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "command",
+        "command": "evidence-storage-contract-validate"
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "evidence-storage-qualification-source",
+      "job": "prepare-evidence-input",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "command",
+        "command": "evidence-storage-contract-validate"
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "exact-main",
+      "job": "admit",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "exact-main-admit-effective",
+          "protection-inspector-token",
+          "prior-evidence-effective",
+          "upload-prior-evidence-effective"
+        ],
+        "evaluation_mode": "closure",
+        "protection_inspection": true
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "exact-main",
+      "job": "governance",
+      "timeout_minutes": 60,
+      "executor": {
+        "kind": "reusable_workflow",
+        "path": ".github/workflows/governance.yml",
+        "inputs": {
+          "evaluation_mode": "closure",
+          "use_prior_evidence": true,
+          "comparison_base_sha": "${{ github.event.before }}"
+        },
+        "artifact_bindings": {
+          "prior-evidence-transport": "use_prior_evidence"
+        }
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "exact-main",
+      "job": "trusted-controller-build",
+      "timeout_minutes": 15,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "resolve-effective-controller-candidate",
+          "classify-exact-main-controller",
+          "setup-controller-custody-directory",
+          "project-controller-custody",
+          "upload-controller-custody",
+          "build-trusted-controller",
+          "upload-trusted-controller"
+        ]
+      },
+      "component_floors": [
+        {
+          "component": "resolve-effective-controller-candidate",
+          "minimum_job_timeout_minutes": 10
+        }
+      ]
+    },
+    {
+      "workflow": "exact-main-finalizer",
+      "job": "finalize",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-trigger-controller-custody",
+          "project-custody-controller-route",
+          "exact-main-finalize-effective",
+          "upload-exact-main-certification-effective",
+          "upload-finalizer-controller-custody"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "exact-main-publisher",
+      "job": "publish",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-exact-main-certification-effective",
+          "download-finalizer-controller-custody",
+          "project-finalizer-controller-route",
+          "exact-main-publish-effective"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "exact-main-publisher",
+      "job": "rotation-callback",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "download-trigger-routine-outcome",
+          "project-rotation-outcome-route",
+          "dispatch-routine-certification"
+        ]
+      },
+      "component_floors": [
+        {
+          "component": "dispatch-routine-certification",
+          "minimum_job_timeout_minutes": 10
+        }
+      ]
+    },
+    {
+      "workflow": "governance",
+      "job": "evidence",
+      "timeout_minutes": 60,
+      "executor": {
+        "kind": "gate_shard",
+        "shard_key": "shard",
+        "shard_count": 4,
+        "gates": [
+          "governance-validate",
+          "governance-exposure-scan",
+          "architecture-test",
+          "architecture-module-size",
+          "architecture-layer-membership",
+          "architecture-context-membership",
+          "architecture-import-boundaries",
+          "architecture-cqrs-side",
+          "architecture-router-thinness",
+          "architecture-duplication",
+          "lint",
+          "typecheck",
+          "test",
+          "contract-test",
+          "security-secret-scan",
+          "security-dependency-audit",
+          "security-sbom",
+          "security-vulnerability-scan",
+          "runtime-smoke",
+          "semantic-ownership"
+        ],
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "setup-test-node",
+          "bootstrap-test-toolchain",
+          "download-governance-session",
+          "restore-governance-session-modes",
+          "capture-governance-shard",
+          "upload-governance-receipts"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "governance",
+      "job": "governance-truthfulness",
+      "timeout_minutes": 15,
+      "executor": {
+        "kind": "terminal_truth",
+        "command": "governance-truth",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "download-governance-receipts",
+          "restore-evidence-modes",
+          "run-governance-truth",
+          "run-governance-truth-with-prior",
+          "preserve-terminal-observation",
+          "upload-governance-truth"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "governance",
+      "job": "preflight",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "run-governance-preflight",
+          "run-governance-preflight-with-prior",
+          "upload-governance-session"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "pr-finalizer",
+      "job": "finalize",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "evaluator_source": "managed_controller",
+        "components": [
+          "checkout-pr-candidate-material",
+          "setup-python",
+          "pr-finalize",
+          "upload-pr-finalization"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "pr-status-publisher",
+      "job": "publish",
+      "timeout_minutes": 5,
+      "executor": {
+        "kind": "component_sequence",
+        "evaluator_source": "managed_controller",
+        "components": [
+          "setup-python",
+          "download-pr-finalization",
+          "pr-publish"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "release-authority",
+      "job": "authorize",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "setup-release-directories",
+          "resolve-release-inputs",
+          "download-release-certification",
+          "download-release-controller",
+          "authorize-release",
+          "upload-release-authorization"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "release-authority",
+      "job": "build",
+      "timeout_minutes": 45,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-authorized-release",
+          "setup-release-python",
+          "setup-test-node",
+          "download-release-authorization",
+          "build-release-bundle",
+          "upload-release-build"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "release-authority",
+      "job": "controller-route",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "resolve-effective-controller-candidate"
+        ]
+      },
+      "component_floors": [
+        {
+          "component": "resolve-effective-controller-candidate",
+          "minimum_job_timeout_minutes": 10
+        }
+      ]
+    },
+    {
+      "workflow": "release-publisher",
+      "job": "controller-route",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-triggering-release-subject",
+          "setup-python",
+          "install-governance",
+          "resolve-effective-controller-candidate"
+        ]
+      },
+      "component_floors": [
+        {
+          "component": "resolve-effective-controller-candidate",
+          "minimum_job_timeout_minutes": 10
+        }
+      ]
+    },
+    {
+      "workflow": "release-publisher",
+      "job": "publish",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-python",
+          "setup-publication-directories",
+          "resolve-release-publication",
+          "download-release-receipt",
+          "attest-release-assets",
+          "create-release-app-token",
+          "publish-release"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "release-verifier",
+      "job": "collect",
+      "timeout_minutes": 10,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-release-python",
+          "download-triggering-release-authorization",
+          "install-triggering-release-controller",
+          "download-triggering-release-build",
+          "download-release-runtime",
+          "setup-verification-directories",
+          "authenticate-release-verification",
+          "collect-release",
+          "upload-release-receipt"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "release-verifier",
+      "job": "runtime",
+      "timeout_minutes": 30,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "setup-release-python",
+          "setup-test-node",
+          "download-triggering-release-authorization",
+          "install-triggering-release-controller",
+          "download-triggering-release-build",
+          "verify-release-runtime",
+          "upload-release-runtime"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "scheduled-nightly-mutants",
+      "job": "high-value-mutants",
+      "timeout_minutes": 60,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "setup-test-node",
+          "bootstrap-test-toolchain",
+          "scheduled-preflight",
+          "nightly-mutants",
+          "upload-nightly-mutants"
+        ]
+      },
+      "component_floors": []
+    },
+    {
+      "workflow": "scheduled-weekly-mutants",
+      "job": "full-mutants",
+      "timeout_minutes": 120,
+      "executor": {
+        "kind": "component_sequence",
+        "components": [
+          "checkout-candidate",
+          "setup-python",
+          "install-governance",
+          "setup-test-node",
+          "bootstrap-test-toolchain",
+          "scheduled-preflight",
+          "weekly-mutants",
+          "upload-weekly-mutants"
+        ]
+      },
+      "component_floors": []
+    }
+  ],
+  "unqualified": [
+    "independent complete runtime provider consumer population",
+    "bounded retry setup cleanup measurement headroom composition",
+    "deadline sufficiency activation and terminal custody"
+  ]
+}

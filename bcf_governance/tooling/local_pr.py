@@ -38,7 +38,7 @@ from .evidence_workitem_lifecycle import (
     validate_evaluation_authored_ready,
 )
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, run_preflight
+from .preflight import PreflightError, _exposure_scan, run_preflight
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -297,6 +297,13 @@ def _run_prospective_train(
             authority_applicability = ordinary_authority_applicability(policy_identity)
         except ProspectiveLaneError as exc:
             raise ProspectiveValidationError(str(exc)) from exc
+    emit("exposure", "started")
+    try:
+        _exposure_scan(root)
+    except PreflightError as exc:
+        fail_stage("exposure")
+        raise ProspectiveValidationError(str(exc)) from exc
+    emit("exposure", "complete")
     verify_provider_authority = repository is not None and (
         custody_state != "ordinary_executable_controller"
         or authority_applicability == "provider_verification_required"
@@ -306,17 +313,23 @@ def _run_prospective_train(
             raise ProspectiveValidationError(
                 "provider-authenticated prospective validation requires a provider API"
             )
-        verify_provider_workflow_authority(
-            root,
-            authority_path=Path("governance/ci-authority.yml"),
-            api=provider_api,
-            repository=repository,
-        )
-        graph = validate_ci_graph(root).graph
-        if graph_controller_policy_path(graph) is not None:
-            controller_authority = effective_controller_authority(
-                provider_api, repository=repository
+        emit("provider_authority", "started")
+        try:
+            verify_provider_workflow_authority(
+                root,
+                authority_path=Path("governance/ci-authority.yml"),
+                api=provider_api,
+                repository=repository,
             )
+            graph = validate_ci_graph(root).graph
+            if graph_controller_policy_path(graph) is not None:
+                controller_authority = effective_controller_authority(
+                    provider_api, repository=repository
+                )
+        except (ValueError, OSError):
+            fail_stage("provider_authority")
+            raise
+        emit("provider_authority", "complete")
     boundaries: list[dict[str, Any]] = []
 
     with tempfile.TemporaryDirectory(prefix="bcf-prospective-") as temporary:

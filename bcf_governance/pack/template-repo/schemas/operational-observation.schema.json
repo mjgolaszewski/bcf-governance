@@ -11,7 +11,7 @@
         "authority": {"const": false},
         "execution_id": {"type": "string", "minLength": 1},
         "sequence": {"type": "integer", "minimum": 1},
-        "stage": {"type": "string", "minLength": 1},
+        "stage": {"type": "string", "minLength": 1, "description": "Open stage identity. provider_authority brackets required provider workflow/controller authentication before preflight; events remain non-authoritative."},
         "state": {"enum": ["started", "complete", "failed"]},
         "monotonic_ms": {"type": "integer", "minimum": 0}
       }

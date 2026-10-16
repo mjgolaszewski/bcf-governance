@@ -1657,3 +1657,76 @@ def test_train_telemetry_schema_rejects_missing_stage() -> None:
         match="stage inventory is not exact",
     ):
         prospective._validate_train_telemetry(REPO_ROOT, telemetry)
+
+
+@pytest.mark.parametrize('failure', ['workflow', 'controller', 'graph', 'oserror', None])
+def test_provider_authority_progress_brackets_existing_queries_without_changing_errors(monkeypatch, tmp_path, failure):
+    trace = []
+    events = []
+    _front_door(monkeypatch, trace)
+    error_type = OSError if failure == 'oserror' else prospective.CIGraphError if failure == 'graph' else prospective.GitHubControllerError
+    error = error_type('exact provider rejection')
+    def policy(graph):
+        if failure == 'graph':
+            raise error
+        return 'policy'
+    monkeypatch.setattr(prospective, 'graph_controller_policy_path', policy)
+    def verify(*args, **kwargs):
+        assert events[-1]['stage'] == 'provider_authority'
+        assert events[-1]['state'] == 'started'
+        trace.append('provider-workflow')
+        if failure == 'workflow':
+            raise error
+    def resolve(*args, **kwargs):
+        assert events[-1]['stage'] == 'provider_authority'
+        assert events[-1]['state'] == 'started'
+        trace.append('provider-controller')
+        if failure in {'controller', 'oserror'}:
+            raise error
+        return {'controller_commit_sha': BASE, 'controller_bundle_sha256': '6' * 64}
+    def preflight(*args, **kwargs):
+        assert any(row['stage'] == 'provider_authority' and row['state'] == 'complete' for row in events)
+        trace.append('preflight')
+        return {'status': 'pass', 'self_controller': None}
+    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', verify)
+    monkeypatch.setattr(prospective, 'effective_controller_authority', resolve)
+    monkeypatch.setattr(prospective, 'run_preflight', preflight)
+    monkeypatch.setattr(prospective, 'classify_trusted_controller_applicability', lambda *args, **kwargs: SimpleNamespace(state=SimpleNamespace(value='current')))
+    def run():
+        return prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
+            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
+    if failure:
+        with pytest.raises(type(error)) as caught:
+            run()
+        assert caught.value is error
+        assert 'preflight' not in trace
+    else:
+        run()
+    authority = [row for row in events if row['stage'] == 'provider_authority']
+    assert [row['state'] for row in authority] == ['started', 'failed' if failure else 'complete']
+    assert all(row['authority'] is False for row in events)
+
+
+def test_provider_authority_progress_absent_when_no_provider_is_required(monkeypatch, tmp_path):
+    events = []
+    _front_door(monkeypatch, [])
+    monkeypatch.setattr(prospective, 'run_preflight', lambda *args, **kwargs: {'status': 'pass', 'self_controller': None})
+    prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
+        runner=_runner, progress_sink=events.append)
+    assert all(row['stage'] != 'provider_authority' for row in events)
+
+
+def test_exposure_failure_stops_before_provider_authority_and_retains_cause(monkeypatch, tmp_path):
+    _front_door(monkeypatch, [])
+    events = []
+    failure = prospective.PreflightError('governance exposure preflight failed: retained audit')
+    def exposure(root):
+        raise failure
+    monkeypatch.setattr(prospective, '_exposure_scan', exposure, raising=False)
+    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *args, **kwargs: pytest.fail('provider ran before exposure rejection'))
+    monkeypatch.setattr(prospective, 'run_preflight', lambda *args, **kwargs: pytest.fail('late preflight ran'))
+    with pytest.raises(prospective.ProspectiveValidationError, match='governance exposure preflight failed') as caught:
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
+            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
+    assert caught.value.__cause__ is failure
+    assert [(row['stage'], row['state']) for row in events[-2:]] == [('exposure', 'started'), ('exposure', 'failed')]
