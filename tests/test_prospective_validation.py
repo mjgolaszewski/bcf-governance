@@ -1776,3 +1776,20 @@ def test_semantic_ownership_failure_rejects_before_provider_and_preserves_cause(
             repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
     assert caught.value.__cause__ is failure
     assert [(e['stage'], e['state']) for e in events[-2:]] == [('semantic_ownership', 'started'), ('semantic_ownership', 'failed')]
+
+
+@pytest.mark.parametrize(("report", "message"), [
+    ({"status": "pass", "issues": [], "marker": "retained"}, None),
+    ({"status": "fail", "issues": ["first", "second"]}, "golden rejected candidate: first, second"),
+    ({"status": "fail"}, "golden rejected candidate: truth failed"),
+    ({"status": "failed", "issues": []}, "golden rejected candidate: truth failed"),
+    ({"issues": ["missing status"]}, "golden rejected candidate: missing status"),
+])
+def test_prospective_truth_acceptance_extraction_characterization(report, message):
+    if message is None:
+        observed = prospective._require_truth(report, boundary="golden")
+        assert observed == report and observed is not report
+    else:
+        with pytest.raises(prospective.ProspectiveValidationError) as observed:
+            prospective._require_truth(report, boundary="golden")
+        assert str(observed.value) == message
