@@ -1110,6 +1110,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - committed-tree-before-provider
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
     - canonical-submit-normalization
@@ -1134,6 +1135,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - committed-tree-before-provider
     - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
     - provider-authority-progress-and-exposure-frontier
@@ -2376,6 +2378,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - committed-tree-before-provider
     - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
     - provider-authority-progress-and-exposure-frontier
@@ -4237,3 +4240,37 @@ implementation_slices:
     - Independently authenticate provider/source custody and freeze matched measurement
       protocol and approved budgets.
     - Whole I18 and all train acceptance remain open.
+
+  committed-tree-before-provider:
+    id: committed-tree-before-provider
+    workitem: P32-P0-07
+    scope: Reuse the canonical committed-tree predicate before provider discovery and proof/submission allocation; retain later exact-identity checks and ordinary edited-tree context reads.
+    contract: audits/issue-394/committed-tree-before-provider-contract.json
+    producer: bcf_governance/tooling/local_pr_context.py::require_clean_candidate_root
+    consumer: submit_candidate; run_prospective_train; canonical_prospective_inputs through existing owners
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[clean-submit]
+    - tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[clean-prospective]
+    - tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[clean-canonical]
+    - tests.test_local_pr::test_ordinary_local_context_discovery_keeps_dirty_read_only_behavior[tracked]
+    - tests.test_local_pr::test_ordinary_local_context_discovery_keeps_dirty_read_only_behavior[untracked]
+    negative_controls:
+    - cause: tracked-dirt-before-submit-provider-or-allocation
+      test: tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[tracked-submit]
+    - cause: tracked-dirt-before-prospective-provider-or-allocation
+      test: tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[tracked-prospective]
+    - cause: tracked-dirt-before-canonical-provider-or-allocation
+      test: tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[tracked-canonical]
+    - cause: untracked-dirt-before-submit-provider-or-allocation
+      test: tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[untracked-submit]
+    - cause: untracked-dirt-before-prospective-provider-or-allocation
+      test: tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[untracked-prospective]
+    - cause: untracked-dirt-before-canonical-provider-or-allocation
+      test: tests.test_candidate_submit::test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[untracked-canonical]
+    - cause: edits-after-initial-clean-admission
+      test: tests.test_local_pr::test_clean_candidate_admission_does_not_replace_later_exact_identity_recheck
+    remaining:
+    - Full independently enumerated deterministic-failure and consumer populations remain unproved.
+    - Exact installed parity, canonical normalization and provider/adopter admission remain required.

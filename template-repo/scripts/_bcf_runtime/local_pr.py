@@ -88,7 +88,7 @@ from .local_pr_context import (
     ProspectiveValidationError,
     Runner,
     _checked,
-    _candidate_identity,
+    _candidate_identity, require_clean_candidate_root,
     _changed_paths,
     _confirm_unchanged as _confirm_context_unchanged,
     _pr_environment,
@@ -751,7 +751,7 @@ def run_prospective_train(
             subject_commit=subject_commit,
         )
         validate_evaluation_authored_ready(
-            repo_root.resolve(), intent=requested_scope.intent.value, target=requested_scope.target_id
+            require_clean_candidate_root(repo_root, runner=runner), intent=requested_scope.intent.value, target=requested_scope.target_id
         )
     except (EvaluationScopeError, WorkitemContractError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc

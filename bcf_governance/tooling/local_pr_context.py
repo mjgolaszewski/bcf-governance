@@ -344,11 +344,10 @@ def run_local_pr_validation(
         return runner(list(command), cwd=repo_root.resolve(), env=environment)
 
 
-def _candidate_identity(
-    repo_root: Path, context: LocalPRContext, *, runner: Runner
-) -> CandidateIdentity:
-    head = _checked(runner, ["git", "rev-parse", "--verify", "HEAD"], cwd=repo_root)
-    tree = _checked(runner, ["git", "rev-parse", "--verify", "HEAD^{tree}"], cwd=repo_root)
+def require_clean_candidate_root(repo_root: Path, *, runner: Runner) -> Path:
+    """Reject known dirty candidate inputs before provider reads or allocation."""
+
+    repo_root = repo_root.resolve()
     status = _checked(
         runner,
         ["git", "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"],
@@ -356,6 +355,15 @@ def _candidate_identity(
     )
     if status:
         raise ProspectiveValidationError("prospective validation requires a clean committed tree")
+    return repo_root
+
+
+def _candidate_identity(
+    repo_root: Path, context: LocalPRContext, *, runner: Runner
+) -> CandidateIdentity:
+    head = _checked(runner, ["git", "rev-parse", "--verify", "HEAD"], cwd=repo_root)
+    tree = _checked(runner, ["git", "rev-parse", "--verify", "HEAD^{tree}"], cwd=repo_root)
+    require_clean_candidate_root(repo_root, runner=runner)
     if head != context.head_sha:
         raise ProspectiveValidationError("local PR context does not bind current HEAD")
     return CandidateIdentity(head, tree, context.base_sha)

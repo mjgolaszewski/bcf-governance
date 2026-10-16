@@ -11,6 +11,7 @@ from .local_pr_context import (
     ProspectiveValidationError,
     Runner,
     _candidate_identity,
+    require_clean_candidate_root,
     _run,
     resolve_local_pr_context,
 )
@@ -25,7 +26,7 @@ def canonical_prospective_inputs(
 ) -> dict[str, str | None]:
     """Derive the immutable subject, proposition, and submit-ready metadata."""
 
-    root = repo_root.resolve()
+    root = require_clean_candidate_root(repo_root, runner=runner)
     context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     identity = _candidate_identity(root, context, runner=runner)
     try:

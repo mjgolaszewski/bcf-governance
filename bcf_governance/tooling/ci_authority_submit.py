@@ -45,7 +45,7 @@ from .runtime_capacity import executing_runtime_version
 from .ci_graph_timeouts import gate_timeout_contract
 from .governance_validation.authored_phase_state import validate_authored_phase_state
 from .governance_validation.required_artifacts import validate_pull_request_changelog_update
-from .local_pr_context import _pr_environment
+from .local_pr_context import _pr_environment, require_clean_candidate_root
 from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 
 
@@ -370,7 +370,7 @@ def submit_candidate(
 ) -> dict[str, object]:
     """Prove and push only the exact immutable candidate that passed the train."""
 
-    root = repo_root.resolve()
+    root = require_clean_candidate_root(repo_root, runner=runner)
     context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     identity = _candidate_identity(root, context, runner=runner)
     progress = []

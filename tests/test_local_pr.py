@@ -482,3 +482,25 @@ def test_late_protected_source_movement_rejects_with_unchanged_stacked_subject(a
     with pytest.raises(ProspectiveValidationError, match='identity changed during validation'):
         local_pr._confirm_unchanged(fixture.repo, initial_context=initial,
             initial_identity=identity, remote='origin', runner=fixture.runner)
+
+
+@pytest.mark.parametrize('change', ['tracked', 'untracked'])
+def test_ordinary_local_context_discovery_keeps_dirty_read_only_behavior(tmp_path, change):
+    repo, base = _repository(tmp_path)
+    path = repo/('source.py' if change == 'tracked' else 'new.py')
+    path.write_text('VALUE = 99\n')
+    before = _git(repo, 'status', '--porcelain=v1', '--untracked-files=all')
+    context = resolve_local_pr_context(repo)
+    assert context.base_sha == base
+    assert context.head_sha == _git(repo, 'rev-parse', 'HEAD')
+    assert _git(repo, 'status', '--porcelain=v1', '--untracked-files=all') == before
+    assert path.read_text() == 'VALUE = 99\n'
+
+
+def test_clean_candidate_admission_does_not_replace_later_exact_identity_recheck(tmp_path):
+    repo, _base = _repository(tmp_path)
+    context = resolve_local_pr_context(repo)
+    assert local_pr_context.require_clean_candidate_root(repo, runner=local_pr_context._run) == repo.resolve()
+    (repo/'source.py').write_text('VALUE = 99\n')
+    with pytest.raises(local_pr_context.ProspectiveValidationError, match='clean committed tree'):
+        local_pr_context._candidate_identity(repo, context, runner=local_pr_context._run)

@@ -112,6 +112,7 @@ workitems:
   - requires-workitem-closure:P32-P0-01
   - Complete the exact affected-surface contract in audits/issue-394/submit-normalization-slice.yml
   - Reject exact PR changelog omissions under canonical candidate scope before normalization allocation
+  - Reject known dirty committed candidates before provider discovery and proof allocation while retaining fresh consuming rechecks
   - Reject authored contradiction wrong intent assertion busy lease and normalization failure before dependent mutation or
     proof
   - Capture the fresh canonical subject after normalization and preserve exact prospective push and provider boundaries

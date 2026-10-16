@@ -118,6 +118,7 @@ class Result:
 def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_choice(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.setattr(candidate_identity, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     context = prospective.LocalPRContext("origin", "main", BASE, HEAD, "feature")
     monkeypatch.setattr(
         candidate_identity, "resolve_local_pr_context", lambda *_args, **_kwargs: context
@@ -358,6 +359,7 @@ def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> Sim
 
 
 def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
+    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
     monkeypatch.setattr(prospective, "_pack_manifest", lambda *_a, **_k: {"applicable": False}, raising=False)
     monkeypatch.setattr(
@@ -520,6 +522,7 @@ def test_pending_rotation_pr_projection_uses_direct_push_release_preflight(
 def test_provider_context_is_mechanically_bound_to_exact_prospective_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     api = object()
     monkeypatch.setattr(
         prospective,
@@ -559,6 +562,7 @@ def test_provider_context_is_mechanically_bound_to_exact_prospective_train(
 def test_direct_protected_main_lane_does_not_resolve_controller_authority(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
@@ -837,6 +841,7 @@ def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
 def test_provider_bound_adopter_delegates_authority_applicability_to_exact_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     graph = {"workflows": [], "trusted_controller": {"kind": "executable"}}
     train_calls: list[dict[str, object]] = []
     monkeypatch.setattr(
@@ -1075,6 +1080,7 @@ def test_authored_todo_workitem_fails_before_reconcile_or_evidence(
 def test_authored_todo_workitem_fails_before_provider_resolution(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
+    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(
         prospective,
         "validate_evaluation_authored_ready",

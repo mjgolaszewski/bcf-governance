@@ -27,6 +27,10 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Reject dirty committed-candidate inputs before provider discovery or proof
+  allocation. Ordinary local context reads still support edited trees, and
+  later exact-subject checks continue to detect new edits.
+
 - Reject provider commit/ref responses whose returned identity contradicts the
   exact requested subject. Bound PR comparison checks also require the exact
   returned ref name even when the object SHA matches.

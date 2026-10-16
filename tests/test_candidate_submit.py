@@ -16,6 +16,7 @@ from bcf_governance.tooling.local_pr import (
 
 
 def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateIdentity]:
+    monkeypatch.setattr(submit, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(submit, "_normalize_submission", lambda *_a, **_k: None, raising=False)
     context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
     identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
@@ -1051,3 +1052,37 @@ def test_default_main_closure_normalization_keeps_release_changelog_scope(monkey
     context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'feature')
     submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
         semantic_intent=None, context=context, runner=lambda *_a, **_k: SimpleNamespace(returncode=0))
+
+
+@pytest.mark.parametrize('entry', ['submit', 'prospective', 'canonical'])
+@pytest.mark.parametrize('change', ['tracked', 'untracked', 'clean'])
+def test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation(monkeypatch, tmp_path, entry, change):
+    import subprocess
+    from bcf_governance.tooling import local_pr, prospective_candidate_identity
+    def git(*args):
+        return subprocess.run(['git', '-C', str(tmp_path), *args], capture_output=True,
+            text=True, check=True).stdout.strip()
+    git('init', '-b', 'main'); git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'user.name', 'Fixture')
+    (tmp_path/'source.py').write_text('VALUE = 1\n')
+    git('add', '.'); git('commit', '-m', 'committed subject')
+    head, tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
+    if change != 'clean':
+        (tmp_path/('source.py' if change == 'tracked' else 'untracked.py')).write_text('VALUE = 2\n')
+    def forbidden(*_a, **_k):
+        if change == 'clean': raise RuntimeError('clean input reached next boundary')
+        pytest.fail('dirty input reached provider discovery or allocation')
+    for owner in [submit, local_pr, prospective_candidate_identity]:
+        monkeypatch.setattr(owner, 'resolve_local_pr_context', forbidden)
+    monkeypatch.setattr(submit, '_normalize_submission', forbidden)
+    monkeypatch.setattr(local_pr, 'local_gate_lease', forbidden)
+    expected_error = RuntimeError if change == 'clean' else ProspectiveValidationError
+    expected_message = 'clean input reached next boundary' if change == 'clean' else 'clean committed tree'
+    with pytest.raises(expected_error, match=expected_message):
+        if entry == 'submit':
+            submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object())
+        elif entry == 'prospective':
+            local_pr.run_prospective_train(tmp_path, semantic_intent='pr', evaluation_target=None,
+                subject_commit=head, subject_tree=tree, python_executable=Path('/python'))
+        else:
+            prospective_candidate_identity.canonical_prospective_inputs(tmp_path)
