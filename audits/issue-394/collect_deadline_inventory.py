@@ -64,21 +64,31 @@ def collect(repo_root: Path) -> dict:
 
 def collect_controller_consumers(repo_root: Path) -> dict:
     """Observe exact direct resolver calls; no runtime reachability qualification."""
+    return _collect_direct_consumers(repo_root, kind='controller', targets={
+        'bcf_governance/tooling/routine_controller_provider.py::resolve_effective_controller',
+        'bcf_governance/tooling/routine_controller_provider.py::effective_controller_authority',
+    })
+
+
+def collect_provider_read_consumers(repo_root: Path) -> dict:
+    """Observe direct retry-owner callers, never all transport/runtime effects."""
+    return _collect_direct_consumers(repo_root, kind='provider_read', targets={
+        'bcf_governance/tooling/provider_read.py::open_provider_get',
+    })
+
+
+def _collect_direct_consumers(repo_root: Path, *, kind: str, targets: set[str]) -> dict:
     subject = _subject(repo_root)
     inventory = resolve_python_imports(repo_root, discover_python_source(
         repo_root, call_contracts_version='1.0', source_subject=subject,
     ))
-    targets = {
-        'bcf_governance/tooling/routine_controller_provider.py::resolve_effective_controller',
-        'bcf_governance/tooling/routine_controller_provider.py::effective_controller_authority',
-    }
     calls = [{'consumer': function['symbol'], 'producer': call['called_symbol'], 'call': copy.deepcopy(call)}
              for function in inventory['functions'] for call in function['calls']
              if call['called_symbol'] in targets]
     if _subject(repo_root) != subject:
-        raise ValueError('controller consumer inventory source changed during capture')
+        raise ValueError(f'{kind} consumer inventory source changed during capture')
     population = sorted(inventory['files'], key=lambda row: row['path'])
-    return {'schema_version': '1.0', 'kind': 'controller_direct_consumer_inventory',
+    return {'schema_version': '1.0', 'kind': f'{kind}_direct_consumer_inventory',
             'authority': False, 'execution_qualified': False, 'subject': subject,
             'producer': {'recipe_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                          'owner': 'bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source'},

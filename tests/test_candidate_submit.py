@@ -666,7 +666,15 @@ def test_submit_forwards_existing_progress_without_conferring_authority(monkeypa
     with pytest.raises(ProspectiveValidationError, match='complete prospective proof'):
         submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), progress_sink=received.append,
                                 runner=lambda *_a, **_k: pytest.fail('incomplete progress must not push'))
-    assert received == [event]
+    assert received[-1] is event
+    assert received[4:] == [event]
+    assert [e for e in received if e["kind"] == "prospective_progress"] == [event]
+    assert all(e["kind"] == "submission_progress" for e in received[:4])
+    assert [(e['stage'], e['state']) for e in received[:4]] == [
+        ('normalization', 'started'), ('normalization', 'complete'),
+        ('submission_authority', 'started'), ('submission_authority', 'complete')]
+    assert all(e['authority'] is False for e in received)
+
     assert received[0]['authority'] is False
 
 
@@ -769,3 +777,101 @@ def test_submit_valid_timeout_policy_keeps_fixed_point_owner(monkeypatch, tmp_pa
         return SimpleNamespace(returncode=0, stdout='', stderr='')
     submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None, runner=runner)
     assert calls == ['--check']
+
+
+@pytest.mark.parametrize('stage', ['normalization', 'submission_authority'])
+@pytest.mark.parametrize('error_type', [ValueError, OSError])
+def test_submission_progress_retains_failed_stage_and_identical_error(monkeypatch, tmp_path, stage, error_type):
+    _, identity = _state(monkeypatch)
+    events = []
+    failure = error_type('exact submission cause')
+    def fail(*_args, **_kwargs):
+        raise failure
+    monkeypatch.setattr(submit, '_normalize_submission' if stage == 'normalization' else '_canonical_inputs', fail)
+    monkeypatch.setattr(submit, 'run_prospective_train', lambda *_a, **_k: pytest.fail('continued after failure'))
+    with pytest.raises(error_type) as caught:
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(),
+            progress_sink=events.append, runner=lambda *_a, **_k: pytest.fail('mutation after failed admission'))
+    assert caught.value is failure
+    expected = [] if stage == 'normalization' else [('normalization', 'started'), ('normalization', 'complete')]
+    assert [(e['stage'], e['state']) for e in events] == expected + [(stage, 'started'), (stage, 'failed')]
+    assert {e['execution_id'] for e in events} == {'submission:' + identity.commit_sha}
+    from bcf_governance.tooling.operational_observations import validate_progress_stream
+    validate_progress_stream(events)
+
+
+def test_submission_progress_separates_initial_and_normalized_subject_streams(monkeypatch, tmp_path):
+    from bcf_governance.tooling.operational_observations import progress_event, validate_progress_stream
+    context, initial = _state(monkeypatch)
+    fresh = CandidateIdentity('4' * 40, '5' * 40, context.base_sha)
+    identities = iter([initial, fresh])
+    events, trace = [], []
+    monkeypatch.setattr(submit, '_candidate_identity', lambda *_a, **_k: next(identities))
+    monkeypatch.setattr(submit, '_normalize_submission', lambda *_a, **_k: trace.append('normalize'))
+    authority = submit._canonical_inputs
+    def inputs(*args, **kwargs):
+        trace.append('authority')
+        return authority(*args, **kwargs)
+    monkeypatch.setattr(submit, '_canonical_inputs', inputs)
+    def prospective(*_args, **kwargs):
+        trace.append('prospective')
+        assert kwargs['subject_commit'] == fresh.commit_sha
+        kwargs['progress_sink'](progress_event(execution_id=fresh.commit_sha, sequence=1,
+            stage='fixed_point', state='started', monotonic_ms=0))
+        return {'status': 'incomplete'}
+    monkeypatch.setattr(submit, 'run_prospective_train', prospective)
+    def sink(event):
+        events.append(event)
+        trace.append((event['stage'], event['state']))
+    with pytest.raises(ProspectiveValidationError, match='complete prospective proof'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(),
+            progress_sink=sink, runner=lambda *_a, **_k: pytest.fail('pushed incomplete proof'))
+    assert trace == [('normalization', 'started'), 'normalize', ('normalization', 'complete'),
+        ('submission_authority', 'started'), 'authority', ('submission_authority', 'complete'),
+        'prospective', ('fixed_point', 'started')]
+    assert {e['execution_id'] for e in events[:4]} == {'submission:' + initial.commit_sha}
+    assert events[-1]['execution_id'] == fresh.commit_sha
+    validate_progress_stream(events[:4])
+    validate_progress_stream(events[4:])
+
+
+@pytest.mark.parametrize('stage', ['normalization', 'submission_authority'])
+def test_submission_progress_sink_failure_cannot_replace_operation_failure(monkeypatch, tmp_path, stage):
+    _state(monkeypatch)
+    failure, sink_failure = ValueError('original operation failure'), RuntimeError('failed diagnostic sink')
+    def fail(*_args, **_kwargs):
+        raise failure
+    monkeypatch.setattr(submit, '_normalize_submission' if stage == 'normalization' else '_canonical_inputs', fail)
+    def sink(event):
+        if event['state'] == 'failed':
+            raise sink_failure
+    with pytest.raises(ValueError) as caught:
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(), progress_sink=sink)
+    assert caught.value is failure
+    assert caught.value.__cause__ is sink_failure
+
+
+@pytest.mark.parametrize('stage', ['normalization', 'submission_authority'])
+@pytest.mark.parametrize('state', ['started', 'complete'])
+def test_submission_progress_sink_failure_stops_before_next_authority_boundary(monkeypatch, tmp_path, stage, state):
+    _state(monkeypatch)
+    trace = []
+    original_authority = submit._canonical_inputs
+    monkeypatch.setattr(submit, '_normalize_submission', lambda *_a, **_k: trace.append('normalization'))
+    def authority(*args, **kwargs):
+        trace.append('submission_authority')
+        return original_authority(*args, **kwargs)
+    monkeypatch.setattr(submit, '_canonical_inputs', authority)
+    monkeypatch.setattr(submit, 'run_prospective_train', lambda *_a, **_k: pytest.fail('continued after sink error'))
+    failure = OSError('diagnostic output unavailable')
+    def sink(event):
+        if (event['stage'], event['state']) == (stage, state):
+            raise failure
+    with pytest.raises(OSError) as caught:
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object(),
+            progress_sink=sink, runner=lambda *_a, **_k: pytest.fail('pushed after diagnostic error'))
+    assert caught.value is failure
+    expected = [] if stage == 'normalization' else ['normalization']
+    if state == 'complete':
+        expected.append(stage)
+    assert trace == expected

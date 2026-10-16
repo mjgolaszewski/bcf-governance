@@ -1,0 +1,34 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/stale-deadline-floor-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-05",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "existing composition deadline domain query",
+  "operation_side": "query",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_composition_costs.py",
+    "tests/test_ci_graph_composition.py"
+  ],
+  "contract": [
+    "Expiration cannot erase an authenticated same-subject measured lower bound and reduce a previously required envelope.",
+    "Under explicitly protected bounded_fallback policy, retain the stale measured lower bound conservatively, while retaining stale classification. It is not fresh measurement or new authority.",
+    "require_fresh still rejects stale measurement; malformed, wrong-subject and future observations still reject before fallback. Missing data remains subject to explicitly authenticated bounded fallback policy.",
+    "Retain both per-relationship and job aggregate minimums before rendering/allocation."
+  ],
+  "expected_tests": [
+    "High same-subject lower bound remains in required envelope after expiry.",
+    "Outer budget that failed with fresh floor must not pass merely because measurement expires.",
+    "Existing missing/stale/fresh/source/fan-in and generated-view tests unchanged."
+  ],
+  "forbidden_surfaces": [
+    "Live canonical submission checkout",
+    "Measurement timestamp clamping or freshness relaxation",
+    "Provider behavior, active timeout policy and authority pins",
+    "Suppression, adopter mutation or custody"
+  ],
+  "dependency_acceptance": "Dormant deadline query correction only; foundation prerequisite closures remain unresolved; no activation."
+}

@@ -2129,3 +2129,58 @@ def test_typed_deadline_rejects_ambiguous_shared_job_identity_or_policy(deadline
         right['headroom_ms'] = policy['headroom_ms'] = 70000
     with pytest.raises(CIGraphError, match='deadline.*(identity|allowance).*inconsistent'):
         _deadline_projection(data)
+
+
+@pytest.mark.parametrize('outer_minutes', [11, 14])
+def test_typed_deadline_expiry_cannot_erase_a_larger_authenticated_floor(deadline_composition, outer_minutes):
+    data = deadline_composition
+    spec = next(iter(data['required_deadlines'].values()))
+    spec['measurement_policy'] = 'bounded_fallback'
+    data['composition']['payload']['relationships'][0]['contract']['deadline']['measurement_policy'] = 'bounded_fallback'
+    measurement = next(iter(data['measurements'].values()))
+    measurement['lower_bound_ms'] = 760000
+    job = data['compiled_graph'].graph['workflows'][0]['jobs'][0]
+    job['timeout_minutes'] = 14
+    fresh = _deadline_projection(data)
+    assert fresh['deadlines'][0]['required_ms'] == 840000
+    measurement['expires_at_ms'] = data['now_ms']
+    job['timeout_minutes'] = outer_minutes
+    if outer_minutes == 11:
+        with pytest.raises(CIGraphError, match='cannot contain required 840000ms'):
+            _deadline_projection(data)
+    else:
+        stale = _deadline_projection(data)
+        assert stale['deadlines'][0]['measurement'] == 'bounded_fallback_stale'
+        assert stale['deadlines'][0]['required_ms'] == fresh['deadlines'][0]['required_ms']
+        assert stale['job_deadlines'][0]['required_ms'] == fresh['job_deadlines'][0]['required_ms']
+        assert stale['authority'] is False and stale['execution_qualified'] is False
+
+
+def test_requirement_selector_migration_preserves_every_original_case_and_cause():
+    migration = json.loads((ROOT / 'audits/issue-394/exact-coverage-selector-migration.json').read_text())
+    plan = load_yaml_path(ROOT / 'audits/issue-394/workplan.yml')
+    expansions = migration['expanded_bare_selectors']
+    assert len(expansions) == 49
+    assert sum(map(len, expansions.values())) == 237
+    assert set(migration['bindings_before']) <= set(plan['implementation_slices'])
+    for key, before in migration['bindings_before'].items():
+        expected_positive = [case for node in before['positive_tests'] for case in expansions.get(node, [node])]
+        expected_negative = []
+        for control in before['negative_controls']:
+            for case in expansions.get(control['test'], [control['test']]):
+                cause = control['cause'] if case == control['test'] else control['cause'] + ':case:' + case[len(control['test']):]
+                expected_negative.append({'cause': cause, 'test': case})
+        binding = plan['implementation_slices'][key]
+        assert set(expected_positive) <= set(binding['positive_tests'])
+        assert all(control in binding['negative_controls'] for control in expected_negative)
+
+
+def test_authored_requirement_bindings_resolve_against_exact_collection_before_generation():
+    import sys
+    from bcf_governance.tooling.test_manifests import collect_selector_map, OracleManifestIndex
+    mapping = collect_selector_map(ROOT, 'test', python_executable=sys.executable)
+    index = OracleManifestIndex((('test', frozenset(mapping.normalized_nodes)),))
+    plan = load_yaml_path(ROOT / 'audits/issue-394/workplan.yml')
+    for binding in plan['implementation_slices'].values():
+        nodes = binding['positive_tests'] + [row['test'] for row in binding['negative_controls']]
+        assert index.resolve(nodes, preferred_gate='test') == 'test'

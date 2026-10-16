@@ -342,7 +342,7 @@
     },
     "schemas/operational-observation.schema.json": {
       "operation": "copy",
-      "sha256": "e36be2afc0206d75e4f8ea8abedf21fd5e1cb33020c9c9a9c477250022830450"
+      "sha256": "c28e35236a3c717c43a73cc7c1332b9c00c7f65f20aefdced249c7e11def1a18"
     },
     "schemas/phase-history.schema.json": {
       "operation": "copy",
@@ -548,7 +548,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "ef59389b352dc652bc3ceedfa184894fe5cbf4279ff5640b307687bebbe5d259"
+      "sha256": "de8c76ebc5f8933de7bd8744a7b96005e8818629344a464851ccd6aeadacb19c"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -736,7 +736,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition_costs.py": {
       "operation": "copy",
-      "sha256": "c24fa2aa692a92ba3e2c5a741eac2fd877338a3e567aa3d23382886ddaddaaaf"
+      "sha256": "9f8e39f32427b5c2f0d22d5856dd4fca8dfd9301a1a86038fc105aa4b22c85f4"
     },
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
@@ -1295,7 +1295,7 @@
     },
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
-      "sha256": "7780a57c01d34bb44897b8c19218ec82035fac73ef898b5515ef85991fa0fe6b"
+      "sha256": "3fc472addde78dffe23c732b90375a964def5b91db6f711523ef903539850c33"
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",

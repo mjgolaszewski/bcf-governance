@@ -7,7 +7,7 @@
       "required": ["schema_version", "kind", "authority", "execution_id", "sequence", "stage", "state", "monotonic_ms"],
       "properties": {
         "schema_version": {"const": "1.0"},
-        "kind": {"const": "prospective_progress"},
+        "kind": {"enum": ["prospective_progress", "submission_progress"], "description": "Nonauthoritative progress; submission:<initial commit> is a separate normalization/authority stream with its own sequence and clock from prospective exact-subject execution."},
         "authority": {"const": false},
         "execution_id": {"type": "string", "minLength": 1},
         "sequence": {"type": "integer", "minimum": 1},

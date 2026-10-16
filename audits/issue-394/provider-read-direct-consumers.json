@@ -1,0 +1,573 @@
+{
+  "schema_version": "1.0",
+  "kind": "provider_read_direct_consumer_inventory",
+  "authority": false,
+  "execution_qualified": false,
+  "subject": {
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+  },
+  "producer": {
+    "recipe_sha256": "8d6014fda2cd426f442f5ae14d258d76c078c9d817a88250d9f1a012e693091d",
+    "owner": "bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source"
+  },
+  "source_files_checked": 1066,
+  "source_file_population_sha256": "719f85d0c46b664cc204a5ea28d9ff470bb83206af3050cd1e2b90c48aa050c3",
+  "consumers": [
+    {
+      "consumer": "bcf_governance/tooling/ci_github_transport.py::request_bytes",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "bcf_governance/tooling/ci_github_transport.py::request_bytes",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 96,
+        "argument_origins": [
+          "local:build_download_request",
+          "local:open_provider_get",
+          "parameter:api_url",
+          "parameter:kind",
+          "parameter:observations",
+          "parameter:opener",
+          "parameter:path",
+          "parameter:token"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "fc83766062e3674213422c25b1d74754549ba7f9e9af61b3526ee0a87903620e",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "02b262529f3916c79ed165aade9eb880aa4681100b21256e2d4e54138372f2ed"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "f999db0995f773dac7f51ebefec3319a2998648175e4e250b4f20bc7c282c8a7"
+            },
+            {
+              "kind": "keyword",
+              "slot": "observations",
+              "expression_sha256": "48ce8fb2f3d6d7e88569a4280aff8718f9b31dc2ae5cf3a978a255145ea9b700"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "provider_read",
+            "member": "open_provider_get",
+            "level": 1,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "bcf_governance/tooling/ci_github_transport.py::request_json",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "bcf_governance/tooling/ci_github_transport.py::request_json",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 50,
+        "argument_origins": [
+          "local:Request",
+          "local:json",
+          "local:open_provider_get",
+          "parameter:api_url",
+          "parameter:method",
+          "parameter:observations",
+          "parameter:opener",
+          "parameter:path",
+          "parameter:payload",
+          "parameter:token"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "fc83766062e3674213422c25b1d74754549ba7f9e9af61b3526ee0a87903620e",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "02b262529f3916c79ed165aade9eb880aa4681100b21256e2d4e54138372f2ed"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "f999db0995f773dac7f51ebefec3319a2998648175e4e250b4f20bc7c282c8a7"
+            },
+            {
+              "kind": "keyword",
+              "slot": "observations",
+              "expression_sha256": "48ce8fb2f3d6d7e88569a4280aff8718f9b31dc2ae5cf3a978a255145ea9b700"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "provider_read",
+            "member": "open_provider_get",
+            "level": 1,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "bcf_governance/tooling/evidence_storage_github_api.py::GitHubEvidenceAPI._download_endpoint",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "bcf_governance/tooling/evidence_storage_github_api.py::GitHubEvidenceAPI._download_endpoint",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 245,
+        "argument_origins": [
+          "local:build_download_request",
+          "local:open_download",
+          "local:open_provider_get",
+          "parameter:kind",
+          "parameter:path",
+          "parameter:self"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "6f7e4a1b5672b1bfec9c4d14ed20adc32b471aca8607cda3aac76a964ae7089e",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "02b262529f3916c79ed165aade9eb880aa4681100b21256e2d4e54138372f2ed"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "4f7b6a7359c51bddc1cec35eee6483511d58c59cabd521fdcaa19f1411bab7ea"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "86bb8ce8e331276dbbb85b75d6e1d078443f37bc3b89a4fe99be2d452f1c9b1a"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "provider_read",
+            "member": "open_provider_get",
+            "level": 1,
+            "line": 21
+          }
+        }
+      }
+    },
+    {
+      "consumer": "bcf_governance/tooling/governance_install/release_custody.py::ReadOnlyReleaseProvider._get",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "bcf_governance/tooling/governance_install/release_custody.py::ReadOnlyReleaseProvider._get",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 86,
+        "argument_origins": [
+          "local:Request",
+          "local:open_download",
+          "local:open_provider_get",
+          "parameter:path",
+          "parameter:self"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "b564076e8560ab64d810e2429e1a269f96c36d16112539565987edc75f2ed58a",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "02b262529f3916c79ed165aade9eb880aa4681100b21256e2d4e54138372f2ed"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "86bb8ce8e331276dbbb85b75d6e1d078443f37bc3b89a4fe99be2d452f1c9b1a"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "provider_read",
+            "member": "open_provider_get",
+            "level": 2,
+            "line": 19
+          }
+        }
+      }
+    },
+    {
+      "consumer": "tests/test_provider_read.py::test_provider_get_exhaustion_and_invalid_retry_after_fail_closed",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "tests/test_provider_read.py::test_provider_get_exhaustion_and_invalid_retry_after_fail_closed",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 100,
+        "argument_origins": [
+          "local:Request",
+          "local:_",
+          "local:_http",
+          "local:open_provider_get"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "d9e17d64993ca9b503412fdad30ad6c1497717c3d68062ef7e8df6be5d7b8f47",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "0d817674b6c6c201f42ba1df89fce1231fb2fb006bb8ea1afdc074e75e36fae3"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "2ab2ec5ef038f92cfcc10c1186dde417aa81367522f08208a10151b518caf977"
+            },
+            {
+              "kind": "keyword",
+              "slot": "sleeper",
+              "expression_sha256": "491dd9a8d4d083aa623c92db1df13f778d5f1a20673f043a1a542c933b07d788"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "bcf_governance.tooling.provider_read",
+            "member": "open_provider_get",
+            "level": 0,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "tests/test_provider_read.py::test_provider_get_exhaustion_and_invalid_retry_after_fail_closed",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "tests/test_provider_read.py::test_provider_get_exhaustion_and_invalid_retry_after_fail_closed",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 92,
+        "argument_origins": [
+          "local:Request",
+          "local:open_provider_get",
+          "local:unavailable"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "d51e18b1618806b610be2d1ee92d354a23317674ab49cd98f9371590638c12ab",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "0d817674b6c6c201f42ba1df89fce1231fb2fb006bb8ea1afdc074e75e36fae3"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "e7c9091e438049039c900257b3a20b5c543eed8f8b836be77374a2e8696fb6a7"
+            },
+            {
+              "kind": "keyword",
+              "slot": "sleeper",
+              "expression_sha256": "491dd9a8d4d083aa623c92db1df13f778d5f1a20673f043a1a542c933b07d788"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "bcf_governance.tooling.provider_read",
+            "member": "open_provider_get",
+            "level": 0,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "tests/test_provider_read.py::test_provider_get_never_retries_authority_or_absence",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "tests/test_provider_read.py::test_provider_get_never_retries_authority_or_absence",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 74,
+        "argument_origins": [
+          "local:Request",
+          "local:open_provider_get",
+          "local:opener",
+          "local:pytest"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "b91fe60e50c60ec3260acf6593b69b81a60e58692348074fe7f451554966ea0c",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "0d817674b6c6c201f42ba1df89fce1231fb2fb006bb8ea1afdc074e75e36fae3"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "f999db0995f773dac7f51ebefec3319a2998648175e4e250b4f20bc7c282c8a7"
+            },
+            {
+              "kind": "keyword",
+              "slot": "sleeper",
+              "expression_sha256": "78128086933d4fc7358ebc06026622a073252c9649d99826ffb106f4502c497f"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "bcf_governance.tooling.provider_read",
+            "member": "open_provider_get",
+            "level": 0,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "tests/test_provider_read.py::test_provider_get_retries_exact_read_after_tls_eof",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "tests/test_provider_read.py::test_provider_get_retries_exact_read_after_tls_eof",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 120,
+        "argument_origins": [
+          "local:Request",
+          "local:open_provider_get",
+          "local:opener"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "ef1dd91c69f619c4d861d31b2a072779d6d9893ac54574317094fe0a69b244e6",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "02b262529f3916c79ed165aade9eb880aa4681100b21256e2d4e54138372f2ed"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "f999db0995f773dac7f51ebefec3319a2998648175e4e250b4f20bc7c282c8a7"
+            },
+            {
+              "kind": "keyword",
+              "slot": "sleeper",
+              "expression_sha256": "bf1e146cf92a6cf4dfa6e237dd93fa858bc01843290d963a6f88458c3371aa67"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "bcf_governance.tooling.provider_read",
+            "member": "open_provider_get",
+            "level": 0,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "tests/test_provider_read.py::test_provider_get_retries_transient_without_rewriting_identity",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "tests/test_provider_read.py::test_provider_get_retries_transient_without_rewriting_identity",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 47,
+        "argument_origins": [
+          "local:Request",
+          "local:open_provider_get",
+          "local:opener"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "fb6fd7193bbc274590058ecbfa5c3dcb64c3843d43c4a68bf524d8d41d741a2a",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "02b262529f3916c79ed165aade9eb880aa4681100b21256e2d4e54138372f2ed"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "f999db0995f773dac7f51ebefec3319a2998648175e4e250b4f20bc7c282c8a7"
+            },
+            {
+              "kind": "keyword",
+              "slot": "sleeper",
+              "expression_sha256": "bf1e146cf92a6cf4dfa6e237dd93fa858bc01843290d963a6f88458c3371aa67"
+            },
+            {
+              "kind": "keyword",
+              "slot": "observations",
+              "expression_sha256": "48ce8fb2f3d6d7e88569a4280aff8718f9b31dc2ae5cf3a978a255145ea9b700"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "bcf_governance.tooling.provider_read",
+            "member": "open_provider_get",
+            "level": 0,
+            "line": 11
+          }
+        }
+      }
+    },
+    {
+      "consumer": "tests/test_provider_read.py::test_provider_retry_rejects_mutation_method",
+      "producer": "bcf_governance/tooling/provider_read.py::open_provider_get",
+      "call": {
+        "caller": "tests/test_provider_read.py::test_provider_retry_rejects_mutation_method",
+        "called_symbol": "bcf_governance/tooling/provider_read.py::open_provider_get",
+        "call_name": "open_provider_get",
+        "line": 133,
+        "argument_origins": [
+          "local:Request",
+          "local:open_provider_get",
+          "local:pytest"
+        ],
+        "call_contract": {
+          "authority": false,
+          "expression_sha256": "15fd2d104bd8a79913100273ed265c8cfcde263b442657665c8357d53279ea56",
+          "occurrence": 0,
+          "arguments": [
+            {
+              "kind": "positional",
+              "slot": 0,
+              "expression_sha256": "95b8384b6f36ec3847e8b71284d267556e375a62a823acb858ecca567633b76a"
+            },
+            {
+              "kind": "keyword",
+              "slot": "timeout",
+              "expression_sha256": "14e182932528b6c448913ce34d285784536ff26e86b383ecd370e4ef72396206"
+            },
+            {
+              "kind": "keyword",
+              "slot": "opener",
+              "expression_sha256": "95df50b6d812dcc23585dc2159fcc6ca7d0ecd8d8ddf9d225cf9974ca9e13b29"
+            }
+          ]
+        },
+        "import_reference": {
+          "local": "open_provider_get",
+          "attributes": [],
+          "binding": {
+            "kind": "from",
+            "local": "open_provider_get",
+            "module": "bcf_governance.tooling.provider_read",
+            "member": "open_provider_get",
+            "level": 0,
+            "line": 11
+          }
+        }
+      }
+    }
+  ],
+  "scope": "Exact committed Python-tree source-resolved direct calls only; test calls retained.",
+  "unqualified": [
+    "reflection and dynamic runtime effects",
+    "independent full provider consumer population",
+    "runtime deadline composition sufficiency and activation"
+  ]
+}

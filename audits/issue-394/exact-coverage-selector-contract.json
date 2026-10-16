@@ -1,0 +1,35 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/exact-coverage-selector-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "existing authored coverage contract and exact test-manifest owner",
+  "operation_side": "query and authored artifact correction",
+  "targets": [
+    "audits/issue-394/workplan.yml",
+    "tests/test_ci_graph_composition.py"
+  ],
+  "contract": [
+    "Correct bare parameterized test references to every exact collected case through existing collect_selector_map owner, retaining all original cases and original cause prefixes.",
+    "Positive bindings expand to exact case identities; negative bindings retain original cause plus exact case suffix for independent unique cause/case binding. Missing nonparameterized identities or empty expansion block; never edit generated manifests or weaken exact oracle validation.",
+    "Retain original selector-to-case migration and exact collection/source identities as nonauthoritative evidence. All 82 requirements and 30 existing bounded slices remain unchanged at whole acceptance.",
+    "Execute exact coverage test before next canonical submission; production-level earlier owner integration remains a separate unresolved obligation.",
+    "Retain cancelled canonical attempt 3 as deliberate termination due independently reproduced authored defect; do not relabel as provider failure."
+  ],
+  "expected_tests": [
+    "Actual coverage schema and original exact governed oracle on canonically normalized corrected source.",
+    "Explicit parameter cases, no lost prior selectors or controls and unique cause/case bindings.",
+    "Missing renamed bare or empty cases reject, no normalization by relaxing OracleManifestIndex."
+  ],
+  "forbidden_surfaces": [
+    "Manual generated manifests/workflows/authority edits",
+    "Required oracle bypass or suppression",
+    "Changing predecessor bytes or maintained adopters",
+    "Claiming local migration is full independent conformance"
+  ],
+  "dependency_acceptance": "Correct authored foundation contract only; no activation, full lifecycle adoption or whole-requirement closure."
+}

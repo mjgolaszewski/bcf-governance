@@ -61,13 +61,15 @@ def test_deadline_inventory_rejects_moving_or_uncommitted_source(inputs, monkeyp
         module.collect(root)
 
 
-def test_controller_consumer_inventory_uses_exact_full_source_and_retains_every_call(monkeypatch, tmp_path):
+@pytest.mark.parametrize("kind,target", [("controller", "bcf_governance/tooling/routine_controller_provider.py::resolve_effective_controller"), ("provider_read", "bcf_governance/tooling/provider_read.py::open_provider_get")])
+def test_controller_consumer_inventory_uses_exact_full_source_and_retains_every_call(monkeypatch, tmp_path, kind, target):
     module = collector()
     subject = {'commit_sha': 'a' * 40, 'tree_sha': 'b' * 40}
-    target = 'bcf_governance/tooling/routine_controller_provider.py::resolve_effective_controller'
     inventory = {'files': [{'path': 'caller.py', 'sha256': 'c' * 64}], 'functions': [
         {'symbol': name, 'calls': [{'called_symbol': target, 'line': 1}]}
         for name in ('caller.py::first', 'caller.py::second', 'tests/control.py::case')]}
+    inventory['functions'].append({'symbol': 'unrelated.py::other', 'calls': [{'called_symbol': 'other.py::read', 'line': 2}]})
+    collect = getattr(module, f'collect_{kind}_consumers')
     monkeypatch.setattr(module, '_subject', lambda root: subject)
     def discover(root, **kwargs):
         assert root == tmp_path
@@ -75,11 +77,11 @@ def test_controller_consumer_inventory_uses_exact_full_source_and_retains_every_
         return inventory
     monkeypatch.setattr(module, 'discover_python_source', discover)
     monkeypatch.setattr(module, 'resolve_python_imports', lambda root, value: value)
-    value = module.collect_controller_consumers(tmp_path)
-    assert value == module.collect_controller_consumers(tmp_path)
+    value = collect(tmp_path)
+    assert value == collect(tmp_path)
     assert value['authority'] is False and value['execution_qualified'] is False
     assert {row['consumer'] for row in value['consumers']} == {'caller.py::first', 'caller.py::second', 'tests/control.py::case'}
     subjects = iter([subject, {**subject, 'commit_sha': 'd' * 40}])
     monkeypatch.setattr(module, '_subject', lambda root: next(subjects))
-    with pytest.raises(ValueError, match='controller consumer inventory source changed'):
-        module.collect_controller_consumers(tmp_path)
+    with pytest.raises(ValueError, match=f'{kind} consumer inventory source changed'):
+        collect(tmp_path)

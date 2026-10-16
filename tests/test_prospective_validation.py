@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -55,7 +56,10 @@ TRAIN = {
 
 
 @pytest.fixture(autouse=True)
-def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
+def _authored_target_ready(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    from bcf_governance.tooling import local_execution_admission as admission
+    namespace = hashlib.sha256(('unit-prospective:' + str(tmp_path)).encode()).hexdigest()
+    monkeypatch.setattr(admission, 'authenticated_execution_state_namespace', lambda _env: namespace)
     monkeypatch.setattr(
         prospective, "validate_evaluation_authored_ready", lambda *_args, **_kwargs: None
     )
@@ -100,6 +104,8 @@ def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
             "history_owner": "plans/phase-history.yml",
         },
     )
+    yield
+    Path(f'/tmp/bcf-local-gate-{os.getuid()}-{namespace}.lock').unlink(missing_ok=True)
 
 
 class Result:
@@ -1747,3 +1753,11 @@ def test_static_control_failure_stops_before_provider_and_preserves_cause(monkey
             repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
     assert caught.value.__cause__ is failure
     assert [(row['stage'], row['state']) for row in events[-2:]] == [('negative_controls', 'started'), ('negative_controls', 'failed')]
+
+
+def test_prospective_unit_namespace_retains_real_lease_exclusion():
+    from bcf_governance.tooling.local_execution_admission import local_gate_lease, LocalExecutionAdmissionError
+    with local_gate_lease(HEAD):
+        with pytest.raises(LocalExecutionAdmissionError, match='local_execution_busy_deferred: active=' + HEAD):
+            with local_gate_lease(BASE):
+                pytest.fail('unit namespace admitted overlapping host gate')
