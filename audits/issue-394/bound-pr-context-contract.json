@@ -26,7 +26,9 @@
     "tests/test_ci_candidate_pr.py",
     "tests/test_prospective_validation.py",
     "governance/canonical-representations.yml",
-    "spec/phase0/release-train-backtrace.yml"
+    "spec/phase0/release-train-backtrace.yml",
+    "bcf_governance/tooling/candidate_provider_recovery.py",
+    "bcf_governance/tooling/ordinary_protection_projection.py"
   ],
   "invariant": "An authenticated bound PR supplies its exact base/head relationship; default branch is not a substitute for that relationship. Candidate-local proof never grants provider certification, protected-main or release authority.",
   "contract": [

@@ -276,3 +276,96 @@ def test_local_pr_event_file_is_removed_after_execution(tmp_path: Path) -> None:
     result = run_local_pr_validation(repo, command=(sys.executable, "-c", script))
     assert result.returncode == 0
     assert not Path(result.stdout.strip()).exists()
+
+
+@pytest.fixture
+def authenticated_stacked_pr(tmp_path, monkeypatch):
+    """A real Git stack with an independently mocked provider read producer."""
+    import copy
+    from bcf_governance.tooling.ci_github_api import GitHubAPI
+    repo, default_base = _repository(tmp_path)
+    stack_base = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "push", "origin", "HEAD:refs/heads/stack")
+    (repo / "source.py").write_text("VALUE = 3\n", encoding="utf-8")
+    _git(repo, "add", "source.py")
+    _git(repo, "commit", "-m", "stacked leaf")
+    head = _git(repo, "rev-parse", "HEAD")
+    _git(repo, "push", "origin", "HEAD:refs/heads/feature")
+    provider_repo = {"id": 17, "full_name": "owner/repository", "default_branch": "main"}
+    pull = {"number": 7, "node_id": "PR_exact7", "state": "open",
+            "head": {"sha": head, "ref": "feature", "repo": provider_repo},
+            "base": {"sha": stack_base, "ref": "stack", "repo": provider_repo}}
+    state = {"repository": provider_repo, "pulls": [pull], "current": pull, "error": None, "reads": []}
+    def repository(_api, name):
+        assert name == "owner/repository"
+        state["reads"].append("repository")
+        return copy.deepcopy(state["repository"])
+    def pulls(_api, name, *, state="open"):
+        assert name == "owner/repository" and state == "open"
+        observation = provider_state
+        observation["reads"].append("pulls")
+        if observation["error"] is not None:
+            raise observation["error"]
+        return tuple(copy.deepcopy(observation["pulls"]))
+    provider_state = state
+    def current(_api, name, number):
+        assert name == "owner/repository" and number == 7
+        state["reads"].append("current")
+        return copy.deepcopy(state["current"])
+    monkeypatch.setenv("GITHUB_TOKEN", "fixture-read-only-token")
+    monkeypatch.setattr(GitHubAPI, "repository", repository)
+    monkeypatch.setattr(GitHubAPI, "pull_requests", pulls)
+    monkeypatch.setattr(GitHubAPI, "pull_request", current)
+    for name in ["create_pull_request", "update_pull_request_metadata", "enable_pull_request_auto_merge", "merge_clean_pull_request"]:
+        monkeypatch.setattr(GitHubAPI, name, lambda *_a, **_k: pytest.fail("identity discovery crossed provider mutation"))
+    def runner(command, **kwargs):
+        if command == ["git", "remote", "get-url", "origin"]:
+            return subprocess.CompletedProcess(command, 0, "https://github.com/owner/repository.git\n", "")
+        return local_pr_context._run(command, **kwargs)
+    return SimpleNamespace(repo=repo, default_base=default_base, stack_base=stack_base,
+                           head=head, state=state, runner=runner)
+
+
+def test_bound_stacked_pr_context_uses_authenticated_base_instead_of_default(authenticated_stacked_pr):
+    fixture = authenticated_stacked_pr
+    context = resolve_local_pr_context(fixture.repo, runner=fixture.runner)
+    assert context.base_sha == fixture.stack_base
+    assert context.base_sha != fixture.default_base
+    assert context.default_branch == "main"
+    assert context.head_sha == fixture.head
+    assert fixture.state["reads"]
+
+
+def test_bound_stacked_pr_synthetic_event_preserves_provider_base_ref(authenticated_stacked_pr):
+    fixture = authenticated_stacked_pr
+    script = ("import json,os,pathlib; "
+              "event=json.loads(pathlib.Path(os.environ['GITHUB_EVENT_PATH']).read_text()); "
+              "assert event['repository']['default_branch']=='main'; "
+              "assert event['pull_request']['base']['ref']=='stack'; "
+              f"assert event['pull_request']['base']['sha']=='{fixture.stack_base}'; "
+              "assert os.environ['GITHUB_BASE_REF']=='stack'; "
+              f"assert os.environ['BCF_COMPARISON_BASE_SHA']=='{fixture.stack_base}'")
+    result = run_local_pr_validation(fixture.repo, command=(sys.executable, "-c", script), runner=fixture.runner)
+    assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize("cause", ["ambiguous", "provider-failure", "wrong-repository", "wrong-head", "missing-base"])
+def test_bound_pr_discovery_never_defaults_on_unprovable_provider_facts(authenticated_stacked_pr, cause):
+    import copy
+    from bcf_governance.tooling.ci_github_errors import GitHubAPIError
+    fixture = authenticated_stacked_pr
+    if cause == "ambiguous":
+        duplicate = copy.deepcopy(fixture.state["pulls"][0]); duplicate["number"] = 8
+        fixture.state["pulls"].append(duplicate)
+    elif cause == "provider-failure":
+        fixture.state["error"] = GitHubAPIError("fixture terminal provider read")
+    elif cause == "wrong-repository":
+        fixture.state["repository"]["id"] = 99
+        # Preserve the independent PR repository observation as the original identity.
+        fixture.state["pulls"][0]["base"]["repo"] = {"id": 17, "full_name": "owner/repository"}
+    elif cause == "wrong-head":
+        fixture.state["pulls"][0]["head"]["sha"] = "9" * 40
+    else:
+        fixture.state["pulls"][0]["base"]["sha"] = ""
+    with pytest.raises(LocalPRError):
+        resolve_local_pr_context(fixture.repo, runner=fixture.runner)
