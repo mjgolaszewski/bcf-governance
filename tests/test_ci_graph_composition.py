@@ -1164,10 +1164,14 @@ def test_reconstructed_binding_rejects_malformed_declarations_before_io(reconstr
         owner.validate_reconstructed_lifecycle_bindings(**inputs)
 
 
-@pytest.mark.parametrize('roots', [('missing',), ('.', '.'), ('../escape',)])
-def test_reconstructed_binding_rejects_invalid_import_resources(reconstructed_binding_inputs, roots):
+@pytest.mark.parametrize('roots', [('missing',), ('.', '.'), ('../escape',), (), ('.', 'nested'), ('alias',)])
+def test_reconstructed_binding_rejects_invalid_import_resources(reconstructed_binding_inputs, roots, monkeypatch):
     from bcf_governance.tooling.ci_graph_composition import validate_reconstructed_lifecycle_bindings
 
+    from bcf_governance.tooling import semantic_ownership_inventory
+    if roots == ('alias',):
+        (reconstructed_binding_inputs['repo_root'] / 'alias').symlink_to('.', target_is_directory=True)
+    monkeypatch.setattr(semantic_ownership_inventory, 'discover_python_source', lambda *args, **kwargs: pytest.fail('source discovery before import-root rejection'))
     with pytest.raises(CIGraphError, match='source reconstruction'):
         validate_reconstructed_lifecycle_bindings(**reconstructed_binding_inputs, source_import_roots=roots)
 
