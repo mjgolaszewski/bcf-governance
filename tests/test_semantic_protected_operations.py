@@ -217,3 +217,30 @@ def test_committed_policy_blob_read_failure_or_substitution_blocks(committed_inp
     with pytest.raises(owner.SemanticAuthorityError, match='blob'):
         committed_run(committed_inputs)
     assert len(blob_reads) == 1
+
+
+def test_permissive_candidate_schema_cannot_relax_protected_policy(inputs, monkeypatch):
+    root, source, path, digest = inputs
+    payload = yaml.safe_load(path.read_text())
+    payload['operations'][0]['semantic_kind'] = 'invented_kind'
+    path.write_text(yaml.safe_dump(payload))
+    (root / 'schemas/application-operations.schema.json').write_text('{}')
+    monkeypatch.setattr(owner, '_discover_population', lambda *args: pytest.fail('population before trusted schema validation'))
+    with pytest.raises(owner.SemanticAuthorityError, match='application-operations.schema.json'):
+        run(inputs, hashlib.sha256(path.read_bytes()).hexdigest())
+
+
+@pytest.mark.parametrize('candidate_schema', [None, 'false', '{malformed'])
+def test_candidate_schema_cannot_reject_valid_protected_policy(inputs, candidate_schema):
+    path = inputs[0] / 'schemas/application-operations.schema.json'
+    if candidate_schema is None:
+        path.unlink()
+    else:
+        path.write_text(candidate_schema)
+    assert len(run(inputs)['operations']) == 1
+
+
+def test_ordinary_authored_factory_keeps_authored_schema(inputs):
+    (inputs[0] / 'schemas/application-operations.schema.json').write_text('false')
+    with pytest.raises(owner.SemanticAuthorityError):
+        owner.load_application_operations(inputs[0])
