@@ -142,3 +142,24 @@ def test_authored_machine_mode_defers_prose_projection_checks(tmp_path: Path) ->
     assert result["machine_backtrace"]["transitions"] > 0
     with pytest.raises(CIStateMatrixError, match="required coverage"):
         validate_ci_state_matrix(repo)
+
+
+@pytest.mark.parametrize("field", ["rejection_transition", "retry_of"])
+@pytest.mark.parametrize("defect", ["missing", "self", "wrong-kind"])
+def test_authored_backtrace_rejects_unbound_typed_transition_reference(tmp_path, field, defect):
+    repo = _repo(tmp_path)
+    path = repo / "spec/phase0/release-train-backtrace.yml"
+    model = yaml.safe_load(path.read_text())
+    source, target = model["transitions"][:2]
+    source["kind"] = "success" if field == "rejection_transition" else "recovery"
+    if field == "retry_of": source["max_attempts"] = 2
+    if defect == "missing": source[field] = "TR-999"
+    elif defect == "self": source[field] = source["id"]
+    else:
+        source[field] = target["id"]
+        target["kind"] = "recovery" if field == "rejection_transition" else "rejection"
+        if target["kind"] == "recovery":
+            target.update(retry_of=model["transitions"][2]["id"], max_attempts=2)
+    path.write_text(yaml.safe_dump(model, sort_keys=False))
+    with pytest.raises(CIStateMatrixError, match="typed transition reference"):
+        validate_ci_state_matrix(repo, authored_only=True)
