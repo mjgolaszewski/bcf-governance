@@ -1367,7 +1367,7 @@
     },
     "scripts/_bcf_runtime/release_publication_transaction.py": {
       "operation": "copy",
-      "sha256": "57187c0880bd554436fc2706a850638521f45f7f6f69fd6788bb13c0b689a866"
+      "sha256": "83457968ac7b2d5c41ad1deb8cc2ac4505983a114576af7aeade4338ed8f1652"
     },
     "scripts/_bcf_runtime/release_receipts.py": {
       "operation": "copy",

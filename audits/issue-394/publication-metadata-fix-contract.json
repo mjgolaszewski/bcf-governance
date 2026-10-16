@@ -28,7 +28,8 @@
     "Preserve inspect_release callers through an optional expected_body argument; standalone inspection still checks canonical tag/name/prerelease",
     "Every publisher path supplies exact expected body, including already-published and race-converged paths",
     "Keep immutable exact-tag exact-assets and attestation checks mandatory",
-    "No blind retry; preserve exact continuation after response loss"
+    "No blind retry; preserve exact continuation after response loss",
+    "Draft lifecycle flags are exact booleans; reject integer aliases before tag or release mutation"
   ],
   "expected_tests": [
     "Pre-publication body/name/prerelease movement rejects with no publication mutation",
