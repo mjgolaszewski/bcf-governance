@@ -1,0 +1,32 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-07",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query_before_normalization_lease",
+  "targets": [
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "tests/test_candidate_submit.py"
+  ],
+  "trigger": "AgentBus7994 reports deterministic missing CHANGELOG.md rejected only at post-normalization preflight.",
+  "contract": [
+    "Derive effective scope through existing authored_post_merge_scope and candidate_semantic_scope using supplied resolved context before normalization lease.",
+    "For effective PR scope with resolved context, invoke the existing canonical changelog validator under the existing canonical PR environment projection.",
+    "Use exact semantic comparison base; a changelog change already in stacked base cannot satisfy leaf PR requirement.",
+    "Raw environment flags or isolated lane cannot opt a provider submission out. Context-free legacy normalization and default-main release/workitem/closure behavior remain unchanged.",
+    "Preserve later fresh-subject changelog enforcement and all independent provider/evidence checks.",
+    "Reject omission before test collection, source build admission, local lease, reconciliation, proof allocation or push; retain original cause and restore temporary environment."
+  ],
+  "verification": [
+    "Real-Git missing delta rejects before expensive normalization operations.",
+    "Real-Git exact comparison changelog delta passes.",
+    "Stacked-base changelog-only delta rejects despite default-main delta.",
+    "Default-main release scope skips PR-only obligation; bound nondefault scope derives PR.",
+    "Raw ambient opt-out cannot bypass and environment restored on failure."
+  ],
+  "limits": [
+    "Does not establish complete deterministic failure population or full foundation closure.",
+    "No competing heavy execution or maintained adopter mutations."
+  ]
+}
