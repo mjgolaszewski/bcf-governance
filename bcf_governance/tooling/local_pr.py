@@ -297,9 +297,9 @@ def _run_prospective_train(
             raise ProspectiveValidationError(str(exc)) from exc
     for stage, check in (
         ("exposure", _exposure_scan),
+        ("source_distribution", lambda root: _pack_manifest(root, python_executable=python_executable)),
         ("negative_controls", _negative_control_targets),
         ("semantic_ownership", _semantic_ownership),
-        ("source_distribution", lambda root: _pack_manifest(root, python_executable=python_executable)),
     ):
         emit(stage, "started")
         try:

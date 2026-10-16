@@ -4166,6 +4166,8 @@ implementation_slices:
     - tests.test_release_artifacts::test_source_manifest_query_uses_backend_defaults_without_build_or_mutation
     - tests.test_release_artifacts::test_built_sdist_contains_every_governed_source_file
     negative_controls:
+    - cause: authored-budget-fits-but-rendered-budget-fails-before-costly-checks
+      test: tests.test_prospective_validation::test_rendered_budget_failure_precedes_costly_qualification_with_exact_existing_owner
     - cause: authored-source-omission-before-normalization-lease
       test: tests.test_candidate_submit::test_authored_source_distribution_rejects_before_lease_and_reconciliation
     - cause: generated-distribution-failure-before-provider

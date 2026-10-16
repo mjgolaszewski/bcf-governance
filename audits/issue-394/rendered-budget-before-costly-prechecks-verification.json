@@ -1,0 +1,36 @@
+{
+  "authority": false,
+  "contract_commit": "093ef1c7",
+  "workitem": "P32-P0-07",
+  "maintenance_failure": {
+    "subject": "8704c330",
+    "source": "Retained09-test.junit.xml parsed read-only",
+    "test": "tests.test_profile_yaml::test_current_gate_contract_renders_inside_existing_context_budget",
+    "rendered_bytes": 103743,
+    "cap_bytes": 103424,
+    "preceding_passes": 2367,
+    "bus_cursor": 8151
+  },
+  "red_before_fix": "Exact existing pack/renderer/budget query fixture reached a costly negative-control sentinel before rejecting a rendered overflow.",
+  "implementation": "Move existing source_distribution stage to second position after exposure, before negative controls and semantic ownership; keep fixed-point and policy bindings first. No new renderer/budget path or changed caps.",
+  "checks": {
+    "prospective_and_profile_yaml": {
+      "passed": 70,
+      "elapsed_seconds": 3.97
+    },
+    "pack_schema_exact_references": {
+      "passed": 9,
+      "elapsed_seconds": 25.42
+    },
+    "governance_yaml": "passed",
+    "authored_semantic_ownership": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_module_size": "passed",
+    "architecture_context_membership": "passed"
+  },
+  "remaining": [
+    "Exact installed parity and canonical pinned-adopter qualification.",
+    "Complete earliest-safe failure population and whole acceptance remain open."
+  ]
+}

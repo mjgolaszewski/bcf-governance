@@ -1901,3 +1901,39 @@ def test_prospective_cache_identity_receives_resolved_context_and_lane(monkeypat
     with pytest.raises(RuntimeError, match='proof context observed'):
         prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'),
             repository='owner/repo', runner=_runner)
+
+
+def test_rendered_budget_failure_precedes_costly_qualification_with_exact_existing_owner(monkeypatch, tmp_path):
+    import yaml
+    from bcf_governance.tooling import preflight
+    from bcf_governance.tooling.governance_validation import preflight_distribution as distribution
+    from bcf_governance.tooling.profile_yaml import render_profile_surface
+    trace = []
+    _front_door(monkeypatch, trace)
+    (tmp_path/'bcf_governance/pack/template-repo').mkdir(parents=True)
+    (tmp_path/'governance').mkdir()
+    payload = {f'k{index}': 'x' for index in range(140)}
+    raw = yaml.safe_dump(payload, sort_keys=False)
+    assert len(raw.encode()) <= 1024 < len(render_profile_surface(payload, width=4096).encode())
+    contract = tmp_path/'governance/gate-contracts.yml'
+    contract.write_text(raw)
+    manifest = {'context_budgets': {'agent_required_files': {
+        'governance/gate-contracts.yml': {'line_hard_cap': 800, 'kib_hard_cap': 1}}}}
+    (tmp_path/'governance/artifact-manifest.yml').write_text(yaml.safe_dump(manifest))
+    monkeypatch.setattr(distribution, '_pack_manifest_entries', lambda *_a: {})
+    monkeypatch.setattr(distribution, 'derive_interpreter_environment', lambda *_a: None)
+    monkeypatch.setattr(distribution, 'validate_source_distribution', lambda *_a, **_k: {'applicable': True})
+    monkeypatch.setattr(prospective, '_pack_manifest', preflight._pack_manifest)
+    monkeypatch.setattr(prospective, '_exposure_scan', lambda *_a: trace.append('exposure'))
+    def forbidden(*_a, **_k): pytest.fail('rendered budget failure reached costly qualification or provider')
+    monkeypatch.setattr(prospective, '_negative_control_targets', forbidden)
+    monkeypatch.setattr(prospective, '_semantic_ownership', forbidden)
+    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', forbidden)
+    events = []
+    with pytest.raises(prospective.ProspectiveValidationError, match='exceeded context budgets'):
+        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'),
+            execute_evidence=False, repository='owner/repo', provider_api=object(), runner=_runner,
+            progress_sink=events.append)
+    assert trace == ['reconcile', 'exposure']
+    assert [(e['stage'], e['state']) for e in events[-2:]] == [('source_distribution','started'),('source_distribution','failed')]
+    assert contract.read_text() == raw

@@ -27,6 +27,10 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Run generated-pack and rendered-budget admission after exposure checks and
+  before costly local control qualification, preserving canonical generation
+  prerequisites and every later required check.
+
 - Reject dirty committed-candidate inputs before provider discovery or proof
   allocation. Ordinary local context reads still support edited trees, and
   later exact-subject checks continue to detect new edits.
