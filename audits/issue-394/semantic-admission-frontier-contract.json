@@ -17,7 +17,10 @@
     "tests/test_semantic_ownership.py",
     "tests/test_candidate_provider_recovery.py",
     "tests/test_candidate_submit.py",
-    "tests/test_prospective_validation.py"
+    "tests/test_prospective_validation.py",
+    "governance/application-operations.yml",
+    "audits/issue-394/operation-validator-semantic-admission.json",
+    "tests/test_semantic_operation_deconstruction.py"
   ],
   "contract": [
     "Declare the actual retry executor as LocalPRContext authorization consumer through existing registry field only. Constructors, owner, pure delegates and suppressions remain identical; runtime permissions/retry behavior do not change.",
@@ -26,7 +29,8 @@
     "Authored Python ownership rejects before lease/reconciliation/provider, omits generated locks/projections and reports authority false/execution_qualified false with Python-only scope. Full mixed-toolchain semantic preflight remains mandatory after generation/toolchain admission and before provider, plus the original later full preflight.",
     "After necessary generation, run the unchanged full semantic preflight owner before provider verification in prospective orchestration. Retain original later full preflight; no proof suppression/reuse or weakening.",
     "Model source-violation rejection before effects, generated-state rejection after fixed point, known errors with same cause, no provider/evidence allocation, and independent future lifecycle/custody gates.",
-    "local_pr.py is 795 LOC: natural three-check loop must stay at most 800. No budget increase or blank-line reductions; further growth requires characterization-led deconstruction."
+    "local_pr.py is 795 LOC: natural three-check loop must stay at most 800. No budget increase or blank-line reductions; further growth requires characterization-led deconstruction.",
+    "Declare the new authored read-only query as a non-authoritative CI observation port, matching the existing full-scan boundary. Preserve all prior 21-operation rows and every mutation/authority count; add exactly one observation port in a separate characterized golden, retaining prior goldens unchanged. No authority/mutation ports added."
   ],
   "expected_tests": [
     "Actual source/registry positive and declaration-only removal negative; constructors/ownership unchanged.",
