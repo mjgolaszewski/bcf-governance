@@ -1,0 +1,25 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-02",
+  "targets": [
+    "bcf_governance/tooling/release_adopter_qualification.py",
+    "tests/test_release_adopter_qualification.py"
+  ],
+  "contract": [
+    "Derive dependency roots from actual distributions visible to the admitted invoking runtime as well as its existing purelib/platlib roots.",
+    "Flatten observed roots as paths; do not execute or recursively copy path-hook code. Preserve exact wheel precedence and existing child origin/version/dependency verification.",
+    "Resolve, validate and deterministically sort roots before allocating a fresh controller; reject unavailable/unsafe roots with the existing typed error.",
+    "Nested projections must retain dependencies physically installed outside the immediate parent prefix. No manual pip repair, extra dependency installation, provider mutation or weakened probe."
+  ],
+  "cause": "Canonical7f82a29f qualification omitted packaging because sysconfig did not include its actual admitted distribution origin.",
+  "verification": [
+    "Injected external distribution root survives projection before fresh runtime creation.",
+    "Unsafe/missing roots reject before allocation.",
+    "Real nested exact runtime probe succeeds using the same preserved candidate wheel and actual admitted dependency chain.",
+    "Existing shadowing/version/dependency rejection and qualification tests retained."
+  ],
+  "limits": [
+    "Complete independent authority/consumer populations and canonical real-adopter qualification remain open."
+  ]
+}
