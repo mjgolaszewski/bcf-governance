@@ -1,4 +1,14 @@
 schema_version: '1.0'
+installed_parent_proof_qualification:
+  context: Existing phase-input query in standalone installed runtime
+  side: query; no production change is presumed
+  required_behavior:
+    - Replay exact provider-port facts captured while the SDK verifies an actual normalized parent bundle; never serialize a successful verifier result as authority.
+    - Execute the installed private verifier with SDK absent and require certified phase_closed for the exact phase and source plus complete provider fact consumption.
+    - Preserve late provider freshness checks and reject substituted archive bytes even when candidate schemas are permissive.
+    - Exercise existing fresh and same-candidate upgrade installer fixtures separately from previous-release upgrades or distributions.
+  expected_tests: [real normalized parent consumption, exact query arguments and order, complete transcript consumption, substituted artifact rejection, candidate schema refusal, SDK absence]
+  forbidden_surfaces: [mocked verifier outcomes, copied SDK test implementations inside consumer, provider state mutation, release or whole-requirement promotion]
 private_runtime_schema_projection:
   context: Existing CI authority query and canonical installation projection
   side: query; generation remains owned by build_pack_manifest.py
