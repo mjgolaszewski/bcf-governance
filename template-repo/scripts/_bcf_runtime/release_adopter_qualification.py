@@ -587,6 +587,8 @@ def qualify_release(
                 temporary_root / f"{source.id}-base.git",
                 source.commit_sha,
             )
+            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
+            _commit(destination, f"test: install immutable BCF {version}")
             if repository_name in adopter_pythons:
                 adopter_python = adopter_pythons[repository_name]
                 if not adopter_python.is_file() or not os.access(adopter_python, os.X_OK):
@@ -608,8 +610,6 @@ def qualify_release(
                 project_python = ensure_local_project_python(
                     destination, Path(sys.executable)
                 )
-            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
-            _commit(destination, f"test: install immutable BCF {version}")
             _run([*bcf, "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
             _commit(destination, f"test: reconcile BCF {version} qualification")
             result = _run(

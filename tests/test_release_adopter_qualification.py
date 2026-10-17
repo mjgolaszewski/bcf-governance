@@ -539,6 +539,9 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
                 encoding='utf-8',
             )
             (destination / 'requirements-governance.txt').write_text('pytest>=8\n', encoding='utf-8')
+            (destination / 'governance/ci-graph.yml').write_text(
+                "resource_classes: {candidate: {python_version: '3.12'}}\n", encoding='utf-8',
+            )
         if argv[4:5] == ['install']:
             from bcf_governance.tooling.governance_install.upgrade import _upgrade_interpreter_contract
             from bcf_governance.tooling.interpreter_environment import derive_interpreter_environment

@@ -1387,7 +1387,7 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "22d32ab46776ff7966eb901e3147b81d1f5104affc28d0aae9970a4251a882d7"
+      "sha256": "6e8892fd83d5ce6d33180f5b4926f13495631e29cfb333760b8bb47d9cecf13d"
     },
     "scripts/_bcf_runtime/release_adopter_sources.py": {
       "operation": "copy",
