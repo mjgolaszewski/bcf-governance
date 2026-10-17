@@ -325,5 +325,75 @@
       "evidence-owned-native-architecture-context-membership.stdout": "c6dfde3f9bcc0d41df6a577e59abe1633603cb8f3e01b81b8a9ad8e61bb6442c",
       "evidence-owned-native-architecture-context-membership.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
+  },
+  "admitted_kernel_child_qualification": {
+    "authority": false,
+    "subject": "a9a4dfaf2f02e6cd278aeb946d4801da45e462cb",
+    "tree_sha": "501fc3c0f8c6f150dd4004bdf6b5fc415e46dea9",
+    "stages": [
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 11396,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 4472,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 788,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 153206,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-consumers",
+        "returncode": 0,
+        "elapsed_ms": 162184,
+        "stdout_sha256": "6c26fb7e3df455c84956aef5c045d4cba42a12973c5aa1b516f4ea6786c4e88d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed",
+        "returncode": 0,
+        "elapsed_ms": 14738,
+        "stdout_sha256": "624d1866e9b2a7740205c70a68f93af179b2d7bf51d0d52e835001befc75b722",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 29603,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 1019,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:34:30.823769+00:00",
+    "ended_at": "2026-10-17T07:40:48.675442+00:00",
+    "returncode": 0,
+    "capture_sha256": "2637e0d624b07de8e492f42a686962f18a0ce62eb5da7b334db6fc577f1c17e8",
+    "source_cases": 259,
+    "installed_cases": 2,
+    "scope": "Bounded exact a9 source/private fresh-upgrade qualification. Integration remains pending additional protocol contradiction review; no complete isolation, whole deadline or acceptance claim."
   }
 }
