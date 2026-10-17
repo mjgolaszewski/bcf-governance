@@ -80,3 +80,43 @@ def test_admitted_policy_does_not_hide_moving_current_frontier(admitted_policy, 
             api, repository="owner/repo", phase_id="P01", policy_subject=subject,
         )
     assert api.reads == 0
+
+
+def test_historical_policy_consumes_real_predecessor_bundle_after_default_advances(protected_population, monkeypatch):
+    api, _, calls = protected_population
+    api.main = "c" * 40
+    original = api.compare_commits
+    def compare(repository, *, base, head):
+        if base == SHA_B:
+            return {"status": "ahead", "base_commit": {"sha": base}, "merge_base_commit": {"sha": base}}
+        return original(repository, base=base, head=head)
+    monkeypatch.setattr(api, "compare_commits", compare)
+    subject = MainIdentity("42", "main", SHA_B, TREE)
+    selected, inputs = trusted_inputs.verify_required_phase_closure_inputs(
+        api, repository="owner/repo", phase_id="P02", policy_subject=subject,
+    )
+    assert selected == subject and api.main == "c" * 40
+    assert {ref for _, ref in calls} == {SHA_B}
+    assert list(inputs) == ["P01"]
+    assert inputs["P01"][1].computed_state == "certified"
+    assert inputs["P01"][2] == api.archive and api.reads == 1
+
+
+def test_rewritten_admitted_subject_rejects_before_policy_reads(admitted_policy):
+    api, subject, calls = admitted_policy
+    api.rewritten = True
+    with pytest.raises(GitHubControllerError, match="source is not exact"):
+        trusted_inputs.verify_required_phase_closure_inputs(
+            api, repository="owner/repo", phase_id="P01", policy_subject=subject,
+        )
+    assert calls == [] and api.reads == 0
+
+
+@pytest.mark.parametrize("subject", [True, {"provider_authenticated": True}])
+def test_asserted_authority_is_not_a_policy_subject(admitted_policy, subject):
+    api, _, calls = admitted_policy
+    with pytest.raises(GitHubControllerError, match="subject is invalid"):
+        trusted_inputs.verify_required_phase_closure_inputs(
+            api, repository="owner/repo", phase_id="P01", policy_subject=subject,
+        )
+    assert calls == [] and api.reads == 0
