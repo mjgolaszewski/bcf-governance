@@ -258,7 +258,7 @@ def test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure(
     assert 'execution infrastructure failure' in result.stderr
 
 
-@pytest.mark.parametrize('interruption', ['caller', 'supervisor'])
+@pytest.mark.parametrize('interruption', ['caller', 'supervisor', 'stalled-supervisor'])
 def test_owned_command_interruption_keeps_terminal_custody(tmp_path, interruption):
     marker = tmp_path / 'interrupted-command.json'
     worker = """import json,os,sys,time
@@ -280,9 +280,14 @@ def observe(process,*args):
             time.sleep(0.005)
         fired=True
         if mode=='caller':raise KeyboardInterrupt()
-        os.kill(process.pid,signal.SIGKILL)
+        if mode=='stalled-supervisor':
+            metadata=json.loads(marker.read_text());metadata['supervisor_pid']=process.pid
+            marker.write_text(json.dumps(metadata))
+            os.kill(process.pid,signal.SIGSTOP)
+        else:os.kill(process.pid,signal.SIGKILL)
     return original(process,*args)
 supervisor._observe=observe
+started=time.monotonic()
 try:
     _run([sys.executable,'-c',sys.argv[3],str(marker)],cwd=marker.parent,
          timeout_seconds=2,cleanup_timeout_seconds=1)
@@ -290,10 +295,10 @@ except KeyboardInterrupt:
     assert mode=='caller'
     outcome='interrupted-after-cleanup'
 except EvidenceProcessCleanupError:
-    assert mode=='supervisor'
+    assert mode in {'supervisor','stalled-supervisor'}
     outcome='unresolved'
 else:raise AssertionError('interruption became successful execution')
-print(json.dumps({'outcome':outcome,'fired':fired}))
+print(json.dumps({'outcome':outcome,'fired':fired,'elapsed':time.monotonic()-started}))
 """
     probe = subprocess.Popen(
         [sys.executable, '-c', code, str(marker), interruption, worker],
@@ -311,10 +316,15 @@ print(json.dumps({'outcome':outcome,'fired':fired}))
             assert not _live(metadata['pid']), 'caller interruption abandoned live work'
         else:
             assert result['outcome'] == 'unresolved'
+            if interruption == 'stalled-supervisor':
+                assert result['elapsed'] < 3.6, 'cleanup silently received a second budget'
     finally:
         groups = {probe.pid}
         if marker.exists():
-            groups.add(json.loads(marker.read_text())['group'])
+            metadata = json.loads(marker.read_text())
+            groups.add(metadata['group'])
+            if 'supervisor_pid' in metadata:
+                groups.add(metadata['supervisor_pid'])
         assert os.getpgrp() not in groups
         for group in groups:
             try:
