@@ -190,5 +190,142 @@
     "elapsed_seconds": 0.95,
     "runtime": "canonical isolated project interpreter",
     "scope": "Existing focused behavior, not every table edge or full recovery lifecycle."
+  },
+  "current_owner_disposition": {
+    "authority": false,
+    "source_checkpoint": "af5229b9d5176102d15687a77a266d80bf617991",
+    "source_sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
+    "construction": "AST literal extraction from the existing canonical owner; historical table and unqualified probe above remain retained.",
+    "edges": [
+      {
+        "operation": "candidate_provider",
+        "state": "active",
+        "action": "observe_same_provider_run",
+        "successor": "pr_provider_pending"
+      },
+      {
+        "operation": "candidate_provider",
+        "state": "not_started",
+        "action": "observe_exact_provider_run",
+        "successor": "pr_provider_pending"
+      },
+      {
+        "operation": "candidate_provider",
+        "state": "retry_exhausted",
+        "action": "stop",
+        "successor": "terminal_blocked"
+      },
+      {
+        "operation": "candidate_provider",
+        "state": "retryable_terminal_transport",
+        "action": "rerun_exact_provider_workflow",
+        "successor": "pr_provider_pending"
+      },
+      {
+        "operation": "candidate_provider",
+        "state": "succeeded",
+        "action": "observe_pr_certification",
+        "successor": "pr_certification_pending"
+      },
+      {
+        "operation": "candidate_provider",
+        "state": "terminal_failure",
+        "action": "stop",
+        "successor": "terminal_blocked"
+      },
+      {
+        "operation": "candidate_submission",
+        "state": "exact_candidate",
+        "action": "run_prospective_and_push",
+        "successor": "provider_proof_required"
+      },
+      {
+        "operation": "candidate_submission",
+        "state": "prospective_proved",
+        "action": "push_exact_candidate",
+        "successor": "pr_provider_pending"
+      },
+      {
+        "operation": "controller_transition",
+        "state": "controller_current",
+        "action": "emit_no_transition",
+        "successor": "ordinary_current"
+      },
+      {
+        "operation": "controller_transition",
+        "state": "pending_rotation",
+        "action": "invoke_routine_transition",
+        "successor": "ordinary_current"
+      },
+      {
+        "operation": "controller_transition",
+        "state": "protected_policy_change",
+        "action": "invoke_exact_alternate_lane",
+        "successor": "ordinary_current"
+      },
+      {
+        "operation": "protected_merge",
+        "state": "base_advanced",
+        "action": "reconstruct_candidate",
+        "successor": "fresh_candidate_required"
+      },
+      {
+        "operation": "protected_merge",
+        "state": "certified_mergeable",
+        "action": "merge_commit",
+        "successor": "exact_main_required"
+      },
+      {
+        "operation": "protected_merge",
+        "state": "nondefault_base",
+        "action": "observe_same_subject",
+        "successor": "pr_pending"
+      },
+      {
+        "operation": "protected_merge",
+        "state": "pending",
+        "action": "observe_same_subject",
+        "successor": "pr_pending"
+      },
+      {
+        "operation": "protected_merge",
+        "state": "prospective_proved",
+        "action": "request_provider_auto_merge",
+        "successor": "pr_pending"
+      },
+      {
+        "operation": "protected_merge",
+        "state": "superseded",
+        "action": "stop",
+        "successor": "superseded"
+      },
+      {
+        "operation": "provider_read",
+        "state": "exhausted",
+        "action": "stop",
+        "successor": "terminal_blocked"
+      },
+      {
+        "operation": "provider_read",
+        "state": "success",
+        "action": "consume_exact_read",
+        "successor": "operation_continues"
+      },
+      {
+        "operation": "provider_read",
+        "state": "terminal",
+        "action": "stop",
+        "successor": "terminal_blocked"
+      },
+      {
+        "operation": "provider_read",
+        "state": "transient",
+        "action": "retry_identical_read",
+        "successor": "provider_observation"
+      }
+    ],
+    "retired_generic_projection": "Four mutation_result edges have no supported authenticated operation consumer and now fail closed. Historical unbound retry probe is superseded by retirement, not qualified as authority.",
+    "evidence": "audits/issue-394/recovery-mutation-frontier-verification.json",
+    "remaining": "Complete context-qualified recovery and consuming-boundary authentication remain required."
   }
 }

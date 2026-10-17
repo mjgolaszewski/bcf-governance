@@ -27,3 +27,16 @@ presently_unprovable:
 - {decision: infer source equivalence from a version branch filename cache key or prior green result, consequence: authenticate exact applicability or execute}
 - {decision: report statistically meaningful p95 improvement from one predecessor subject, consequence: retain observations and collect adequate matched cohorts}
 - {decision: retire the prose DAG from the dormant compiler alone, consequence: require full machine lifecycle populations executable conformance and generated-view parity first}
+
+current_dispositions:
+- decision: lifecycle intent and bounded target
+  historical_residual: The earlier Issue420 integration note above is retained.
+  disposition: Admitted lifecycle derivation is incorporated in retained PR429/430 successor history; complete protected lifecycle populations and provider-specific scopes remain open.
+  evidence: audits/issue-394/successor-e544-submission-recovery.json
+- decision: adopter source inventory
+  historical_residual: The earlier isolated1.4 installed-integration pending note above is retained.
+  disposition: Provider-selected source recovery is integrated in PR430 with scoped source/private proof; current moving-adopter adoption and whole assurance remain separate and unverified.
+  evidence: audits/issue-394/provider-source-recovery-verification.json
+- decision: next legal recovery action
+  disposition: Unsupported generic mutation_result projections retired in isolated af5229b9 after12 genuine rejection failures;101 focused recovery/provider cases now pass. Concrete authenticated owners remain responsible; broad/private qualification and integration pending.
+  evidence: audits/issue-394/recovery-mutation-frontier-verification.json

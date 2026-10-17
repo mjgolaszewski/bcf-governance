@@ -1,0 +1,32 @@
+{
+  "authority": false,
+  "status": "focused_tests_passed_broad_installed_checks_pending",
+  "subject": "af5229b9d5176102d15687a77a266d80bf617991",
+  "tree_sha": "c97cee7190c0c94f2296b6371ff61d6fecd81cd2",
+  "source_sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
+  "cases_passed": 101,
+  "cases_failed": 0,
+  "elapsed_seconds": 9.88,
+  "new_unsupported_ingress_controls": 12,
+  "streams": {
+    "stdout_sha256": "3518116a45fde5671a90464a63e440e610904a8cb1c4bcb690ac2b1397348bee",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "preservation": {
+    "authority": false,
+    "source_sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
+    "old_edges": 25,
+    "remaining_edges": 21,
+    "removed_edges": 4,
+    "all_existing_function_asts_unchanged": true,
+    "all_remaining_edge_values_unchanged": true,
+    "limit": "Structural preservation supports compatibility; runtime owner qualification remains separately required."
+  },
+  "scope": "Retirement of4 unsupported generic projections;21 existing supported edge values and all function ASTs unchanged",
+  "limits": [
+    "No full mutation-recovery lifecycle or provider authority qualification.",
+    "Native broad source/private/governance/semantic qualification and integration remain pending.",
+    "All82 whole requirements remain open."
+  ],
+  "next_action": "After peer native handback, qualify existing concrete consumers, package/private runtimes and required gates before integrating."
+}
