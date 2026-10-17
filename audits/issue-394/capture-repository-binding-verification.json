@@ -194,5 +194,52 @@
     ],
     "scope": "Actual fixture code under bare isolated Python against both templates, not fresh/upgrade installed execution.",
     "remaining": "Run existing fresh/upgrade combined installed consumer after primary terminal and native admission."
+  },
+  "admitted_exact_subject_qualification": {
+    "authority": false,
+    "subject": "7faa3ca9b38087156c3ee8b9509baee8bfcced1a",
+    "tree_sha": "35487c664d2018ff561834047b8dd789c0a7042e",
+    "stages": [
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 143845,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-bindings",
+        "returncode": 0,
+        "elapsed_ms": 9921,
+        "stdout_sha256": "8e6d6029ea28bfecc41a6d3534b8fc4834801860eb1de0b7160470d6d21f22ae",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed-mixed",
+        "returncode": 0,
+        "elapsed_ms": 195906,
+        "stdout_sha256": "ee891bde08826f07fe9c8e271a17579c8e3aa514f3b35fc574d333c9673f2490",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 33178,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 741,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:26:57.589305+00:00",
+    "ended_at": "2026-10-17T07:33:21.502597+00:00",
+    "returncode": 0,
+    "capture_sha256": "e73a8cc583ccd31dd79e684e14a9c1012e350c6b2ba327f122cd7ba0341cf94b",
+    "scope": "122 source/binding cases and2 actual fresh/upgrade mixed installed consumer cases PASS; unchanged21-operation query/governance/exposure PASS. Consistent capture metadata is neither provider authentication nor matched baseline/performance evidence."
   }
 }
