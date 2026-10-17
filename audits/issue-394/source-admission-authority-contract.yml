@@ -1,0 +1,37 @@
+schema_version: '1.0'
+authority: false
+issue: 394
+phase: P32
+workitem: P32-P0-07
+status: authored_contract
+bounded_context: canonical source-distribution validation
+architectural_layer: governance validation tooling
+operation_side: admission query; no build or publication authority
+problem: Admission executes candidate checkout release_source_inventory.py and accepts its self-reported static coverage, even though the loaded runtime can mechanically check the candidate declarations.
+target_modules:
+  - bcf_governance/tooling/governance_validation/preflight_distribution.py
+  - bcf_governance/tooling/governance_validation/source_inventory.py
+  - .github/scripts/release_source_inventory.py
+required_behavior:
+  - Treat candidate source files and declarations as data, not as the admission evaluator implementation.
+  - Execute the query implementation belonging to the already selected loaded BCF runtime, using the selected project interpreter in isolation from candidate module shadowing.
+  - Preserve existing static setuptools restrictions and rejection of dynamic execution, custom backends, setup scripts and unsupported declaration forms.
+  - Preserve exact tracked-source and manifest population checks, observation scope and non-authoritative metadata.
+  - Preserve ordinary source-release script imports and CLI grammar through a thin compatibility wrapper.
+  - Keep public operation implementations in one canonical owner; move existing bodies without inventing a second checker or declaration registry.
+  - Reject forged success and candidate side effects before reconciliation, expensive proof or push.
+expected_controls:
+  - A real Git fixture with missing manifest coverage and a candidate program printing a valid success report must be rejected without executing that program.
+  - A valid fixture must pass even when its candidate script would fail or create a marker if executed.
+  - Candidate setuptools shadow modules must not execute in the isolated query interpreter.
+  - Existing malformed-report and static-declaration controls remain effective.
+  - Exact source, template runtime, fresh install and upgrade invoke the same query implementation.
+forbidden_surfaces:
+  - In-flight primary successor bytes and submission transaction.
+  - Immutable predecessor and maintained adopter installations.
+  - Hand-authored generated workflows or authority pins.
+  - Provider status identity, ordinary CLI grammar and release role separation.
+qualification_limits:
+  - Early static declaration coverage is not verification of built archive bytes.
+  - Selection and authentication of the loaded evaluator remain the responsibility of existing callers.
+  - This correction does not prove complete lifecycle populations, all deadline bounds or any whole-requirement closure.
