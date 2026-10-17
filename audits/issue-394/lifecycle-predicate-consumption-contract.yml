@@ -74,3 +74,15 @@ protected_phase_population_scope:
   forbidden_shortcuts: [local candidate lifecycle policy as authority, authored completed or closed labels as proof, caller-selected evidence run, missing dependency treated as empty population]
   controls: tests/test_phase_closure_population.py
   limits: This authenticated population query still needs wiring into authored readiness and computed lifecycle truth before integration.
+truth_owner_deconstruction:
+  reason: Existing governance_truth.py is798 lines and cannot receive phase-input integration without violating its800-line cap.
+  fatty: bcf_governance/tooling/governance_truth.py
+  owning_context: evidence truth
+  layer: tooling query
+  destination: Existing bcf_governance/tooling/truth_workflow_graph.py
+  extraction: Workflow gate resolution and its path-safety primitive; retain compiled graph and legacy traversal semantics
+  preserved: Existing truth CLI, derive_truth API, TruthfulnessError identity, YAML loader semantics, workflow diagnostics, wrapper ordering and all authority decisions
+  approach: Keep the old private workflow query as a thin delegate; explicitly pass its unchanged YAML loader rather than introducing a circular import or duplicate evaluator.
+  tests_first: tests/test_truth_workflow_extraction.py and affected existing truth/graph controls
+  forbidden: [new graph or claim owner, workflow or authority pin edits, source admission changes, phase predicate whitelisting, public CLI changes]
+  gate: Characterize before moving code, compare moved AST bodies with only declared loader injection, verify owner boundaries and mirrors.
