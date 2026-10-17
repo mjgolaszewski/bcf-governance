@@ -230,6 +230,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/evidence_execution.py
     - bcf_governance/tooling/ci_graph_timeouts.py
     - bcf_governance/tooling/provider_read.py
     forbidden_surfaces:
@@ -250,6 +251,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/evidence-timeout-cleanup-contract.json
+    - audits/issue-394/evidence-timeout-cleanup-characterization.json
     - audits/issue-394/provider-io-inventory-verification.json
   foundation.baseline:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets

@@ -2508,3 +2508,7 @@ The existing profile renderer shares repeated string sequences as YAML aliases;
 decoded contracts, control inventory, and scalar types remain unchanged, and
 repeated rendering remains deterministic. Exceeding the existing budget rejects
 the candidate rather than increasing the budget or dropping controls.
+
+### Evidence command terminal and cleanup boundary
+
+TR-003 execution consumes the gate registry's execution and cleanup bounds. The existing timeout compiler accounts for both before CI allocation. The candidate runtime holds the temporary supervisor unreaped until exact command termination, kernel child-tree quiescence and output drain are authenticated. An ordinary command that leaves live descendants fails after bounded child cleanup. New sessions and double forks retain kernel ancestry; missing terminal proof preserves execution-state custody. This replacement avoids host-global PID stability and remains subject to complete source/private/installed qualification. Source controls cover timeout, background-success, invalid preallocation budgets, inadequate outer deadlines and unresolved cleanup. The complete context-qualified lifecycle, escaped-process isolation and total setup/namespace-removal envelopes remain P32/P33 obligations; this prose does not confer their adoption or terminal authority.

@@ -1,0 +1,334 @@
+"""Real-process containment controls for the evidence command timeout boundary."""
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import signal
+import subprocess
+import sys
+import time
+
+import pytest
+
+from bcf_governance.tooling.evidence_execution import _run
+
+ROOT = Path(__file__).resolve().parents[1]
+pytestmark = pytest.mark.skipif(sys.platform != 'linux', reason='Linux process-group custody control')
+
+
+def test_evidence_command_preserves_successful_output(tmp_path):
+    result = _run([sys.executable, '-c', "print('governed')"], cwd=tmp_path,
+                  timeout_seconds=1)
+    assert (result.returncode, result.stdout, result.stderr) == (0, 'governed\n', '')
+
+
+
+def test_evidence_command_preserves_nonzero_unicode_and_universal_newlines(tmp_path):
+    code = "import sys;sys.stdout.buffer.write(('é'*70000+'\\r\\n').encode());sys.stderr.write('failure\\r\\n');sys.exit(7)"
+    result = _run([sys.executable, '-c', code], cwd=tmp_path, timeout_seconds=2)
+    assert result.returncode == 7
+    assert result.stdout == 'é' * 70000 + '\n'
+    assert result.stderr == 'failure\n'
+
+def test_evidence_direct_child_timeout_keeps_typed_failure(tmp_path):
+    result = _run([sys.executable, '-c', 'import time; time.sleep(20)'],
+                  cwd=tmp_path, timeout_seconds=1)
+    assert result.returncode == 126
+    assert 'execution infrastructure failure' in result.stderr
+
+
+def _live(pid):
+    try:
+        for path in Path(f'/proc/{pid}/task').glob('*/stat'):
+            try:
+                raw = path.read_text()
+            except FileNotFoundError:
+                continue
+            if raw[raw.rfind(')') + 2:].split()[0] not in {'Z', 'X'}:
+                return True
+        return False
+    except FileNotFoundError:
+        return False
+
+
+@pytest.mark.parametrize('mode', ['timeout', 'background-success', 'threaded-background-success'])
+def test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog(tmp_path, mode):
+    marker = tmp_path / 'owned-worker.json'
+    worker = """import json, os, subprocess, sys, time
+from pathlib import Path
+path=Path(sys.argv[1]); temporary=path.with_suffix('.tmp')
+metadata={'pid':os.getpid(),'group':os.getpgrp()}
+temporary.write_text(json.dumps(metadata));temporary.replace(path)
+background=sys.argv[2]!='timeout'
+threaded=sys.argv[2]=='threaded-background-success'
+child_code="import threading,time,ctypes; threading.Thread(target=lambda:time.sleep(20)).start(); ctypes.CDLL(None).pthread_exit(None)" if threaded else 'import time; time.sleep(20)'
+child=subprocess.Popen([sys.executable,'-c',child_code],
+    stdout=subprocess.DEVNULL if background else None,
+    stderr=subprocess.DEVNULL if background else None)
+metadata['child_pid']=child.pid
+temporary.write_text(json.dumps(metadata));temporary.replace(path)
+if threaded:
+    deadline=time.monotonic()+1
+    while time.monotonic()<deadline:
+        raw=Path('/proc/'+str(child.pid)+'/stat').read_text()
+        if raw[raw.rfind(')')+2:].split()[0]=='Z' and len(list(Path('/proc/'+str(child.pid)+'/task').iterdir()))>1:break
+        time.sleep(0.01)
+    else:raise AssertionError('threaded fixture did not establish zombie leader')
+print('ready',flush=True)
+if background:sys.exit(0)
+time.sleep(20)
+"""
+    probe_code = """import json, sys, time
+from pathlib import Path
+from bcf_governance.tooling import evidence_execution
+root=Path(sys.argv[1]);marker=Path(sys.argv[2]);worker=sys.argv[3];mode=sys.argv[4]
+assert Path(evidence_execution.__file__).resolve().is_relative_to(root)
+import os
+original_signal=evidence_execution.os.killpg
+def owned_signal(group, sig):
+    os.waitid(os.P_PID,group,os.WEXITED|os.WNOHANG|os.WNOWAIT)
+    return original_signal(group,sig)
+evidence_execution.os.killpg=owned_signal
+start=time.monotonic()
+result=evidence_execution._run([sys.executable,'-c',worker,str(marker),mode],
+    cwd=marker.parent,timeout_seconds=2 if mode.startswith('threaded') else 1)
+print(json.dumps({'returncode':result.returncode,'stderr':result.stderr,
+                  'elapsed':time.monotonic()-start}))
+"""
+    probe = subprocess.Popen(
+        [sys.executable, '-c', probe_code, str(ROOT), str(marker), worker, mode],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
+    )
+    expired = False
+    output = error = ''
+    metadata = {}
+    try:
+        try:
+            output, error = probe.communicate(timeout=6)
+        except subprocess.TimeoutExpired:
+            expired = True
+        if marker.exists():
+            metadata = json.loads(marker.read_text())
+        assert not expired, (
+            'evidence runner did not return within external watchdog; inherited output '
+            'pipes outlived the command timeout'
+        )
+        assert probe.returncode == 0, error
+        result = json.loads(output)
+        assert result['returncode'] == 126
+        assert 'execution infrastructure failure' in result['stderr']
+        assert 'child_pid' in metadata, 'fixture did not establish the descendant path'
+        deadline = time.monotonic() + 1
+        while _live(metadata['child_pid']) and time.monotonic() < deadline:
+            time.sleep(0.01)
+        assert not _live(metadata['child_pid']), 'timed-out command left a live descendant'
+    finally:
+        # Only fixture-created sessions/groups are eligible. Never signal the
+        # pytest parent, another test, a native transaction or an unknown group.
+        if not metadata and marker.exists():
+            metadata = json.loads(marker.read_text())
+        groups = {probe.pid}
+        if metadata:
+            assert metadata['group'] in {probe.pid, metadata['pid']}
+            groups.add(metadata['group'])
+        for group in groups:
+            try:
+                os.killpg(group, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        probe.communicate(timeout=2)
+
+
+@pytest.mark.parametrize('disposition', ['ignored', 'custom'])
+def test_nonexclusive_child_wait_owner_blocks_before_command_effect(tmp_path, disposition):
+    marker = tmp_path / 'unexpected-command-effect'
+    code = """import signal,sys
+from pathlib import Path
+from bcf_governance.tooling.evidence_execution import _run,EvidenceError
+signal.signal(signal.SIGCHLD,signal.SIG_IGN if sys.argv[1]=='ignored' else lambda *args:None)
+marker=Path(sys.argv[2])
+try:
+    _run([sys.executable,'-c',"from pathlib import Path;Path(__import__('sys').argv[1]).write_text('effect')",str(marker)],cwd=marker.parent,timeout_seconds=1)
+except EvidenceError as exc:
+    assert 'SIGCHLD' in str(exc)
+else:
+    raise AssertionError('nonexclusive wait owner executed command')
+assert not marker.exists()
+"""
+    result = subprocess.run([sys.executable, '-c', code, disposition, str(marker)],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        capture_output=True, text=True, timeout=5)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not marker.exists()
+
+
+def test_owned_command_completion_is_independent_of_foreign_process_births(tmp_path, monkeypatch):
+    """An actual foreign birth cannot invalidate owned kernel terminal evidence."""
+    from bcf_governance.tooling import evidence_process_supervisor as supervisor
+
+    original = supervisor._terminal_result
+    foreign = []
+
+    def observe(value, pid):
+        foreign.append(subprocess.Popen(
+            [sys.executable, '-c', 'import time;time.sleep(20)'],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
+        ))
+        return original(value, pid)
+
+    monkeypatch.setattr(supervisor, '_terminal_result', observe)
+    try:
+        result = _run([sys.executable, '-c', "print('owned-command-completed')"],
+                      cwd=tmp_path, timeout_seconds=1, cleanup_timeout_seconds=1)
+        assert foreign, 'fixture did not create a foreign process at consumption'
+        assert (result.returncode, result.stdout, result.stderr) == (
+            0, 'owned-command-completed\n', '',
+        )
+    finally:
+        for child in foreign:
+            child.kill()
+            child.wait(timeout=2)
+
+
+@pytest.mark.parametrize('double_fork', [False, True])
+def test_evidence_completion_cannot_abandon_escaped_descendants(tmp_path, double_fork):
+    """New sessions and double forks remain children of the execution owner."""
+    marker = tmp_path / 'escaped-worker.json'
+    escaped = """import json,os,sys,time
+from pathlib import Path
+if sys.argv[2]=='True':
+    if os.fork():os._exit(0)
+    os.setsid()
+    if os.fork():os._exit(0)
+Path(sys.argv[1]).write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp(),
+                                      'worker_group':int(sys.argv[3])}))
+time.sleep(20)
+"""
+    worker = """import os,subprocess,sys,time
+from pathlib import Path
+subprocess.Popen([sys.executable,'-c',sys.argv[2],sys.argv[1],sys.argv[3],str(os.getpgrp())],
+                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
+end=time.monotonic()+2
+while not Path(sys.argv[1]).exists():
+    assert time.monotonic()<end,'escaped fixture did not become ready'
+    time.sleep(0.01)
+"""
+    probe_code = """import json,sys
+from pathlib import Path
+from bcf_governance.tooling.evidence_execution import _run
+result=_run([sys.executable,'-c',sys.argv[2],sys.argv[1],sys.argv[3],sys.argv[4]],
+            cwd=Path(sys.argv[1]).parent,timeout_seconds=2,cleanup_timeout_seconds=1)
+print(json.dumps({'returncode':result.returncode,'stderr':result.stderr}))
+"""
+    probe = subprocess.Popen(
+        [sys.executable, '-c', probe_code, str(marker), worker, escaped, str(double_fork)],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
+    )
+    try:
+        output, error = probe.communicate(timeout=6)
+        assert probe.returncode == 0, error
+        assert marker.exists(), 'fixture never established escaped descendant'
+        metadata = json.loads(marker.read_text())
+        result = json.loads(output)
+        assert result['returncode'] == 126, 'normal exit abandoned an escaped descendant'
+        assert not _live(metadata['pid']), 'typed failure returned with a live escaped descendant'
+    finally:
+        groups = {probe.pid}
+        if marker.exists():
+            metadata = json.loads(marker.read_text())
+            groups.update((metadata['group'], metadata['worker_group']))
+        assert os.getpgrp() not in groups
+        for group in groups:
+            try:
+                os.killpg(group, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        probe.communicate(timeout=2)
+
+
+@pytest.mark.parametrize('missing', ['command', 'directory'])
+def test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure(tmp_path, missing):
+    command = [str(tmp_path / 'absent-executable')] if missing == 'command' else [sys.executable, '-c', 'pass']
+    cwd = tmp_path if missing == 'command' else tmp_path / 'absent-directory'
+    result = _run(command, cwd=cwd, timeout_seconds=1, cleanup_timeout_seconds=1)
+    assert result.returncode == 126
+    assert 'execution infrastructure failure' in result.stderr
+
+
+@pytest.mark.parametrize('interruption', ['caller', 'supervisor', 'stalled-supervisor'])
+def test_owned_command_interruption_keeps_terminal_custody(tmp_path, interruption):
+    marker = tmp_path / 'interrupted-command.json'
+    worker = """import json,os,sys,time
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp()}))
+time.sleep(20)
+"""
+    code = """import json,os,signal,sys,time
+from pathlib import Path
+from bcf_governance.tooling import evidence_process_supervisor as supervisor
+from bcf_governance.tooling.evidence_execution import _run,EvidenceProcessCleanupError
+marker=Path(sys.argv[1]);mode=sys.argv[2];original=supervisor._observe;fired=False
+def observe(process,*args):
+    global fired
+    if not fired:
+        end=time.monotonic()+2
+        while not marker.exists():
+            assert time.monotonic()<end,'command never became ready'
+            time.sleep(0.005)
+        fired=True
+        if mode=='caller':raise KeyboardInterrupt()
+        if mode=='stalled-supervisor':
+            metadata=json.loads(marker.read_text());metadata['supervisor_pid']=process.pid
+            marker.write_text(json.dumps(metadata))
+            os.kill(process.pid,signal.SIGSTOP)
+        else:os.kill(process.pid,signal.SIGKILL)
+    return original(process,*args)
+supervisor._observe=observe
+started=time.monotonic()
+try:
+    _run([sys.executable,'-c',sys.argv[3],str(marker)],cwd=marker.parent,
+         timeout_seconds=2,cleanup_timeout_seconds=1)
+except KeyboardInterrupt:
+    assert mode=='caller'
+    outcome='interrupted-after-cleanup'
+except EvidenceProcessCleanupError:
+    assert mode in {'supervisor','stalled-supervisor'}
+    outcome='unresolved'
+else:raise AssertionError('interruption became successful execution')
+print(json.dumps({'outcome':outcome,'fired':fired,'elapsed':time.monotonic()-started}))
+"""
+    probe = subprocess.Popen(
+        [sys.executable, '-c', code, str(marker), interruption, worker],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
+    )
+    try:
+        output, error = probe.communicate(timeout=6)
+        assert probe.returncode == 0, error
+        result = json.loads(output)
+        assert result['fired'] is True
+        metadata = json.loads(marker.read_text())
+        if interruption == 'caller':
+            assert result['outcome'] == 'interrupted-after-cleanup'
+            assert not _live(metadata['pid']), 'caller interruption abandoned live work'
+        else:
+            assert result['outcome'] == 'unresolved'
+            if interruption == 'stalled-supervisor':
+                assert result['elapsed'] < 3.6, 'cleanup silently received a second budget'
+    finally:
+        groups = {probe.pid}
+        if marker.exists():
+            metadata = json.loads(marker.read_text())
+            groups.add(metadata['group'])
+            if 'supervisor_pid' in metadata:
+                groups.add(metadata['supervisor_pid'])
+        assert os.getpgrp() not in groups
+        for group in groups:
+            try:
+                os.killpg(group, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        probe.communicate(timeout=2)
