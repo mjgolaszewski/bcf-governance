@@ -595,5 +595,34 @@
     "source_cases": 263,
     "installed_cases": 2,
     "scope": "Exact427 bounded Linux source/private fresh-upgrade qualification, including41 cleanup/policy/transport controls. Not a whole pipeline deadline, adversarial same-user isolation or current maintained-adopter assurance claim."
+  },
+  "final_architecture_pack_sync": {
+    "authority": false,
+    "subject": "16d74688",
+    "checks": {
+      "architecture-module-size": 0,
+      "architecture-context-membership": 0,
+      "pack-sync": {
+        "returncode": 0,
+        "passed": 7
+      }
+    },
+    "streams": {
+      "evidence-owned-final-architecture-module-size.stdout": "730410d23add507d10274b5400f29dd16f80db2f65bf9ef1c50a875848f3486b",
+      "evidence-owned-final-architecture-module-size.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-final-architecture-context-membership.stdout": "b336bfbb42d8a55315e2f7350d4a6528e0fd95453f81c1e21f96f9ae7c5d2932",
+      "evidence-owned-final-architecture-context-membership.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-final-pack-sync.stdout": "d422605622f552bad19cb9dc252f90f955fba327e05eee6eb948165abc1981ef",
+      "evidence-owned-final-pack-sync.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "integration": {
+    "authority": false,
+    "merge_commit": "67531b88",
+    "scoped_source_subject": "427c041e2728170af45bb3468cef6c5d69d9c574",
+    "bindings": 43,
+    "source_cases": 41,
+    "installed_cases": 2,
+    "remaining": "Exact combined source/private/installed/package and canonical prospective/provider proof remain required; no whole foundation/deadline/phase closure."
   }
 }

@@ -779,6 +779,7 @@ requirements:
     - provider-derived-compatibility-sources
     - authenticated-bound-pr-comparison-context
     - separate-pipeline-clock-observation
+    - evidence-command-terminal-cleanup
   I04:
     requirement: Independent completeness. Trusted truth independently derives/verifies required claims, impact, exclusions, selected execution and reuse. A candidate planner's internally consistent omissions cannot certify themselves.
     owner: ci_authority
@@ -1161,6 +1162,7 @@ requirements:
     - publication-metadata-revalidation
     - early-active-phase-schema
     - canonical-submit-normalization
+    - evidence-command-terminal-cleanup
   I22:
     requirement: Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision. Agent-selected defaults, CLI flags, environment variables, hand-edited receipts and silent recovery overrides must not recreate the choice. Genuine policy/intent changes retain explicit human authorization; absence of derivable authority yields a typed blocker.
     owner: ci_authority
@@ -1214,6 +1216,7 @@ requirements:
     - typed-lifecycle-path-binding
     - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
+    - evidence-command-terminal-cleanup
   I24:
     requirement: "Mechanical subject selection. Use the existing provider resolver for the entire required adopter/source inventory before expensive qualification. Freeze exact subjects; supplied roots/interpreters are resources, not selection authority. Provider movement must follow current freshness/invalidation policy\u2014never silently alter an in-flight inventory, choose older green sources, or relax collection-time checks."
     owner: ci_authority
@@ -4423,3 +4426,98 @@ implementation_slices:
     - Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.
     - No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain
       not_executed.
+  evidence-command-terminal-cleanup:
+    id: evidence-command-terminal-cleanup
+    workitem: P32-P0-05
+    scope: Linux per-command kernel-child custody, typed unresolved retirement block and body/setup/cleanup deadline floor;
+      not full host isolation or complete pipeline bounds.
+    contract: audits/issue-394/evidence-timeout-cleanup-contract.json
+    producer: evidence_execution::_run; evidence_process_supervisor::run_owned_command
+    consumer: _run_with_execution_state; interpreter metadata probe; existing evidence contract loader and CI timeout compiler/audit
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_evidence_execution_timeout::test_evidence_command_preserves_successful_output
+    - tests.test_evidence_execution_timeout::test_evidence_command_preserves_nonzero_unicode_and_universal_newlines
+    - tests.test_evidence_execution_timeout::test_owned_command_completion_is_independent_of_foreign_process_births
+    - tests.test_evidence_execution_timeout::test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure[command]
+    - tests.test_evidence_execution_timeout::test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure[directory]
+    - tests.test_evidence_cleanup_policy::test_decoding_failure_after_proved_cleanup_retires_exact_state
+    - tests.test_installed_evidence_cleanup::test_installed_evidence_commands_retain_kernel_child_custody[fresh]
+    - tests.test_installed_evidence_cleanup::test_installed_evidence_commands_retain_kernel_child_custody[upgrade]
+    negative_controls:
+    - cause: evidence_direct_child_timeout_keeps_typed_failure
+      test: tests.test_evidence_execution_timeout::test_evidence_direct_child_timeout_keeps_typed_failure
+    - cause: evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog:timeout
+      test: tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[timeout]
+    - cause: evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog:background-success
+      test: tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[background-success]
+    - cause: evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog:threaded-background-success
+      test: tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[threaded-background-success]
+    - cause: nonexclusive_child_wait_owner_blocks_before_command_effect:ignored
+      test: tests.test_evidence_execution_timeout::test_nonexclusive_child_wait_owner_blocks_before_command_effect[ignored]
+    - cause: nonexclusive_child_wait_owner_blocks_before_command_effect:custom
+      test: tests.test_evidence_execution_timeout::test_nonexclusive_child_wait_owner_blocks_before_command_effect[custom]
+    - cause: evidence_completion_cannot_abandon_escaped_descendants:False
+      test: tests.test_evidence_execution_timeout::test_evidence_completion_cannot_abandon_escaped_descendants[False]
+    - cause: evidence_completion_cannot_abandon_escaped_descendants:True
+      test: tests.test_evidence_execution_timeout::test_evidence_completion_cannot_abandon_escaped_descendants[True]
+    - cause: owned_command_interruption_keeps_terminal_custody:caller
+      test: tests.test_evidence_execution_timeout::test_owned_command_interruption_keeps_terminal_custody[caller]
+    - cause: owned_command_interruption_keeps_terminal_custody:supervisor
+      test: tests.test_evidence_execution_timeout::test_owned_command_interruption_keeps_terminal_custody[supervisor]
+    - cause: owned_command_interruption_keeps_terminal_custody:stalled-supervisor
+      test: tests.test_evidence_execution_timeout::test_owned_command_interruption_keeps_terminal_custody[stalled-supervisor]
+    - cause: gate_deadline_includes_real_cleanup_before_outer_allocation
+      test: tests.test_evidence_cleanup_policy::test_gate_deadline_includes_real_cleanup_before_outer_allocation
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:None
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[None]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:0
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[0]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:-1
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[-1]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:False
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[False]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:1.5
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[1.5]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:1
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[1]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:21601
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[21601]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:None
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[None]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:0
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[0]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:-1
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[-1]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:False
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[False]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:1.5
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[1.5]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:1
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[1]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:21601
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[21601]
+    - cause: unproven_process_cleanup_preserves_execution_state_custody
+      test: tests.test_evidence_cleanup_policy::test_unproven_process_cleanup_preserves_execution_state_custody
+    - cause: unqualified_group_inventory_host_blocks_before_allocation:darwin
+      test: tests.test_evidence_cleanup_policy::test_unqualified_group_inventory_host_blocks_before_allocation[darwin]
+    - cause: unqualified_group_inventory_host_blocks_before_allocation:win32
+      test: tests.test_evidence_cleanup_policy::test_unqualified_group_inventory_host_blocks_before_allocation[win32]
+    - cause: missing_owned_terminal_cannot_become_verified_cleanup:missing
+      test: tests.test_evidence_cleanup_policy::test_missing_owned_terminal_cannot_become_verified_cleanup[missing]
+    - cause: missing_owned_terminal_cannot_become_verified_cleanup:empty
+      test: tests.test_evidence_cleanup_policy::test_missing_owned_terminal_cannot_become_verified_cleanup[empty]
+    - cause: missing_owned_terminal_cannot_become_verified_cleanup:missing-anchor
+      test: tests.test_evidence_cleanup_policy::test_missing_owned_terminal_cannot_become_verified_cleanup[missing-anchor]
+    - cause: equality_compatible_readiness_pid_cannot_allocate_command
+      test: tests.test_evidence_process_supervisor::test_equality_compatible_readiness_pid_cannot_allocate_command
+    - cause: partial_trailing_frame_cannot_become_terminal_cleanup
+      test: tests.test_evidence_process_supervisor::test_partial_trailing_frame_cannot_become_terminal_cleanup
+    - cause: invalid_control_utf8_is_not_an_ordinary_output_decode_failure
+      test: tests.test_evidence_process_supervisor::test_invalid_control_utf8_is_not_an_ordinary_output_decode_failure
+    remaining:
+    - Complete sibling/runtime-effect population and full setup/namespace removal/retry/response-read/pipeline deadline composition.
+    - Actual current provider-selected adopter profiles, malicious same-user isolation and host-wide admission remain unqualified.
+    - Canonical exact combined proof and independently computed closure remain required; no whole I03/I21/I23, P33 activation,
+      approved performance or immutable2.5 custody claim.
