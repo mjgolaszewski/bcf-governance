@@ -1,4 +1,17 @@
 schema_version: '1.0'
+runtime_prebuild_admission:
+  owner: bcf_governance/tooling/governance_validation/source_inventory.py
+  side: query
+  required_behavior:
+    - Move the three existing resource queries without changing their AST or public signatures; preserve release-script imports as compatibility aliases.
+    - Consume metadata coverage from the loaded runtime before the selected-project subprocess in validate_source_distribution.
+    - Recheck coverage in the standalone source-inventory query before backend Distribution allocation.
+    - Preserve the existing framework-source applicability boundary and genuinely nonframework behavior; add no caller authority flag or new population selector.
+    - Missing or excluded resource coverage rejects through existing typed source-admission errors; candidate evaluator success cannot supply authority.
+    - Preserve malformed-observation controls after furnishing complete authored resource fixtures, rather than allowing an earlier fixture omission to mask them.
+  migration: Framework-source fixtures and callers must declare coverage for their existing pack resources; this is the same required population enforced by wheel verification, checked earlier.
+  target_modules: [bcf_governance/tooling/governance_validation/source_inventory.py, bcf_governance/tooling/governance_validation/preflight_distribution.py, .github/scripts/test_release_artifacts.py]
+  expected_tests: [real missing metadata rejection, excluded resource rejection, no project subprocess on failure, no backend allocation on failure, malicious candidate evaluator not executed, valid complete framework source, nonframework compatibility, installed SDK-absent authority]
 authority: false
 phase: P32
 workitems: [P32-P0-03, P32-P0-04, P32-P0-07]
