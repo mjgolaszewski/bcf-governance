@@ -1,0 +1,39 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/current-main-integration-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-02",
+  "bounded_context": "evidence; maintenance fixes through existing canonical owners",
+  "architectural_layer": "tooling and authored delivery state",
+  "operation_side": "source integration before canonical qualification",
+  "contract": [
+    "Integrate authenticated provider mainf911f21c by ancestry into clean successor de6fded0, preserving immutable2.3.4 handoff and target2.5/P32-P35 state.",
+    "Retain Issue427 session-input binding owner, current-session-before-claim-capture wiring and its installed/cause controls. No parallel receipt/input resolver.",
+    "Retain canonical profile renderer sequence compaction; use canonical source to regenerate mirrors.",
+    "Preserve all historical P31 maintenance facts while keeping current P32 successor state. Resolve authored source conflicts only; generated workflows and authority commits remain owned by canonical reconciliation.",
+    "Keep isolated bound-PR feature0fd9 unmerged until full consumer matrix qualifies. Maintenance source integration cannot confer whole Issue394 acceptance or upgrade maintained agent baselines."
+  ],
+  "targets": [
+    "bcf_governance/tooling/evidence_session_inputs.py",
+    "bcf_governance/tooling/governance_evidence.py",
+    "bcf_governance/tooling/profile_yaml.py",
+    "tests/test_governance_evidence.py",
+    "tests/test_installed_evidence_storage.py",
+    "tests/test_profile_yaml.py",
+    "canonical maintenance governance/history and successor state"
+  ],
+  "expected_tests": [
+    "Affected session-input direct and installed controls; renderer semantic preservation and byte budgets.",
+    "Native governance, semantic ownership, module/context, package parity and canonical reconciliation before submission."
+  ],
+  "forbidden_surfaces": [
+    "Maintained adopter sources/runtimes",
+    "Manual generated workflow or authority-pin changes",
+    "Immutable releases",
+    "Premature P33 activation or acceptance closure"
+  ],
+  "next_action": "Merge source ancestry and inspect conflicts; retain unresolved generated surfaces for existing canonical reconciliation under native admission."
+}
