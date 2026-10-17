@@ -296,5 +296,12 @@
     "result": "One committed real foreign-process noninterference control fails with EvidenceProcessCleanupError; fixture children reaped in finally. No production correction claimed.",
     "stdout_sha256": "5822b40e7b5a8e77a8e973fdf864462402a4ee213729ed85880aea5b5b8d552f",
     "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "escaped_descendant_red": {
+    "authority": false,
+    "subject": "241c69f6",
+    "result": "Both committed real-process controls fail: runner returns0 while a setsid child or double-fork descendant remains live. Fixtures independently terminate their recorded process groups. Replacement kernel-child backend is contract-only.",
+    "stdout_sha256": "a63f0de352f36710b31943a708c66965b37c9057a3f16c37dfe8e5731f9df01d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   }
 }
