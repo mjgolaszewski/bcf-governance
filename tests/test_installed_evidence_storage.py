@@ -407,6 +407,48 @@ print(json.dumps(report, sort_keys=True))
         capture_output=True, text=True,
     )
     assert authored_query.returncode == 0, _record(authored_query)
+    capture_code = """import copy, hashlib, importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime.operational_observations import validate_timing_capture, OperationalObservationError
+import _bcf_runtime.operational_observations as owner
+assert Path(owner.__file__).resolve().is_relative_to(Path.cwd())
+original = json.load(sys.stdin)
+assert validate_timing_capture(Path.cwd(), json.dumps(original)) == original['observation']
+rejected = 0
+for placement in ('source', 'producer', 'both'):
+    for cause in ('repository', 'different-id', 'string-id', 'float-id', 'bool-id'):
+        capture = copy.deepcopy(original)
+        identity = {key: capture['observation'][key] for key in ('repository', 'repository_id')}
+        capture['source_snapshot'] = {**capture['producer'], **identity}
+        capture['producer'].update(identity)
+        rid = identity['repository_id']
+        value = {'repository': 'other/unrelated', 'different-id': rid + 1,
+                 'string-id': str(rid), 'float-id': float(rid), 'bool-id': True}[cause]
+        field = 'repository' if cause == 'repository' else 'repository_id'
+        if placement in ('source', 'both'):
+            capture['source_snapshot'][field] = value
+        if placement in ('producer', 'both'):
+            capture['producer'][field] = value
+        capture['observation']['source_snapshot_sha256'] = hashlib.sha256(json.dumps(
+            capture['source_snapshot'], sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        try:
+            validate_timing_capture(Path.cwd(), json.dumps(capture))
+        except OperationalObservationError as exc:
+            assert 'repository' in str(exc)
+            rejected += 1
+        else:
+            raise AssertionError('contradictory repository accepted: ' + cause + '/' + placement)
+assert rejected == 15
+print(json.dumps({'authority': False, 'legacy_accepted': True, 'rejected': rejected}))
+"""
+    capture_query = subprocess.run(
+        [str(python), "-I", "-c", capture_code], cwd=consumer, env=_environment(),
+        input=(ROOT / "audits/issue-394/observations/reconcile-b976db49-attempt-1.json").read_text(),
+        capture_output=True, text=True,
+    )
+    assert capture_query.returncode == 0, _record(capture_query)
     prepare_records = _exercise_prepare(consumer, python, fixture_root / "prepare")
     resolve_records = [
         _exercise_resolve(consumer, python, fixture_root / f"resolve-{case or 'valid'}", case)
@@ -417,6 +459,7 @@ print(json.dumps(report, sort_keys=True))
         "status": "pass", "consumer": str(consumer), "python": str(python),
         "bcf_package_absent": _record(probe), "semantic_commands": semantic_records,
         "authored_operation_query": _record(authored_query),
+        "capture_integrity_query": _record(capture_query),
         "prepare_commands": prepare_records, "resolve_commands": resolve_records,
         "installed_schemas_preserved": True,
     }

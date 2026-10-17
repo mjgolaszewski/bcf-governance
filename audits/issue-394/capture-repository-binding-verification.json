@@ -175,5 +175,24 @@
       "sha256": "1b4bdb70596ae735341931c574fa2fce5cc73eb849342abb6e7ae957a72d1da0"
     }
   ],
-  "canonical_mirror_bytes_equal": true
+  "canonical_mirror_bytes_equal": true,
+  "installed_probe_authored": {
+    "contract_commit": "5b9f1f66",
+    "template_execution": [
+      {
+        "template": "template-repo",
+        "returncode": 0,
+        "stdout_sha256": "e0adc493af042a152c79699332ea36bc6605ae1f7bddcdb87d956e0730c917fd",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "template": "bcf_governance/pack/template-repo",
+        "returncode": 0,
+        "stdout_sha256": "e0adc493af042a152c79699332ea36bc6605ae1f7bddcdb87d956e0730c917fd",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "scope": "Actual fixture code under bare isolated Python against both templates, not fresh/upgrade installed execution.",
+    "remaining": "Run existing fresh/upgrade combined installed consumer after primary terminal and native admission."
+  }
 }
