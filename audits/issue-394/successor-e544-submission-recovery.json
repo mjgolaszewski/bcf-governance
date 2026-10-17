@@ -1,0 +1,256 @@
+{
+  "authority": false,
+  "source_commit": "1360a8cc2aa2eb1db737fb7bdabb3ff8f6098aba",
+  "submitted_commit": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+  "merge_commit": "de7ade7f1708b6667a2fa7aae1d5960c808c9fdc",
+  "merge_tree": "754eb8c36751f29d6a4071baa113089db93d8116",
+  "merge_parents": [
+    "05e0ddd00b0ff9805c7b2ff5e0f5c68034d721c3",
+    "e544acdd070941329005ae2c1ec4ac1fb85a86f6"
+  ],
+  "pr": "https://github.com/mjgolaszewski/bcf-governance/pull/430",
+  "merged_at": "2026-10-17T10:43:35Z",
+  "native_exit_code": null,
+  "native_capture_disposition": "wrapper interrupted; original tracker and streams preserved",
+  "original_sha256": {
+    "primary-1360-authenticated-submit.json": "b2b21375e22e1e80abb0135a9ab14eadbb35ee78ca5f42049166a1d26f20f176",
+    "primary-1360-authenticated-submit.stdout": "4180874a9cc14f1678d293a5648aabe6f1c884e90f440827ce3d6eccbc11c10f",
+    "primary-1360-authenticated-submit.stderr": "e1be6a9e6f02f141664443cc773309c2f6e7a137fb4f8c157f7312bcb93cb243"
+  },
+  "provider_capture_sha256": {
+    "pr": {
+      "raw_sha256": "e593b9fe60e8021ef4565c8e0da00906664baa796d234ffcde56d958d33516e4"
+    },
+    "merge": {
+      "raw_sha256": "c9c84f4f380dcd9ddb468304cbea600a62d7410825f4a93683036f81e8ae0488"
+    },
+    "checks": {
+      "raw_sha256": "7ed1b37cfef38db8bf9e300c65177b772ea4efbde8fdbe210d29b3b12cf82028"
+    }
+  },
+  "provider_checks": [
+    {
+      "name": "Publish newest authenticated exact-main status or revocation",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Dispatch post-rotation exact-main certification",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Dispatch post-rotation exact-main certification",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Publish newest authenticated exact-main status or revocation",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Activate authenticated routine controller transition",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Promote routine controller / ${{ matrix.trusted_runner }}",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Probe routine controller / ${{ matrix.trusted_runner }}",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Authenticate routine probe inventory",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Project the unique routine rotation outcome",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Bootstrap routine controller / ${{ matrix.trusted_runner }}",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Authenticate routine bootstrap inventory",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Authorize protected routine controller transition",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Reconstruct the newest same-admission exact-main evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Run exact-main governance evidence / Verify exact-tree governance evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Run exact-main governance evidence / Evidence / Evidence shard 0",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Run exact-main governance evidence / Evidence / Evidence shard 1",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Run exact-main governance evidence / Evidence / Evidence shard 2",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Run exact-main governance evidence / Evidence / Evidence shard 3",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Run exact-main governance evidence / Validate governance front door",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Authenticate exact-main admission and publish pending authority",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Build independent exact-main trusted controller",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Publish newest authenticated exact-main status or revocation",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Dispatch post-rotation exact-main certification",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Project the unique routine rotation outcome",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Activate authenticated routine controller transition",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Promote routine controller / bcf-trusted-control-1",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Promote routine controller / bcf-trusted-control-2",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Authenticate routine probe inventory",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Probe routine controller / bcf-trusted-control-1",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Probe routine controller / bcf-trusted-control-2",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Authenticate routine bootstrap inventory",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Bootstrap routine controller / bcf-trusted-control-2",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Bootstrap routine controller / bcf-trusted-control-1",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Dispatch post-rotation exact-main certification",
+      "status": "completed",
+      "conclusion": "skipped",
+      "app_id": 15368
+    },
+    {
+      "name": "Publish newest authenticated exact-main status or revocation",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Authorize protected routine controller transition",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    },
+    {
+      "name": "Reconstruct the newest same-admission exact-main evidence",
+      "status": "completed",
+      "conclusion": "success",
+      "app_id": 15368
+    }
+  ],
+  "disposition": "Provider merge outcome authenticated; SDK stdout records submitted terminal. Missing native exit remains unknown; no duplicate submission. All82 whole requirements remain open; no release custody claim."
+}

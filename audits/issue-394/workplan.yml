@@ -22,7 +22,7 @@ admission:
   canonical_release_train_id: release_27
   rule: Derive phase and train IDs only after exact predecessor closure qualifications compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: Recovered3cb3 canonical transaction terminated0 as17d; PR429 merged05e with successful PR governance/main admission/controller rotation. Later integrated identity guard and remaining isolated corrections require exact successor proof; all82 whole requirements remain open. Historical attempt dispositions are retained in audits/issue-394/successor-17d-submission-terminal.json.
+  blocker: PR430 recovery: e544 merged as de7ade7f with identical tree754eb8c and successful provider exact-main/controller checks. SDK submitted terminal retained; interrupted wrapper native exit remains unknown, originals hashed. No duplicate submission. See audits/issue-394/successor-e544-submission-recovery.json; P32 active/all82 whole requirements open.
   unblock_condition: Complete admitted v2.3.4 source integration and existing canonical execution path. Optional compatibility failures remain residuals under current policy.
   evidence: audits/issue-394/v234-successor-admission.json
 stages:
