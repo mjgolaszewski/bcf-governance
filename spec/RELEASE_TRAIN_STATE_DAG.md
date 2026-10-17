@@ -2508,3 +2508,7 @@ The existing profile renderer shares repeated string sequences as YAML aliases;
 decoded contracts, control inventory, and scalar types remain unchanged, and
 repeated rendering remains deterministic. Exceeding the existing budget rejects
 the candidate rather than increasing the budget or dropping controls.
+
+### Evidence command terminal and cleanup boundary
+
+TR-003 execution consumes the gate registry's execution and cleanup bounds. The existing timeout compiler accounts for both before CI allocation. The runtime retains the leader without reaping while inspecting its process group, rejects a nominal success with live descendants, and preserves execution-state custody when termination cannot be verified. Source controls cover timeout, background-success, invalid preallocation budgets, inadequate outer deadlines and unresolved cleanup. The complete context-qualified lifecycle, escaped-process isolation and total setup/namespace-removal envelopes remain P32/P33 obligations; this prose does not confer their adoption or terminal authority.

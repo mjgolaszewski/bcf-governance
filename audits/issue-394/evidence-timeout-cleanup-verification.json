@@ -1,0 +1,300 @@
+{
+  "authority": false,
+  "contract": "audits/issue-394/evidence-timeout-cleanup-contract.json",
+  "contract_checkpoints": [
+    "2a27e01f",
+    "d305de2d",
+    "ccc9cb49",
+    "f2d66832"
+  ],
+  "initial_red": {
+    "authority": false,
+    "subject": "1c939d9afb8ea853d759649c86eca5e103c27f0a",
+    "returncode": 1,
+    "elapsed_ms": 4026,
+    "stdout_sha256": "c0048b1f0b66d9665141200bee972b66cee9b09efcefe1b912c47f579deeef7e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "policy_red": {
+    "authority": false,
+    "subject": "08a33dd167124ee01b5a3311b67aed2181b33726",
+    "returncode": 1,
+    "elapsed_ms": 4500,
+    "stdout_sha256": "336da7c9e89304bae029b97f6887742112d2585170c54c21bdc9f1ba45c9cbbd",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "thread_red": {
+    "authority": false,
+    "subject": "f2d66832cb5c7989bb7c1ff04dd0bc2a678a4049",
+    "scope": "Working process-group implementation before thread inventory correction",
+    "returncode": 1,
+    "stdout_sha256": "96085d977500d1fd3786f669c8e53ddd2e8f5f9137bd6cb8041ad40a538a968d",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "focused25": {
+    "authority": false,
+    "returncode": 0,
+    "elapsed_ms": 6428,
+    "stdout_sha256": "bbd22bcaef00573024cc3a7e03d47f3d234f3f841436afd7793bc9d2fb8bbd97",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_batches": [
+    {
+      "stage": "focused",
+      "returncode": 0,
+      "elapsed_ms": 4864
+    },
+    {
+      "stage": "timeout-consumers",
+      "returncode": 0,
+      "elapsed_ms": 2960
+    },
+    {
+      "stage": "evidence-consumers",
+      "returncode": 1,
+      "elapsed_ms": 30581
+    }
+  ],
+  "scope": "UNQUALIFIED isolated prototype: latest29 focused controls have27passes/2ordinary-command failures. Foreign-only PID churn causally prevents terminal acknowledgement. Historical passes below describe earlier working points only. No integration, installed parity, deadline closure or whole acceptance claim.",
+  "limits": [
+    "Complete semantic/cause-specific governance, source/private/install/package and actual consumer qualification before integration.",
+    "Group observations do not prove escaped-session/cgroup isolation, global host admission, namespace-removal elapsed bounds, or full sibling deadline composition.",
+    "All82 whole requirements and P32 deadline closure remain open.",
+    "First qualified inventory backend is Linux procfs with wait-without-reap; unsupported hosts block before allocation.",
+    "Per-command floor includes the existing30-second interpreter probe and its cleanup, main execution and cleanup; full gate/control sequence and namespace filesystem bounds remain unqualified."
+  ],
+  "positive_tests": [
+    "tests.test_evidence_execution_timeout::test_evidence_command_preserves_successful_output",
+    "tests.test_evidence_execution_timeout::test_evidence_command_preserves_nonzero_unicode_and_universal_newlines",
+    "tests.test_evidence_execution_timeout::test_evidence_direct_child_timeout_keeps_typed_failure"
+  ],
+  "negative_controls": [
+    {
+      "cause": "surviving-timeout",
+      "test": "tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[timeout]"
+    },
+    {
+      "cause": "surviving-background-success",
+      "test": "tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[background-success]"
+    },
+    {
+      "cause": "surviving-threaded-background-success",
+      "test": "tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[threaded-background-success]"
+    },
+    {
+      "cause": "invalid-policy-None",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[None]"
+    },
+    {
+      "cause": "invalid-policy-0",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[0]"
+    },
+    {
+      "cause": "invalid-policy--1",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[-1]"
+    },
+    {
+      "cause": "invalid-policy-False",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[False]"
+    },
+    {
+      "cause": "invalid-policy-1.5",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[1.5]"
+    },
+    {
+      "cause": "invalid-policy-1",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[1]"
+    },
+    {
+      "cause": "invalid-policy-21601",
+      "test": "tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[21601]"
+    },
+    {
+      "cause": "invalid-before-runtime-None",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[None]"
+    },
+    {
+      "cause": "invalid-before-runtime-0",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[0]"
+    },
+    {
+      "cause": "invalid-before-runtime--1",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[-1]"
+    },
+    {
+      "cause": "invalid-before-runtime-False",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[False]"
+    },
+    {
+      "cause": "invalid-before-runtime-1.5",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[1.5]"
+    },
+    {
+      "cause": "invalid-before-runtime-1",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[1]"
+    },
+    {
+      "cause": "invalid-before-runtime-21601",
+      "test": "tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[21601]"
+    },
+    {
+      "cause": "outer-excludes-cleanup",
+      "test": "tests.test_evidence_cleanup_policy::test_gate_deadline_includes_real_cleanup_before_outer_allocation"
+    },
+    {
+      "cause": "unproved-cleanup-cannot-retire",
+      "test": "tests.test_evidence_cleanup_policy::test_unproven_process_cleanup_preserves_execution_state_custody"
+    },
+    {
+      "cause": "unqualified-host-darwin",
+      "test": "tests.test_evidence_cleanup_policy::test_unqualified_group_inventory_host_blocks_before_allocation[darwin]"
+    },
+    {
+      "cause": "unqualified-host-win32",
+      "test": "tests.test_evidence_cleanup_policy::test_unqualified_group_inventory_host_blocks_before_allocation[win32]"
+    },
+    {
+      "cause": "missing-population-not-quiescence",
+      "test": "tests.test_evidence_cleanup_policy::test_unstable_process_population_cannot_become_verified_cleanup[missing]"
+    },
+    {
+      "cause": "empty-population-not-quiescence",
+      "test": "tests.test_evidence_cleanup_policy::test_unstable_process_population_cannot_become_verified_cleanup[empty]"
+    },
+    {
+      "cause": "missing-anchor-population-not-quiescence",
+      "test": "tests.test_evidence_cleanup_policy::test_unstable_process_population_cannot_become_verified_cleanup[missing-anchor]"
+    }
+  ],
+  "source_sha256": {
+    "bcf_governance/tooling/evidence_execution.py": "35b68e5202f3c94cb683b3148deb0e0e8fb20e13418f374a4f7ab7c68ef64ac4",
+    "bcf_governance/tooling/ci_graph_timeouts.py": "f69f4d3d4f2dedb4d7d5d57a2dae077e542116c57879fc2556ebb80d27c36234",
+    "bcf_governance/tooling/evidence_gate_contracts.py": "e8009b1781ec9f514bb58adabe32c2efe0669585ffa4e8a2f081be18b67b2d6e",
+    "governance/gate-contracts.yml": "90ddf50850499de4aef274cbb47b3c9f563f8111e15e19c35d03b6af3178ac9a"
+  },
+  "raw_streams": [
+    {
+      "name": "evidence-cleanup-native-architecture-context-membership.stdout",
+      "sha256": "acb50bc88917f57929611d63c707e0ccd387dae970fefba6e9100a81f12eba7b"
+    },
+    {
+      "name": "evidence-cleanup-native-architecture-module-size.stdout",
+      "sha256": "b263d69c44b612282137de0281bd9556f3ac416582ffd664301063cbd8c10652"
+    },
+    {
+      "name": "evidence-cleanup-native-lint.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "evidence-cleanup-native-pack.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "evidence-cleanup-native-typecheck.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "evidence-cleanup-policy-red.stdout",
+      "sha256": "336da7c9e89304bae029b97f6887742112d2585170c54c21bdc9f1ba45c9cbbd"
+    },
+    {
+      "name": "evidence-cleanup-qualified-focused.stdout",
+      "sha256": "e31db85db43cd265d9fe0c183b5d9a1a5a0f132a3492ccbbe6bda1057a5cff91"
+    },
+    {
+      "name": "evidence-cleanup-source-evidence-consumers.stdout",
+      "sha256": "5832081460046bc7d2533cb5ba42e247f06208d6a5db3a66223114f17eddf63a"
+    },
+    {
+      "name": "evidence-cleanup-source-focused.stdout",
+      "sha256": "24d96cf4fe7ee60b083f66cd996444c4e6e7d37427d18301a29273d819c893fd"
+    },
+    {
+      "name": "evidence-cleanup-source-timeout-consumers.stdout",
+      "sha256": "d14dcd6ccd02ceda237af01047be9df114a0b83ed168b496216d1113e3027829"
+    },
+    {
+      "name": "evidence-cleanup-thread-qualified.stdout",
+      "sha256": "bbd22bcaef00573024cc3a7e03d47f3d234f3f841436afd7793bc9d2fb8bbd97"
+    },
+    {
+      "name": "evidence-cleanup-threaded-red.stdout",
+      "sha256": "96085d977500d1fd3786f669c8e53ddd2e8f5f9137bd6cb8041ad40a538a968d"
+    },
+    {
+      "name": "evidence-cleanup-v2-native-architecture-context-membership.stdout",
+      "sha256": "3be62f393f5921607a873beb897436b1f6af7bf8e959115d728ee0ecc5bd3a34"
+    },
+    {
+      "name": "evidence-cleanup-v2-native-architecture-module-size.stdout",
+      "sha256": "0dff5a7b4f7b627aa5d5ba9609862b0c83a9c34efeac8569b0ff66edb0c0e2d9"
+    },
+    {
+      "name": "evidence-cleanup-v2-native-lint.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "evidence-cleanup-v2-native-pack.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "evidence-cleanup-v2-native-typecheck.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "evidence-cleanup-working-green.stdout",
+      "sha256": "3b7ec9f3e4391b3fd82f2e6fac224a85ec3778e0bcade267a5f23caf0fa2c93e"
+    }
+  ],
+  "missing_anchor_red": {
+    "authority": false,
+    "returncode": 1,
+    "stdout_sha256": "15b400475d2a81a9d1fe0e03c7e817552f4665348008c7811abbc0213ddd9436",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "final_source": [
+    {
+      "stage": "focused",
+      "returncode": 0,
+      "elapsed_ms": 10572,
+      "stdout_sha256": "57f50c4a73b4fbe88be1031140ad09b8a39a7c61297da27e0a649fcd57f24cfc",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "timeout",
+      "returncode": 0,
+      "elapsed_ms": 1991,
+      "stdout_sha256": "4e1bac2476434ba1070a6c7f00facfc6212b9fe74b4f137e2efe48dafd80a99b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "latest_focused": {
+    "authority": false,
+    "returncode": 1,
+    "elapsed_ms": 20454,
+    "stdout_sha256": "5838744c5635f8a77de2d79be59a87b42a7060f765bc8119a639765dc87c0b59",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "capture_sha256": "6fe5d047ed400c1bb1875f064550fb14c8853fcac40c64d52c9882c9cf106a2e"
+  },
+  "foreign_interference": {
+    "authority": false,
+    "scope": "Controlled real foreign-process births between OS snapshots; hooks leave snapshots unchanged and do not change the owned command or its process group. All fixture-created groups terminated/reaped.",
+    "source_sha256": "32274c0874e5edbb3a462199ab70f7035dea494ec51e333346378cca9a0decda",
+    "first_inventory_after_owned_leader_terminal_ms": 126,
+    "snapshot_calls": 20,
+    "outcome": {
+      "typed_cleanup_block": "process-group cleanup could not be authenticated"
+    },
+    "elapsed_ms": 2164,
+    "finding": "Owned leader is terminal before snapshot hooks, yet foreign-only PID churn prevents completion. This prototype is not qualified for concurrent host activity.",
+    "capture_sha256": "c30bbb7bb677f44e4a5a0b1475f7513be9bf29cc4e6b2b8ee5caf4769c2ca66d"
+  },
+  "disposition": "Withdraw uncommitted focused_tests_passed workplan slice and its three bindings. Retain every executable control and contract. Replace host-global inventory with independently qualified owned-child custody before reintegration.",
+  "foreign_noninterference_red": {
+    "authority": false,
+    "subject": "ed7cc38629e88917bbbc03b4ce4dcd4d8957aa58",
+    "result": "One committed real foreign-process noninterference control fails with EvidenceProcessCleanupError; fixture children reaped in finally. No production correction claimed.",
+    "stdout_sha256": "5822b40e7b5a8e77a8e973fdf864462402a4ee213729ed85880aea5b5b8d552f",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

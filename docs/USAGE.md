@@ -938,3 +938,9 @@ CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
 or performs global Docker/build-cache pruning; it revalidates the exact ID and
 label immediately before deletion and removes container anonymous volumes.
+
+### BCF 2.5 evidence process cleanup
+
+The first qualified BCF 2.5 command-containment backend requires Linux procfs, POSIX process groups, default SIGCHLD ownership and wait-without-reap support. Other hosts block before namespace or process allocation until their inventory backend is qualified. The runner keeps the group leader as its identity anchor until group quiescence is checked. A timeout, or an otherwise successful command that leaves live group members, fails the gate after bounded group termination. An unverified cleanup raises a typed block and retains execution-state custody. This does not prove containment of escaped groups or authorize a host-slot handoff.
+
+The gate registry keeps schema version `2.0` and accepts the additive `execution_policy.default_cleanup_timeout_seconds` field. BCF 2.5 uses a 60-second termination allowance when an older registry omits it; this is a safety budget, not a performance target. Canonical installation projects the explicit default. The interpreter metadata probe uses the same command owner. CI deadline validation includes its existing 30-second setup bound and cleanup, main execution and cleanup, plus independent headroom, so an older tightly sized job can now block before allocation. Correct its governed deadline and use canonical reconciliation. This is a per-command floor; complete gate/control sequences, namespace setup/retirement and pipeline bounds require separate composition. Historical receipts remain readable; source and installed-runtime qualification still require their exact subjects.
