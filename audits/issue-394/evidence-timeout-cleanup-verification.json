@@ -412,5 +412,97 @@
       "evidence-owned-protocol-green.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "next_action": "Requalify exact changed source/private/installed bytes before integration; earlier a9 qualification remains scoped to its original subject."
+  },
+  "admitted_protocol_correction_qualification": {
+    "authority": false,
+    "subject": "297a17d65e09eaeb837d6ba45f63e7529320f777",
+    "tree_sha": "b3547b2cbdbac1cdcc0a526b2290aab07d752bff",
+    "stages": [
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 10786,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 3807,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 796,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 149399,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-consumers",
+        "returncode": 0,
+        "elapsed_ms": 156680,
+        "stdout_sha256": "bbd59f5e5260bf4968066e133cbc877cff5295075074b03075384be2020c7bea",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed",
+        "returncode": 0,
+        "elapsed_ms": 13767,
+        "stdout_sha256": "cbedb2b0f18e89e4c3291af2177cfc54e388caa058430b112b6b1e30ececc8de",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 30108,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 970,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:43:07.892022+00:00",
+    "ended_at": "2026-10-17T07:49:14.579430+00:00",
+    "returncode": 0,
+    "capture_sha256": "f3c24b1770e9166c3ba3059b921b4ac5edd4d2bfe617e5e1f3da706f691a6dac",
+    "source_cases": 261,
+    "installed_cases": 2
+  },
+  "decoder_compatibility_probe": {
+    "authority": false,
+    "scope": "Two exact source-owner real-command observations, no installed predecessor or authority claim. Original function extracted from retained17d AST only.",
+    "predecessor_run_sha256": "dfad2c60c54c77cd4e438205a26b5ce435b467421cd582aadfd712a52e7e32c0",
+    "current_commit": "297a17d65e09eaeb837d6ba45f63e7529320f777",
+    "current_owner_sha256": "8d1c44e8062b34189096e00eaaf93ecb3947b634cbc7fbf4d5d516207d4cffcb",
+    "observations": {
+      "retained17d": {
+        "exception": "UnicodeDecodeError",
+        "cause": null
+      },
+      "current297": {
+        "exception": "EvidenceProcessCleanupError",
+        "cause": "OwnedProcessError"
+      }
+    }
+  },
+  "decoder_state_probe": {
+    "authority": false,
+    "scope": "Actual command/supervisor, fixture-only allocation/environment/retirement ports; no actual governed namespace allocated.",
+    "exception": "EvidenceProcessCleanupError",
+    "retired_fixture_leases": 0
   }
 }
