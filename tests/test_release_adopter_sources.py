@@ -220,6 +220,7 @@ def test_frozen_source_inventory_rejects_ambiguous_members_before_reads(monkeypa
     else:
         second = replace(second, repository=first.repository.upper())
     calls.clear()
-    with pytest.raises(AdopterSourceError, match='inventory'):
+    with pytest.raises(AdopterSourceError) as caught:
         sources.authenticate_adopter_sources(api, (first, second))
     assert calls == []
+    assert 'inventory' in str(caught.value)
