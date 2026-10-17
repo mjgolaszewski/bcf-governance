@@ -1,0 +1,44 @@
+{
+  "authority": false,
+  "cases": [
+    {
+      "defect": "undeclared-primitive",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    },
+    {
+      "defect": "empty-states",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    },
+    {
+      "defect": "invalid-normative-type",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    },
+    {
+      "defect": "invented-normative-root",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    }
+  ],
+  "limit": "Structural authored-only validation gap; no evidence that these flags confer runtime authority. Full conformance remains open.",
+  "raw_sha256": "24d52a9c8be5e586156e9218e97050443c65ea29b3c9f0b61a63c72f2c20567d",
+  "source_commit": "aa2cd42034f5d625c91c8e4861ac29951b8da063"
+}
