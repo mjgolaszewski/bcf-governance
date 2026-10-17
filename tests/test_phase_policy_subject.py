@@ -82,7 +82,8 @@ def test_admitted_policy_does_not_hide_moving_current_frontier(admitted_policy, 
     assert api.reads == 0
 
 
-def test_historical_policy_consumes_real_predecessor_bundle_after_default_advances(protected_population, monkeypatch):
+@pytest.fixture
+def advanced_admitted_population(protected_population, monkeypatch):
     api, _, calls = protected_population
     api.main = "c" * 40
     original_commit = api.commit
@@ -98,7 +99,11 @@ def test_historical_policy_consumes_real_predecessor_bundle_after_default_advanc
             return {"status": "ahead", "base_commit": {"sha": base}, "merge_base_commit": {"sha": base}}
         return original(repository, base=base, head=head)
     monkeypatch.setattr(api, "compare_commits", compare)
-    subject = MainIdentity("42", "main", SHA_B, TREE)
+    return api, MainIdentity("42", "main", SHA_B, TREE), calls
+
+
+def test_historical_policy_consumes_real_predecessor_bundle_after_default_advances(advanced_admitted_population):
+    api, subject, calls = advanced_admitted_population
     selected, inputs = trusted_inputs.verify_required_phase_closure_inputs(
         api, repository="owner/repo", phase_id="P02", policy_subject=subject,
     )
