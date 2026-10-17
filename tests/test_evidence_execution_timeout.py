@@ -256,3 +256,69 @@ def test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure(
     result = _run(command, cwd=cwd, timeout_seconds=1, cleanup_timeout_seconds=1)
     assert result.returncode == 126
     assert 'execution infrastructure failure' in result.stderr
+
+
+@pytest.mark.parametrize('interruption', ['caller', 'supervisor'])
+def test_owned_command_interruption_keeps_terminal_custody(tmp_path, interruption):
+    marker = tmp_path / 'interrupted-command.json'
+    worker = """import json,os,sys,time
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp()}))
+time.sleep(20)
+"""
+    code = """import json,os,signal,sys,time
+from pathlib import Path
+from bcf_governance.tooling import evidence_process_supervisor as supervisor
+from bcf_governance.tooling.evidence_execution import _run,EvidenceProcessCleanupError
+marker=Path(sys.argv[1]);mode=sys.argv[2];original=supervisor._observe;fired=False
+def observe(process,*args):
+    global fired
+    if not fired:
+        end=time.monotonic()+2
+        while not marker.exists():
+            assert time.monotonic()<end,'command never became ready'
+            time.sleep(0.005)
+        fired=True
+        if mode=='caller':raise KeyboardInterrupt()
+        os.kill(process.pid,signal.SIGKILL)
+    return original(process,*args)
+supervisor._observe=observe
+try:
+    _run([sys.executable,'-c',sys.argv[3],str(marker)],cwd=marker.parent,
+         timeout_seconds=2,cleanup_timeout_seconds=1)
+except KeyboardInterrupt:
+    assert mode=='caller'
+    outcome='interrupted-after-cleanup'
+except EvidenceProcessCleanupError:
+    assert mode=='supervisor'
+    outcome='unresolved'
+else:raise AssertionError('interruption became successful execution')
+print(json.dumps({'outcome':outcome,'fired':fired}))
+"""
+    probe = subprocess.Popen(
+        [sys.executable, '-c', code, str(marker), interruption, worker],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
+    )
+    try:
+        output, error = probe.communicate(timeout=6)
+        assert probe.returncode == 0, error
+        result = json.loads(output)
+        assert result['fired'] is True
+        metadata = json.loads(marker.read_text())
+        if interruption == 'caller':
+            assert result['outcome'] == 'interrupted-after-cleanup'
+            assert not _live(metadata['pid']), 'caller interruption abandoned live work'
+        else:
+            assert result['outcome'] == 'unresolved'
+    finally:
+        groups = {probe.pid}
+        if marker.exists():
+            groups.add(json.loads(marker.read_text())['group'])
+        assert os.getpgrp() not in groups
+        for group in groups:
+            try:
+                os.killpg(group, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        probe.communicate(timeout=2)
