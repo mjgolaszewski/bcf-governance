@@ -320,5 +320,26 @@
       }
     ],
     "fixture_sha256": "c0ecce27fbc5c34de77a4d08859a1825ef13863e0f04bbcae76d981108f69d0b"
+  },
+  "additional_consumers": {
+    "result": {
+      "authority": false,
+      "subject": "6c0717c8eafc2810147c206d819a4ae73a69ddcc",
+      "returncode": 0,
+      "elapsed_ms": 92811,
+      "stdout_sha256": "5de1e2f6119b6b570f00b3275b978e71acab4f2280ebf6b2c3c8b35a535f4b96",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "passed": 193,
+    "modules": [
+      "tests/test_ci_github_release.py",
+      "tests/test_routine_controller_provider.py",
+      "tests/test_routine_controller_rotation.py",
+      "tests/test_ci_self_controller.py",
+      "tests/test_ci_github_canary.py",
+      "tests/test_break_glass_recovery.py",
+      "tests/test_ordinary_protection_projection.py"
+    ],
+    "scope": "Seven further source consumer suites; additional to original399. No installed or full canonical claim."
   }
 }
