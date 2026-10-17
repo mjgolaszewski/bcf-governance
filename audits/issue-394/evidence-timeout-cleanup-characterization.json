@@ -31,5 +31,26 @@
       "name": "evidence-timeout-descendant-red.stderr",
       "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
-  ]
+  ],
+  "predecessor_source_comparison": {
+    "captures": [
+      {
+        "commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+        "function": "bcf_governance/tooling/evidence_execution.py::_run",
+        "function_source_sha256": "dfad2c60c54c77cd4e438205a26b5ce435b467421cd582aadfd712a52e7e32c0"
+      },
+      {
+        "commit": "f911f21c29114b8280866b75281673018a231c9c",
+        "function": "bcf_governance/tooling/evidence_execution.py::_run",
+        "function_source_sha256": "dfad2c60c54c77cd4e438205a26b5ce435b467421cd582aadfd712a52e7e32c0"
+      },
+      {
+        "commit": "17d2b4f3890ed4b5999428115c3d8eb13ab8321a",
+        "function": "bcf_governance/tooling/evidence_execution.py::_run",
+        "function_source_sha256": "dfad2c60c54c77cd4e438205a26b5ce435b467421cd582aadfd712a52e7e32c0"
+      }
+    ],
+    "exact_function_bytes_equal": true,
+    "scope": "Source comparison only; real-process control executed against isolated17d-derived2.5 source, not every installed predecessor or consumer."
+  }
 }
