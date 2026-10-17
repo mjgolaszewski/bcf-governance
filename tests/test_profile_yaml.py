@@ -71,3 +71,13 @@ def test_projected_content_uses_existing_budget_owner_without_mutation(tmp_path,
     with pytest.raises(GovernanceValidationError):
         _validate_context_budgets(tmp_path, manifest, projected_contents=projected)
     assert manifest == before and path.read_bytes() == raw
+
+
+def test_equal_string_sequences_share_without_changing_decoded_contract() -> None:
+    payload = {f"claim_{index}": ["normal", "regulated", "self"] for index in range(20)}
+    before = copy.deepcopy(payload)
+    rendered = render_profile_surface(payload, width=4096)
+
+    assert yaml.safe_load(rendered) == payload == before
+    assert len(rendered) < 500
+    assert render_profile_surface(copy.deepcopy(payload), width=4096) == rendered

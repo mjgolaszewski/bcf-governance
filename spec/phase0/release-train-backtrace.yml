@@ -307,3 +307,30 @@ negative_control_fixture_reachability_contract:
   exclusions:
   - {id: NFRX-001, reason: an_unrelated_earlier_failure_does_not_kill_the_declared_mutation}
   - {id: NFRX-002, reason: fixture_repair_cannot_weaken_or_reorder_production_validation}
+
+same_session_evidence_input_transport:
+  issue: 427
+  canonical_owner: bcf_governance/tooling/governance_evidence.py::capture_gate
+  namespace: .artifacts/bcf/sessions
+  rule: after_session_subject_and_output_binding_resolve_declared_canonical_session_inputs_to_the_exact_bound_session
+  contexts:
+  - external_local_prospective_session
+  - transported_hosted_session
+  preserve:
+  - gate_contract
+  - required_environment_names
+  - producer_order
+  - session_manifest
+  - receipt_identity
+  - finding_requirements
+  - unrelated_workspace_inputs
+  reject_before_execution:
+  - foreign_session_output
+  - wrong_subject_session
+  - unsafe_session_manifest
+  forbidden:
+  - repository_session_fallback
+  - stale_session_discovery
+  - application_specific_environment_names
+  - receipt_copy_workaround
+  regression: tests/test_governance_evidence.py::test_dependent_gate_consumes_exact_current_session_inputs

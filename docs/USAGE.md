@@ -743,6 +743,12 @@ deeper in the selected session remain immutable evidence and do not create a
 second session candidate. Missing, multiple, symlinked, malformed, unreadable,
 misnamed, or permission-unsafe root manifests fail before a gate starts.
 
+When a gate declares a required environment input at the canonical
+`.artifacts/bcf/sessions` namespace (non-authoritative until captured), capture
+binds that input to the exact validated session. This applies to external local
+sessions and downloaded CI sessions. Other workspace inputs stay unchanged;
+dependent gates never discover older repository sessions as a fallback.
+
 Truth admits receipts before grouping them by gate or selecting claim evidence.
 Within one exact subject and session, both `evidence_id` and each execution slot
 must be unique. An execution slot is the gate, declared producer, workflow job,

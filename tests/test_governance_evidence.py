@@ -1257,6 +1257,100 @@ def test_transported_session_supports_a_dependent_producer_without_rewriting_inp
     )
 
 
+def _make_session_input_consumer_repo(tmp_path: Path) -> Path:
+    repo = _make_diagnostic_gate_repo(
+        tmp_path,
+        "import sys\nBROKEN = False\nif BROKEN:\n print('expected policy violation', file=sys.stderr); raise SystemExit(1)\nprint('producer passed')\n",
+    )
+    (repo / "consumer.py").write_text(
+        "import json, os, sys\nfrom pathlib import Path\n"
+        "BROKEN = False\nif BROKEN:\n print('expected policy violation', file=sys.stderr); raise SystemExit(1)\n"
+        "root = Path(os.environ['DEPENDENCY_RECEIPTS'])\n"
+        "receipts = list(root.rglob('gate.evidence.json'))\n"
+        "assert len(receipts) == 1, 'one prerequisite receipt required'\n"
+        "receipt = json.loads(receipts[0].read_text())\n"
+        "assert receipt['result'] == 'passed'\n"
+        "assert receipt['observations']['evidence_session']['session_id'] == os.environ['EXPECTED_SESSION_ID'], 'foreign session input'\n"
+        "print('current-session prerequisite consumed')\n",
+        encoding="utf-8",
+    )
+    profile_path = repo / "governance-profile.yml"
+    profile = yaml.safe_load(profile_path.read_text(encoding="utf-8"))
+    profile["release_gate_profile"]["gates"]["dependent"] = {
+        **profile["release_gate_profile"]["gates"]["gate"], "target": "dependent"
+    }
+    profile_path.write_text(yaml.safe_dump(profile, sort_keys=False), encoding="utf-8")
+    contracts_path = repo / "governance/gate-contracts.yml"
+    contracts = yaml.safe_load(contracts_path.read_text(encoding="utf-8"))
+    producer = contracts["gates"]["gate"]
+    control = producer["negative_controls"][0]
+    contracts["gates"]["dependent"] = {
+        **producer,
+        "invocation": {
+            **producer["invocation"], "argv": ["python3", "consumer.py"],
+            "required_env": ["DEPENDENCY_RECEIPTS", "EXPECTED_SESSION_ID"],
+        },
+        "negative_controls": [{**control, "mutation": {**control["mutation"], "path": "consumer.py"}}],
+    }
+    contracts_path.write_text(yaml.safe_dump(contracts, sort_keys=False), encoding="utf-8")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-m", "declare dependent session consumer")
+    _enable_profile_v2(repo)
+    return repo
+
+
+@pytest.mark.parametrize("transport", ["local", "hosted"])
+def test_dependent_gate_consumes_exact_current_session_inputs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, transport: str
+) -> None:
+    from bcf_governance.tooling.local_proof_bundles import capture_producers
+
+    repo = _make_session_input_consumer_repo(tmp_path)
+    producer = local_producer_identity(repo, "local")
+    namespace = repo / ".artifacts/bcf/sessions"
+    stale = allocate_session(repo, namespace, ["gate", "dependent"],
+                             expected_producers=["local"], producer_identity=producer)
+    capture_gate(repo, "gate", stale.root / "gate", session_manifest=stale.manifest_path)
+    stale_bytes = {p.relative_to(namespace): p.read_bytes()
+                   for p in namespace.rglob("*") if p.is_file()}
+    current = allocate_session(repo, tmp_path / "external", ["gate", "dependent"],
+                               expected_producers=["local"], producer_identity=producer)
+    environment = {"DEPENDENCY_RECEIPTS": str(namespace),
+                   "EXPECTED_SESSION_ID": current.payload["session_id"]}
+    if transport == "local":
+        capture_producers(repo, python_executable=Path(sys.executable),
+                          session_manifest=current.manifest_path, session_root=current.root,
+                          producers=("gate", "dependent"),
+                          producer_environments={"gate": {}, "dependent": environment})
+        receipt_path = current.root / "dependent/dependent.evidence.json"
+    else:
+        capture_gate(repo, "gate", current.root / "gate", session_manifest=current.manifest_path)
+        destination = tmp_path / "downloaded"
+        shutil.copytree(current.root.parent, destination, copy_function=shutil.copy2)
+        current = select_session(destination)
+        for name, value in environment.items():
+            monkeypatch.setenv(name, value)
+        receipt_path = capture_gate(repo, "dependent", current.root / "dependent",
+                                    session_manifest=current.manifest_path)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["result"] == "passed", receipt["observations"]
+    assert all((namespace / path).read_bytes() == content
+               for path, content in stale_bytes.items())
+
+
+def test_dependent_session_input_rejects_foreign_binding(tmp_path: Path) -> None:
+    repo = _make_session_input_consumer_repo(tmp_path)
+    producer = local_producer_identity(repo, "local")
+    sessions = [allocate_session(repo, tmp_path / name, ["gate", "dependent"],
+                                expected_producers=["local"], producer_identity=producer)
+                for name in ("current", "foreign")]
+    with pytest.raises(EvidenceError, match="inside its session root"):
+        capture_gate(repo, "dependent", sessions[0].root / "dependent",
+                     session_manifest=sessions[1].manifest_path,
+                     job_environment={"DEPENDENCY_RECEIPTS": str(sessions[1].root),
+                                      "EXPECTED_SESSION_ID": sessions[1].payload["session_id"]})
+
+
 def test_governance_validation_controls_preserve_their_declared_failure_causes(
     tmp_path: Path,
 ) -> None:
