@@ -40,5 +40,15 @@
   ],
   "limit": "Structural authored-only validation gap; no evidence that these flags confer runtime authority. Full conformance remains open.",
   "raw_sha256": "24d52a9c8be5e586156e9218e97050443c65ea29b3c9f0b61a63c72f2c20567d",
-  "source_commit": "aa2cd42034f5d625c91c8e4861ac29951b8da063"
+  "source_commit": "aa2cd42034f5d625c91c8e4861ac29951b8da063",
+  "version3_before": {
+    "passed": 1,
+    "fixture_errors": 42,
+    "failed": 0,
+    "cause": "Version3 positive fixture is unsupported by the existing version2-only schema; these setup errors do not qualify cause-specific rejection. Original4 version2 malformed acceptances remain separate evidence.",
+    "streams": {
+      "stdout_sha256": "44dd3f641fb47033a0c84a95dc3f647bdd88caa08563cc3b07cff0af12dd7140",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
 }
