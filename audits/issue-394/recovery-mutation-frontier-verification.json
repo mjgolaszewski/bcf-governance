@@ -44,5 +44,12 @@
     "Native broad source/private/governance/semantic qualification and integration remain pending.",
     "All82 whole requirements remain open."
   ],
-  "previous_next_action": "After peer native handback, qualify existing concrete consumers, package/private runtimes and required gates before integrating."
+  "previous_next_action": "After peer native handback, qualify existing concrete consumers, package/private runtimes and required gates before integrating.",
+  "primary_integration": {
+    "checkpoint": "411ef3d153b4b737b560fae5ee1aa8511110f2ae",
+    "method": "fast_forward_existing_successor",
+    "scoped_implementation_inputs_unchanged": true,
+    "canonical_fresh_candidate_proof": "pending",
+    "whole_requirements_not_executed": 82
+  }
 }

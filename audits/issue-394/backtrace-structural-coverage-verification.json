@@ -61,5 +61,12 @@
     "Full source/profile/private-installed/governance/semantic qualification and integration remain pending.",
     "All82 whole requirements remain open; no P33 activation or release certification."
   ],
-  "previous_next_action": "After actual peer terminal and native admission, qualify complete affected suites and installed consumers, then integrate only qualified source. Continue full protected context/effect populations."
+  "previous_next_action": "After actual peer terminal and native admission, qualify complete affected suites and installed consumers, then integrate only qualified source. Continue full protected context/effect populations.",
+  "primary_integration": {
+    "checkpoint": "411ef3d153b4b737b560fae5ee1aa8511110f2ae",
+    "method": "fast_forward_existing_successor",
+    "scoped_implementation_inputs_unchanged": true,
+    "canonical_fresh_candidate_proof": "pending",
+    "whole_requirements_not_executed": 82
+  }
 }
