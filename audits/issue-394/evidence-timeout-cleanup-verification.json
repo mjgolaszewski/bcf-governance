@@ -55,7 +55,7 @@
       "elapsed_ms": 30581
     }
   ],
-  "scope": "Kernel child prototype: retained exact297 qualification261 source/2 installed and native/semantic/governance/exposurePASS. Subsequent decoder compatibility correction has41 focused passes including exact state retirement and corrupt-control rejection; exact changed-byte qualification pending. No integration or whole deadline/acceptance closure.",
+  "scope": "Exact427 kernel-child correction qualification terminal0:263 source/2 actual fresh-upgrade installed; pack/lint/type/unchanged21-operation semantic/governance/exposure PASS. Earlier failures/corrections retained. Integrate source with existing3 corrections, validate scoped bindings and qualify exact combined successor; no whole acceptance or P33 activation.",
   "limits": [
     "Complete semantic/cause-specific governance, source/private/install/package and actual consumer qualification before integration.",
     "Group observations do not prove escaped-session/cgroup isolation, global host admission, namespace-removal elapsed bounds, or full sibling deadline composition.",
@@ -518,5 +518,82 @@
       "evidence-owned-decoder-green.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "next_action": "Qualify exact changed private/source/installed bytes before integration. Earlier exact297 qualification remains261 source/2 installed on its original subject."
+  },
+  "admitted_decoder_correction_qualification": {
+    "authority": false,
+    "subject": "427c041e2728170af45bb3468cef6c5d69d9c574",
+    "tree_sha": "2aad475d6a03cd5d6f0080ae72bad61167be6211",
+    "source_sha256": {
+      "bcf_governance/tooling/evidence_execution.py": "3dfdcb15368e0c9a4e0f5981742f42df91d2902f05524e1d280c1df613fa78e0",
+      "bcf_governance/tooling/evidence_process_supervisor.py": "71fd1f0627f2556feeaf7cd9c39f7a8c36d2089d3ac4956446abaee78d9b796f",
+      "tests/test_evidence_process_supervisor.py": "5564b8355449330549fa0fec58a4c6e5f33b6d626172e84e058bed09d6ac6aac",
+      "tests/test_installed_evidence_cleanup.py": "96a328ee9d0d11fde8d55d633ff2a3627c9135d71f4206728b547a87827f4929",
+      "tests/test_evidence_cleanup_policy.py": "b9d0fc8f1b5ebe6a02a58f13c355448a7438895d884084eb889b538070dcf1e5"
+    },
+    "stages": [
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 11275,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 3953,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 596,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 145529,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-consumers",
+        "returncode": 0,
+        "elapsed_ms": 152816,
+        "stdout_sha256": "63fe5093e1094f04c1a050fd2b5a9bdc57e25d5b30ae41730789a995d0c4721e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed",
+        "returncode": 0,
+        "elapsed_ms": 14712,
+        "stdout_sha256": "53d3425636d92616964bacccf7b20c4c043af476a36e5a2cf89b14b84a235fac",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 28839,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 1219,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:51:48.889906+00:00",
+    "ended_at": "2026-10-17T07:57:48.239614+00:00",
+    "returncode": 0,
+    "capture_sha256": "7b918d236ecfffb5c7e46e70713a26b295eb208a77db37ae1f1038861a616821",
+    "source_cases": 263,
+    "installed_cases": 2,
+    "scope": "Exact427 bounded Linux source/private fresh-upgrade qualification, including41 cleanup/policy/transport controls. Not a whole pipeline deadline, adversarial same-user isolation or current maintained-adopter assurance claim."
   }
 }
