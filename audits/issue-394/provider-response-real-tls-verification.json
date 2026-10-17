@@ -1,0 +1,30 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Actual local TLS body and chunk framing on this interpreter only",
+  "source_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+  "tls_authentication": "Client verified ephemeral local CA and IP SAN; no verification bypass",
+  "cases": [
+    {
+      "mode": "body",
+      "timeout_seconds": 0.08,
+      "elapsed_seconds": 0.08046914999977162,
+      "outcome": "TimeoutError"
+    },
+    {
+      "mode": "chunk_header",
+      "timeout_seconds": 0.08,
+      "elapsed_seconds": 0.08040280599925609,
+      "outcome": "TimeoutError"
+    },
+    {
+      "mode": "chunk_trailer",
+      "timeout_seconds": 0.08,
+      "elapsed_seconds": 0.08044759899894416,
+      "outcome": "TimeoutError"
+    }
+  ],
+  "cleanup": "All workers joined and sockets closed; ephemeral key/certificate directory removed",
+  "limits": "Not installed-runtime, multi-interpreter, remote-provider or whole-pipeline qualification",
+  "probe_sha256": "0e6b0cbbf8a8f0c799aaf3a73f01e6345a3d937bd36ec621889b566896fb7a2d"
+}
