@@ -73,5 +73,19 @@
     "execution": "Run only in the next admitted qualification window; no additional heavy train while primary submission is active.",
     "limits": "Fixture-controlled provider GETs prove installed runtime behavior and dependency origin, not real provider or release certification. Existing actual real-provider source query is recorded separately."
   },
-  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources"
+  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources",
+  "physical_inventory_uniqueness": {
+    "contract": [
+      "GitHub repository names compare case-insensitively for required and frozen inventory uniqueness; duplicate aliases reject before provider reads.",
+      "Distinct required repository names must resolve to distinct authenticated numeric repository IDs; no physical adopter can satisfy two required members.",
+      "A frozen inventory with repeated numeric IDs or case-equivalent names rejects before collection-time provider reads.",
+      "Keep exact policy order, source/freshness checks, existing source identity type and authority false.",
+      "Complete synthetic provider full_name metadata for compatibility with the separately qualified shared resolver guard; do not replace real provider checks with test authority."
+    ],
+    "controls": [
+      "Duplicate physical repository IDs at capture cannot become a partial or repeated success.",
+      "Case-equivalent required repository names reject before any provider request.",
+      "Duplicate physical repository IDs and case aliases in frozen inventory reject before collection reads."
+    ]
+  }
 }
