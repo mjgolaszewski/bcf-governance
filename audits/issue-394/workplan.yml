@@ -132,6 +132,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/residual-admitted-evidence.json
+    - audits/issue-394/provider-source-recovery-contract.json
+    - audits/issue-394/provider-source-recovery-verification.json
     - audits/issue-394/qualification-admission-order-verification.json
     - audits/issue-394/pinned-qualification-2328e076-terminal.json
     - audits/issue-394/qualification-upgrade-order-verification.json

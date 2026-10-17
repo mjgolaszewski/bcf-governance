@@ -8,6 +8,7 @@ import subprocess
 import sys
 import venv
 import zipfile
+import yaml
 
 import pytest
 
@@ -36,6 +37,39 @@ PRODUCER = {
     "kind": "local",
     "id": "bcf-release-compatibility",
 }
+
+
+@pytest.fixture
+def qualification_provider(monkeypatch):
+    from bcf_governance.tooling.ci_github_api import GitHubAPI
+    from bcf_governance.tooling.ci_github_errors import GitHubAPIError
+
+    required = load_contract(REPO_ROOT)['required_adopters']
+    population = {item['repository']: index for index, item in enumerate(required, 1)}
+    observed = {'calls': [], 'move': None, 'repositories': {}}
+
+    def request(_self, method, path, **_kwargs):
+        assert method == 'GET'
+        observed['calls'].append(path)
+        repository = '/'.join(path.split('/')[2:4])
+        index = population[repository]
+        if '/git/' not in path:
+            observed['repositories'][repository] = observed['repositories'].get(repository, 0) + 1
+        moved = observed['repositories'].get(repository, 0) > 1
+        mutation = observed['move'] if moved else None
+        if mutation == 'unavailable':
+            raise GitHubAPIError('provider unavailable at collection')
+        sha = 'f' * 40 if mutation == 'commit' else str(index) * 40
+        branch = 'other' if mutation == 'branch' else 'main'
+        if '/git/ref/' in path:
+            return {'ref': 'refs/heads/' + branch, 'object': {'type': 'commit', 'sha': sha}}
+        if '/git/commits/' in path:
+            return {'sha': sha, 'tree': {'sha': 'e' * 40 if mutation == 'tree' else str(index) * 40}}
+        return {'id': index + 1000 if mutation == 'id' else index, 'default_branch': branch}
+
+    monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
+    monkeypatch.setattr(GitHubAPI, '_request', request)
+    return observed
 
 
 def test_qualification_cli_derives_local_nonauthoritative_producer_identity(
@@ -194,18 +228,50 @@ def test_release_qualification_contract_is_closed_and_unique() -> None:
     assert "provider_credentials" not in contract
     assert all("provider_credential" not in item for item in contract["required_adopters"])
     assert contract["qualification"] == {
-        "source": "explicit_pinned_local_clone_transaction",
-        "caller_checkout_role": "exact_source_identity",
+        "source": "provider_default_branch_transaction",
+        "caller_checkout_role": "materialization_resource_only",
         "mutation_scope": "disposable_clone_only",
         "fixed_point": "required",
         "evaluation_scope": "canonical_graph_derived",
         "authority": "local_non_authoritative",
         "execution_provenance": "local_observation_receipt",
         "continuation": "compatibility_report_only",
-        "source_freshness": "exact_at_observation",
+        "source_freshness": "provider_exact_at_capture_and_collection",
         "product_failure": "typed_remediation_input_no_publication_effect",
         "release_asset_identity": "exact_sha256sums",
     }
+
+
+def test_historical_source_policy_decodes_but_cannot_authorize_new_execution():
+    contract = copy.deepcopy(load_contract(REPO_ROOT))
+    contract['schema_version'] = '1.3'
+    contract['document']['version'] = '1.3.0'
+    contract['qualification'].update(
+        source='explicit_pinned_local_clone_transaction',
+        caller_checkout_role='exact_source_identity',
+        source_freshness='exact_at_observation',
+    )
+    decoded = qualification.parse_contract(
+        yaml.safe_dump(contract).encode(),
+        (REPO_ROOT / 'schemas/release-qualification.schema.json').read_bytes(),
+    )
+    assert decoded == contract
+    with pytest.raises(AdopterSourceError, match='source policy'):
+        qualification.require_provider_source_policy(decoded)
+
+
+@pytest.mark.parametrize('field', ['source', 'caller_checkout_role', 'source_freshness'])
+def test_provider_source_policy_cannot_mix_legacy_selection_fields(field):
+    contract = copy.deepcopy(load_contract(REPO_ROOT))
+    legacy = {'source': 'explicit_pinned_local_clone_transaction',
+              'caller_checkout_role': 'exact_source_identity',
+              'source_freshness': 'exact_at_observation'}
+    contract['qualification'][field] = legacy[field]
+    with pytest.raises(ReleaseQualificationError, match='contract is invalid'):
+        qualification.parse_contract(
+            yaml.safe_dump(contract).encode(),
+            (REPO_ROOT / 'schemas/release-qualification.schema.json').read_bytes(),
+        )
 
 
 @pytest.mark.parametrize(
@@ -412,7 +478,7 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
 
 
 @pytest.mark.parametrize('defect', ['profile', 'missing-profile', 'missing-python', 'nonexecutable-python', None])
-def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path, monkeypatch, defect):
+def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path, monkeypatch, defect, qualification_provider):
     contract = load_contract(REPO_ROOT)
     assets = tmp_path / 'assets'
     assets.mkdir()
@@ -462,7 +528,7 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
     assert not (tmp_path / 'receipt.json').exists()
 
 
-@pytest.mark.parametrize('defect', ['stale-commit', 'stale-tree', 'legacy-policy'])
+@pytest.mark.parametrize('defect', ['stale-commit', 'stale-tree', 'legacy-policy', 'missing-token'])
 def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, monkeypatch, defect):
     from bcf_governance.tooling.ci_github_api import GitHubAPI
 
@@ -514,22 +580,25 @@ def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, 
         identities[roots[-1].resolve()] = (repo, 'f' * 40 if defect == 'stale-commit' else commit,
                                           'e' * 40 if defect == 'stale-tree' else tree)
     monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
+    if defect == 'missing-token':
+        monkeypatch.delenv('GITHUB_TOKEN')
     monkeypatch.setattr(GitHubAPI, '_request', request)
     monkeypatch.setattr(qualification, 'load_contract', lambda _root: contract)
     monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
     monkeypatch.setattr(qualification.tempfile, 'TemporaryDirectory', allocation)
-    with pytest.raises(ReleaseQualificationError, match='source policy|provider source'):
+    with pytest.raises(ReleaseQualificationError, match='source policy|provider source|token is required'):
         qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
                         release_build_manifest=manifest, adopter_roots=roots,
                         adopter_pythons={}, producer=PRODUCER, output=tmp_path / 'receipt.json')
     assert effects == []
     assert not (tmp_path / 'receipt.json').exists()
-    if defect == 'legacy-policy':
+    if defect in {'legacy-policy', 'missing-token'}:
         assert reads == []
 
 
+@pytest.mark.parametrize('source_movement', [None, 'id', 'branch', 'commit', 'tree', 'unavailable'])
 def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, qualification_provider, source_movement,
 ) -> None:
     contract = load_contract(REPO_ROOT)
     assets = tmp_path / "assets"
@@ -645,16 +714,28 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     monkeypatch.setattr(qualification, "ensure_local_project_python", ensure_project_python)
     monkeypatch.setattr(qualification, "_commit", lambda *_args, **_kwargs: None)
 
-    receipt = qualify_release(
-        REPO_ROOT,
-        repository=release_identity[0],
-        release_assets=assets,
-        release_build_manifest=manifest,
-        adopter_roots=tuple(reversed(adopter_roots)),
-        adopter_pythons=adopter_pythons,
-        producer=PRODUCER,
-        output=tmp_path / "receipt.json",
-    )
+    qualification_provider['move'] = source_movement
+    def execute():
+        return qualify_release(
+            REPO_ROOT,
+            repository=release_identity[0],
+            release_assets=assets,
+            release_build_manifest=manifest,
+            adopter_roots=tuple(reversed(adopter_roots)),
+            adopter_pythons=adopter_pythons,
+            producer=PRODUCER,
+            output=tmp_path / "receipt.json",
+        )
+    if source_movement is not None:
+        with pytest.raises(ReleaseQualificationError, match='stale|unavailable'):
+            execute()
+        assert not (tmp_path / 'receipt.json').exists()
+        assert len(environment_requests) == len(contract['required_adopters'])
+        return
+    receipt = execute()
+    assert len(qualification_provider['calls']) == 6 * len(contract['required_adopters'])
+    assert all(item['repository_id'] == str(index) and item['source_branch'] == 'main'
+               for index, item in enumerate(receipt['adopters'], 1))
 
     ids = [item['id'] for item in contract['required_adopters']]
     assert [identifier for _, identifier in profile_checks] == ids + ids
@@ -842,10 +923,20 @@ def test_qualification_base_remote_is_immutable_at_captured_adopter_subject(
     assert observed == commit
 
 
+@pytest.mark.parametrize('source_policy', ['1.3', '1.4'])
 def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
-    tmp_path: Path,
+    tmp_path: Path, source_policy,
 ) -> None:
     contract = load_contract(REPO_ROOT)
+    if source_policy == '1.3':
+        contract = copy.deepcopy(contract)
+        contract['schema_version'] = '1.3'
+        contract['document']['version'] = '1.3.0'
+        contract['qualification'].update(
+            source='explicit_pinned_local_clone_transaction',
+            caller_checkout_role='exact_source_identity',
+            source_freshness='exact_at_observation',
+        )
     assets = _assets(tmp_path)
     receipt = _receipt(contract, assets)
     kwargs = {

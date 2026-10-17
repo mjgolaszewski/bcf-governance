@@ -27,12 +27,17 @@ from packaging.version import Version
 
 from .ci_github_values import GitHubValueError, remote_repository
 from .ci_github_identity import GitHubControllerError
+from .ci_github_api import GitHubAPI
+from .ci_github_errors import GitHubAPIError
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
     AdopterSourceError,
     AdopterSourceIdentity,
     require_adopter_profile,
     source_inventory_sha256,
+    require_provider_source_policy,
+    resolve_adopter_sources,
+    authenticate_adopter_sources,
 )
 from .release_asset_inventory import (
     checksum_declared_assets,
@@ -473,6 +478,10 @@ def qualify_release(
     """Observe exact pinned adopter clones without mutating maintained checkouts."""
 
     contract = load_contract(repo_root.resolve())
+    try:
+        require_provider_source_policy(contract)
+    except AdopterSourceError as exc:
+        raise ReleaseQualificationError(str(exc)) from exc
     version, build_assets, assets = _release_assets(release_assets.resolve())
     try:
         build = json.loads(release_build_manifest.read_text(encoding="utf-8"))
@@ -521,21 +530,16 @@ def qualify_release(
         raise ReleaseQualificationError(
             "qualification producer identity is not exact"
         )
-    sources = tuple(
-        AdopterSourceIdentity(
-            id=str(item["id"]),
-            repository=str(item["repository"]),
-            repository_id=str(
-                int(hashlib.sha256(str(item["repository"]).encode()).hexdigest()[:15], 16)
-            ),
-            profile=str(item["profile"]),
-            default_branch="pinned-local",
-            commit_sha=supplied_identity[str(item["repository"])][0],
-            tree_sha=supplied_identity[str(item["repository"])][1],
-        )
-        for item in contract["required_adopters"]
-    )
+    try:
+        api = GitHubAPI(token=os.environ.get('GITHUB_TOKEN', ''))
+        sources = resolve_adopter_sources(api, contract)
+    except (GitHubAPIError, AdopterSourceError) as exc:
+        raise ReleaseQualificationError(str(exc)) from exc
     for source in sources:
+        if supplied_identity[source.repository] != (source.commit_sha, source.tree_sha):
+            raise ReleaseQualificationError(
+                f'adopter resource differs from provider source: {source.repository}'
+            )
         try:
             require_adopter_profile(supplied[source.repository], source)
         except AdopterSourceError as exc:
@@ -643,6 +647,10 @@ def qualify_release(
                 "evaluation": report["post_merge_evaluation"],
                 "status": "pass",
             })
+    try:
+        authenticate_adopter_sources(api, sources)
+    except AdopterSourceError as exc:
+        raise ReleaseQualificationError(str(exc)) from exc
     receipt = {
         "schema_version": "1.1",
         "kind": "release_adopter_qualification",

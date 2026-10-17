@@ -1,0 +1,92 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "focused_controls_passed_installed_pending",
+  "contract_commit": "37a9fb46",
+  "test_commits": [
+    "31fd9dfa",
+    "557961b6"
+  ],
+  "observations": [
+    {
+      "capture_sha256": "2b9139dfbaf9e999b5dff944059c23459e441ffc5e35480f6ab80c4e53c9f869",
+      "subject": "31fd9dfa54c15d822ef3edb2bc09e5952089a948",
+      "returncode": 1,
+      "elapsed_ms": 748,
+      "stdout_sha256": "e3c0bd840b19452632396bed6dd73d86490738914d94cd5627df3392734f5629",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "capture_sha256": "1f96f449e906fe62d45c13dc1fb608a06380c2660a718fc7a6b1256e8d78529c",
+      "subject": "557961b675fad711b442d16bf8c3eadfda651160",
+      "returncode": 1,
+      "elapsed_ms": 2571,
+      "stdout_sha256": "8bfcb618fbf124e1787f0a84bee5dfe670cb4d5d3a1e5caabff4d503029fd3f7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "capture_sha256": "e338c0a99be6a082fd993231bf774bb97c38e2c5f70e8a62b4bf929505a8ca33",
+      "subject": "557961b675fad711b442d16bf8c3eadfda651160",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 2804,
+      "stdout_sha256": "6b8c9366da6c9b16228fa4730c3cfc3440566e8d54a29da8433b8edc088d3177",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "capture_sha256": "67cc2d5fdfa3157b2c9f9d8dafc45b0dd64e085e1927cac0c8801f862388f09a",
+      "subject": "557961b675fad711b442d16bf8c3eadfda651160",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 2493,
+      "stdout_sha256": "e25ad3755addf452843bc1eb52c8a00266865acc417e394845da3f1b712b5b7a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_sha256": {
+    "bcf_governance/tooling/release_adopter_sources.py": "f9e26af7a3edb86bfe063dbb0a52f85ab2fcebfd250846b708420c3151852b7e",
+    "bcf_governance/tooling/release_adopter_qualification.py": "4f1e719f94970689770570143d872475251a3cfaf0bcb8b1bc4f7aea6d39876b",
+    "governance/release-qualification.yml": "81e3c5e913024cfb2e35e95e782e84c62a4ee06865ecdad008b8bd7be37bbe73",
+    "schemas/release-qualification.schema.json": "b48107c428992d76045e765fa67a5f8f4fcee80e6e88aab627d4306403e88881"
+  },
+  "residuals": [
+    "Isolated source is not integrated into active primary transaction.",
+    "Exact committed-source repeat, native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
+    "All82 whole requirements remain open; no P33 activation, provider certification, performance target or custody closure.",
+    "Historical1.3 receipts remain observations; offline verification is not current provider freshness."
+  ],
+  "summary": "Source owner controls:18 expected failures before resolver implementation. Existing qualification consumer:3 expected failures reached allocation on stale commit/tree or legacy policy. Working-source focused suites76pass1.78s after provider capture, resource matching and collection-time freshness checks; fixture-controlled GETs only, no external qualification or maintained mutation.",
+  "native_working_source": {
+    "capture_sha256": "16e4b481360000964d5d237bbc0eef44b27b26765e7d78f44e1e868e97dd3ba2",
+    "gates": [
+      {
+        "gate": "lint",
+        "returncode": 0,
+        "elapsed_ms": 5424,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "gate": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 2515,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "gate": "architecture-module-size",
+        "returncode": 0,
+        "elapsed_ms": 2491,
+        "stdout_sha256": "a33286c6a594617561f0e2dcac2a49e43285cbd1cba8a7c7c6e90fb2dbe961c8",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "gate": "architecture-context-membership",
+        "returncode": 0,
+        "elapsed_ms": 2153,
+        "stdout_sha256": "791acbb2840ecff621592488f8e65512e312896e3865560d4000495c22ef5d13",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  }
+}
