@@ -56,7 +56,7 @@ def test_cli_consumes_real_protected_phase_bundle(tmp_path, monkeypatch, protect
     assert api.reads == 1
     assert len(constructed) == 1
     assert constructed[0]["token"] == "fixture-token"
-    assert report["workitems"]["phase_prerequisites"]["verified_phases"] == ["P01"]
+    assert report["claims"]["workitems_closed"]["repository_observation"]["phase_prerequisites"]["verified_phases"] == ["P01"]
 
 
 @pytest.mark.parametrize(("repository", "token", "remote"), [
@@ -89,7 +89,7 @@ def test_cli_unbound_without_phase_requirement_preserves_actual_truth(tmp_path, 
     repo = _make_repo(tmp_path)
     evidence = _write_complete_bundle(repo)
     monkeypatch.setattr(ci_authority_preflight, "GitHubAPI", lambda **kw: pytest.fail("unbound API discovery"))
-    report = _invoke(repo, evidence, tmp_path / "truth.json", target="P01-P0-01")
+    report = _invoke(repo, evidence, tmp_path / "truth.json", target="P01-W01")
     assert report["status"] == "pass", report["issues"]
 
 
