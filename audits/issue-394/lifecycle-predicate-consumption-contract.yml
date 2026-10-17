@@ -116,3 +116,21 @@ trusted_pr_phase_context_forwarding:
   required: Forward the already authenticated provider API and expected repository; a candidate cannot disable protected predecessor discovery by removing its own phase predicates.
   controls: Existing protected-evaluator rejection control must assert exact API and repository forwarding in addition to rejecting a candidate pass claim.
   preserved: Existing candidate subject authentication, artifact inventory/digest checks, independent evaluation, required status identity and ordinary CLI grammar
+local_owner_deconstruction:
+  fatty: bcf_governance/tooling/local_pr.py
+  current_lines: 800
+  context: Existing prospective CI authority
+  layer: tooling use case and telemetry query
+  destination: bcf_governance/tooling/ci_authority_prospective_telemetry.py
+  extraction: Existing per-train progress list, monotonic origin, emit and matching-start fail transition
+  preservation: Same event construction, sequence, monotonic milliseconds, validation-before-sink order, callback exceptions, partial-private reporting and false authority
+  dependency_rule: Pass the existing validator explicitly so the local facade remains injectable; retain existing operational event primitives and schemas.
+  tests_first: tests/test_prospective_progress_extraction.py plus existing prospective and submission behavior
+  limits: Pure extraction precedes provider-context behavior; no CLI mode, graph, receipt family or evaluator added.
+local_phase_context_forwarding:
+  owner: bcf_governance/tooling/local_pr.py
+  required_calls: [public pre-lease authored readiness, inner exact-subject authored readiness, PR truth, post-merge semantic truth]
+  authority: Existing authenticated provider API and expected repository from the canonical submission caller
+  invariants: [missing phase authority blocks before proof allocation, computed consumption refreshes authority after evidence, candidate cannot shrink protected parent population, existing provider/head/context freshness stays enforced]
+  tests: Source forwarding controls plus actual phase-consumer fixtures and existing full prospective suite
+  remaining: Ordinary CLI/exact-main and installed consumer qualification remain required before integration.
