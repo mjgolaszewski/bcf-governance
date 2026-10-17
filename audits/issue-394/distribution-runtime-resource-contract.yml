@@ -20,3 +20,9 @@ expected_controls: [omitted schema population, omitted pack Python, metadata exc
 limits:
   - Source-root admission and final immutable artifact custody remain owned by their existing callers.
   - Passing static or archive checks does not qualify all consumer behaviors or close any whole requirement.
+dependency_inventory_followup:
+  observed_failure: Existing runtime import inventory rejects undeclared setuptools imported by the packaged source declaration query.
+  evidence: tests/test_release_artifacts.py::test_runtime_third_party_imports_are_declared_as_package_dependencies
+  required_correction: Declare the actual packaged query dependency using the existing build-system setuptools lower bound; do not exempt the module or weaken import discovery.
+  migration: Additive SDK dependency declaration; no CLI or standalone consumer grammar change. Existing controller requirement derivation must include it mechanically.
+  qualification: Rerun runtime import inventory and source requirement derivation; actual isolated distribution and controller closure remain separately required.
