@@ -995,6 +995,32 @@ def test_authored_source_distribution_rejects_before_lease_and_reconciliation(mo
     assert caught.value.__cause__ is failure
 
 
+@pytest.mark.parametrize('later_check', [
+    'validate_authored_test_reference_inventories', 'validate_authored_semantic_ownership',
+])
+def test_source_omission_precedes_expensive_collection_and_semantic_discovery(
+    monkeypatch, tmp_path, later_check,
+):
+    _normalization_state(monkeypatch)
+    failure = ValueError('source manifest omits governed audit collector')
+
+    def reject(*_args, **_kwargs):
+        raise failure
+
+    monkeypatch.setattr(submit, 'validate_source_distribution', reject)
+    monkeypatch.setattr(submit, later_check,
+                        lambda *_a, **_k: pytest.fail('expensive discovery before source rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease',
+                        lambda *_a: pytest.fail('lease before source rejection'))
+    with pytest.raises(ProspectiveValidationError, match='source manifest omits') as error:
+        submit._normalize_submission(
+            tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+            semantic_intent=None,
+            runner=lambda *_a, **_k: pytest.fail('reconcile before source rejection'),
+        )
+    assert error.value.__cause__ is failure
+
+
 @pytest.mark.parametrize('stacked', [False, True])
 @pytest.mark.parametrize('changed', [False, True])
 def test_exact_pr_changelog_precedes_normalization_allocation(monkeypatch, tmp_path, stacked, changed):

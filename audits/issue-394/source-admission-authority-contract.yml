@@ -20,11 +20,13 @@ required_behavior:
   - Preserve ordinary source-release script imports and CLI grammar through a thin compatibility wrapper.
   - Keep public operation implementations in one canonical owner; move existing bodies without inventing a second checker or declaration registry.
   - Reject forged success and candidate side effects before reconciliation, expensive proof or push.
+  - Run the runtime-owned static source query before pytest reference collection and full semantic discovery, retaining earlier phase, version, deadline, matrix, intent and changelog checks.
 expected_controls:
   - A real Git fixture with missing manifest coverage and a candidate program printing a valid success report must be rejected without executing that program.
   - A valid fixture must pass even when its candidate script would fail or create a marker if executed.
   - Candidate setuptools shadow modules must not execute in the isolated query interpreter.
   - Existing malformed-report and static-declaration controls remain effective.
+  - Missing source coverage must reject before either test collection or semantic discovery starts; valid candidates still execute both checks before the mutation lease.
   - Exact source, template runtime, fresh install and upgrade invoke the same query implementation.
 forbidden_surfaces:
   - In-flight primary successor bytes and submission transaction.
