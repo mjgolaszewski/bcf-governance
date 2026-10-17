@@ -53,5 +53,27 @@
     "scope": "One combined source/binding batch for provider source, authenticated main identity and timing capture repository consistency. No combined installed or provider authority inferred.",
     "stdout_sha256": "04b1ecab839a064171abd6631bcb6290687d71a5c82768d194050663086aaf6c",
     "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "combined_native_checks": {
+    "authority": false,
+    "subject": "2af2ec17",
+    "checks": {
+      "pack": {
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "governance": {
+        "returncode": 0,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exposure": {
+        "returncode": 0,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "limits": "Exact integrated source checks; fresh combined installed and canonical prospective/provider proof remain required."
   }
 }
