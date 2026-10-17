@@ -104,3 +104,9 @@ actual_phase_consumer_scope:
   verification_matrix: [authenticated predecessor success, missing API, missing repository, caller boolean rejection, wrong phase, wrong repository, candidate dependency removal, moved source after readiness, missing or newer failed finalizer, unrelated future prerequisite, ordinary unbound compatibility]
   remaining_integration: Readiness provider-context forwarding, trusted PR and exact-main consumers, ordinary CLI custody, installed runtime parity and full semantic qualification must pass before branch integration.
   local_readiness_owner_limit: local_pr.py is800 lines; finish a separate characterized responsibility extraction before adding forwarding behavior there.
+phase_closure_early_authored_invariant:
+  owner: bcf_governance/tooling/evidence_workitem_lifecycle.py
+  invariant: Full phase closure requires every active workitem to be authored DONE before required evidence can possibly close the phase.
+  admission_order: Reject unfinished authored workitems before any provider query, artifact download, evidence allocation or expensive execution.
+  compatibility: Keep computed verification independent; authored DONE is necessary and never sufficient.
+  controls: tests/test_workitem_phase_consumption.py full phase readiness controls
