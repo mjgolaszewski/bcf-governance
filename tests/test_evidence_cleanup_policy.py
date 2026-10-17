@@ -84,3 +84,24 @@ def test_unproven_process_cleanup_preserves_execution_state_custody(tmp_path, mo
             ['unused'], Path('/unused'), session_id='session', execution_id='run', require_state=True,
         )
     assert retired == []
+
+
+@pytest.mark.parametrize('platform', ['darwin', 'win32'])
+def test_unqualified_group_inventory_host_blocks_before_allocation(tmp_path, monkeypatch, platform):
+    seen = []
+    monkeypatch.setattr(execution.sys, 'platform', platform)
+
+    def unexpected(*args, **kwargs):
+        seen.append('allocation')
+        raise AssertionError('unqualified process-group inventory reached allocation')
+
+    monkeypatch.setattr(execution, 'load_runtime_contract', unexpected)
+    monkeypatch.setattr(execution, 'allocate_execution_state', unexpected)
+    with pytest.raises(execution.EvidenceError, match='Linux'):
+        execution._run_with_execution_state(
+            tmp_path, tmp_path,
+            {'target': 'test', 'invocation': {'cwd': '.'}, 'execution_timeout_seconds': 1,
+             'execution_cleanup_timeout_seconds': 1},
+            ['unused'], Path('/unused'), session_id='session', execution_id='run', require_state=True,
+        )
+    assert seen == []

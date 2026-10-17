@@ -60,6 +60,7 @@
     "residuals": [
       "Process-group containment does not prove escaped group/cgroup isolation or bounded kernel scheduling.",
       "Unresolved host-wide admission/quarantine and complete namespace-removal elapsed bounds still require independent foundation/resource qualification."
-    ]
+    ],
+    "platform_qualification": "First qualified backend requires Linux procfs plus POSIX wait-without-reap. Other hosts block before namespace/process allocation until their own group inventory is independently qualified; killpg(0) alone cannot distinguish an unreaped zombie leader from live work."
   }
 }
