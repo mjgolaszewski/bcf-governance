@@ -7,6 +7,8 @@ import json
 import os
 from pathlib import Path
 
+from .ci_authority_preflight import provider_context_for_checkout
+from .ci_github_api import GitHubAPIError
 from .release_receipts import ReleaseReceiptError, build_release_receipt, emit_release_receipt
 
 
@@ -31,6 +33,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--compact", action="store_true")
     args = parser.parse_args(argv)
     try:
+        provider_api, repository = provider_context_for_checkout(args.repo_root)
         report = derive_truth(
             args.repo_root,
             args.evidence_dir,
@@ -41,8 +44,9 @@ def main(argv: list[str] | None = None) -> None:
             ci_certification_path=args.ci_certification,
             ci_session_manifest_path=args.ci_session_manifest,
             prior_transport_dir=args.prior_evidence_dir,
+            provider_api=provider_api, repository=repository,
         )
-    except TruthfulnessError as exc:
+    except (TruthfulnessError, GitHubAPIError) as exc:
         print(str(exc), file=os.sys.stderr)
         raise SystemExit(1)
     if args.durable_ref:

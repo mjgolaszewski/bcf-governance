@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_cli_context_qualified_integration_pending",
+  "source_base_commit": "ed799ac0",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "initial_results": {
+    "failed": 8,
+    "passed": 1,
+    "fixture_error": "Unbound test used nonexistent P01-P0-01 instead of existing P01-W01; report projection corrected before production change."
+  },
+  "corrected_before_production": {
+    "failed": 7,
+    "passed": 2
+  },
+  "focused_passed": 10,
+  "affected_passed": 232,
+  "architecture_passed": 5,
+  "real_consumer": "Actual CLI -> derive_truth -> lifecycle consumer -> protected population -> normalized provider finalizer archive, with and without candidate predicate. Both independently consume P01.",
+  "authority_boundary": "Environment selects an asserted connection, exact existing GitHub remote decoder binds checkout origin, existing provider owners authenticate all facts. Pure truth API still requires explicit provider input.",
+  "cause_controls": {
+    "forwarding": {
+      "mutant": "forwarding",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "partial": {
+      "mutant": "partial",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "origin": {
+      "mutant": "origin",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "host": {
+      "mutant": "host",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    }
+  },
+  "harness_disposition": "Initial partial/origin mutations redefined a helper without rebinding the already-imported CLI alias; both stayed green. Originals retained; corrected alias binding makes both named controls fail. No production or test guard was weakened.",
+  "raw_output_sha256": {
+    "truth-cli-phase-affected.stdout": "abe6cfdaa342a57fb34039fe8e1f2616e41073081971bb8e066848b7b5b18a7e",
+    "truth-cli-phase-architecture.stdout": "9a4db7c5ff73dad87a7597528874d6be6aa3b162f61c7c400cbf0bc9c57021e9",
+    "truth-cli-phase-cause-forwarding.stdout": "cc68f2c0b7e81f0c2796a715ef7eb8dfe025f3d885ecf7cf6e8d8110d7852896",
+    "truth-cli-phase-cause-host.stdout": "d7ab76f33e8890879bcdfb4c431b63f301f7197d24f8f943695ad30f0617aa39",
+    "truth-cli-phase-cause-origin-corrected.stdout": "8b196e483abdf3abf8675d6feb20a18367f6cf1e86e3c0cf76ddd18d6056953d",
+    "truth-cli-phase-cause-origin.stdout": "21761670493164aed0607cfd6e35d104c0c6111be5024620e22b9f0398c87671",
+    "truth-cli-phase-cause-partial-corrected.stdout": "42b2bdd2700c60b0b6f79e37023ec4a5c8f863dbcafc70bc247da5d65eb5353a",
+    "truth-cli-phase-cause-partial.stdout": "4793109a922b5f1a895563df6963567159f27e07f5c130acf72116f474416a94",
+    "truth-cli-phase-corrected-red.stdout": "349ada26f1ff3fc5ab414ddfc464ed94a801d5437daa2bbcdd42a814ff29ca19",
+    "truth-cli-phase-focused.stdout": "15b7295f1dd38be27eb4e2089fa2ca347533f7bf94a86b76812d616144192f9e",
+    "truth-cli-phase-initial-red.stdout": "44f0b7f0bcacda4a9cfcab4f4ba08395ffc5b54321d13132776606192e0756b9",
+    "truth-cli-phase-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truth-cli-phase-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truth-cli-phase-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "truth-cli-phase-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_authority_preflight.py": "2f4078e311dcb278b2c904f2b84246089140d0ab777957aa010ebef642f925e0",
+    "bcf_governance/tooling/governance_truth_cli.py": "0a4fa12e6565b516f662f557d8f45fe210844fe5e8c4c5f5d4dca19288290891"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_passed": 5,
+    "governance": 0,
+    "pack_parity": 0
+  },
+  "limits": [
+    "Exact-main finalizer prerequisite authentication remains open.",
+    "Early hosted preflight readiness and installed/semantic consumer qualification remain required.",
+    "All82 whole requirements remain open; P33-P35 dormant; performance targets unapproved."
+  ],
+  "acceptance_objects_unchanged": {
+    "requirements": 82,
+    "implementation_slices": 38
+  }
+}
