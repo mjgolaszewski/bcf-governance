@@ -62,7 +62,7 @@ class FakeAutomationAPI:
 
     def repository(self, repository: str) -> dict[str, object]:
         assert repository == REPOSITORY
-        return {"id": REPOSITORY_ID, "default_branch": "main"}
+        return {"full_name": repository, "id": REPOSITORY_ID, "default_branch": "main"}
 
     def reference(self, repository: str, ref: str) -> dict[str, object]:
         assert repository == REPOSITORY

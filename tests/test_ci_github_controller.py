@@ -236,7 +236,7 @@ class FakeAPI:
 
     def repository(self, repository: str) -> dict[str, object]:
         assert repository == "owner/repo"
-        return {"id": 42, "default_branch": "main"}
+        return {"full_name": repository, "id": 42, "default_branch": "main"}
 
     def reference(self, repository: str, ref: str) -> dict[str, object]:
         assert repository == "owner/repo" and ref == "heads/main"

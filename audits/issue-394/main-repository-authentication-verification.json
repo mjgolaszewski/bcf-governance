@@ -1,0 +1,269 @@
+{
+  "authority": false,
+  "contract": "audits/issue-394/main-repository-authentication-contract.json",
+  "red": {
+    "authority": false,
+    "subject": "45a5485d3c67c65ae242933b384ef3ca4dc9ca18",
+    "returncode": 1,
+    "elapsed_ms": 3379,
+    "stdout_sha256": "a54a56c0273d9acf2625137c0baceb0a8f256c6f887ba0d8544fa3e1b0151c5e",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "initial_consumer_characterization": {
+    "authority": false,
+    "returncode": 1,
+    "elapsed_ms": 46555
+  },
+  "affected_source": {
+    "authority": false,
+    "returncode": 0,
+    "elapsed_ms": 43623
+  },
+  "cases": {
+    "genuine_red": 14,
+    "initial_positive": 4,
+    "affected_green": 399
+  },
+  "positive_tests": [
+    "tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[owner/repo-default]",
+    "tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[owner/repo-run]",
+    "tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[Owner/Repo-default]",
+    "tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[Owner/Repo-run]"
+  ],
+  "negative_controls": [
+    {
+      "cause": "wrong-owner-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-owner-default]"
+    },
+    {
+      "cause": "wrong-owner-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-owner-run]"
+    },
+    {
+      "cause": "wrong-name-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-name-default]"
+    },
+    {
+      "cause": "wrong-name-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-name-run]"
+    },
+    {
+      "cause": "blank-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[blank-default]"
+    },
+    {
+      "cause": "blank-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[blank-run]"
+    },
+    {
+      "cause": "missing-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[missing-default]"
+    },
+    {
+      "cause": "missing-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[missing-run]"
+    },
+    {
+      "cause": "null-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[null-default]"
+    },
+    {
+      "cause": "null-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[null-run]"
+    },
+    {
+      "cause": "number-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[number-default]"
+    },
+    {
+      "cause": "number-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[number-run]"
+    },
+    {
+      "cause": "object-default",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-default]"
+    },
+    {
+      "cause": "object-run",
+      "test": "tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-run]"
+    }
+  ],
+  "limitations": [
+    "Source399, native structural, exact bindings, source-absent template18x2 and time-scoped real provider reads pass. Fresh/upgrade installed, full integrated semantic and canonical proof pending.",
+    "Current provider-source recovery fixture metadata must also be completed before combined qualification; its previously pinned proof does not cover this new guard.",
+    "No acceptance or authority from these source observations."
+  ],
+  "native_checks": [
+    {
+      "stage": "pack",
+      "returncode": 0,
+      "elapsed_ms": 22443
+    },
+    {
+      "stage": "lint",
+      "returncode": 0,
+      "elapsed_ms": 10489
+    },
+    {
+      "stage": "typecheck",
+      "returncode": 0,
+      "elapsed_ms": 2742
+    },
+    {
+      "stage": "architecture-module-size",
+      "returncode": 0,
+      "elapsed_ms": 4132
+    },
+    {
+      "stage": "architecture-context-membership",
+      "returncode": 0,
+      "elapsed_ms": 4007
+    },
+    {
+      "stage": "bindings",
+      "returncode": 0,
+      "elapsed_ms": 17284
+    }
+  ],
+  "bare_template_checks": [
+    {
+      "template": "template-repo",
+      "returncode": 0,
+      "stdout_sha256": "ddf11325c855dc60fcfbfb36bb3b68a8166da084013adf3f1da15d520ef59f68",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "template": "bcf_governance/pack/template-repo",
+      "returncode": 0,
+      "stdout_sha256": "ddf11325c855dc60fcfbfb36bb3b68a8166da084013adf3f1da15d520ef59f68",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "real_provider_read": {
+    "authority": false,
+    "operation": "Read-only shared resolver capture and immediate reauthentication, not adopter execution or enduring authority",
+    "source_sha256": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+    "captured_at": "2026-10-17T05:48:01.137111+00:00",
+    "elapsed_ms": 7866,
+    "repositories": {
+      "moranwm/tradeflow": {
+        "repository_id": "1396203132",
+        "default_branch": "main",
+        "checkout_sha": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+        "tree_sha": "c6c6b001c765fbd30f12340620ee9eb9a8ff88aa"
+      },
+      "mjgolaszewski/racecar": {
+        "repository_id": "1357342339",
+        "default_branch": "main",
+        "checkout_sha": "38945f5aa3a90e0782cabb006c8c88a5463fcfbd",
+        "tree_sha": "11b3a874b5c3b18c9a4b8e94a804b68b02790583"
+      },
+      "mjgolaszewski/AgentBus": {
+        "repository_id": "1390225113",
+        "default_branch": "main",
+        "checkout_sha": "8f2dbf5ced0f591bec21d561f3a39308bc3f373b",
+        "tree_sha": "da456291a35b858850be6756dc41c81e02ac8d5c"
+      }
+    },
+    "provider_get_attempts": 18,
+    "live_consuming_reauthentication_required": true
+  },
+  "probe_operator_error": {
+    "authority": false,
+    "result": "failed",
+    "repository": "mjgolaszewski/Tradeflow",
+    "cause": "Operator probe constructed an incorrect locator rather than reading governed inventory; HTTP404. No source identity or qualification was produced.",
+    "correction": "Read required_adopters from existing governance/release-qualification.yml; do not guess."
+  },
+  "source_sha256": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+  "raw_streams": [
+    {
+      "name": "main-repository-bare-bcf_governance-pack-template-repo.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-bare-bcf_governance-pack-template-repo.stdout",
+      "sha256": "ddf11325c855dc60fcfbfb36bb3b68a8166da084013adf3f1da15d520ef59f68"
+    },
+    {
+      "name": "main-repository-bare-template-repo.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-bare-template-repo.stdout",
+      "sha256": "ddf11325c855dc60fcfbfb36bb3b68a8166da084013adf3f1da15d520ef59f68"
+    },
+    {
+      "name": "main-repository-consumer-before.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-consumer-before.stdout",
+      "sha256": "8bbeb1965857ca495553f012580dc21bbb1a0cbc869d1d2a14bfbd8358f59075"
+    },
+    {
+      "name": "main-repository-consumer-green.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-consumer-green.stdout",
+      "sha256": "38562d59431f9cdfc8764c8611477d65707df2c08f25a70e5003766aa8167a65"
+    },
+    {
+      "name": "main-repository-native-architecture-context-membership.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-architecture-context-membership.stdout",
+      "sha256": "eb9b4f1a944ad55440ef124081b12f44ca37e01cf23ff227ce3b533a939260bc"
+    },
+    {
+      "name": "main-repository-native-architecture-module-size.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-architecture-module-size.stdout",
+      "sha256": "aaafccde9096665c69db6c71db21673fa3fc7c0d0de6dde50e19fc1f5687b682"
+    },
+    {
+      "name": "main-repository-native-bindings.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-bindings.stdout",
+      "sha256": "a46e588fce4e006adac9af9f8826fff91750b8d6fafed5cc48dad29560548cf2"
+    },
+    {
+      "name": "main-repository-native-lint.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-lint.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-pack.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-pack.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-typecheck.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-native-typecheck.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-red.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "main-repository-red.stdout",
+      "sha256": "a54a56c0273d9acf2625137c0baceb0a8f256c6f887ba0d8544fa3e1b0151c5e"
+    }
+  ]
+}

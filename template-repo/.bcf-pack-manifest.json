@@ -668,7 +668,7 @@
     },
     "scripts/_bcf_runtime/ci_github_identity.py": {
       "operation": "copy",
-      "sha256": "0801a9ec79d49f53fc867b28fc98b7afdd40cdb20e0e2d3272124ba1e66f0361"
+      "sha256": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7"
     },
     "scripts/_bcf_runtime/ci_github_membership.py": {
       "operation": "copy",
