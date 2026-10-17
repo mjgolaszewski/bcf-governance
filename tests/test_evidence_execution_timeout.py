@@ -139,3 +139,26 @@ print(json.dumps({'returncode':result.returncode,'stderr':result.stderr,
             except ProcessLookupError:
                 pass
         probe.communicate(timeout=2)
+
+
+@pytest.mark.parametrize('disposition', ['ignored', 'custom'])
+def test_nonexclusive_child_wait_owner_blocks_before_command_effect(tmp_path, disposition):
+    marker = tmp_path / 'unexpected-command-effect'
+    code = """import signal,sys
+from pathlib import Path
+from bcf_governance.tooling.evidence_execution import _run,EvidenceError
+signal.signal(signal.SIGCHLD,signal.SIG_IGN if sys.argv[1]=='ignored' else lambda *args:None)
+marker=Path(sys.argv[2])
+try:
+    _run([sys.executable,'-c',"from pathlib import Path;Path(__import__('sys').argv[1]).write_text('effect')",str(marker)],cwd=marker.parent,timeout_seconds=1)
+except EvidenceError as exc:
+    assert 'SIGCHLD' in str(exc)
+else:
+    raise AssertionError('nonexclusive wait owner executed command')
+assert not marker.exists()
+"""
+    result = subprocess.run([sys.executable, '-c', code, disposition, str(marker)],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        capture_output=True, text=True, timeout=5)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not marker.exists()
