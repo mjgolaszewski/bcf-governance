@@ -26,6 +26,7 @@ scope:
   - schemas/release-train-backtrace.schema.json
   - spec/phase0/release-train-backtrace.yml
   - tests/test_ci_graph_composition.py
+  - tests/test_installed_lifecycle_composition.py
   - audits/issue-394/workplan.yml
 contract:
 - Derive complete expected contexts, nodes, required relationships and grounded exclusions from authenticated protected canonical owners, independently of the proposed composition and its test list.
@@ -42,6 +43,7 @@ characterization:
 - Preserve public compiler import paths, exception semantics, reordered canonical bytes, edge identity and every current positive/negative case during extraction.
 - Add genuine omission, false-exclusion, missing-effect, missing-consumer and omitted-edge-plus-test controls against the protected population before production behavior changes.
 qualification:
+- Execute fresh and upgrade installed private compilers with the source package absent, comparing canonical outputs and rejecting omitted relationship-plus-test and false exclusions.
 - Verify complete context/profile/terminal populations, alternate and recovery paths, actual isolated consumer effects and both trace directions; do not substitute a convenient subset.
 - Run affected behavioral and cause-specific controls followed by governance, architecture, semantic, package and installed parity checks.
 - Integrate only after exact source/private/consumer qualification. Canonical submission and reconciliation alone own generated workflows and authority commits.
