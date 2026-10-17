@@ -19,11 +19,13 @@ from .evidence_execution import _selected_python
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_bounded_target_successor,
+    validate_evaluation_authored_ready,
 )
 from .evidence_planning import verification_plan as build_verification_plan
 from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .ci_authority_pins import CIAuthorityPinError
-from .ci_authority_preflight import verify_workflow_authority_preflight
+from .ci_authority_preflight import provider_context_for_checkout, verify_workflow_authority_preflight
+from .ci_github_api import GitHubAPI
 from .ci_self_controller import verify_self_controller_projection
 from .check_governance_exposure import scan_exposures
 from .evidence_sessions import (
@@ -500,6 +502,7 @@ def run_preflight(
     transported_authority: Mapping[str, Any] | None = None,
     controller_state_expectation: str | None = None,
     trace: Callable[[str], None] | None = None,
+    provider_api: GitHubAPI | None = None, repository: str | None = None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
     if mode not in {"release", "pr"}:
@@ -570,6 +573,14 @@ def run_preflight(
                     repo_root, scope.target_id
                 ),
             )
+        except WorkitemContractError as exc:
+            raise PreflightError(str(exc)) from exc
+    if scope.intent is not EvaluationIntent.PR_PROGRESS:
+        try:
+            step("authored-evaluation-ready", lambda: validate_evaluation_authored_ready(
+                repo_root, intent=scope.intent.value, target=scope.target_id,
+                provider_api=provider_api, repository=repository,
+            ))
         except WorkitemContractError as exc:
             raise PreflightError(str(exc)) from exc
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
@@ -726,6 +737,7 @@ def main(argv: list[str] | None = None) -> None:
     effective_mode = args.mode or preflight_mode_for_evaluation(args.evaluation_mode)
     effective_evaluation = args.evaluation_mode or "pr"
     try:
+        provider_api, repository = provider_context_for_checkout(args.repo_root)
         prior_receipts = (
             load_prior_receipts(
                 args.repo_root, args.prior_evidence_dir, args.prior_evidence_digest,
@@ -740,6 +752,7 @@ def main(argv: list[str] | None = None) -> None:
             expected_producers=args.expected_producer,
             evaluation_mode=args.evaluation_mode,
             evaluation_target=args.evaluation_target,
+            provider_api=provider_api, repository=repository,
             producer_identity=(
                 local_producer_identity(args.repo_root, args.local_producer_id)
                 if args.local_producer_id

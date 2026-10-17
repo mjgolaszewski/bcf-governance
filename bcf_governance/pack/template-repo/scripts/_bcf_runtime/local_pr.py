@@ -336,6 +336,7 @@ def _run_prospective_train(
                     python_executable=python_executable,
                     evaluation_mode="pr",
                     transported_authority=controller_authority,
+                    provider_api=provider_api, repository=phase_repository,
                 )
                 preflight_duration = _elapsed_ms(preflight_started)
                 emit("preflight", "complete")
@@ -375,6 +376,7 @@ def _run_prospective_train(
                     evaluation_mode=post_merge_mode,
                     evaluation_target=post_merge_target,
                     transported_authority=controller_authority,
+                    provider_api=provider_api, repository=phase_repository,
                     controller_state_expectation=(
                         "prospective_pending_rotation"
                         if controller_state == "pending_rotation"

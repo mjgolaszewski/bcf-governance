@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_early_readiness_qualified_integration_pending",
+  "source_base_commit": "92c75380",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "initial_results": {
+    "failed": 7,
+    "passed": 2
+  },
+  "partial_implementation": {
+    "failed": 1,
+    "passed": 8,
+    "reason": "Preflight gate implemented before both prospective callers were updated; retained."
+  },
+  "complete_focused_passed": 9,
+  "first_affected_results": {
+    "passed": 309,
+    "failed": 1,
+    "reason": "Allocation-order unit fixture had no lifecycle ledger; added actual DONE target and declared successor without bypassing readiness."
+  },
+  "fixture_correction_disposition": "Retained missing-ledger failure and two expected-trace ordering failures; corrected stage ordering and removed accidental duplicate target-valid expectation. Production guard unchanged.",
+  "final_affected_passed": 310,
+  "architecture_passed": 5,
+  "real_consumer_scope": "Both bounded workitem and full-phase readiness consume existing normalized provider phase bundle before intercepted syntax/discovery. Missing authority and unfinished authored work block without session allocation; unfinished work downloads no phase proof.",
+  "forwarding": [
+    "preflight CLI -> explicit run_preflight API",
+    "prospective PR preflight",
+    "prospective post-merge preflight",
+    "run_preflight -> existing authored evaluation readiness"
+  ],
+  "source_lines": {
+    "preflight.py": 791,
+    "local_pr.py": 795
+  },
+  "cause_controls": {
+    "gate": {
+      "mutant": "gate",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "readiness_context": {
+      "mutant": "readiness_context",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "cli_context": {
+      "mutant": "cli_context",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "local_pr": {
+      "mutant": "local_pr",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "local_post": {
+      "mutant": "local_post",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    }
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_passed": 5,
+    "governance": 0,
+    "pack_parity": 0,
+    "exposure": 0
+  },
+  "raw_output_sha256": {
+    "preflight-phase-affected.stdout": "72d654efae947c747209130b4c58c7da6be5f4b97cd28f9446426f499fac60ac",
+    "preflight-phase-architecture.stdout": "0c73093e4e4e7a3b2d5a6de8b87c06b01ab3fb9720924b97e19a5685df9539fe",
+    "preflight-phase-cause-cli_context.stdout": "ddf3ea07bdcb1b1e54e23bec4416b2a17a0889081cc1c28ffb25962cd97e6cf7",
+    "preflight-phase-cause-gate.stdout": "817b4dc81437655cb6607722c765f8197a6bf65d7126b249770936a5ecd5396e",
+    "preflight-phase-cause-local_post.stdout": "15411014757db5b9272a0678dd8c16e3a5ece60a8d9cd6e5689c68c731d73363",
+    "preflight-phase-cause-local_pr.stdout": "7a8793c62efd6c321eb7d43c688918185e4272e055e441ba17b3dc1a4df4a96e",
+    "preflight-phase-cause-readiness_context.stdout": "1ec9f62105e3d128ab1618049436aadd19f23d8289aedd76eb55d2ac5ea25388",
+    "preflight-phase-complete-forwarding.stdout": "80bea6059281ea79f2d8e0cae258be78b070c31d07a87fb1ff6fe2341c69bbdf",
+    "preflight-phase-corrected-affected.stdout": "8ff183f015ea0439ab0e7f9d02d27437ecd442720c22be905130dd9c2e10095f",
+    "preflight-phase-final-affected.stdout": "07e6310a7ce90f3a683ea4af232c23f3a8b84b5c8a9a285b1ab9dfbb2899a994",
+    "preflight-phase-fixture-correction.stdout": "22e6b2480bb723e3d30db509dd854ba0ce8ac673f138c2d00abd6c25ab092136",
+    "preflight-phase-fixture-trace.stdout": "9223eeb6c4f52cbe2d1960ce8304ce90d68720c74924e827d92f3df2330de7cf",
+    "preflight-phase-focused.stdout": "dce01c432cc87460e85ece694bca1f810ba362ec0e658871828e1a07c23d4fdc",
+    "preflight-phase-initial-red.stdout": "fe65fade63a6de2625591b75e3e39711568fb822e0d6155dc70984e14919446a",
+    "preflight-phase-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preflight-phase-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preflight-phase-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "preflight-phase-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-context-composed-semantic.stdout": "a15e87356224c8fe1e45c72719dd7a4842ca3df878e3307c4e5af663643adc1f",
+    "phase-context-composed-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/preflight.py": "cf9d00bff1c57c2d276fbd5e9b559b808012dfbd95f8a57a37a0aa2caa71810d",
+    "bcf_governance/tooling/local_pr.py": "ffe9e7a64af49cbd12e4fa4e0b680ee20b86a7ab7f401cd6db87ae911f89c84a"
+  },
+  "limits": [
+    "Independent exact-main finalizer phase prerequisite enforcement remains open.",
+    "Installed/runtime parity and actual semantic qualification remain required before integration.",
+    "Full lifecycle/effect populations, all82 whole requirements and performance targets remain open; P33-P35 dormant."
+  ],
+  "composed_semantic_disposition": "Not passed: independently discovered missing trusted_inputs.verify_phase_closure_input authorization consumer. Registry correction is contracted separately; no integration or operation-golden claim.",
+  "acceptance_objects_unchanged": {
+    "requirements": 82,
+    "implementation_slices": 38
+  }
+}

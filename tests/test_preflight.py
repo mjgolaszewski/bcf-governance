@@ -592,6 +592,14 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
     observed_authority: list[object] = []
     repo = tmp_path / "repo"
     repo.mkdir()
+    (repo / "plans").mkdir()
+    (repo / "plans/phase-ledger.yml").write_text(yaml.safe_dump({
+        "active_phase": {"id": "P01", "workitems": "plans/items.yml"},
+    }))
+    (repo / "plans/items.yml").write_text(yaml.safe_dump({"workitems": [
+        {"id": "P01-W01", "status": "DONE", "acceptance": []},
+        {"id": "P01-W02", "status": "TODO", "acceptance": ["requires-workitem-closure:P01-W01"]},
+    ]}))
 
     monkeypatch.setattr(
         preflight, "_git_state", lambda _: {"commit_sha": "a" * 40, "tree_sha": "b" * 40}
@@ -674,6 +682,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "structural-limits",
         "bounded-target",
         "target-valid",
+        "authored-evaluation-ready",
         "syntax",
         "exposure",
         "interpreter",

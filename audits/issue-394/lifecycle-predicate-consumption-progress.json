@@ -33,7 +33,7 @@
     "lifecycle-mandatory-predicates-focused.stdout": "adf05ced3f78f0ef69a6e00398bd51daced8df1829421effe664ceb7c23b41cf",
     "lifecycle-mandatory-predicates-consumers.stdout": "997d8820061382da78010f1957af065734aaf8395ff8116be3db3f0043d4c6a9"
   },
-  "next_action": "Authenticate exact-main finalizer prerequisites and move hosted authored readiness before expensive discovery/allocation; qualify installed/runtime parity and semantic operations, then full protected lifecycle conformance.",
+  "next_action": "Independently authenticate exact-main finalizer phase prerequisites, qualify installed/runtime authority parity and actual semantic operations before integration, then complete full protected lifecycle/effect populations.",
   "limits": [
     "No whole requirement closure or P33 activation.",
     "Actual phase predicates are now consumed; structural governance can pass without granting closure. Submission and installed authority forwarding remain unqualified."
@@ -207,7 +207,8 @@
   },
   "historical_next_actions": [
     "Deconstruct the800-line local prospective owner before forwarding authenticated provider context; qualify ordinary CLI/exact-main and installed consumers. Then complete full protected lifecycle populations and runtime conformance. Missing authority must remain unverified.",
-    "Forward authenticated context through ordinary CLI/exact-main consumers; qualify installed/runtime parity and semantic operations before integration. Then complete protected lifecycle populations and runtime conformance."
+    "Forward authenticated context through ordinary CLI/exact-main consumers; qualify installed/runtime parity and semantic operations before integration. Then complete protected lifecycle populations and runtime conformance.",
+    "Authenticate exact-main finalizer prerequisites and move hosted authored readiness before expensive discovery/allocation; qualify installed/runtime parity and semantic operations, then full protected lifecycle conformance."
   ],
   "local_phase_forwarding": {
     "verification": "audits/issue-394/local-phase-forwarding-verification.json",
@@ -220,6 +221,12 @@
     "verification": "audits/issue-394/truth-cli-phase-context-verification.json",
     "affected_passed": 232,
     "cause_controls": 4,
+    "authority": false
+  },
+  "hosted_preflight_readiness": {
+    "verification": "audits/issue-394/preflight-phase-readiness-verification.json",
+    "affected_passed": 310,
+    "cause_controls": 5,
     "authority": false
   }
 }

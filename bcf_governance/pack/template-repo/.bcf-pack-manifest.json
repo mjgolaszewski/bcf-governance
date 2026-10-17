@@ -1295,7 +1295,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "6b336b3ea08d4c0e0b02b3fc28b9b6d061e75ef2483970d5f26d16c646660caf"
+      "sha256": "ffe9e7a64af49cbd12e4fa4e0b680ee20b86a7ab7f401cd6db87ae911f89c84a"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1335,7 +1335,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "9c0efe0f2122cf2166dcacdc9d53954b70c32a2c8c09feb77379b79371477da2"
+      "sha256": "cf9d00bff1c57c2d276fbd5e9b559b808012dfbd95f8a57a37a0aa2caa71810d"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
