@@ -736,7 +736,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd"
+      "sha256": "41a8676a152c63ac17a6dfdf22e4b1649d361271909cb991d7e134b6fc15bbb2"
     },
     "scripts/_bcf_runtime/ci_graph_composition_costs.py": {
       "operation": "copy",
@@ -745,6 +745,10 @@
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
       "sha256": "9a89f29fdff66c4842cba03691df5bb5c9edfb8d75d49d3b61f1ba2f3b8b80af"
+    },
+    "scripts/_bcf_runtime/ci_graph_composition_populations.py": {
+      "operation": "copy",
+      "sha256": "d781d011e371c991d7e28fe42af4c26673ec9307cdf10e40ec23f483982705ba"
     },
     "scripts/_bcf_runtime/ci_graph_composition_schemas.py": {
       "operation": "copy",
