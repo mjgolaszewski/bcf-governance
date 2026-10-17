@@ -51,7 +51,7 @@
   },
   "residuals": [
     "Isolated source is not integrated into active primary transaction.",
-    "Exact updated committed-source/native checks, native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
+    "Native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
     "All82 whole requirements remain open; no P33 activation, provider certification, performance target or custody closure.",
     "Historical1.3 receipts remain observations; offline verification is not current provider freshness."
   ],
@@ -285,5 +285,56 @@
     },
     "scope": "Missing-token cause-specific control proves assets were read before fix; moved existing API constructor immediately after source policy validation.77 working-source controls pass2.41s. No provider reads are granted by credential presence."
   },
-  "installed_consumer_probe": "Authored under contract4ba828a7 in existing fresh/upgrade mixed fixture; not executed while primary canonical submission owns heavy capacity."
+  "installed_consumer_probe": "Authored under contract4ba828a7 in existing fresh/upgrade mixed fixture; not executed while primary canonical submission owns heavy capacity.",
+  "credential_fixed_source": {
+    "capture_sha256": "74c5f10bb25aaa1d48274ea3b8170fe631f1da20cdf80d2b10fdfdce6764ff8e",
+    "authority": false,
+    "subject": "9e99bbc4d83b5f9ed6a8402edac4599e927f67ac",
+    "tree": "a8fed9e009443b1de83bf5c8c31ea9d3dabbd5f5",
+    "stages": [
+      {
+        "stage": "source-controls",
+        "returncode": 0,
+        "elapsed_ms": 2684,
+        "stdout_sha256": "60a8a7052c0e1a5a8a75be04fbe102c0adabfca69e5033bf8a5e8584f552f5c4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack-check",
+        "returncode": 0,
+        "elapsed_ms": 13892,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 4917,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 1143,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "architecture-module-size",
+        "returncode": 0,
+        "elapsed_ms": 2715,
+        "stdout_sha256": "212504876166ec78d6893ba7cb632e14878599d119e4df02390a6a5464c97ea0",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "architecture-context-membership",
+        "returncode": 0,
+        "elapsed_ms": 2613,
+        "stdout_sha256": "7f20721722339faad833bedbd918bbce72ec5ee8917b82cf8b1a09bf4e47f2f3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "source_cases_passed": 77
+  }
 }

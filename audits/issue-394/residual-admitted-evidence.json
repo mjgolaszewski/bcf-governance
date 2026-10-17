@@ -670,5 +670,16 @@
       "Full historical subrequirement mapping and installed consumer evidence remain required.",
       "Census metadata is not BCF computed verified/closed truth."
     ]
-  }
+  },
+  "successor_observations": [
+    {
+      "id": "394.provider-source-regression",
+      "source_commit": "9e99bbc4d83b5f9ed6a8402edac4599e927f67ac",
+      "disposition": "PARTIAL",
+      "implementation": "Existing source owner now resolves provider population, binds exact resource roots and reauthenticates freshness before output under explicitly versioned1.4 policy; no publication authority.",
+      "execution": "77 scoped source cases, pack parity, lint/type/module/context pass; real provider capture and immediate freshness pass atc217.",
+      "installed_adoption": "Not qualified; installed/current-real-consumer proof and integration remain pending. Historical admitted census identities above remain unchanged.",
+      "evidence": "audits/issue-394/provider-source-recovery-verification.json"
+    }
+  ]
 }
