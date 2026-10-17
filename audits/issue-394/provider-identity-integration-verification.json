@@ -1,0 +1,25 @@
+{
+  "authority": false,
+  "parents": [
+    "7609baf0",
+    "de85768e"
+  ],
+  "integration_commit": "f768fe93",
+  "finding": "Merged ledger conflict resolution lost sections; earliest structural/binding checks rejected it before any submission. Reconstructed workplan and phase log from exact committed parents with bounded line headers;37 slices, all82 requirements and all20 original operator entries retained.",
+  "behavioral_batch": {
+    "passed": 102,
+    "structural_failures": 2
+  },
+  "reconstructed_binding_batch": {
+    "passed": 2
+  },
+  "streams": {
+    "primary-provider-identity-combined.stdout": "4b2c382b9bb654f08c80d582aa65afc07b0031d6f7f66532fe146dd8f8b1f510",
+    "primary-provider-identity-combined.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "primary-provider-identity-reconstructed-bindings.stdout": "0e8a44565e8a7e5887c23088346bcb17144e6bde1cb20b0caf39ff31a641ee4f",
+    "primary-provider-identity-reconstructed-bindings.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Two separate batches; not a full exact successor proof, installed combined proof or acceptance closure."
+  ]
+}
