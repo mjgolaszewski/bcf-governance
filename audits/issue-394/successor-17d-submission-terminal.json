@@ -1,0 +1,41 @@
+{
+  "authority": false,
+  "recorded_at": "2026-10-17T07:20:04.627551+00:00",
+  "source_commit": "3cb3f95e1e7309907ed2352dcb89b1c5a7220868",
+  "normalized_commit": "17d2b4f3890ed4b5999428115c3d8eb13ab8321a",
+  "candidate_tree": "abe040021492da066bcd28ea2b82c8c2736393c7",
+  "native_returncode": 0,
+  "elapsed_ms": 5750108,
+  "ended_at": "2026-10-17T06:31:56.494343+00:00",
+  "streams": {
+    "stdout_sha256": "68626bdbdde42c50f6ef8292bd5787e0abc9ea833f3a4fc44a3ad1326ed8cb6e",
+    "stderr_sha256": "aa6af7f4302860e2dbf3852a78871daa9a3076df809a2a7fc978a1ace00097c9"
+  },
+  "local_test_cases": 3597,
+  "local_failures": 0,
+  "provider": {
+    "pull_request": 429,
+    "merged_at": "2026-10-17T06:58:36Z",
+    "merge_commit": "05e0ddd00b0ff9805c7b2ff5e0f5c68034d721c3",
+    "pr_certification": {
+      "conclusion": "success",
+      "app_id": 15368,
+      "check_run_id": 117336001262
+    },
+    "governance_run": 39010254772,
+    "exact_main_admission": {
+      "run_id": 39011908769,
+      "conclusion": "success"
+    },
+    "controller_rotation": {
+      "run_id": 39012455925,
+      "conclusion": "success"
+    }
+  },
+  "limits": [
+    "Observed native/provider results apply to their exact subjects. This record is not a bcf truth phase or release certificate.",
+    "Later integrated repository guard and other unfinished corrections require their own exact successor canonical proof.",
+    "All82 whole requirements remain open; P32 remains active and P33\u2013P35 dormant; approved performance targets remain null."
+  ],
+  "superseded_workplan_observation": "Historical attempt six and67825aac outcomes remain retained. Current source6307 normalized to c1887f45 and passed provider authority and dual preflights, then test evidence rejected8 installed fixture cases. Fixture correction passes47 installed/ref/pack cases and native checks; exact corrected-source canonical proof remains pending; no whole acceptance advances."
+}
