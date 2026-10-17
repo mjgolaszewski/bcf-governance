@@ -9,7 +9,7 @@
     "bcf_governance/tooling/evidence_execution.py",
     "tests/test_evidence_execution_timeout.py"
   ],
-  "finding": "subprocess.run timeout kills the direct child, but communicate can continue waiting on inherited pipes held by descendants. A command timeout alone does not bound the complete operation or prove cleanup.",
+  "finding": "Actual Linux control: the runner returns typed timeout126 while the grandchild remains live. Direct-child termination is not descendant cleanup or authenticated execution-state retirement.",
   "contract": [
     "Characterize with a real child and grandchild holding captured pipes, under an independent outer watchdog that retires only test-owned process groups.",
     "Preserve ordinary successful command output and typed infrastructure-failure behavior.",
@@ -26,5 +26,15 @@
     "Incomplete cleanup cannot become retired-state or replay authority."
   ],
   "test_watchdog": "The external test watchdog is detector containment only, not a proposed product performance target or cleanup policy.",
-  "integration": "Isolated characterization first. Production and integration require the complete policy/cleanup contract, affected behavioral/controls, native checks and installed parity after actual primary terminal and fresh admission."
+  "integration": "Isolated characterization first. Production and integration require the complete policy/cleanup contract, affected behavioral/controls, native checks and installed parity after actual primary terminal and fresh admission.",
+  "characterization_history": [
+    {
+      "hypothesis": "subprocess.run timeout kills the direct child, but communicate can continue waiting on inherited pipes held by descendants. A command timeout alone does not bound the complete operation or prove cleanup.",
+      "disposition": "The pipe-wait prediction is not established on this Linux runtime. Actual behavior returns126 and leaves a live descendant."
+    },
+    {
+      "subject": "1c939d9afb8ea853d759649c86eca5e103c27f0a",
+      "result": "Two ordinary/direct-timeout controls pass; one real-descendant retirement control fails. The outer watchdog does not expire. Fixture-owned groups are killed in finally."
+    }
+  ]
 }
