@@ -65,7 +65,8 @@ def qualification_provider(monkeypatch):
             return {'ref': 'refs/heads/' + branch, 'object': {'type': 'commit', 'sha': sha}}
         if '/git/commits/' in path:
             return {'sha': sha, 'tree': {'sha': 'e' * 40 if mutation == 'tree' else str(index) * 40}}
-        return {'id': index + 1000 if mutation == 'id' else index, 'default_branch': branch}
+        return {'id': index + 1000 if mutation == 'id' else index,
+                'default_branch': branch, 'full_name': repository}
 
     monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
     monkeypatch.setattr(GitHubAPI, '_request', request)
@@ -569,7 +570,7 @@ def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, 
             return {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': sha}}
         if '/git/commits/' in path:
             return {'sha': sha, 'tree': {'sha': sha}}
-        return {'id': number, 'default_branch': 'main'}
+        return {'id': number, 'default_branch': 'main', 'full_name': repository}
 
     def allocation(**_kwargs):
         effects.append('allocation')

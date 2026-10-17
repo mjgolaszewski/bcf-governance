@@ -90,7 +90,11 @@ def _provider(monkeypatch):
                     'object': {'type': 'commit', 'sha': state['commit']}}
         if '/git/commits/' in path:
             return {'sha': state['commit'], 'tree': {'sha': state['tree']}}
-        return {'id': state['id'], 'default_branch': state['branch']}
+        repository = '/'.join(path.split('/')[2:4])
+        identity = state['id']
+        if type(identity) is int and repository.casefold().endswith('/first'):
+            identity += 1
+        return {'id': identity, 'default_branch': state['branch'], 'full_name': repository}
 
     monkeypatch.setattr(GitHubAPI, '_request', request)
     return GitHubAPI(token='test-only'), state, calls
@@ -101,7 +105,8 @@ def test_provider_source_population_is_complete_ordered_and_authentic(monkeypatc
     selected = sources.resolve_adopter_sources(api, _provider_contract())
     assert [item.repository for item in selected] == ['owner/second', 'owner/first']
     assert [item.profile for item in selected] == ['standard', 'lite']
-    assert all(item.repository_id == '123' and item.default_branch == 'default'
+    assert [item.repository_id for item in selected] == ['123', '124']
+    assert all(item.default_branch == 'default'
                and item.commit_sha == 'a' * 40 and item.tree_sha == 'b' * 40
                for item in selected)
     assert len(calls) == 6
@@ -177,4 +182,44 @@ def test_source_policy_migration_block_precedes_provider_reads(monkeypatch, corr
         contract['qualification']['source_freshness'] = 'exact_at_observation'
     with pytest.raises(AdopterSourceError, match='source policy'):
         sources.resolve_adopter_sources(api, contract)
+    assert calls == []
+
+
+def test_source_capture_rejects_two_names_with_one_physical_repository(monkeypatch):
+    api, _state, calls = _provider(monkeypatch)
+    original = GitHubAPI._request
+
+    def request(self, method, path, **kwargs):
+        reply = original(self, method, path, **kwargs)
+        if '/git/' not in path:
+            reply['id'] = 123
+        return reply
+
+    monkeypatch.setattr(GitHubAPI, '_request', request)
+    with pytest.raises(AdopterSourceError, match='inventory'):
+        sources.resolve_adopter_sources(api, _provider_contract())
+    assert len(calls) == 6
+
+
+def test_source_capture_rejects_case_equivalent_repository_names_before_reads(monkeypatch):
+    api, _state, calls = _provider(monkeypatch)
+    contract = _provider_contract()
+    contract['required_adopters'][1]['repository'] = 'OWNER/SECOND'
+    with pytest.raises(AdopterSourceError, match='inventory'):
+        sources.resolve_adopter_sources(api, contract)
+    assert calls == []
+
+
+@pytest.mark.parametrize('cause', ['physical-id', 'case-alias'])
+def test_frozen_source_inventory_rejects_ambiguous_members_before_reads(monkeypatch, cause):
+    from dataclasses import replace
+    api, _state, calls = _provider(monkeypatch)
+    first, second = sources.resolve_adopter_sources(api, _provider_contract())
+    if cause == 'physical-id':
+        second = replace(second, repository_id=first.repository_id)
+    else:
+        second = replace(second, repository=first.repository.upper())
+    calls.clear()
+    with pytest.raises(AdopterSourceError, match='inventory'):
+        sources.authenticate_adopter_sources(api, (first, second))
     assert calls == []

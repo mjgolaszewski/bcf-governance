@@ -423,7 +423,7 @@ def request(self, method, path, **kwargs):
         return {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': state['commit']}}
     if '/git/commits/' in path:
         return {'sha': state['commit'], 'tree': {'sha': 'b' * 40}}
-    return {'id': 123, 'default_branch': 'main'}
+    return {'id': 123, 'default_branch': 'main', 'full_name': 'owner/consumer'}
 GitHubAPI._request = request
 api = GitHubAPI(token='fixture-only')
 contract = {'schema_version': '1.4', 'required_adopters': [
