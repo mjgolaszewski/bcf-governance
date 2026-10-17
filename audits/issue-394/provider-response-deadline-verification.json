@@ -83,6 +83,11 @@
       "topic": "Dynamic byte limit admission and JSON cap",
       "disposition": "Five entry points reject invalid limits before allocation with193 affected source passes; general JSON byte cap remains open.",
       "evidence": "audits/issue-394/provider-byte-limit-verification.json"
+    },
+    {
+      "topic": "Reader HTTP/TLS interpreter coverage",
+      "disposition": "Copied runtime passed all four declared Python minors; complete installed distribution/profile qualification remains open.",
+      "evidence": "audits/issue-394/provider-response-supported-profile-verification.json"
     }
   ]
 }

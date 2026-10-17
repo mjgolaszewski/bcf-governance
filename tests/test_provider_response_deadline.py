@@ -4,6 +4,8 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from io import BytesIO
 import threading
 import time
+import ssl
+import subprocess
 from urllib.request import urlopen
 
 import pytest
@@ -18,7 +20,7 @@ def _deadline(response, timeout):
 
 
 @contextmanager
-def _server(mode, accepted=None):
+def _server(mode, accepted=None, tls_context=None):
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_args):
             pass
@@ -47,14 +49,17 @@ def _server(mode, accepted=None):
                     self.wfile.write(bytes([byte]))
                     self.wfile.flush()
                     time.sleep(0.01)
-            except (BrokenPipeError, ConnectionResetError):
+            except OSError:
                 pass
 
     server = HTTPServer(("127.0.0.1", 0), Handler)
+    if tls_context is not None:
+        server.socket = tls_context.wrap_socket(server.socket, server_side=True)
     worker = threading.Thread(target=server.serve_forever, daemon=True)
     worker.start()
     try:
-        yield f"http://127.0.0.1:{server.server_port}/"
+        scheme = 'https' if tls_context is not None else 'http'
+        yield f"{scheme}://127.0.0.1:{server.server_port}/"
     finally:
         server.shutdown()
         server.server_close()
@@ -75,6 +80,43 @@ def test_real_drip_and_internal_framing_share_one_elapsed_budget(mode, reader):
                     while bounded.read1(1):
                         pass
         assert time.monotonic() - start < 0.30
+
+
+@pytest.fixture(scope='module')
+def verified_tls_contexts(tmp_path_factory):
+    root = tmp_path_factory.mktemp('response-tls')
+    certificate, key = root / 'cert.pem', root / 'key.pem'
+    subprocess.run(
+        ['openssl', 'req', '-x509', '-newkey', 'rsa:2048', '-nodes', '-days', '1',
+         '-subj', '/CN=localhost', '-addext', 'subjectAltName=IP:127.0.0.1',
+         '-keyout', str(key), '-out', str(certificate)],
+        check=True, capture_output=True,
+    )
+    server = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    server.load_cert_chain(certificate, key)
+    client = ssl.create_default_context(cafile=str(certificate))
+    yield server, client
+    key.unlink()
+    certificate.unlink()
+
+
+@pytest.mark.parametrize('mode', ['body', 'chunk_header', 'chunk_trailer'])
+@pytest.mark.parametrize('reader', ['read', 'read1'])
+def test_verified_tls_framing_uses_the_same_absolute_body_budget(
+    mode, reader, verified_tls_contexts,
+):
+    server, client = verified_tls_contexts
+    with _server(mode, tls_context=server) as url, urlopen(url, context=client, timeout=1) as response:
+        assert type(response.fp.raw._sock) is ssl.SSLSocket
+        started = time.monotonic()
+        with pytest.raises(TimeoutError):
+            with _deadline(response, 0.08) as bounded:
+                if reader == 'read':
+                    bounded.read()
+                else:
+                    while bounded.read1(1):
+                        pass
+        assert time.monotonic() - started < 0.30
 
 
 @pytest.mark.parametrize("invalid", [True, False, 0, -1, float("nan"), float("inf"), "30", None])

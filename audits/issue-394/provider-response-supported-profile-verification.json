@@ -1,0 +1,262 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Copied template runtime HTTP/TLS profiles only; no installer, upgrade, full lifecycle or remote-provider qualification",
+  "source_commit": "4a4a3ab0eb577f91da15f1c26d82d3a900b8b014",
+  "public_contract_sha256": "b958aba90e9099f60957f878b1c00e9f2c9dfb5daacabd2ea819601af37c72cf",
+  "platform": "linux_x86_64",
+  "reader_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+  "probe_sha256": "e6f106334fe7a4de25699222ebf6e107143125815c54d988a7d694cfb3fe7ace",
+  "profiles": [
+    {
+      "python_minor": "3.11",
+      "python_version": "3.11.2",
+      "executable_sha256": "6d972cf21be56fe3c947ab6ba257ff8d08c342dd2714442986791bd9a6dfabfe",
+      "stages": [
+        {
+          "stage": "body",
+          "returncode": 0,
+          "stdout_sha256": "e1bb30e6f2dd495289176b1fdca479f67862bebe288c5d694d3006da81539420",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "expired": [
+              "body",
+              "chunk_header",
+              "chunk_trailer"
+            ],
+            "invalid_byte_limits_rejected": 9,
+            "invalid_timeouts_rejected": 8,
+            "source_package_absent": true
+          }
+        },
+        {
+          "stage": "tls",
+          "returncode": 0,
+          "stdout_sha256": "09b1c3d1fbb8b1851935f9ae48e6aced0bfa3862b262fcc47071d45aafa0d365",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "authority": false,
+            "execution_qualified": false,
+            "scope": "Actual local TLS body and chunk framing on this interpreter only",
+            "source_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+            "tls_authentication": "Client verified ephemeral local CA and IP SAN; no verification bypass",
+            "cases": [
+              {
+                "mode": "body",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08121365700026217,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_header",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08031732400013425,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_trailer",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08120268599850533,
+                "outcome": "TimeoutError"
+              }
+            ],
+            "cleanup": "All workers joined and sockets closed; ephemeral key/certificate directory removed",
+            "limits": "Not installed-runtime, multi-interpreter, remote-provider or whole-pipeline qualification"
+          }
+        }
+      ]
+    },
+    {
+      "python_minor": "3.12",
+      "python_version": "3.12.11",
+      "executable_sha256": "837a48d7afd08447fb43e28b282026fadb59368620072e57e01f66d12977e5ce",
+      "stages": [
+        {
+          "stage": "body",
+          "returncode": 0,
+          "stdout_sha256": "e1bb30e6f2dd495289176b1fdca479f67862bebe288c5d694d3006da81539420",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "expired": [
+              "body",
+              "chunk_header",
+              "chunk_trailer"
+            ],
+            "invalid_byte_limits_rejected": 9,
+            "invalid_timeouts_rejected": 8,
+            "source_package_absent": true
+          }
+        },
+        {
+          "stage": "tls",
+          "returncode": 0,
+          "stdout_sha256": "9ba2d1394ab71deb6a06b29d04487c9df240c84fe3f407033893db09472d8caa",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "authority": false,
+            "execution_qualified": false,
+            "scope": "Actual local TLS body and chunk framing on this interpreter only",
+            "source_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+            "tls_authentication": "Client verified ephemeral local CA and IP SAN; no verification bypass",
+            "cases": [
+              {
+                "mode": "body",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08082154899966554,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_header",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08038792099978309,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_trailer",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08122493500013661,
+                "outcome": "TimeoutError"
+              }
+            ],
+            "cleanup": "All workers joined and sockets closed; ephemeral key/certificate directory removed",
+            "limits": "Not installed-runtime, multi-interpreter, remote-provider or whole-pipeline qualification"
+          }
+        }
+      ]
+    },
+    {
+      "python_minor": "3.13",
+      "python_version": "3.13.13",
+      "executable_sha256": "74fceb0fdd29c31cf066ac8d92465975ea4ac8592308d7c888e26a70092d8eeb",
+      "stages": [
+        {
+          "stage": "body",
+          "returncode": 0,
+          "stdout_sha256": "e1bb30e6f2dd495289176b1fdca479f67862bebe288c5d694d3006da81539420",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "expired": [
+              "body",
+              "chunk_header",
+              "chunk_trailer"
+            ],
+            "invalid_byte_limits_rejected": 9,
+            "invalid_timeouts_rejected": 8,
+            "source_package_absent": true
+          }
+        },
+        {
+          "stage": "tls",
+          "returncode": 0,
+          "stdout_sha256": "370d9005addb517ba4391eade59cb3b2180ef8be4e28ca225ce9ecbdc61395e1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "authority": false,
+            "execution_qualified": false,
+            "scope": "Actual local TLS body and chunk framing on this interpreter only",
+            "source_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+            "tls_authentication": "Client verified ephemeral local CA and IP SAN; no verification bypass",
+            "cases": [
+              {
+                "mode": "body",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.0807511519997206,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_header",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08228530199994566,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_trailer",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08075492100033443,
+                "outcome": "TimeoutError"
+              }
+            ],
+            "cleanup": "All workers joined and sockets closed; ephemeral key/certificate directory removed",
+            "limits": "Not installed-runtime, multi-interpreter, remote-provider or whole-pipeline qualification"
+          }
+        }
+      ]
+    },
+    {
+      "python_minor": "3.14",
+      "python_version": "3.14.5",
+      "executable_sha256": "a1512f9a07029c4a9b02a1bb63bbd156d36b0dcb26f49cb7f5ee175f19b222da",
+      "stages": [
+        {
+          "stage": "body",
+          "returncode": 0,
+          "stdout_sha256": "e1bb30e6f2dd495289176b1fdca479f67862bebe288c5d694d3006da81539420",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "expired": [
+              "body",
+              "chunk_header",
+              "chunk_trailer"
+            ],
+            "invalid_byte_limits_rejected": 9,
+            "invalid_timeouts_rejected": 8,
+            "source_package_absent": true
+          }
+        },
+        {
+          "stage": "tls",
+          "returncode": 0,
+          "stdout_sha256": "acb04963f0acfc167c4870a157a9e5d6fc95c4744e2a1c1a75fec3968c0f62ef",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "observation": {
+            "authority": false,
+            "execution_qualified": false,
+            "scope": "Actual local TLS body and chunk framing on this interpreter only",
+            "source_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+            "tls_authentication": "Client verified ephemeral local CA and IP SAN; no verification bypass",
+            "cases": [
+              {
+                "mode": "body",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08088169199982076,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_header",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08268444200075464,
+                "outcome": "TimeoutError"
+              },
+              {
+                "mode": "chunk_trailer",
+                "timeout_seconds": 0.08,
+                "elapsed_seconds": 0.08024438899883535,
+                "outcome": "TimeoutError"
+              }
+            ],
+            "cleanup": "All workers joined and sockets closed; ephemeral key/certificate directory removed",
+            "limits": "Not installed-runtime, multi-interpreter, remote-provider or whole-pipeline qualification"
+          }
+        }
+      ]
+    }
+  ],
+  "regular_tls_regression": {
+    "passed": 73,
+    "disabled_guard_failed": 6,
+    "source_sha256": "d6a7ffdd28d21e4a2bd938219d64e2bbf66a16e10533581ac290cb82605a255d",
+    "output_sha256": "6160f3c7c4a13629d54de00e89c88dc98546ec0c298c7c9ba308e944aa1f37f9",
+    "disabled_guard_output_sha256": "d38fed0b9866fe9cd6571ee25dd9b8d2a0d32f54f9895f2f172096d391171da8"
+  },
+  "limits": [
+    "Copied-runtime profiles do not qualify installer/upgrade or complete distributions.",
+    "No remote-provider or whole-pipeline deadline bound is established.",
+    "Full lifecycle populations, semantic and canonical qualification remain open."
+  ],
+  "local_checks": {
+    "lint_returncode": 0,
+    "typecheck_returncode": 0,
+    "governance_returncode": 0,
+    "governance_stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  }
+}
