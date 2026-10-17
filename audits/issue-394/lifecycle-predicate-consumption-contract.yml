@@ -172,3 +172,10 @@ phase_input_semantic_consumers:
   correction: Declare exact authorization consumers under existing certification/provider-artifact families only when source discovery proves they consume those canonical values
   invariants: [existing factories remain sole constructors, no new family or registry, no pure-delegate promotion, no narrow suppression, no analyzer weakening, exact operation population changes must be separately explained rather than overwriting its golden]
   controls: Discover actual verifier source independently; removing each added consumer declaration must restore its corresponding semantic violation
+phase_input_temporary_materialization_effects:
+  owner: governance/application-operations.yml
+  source_owner: bcf_governance/tooling/trusted_inputs.py::verify_phase_closure_input
+  discovery: Composed operation scan independently finds path.parent.mkdir and path.write_bytes while materializing bounded provider bytes in an exactly scoped TemporaryDirectory for the existing verifier
+  classification: Declare only these two exact leaf calls as non-authoritative temporary output effects for actual reachable public operations; do not hide the whole verification function behind an effect port
+  invariants: [verification and provider reads remain traversable, no new authority or mutation factory, no broader path/write wildcard, no golden replacement without exact population delta, canonical reconciliation alone owns generated semantic locks]
+  controls: Independently discover the real helper and remove each exact leaf declaration; undeclared-write rejection must return. Then run the complete actual operation population and compare every changed operation against the retained baseline.
