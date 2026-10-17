@@ -209,3 +209,9 @@ independent_exact_main_readiness:
   evidence: Existing finalizer/certification/session/bundle owners retain authority; no new receipt family or caller verified boolean
   controls: Exact phase/workitem positive paths; unfinished phase/workitem/hotfix; missing or forged prerequisite; wrong target; historical source vs current default; omitted/duplicate/wrong-blob/unsafe lifecycle inventory; no partial certificate after rejection; noncertifying PR compatibility
   limits: Installed runtime parity, full lifecycle/effect conformance and whole Issue394 acceptance remain independently required.
+exact_main_regular_lifecycle_blobs:
+  owner: bcf_governance/tooling/ci_github_api.py
+  finding: Existing complete_tree projects only path/blob OID and loses the provider Git file mode needed to distinguish regular lifecycle YAML from symlink blobs
+  correction: Share one exact provider tree decoder between the unchanged two-column query and an additive mode-preserving query; finalizer reads lifecycle data only from regular100644/100755 blobs
+  invariants: [legacy complete_tree shape unchanged, full population retained, unrelated symlinks do not become lifecycle inputs, unknown modes reject in mode-preserving query, no second parser/graph/registry, no CLI grammar change]
+  controls: Legacy exact inventory compatibility; actual Git regular/symlink modes; malformed/missing modes; finalizer rejection of a correctly hashed nonregular lifecycle blob
