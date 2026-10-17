@@ -676,7 +676,7 @@
     },
     "scripts/_bcf_runtime/ci_github_pr.py": {
       "operation": "copy",
-      "sha256": "fd26bc38705f8432c7da7210572c1ee2249922e7d9919c4271093a816dcef634"
+      "sha256": "ca8d592e5b515faa91723b5f2c575fca88e78088890f5b888b9e490dbf7f9a48"
     },
     "scripts/_bcf_runtime/ci_github_pr_mutations.py": {
       "operation": "copy",
@@ -1032,7 +1032,7 @@
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
-      "sha256": "20e11c72489866ff383e59cd8f518648faf4df2045c1e67695d26de42f9e0f03"
+      "sha256": "804162376afc7c881b98bcdb2d3758fe451cb83ff372c5d95d4ea4496cfa5218"
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
@@ -1144,7 +1144,7 @@
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
-      "sha256": "6f7833a759e500d19f5886bae978e130d68b2030d416b78e5de8af4352a4d698"
+      "sha256": "6b9f8ba1de2add0cdb75aded87bfda1324fbc48943f5c1bff7b602c91d189080"
     },
     "scripts/_bcf_runtime/governance_truth_cli.py": {
       "operation": "copy",

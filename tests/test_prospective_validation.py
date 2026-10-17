@@ -1145,7 +1145,11 @@ def test_phase_closure_readiness_reads_exact_authored_hotfix_state(
     (tmp_path / "plans").mkdir()
     (tmp_path / "phases").mkdir()
     (tmp_path / "plans/phase-ledger.yml").write_text(
-        "active_phase: {id: P28, log: phases/phase-28-log.yml}\n",
+        "active_phase: {id: P28, log: phases/phase-28-log.yml, workitems: plans/phase-28-workitems.yml}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "plans/phase-28-workitems.yml").write_text(
+        "workitems: [{id: P28-W01, status: DONE, acceptance_evidence: [test]}]\n",
         encoding="utf-8",
     )
     (tmp_path / "phases/phase-28-log.yml").write_text(

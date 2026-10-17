@@ -1,7 +1,7 @@
 {
   "authority": false,
-  "status": "implementation_in_progress_unmergeable_until_phase_proof_consumer",
-  "scope": "Mandatory predicate entry boundary, not full lifecycle conformance",
+  "status": "implementation_in_progress_unmergeable_until_context_forwarding_and_qualification",
+  "scope": "Mandatory predicate syntax plus authenticated readiness/computed truth and trusted PR consumer; full lifecycle conformance remains open",
   "initial_control_results": {
     "failed": 33,
     "passed": 4
@@ -12,62 +12,43 @@
   "current_ledger_corpus": {
     "files": 10,
     "workitems": 42,
-    "unsupported_mandatory_phase_rows": [
-      {
-        "path": "plans/phase-33-workitems.yml",
-        "workitem": "P33-P0-01",
-        "predicates": [
-          "requires-phase-closure:P32"
-        ],
-        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P32'"
-      },
-      {
-        "path": "plans/phase-35-workitems.yml",
-        "workitem": "P35-P0-01",
-        "predicates": [
-          "requires-phase-closure:P34"
-        ],
-        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P34'"
-      },
-      {
-        "path": "plans/phase-32-workitems.yml",
-        "workitem": "P32-P0-01",
-        "predicates": [
-          "requires-phase-closure:P31"
-        ],
-        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P31'"
-      },
-      {
-        "path": "plans/phase-34-workitems.yml",
-        "workitem": "P34-P0-01",
-        "predicates": [
-          "requires-phase-closure:P33"
-        ],
-        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P33'"
-      }
-    ]
+    "unsupported_mandatory_phase_rows": [],
+    "selection": "All tracked numeric phase workitem ledgers including template and packaged copies; placeholders excluded",
+    "paths": [
+      "bcf_governance/pack/template-repo/plans/phase-01-workitems.yml",
+      "plans/phase-24-workitems.yml",
+      "plans/phase-26-workitems.yml",
+      "plans/phase-27-workitems.yml",
+      "plans/phase-29-workitems.yml",
+      "plans/phase-32-workitems.yml",
+      "plans/phase-33-workitems.yml",
+      "plans/phase-34-workitems.yml",
+      "plans/phase-35-workitems.yml",
+      "template-repo/plans/phase-01-workitems.yml"
+    ],
+    "source_disposition": "Pure syntax is accepted; authenticated consuming truth is independently required"
   },
   "raw_output_sha256": {
     "lifecycle-mandatory-predicates-initial-red.stdout": "3e77c439a585f9fbeafcdc2a118196f3ada9fb2f09fa3fbf193ecdb2df83f5a5",
     "lifecycle-mandatory-predicates-focused.stdout": "adf05ced3f78f0ef69a6e00398bd51daced8df1829421effe664ceb7c23b41cf",
     "lifecycle-mandatory-predicates-consumers.stdout": "997d8820061382da78010f1957af065734aaf8395ff8116be3db3f0043d4c6a9"
   },
-  "next_action": "Consume requires-phase-closure through existing certified-proposition and verified prior-evidence owners; require authentic phase/subject/custody proof. Do not accept authored history labels or ignore the predicate to restore green checks. Then implement full protected lifecycle populations and runtime conformance.",
+  "next_action": "Deconstruct the800-line local prospective owner before forwarding authenticated provider context; qualify ordinary CLI/exact-main and installed consumers. Then complete full protected lifecycle populations and runtime conformance. Missing authority must remain unverified.",
   "limits": [
     "No whole requirement closure or P33 activation.",
-    "Current source ledger corpus intentionally blocks at the missing phase-proof consumer; this branch must not be integrated as complete."
+    "Actual phase predicates are now consumed; structural governance can pass without granting closure. Submission and installed authority forwarding remain unqualified."
   ],
   "actual_project_gate": {
-    "returncode": 1,
-    "reason": "Declared P31 phase prerequisite has no authenticated phase-proof consumer yet; typed block retained.",
-    "raw_output_sha256": "196676abd2902c29a541d129b813c539471aace6ff2e0dfb9c51145943d7a79b"
+    "returncode": 0,
+    "reason": "Exact phase syntax now has an authenticated consuming implementation; structural validation grants no closure",
+    "raw_output_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
   },
   "source_sha256": "20e11c72489866ff383e59cd8f518648faf4df2045c1e67695d26de42f9e0f03",
   "phase31_cold_verification": {
     "observation": "audits/issue-394/phase31-finalizer-cold-verification.json",
     "provider_authority_matches_bundle": true,
     "loaded_sdk_schema_recomputation": "certified",
-    "product_consumer": "not_implemented",
+    "product_consumer": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source",
     "whole_requirement_status_advanced": false
   },
   "phase_input_acquisition": {
@@ -75,7 +56,7 @@
     "implemented": true,
     "live_provider_result": "certified",
     "canonical_policy_derivation": "implemented_by_protected_phase_population",
-    "actual_phase_predicate_consumer": "not_implemented"
+    "actual_phase_predicate_consumer": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
   },
   "protected_phase_population": {
     "verification": "audits/issue-394/phase-population-verification.json",
@@ -84,13 +65,137 @@
     "live_required_phases": [
       "P31"
     ],
-    "actual_phase_predicate_consumer": "not_implemented"
+    "actual_phase_predicate_consumer": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
   },
   "truth_owner_deconstruction": {
     "verification": "audits/issue-394/truth-workflow-extraction-verification.json",
     "source_lines": 643,
     "workflow_owner_lines": 224,
     "pure_ast_preservation": true,
-    "actual_phase_predicate_consumer": "not_implemented"
+    "actual_phase_predicate_consumer": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
+  },
+  "historical_dispositions": [
+    {
+      "path": "status",
+      "previous": "implementation_in_progress_unmergeable_until_phase_proof_consumer",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "implementation_in_progress_unmergeable_until_context_forwarding_and_qualification"
+    },
+    {
+      "path": "scope",
+      "previous": "Mandatory predicate entry boundary, not full lifecycle conformance",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "Mandatory predicate syntax plus authenticated readiness/computed truth and trusted PR consumer; full lifecycle conformance remains open"
+    },
+    {
+      "path": "next_action",
+      "previous": "Consume requires-phase-closure through existing certified-proposition and verified prior-evidence owners; require authentic phase/subject/custody proof. Do not accept authored history labels or ignore the predicate to restore green checks. Then implement full protected lifecycle populations and runtime conformance.",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "Deconstruct the800-line local prospective owner before forwarding authenticated provider context; qualify ordinary CLI/exact-main and installed consumers. Then complete full protected lifecycle populations and runtime conformance. Missing authority must remain unverified."
+    },
+    {
+      "path": "limits",
+      "previous": [
+        "No whole requirement closure or P33 activation.",
+        "Current source ledger corpus intentionally blocks at the missing phase-proof consumer; this branch must not be integrated as complete."
+      ],
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": [
+        "No whole requirement closure or P33 activation.",
+        "Actual phase predicates are now consumed; structural governance can pass without granting closure. Submission and installed authority forwarding remain unqualified."
+      ]
+    },
+    {
+      "path": "phase31_cold_verification.product_consumer",
+      "previous": "not_implemented",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
+    },
+    {
+      "path": "phase_input_acquisition.actual_phase_predicate_consumer",
+      "previous": "not_implemented",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
+    },
+    {
+      "path": "protected_phase_population.actual_phase_predicate_consumer",
+      "previous": "not_implemented",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
+    },
+    {
+      "path": "truth_owner_deconstruction.actual_phase_predicate_consumer",
+      "previous": "not_implemented",
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": "implemented_in_authored_readiness_computed_truth_and_trusted_pr_source"
+    },
+    {
+      "path": "current_ledger_corpus",
+      "previous": {
+        "files": 10,
+        "workitems": 42,
+        "unsupported_mandatory_phase_rows": [
+          {
+            "path": "plans/phase-33-workitems.yml",
+            "workitem": "P33-P0-01",
+            "predicates": [
+              "requires-phase-closure:P32"
+            ],
+            "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P32'"
+          },
+          {
+            "path": "plans/phase-35-workitems.yml",
+            "workitem": "P35-P0-01",
+            "predicates": [
+              "requires-phase-closure:P34"
+            ],
+            "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P34'"
+          },
+          {
+            "path": "plans/phase-32-workitems.yml",
+            "workitem": "P32-P0-01",
+            "predicates": [
+              "requires-phase-closure:P31"
+            ],
+            "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P31'"
+          },
+          {
+            "path": "plans/phase-34-workitems.yml",
+            "workitem": "P34-P0-01",
+            "predicates": [
+              "requires-phase-closure:P33"
+            ],
+            "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P33'"
+          }
+        ]
+      },
+      "disposition": "Superseded by actual consuming implementation; previous evidence remains historical at its recorded source",
+      "current": {
+        "files": 8,
+        "workitems": 40,
+        "unsupported_mandatory_phase_rows": [],
+        "source_disposition": "Current pure decoder census; phase verification is a separate consuming query"
+      }
+    },
+    {
+      "path": "actual_project_gate",
+      "previous": {
+        "returncode": 1,
+        "reason": "Declared P31 phase prerequisite has no authenticated phase-proof consumer yet; typed block retained.",
+        "raw_output_sha256": "196676abd2902c29a541d129b813c539471aace6ff2e0dfb9c51145943d7a79b"
+      },
+      "disposition": "Earlier missing-consumer failure retained at its exact source; current structural validation passes with actual consumption",
+      "current": {
+        "returncode": 0,
+        "reason": "Exact phase syntax now has an authenticated consuming implementation; structural validation grants no closure",
+        "raw_output_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+      }
+    }
+  ],
+  "actual_phase_consumer": {
+    "verification": "audits/issue-394/phase-consumer-verification.json",
+    "source_implemented": true,
+    "current_governance_returncode": 0,
+    "context_forwarding_and_installed_qualification": "pending"
   }
 }

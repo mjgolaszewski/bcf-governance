@@ -100,6 +100,7 @@ workitems:
     evidence:
     - audits/issue-394/admission-implementation-completion.json
     - audits/issue-394/independent-admission-review.json
+    - audits/issue-394/successor-e2-provider-merge-observation.json
   foundation.residuals:
     summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
     status: IN_PROGRESS
@@ -231,6 +232,7 @@ workitems:
     - audits/issue-394/phase-input-acquisition-verification.json
     - audits/issue-394/phase-population-verification.json
     - audits/issue-394/truth-workflow-extraction-verification.json
+    - audits/issue-394/phase-consumer-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

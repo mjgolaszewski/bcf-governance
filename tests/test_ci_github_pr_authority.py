@@ -258,6 +258,8 @@ def test_protected_evaluator_recomputes_truth_instead_of_accepting_candidate_pas
     called: list[Path] = []
 
     def reject_candidate_truth(repo_root: Path, *_args: object, **_kwargs: object) -> dict[str, object]:
+        assert _kwargs.get("provider_api") is api
+        assert _kwargs.get("repository") == REPOSITORY
         called.append(repo_root)
         return {
             "status": "fail",

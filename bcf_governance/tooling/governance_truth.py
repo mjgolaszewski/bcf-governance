@@ -7,7 +7,7 @@ import re
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import yaml  # type: ignore[import-untyped]
 
@@ -51,6 +51,9 @@ from .evaluation_scope import (
     evaluation_scope,
 )
 from .truth_workflow_graph import workflow_gate_issues
+
+if TYPE_CHECKING:
+    from .ci_github_api import GitHubAPI
 
 
 class TruthfulnessError(ValueError):
@@ -96,6 +99,8 @@ def derive_truth(
     ci_certification_path: Path | None = None,
     ci_session_manifest_path: Path | None = None,
     prior_transport_dir: Path | None = None,
+    provider_api: GitHubAPI | None = None,
+    repository: str | None = None,
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve()
     evidence_dir = evidence_dir.resolve()
@@ -216,6 +221,7 @@ def derive_truth(
     workitems = workitem_observation(
         repo_root, receipts, claim_model or {"claims": {}}, preflight_claims, current,
         reuse_attestations=reuse_index,
+        provider_api=provider_api, repository=repository,
     )
     required_gate_ids: set[str] = set()
     for claim_id, raw in raw_claims.items():

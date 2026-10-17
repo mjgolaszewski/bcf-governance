@@ -347,7 +347,10 @@ def _independent_truth(
                 {"id": artifact_id, "name": artifact["name"], "provider_digest": digest}
             )
         try:
-            truth = derive_truth(candidate_root, evidence_root, evaluation_mode="pr")
+            truth = derive_truth(
+                candidate_root, evidence_root, evaluation_mode="pr",
+                provider_api=api, repository=repository,
+            )
         except TruthfulnessError as exc:
             raise GitHubControllerError(
                 f"protected evaluator rejected candidate evidence: {exc}"

@@ -1,0 +1,155 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "readiness_computed_truth_and_trusted_pr_source_implemented_integration_pending",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "source_base_commit": "336830e2",
+  "source_sha256": {
+    "bcf_governance/tooling/evidence_workitem_lifecycle.py": "804162376afc7c881b98bcdb2d3758fe451cb83ff372c5d95d4ea4496cfa5218",
+    "bcf_governance/tooling/governance_truth.py": "6b9f8ba1de2add0cdb75aded87bfda1324fbc48943f5c1bff7b602c91d189080",
+    "bcf_governance/tooling/ci_github_pr.py": "ca8d592e5b515faa91723b5f2c575fca88e78088890f5b888b9e490dbf7f9a48"
+  },
+  "initial_controls": {
+    "failed": 16,
+    "passed": 9
+  },
+  "first_broad": {
+    "passed": 470,
+    "scope": "Before additional full-phase authored readiness invariant and trusted PR context forwarding"
+  },
+  "expanded_before_fixture_correction": {
+    "passed": 440,
+    "failed": 1,
+    "reason": "Hotfix-only fixture omitted the now-required active workitem ledger; data corrected without weakening admission"
+  },
+  "final_affected": {
+    "passed": 441,
+    "scope": "Truth, phase consumer, mandatory syntax, prospective/local/submission, trusted PR, exact phase input and protected population owners"
+  },
+  "source_architecture_passed": 5,
+  "genuine_additional_red_controls": [
+    "Full phase authored completed with TODO workitem was admitted and queried provider",
+    "Trusted PR evaluator omitted authenticated API and expected repository when invoking truth"
+  ],
+  "disabled_guard_controls": {
+    "computed_phase_authority": "4 named cases fail",
+    "target_readiness": "named control fails",
+    "independent_protected_population": "candidate-removal control fails",
+    "full_phase_authored_workitem_readiness": "named control fails"
+  },
+  "live_consumer": {
+    "authority": false,
+    "scope": "Actual lifecycle phase-prerequisite consumer on the Issue394 ledger; no workitem or whole-requirement closure evaluated",
+    "source_sha256": "804162376afc7c881b98bcdb2d3758fe451cb83ff372c5d95d4ea4496cfa5218",
+    "observation": {
+      "required_phases": [
+        "P31"
+      ],
+      "protected_required_phases": [
+        "P31"
+      ],
+      "verified_phases": [
+        "P31"
+      ],
+      "missing_phases": [],
+      "evidence_refs": [
+        {
+          "phase_id": "P31",
+          "artifact": {
+            "run_id": "38864317679",
+            "run_attempt": 1,
+            "artifact_id": "12030816786",
+            "artifact_name": "bcf-exact-main-certification-38864317679-1",
+            "provider_digest": "sha256:02650ded768cb49e3f880b30075d326a7af80911a1bedf3c2d30f144135afa5e",
+            "workflow": {
+              "provider": "github",
+              "repository_id": "1207503211",
+              "workflow_id": "346274484",
+              "active_path": ".github/workflows/bcf-trusted-finalizer.yml",
+              "trusted_workflow_blob_oid": "14405716e23275f7a8fe817a1340348563ea6893",
+              "trusted_workflow_sha256": "d1dc1103acec52d044f80855ca0274ba341425258ef2d01ba99db68493dbe208",
+              "trusted_workflow_definition_commit": "af818079f41e001066463f5d5ee1e9c72b36c77b",
+              "event": "workflow_run"
+            }
+          },
+          "certification_sha256": "fbafafc457753764544079ed4f5c55c5f7cfa6ccd3a2447a21a9c60bda951324",
+          "session_manifest_sha256": "f9fb8db826f4970223a2e23932b7cc23dfe1627f3257a0d5d2388073d8b998f6",
+          "proposition": {
+            "authorizes": [],
+            "conclusion": "success",
+            "eligible_successors": [],
+            "predicate": "phase_closed",
+            "subject": {
+              "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+            },
+            "target": {
+              "id": "P31",
+              "kind": "phase"
+            }
+          }
+        }
+      ],
+      "issues": [],
+      "satisfied": true,
+      "policy_subject": {
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": "1207503211",
+        "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+        "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+      }
+    },
+    "whole_requirement_status_advanced": false
+  },
+  "raw_output_sha256": {
+    "phase-consumer-initial-red.stdout": "4aadf26fcaf5dfa4f5106a59bb99773053c6363d6346cf9b5c63b0889fb7b8ba",
+    "phase-consumer-first-implementation.stdout": "fbcba78efeb76e5ff34d6064663d0bb66557132f68cb68f5f895e15b1c381ea7",
+    "phase-consumer-broad.stdout": "f171a330ba3dd46e1f9ea3eac74963e5318fbc0e533d95a7cc8197574cda6ae4",
+    "phase-consumer-authored-workitem-red.stdout": "bf8c090ec0ba9fadeb70b867e4f569ecde285e101d3027087041931a5a44ad17",
+    "phase-consumer-final-affected.stdout": "32b44f71f17598455c2225dae061fddf1e1b40f5484713adf759f9983d4ff46d",
+    "phase-consumer-trusted-pr-forwarding-red.stdout": "f931d9c5be516d33e9da9fc3ac3ea15f5205b4891908af9b99418e3643dc1bb5",
+    "phase-consumer-corrected-affected.stdout": "630419e2640af5f636374896a562839bdaeee5f46897137acc9a6e93b9aeacef",
+    "phase-consumer-cause-computed-authority.stdout": "2f078fc979453c44b2f5e46951878401045da11815b181bfec308ca3bf92fd4c",
+    "phase-consumer-cause-readiness.stdout": "1851408f68bff031cae8a91a07568df4d9031f071e8f37f73aa99289226fe6c8",
+    "phase-consumer-cause-protected-population.stdout": "29f4a7c8ab1a9065786b7f7e77981fbb3aa997e4e2bd989badd59840b82893a5",
+    "phase-consumer-cause-authored-full-phase.stdout": "291a2b9b0d7ab2fb6c77df0284c610f584b470e8c02c20f1da5ad30839a44cdf",
+    "phase-consumer-live-observation.json": "f707bc9f939d6449a93fe0fa84f1128440cf4387d34a892db90826a116f072d9",
+    "phase-consumer-architecture.stdout": "67cdf1fd7abce5513c1bf86cde47160c9476cdf7b86921357ba11ca9b1ab4abe",
+    "phase-consumer-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-consumer-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-consumer-project-governance-first.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "phase-consumer-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-consumer-project-governance-final.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "governance_first": 0,
+    "pack_parity": 0,
+    "governance_final": 0
+  },
+  "limits": [
+    "Local prospective owner is800 lines and still needs characterized deconstruction plus provider-context forwarding.",
+    "Ordinary CLI/exact-main authority forwarding and installed runtime qualification remain required.",
+    "SDK-schema absence in a private runtime is a typed block, not installed assurance or permission to use candidate schemas.",
+    "Full protected lifecycle/effect populations and runtime conformance remain incomplete.",
+    "No whole requirement closure, P33 activation, approved performance target or release custody claim."
+  ],
+  "decoder_corpus": {
+    "files": 10,
+    "workitems": 42,
+    "paths": [
+      "bcf_governance/pack/template-repo/plans/phase-01-workitems.yml",
+      "plans/phase-24-workitems.yml",
+      "plans/phase-26-workitems.yml",
+      "plans/phase-27-workitems.yml",
+      "plans/phase-29-workitems.yml",
+      "plans/phase-32-workitems.yml",
+      "plans/phase-33-workitems.yml",
+      "plans/phase-34-workitems.yml",
+      "plans/phase-35-workitems.yml",
+      "template-repo/plans/phase-01-workitems.yml"
+    ],
+    "unsupported_mandatory_phase_rows": 0
+  }
+}

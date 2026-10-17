@@ -6,6 +6,7 @@ import yaml
 from bcf_governance.tooling import governance_truth
 from bcf_governance.tooling.evidence_workitem_lifecycle import (
     WorkitemContractError, validate_bounded_target_authored_ready,
+    validate_phase_closure_authored_ready,
     workitem_observation, workitem_predecessors,
 )
 from tests.test_phase_closure_population import protected_population, phase_input  # noqa: F401
@@ -138,6 +139,38 @@ def test_genuinely_unbound_workitem_without_phase_predicate_preserves_behavior(t
     report = _observe(tmp_path)
     assert report["closed_ids"] == ["P02-W01"]
     assert report["items"][1]["eligible"] is True
+
+
+def _phase_log(root):
+    path = root / "plans/phase-ledger.yml"
+    ledger = yaml.safe_load(path.read_text())
+    ledger["active_phase"]["log"] = "phases/phase-02-log.yml"
+    path.write_text(yaml.safe_dump(ledger))
+    phases = root / "phases"
+    phases.mkdir()
+    (phases / "phase-02-log.yml").write_text(yaml.safe_dump({
+        "document": {"status": "completed"}, "phase": {"id": "P02"},
+    }))
+
+
+def test_full_phase_unfinished_authored_work_blocks_before_provider_work(tmp_path, protected_population):
+    api, _, _ = protected_population
+    _repo(tmp_path)
+    _phase_log(tmp_path)
+    with pytest.raises(WorkitemContractError, match="workitems.*not authored DONE"):
+        validate_phase_closure_authored_ready(tmp_path, provider_api=api, repository="owner/repo")
+    assert api.reads == 0
+
+
+def test_full_phase_authored_done_still_requires_authenticated_parent(tmp_path, protected_population):
+    api, _, _ = protected_population
+    entries = _repo(tmp_path)
+    entries[1]["status"] = "DONE"
+    (tmp_path / "plans/items.yml").write_text(yaml.safe_dump({"workitems": entries}))
+    _phase_log(tmp_path)
+    validate_phase_closure_authored_ready(tmp_path, provider_api=api, repository="owner/repo")
+    with pytest.raises(WorkitemContractError, match="phase"):
+        validate_phase_closure_authored_ready(tmp_path)
 
 
 @pytest.mark.parametrize("predicate", [

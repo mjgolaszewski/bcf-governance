@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "scope": "Native submission and provider merge accounting only; exact-main terminal and phase assurance remain separate",
+  "native_submission": "audits/issue-394/successor-e2-submission-observation.json",
+  "provider_pull_request": {
+    "baseRefOid": "de7ade7f1708b6667a2fa7aae1d5960c808c9fdc",
+    "headRefOid": "e2cec9c26efe71ed2909007e6c9cb8cd1c806634",
+    "mergeCommit": {
+      "oid": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe"
+    },
+    "mergedAt": "2026-10-17T19:36:45Z",
+    "state": "MERGED",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T18:59:13Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471261/job/117477228337",
+        "name": "Authenticate an automation-authored dependency PR",
+        "startedAt": "2026-10-17T18:59:13Z",
+        "status": "COMPLETED",
+        "workflowName": "bcf/automation-admission"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:00:50Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477226272",
+        "name": "Validate governance front door",
+        "startedAt": "2026-10-17T18:59:14Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:01:27Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477579976",
+        "name": "Evidence / Evidence shard 0",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:01:20Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477580046",
+        "name": "Evidence / Evidence shard 1",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:33:54Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477579867",
+        "name": "Evidence / Evidence shard 2",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:01:17Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477580018",
+        "name": "Evidence / Evidence shard 3",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:34:18Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117484684672",
+        "name": "Verify exact-tree governance evidence",
+        "startedAt": "2026-10-17T19:33:56Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:35:06Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/runs/117484952510",
+        "name": "bcf/pr-certification",
+        "startedAt": "2026-10-17T19:35:06Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      }
+    ],
+    "url": "https://github.com/mjgolaszewski/bcf-governance/pull/431"
+  },
+  "merge_commit": {
+    "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+    "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a",
+    "parents": [
+      "de7ade7f1708b6667a2fa7aae1d5960c808c9fdc",
+      "e2cec9c26efe71ed2909007e6c9cb8cd1c806634"
+    ]
+  },
+  "exact_main_admission": {
+    "id": 39063214914,
+    "workflow_id": 346274480,
+    "path": ".github/workflows/bcf-exact-main.yml",
+    "event": "push",
+    "head_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "raw_output_sha256": {
+    "pr431-merged-provider-observation.json": "d0ef1969e443b5b144b5dec0433499d9683375ff4b153992d05950983b267fb6",
+    "pr431-merge-commit-provider.json": "2698f0bcc599df79fb9a1cdc42b7bdde8e47275eb9ca79a7c8c3e6ddd227db65",
+    "pr431-exact-main-latest-run.json": "78dc46e95fe2e26c574efc0cb84637bd8734f6bf6ccf61df2bd5998969d51924"
+  },
+  "disposition": "Earlier PR-open snapshot is historical; exact head e2 is now merged as100dc. Submitted primary bytes remain fixed while current provider train is accounted for.",
+  "limits": [
+    "PR merge and its successful rollup are not independent exact-main certification or phase closure.",
+    "No P33 activation, release certification or immutable2.5.0 custody claim.",
+    "No whole Issue394 requirement status advances."
+  ]
+}
