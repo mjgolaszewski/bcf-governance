@@ -22,7 +22,7 @@ admission:
   canonical_release_train_id: release_27
   rule: Derive phase and train IDs only after exact predecessor closure qualifications compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: Historical attempt six and67825aac outcomes remain retained. Current source6307 normalized to c1887f45 and passed provider authority and dual preflights, then test evidence rejected8 installed fixture cases. Fixture correction passes47 installed/ref/pack cases and native checks; exact corrected-source canonical proof remains pending; no whole acceptance advances.
+  blocker: Recovered3cb3 canonical transaction terminated0 as17d; PR429 merged05e with successful PR governance/main admission/controller rotation. Later integrated identity guard and remaining isolated corrections require exact successor proof; all82 whole requirements remain open. Historical attempt dispositions are retained in audits/issue-394/successor-17d-submission-terminal.json.
   unblock_condition: Complete admitted v2.3.4 source integration and existing canonical execution path. Optional compatibility failures remain residuals under current policy.
   evidence: audits/issue-394/v234-successor-admission.json
 stages:
@@ -132,6 +132,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/residual-admitted-evidence.json
+    - audits/issue-394/provider-source-recovery-contract.json
+    - audits/issue-394/provider-source-recovery-verification.json
     - audits/issue-394/qualification-admission-order-verification.json
     - audits/issue-394/pinned-qualification-2328e076-terminal.json
     - audits/issue-394/qualification-upgrade-order-verification.json
@@ -228,6 +230,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/evidence_execution.py
     - bcf_governance/tooling/ci_graph_timeouts.py
     - bcf_governance/tooling/provider_read.py
     forbidden_surfaces:
@@ -248,6 +251,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/evidence-timeout-cleanup-contract.json
+    - audits/issue-394/evidence-timeout-cleanup-characterization.json
     - audits/issue-394/provider-io-inventory-verification.json
   foundation.baseline:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
@@ -278,6 +283,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/v234-pr-log-supplement.json
+    - audits/issue-394/capture-repository-binding-contract.json
+    - audits/issue-394/capture-repository-binding-verification.json
   dormant.early-checks:
     summary: Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
     status: TODO
@@ -768,8 +775,11 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-repository-source
+    - provider-derived-compatibility-sources
     - authenticated-bound-pr-comparison-context
     - separate-pipeline-clock-observation
+    - evidence-command-terminal-cleanup
   I04:
     requirement: Independent completeness. Trusted truth independently derives/verifies required claims, impact, exclusions, selected execution and reuse. A candidate planner's internally consistent omissions cannot certify themselves.
     owner: ci_authority
@@ -856,6 +866,8 @@ requirements:
       scenario: Cause-specific I07 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   I08:
     requirement: "No time-based laundering. Periodic evidence satisfies a consumer only after exact proposition, dependencies, policy, source, toolchain/environment, qualification, freshness and authority validation. \u201CGreen last night\u201D is insufficient."
     owner: evidence
@@ -1109,6 +1121,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-derived-compatibility-sources
     - committed-tree-before-provider
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
@@ -1132,6 +1145,8 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-repository-source
+    - provider-derived-compatibility-sources
     - committed-tree-before-provider
     - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
@@ -1147,6 +1162,7 @@ requirements:
     - publication-metadata-revalidation
     - early-active-phase-schema
     - canonical-submit-normalization
+    - evidence-command-terminal-cleanup
   I22:
     requirement: Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision. Agent-selected defaults, CLI flags, environment variables, hand-edited receipts and silent recovery overrides must not recreate the choice. Genuine policy/intent changes retain explicit human authorization; absence of derivable authority yields a typed blocker.
     owner: ci_authority
@@ -1166,6 +1182,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-derived-compatibility-sources
     - authenticated-bound-pr-comparison-context
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
@@ -1199,6 +1216,7 @@ requirements:
     - typed-lifecycle-path-binding
     - finite-provider-retry-bound
     - dormant-composition-and-static-bindings
+    - evidence-command-terminal-cleanup
   I24:
     requirement: "Mechanical subject selection. Use the existing provider resolver for the entire required adopter/source inventory before expensive qualification. Freeze exact subjects; supplied roots/interpreters are resources, not selection authority. Provider movement must follow current freshness/invalidation policy\u2014never silently alter an in-flight inventory, choose older green sources, or relax collection-time checks."
     owner: ci_authority
@@ -1218,6 +1236,8 @@ requirements:
       scenario: Cause-specific I24 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   I25:
     requirement: "Single canonical handoff. One admitted candidate/operation has one tracked submit/release transaction and resumable exact continuation. A second frontend invocation must observe/join or reject duplicate in-flight work under policy, not launch another identical train. Transport ambiguity is not \u201Cexactly once\u201D; authenticate outcome before retrying a mutation. No duplicate local gate train solely because the operation crosses a workflow boundary."
     owner: evidence
@@ -1732,6 +1752,8 @@ requirements:
       scenario: Cause-specific CP10 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   AC01:
     requirement: 'Docs-only candidate: every required proposition still accounted for through valid reuse/execution; no blanket path skip.'
     owner: evidence
@@ -2123,6 +2145,8 @@ requirements:
       scenario: Cause-specific AC19 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   AC20:
     requirement: 'One required adopter source advances after snapshot/before collection: current freshness rule enforced, sound affected remainder derived, no hidden older-green fallback or global unnecessary requalification.'
     owner: ci_authority
@@ -2142,6 +2166,8 @@ requirements:
       scenario: Cause-specific AC20 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   AC21:
     requirement: "Retry exact prospective\u2192submit or release\u2192qualification continuation: only invalidated/unobserved work executes; duplicate concurrent invocation cannot create duplicate admitted mutation or claim credit."
     owner: evidence
@@ -4101,6 +4127,9 @@ implementation_slices:
     - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[pr-426-attempt-1.json]
     - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[reconcile-b976db49-attempt-1.json]
     - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[reconcile-0e99bece-attempt-1.json]
+    - tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[source]
+    - tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[producer]
+    - tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[both]
     negative_controls:
     - cause: source-digest
       test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[source-digest]
@@ -4144,6 +4173,36 @@ implementation_slices:
       test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[provider-undeclared-stream]
     - cause: provider-missing-stream
       test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[provider-missing-stream]
+    - cause: repository-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-source]
+    - cause: repository-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-producer]
+    - cause: repository-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-both]
+    - cause: different-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-source]
+    - cause: different-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-producer]
+    - cause: different-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-both]
+    - cause: string-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-source]
+    - cause: string-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-producer]
+    - cause: string-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-both]
+    - cause: float-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-source]
+    - cause: float-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-producer]
+    - cause: float-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-both]
+    - cause: bool-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-source]
+    - cause: bool-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-producer]
+    - cause: bool-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-both]
     remaining:
     - Wire into any future cohort collection before accepted persistence or statistics; no aggregation path exists yet.
     - Independently authenticate provider/source custody and freeze matched measurement protocol and approved budgets.
@@ -4223,3 +4282,242 @@ implementation_slices:
     remaining:
     - Exact installed nested projection and new canonical real pinned-adopter transaction remain required.
     - Entire independent consumer/failure populations, targets and custody remain open; no CP07 closure.
+
+  authenticated-provider-repository-source:
+    id: authenticated-provider-repository-source
+    workitem: P32-P0-01
+    scope: Provider full_name must bind the requested repository before default-main or provider-run source reconstruction; case-insensitive identity
+      retained.
+    contract: audits/issue-394/main-repository-authentication-contract.json
+    producer: bcf_governance/tooling/ci_github_identity.py::_repository_default_identity
+    consumer: resolve_main and resolve_run_subject; later source reconstruction retains existing exact facts
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[owner/repo-default]
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[owner/repo-run]
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[Owner/Repo-default]
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[Owner/Repo-run]
+    negative_controls:
+    - cause: wrong-owner-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-owner-default]
+    - cause: wrong-owner-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-owner-run]
+    - cause: wrong-name-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-name-default]
+    - cause: wrong-name-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-name-run]
+    - cause: blank-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[blank-default]
+    - cause: blank-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[blank-run]
+    - cause: missing-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[missing-default]
+    - cause: missing-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[missing-run]
+    - cause: null-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[null-default]
+    - cause: null-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[null-run]
+    - cause: number-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[number-default]
+    - cause: number-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[number-run]
+    - cause: object-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-default]
+    - cause: object-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-run]
+    remaining:
+    - Qualify the exact combined successor and actual current consumers; isolated f64 source/installed/native qualification passed
+      before integration.
+    - No whole acceptance, matched performance, phase activation or release certification.
+  provider-derived-compatibility-sources:
+    id: provider-derived-compatibility-sources
+    workitem: P32-P0-02
+    scope: Derive complete provider-selected compatibility subjects before allocation; root resources cannot select sources,
+      freshness is rechecked before output and legacy source policy blocks under explicit1.4 migration.
+    contract: audits/issue-394/provider-source-recovery-contract.json
+    producer: bcf_governance/tooling/release_adopter_sources.py::resolve_adopter_sources
+    consumer: bcf_governance/tooling/release_adopter_qualification.py::qualify_release
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_release_adopter_sources::test_provider_source_population_is_complete_ordered_and_authentic
+    - tests.test_release_adopter_qualification::test_historical_source_policy_decodes_but_cannot_authorize_new_execution
+    - tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[None]
+    - tests.test_release_adopter_qualification::test_qualification_receipt_requires_exact_subject_assets_and_adopters[1.3]
+    - tests.test_release_adopter_qualification::test_qualification_receipt_requires_exact_subject_assets_and_adopters[1.4]
+    negative_controls:
+    - cause: provider-source-freshness-id-456
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[id-456]
+    - cause: provider-source-freshness-branch-other
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[branch-other]
+    - cause: provider-source-freshness-commit-cccccccccccccccccccccccccccccccccccccccc
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[commit-cccccccccccccccccccccccccccccccccccccccc]
+    - cause: provider-source-freshness-tree-dddddddddddddddddddddddddddddddddddddddd
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[tree-dddddddddddddddddddddddddddddddddddddddd]
+    - cause: source-population-before-provider-read-empty
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[empty]
+    - cause: source-population-before-provider-read-duplicate_repository
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[duplicate_repository]
+    - cause: source-population-before-provider-read-duplicate_id
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[duplicate_id]
+    - cause: source-population-before-provider-read-missing_profile
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[missing_profile]
+    - cause: provider-response-before-allocation-unavailable
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[unavailable]
+    - cause: provider-response-before-allocation-wrong_ref
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[wrong_ref]
+    - cause: provider-response-before-allocation-wrong_commit
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[wrong_commit]
+    - cause: provider-response-before-allocation-bad_id
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[bad_id]
+    - cause: provider-response-before-allocation-bad_tree
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[bad_tree]
+    - cause: source-policy-before-provider-read-legacy
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[legacy]
+    - cause: source-policy-before-provider-read-missing
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[missing]
+    - cause: source-policy-before-provider-read-caller_role
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[caller_role]
+    - cause: source-policy-before-provider-read-freshness
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[freshness]
+    - cause: source-policy-schema-contradiction-source
+      test: tests.test_release_adopter_qualification::test_provider_source_policy_cannot_mix_legacy_selection_fields[source]
+    - cause: source-policy-schema-contradiction-caller_checkout_role
+      test: tests.test_release_adopter_qualification::test_provider_source_policy_cannot_mix_legacy_selection_fields[caller_checkout_role]
+    - cause: source-policy-schema-contradiction-source_freshness
+      test: tests.test_release_adopter_qualification::test_provider_source_policy_cannot_mix_legacy_selection_fields[source_freshness]
+    - cause: resource-policy-credential-before-allocation-stale-commit
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[stale-commit]
+    - cause: resource-policy-credential-before-allocation-stale-tree
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[stale-tree]
+    - cause: resource-policy-credential-before-allocation-legacy-policy
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[legacy-policy]
+    - cause: resource-policy-credential-before-allocation-missing-token
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[missing-token]
+    - cause: resource-policy-credential-before-allocation-wrong-repository
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[wrong-repository]
+    - cause: resource-policy-credential-before-allocation-duplicate-resource
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[duplicate-resource]
+    - cause: resource-policy-credential-before-allocation-missing-resource
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[missing-resource]
+    - cause: collection-freshness-no-output-id
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[id]
+    - cause: collection-freshness-no-output-branch
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[branch]
+    - cause: collection-freshness-no-output-commit
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[commit]
+    - cause: collection-freshness-no-output-tree
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[tree]
+    - cause: collection-freshness-no-output-unavailable
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[unavailable]
+    - cause: same-provider-id-across-distinct-repository-names
+      test: tests.test_release_adopter_sources::test_source_capture_rejects_two_names_with_one_physical_repository
+    - cause: case-equivalent-required-repositories-before-provider
+      test: tests.test_release_adopter_sources::test_source_capture_rejects_case_equivalent_repository_names_before_reads
+    - cause: frozen-physical-id-before-freshness-reads
+      test: tests.test_release_adopter_sources::test_frozen_source_inventory_rejects_ambiguous_members_before_reads[physical-id]
+    - cause: frozen-case-alias-before-freshness-reads
+      test: tests.test_release_adopter_sources::test_frozen_source_inventory_rejects_ambiguous_members_before_reads[case-alias]
+    remaining:
+    - Qualify exact integrated successor source/private/installed and actual provider-selected isolated current adopters; isolated89d1d7e1
+      source/installed/semantic/governance/exposure passed before integration.
+    - Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.
+    - No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain
+      not_executed.
+  evidence-command-terminal-cleanup:
+    id: evidence-command-terminal-cleanup
+    workitem: P32-P0-05
+    scope: Linux per-command kernel-child custody, typed unresolved retirement block and body/setup/cleanup deadline floor;
+      not full host isolation or complete pipeline bounds.
+    contract: audits/issue-394/evidence-timeout-cleanup-contract.json
+    producer: evidence_execution::_run; evidence_process_supervisor::run_owned_command
+    consumer: _run_with_execution_state; interpreter metadata probe; existing evidence contract loader and CI timeout compiler/audit
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_evidence_execution_timeout::test_evidence_command_preserves_successful_output
+    - tests.test_evidence_execution_timeout::test_evidence_command_preserves_nonzero_unicode_and_universal_newlines
+    - tests.test_evidence_execution_timeout::test_owned_command_completion_is_independent_of_foreign_process_births
+    - tests.test_evidence_execution_timeout::test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure[command]
+    - tests.test_evidence_execution_timeout::test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure[directory]
+    - tests.test_evidence_cleanup_policy::test_decoding_failure_after_proved_cleanup_retires_exact_state
+    - tests.test_installed_evidence_cleanup::test_installed_evidence_commands_retain_kernel_child_custody[fresh]
+    - tests.test_installed_evidence_cleanup::test_installed_evidence_commands_retain_kernel_child_custody[upgrade]
+    negative_controls:
+    - cause: evidence_direct_child_timeout_keeps_typed_failure
+      test: tests.test_evidence_execution_timeout::test_evidence_direct_child_timeout_keeps_typed_failure
+    - cause: evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog:timeout
+      test: tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[timeout]
+    - cause: evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog:background-success
+      test: tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[background-success]
+    - cause: evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog:threaded-background-success
+      test: tests.test_evidence_execution_timeout::test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog[threaded-background-success]
+    - cause: nonexclusive_child_wait_owner_blocks_before_command_effect:ignored
+      test: tests.test_evidence_execution_timeout::test_nonexclusive_child_wait_owner_blocks_before_command_effect[ignored]
+    - cause: nonexclusive_child_wait_owner_blocks_before_command_effect:custom
+      test: tests.test_evidence_execution_timeout::test_nonexclusive_child_wait_owner_blocks_before_command_effect[custom]
+    - cause: evidence_completion_cannot_abandon_escaped_descendants:False
+      test: tests.test_evidence_execution_timeout::test_evidence_completion_cannot_abandon_escaped_descendants[False]
+    - cause: evidence_completion_cannot_abandon_escaped_descendants:True
+      test: tests.test_evidence_execution_timeout::test_evidence_completion_cannot_abandon_escaped_descendants[True]
+    - cause: owned_command_interruption_keeps_terminal_custody:caller
+      test: tests.test_evidence_execution_timeout::test_owned_command_interruption_keeps_terminal_custody[caller]
+    - cause: owned_command_interruption_keeps_terminal_custody:supervisor
+      test: tests.test_evidence_execution_timeout::test_owned_command_interruption_keeps_terminal_custody[supervisor]
+    - cause: owned_command_interruption_keeps_terminal_custody:stalled-supervisor
+      test: tests.test_evidence_execution_timeout::test_owned_command_interruption_keeps_terminal_custody[stalled-supervisor]
+    - cause: gate_deadline_includes_real_cleanup_before_outer_allocation
+      test: tests.test_evidence_cleanup_policy::test_gate_deadline_includes_real_cleanup_before_outer_allocation
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:None
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[None]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:0
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[0]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:-1
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[-1]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:False
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[False]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:1.5
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[1.5]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:1
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[1]
+    - cause: cleanup_policy_rejects_at_existing_authored_admission_query:21601
+      test: tests.test_evidence_cleanup_policy::test_cleanup_policy_rejects_at_existing_authored_admission_query[21601]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:None
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[None]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:0
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[0]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:-1
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[-1]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:False
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[False]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:1.5
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[1.5]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:1
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[1]
+    - cause: invalid_cleanup_cannot_load_or_allocate_runtime:21601
+      test: tests.test_evidence_cleanup_policy::test_invalid_cleanup_cannot_load_or_allocate_runtime[21601]
+    - cause: unproven_process_cleanup_preserves_execution_state_custody
+      test: tests.test_evidence_cleanup_policy::test_unproven_process_cleanup_preserves_execution_state_custody
+    - cause: unqualified_group_inventory_host_blocks_before_allocation:darwin
+      test: tests.test_evidence_cleanup_policy::test_unqualified_group_inventory_host_blocks_before_allocation[darwin]
+    - cause: unqualified_group_inventory_host_blocks_before_allocation:win32
+      test: tests.test_evidence_cleanup_policy::test_unqualified_group_inventory_host_blocks_before_allocation[win32]
+    - cause: missing_owned_terminal_cannot_become_verified_cleanup:missing
+      test: tests.test_evidence_cleanup_policy::test_missing_owned_terminal_cannot_become_verified_cleanup[missing]
+    - cause: missing_owned_terminal_cannot_become_verified_cleanup:empty
+      test: tests.test_evidence_cleanup_policy::test_missing_owned_terminal_cannot_become_verified_cleanup[empty]
+    - cause: missing_owned_terminal_cannot_become_verified_cleanup:missing-anchor
+      test: tests.test_evidence_cleanup_policy::test_missing_owned_terminal_cannot_become_verified_cleanup[missing-anchor]
+    - cause: equality_compatible_readiness_pid_cannot_allocate_command
+      test: tests.test_evidence_process_supervisor::test_equality_compatible_readiness_pid_cannot_allocate_command
+    - cause: partial_trailing_frame_cannot_become_terminal_cleanup
+      test: tests.test_evidence_process_supervisor::test_partial_trailing_frame_cannot_become_terminal_cleanup
+    - cause: invalid_control_utf8_is_not_an_ordinary_output_decode_failure
+      test: tests.test_evidence_process_supervisor::test_invalid_control_utf8_is_not_an_ordinary_output_decode_failure
+    remaining:
+    - Complete sibling/runtime-effect population and full setup/namespace removal/retry/response-read/pipeline deadline composition.
+    - Actual current provider-selected adopter profiles, malicious same-user isolation and host-wide admission remain unqualified.
+    - Canonical exact combined proof and independently computed closure remain required; no whole I03/I21/I23, P33 activation,
+      approved performance or immutable2.5 custody claim.

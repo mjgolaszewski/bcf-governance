@@ -1,0 +1,191 @@
+{
+  "authority": false,
+  "parents": [
+    "7609baf0",
+    "de85768e"
+  ],
+  "integration_commit": "f768fe93",
+  "finding": "Merged ledger conflict resolution lost sections; earliest structural/binding checks rejected it before any submission. Reconstructed workplan and phase log from exact committed parents with bounded line headers;37 slices, all82 requirements and all20 original operator entries retained.",
+  "behavioral_batch": {
+    "passed": 102,
+    "structural_failures": 2
+  },
+  "reconstructed_binding_batch": {
+    "passed": 2
+  },
+  "streams": {
+    "primary-provider-identity-combined.stdout": "4b2c382b9bb654f08c80d582aa65afc07b0031d6f7f66532fe146dd8f8b1f510",
+    "primary-provider-identity-combined.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "primary-provider-identity-reconstructed-bindings.stdout": "0e8a44565e8a7e5887c23088346bcb17144e6bde1cb20b0caf39ff31a641ee4f",
+    "primary-provider-identity-reconstructed-bindings.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Two separate batches; not a full exact successor proof, installed combined proof or acceptance closure."
+  ],
+  "workplan_dispositions": {
+    "authenticated-provider-repository-source": {
+      "superseded_remaining": [
+        "Native architecture and source/installed/runtime qualification before integration.",
+        "No whole acceptance, matched performance, phase activation or release certification."
+      ],
+      "disposition": [
+        "Qualify the exact combined successor and actual current consumers; isolated f64 source/installed/native qualification passed before integration.",
+        "No whole acceptance, matched performance, phase activation or release certification."
+      ]
+    },
+    "provider-derived-compatibility-sources": {
+      "superseded_remaining": [
+        "Fresh/upgrade installed private-runtime probe is authored but unexecuted; native governance/exposure, actual provider-selected isolated consumers and integration remain pending.",
+        "Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.",
+        "No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain not_executed."
+      ],
+      "disposition": [
+        "Qualify exact integrated successor source/private/installed and actual provider-selected isolated current adopters; isolated89d1d7e1 source/installed/semantic/governance/exposure passed before integration.",
+        "Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.",
+        "No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain not_executed."
+      ]
+    }
+  },
+  "three_corrections_source_batch": {
+    "authority": false,
+    "subject": "8a8463c1",
+    "passed": 224,
+    "scope": "One combined source/binding batch for provider source, authenticated main identity and timing capture repository consistency. No combined installed or provider authority inferred.",
+    "stdout_sha256": "04b1ecab839a064171abd6631bcb6290687d71a5c82768d194050663086aaf6c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "combined_native_checks": {
+    "authority": false,
+    "subject": "2af2ec17",
+    "checks": {
+      "pack": {
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "governance": {
+        "returncode": 0,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "exposure": {
+        "returncode": 0,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "limits": "Exact integrated source checks; fresh combined installed and canonical prospective/provider proof remain required."
+  },
+  "four_corrections_admitted_qualification": {
+    "authority": false,
+    "subject": "1fd924d7286a51faa78af877d6c5442c54624541",
+    "tree_sha": "02514730e7b77e7b5a493e7e4bd397780e095659",
+    "source_sha256": {
+      "bcf_governance/tooling/evidence_process_supervisor.py": "71fd1f0627f2556feeaf7cd9c39f7a8c36d2089d3ac4956446abaee78d9b796f",
+      "bcf_governance/tooling/ci_github_identity.py": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+      "bcf_governance/tooling/release_adopter_sources.py": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c",
+      "bcf_governance/tooling/operational_observations.py": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311",
+      "audits/issue-394/workplan.yml": "b7acb09982d118e5d98a0496d6870f3d11cae5029e4326cf2f438973d1500873"
+    },
+    "stages": [
+      {
+        "stage": "bindings",
+        "returncode": 0,
+        "elapsed_ms": 9538,
+        "stdout_sha256": "4875c30fef80275ebe91aba590558fbd396e1d2e88837fc50fd4f12dac53fef9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 11822,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 4501,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 1252,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 140583,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-profile-package",
+        "returncode": 0,
+        "elapsed_ms": 826609,
+        "stdout_sha256": "5274ea452b4a1e0b98378c0afe60dbc514f528a4245086a561b3d06bbf65906c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed",
+        "returncode": 0,
+        "elapsed_ms": 195025,
+        "stdout_sha256": "3b7a9eed9ba422cc83d7fd5f8537a429d5a5adb4f16b70544b41d5aace9e1ee8",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 25041,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 661,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T08:04:14.762377+00:00",
+    "ended_at": "2026-10-17T08:24:30.439296+00:00",
+    "returncode": 0,
+    "capture_sha256": "f0a8ab07b04fe69fbaf0ed3291d92344c066bb6141c6d43474080efa2745a5da",
+    "source_profile_package_cases": 1188,
+    "installed_cases": 6,
+    "early_binding_cases": 2,
+    "scope": "Exact1fd combined source/profile/package and fresh-upgrade installed qualification before later timing-only data merge. Actual source distribution build is included; no immutable release or maintained-adopter custody authority."
+  },
+  "next_action": "Use the canonical submit boundary for normalization, fresh exact subject and prospective/provider proof; retain required stale generated-manifest oracle until canonical owner refreshes it.",
+  "canonical_preflight_terminals": [
+    {
+      "authority": false,
+      "source_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "source_tree": "c233fd24f9cbfbb904737eceb45628b621195031",
+      "returncode": 1,
+      "elapsed_ms": 1947,
+      "ended_at": "2026-10-17T08:31:01.011264+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "13ccdbb6bf4c9ecf00d10a6a94c8571d340a433ccab509b4e84354feb823c123",
+      "final_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "disposition": "Required GITHUB_TOKEN absent; invocation stopped before normalization. No tracked tree or head change observed. Preserve originals; credential is now supplied in memory and changelog delta is authored."
+    },
+    {
+      "authority": false,
+      "source_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "source_tree": "c233fd24f9cbfbb904737eceb45628b621195031",
+      "returncode": 1,
+      "elapsed_ms": 6309,
+      "ended_at": "2026-10-17T08:33:58.372901+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "43d26f9e7ca7d313482a59b0b7b837f9853aaf6bc4deeda6cb7cb191015ede40",
+      "final_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "disposition": "Required leaf PR changelog delta absent; normalization emitted failed before completion. No tracked tree or head change observed. Preserve originals; credential is now supplied in memory and changelog delta is authored."
+    }
+  ]
+}

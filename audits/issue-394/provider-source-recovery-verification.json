@@ -1,0 +1,557 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "committed_source_and_pack_passed_installed_pending",
+  "contract_commit": "37a9fb46",
+  "test_commits": [
+    "31fd9dfa",
+    "557961b6"
+  ],
+  "observations": [
+    {
+      "capture_sha256": "2b9139dfbaf9e999b5dff944059c23459e441ffc5e35480f6ab80c4e53c9f869",
+      "subject": "31fd9dfa54c15d822ef3edb2bc09e5952089a948",
+      "returncode": 1,
+      "elapsed_ms": 748,
+      "stdout_sha256": "e3c0bd840b19452632396bed6dd73d86490738914d94cd5627df3392734f5629",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "capture_sha256": "1f96f449e906fe62d45c13dc1fb608a06380c2660a718fc7a6b1256e8d78529c",
+      "subject": "557961b675fad711b442d16bf8c3eadfda651160",
+      "returncode": 1,
+      "elapsed_ms": 2571,
+      "stdout_sha256": "8bfcb618fbf124e1787f0a84bee5dfe670cb4d5d3a1e5caabff4d503029fd3f7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "capture_sha256": "e338c0a99be6a082fd993231bf774bb97c38e2c5f70e8a62b4bf929505a8ca33",
+      "subject": "557961b675fad711b442d16bf8c3eadfda651160",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 2804,
+      "stdout_sha256": "6b8c9366da6c9b16228fa4730c3cfc3440566e8d54a29da8433b8edc088d3177",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "capture_sha256": "67cc2d5fdfa3157b2c9f9d8dafc45b0dd64e085e1927cac0c8801f862388f09a",
+      "subject": "557961b675fad711b442d16bf8c3eadfda651160",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 2493,
+      "stdout_sha256": "e25ad3755addf452843bc1eb52c8a00266865acc417e394845da3f1b712b5b7a",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_sha256": {
+    "bcf_governance/tooling/release_adopter_sources.py": "f9e26af7a3edb86bfe063dbb0a52f85ab2fcebfd250846b708420c3151852b7e",
+    "bcf_governance/tooling/release_adopter_qualification.py": "4f1e719f94970689770570143d872475251a3cfaf0bcb8b1bc4f7aea6d39876b",
+    "governance/release-qualification.yml": "81e3c5e913024cfb2e35e95e782e84c62a4ee06865ecdad008b8bd7be37bbe73",
+    "schemas/release-qualification.schema.json": "b48107c428992d76045e765fa67a5f8f4fcee80e6e88aab627d4306403e88881"
+  },
+  "residuals": [
+    "Isolated source is not integrated into active primary transaction.",
+    "Native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
+    "All82 whole requirements remain open; no P33 activation, provider certification, performance target or custody closure.",
+    "Historical1.3 receipts remain observations; offline verification is not current provider freshness."
+  ],
+  "summary": "Source owner controls:18 expected failures before resolver implementation. Existing qualification consumer:3 expected failures reached allocation on stale commit/tree or legacy policy. Working-source focused suites76pass1.78s after provider capture, resource matching and collection-time freshness checks; fixture-controlled GETs only, no external qualification or maintained mutation.",
+  "native_working_source": {
+    "capture_sha256": "16e4b481360000964d5d237bbc0eef44b27b26765e7d78f44e1e868e97dd3ba2",
+    "gates": [
+      {
+        "gate": "lint",
+        "returncode": 0,
+        "elapsed_ms": 5424,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "gate": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 2515,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "gate": "architecture-module-size",
+        "returncode": 0,
+        "elapsed_ms": 2491,
+        "stdout_sha256": "a33286c6a594617561f0e2dcac2a49e43285cbd1cba8a7c7c6e90fb2dbe961c8",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "gate": "architecture-context-membership",
+        "returncode": 0,
+        "elapsed_ms": 2153,
+        "stdout_sha256": "791acbb2840ecff621592488f8e65512e312896e3865560d4000495c22ef5d13",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "fixed_source": {
+    "capture_sha256": "17b3ebb6c88d3043c53d68cdd0c6d68e19f52c307e4e00152343f7c562af610c",
+    "authority": false,
+    "subject": "959fcdaa91a7145bef6591e3af3522bff571c5ea",
+    "stages": [
+      {
+        "stage": "source-controls",
+        "returncode": 0,
+        "elapsed_ms": 2430,
+        "stdout_sha256": "2057d58ed2c89955b2ea275c10156eecfbf05c4db9f54746e0504d72c7d6208e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack-check",
+        "returncode": 0,
+        "elapsed_ms": 13181,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "source_cases_passed": 77,
+    "tree": "490c5e0ae988f00202766c38d683bb5c269b2431"
+  },
+  "real_provider_source_query": {
+    "raw_stdout_sha256": "a77d24bca7241c3c6f69abe0d37276cbc752d3c4874653bb8186b37de7f0f56f",
+    "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority": false,
+    "execution_qualified": false,
+    "subject": "c217fb2b1d1646efd97726a6195bdbc67a6eee84",
+    "started_at": "2026-10-17T05:11:27.075952+00:00",
+    "scope": "read-only real-provider source capture and immediate freshness only; no adopter execution, installation or release authority",
+    "sources": [
+      {
+        "id": "tradeflow-lite",
+        "repository": "moranwm/tradeflow",
+        "repository_id": "1396203132",
+        "profile": "lite",
+        "default_branch": "main",
+        "commit_sha": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+        "tree_sha": "c6c6b001c765fbd30f12340620ee9eb9a8ff88aa"
+      },
+      {
+        "id": "racecar-standard-v3",
+        "repository": "mjgolaszewski/racecar",
+        "repository_id": "1357342339",
+        "profile": "standard",
+        "default_branch": "main",
+        "commit_sha": "38945f5aa3a90e0782cabb006c8c88a5463fcfbd",
+        "tree_sha": "11b3a874b5c3b18c9a4b8e94a804b68b02790583"
+      },
+      {
+        "id": "agentbus-standard-v3",
+        "repository": "mjgolaszewski/AgentBus",
+        "repository_id": "1390225113",
+        "profile": "standard",
+        "default_branch": "main",
+        "commit_sha": "8f2dbf5ced0f591bec21d561f3a39308bc3f373b",
+        "tree_sha": "da456291a35b858850be6756dc41c81e02ac8d5c"
+      }
+    ],
+    "source_inventory_sha256": "f2ae2ab8896eabaca1eb46d3b831e2fa3e74584cb98b02f957cc46afa95b230b",
+    "status": "pass",
+    "elapsed_ms": 7156,
+    "provider_read_observations": [
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "58cc7400d7271d83cc5d678b6ce292a163d0f8bc7f6b85a33c55386790a125bb",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "21c3f3d4b7b17095e5702b442015137e0be6b3e028dd0bffba03a1efa1268453",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "215109c1786e09554e4406e931cc85d8abc4f3ec7ab792c5ce25d805beaade8e",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "b024dcceb13b39e8243ea2a7c90e05135c02db4724a54ec093f4735aba952a39",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "acbd00713696aa5191627fe22d51497c522ee4a62da82cdd86f3b65196faa36f",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "f454b255fab302ac770cc1f71e414402ec7bece0501adb4c5e1dc3b9bc542fa2",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "6f2f1d17253cd6f76368d3d417661a1a389596ec7e77078c6e3b987f4de323ac",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "e994c8e621e90f9c8f86d712bf1796130082ed5ced422d6a012812341d7e2728",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "36b4cdad71af39734b91264b3bba4e8e48f7ae6aaf65d83462bf56253b41050f",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "58cc7400d7271d83cc5d678b6ce292a163d0f8bc7f6b85a33c55386790a125bb",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "21c3f3d4b7b17095e5702b442015137e0be6b3e028dd0bffba03a1efa1268453",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "215109c1786e09554e4406e931cc85d8abc4f3ec7ab792c5ce25d805beaade8e",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "b024dcceb13b39e8243ea2a7c90e05135c02db4724a54ec093f4735aba952a39",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "acbd00713696aa5191627fe22d51497c522ee4a62da82cdd86f3b65196faa36f",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "f454b255fab302ac770cc1f71e414402ec7bece0501adb4c5e1dc3b9bc542fa2",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "6f2f1d17253cd6f76368d3d417661a1a389596ec7e77078c6e3b987f4de323ac",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "e994c8e621e90f9c8f86d712bf1796130082ed5ced422d6a012812341d7e2728",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "36b4cdad71af39734b91264b3bba4e8e48f7ae6aaf65d83462bf56253b41050f",
+        "delay_seconds": null
+      }
+    ]
+  },
+  "early_credential_correction": {
+    "red": {
+      "capture_sha256": "a0e54e1fe75c552c0b36a3efb4f83ca8c02054ae9bd22fffe5cd21d73da17bed",
+      "authority": false,
+      "subject": "376ef72dc70ee90ea1b132ba91eb6f57af85b051",
+      "returncode": 1,
+      "elapsed_ms": 1885,
+      "stdout_sha256": "440356c95cd8e519a009d44f66b7a8820fb81667f77b5700aa997a81316c8ad5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "working_green": {
+      "capture_sha256": "a17a246f7050951b01663c4abbd69d41983c013c3bfb0d31b995c9872aa3ff1e",
+      "authority": false,
+      "subject": "4ba828a797b1d397d57580c2a71428ad12a10328",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 3100,
+      "stdout_sha256": "5244918c4574b631a914868faa2ae01a7b9f7e308e9a0c8993913c38a98bbe9f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scope": "Missing-token cause-specific control proves assets were read before fix; moved existing API constructor immediately after source policy validation.77 working-source controls pass2.41s. No provider reads are granted by credential presence."
+  },
+  "installed_consumer_probe": "Authored under contract4ba828a7 in existing fresh/upgrade mixed fixture; not executed while primary canonical submission owns heavy capacity.",
+  "credential_fixed_source": {
+    "capture_sha256": "74c5f10bb25aaa1d48274ea3b8170fe631f1da20cdf80d2b10fdfdce6764ff8e",
+    "authority": false,
+    "subject": "9e99bbc4d83b5f9ed6a8402edac4599e927f67ac",
+    "tree": "a8fed9e009443b1de83bf5c8c31ea9d3dabbd5f5",
+    "stages": [
+      {
+        "stage": "source-controls",
+        "returncode": 0,
+        "elapsed_ms": 2684,
+        "stdout_sha256": "60a8a7052c0e1a5a8a75be04fbe102c0adabfca69e5033bf8a5e8584f552f5c4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack-check",
+        "returncode": 0,
+        "elapsed_ms": 13892,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 4917,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 1143,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "architecture-module-size",
+        "returncode": 0,
+        "elapsed_ms": 2715,
+        "stdout_sha256": "212504876166ec78d6893ba7cb632e14878599d119e4df02390a6a5464c97ea0",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "architecture-context-membership",
+        "returncode": 0,
+        "elapsed_ms": 2613,
+        "stdout_sha256": "7f20721722339faad833bedbd918bbce72ec5ee8917b82cf8b1a09bf4e47f2f3",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "source_cases_passed": 77
+  },
+  "resource_control_expansion": {
+    "provider-source-resource-expanded": {
+      "capture_sha256": "8cfc293c09ae13c533bc20e79975294c17c0ccc8ab1fcc0c9b8bf7d4738ab483",
+      "authority": false,
+      "subject": "5fc647313e0aa8fe1a60b8296e3590550debb036",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 2261,
+      "stdout_sha256": "47dda59cdb853ba6771a3d8715b68db0e6e90190063b7709ed1b7728fcc3143e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "provider-source-bindings-and-bare-template": {
+      "capture_sha256": "b129090e591e8c9320889c0a0abb83373561e2af38cf914bb0a3b8098297ab4d",
+      "authority": false,
+      "dirty": true,
+      "stages": [
+        {
+          "stage": "binding-controls",
+          "returncode": 0,
+          "elapsed_ms": 9380,
+          "stdout_sha256": "99a3db9bd13a76236159c5950fcc2436bbc03280e310d5b159369677508a8b7d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "bare-template-0",
+          "scope": "bare template runtime only; no installation or real provider proof",
+          "returncode": 0,
+          "elapsed_ms": 867,
+          "stdout_sha256": "200a115d094d13a1fa46486822ed16f774eb540bfcc8bca8c6b8bcd6ceb34e59",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "bare-template-1",
+          "scope": "bare template runtime only; no installation or real provider proof",
+          "returncode": 0,
+          "elapsed_ms": 317,
+          "stdout_sha256": "200a115d094d13a1fa46486822ed16f774eb540bfcc8bca8c6b8bcd6ceb34e59",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "scope": "80 working-source cases pass1.68s, including wrong-repository/duplicate/missing resources rejected before provider reads or allocation. Existing workplan now36 slices, with5 positive/32 cause-specific exact bindings for this slice;2 schema/exact-collection checks pass. Both bare template runtimes execute the authored probe with canonical package absent; no fresh/upgrade installation or real-adopter execution claim.",
+    "tested_files_sha256": {
+      "tests/test_release_adopter_sources.py": "8faea01154a1c1e28e51d8ede798685f506ffd752433c08ed9cd3a45e0f26dac",
+      "tests/test_release_adopter_qualification.py": "a60bba2e89b13d60e937841f3e2cdc1a3df538eda69a6c4e245ba38545b35445",
+      "tests/test_installed_evidence_storage.py": "46e41f9dbb99de0b8595d74d81e0b8006c72fa615af7b7dd94fd2e97b2d82cbf",
+      "audits/issue-394/workplan.yml": "9fbb7a0e07fa8f78938d4e35ad47765ad7d8306f846d6a59a7c0c485d756fa8c"
+    }
+  },
+  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources",
+  "physical_inventory_uniqueness": {
+    "contract_commit": "77aa61b1",
+    "red": {
+      "authority": false,
+      "subject": "7aa6a87979e22e26d7064fed6ab0374a305d7d23",
+      "returncode": 1,
+      "elapsed_ms": 2248,
+      "stdout_sha256": "8c61c54ade584157b99f13cd62bd1e50ce82afa69b03d873e91229b177e26f5e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "boundary_red": {
+      "authority": false,
+      "subject": "5d9b7fc16463138d97816b0058e8edaf89cf8778",
+      "returncode": 1,
+      "stdout_sha256": "8503f5c581184fd3004b22858b23da8d7d43799453b857ab77e7a201e1f3ace1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green": {
+      "authority": false,
+      "returncode": 0,
+      "elapsed_ms": 4565,
+      "stdout_sha256": "b1fd1e86bfd6f0c159bc4c0093a7f539ca9cad17b3dbe48733dc13a2722d577e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scope": "Two previously accepted ambiguous captures now reject; two corrupt frozen inventories reject before six avoidable GETs. Full84 source cases pass. Synthetic metadata now includes full_name; actual cross-feature shared resolver proof pending.",
+    "controls": [
+      "same-provider-id-across-distinct-repository-names",
+      "case-equivalent-required-repositories-before-provider",
+      "frozen-physical-id-before-freshness-reads",
+      "frozen-case-alias-before-freshness-reads"
+    ],
+    "remaining": [
+      "Native structural/pack/exact bindings pass. Full authored semantic query, governance/exposure, fresh/upgrade installed and integration remain pending.",
+      "Fresh/upgrade installed and current real-consumer execution after native admission.",
+      "Actual integration with shared repository source resolver before canonical proof."
+    ],
+    "native_checks": [
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 21118
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 8833
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 2068
+      },
+      {
+        "stage": "architecture-module-size",
+        "returncode": 0,
+        "elapsed_ms": 4950
+      },
+      {
+        "stage": "architecture-context-membership",
+        "returncode": 0,
+        "elapsed_ms": 4099
+      },
+      {
+        "stage": "bindings",
+        "returncode": 0,
+        "elapsed_ms": 21638
+      }
+    ],
+    "installed_probe_qualification": {
+      "authority": false,
+      "scope": "Actual fixture probe in bare private templates, plus exact old-module fault control; not fresh/upgrade execution",
+      "cases": [
+        {
+          "template": "template-repo",
+          "returncode": 0,
+          "stdout_sha256": "68ed8e5b2c8e29a66fff530a858d12f736a17d8f7d205791fd584c989ccc8133",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "template": "bcf_governance/pack/template-repo",
+          "returncode": 0,
+          "stdout_sha256": "68ed8e5b2c8e29a66fff530a858d12f736a17d8f7d205791fd584c989ccc8133",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "exact-pre-uniqueness-private-runtime-fault",
+          "subject": "005781d896e48598e6c12fa8587af1a98f6d082e",
+          "returncode": 1,
+          "named_fault_detected": true,
+          "archive_sha256": "519639417471b73a2858ff0a3c846f167ec3aeb851e42e40b623d1226d4ca53d",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "77ecc2eed40aaa7f1b0c3f50047bf63e1f8f2c91f25d64f359136bde80e61a5d"
+        }
+      ]
+    },
+    "source_sha256": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c",
+    "fixture_sha256": "14d17fb3f808a705bc841aeae2aaadd2a1ea9c06cfe7a4bb0efcd7338c644b83",
+    "cross_feature_compatibility": {
+      "source_matrix_observation": {
+        "authority": false,
+        "scope": "Cross-feature compatibility probe only; no merged or single-subject proof",
+        "source_subject": "b6f0c35845cb4db78a075cd44d4e3c5258a7f6f8",
+        "identity_subject": "6c0717c8eafc2810147c206d819a4ae73a69ddcc",
+        "identity_module_sha256": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+        "returncode": 0,
+        "elapsed_ms": 5342
+      },
+      "actual_bound_consumer": {
+        "authority": false,
+        "scope": "Cross-feature test-only exact-module consumer probe; no merged tree or installed proof",
+        "source_subject": "b6f0c35845cb4db78a075cd44d4e3c5258a7f6f8",
+        "identity_subject": "6c0717c8eafc2810147c206d819a4ae73a69ddcc",
+        "returncode": 0,
+        "elapsed_ms": 445,
+        "stdout_sha256": "b1b543c507b8e86367c2ce144102ced9d08105493b431e7e4998219f73f73b5c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "scope": "Mixed exact modules in disposable test processes only:84 source observations plus authenticated binding and contradictory capture/collection rejection before reference/commit reads. This is not an integrated single-subject, installed, provider certification or publication proof."
+    }
+  },
+  "admitted_exact_subject_qualification": {
+    "authority": false,
+    "subject": "89d1d7e1d0912b1feb7a1467b8e37e21a2521e8f",
+    "tree_sha": "43a9955b0f95a2a2c298a0e183a5c136424eb067",
+    "stages": [
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 137857,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-bindings",
+        "returncode": 0,
+        "elapsed_ms": 10850,
+        "stdout_sha256": "98bb27f737b5ea8c4dd886447886cd41fc820b4637150ba2ae1ddfa97c39f91b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed-mixed",
+        "returncode": 0,
+        "elapsed_ms": 181423,
+        "stdout_sha256": "a8e70df5dd189d34b5391c8aa419728a25811fd0bb8792269b7c5b1b9b469efc",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 25800,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 1123,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:19:34.927710+00:00",
+    "ended_at": "2026-10-17T07:25:32.172564+00:00",
+    "returncode": 0,
+    "capture_sha256": "0d3c3c9d04894b923196688c3d89ea2bfd80b7478a496fcd50215ab2dec8c1e5",
+    "scope": "86 source/binding cases and2 actual fresh/upgrade mixed installed consumer cases PASS; authored21-operation golden/governance/exposure PASS. No moving-adopter execution, provider or publication authority inferred. Integration still requires shared repository-identity guard and exact combined proof."
+  }
+}

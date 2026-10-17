@@ -407,6 +407,125 @@ print(json.dumps(report, sort_keys=True))
         capture_output=True, text=True,
     )
     assert authored_query.returncode == 0, _record(authored_query)
+    provider_code = """import importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime import release_adopter_sources as sources
+from _bcf_runtime.ci_github_api import GitHubAPI
+from _bcf_runtime.release_adopter_qualification import ReleaseQualificationError
+state = {'commit': 'a' * 40}
+reads = []
+def request(self, method, path, **kwargs):
+    assert method == 'GET'
+    reads.append(path)
+    if '/git/ref/' in path:
+        return {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': state['commit']}}
+    if '/git/commits/' in path:
+        return {'sha': state['commit'], 'tree': {'sha': 'b' * 40}}
+    return {'id': 123, 'default_branch': 'main',
+            'full_name': '/'.join(path.split('/')[2:4])}
+GitHubAPI._request = request
+api = GitHubAPI(token='fixture-only')
+contract = {'schema_version': '1.4', 'required_adopters': [
+    {'id': 'consumer', 'repository': 'owner/consumer', 'profile': 'lite'}],
+    'qualification': {'source': 'provider_default_branch_transaction',
+    'caller_checkout_role': 'materialization_resource_only',
+    'source_freshness': 'provider_exact_at_capture_and_collection'}}
+captured = sources.resolve_adopter_sources(api, contract)
+assert captured[0].repository_id == '123' and captured[0].default_branch == 'main'
+sources.authenticate_adopter_sources(api, captured)
+state['commit'] = 'c' * 40
+try:
+    sources.authenticate_adopter_sources(api, captured)
+except sources.AdopterSourceError as exc:
+    assert 'stale' in str(exc)
+else:
+    raise AssertionError('installed source freshness guard accepted moved head')
+state['commit'] = 'a' * 40
+from dataclasses import replace
+for cause in ('physical-id', 'case-alias'):
+    before = len(reads)
+    duplicate = replace(captured[0], id='duplicate',
+        repository='owner/other' if cause == 'physical-id' else 'OWNER/CONSUMER',
+        repository_id='123' if cause == 'physical-id' else '124')
+    try:
+        sources.authenticate_adopter_sources(api, (captured[0], duplicate))
+    except sources.AdopterSourceError as exc:
+        assert 'inventory' in str(exc)
+    else:
+        raise AssertionError('installed frozen inventory accepted ' + cause)
+    assert len(reads) == before
+    duplicate_contract = json.loads(json.dumps(contract))
+    duplicate_contract['required_adopters'].append({'id': 'duplicate', 'profile': 'lite',
+        'repository': 'owner/other' if cause == 'physical-id' else 'OWNER/CONSUMER'})
+    try:
+        sources.resolve_adopter_sources(api, duplicate_contract)
+    except sources.AdopterSourceError as exc:
+        assert 'inventory' in str(exc)
+    else:
+        raise AssertionError('installed capture accepted ' + cause)
+    assert len(reads) - before == (6 if cause == 'physical-id' else 0)
+before = len(reads)
+contract['schema_version'] = '1.3'
+try:
+    sources.resolve_adopter_sources(api, contract)
+except sources.AdopterSourceError as exc:
+    assert 'source policy' in str(exc)
+else:
+    raise AssertionError('installed query accepted caller-selected legacy policy')
+assert len(reads) == before
+print(json.dumps({'authority': False, 'publication_authority': False,
+    'captured': [item.as_dict() for item in captured], 'freshness_rejection': True,
+    'legacy_rejection_before_reads': True, 'physical_and_case_uniqueness': True}, sort_keys=True))
+"""
+    provider_query = subprocess.run(
+        [str(python), "-I", "-c", provider_code], cwd=consumer, env=_environment(),
+        capture_output=True, text=True,
+    )
+    assert provider_query.returncode == 0, _record(provider_query)
+    capture_code = """import copy, hashlib, importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime.operational_observations import validate_timing_capture, OperationalObservationError
+import _bcf_runtime.operational_observations as owner
+assert Path(owner.__file__).resolve().is_relative_to(Path.cwd())
+original = json.load(sys.stdin)
+assert validate_timing_capture(Path.cwd(), json.dumps(original)) == original['observation']
+rejected = 0
+for placement in ('source', 'producer', 'both'):
+    for cause in ('repository', 'different-id', 'string-id', 'float-id', 'bool-id'):
+        capture = copy.deepcopy(original)
+        identity = {key: capture['observation'][key] for key in ('repository', 'repository_id')}
+        capture['source_snapshot'] = {**capture['producer'], **identity}
+        capture['producer'].update(identity)
+        rid = identity['repository_id']
+        value = {'repository': 'other/unrelated', 'different-id': rid + 1,
+                 'string-id': str(rid), 'float-id': float(rid), 'bool-id': True}[cause]
+        field = 'repository' if cause == 'repository' else 'repository_id'
+        if placement in ('source', 'both'):
+            capture['source_snapshot'][field] = value
+        if placement in ('producer', 'both'):
+            capture['producer'][field] = value
+        capture['observation']['source_snapshot_sha256'] = hashlib.sha256(json.dumps(
+            capture['source_snapshot'], sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        try:
+            validate_timing_capture(Path.cwd(), json.dumps(capture))
+        except OperationalObservationError as exc:
+            assert 'repository' in str(exc)
+            rejected += 1
+        else:
+            raise AssertionError('contradictory repository accepted: ' + cause + '/' + placement)
+assert rejected == 15
+print(json.dumps({'authority': False, 'legacy_accepted': True, 'rejected': rejected}))
+"""
+    capture_query = subprocess.run(
+        [str(python), "-I", "-c", capture_code], cwd=consumer, env=_environment(),
+        input=(ROOT / "audits/issue-394/observations/reconcile-b976db49-attempt-1.json").read_text(),
+        capture_output=True, text=True,
+    )
+    assert capture_query.returncode == 0, _record(capture_query)
     prepare_records = _exercise_prepare(consumer, python, fixture_root / "prepare")
     resolve_records = [
         _exercise_resolve(consumer, python, fixture_root / f"resolve-{case or 'valid'}", case)
@@ -417,6 +536,8 @@ print(json.dumps(report, sort_keys=True))
         "status": "pass", "consumer": str(consumer), "python": str(python),
         "bcf_package_absent": _record(probe), "semantic_commands": semantic_records,
         "authored_operation_query": _record(authored_query),
+        "provider_source_query": _record(provider_query),
+        "capture_integrity_query": _record(capture_query),
         "prepare_commands": prepare_records, "resolve_commands": resolve_records,
         "installed_schemas_preserved": True,
     }

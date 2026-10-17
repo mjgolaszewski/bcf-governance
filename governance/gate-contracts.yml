@@ -9,7 +9,7 @@ interpreter_contract:
   optional_dependency_groups: [dev]
   gate_requirements:
     security-dependency-audit: [pip==26.2.1]
-execution_policy: {default_timeout_seconds: 1800}
+execution_policy: {default_timeout_seconds: 1800, default_cleanup_timeout_seconds: 60}
 claim_model:
   version: '1.0'
   dependency_sets:

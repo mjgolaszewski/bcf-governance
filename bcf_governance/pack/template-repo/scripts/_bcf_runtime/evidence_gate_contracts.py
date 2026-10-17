@@ -8,6 +8,8 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_execution import EvidenceError
+from .ci_graph_errors import CIGraphError
+from .ci_graph_timeouts import bounded_execution_seconds, gate_cleanup_timeout_seconds
 
 
 TEST_POLICIES = {
@@ -110,9 +112,17 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
         if isinstance(execution_policy, dict)
         else 1800
     )
+    try:
+        cleanup_timeout = gate_cleanup_timeout_seconds(execution_policy)
+    except CIGraphError as exc:
+        raise EvidenceError(str(exc)) from exc
     timeout = executable["invocation"].get("timeout_seconds", default_timeout)
     if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout < 1:
         raise EvidenceError(f"gate {gate_id!r} execution timeout is invalid")
+    try:
+        timeout = bounded_execution_seconds(timeout, field=f"gate {gate_id!r} execution timeout")
+    except CIGraphError as exc:
+        raise EvidenceError(str(exc)) from exc
     return {
         "id": configured_id,
         "target": str(gate["target"]),
@@ -125,6 +135,7 @@ def _gate_contract(repo_root: Path, gate_id: str) -> dict[str, Any]:
         "output_requirements": outputs,
         "freshness_limit_seconds": freshness,
         "execution_timeout_seconds": timeout,
+        "execution_cleanup_timeout_seconds": cleanup_timeout,
         "invocation": executable["invocation"],
     }
 

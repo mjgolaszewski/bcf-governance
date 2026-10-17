@@ -63,12 +63,21 @@ def _workflow_path(value: object) -> str:
     return text
 
 
-def resolve_main(api: GitHubAPI, repository: str) -> MainIdentity:
+def _repository_default_identity(api: GitHubAPI, repository: str) -> tuple[str, str]:
+    """Bind provider repository facts before consuming either source locator."""
     repo = api.repository(repository)
+    name = repo.get("full_name")
+    if not isinstance(name, str) or name.casefold() != repository.casefold():
+        raise GitHubControllerError("provider repository identity is missing or contradictory")
     repository_id = str(positive_int(repo.get("id"), field="repository ID"))
     branch = repo.get("default_branch")
     if not isinstance(branch, str) or not re.fullmatch(r"[A-Za-z0-9._/-]+", branch):
         raise GitHubControllerError("default branch is missing or unsafe")
+    return repository_id, branch
+
+
+def resolve_main(api: GitHubAPI, repository: str) -> MainIdentity:
+    repository_id, branch = _repository_default_identity(api, repository)
     reference = api.reference(repository, f"heads/{branch}")
     target = reference.get("object")
     if not isinstance(target, dict) or target.get("type") != "commit":
@@ -99,11 +108,7 @@ def resolve_run_subject(
     authority at that commit and authenticate the run against its governed role.
     """
 
-    repo = api.repository(repository)
-    repository_id = str(positive_int(repo.get("id"), field="repository ID"))
-    branch = repo.get("default_branch")
-    if not isinstance(branch, str) or not re.fullmatch(r"[A-Za-z0-9._/-]+", branch):
-        raise GitHubControllerError("default branch is missing or unsafe")
+    repository_id, branch = _repository_default_identity(api, repository)
     numeric_run = str(positive_int(run_id, field="trusted run ID"))
     attempt = positive_int(run_attempt, field="trusted run attempt")
     run = api.run(repository, numeric_run)

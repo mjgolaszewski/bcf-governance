@@ -513,6 +513,26 @@ compatibility `release verify` command remains available, but BCF's governed top
 requires the split operations. The trusted collector recomputes the bindings; a
 candidate-authored pass label is not authority.
 
+Optional `bcf ci qualify-release` compatibility observations use the 1.4
+`governance/release-qualification.yml` source policy. BCF resolves every declared
+adopter's current default branch, commit and tree through authenticated provider
+reads. Supplied checkout roots and interpreters provide resources for those exact
+subjects. A mismatched checkout rejects before runtime allocation; provider
+movement before result collection rejects the completed observation. Maintained
+checkouts remain unchanged, and compatibility results retain no publication
+authority or effect on the required release proof population.
+Missing provider credentials reject before asset reads or checkout inspection.
+
+The 1.3 caller-selected source policy remains readable for historical verification.
+Starting a new qualification requires an explicitly authored 1.4 contract:
+`source: provider_default_branch_transaction`,
+`caller_checkout_role: materialization_resource_only`, and
+`source_freshness: provider_exact_at_capture_and_collection`, with document version
+`1.4.0` and schema version `1.4`. BCF blocks legacy execution before allocation;
+it does not silently upgrade the policy or substitute an older checkout. The CLI
+grammar and nonauthoritative 1.1 receipt format remain unchanged. Offline receipt
+validation does not establish current provider freshness.
+
 BCF retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable
 callback envelope: a pending envelope contains no candidate artifact, while a
@@ -938,3 +958,9 @@ CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
 or performs global Docker/build-cache pruning; it revalidates the exact ID and
 label immediately before deletion and removes container anonymous volumes.
+
+### BCF 2.5 evidence process cleanup
+
+The candidate BCF 2.5 command-containment backend requires Linux procfs, default SIGCHLD ownership, child-subreaper support and wait-without-reap support. Known unsupported host prerequisites block before namespace allocation. Each command receives a temporary supervisor with exclusive kernel child custody; command allocation follows verified subreaper readiness. Startup consumes the command timeout. Success requires the exact command terminal, an empty kernel child tree and drained output, including children adopted after new sessions or double forks. Unexpected live descendants become infrastructure failure after bounded cleanup. Missing or contradictory completion retains execution-state custody. The caller and supervisor share one cleanup allowance; a stalled supervisor cannot obtain another allowance. This is not a cgroup or malicious same-user isolation boundary and does not authorize a host-slot handoff. Source, installed and consumer qualification remain separate requirements.
+
+The gate registry keeps schema version `2.0` and accepts the additive `execution_policy.default_cleanup_timeout_seconds` field. BCF 2.5 uses a 60-second termination allowance when an older registry omits it; this is a safety budget, not a performance target. Canonical installation projects the explicit default. The interpreter metadata probe uses the same command owner. CI deadline validation includes its existing 30-second setup bound and cleanup, main execution and cleanup, plus independent headroom, so an older tightly sized job can now block before allocation. Correct its governed deadline and use canonical reconciliation. This is a per-command floor; complete gate/control sequences, namespace setup/retirement and pipeline bounds require separate composition. Historical receipts remain readable; source and installed-runtime qualification still require their exact subjects.

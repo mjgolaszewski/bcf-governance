@@ -11,6 +11,25 @@ from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 LEGACY_GATE_TIMEOUT_SECONDS = 1800
 LEGACY_HEADROOM_SECONDS = 60
+LEGACY_GATE_CLEANUP_SECONDS = LEGACY_HEADROOM_SECONDS
+INTERPRETER_PROBE_TIMEOUT_SECONDS = 30
+
+
+def bounded_execution_seconds(value: object, *, field: str) -> int:
+    """Validate the common execution-policy scalar before resource allocation."""
+    if type(value) is not int or not 1 <= value <= 21600:
+        raise CIGraphError(f"{field} must be integer seconds in1..21600")
+    return value
+
+
+def gate_cleanup_timeout_seconds(policy: dict[str, Any]) -> int:
+    """One cleanup policy owner for execution, admission and deadline consumers."""
+    if not isinstance(policy, dict):
+        raise CIGraphError("gate cleanup timeout policy is invalid")
+    return bounded_execution_seconds(
+        policy.get('default_cleanup_timeout_seconds', LEGACY_GATE_CLEANUP_SECONDS),
+        field='gate cleanup timeout',
+    )
 
 
 def quantized_deadline_ms(*, bounded_work_ms: int, setup_ms: int, cleanup_ms: int,
@@ -23,12 +42,12 @@ def quantized_deadline_ms(*, bounded_work_ms: int, setup_ms: int, cleanup_ms: in
     return ((required + 59999) // 60000) * 60000
 
 
-def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
+def gate_deadline_contract(repo_root: Path) -> tuple[int, dict[str, int], int]:
     """Read the canonical gate timeout defaults and optional per-gate overrides."""
 
     path = repo_root / "governance/gate-contracts.yml"
     if not path.exists() and not path.is_symlink():
-        return LEGACY_GATE_TIMEOUT_SECONDS, {}
+        return LEGACY_GATE_TIMEOUT_SECONDS, {}, LEGACY_GATE_CLEANUP_SECONDS
     try:
         registry = load_yaml_path(path)
     except GraphYAMLError as exc:
@@ -36,6 +55,7 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
     policy = registry.get("execution_policy", {})
     if not isinstance(policy, dict):
         raise CIGraphError("gate execution timeout policy is invalid")
+    cleanup = gate_cleanup_timeout_seconds(policy)
     default = policy.get("default_timeout_seconds", LEGACY_GATE_TIMEOUT_SECONDS)
     gates = registry.get("gates", {})
     if (
@@ -45,6 +65,7 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
         or not isinstance(gates, dict)
     ):
         raise CIGraphError("gate execution timeout policy is invalid")
+    default = bounded_execution_seconds(default, field="gate execution timeout")
     overrides: dict[str, int] = {}
     for gate_id, raw in gates.items():
         if not isinstance(raw, dict):
@@ -59,14 +80,20 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
         timeout = invocation["timeout_seconds"]
         if isinstance(timeout, bool) or not isinstance(timeout, int) or timeout < 1:
             raise CIGraphError(f"gate {gate_id} execution timeout is invalid")
-        overrides[str(gate_id)] = timeout
+        overrides[str(gate_id)] = bounded_execution_seconds(timeout, field=f"gate {gate_id} execution timeout")
+    return default, overrides, cleanup
+
+
+def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
+    """Preserve the existing interface while validating complete deadline policy."""
+    default, overrides, _cleanup = gate_deadline_contract(repo_root)
     return default, overrides
 
 
 def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
     """Reject any evidence lane whose outer deadline cannot contain one gate deadline."""
 
-    default, overrides = gate_timeout_contract(repo_root)
+    default, overrides, cleanup = gate_deadline_contract(repo_root)
     headroom = graph["policy"].get(
         "minimum_gate_timeout_headroom_seconds", LEGACY_HEADROOM_SECONDS
     )
@@ -79,12 +106,13 @@ def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
                 continue
             maximum = max(overrides.get(str(gate), default) for gate in executor["gates"])
             available = int(job["timeout_minutes"]) * 60
-            required = quantized_deadline_ms(bounded_work_ms=maximum * 1000, setup_ms=0,
-                cleanup_ms=0, measured_lower_bound_ms=0, headroom_ms=headroom * 1000) // 1000
+            required = quantized_deadline_ms(bounded_work_ms=maximum * 1000, setup_ms=INTERPRETER_PROBE_TIMEOUT_SECONDS * 1000,
+                cleanup_ms=2 * cleanup * 1000, measured_lower_bound_ms=0, headroom_ms=headroom * 1000) // 1000
             if available < required:
                 raise CIGraphError(
                     f"CI graph evidence job {job['id']} timeout {available}s cannot contain "
-                    f"the {maximum}s gate timeout plus {headroom}s headroom"
+                    f"the {maximum}s gate timeout plus {INTERPRETER_PROBE_TIMEOUT_SECONDS}s interpreter setup, "
+                    f"two {cleanup}s cleanup bounds and {headroom}s headroom"
                 )
 
 
