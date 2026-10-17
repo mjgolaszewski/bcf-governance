@@ -74,6 +74,23 @@
     },
     "first_governance_result": "required same-candidate state matrix update missing; oracle retained and explanatory matrix update added before rerun",
     "limits": "No protected population derivation or runtime conformance qualification claimed.",
-    "governance": "passed after required state-matrix update"
+    "governance": "passed after required state-matrix update",
+    "installed_consumers": {
+      "passed": 2,
+      "modes": [
+        "fresh",
+        "upgrade"
+      ],
+      "source_package_absent": true,
+      "controls": [
+        "omitted-edge-and-tests",
+        "false-exclusion"
+      ],
+      "canonical_output_matches_source": true,
+      "streams": {
+        "stdout_sha256": "5ce6607f26e3851fa27694e50c83c6bc386fc7efc04cd5c54c4013ca834f343b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
   }
 }
