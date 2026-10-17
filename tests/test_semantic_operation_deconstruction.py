@@ -68,3 +68,24 @@ def test_semantic_admission_observation_preserves_all_prior_operations_and_autho
     assert port in declaration['non_authoritative_output_effects']
     assert port not in declaration['allowed_mutation_ports'] + declaration['allowed_authority_ports']
     assert operation['write_effect_count'] == 12 and operation['authority_effect_count'] == 0
+
+
+def test_import_resolved_operation_effects_preserve_exact_local_environment_port():
+    from bcf_governance.tooling.semantic_ownership_inventory import resolve_python_imports
+    from bcf_governance.tooling.semantic_ownership_registry import load_registry
+
+    prior = json.loads((ROOT / 'audits/issue-394/operation-validator-semantic-admission.json').read_bytes())
+    expected = json.loads(json.dumps(prior))
+    operation = next(row for row in expected if row['operation'] == 'governance.cli.ci.v1')
+    operation['effect_ports'].append({
+        'classification': 'observation',
+        'symbol': 'bcf_governance/tooling/local_pr_context.py::_pr_environment',
+        'target_kind': 'function',
+    })
+    operation['effect_ports'].sort(key=lambda port: (port['classification'], port['target_kind'], port['symbol']))
+    inventory = resolve_python_imports(
+        ROOT, discover_python_source(ROOT), load_registry(ROOT).python_import_roots,
+    )
+    assert contracts.validate_application_operations(ROOT, inventory) == expected
+    assert operation['write_effect_count'] == 12
+    assert operation['authority_effect_count'] == 0
