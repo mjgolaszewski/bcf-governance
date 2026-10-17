@@ -1,0 +1,100 @@
+{
+  "document": {
+    "kind": "pipeline_timing_capture",
+    "path": "audits/issue-394/observations/main100dc-finalizer-39067142495-1.json",
+    "authority": false
+  },
+  "producer": {
+    "commit_sha": "92818bb22f1201e605cfbc2df6d9e32d04b89228",
+    "function": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+    "source_sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311"
+  },
+  "capture_policy": {
+    "source": "Authenticated exact-attempt API with complete jobs and identical run/job/commit rereads",
+    "endpoints": {
+      "run": "repos/mjgolaszewski/bcf-governance/actions/runs/39067142495/attempts/1",
+      "jobs": "repos/mjgolaszewski/bcf-governance/actions/runs/39067142495/attempts/1/jobs?per_page=100"
+    },
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "targets_frozen": false,
+    "eligible_optimization_baseline": false,
+    "scope": "Separate workflow window only; CPU and external waits unmeasured; finalizer artifact is noncertifying PR progress",
+    "raw_sha256": {
+      "main100dc-finalizer-39067142495-1-run.json": "6c48da224d012fa81dda2421b757402ed1458d60de5e704b2f91f778775bbb4d",
+      "main100dc-finalizer-39067142495-1-jobs.json": "24a58c7f6ed6a2ccc52ec1df42d07c258fb79a16aa56d33dc14d2fca5f0f5dc8"
+    }
+  },
+  "source_snapshot": {
+    "repository": {
+      "id": 1207503211,
+      "full_name": "mjgolaszewski/bcf-governance"
+    },
+    "run": {
+      "id": 39067142495,
+      "run_attempt": 1,
+      "head_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+      "event": "workflow_run",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-17T20:32:23Z",
+      "run_started_at": "2026-10-17T20:32:23Z",
+      "updated_at": "2026-10-17T20:40:03Z",
+      "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39067142495"
+    },
+    "commit": {
+      "sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+      "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+    },
+    "jobs": {
+      "total_count": 1,
+      "jobs": [
+        {
+          "id": 117497045776,
+          "run_id": 39067142495,
+          "head_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+          "name": "Reconstruct the newest same-admission exact-main evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T20:32:25Z",
+          "completed_at": "2026-10-17T20:40:02Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39067142495/job/117497045776",
+          "run_attempt": 1
+        }
+      ]
+    }
+  },
+  "observation": {
+    "schema_version": "1.0",
+    "kind": "pipeline_timing",
+    "authority": false,
+    "subject": {
+      "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+      "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+    },
+    "repository": "mjgolaszewski/bcf-governance",
+    "repository_id": 1207503211,
+    "source_snapshot_sha256": "75386735e8aca925dc5cef00a35cfcf1eb6c1221c10dfff3477d1c8952803f11",
+    "pipeline": "exact_main",
+    "clock_id": "github:1207503211:run:39067142495:attempt:1",
+    "clock_basis": "provider_utc_ms",
+    "start_ms": 1792269143000,
+    "end_ms": 1792269603000,
+    "elapsed_ms": 460000,
+    "execution_union_ms": 457000,
+    "execution_sum_ms": 457000,
+    "external_wait_union_ms": 0,
+    "uncovered_ms": 3000,
+    "cpu_ms": "unknown",
+    "intervals": [
+      {
+        "id": "117497045776",
+        "clock_id": "github:1207503211:run:39067142495:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792269145000,
+        "end_ms": 1792269602000
+      }
+    ]
+  }
+}

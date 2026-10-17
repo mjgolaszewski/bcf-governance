@@ -488,3 +488,13 @@ v234_captures:
     cause: Provider run_started_at precedes created_at by one second; existing strict timing projection rejects.
     disposition: Retain raw facts without clamping; no valid elapsed or percentile claim.
   limits: Separate workflow windows are not dispatch-to-custody or merge-to-custody certification; CPU and external waits remain unmeasured.
+
+successor_main100dc_captures:
+  authority: false
+  status: unmatched_observations_with_retained_timestamp_rejections
+  review: audits/issue-394/main100dc-provider-timing-review.json
+  valid_finalizer_window_ms: 460000
+  accepted:
+  - audits/issue-394/observations/main100dc-finalizer-39067142495-1.json
+  rejected_run_attempts: [39063214914/2, 39067142494/1]
+  interpretation: One complete finalizer workflow window; not phase certification or end-to-end custody. Admission start precedes creation and two rotation jobs end before start; strict existing projection rejects both without repair. Targets and matched cohorts remain unfrozen.

@@ -313,6 +313,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/v234-pr-log-supplement.json
+    - audits/issue-394/main100dc-provider-timing-review.json
     - audits/issue-394/capture-repository-binding-contract.json
     - audits/issue-394/capture-repository-binding-verification.json
   dormant.early-checks:
