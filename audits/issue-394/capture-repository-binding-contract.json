@@ -1,0 +1,57 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-06",
+  "bounded_context": "operations",
+  "architectural_layer": "tooling",
+  "operation_side": "pure query",
+  "owner": "bcf_governance/tooling/operational_observations.py::validate_timing_capture",
+  "targets": [
+    "bcf_governance/tooling/operational_observations.py",
+    "tests/test_operational_observations.py"
+  ],
+  "invariants": [
+    "I03",
+    "I18",
+    "I21",
+    "AC07",
+    "AC30"
+  ],
+  "contract": [
+    "For local captures, every explicitly declared repository name or repository ID in the retained source snapshot and producer must agree exactly with the observation.",
+    "A self-consistent source digest cannot repair a contradictory repository label or substitute float/bool/string IDs for the observation's positive integer identity.",
+    "Preserve legacy local captures without optional repository metadata, existing provider projection, stream binding, source/clock checks and nonauthoritative result format.",
+    "Acceptance still proves only internal integrity and arithmetic. Missing repository declarations never become authenticated facts, matched cohort eligibility, baseline approval or provider authority.",
+    "Reject contradictions in the existing pure acceptance owner before later baseline aggregation; do not introduce a second capture validator, authority flag, receipt family or caller-selected repository override.",
+    "Keep immutable original captures unchanged; regenerate mirrors only through the canonical owner."
+  ],
+  "positive_tests": [
+    "Original valid local/provider captures remain byte-identical and accepted within their existing narrow scope.",
+    "Explicit correct local source/producer repository metadata is accepted without conferring authority."
+  ],
+  "negative_controls": [
+    "Wrong local source repository or ID with a correctly recomputed snapshot digest is rejected.",
+    "Wrong producer metadata cannot hide behind an explicit consistent source snapshot.",
+    "An ID numerically equal to the observation but represented as float/string is not silently repaired."
+  ],
+  "forbidden": [
+    "Active primary submission bytes or transaction state",
+    "Original observation/capture mutation",
+    "New source authentication or matched/statistical performance claims",
+    "Provider writes, maintained adopters or immutable custody mutation"
+  ],
+  "integration": "Isolated until the active primary transaction has an authenticated terminal and scoped source/runtime parity passes. All whole requirements stay open.",
+  "installed_verification": {
+    "consumer": "tests/test_installed_evidence_storage.py::exercise_installed_consumer",
+    "profiles": [
+      "fresh",
+      "upgrade"
+    ],
+    "contract": [
+      "Extend the existing combined installed consumer probe; source package absent under isolated Python.",
+      "Consume immutable original capture JSON as input data, not source imports; read schemas from the actual installed consumer.",
+      "Accept the unchanged legacy capture, reject each contradictory source/producer identity type and preserve authority false.",
+      "Keep real compiler, durable evidence, archive/ref negative controls and schema preservation in the same existing fixture."
+    ],
+    "execution": "Defer full installed execution until actual primary transaction terminal and native admission."
+  }
+}

@@ -280,6 +280,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/v234-pr-log-supplement.json
+    - audits/issue-394/capture-repository-binding-contract.json
+    - audits/issue-394/capture-repository-binding-verification.json
   dormant.early-checks:
     summary: Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
     status: TODO
@@ -4119,6 +4121,9 @@ implementation_slices:
     - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[pr-426-attempt-1.json]
     - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[reconcile-b976db49-attempt-1.json]
     - tests.test_operational_observations::test_capture_acceptance_recomputes_retained_provider_and_local_observations[reconcile-0e99bece-attempt-1.json]
+    - tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[source]
+    - tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[producer]
+    - tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[both]
     negative_controls:
     - cause: source-digest
       test: tests.test_operational_observations::test_capture_acceptance_rejects_corruption_before_baseline[source-digest]
@@ -4162,6 +4167,36 @@ implementation_slices:
       test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[provider-undeclared-stream]
     - cause: provider-missing-stream
       test: tests.test_operational_observations::test_capture_acceptance_rejects_self_consistent_unqualified_metadata[provider-missing-stream]
+    - cause: repository-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-source]
+    - cause: repository-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-producer]
+    - cause: repository-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-both]
+    - cause: different-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-source]
+    - cause: different-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-producer]
+    - cause: different-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-both]
+    - cause: string-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-source]
+    - cause: string-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-producer]
+    - cause: string-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-both]
+    - cause: float-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-source]
+    - cause: float-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-producer]
+    - cause: float-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-both]
+    - cause: bool-id-source
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-source]
+    - cause: bool-id-producer
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-producer]
+    - cause: bool-id-both
+      test: tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-both]
     remaining:
     - Wire into any future cohort collection before accepted persistence or statistics; no aggregation path exists yet.
     - Independently authenticate provider/source custody and freeze matched measurement protocol and approved budgets.

@@ -471,3 +471,49 @@ def test_capture_acceptance_rejects_self_consistent_unqualified_metadata(cause):
         capture['producer']['stdout_sha256'] = hashlib.sha256(b'missing').hexdigest()
     with pytest.raises(OperationalObservationError):
         validate_timing_capture(Path(__file__).resolve().parents[1], json.dumps(capture))
+
+
+def _capture_repository_metadata(placement):
+    import json, hashlib
+    capture = _retained_timing_capture('reconcile-b976db49-attempt-1.json')
+    identity = {key: capture['observation'][key] for key in ('repository', 'repository_id')}
+    if placement in {'source', 'both'}:
+        capture['source_snapshot'] = {**capture['producer'], **identity}
+    if placement in {'producer', 'both'}:
+        capture['producer'].update(identity)
+    source = capture.get('source_snapshot', capture['producer'])
+    capture['observation']['source_snapshot_sha256'] = hashlib.sha256(
+        json.dumps(source, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    return capture
+
+
+@pytest.mark.parametrize('placement', ['source', 'producer', 'both'])
+def test_local_capture_accepts_consistent_optional_repository_metadata(placement):
+    import json
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    capture = _capture_repository_metadata(placement)
+    before = json.dumps(capture, sort_keys=True)
+    result = validate_timing_capture(Path(__file__).resolve().parents[1], before)
+    assert result == capture['observation'] and result['authority'] is False
+    assert json.dumps(capture, sort_keys=True) == before
+
+
+@pytest.mark.parametrize('placement', ['source', 'producer', 'both'])
+@pytest.mark.parametrize('cause', ['repository', 'different-id', 'string-id', 'float-id', 'bool-id'])
+def test_local_capture_rejects_rebound_repository_labels_before_baseline(placement, cause):
+    import json, hashlib
+    from bcf_governance.tooling.operational_observations import validate_timing_capture
+    capture = _capture_repository_metadata('both')
+    identity = capture['observation']['repository_id']
+    field = 'repository' if cause == 'repository' else 'repository_id'
+    value = {'repository': 'other/unrelated', 'different-id': identity + 1,
+             'string-id': str(identity), 'float-id': float(identity), 'bool-id': True}[cause]
+    if placement in {'source', 'both'}:
+        capture['source_snapshot'][field] = value
+    if placement in {'producer', 'both'}:
+        capture['producer'][field] = value
+    source = capture['source_snapshot']
+    capture['observation']['source_snapshot_sha256'] = hashlib.sha256(
+        json.dumps(source, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+    with pytest.raises(OperationalObservationError, match='repository'):
+        validate_timing_capture(Path(__file__).resolve().parents[1], json.dumps(capture))
