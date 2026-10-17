@@ -1,0 +1,220 @@
+{
+  "document": {
+    "kind": "pipeline_timing_capture",
+    "path": "audits/issue-394/observations/pr-430-attempt-1.json",
+    "authority": false
+  },
+  "producer": {
+    "commit_sha": "9e27b25f06ee99133bdfae260d253d2523be50f1",
+    "function": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+    "source_sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311"
+  },
+  "capture_policy": {
+    "window": "run-created to latest observed job completion or run update",
+    "precision_ms": 1000,
+    "source": "Authenticated read-only attempt-specific API; complete single-page jobs and identical terminal run/jobs/commit rereads. Exact merged PR430 head and independent commit/tree authenticated. Raw reads retained separately with hashes. Complete population contains6 jobs.",
+    "endpoints": {
+      "repository": "repos/mjgolaszewski/bcf-governance",
+      "run": "repos/mjgolaszewski/bcf-governance/actions/runs/39023412426/attempts/1",
+      "jobs": "repos/mjgolaszewski/bcf-governance/actions/runs/39023412426/attempts/1/jobs?per_page=100",
+      "commit": "repos/mjgolaszewski/bcf-governance/commits/e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+      "pr": "repos/mjgolaszewski/bcf-governance/pulls/430"
+    },
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "targets_frozen": false,
+    "eligible_optimization_baseline": false,
+    "ineligibility": "Unmatched preactivation2.5 source; no frozen matched measurement protocol/cohort or approved targets.",
+    "scope": "PR workflow attempt only; no developer interruption, merge, release, custody, external-wait or CPU inference.",
+    "complete_job_population_reread_equal": true,
+    "terminal_run_reread_equal": true,
+    "raw_sha256": {
+      "first": {
+        "repository": "b5eed722e2aebe0b3b49569b1cdc845f36d4c4feacc97903f45fd5b6fe34c277",
+        "run": "f6c3898597039884df75c3fe0e2377f98d7252ec8045747f19121dd76f825702",
+        "jobs": "adb369303274c340c4493daaa84b40f1f20b87d563a8e4079d8048b7aa89f658",
+        "commit": "ad359e29adc46893244cedd1bca03a7734c54eecf51e725291a79285d458d8e4",
+        "pr": "e593b9fe60e8021ef4565c8e0da00906664baa796d234ffcde56d958d33516e4"
+      },
+      "second": {
+        "repository": "b5eed722e2aebe0b3b49569b1cdc845f36d4c4feacc97903f45fd5b6fe34c277",
+        "run": "f6c3898597039884df75c3fe0e2377f98d7252ec8045747f19121dd76f825702",
+        "jobs": "adb369303274c340c4493daaa84b40f1f20b87d563a8e4079d8048b7aa89f658",
+        "commit": "ad359e29adc46893244cedd1bca03a7734c54eecf51e725291a79285d458d8e4",
+        "pr": "e593b9fe60e8021ef4565c8e0da00906664baa796d234ffcde56d958d33516e4"
+      }
+    }
+  },
+  "source_snapshot": {
+    "repository": {
+      "id": 1207503211,
+      "full_name": "mjgolaszewski/bcf-governance"
+    },
+    "run": {
+      "id": 39023412426,
+      "run_attempt": 1,
+      "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-10-17T10:02:54Z",
+      "run_started_at": "2026-10-17T10:02:54Z",
+      "updated_at": "2026-10-17T10:37:42Z",
+      "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426"
+    },
+    "commit": {
+      "sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+      "tree_sha": "754eb8c36751f29d6a4071baa113089db93d8116"
+    },
+    "jobs": {
+      "total_count": 6,
+      "jobs": [
+        {
+          "id": 117369562119,
+          "run_id": 39023412426,
+          "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+          "name": "Validate governance front door",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T10:02:56Z",
+          "completed_at": "2026-10-17T10:05:45Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426/job/117369562119",
+          "run_attempt": 1
+        },
+        {
+          "id": 117370089406,
+          "run_id": 39023412426,
+          "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+          "name": "Evidence / Evidence shard 0",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T10:05:47Z",
+          "completed_at": "2026-10-17T10:06:21Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426/job/117370089406",
+          "run_attempt": 1
+        },
+        {
+          "id": 117370089407,
+          "run_id": 39023412426,
+          "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+          "name": "Evidence / Evidence shard 3",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T10:05:47Z",
+          "completed_at": "2026-10-17T10:06:16Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426/job/117370089407",
+          "run_attempt": 1
+        },
+        {
+          "id": 117370089437,
+          "run_id": 39023412426,
+          "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+          "name": "Evidence / Evidence shard 2",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T10:05:47Z",
+          "completed_at": "2026-10-17T10:37:06Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426/job/117370089437",
+          "run_attempt": 1
+        },
+        {
+          "id": 117370089486,
+          "run_id": 39023412426,
+          "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+          "name": "Evidence / Evidence shard 1",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T10:05:47Z",
+          "completed_at": "2026-10-17T10:06:18Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426/job/117370089486",
+          "run_attempt": 1
+        },
+        {
+          "id": 117375798527,
+          "run_id": 39023412426,
+          "head_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+          "name": "Verify exact-tree governance evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-17T10:37:08Z",
+          "completed_at": "2026-10-17T10:37:41Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39023412426/job/117375798527",
+          "run_attempt": 1
+        }
+      ]
+    }
+  },
+  "observation": {
+    "schema_version": "1.0",
+    "kind": "pipeline_timing",
+    "authority": false,
+    "subject": {
+      "commit_sha": "e544acdd070941329005ae2c1ec4ac1fb85a86f6",
+      "tree_sha": "754eb8c36751f29d6a4071baa113089db93d8116"
+    },
+    "repository": "mjgolaszewski/bcf-governance",
+    "repository_id": 1207503211,
+    "source_snapshot_sha256": "a2fb8fb50d32d26703464fe03d222bf486558aa18b62a40e10064f2e8ec68797",
+    "pipeline": "pr",
+    "clock_id": "github:1207503211:run:39023412426:attempt:1",
+    "clock_basis": "provider_utc_ms",
+    "start_ms": 1792231374000,
+    "end_ms": 1792233462000,
+    "elapsed_ms": 2088000,
+    "execution_union_ms": 2081000,
+    "execution_sum_ms": 2175000,
+    "external_wait_union_ms": 0,
+    "uncovered_ms": 7000,
+    "cpu_ms": "unknown",
+    "intervals": [
+      {
+        "id": "117369562119",
+        "clock_id": "github:1207503211:run:39023412426:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792231376000,
+        "end_ms": 1792231545000
+      },
+      {
+        "id": "117370089406",
+        "clock_id": "github:1207503211:run:39023412426:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792231547000,
+        "end_ms": 1792231581000
+      },
+      {
+        "id": "117370089407",
+        "clock_id": "github:1207503211:run:39023412426:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792231547000,
+        "end_ms": 1792231576000
+      },
+      {
+        "id": "117370089437",
+        "clock_id": "github:1207503211:run:39023412426:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792231547000,
+        "end_ms": 1792233426000
+      },
+      {
+        "id": "117370089486",
+        "clock_id": "github:1207503211:run:39023412426:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792231547000,
+        "end_ms": 1792231578000
+      },
+      {
+        "id": "117375798527",
+        "clock_id": "github:1207503211:run:39023412426:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792233428000,
+        "end_ms": 1792233461000
+      }
+    ]
+  }
+}

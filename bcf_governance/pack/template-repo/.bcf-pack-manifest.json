@@ -736,7 +736,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd"
+      "sha256": "41a8676a152c63ac17a6dfdf22e4b1649d361271909cb991d7e134b6fc15bbb2"
     },
     "scripts/_bcf_runtime/ci_graph_composition_costs.py": {
       "operation": "copy",
@@ -745,6 +745,10 @@
     "scripts/_bcf_runtime/ci_graph_composition_operations.py": {
       "operation": "copy",
       "sha256": "9a89f29fdff66c4842cba03691df5bb5c9edfb8d75d49d3b61f1ba2f3b8b80af"
+    },
+    "scripts/_bcf_runtime/ci_graph_composition_populations.py": {
+      "operation": "copy",
+      "sha256": "d781d011e371c991d7e28fe42af4c26673ec9307cdf10e40ec23f483982705ba"
     },
     "scripts/_bcf_runtime/ci_graph_composition_schemas.py": {
       "operation": "copy",
@@ -756,7 +760,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "01fd69a006b3bc299491d895d7e44fca31663d45be8a26d41fb830c793f3597c"
+      "sha256": "f417a21914ebfa0067ee06ebb52a810476b3d8a065e0829ac8a1576f7b829abf"
     },
     "scripts/_bcf_runtime/ci_graph_controller_install.py": {
       "operation": "copy",
@@ -780,7 +784,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_edges.py": {
       "operation": "copy",
-      "sha256": "59b36c77b849e0d88f888802e966d0e3bd050a6a5c20f70354dff41efca38556"
+      "sha256": "2e978242ead9b9b0cb3b7fc17a3a00fac745cf0b108712e103c2e61950f4dc8e"
     },
     "scripts/_bcf_runtime/ci_graph_errors.py": {
       "operation": "copy",
