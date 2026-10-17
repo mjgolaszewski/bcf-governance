@@ -1,0 +1,37 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-01",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "owner": "bcf_governance/tooling/ci_github_identity.py",
+  "targets": [
+    "bcf_governance/tooling/ci_github_identity.py",
+    "tests/test_ci_github_controller.py",
+    "tests/test_ci_github_main_identity.py"
+  ],
+  "contract": [
+    "Default-main and provider-run source reconstruction require provider-reported full_name to identify the requested repository under GitHub case-insensitive repository naming.",
+    "Missing, non-string, blank or contradictory provider repository identity rejects before branch-reference, commit or run reads; no fallback to a caller label.",
+    "Preserve existing repository ID, branch, ref, commit/tree and run identity checks and external CLI/dataclass contracts.",
+    "Use the existing shared identity owner for both real consumers; no parallel resolver or authority family.",
+    "Existing synthetic ports must provide the actual mandatory repository fact; do not bypass the new guard in tests."
+  ],
+  "positive_tests": [
+    "Matching repository identity including legitimate case changes retains exact source reconstruction.",
+    "Existing controller, automation, PR authority, exact-main and run callbacks retain their behavior with complete provider fixtures."
+  ],
+  "negative_controls": [
+    "Contradictory/missing/malformed names reject independently in default-main and provider-run reconstruction before later reads.",
+    "Explicit metadata from a different repository cannot be converted into the caller-requested repository by correct branch/commit/tree values."
+  ],
+  "forbidden": [
+    "Live primary submission bytes and transaction state",
+    "Provider mutations or maintained adopters",
+    "Workflow pins and generated authority commits"
+  ],
+  "limits": [
+    "No certification from source tests or bus reports; integrate only after native scoped source/installed qualification and primary terminal.",
+    "Provider endpoint custody remains necessary; metadata consistency alone is not sufficient authentication."
+  ]
+}
