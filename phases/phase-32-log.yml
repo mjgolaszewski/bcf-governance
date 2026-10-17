@@ -285,6 +285,7 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
+- Normalized305 compiler characterization passes332 cases with unchanged source; historical oracle failure retained in audits/issue-394/lifecycle-population-characterization.json; proceed with contracted pure extraction, full populations remain open
 - Bind the complete actual lifecycle and runtime-effect populations using existing canonical owners; positive/control references alone do not establish executable conformance
 - Generate the prose DAG and human matrices from the adopted machine contract; prose remains context until complete adoption and reverse conformance pass
 - Measure matched pipeline baselines and freeze reviewed targets before optimization is judged; retain the unattributed adopter compatibility/interpreter failure as a non-authoritative residual
