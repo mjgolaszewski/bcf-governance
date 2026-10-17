@@ -370,11 +370,12 @@ def test_operation_source_scope_is_closed_and_typed(inputs):
 
 @pytest.mark.parametrize('target', ['python', 'missing_python', 'foreign'])
 def test_authored_python_catalog_scope_uses_discovered_source_facts(inputs, monkeypatch, target):
+    import copy
     from bcf_governance.tooling import semantic_ownership_scan as scan
     from bcf_governance.tooling.semantic_ownership_registry import SemanticOwnershipRegistryError
 
     root, facts = _authored_query_inputs(inputs, monkeypatch)
-    before = json.loads(json.dumps(facts))
+    before = copy.deepcopy(facts)
     entrypoint = {'python': 'runtime.py::work', 'missing_python': 'runtime.py::missing',
                   'foreign': 'foreign.ts::work'}[target]
     (root / 'catalog.yml').write_text(yaml.safe_dump({'catalog': {'work': entrypoint}}))
