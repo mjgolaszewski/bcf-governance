@@ -1,0 +1,22 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-07",
+  "scope": "Move deterministically discoverable Python public-operation failures into the existing authored semantic admission query",
+  "trigger": "Canonical a750 normalization rejected an undeclared decorated local effect after the earlier authored ownership query passed; import-resolved regression4aa0dddb reproduces the production path.",
+  "affected_surfaces": ["bcf_governance/tooling/semantic_authority_operations.py", "bcf_governance/tooling/semantic_authority_contracts.py", "bcf_governance/tooling/semantic_ownership_scan.py", "tests/test_semantic_protected_operations.py", "tests/test_semantic_ownership.py", "tests/test_candidate_submit.py"],
+  "contract": [
+    "Reuse the existing application-operation schema, population discovery, classification and effect validator; add no parallel evaluator or graph.",
+    "Extend the existing validator with an additive Python source scope; default full validation remains byte-compatible. Validate registry structure before selecting any scoped population.",
+    "Scope Python adapters directly and source-qualified Python canonical catalogs; defer foreign operation populations to unchanged full toolchain verification, without accepting a whole-operation or runtime proof.",
+    "Invoke the same scoped validator from the existing authored query using its already import-resolved Python inventory, before normalization lease, reconciliation, provider proof or allocation.",
+    "Preserve legacy repositories without operation contracts, existing capability semantics, ordinary CLI grammar/status identities and all unresolved/decorated dispatch rejection rules.",
+    "Keep the query nonauthoritative and static; full semantic locking, cross-language proof and execution remain mandatory."
+  ],
+  "verification": [
+    "An import-resolved decorated effect lacking its exact local port must reject at the authored query, reproducing the canonical failure without expensive reconciliation.",
+    "Dynamic Python public populations and malformed registries reject before allocation; an exact declared local effect retains success.",
+    "Mixed Python/TypeScript contracts check the Python scope without compiler execution and remain subject to unchanged full verification.",
+    "Existing no-lease/no-reconciliation submission controls, default21-operation golden, qualified operation controls, native architecture/governance and generated package parity remain required."
+  ],
+  "remaining": "This static admission check does not complete lifecycle population/runtime conformance, activate suppression, authorize source-owned policy, or close any whole Issue394 requirement."
+}
