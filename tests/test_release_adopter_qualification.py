@@ -529,7 +529,8 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
     assert not (tmp_path / 'receipt.json').exists()
 
 
-@pytest.mark.parametrize('defect', ['stale-commit', 'stale-tree', 'legacy-policy', 'missing-token'])
+@pytest.mark.parametrize('defect', ['stale-commit', 'stale-tree', 'legacy-policy', 'missing-token',
+                                  'wrong-repository', 'duplicate-resource', 'missing-resource'])
 def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, monkeypatch, defect):
     from bcf_governance.tooling.ci_github_api import GitHubAPI
 
@@ -578,8 +579,13 @@ def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, 
         contract['schema_version'] = '1.3'
     else:
         repo, commit, tree = identities[roots[-1].resolve()]
-        identities[roots[-1].resolve()] = (repo, 'f' * 40 if defect == 'stale-commit' else commit,
+        identities[roots[-1].resolve()] = ('owner/unrelated' if defect == 'wrong-repository' else repo,
+                                          'f' * 40 if defect == 'stale-commit' else commit,
                                           'e' * 40 if defect == 'stale-tree' else tree)
+        if defect == 'duplicate-resource':
+            roots.append(roots[0])
+        elif defect == 'missing-resource':
+            roots.pop()
     monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
     if defect == 'missing-token':
         monkeypatch.delenv('GITHUB_TOKEN')
@@ -590,13 +596,13 @@ def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, 
     monkeypatch.setattr(qualification, 'load_contract', lambda _root: contract)
     monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
     monkeypatch.setattr(qualification.tempfile, 'TemporaryDirectory', allocation)
-    with pytest.raises(ReleaseQualificationError, match='source policy|provider source|token is required'):
+    with pytest.raises(ReleaseQualificationError, match='source policy|provider source|token is required|inventory|duplicate'):
         qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
                         release_build_manifest=manifest, adopter_roots=roots,
                         adopter_pythons={}, producer=PRODUCER, output=tmp_path / 'receipt.json')
     assert effects == []
     assert not (tmp_path / 'receipt.json').exists()
-    if defect in {'legacy-policy', 'missing-token'}:
+    if defect in {'legacy-policy', 'missing-token', 'wrong-repository', 'duplicate-resource', 'missing-resource'}:
         assert reads == []
 
 

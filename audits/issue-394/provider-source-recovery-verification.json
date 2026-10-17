@@ -336,5 +336,55 @@
       }
     ],
     "source_cases_passed": 77
-  }
+  },
+  "resource_control_expansion": {
+    "provider-source-resource-expanded": {
+      "capture_sha256": "8cfc293c09ae13c533bc20e79975294c17c0ccc8ab1fcc0c9b8bf7d4738ab483",
+      "authority": false,
+      "subject": "5fc647313e0aa8fe1a60b8296e3590550debb036",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 2261,
+      "stdout_sha256": "47dda59cdb853ba6771a3d8715b68db0e6e90190063b7709ed1b7728fcc3143e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "provider-source-bindings-and-bare-template": {
+      "capture_sha256": "b129090e591e8c9320889c0a0abb83373561e2af38cf914bb0a3b8098297ab4d",
+      "authority": false,
+      "dirty": true,
+      "stages": [
+        {
+          "stage": "binding-controls",
+          "returncode": 0,
+          "elapsed_ms": 9380,
+          "stdout_sha256": "99a3db9bd13a76236159c5950fcc2436bbc03280e310d5b159369677508a8b7d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "bare-template-0",
+          "scope": "bare template runtime only; no installation or real provider proof",
+          "returncode": 0,
+          "elapsed_ms": 867,
+          "stdout_sha256": "200a115d094d13a1fa46486822ed16f774eb540bfcc8bca8c6b8bcd6ceb34e59",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "bare-template-1",
+          "scope": "bare template runtime only; no installation or real provider proof",
+          "returncode": 0,
+          "elapsed_ms": 317,
+          "stdout_sha256": "200a115d094d13a1fa46486822ed16f774eb540bfcc8bca8c6b8bcd6ceb34e59",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    "scope": "80 working-source cases pass1.68s, including wrong-repository/duplicate/missing resources rejected before provider reads or allocation. Existing workplan now36 slices, with5 positive/32 cause-specific exact bindings for this slice;2 schema/exact-collection checks pass. Both bare template runtimes execute the authored probe with canonical package absent; no fresh/upgrade installation or real-adopter execution claim.",
+    "tested_files_sha256": {
+      "tests/test_release_adopter_sources.py": "8faea01154a1c1e28e51d8ede798685f506ffd752433c08ed9cd3a45e0f26dac",
+      "tests/test_release_adopter_qualification.py": "a60bba2e89b13d60e937841f3e2cdc1a3df538eda69a6c4e245ba38545b35445",
+      "tests/test_installed_evidence_storage.py": "46e41f9dbb99de0b8595d74d81e0b8006c72fa615af7b7dd94fd2e97b2d82cbf",
+      "audits/issue-394/workplan.yml": "9fbb7a0e07fa8f78938d4e35ad47765ad7d8306f846d6a59a7c0c485d756fa8c"
+    }
+  },
+  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources"
 }

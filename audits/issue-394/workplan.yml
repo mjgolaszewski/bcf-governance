@@ -770,6 +770,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-derived-compatibility-sources
     - authenticated-bound-pr-comparison-context
     - separate-pipeline-clock-observation
   I04:
@@ -858,6 +859,8 @@ requirements:
       scenario: Cause-specific I07 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   I08:
     requirement: "No time-based laundering. Periodic evidence satisfies a consumer only after exact proposition, dependencies, policy, source, toolchain/environment, qualification, freshness and authority validation. \u201CGreen last night\u201D is insufficient."
     owner: evidence
@@ -1111,6 +1114,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-derived-compatibility-sources
     - committed-tree-before-provider
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
@@ -1134,6 +1138,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-derived-compatibility-sources
     - committed-tree-before-provider
     - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
@@ -1168,6 +1173,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - provider-derived-compatibility-sources
     - authenticated-bound-pr-comparison-context
     - derived-comparison-context-before-preflight-work
     - authenticated-provider-retry-consumption
@@ -1220,6 +1226,8 @@ requirements:
       scenario: Cause-specific I24 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   I25:
     requirement: "Single canonical handoff. One admitted candidate/operation has one tracked submit/release transaction and resumable exact continuation. A second frontend invocation must observe/join or reject duplicate in-flight work under policy, not launch another identical train. Transport ambiguity is not \u201Cexactly once\u201D; authenticate outcome before retrying a mutation. No duplicate local gate train solely because the operation crosses a workflow boundary."
     owner: evidence
@@ -1734,6 +1742,8 @@ requirements:
       scenario: Cause-specific CP10 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   AC01:
     requirement: 'Docs-only candidate: every required proposition still accounted for through valid reuse/execution; no blanket path skip.'
     owner: evidence
@@ -2125,6 +2135,8 @@ requirements:
       scenario: Cause-specific AC19 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   AC20:
     requirement: 'One required adopter source advances after snapshot/before collection: current freshness rule enforced, sound affected remainder derived, no hidden older-green fallback or global unnecessary requalification.'
     owner: ci_authority
@@ -2144,6 +2156,8 @@ requirements:
       scenario: Cause-specific AC20 violation is independently rejected
     terminal_gate: certification.custody
     evidence_status: not_executed
+    implementation_slices:
+    - provider-derived-compatibility-sources
   AC21:
     requirement: "Retry exact prospective\u2192submit or release\u2192qualification continuation: only invalidated/unobserved work executes; duplicate concurrent invocation cannot create duplicate admitted mutation or claim credit."
     owner: evidence
@@ -4225,3 +4239,90 @@ implementation_slices:
     remaining:
     - Exact installed nested projection and new canonical real pinned-adopter transaction remain required.
     - Entire independent consumer/failure populations, targets and custody remain open; no CP07 closure.
+  provider-derived-compatibility-sources:
+    id: provider-derived-compatibility-sources
+    workitem: P32-P0-02
+    scope: Derive complete provider-selected compatibility subjects before allocation; root resources cannot select sources,
+      freshness is rechecked before output and legacy source policy blocks under explicit1.4 migration.
+    contract: audits/issue-394/provider-source-recovery-contract.json
+    producer: bcf_governance/tooling/release_adopter_sources.py::resolve_adopter_sources
+    consumer: bcf_governance/tooling/release_adopter_qualification.py::qualify_release
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_release_adopter_sources::test_provider_source_population_is_complete_ordered_and_authentic
+    - tests.test_release_adopter_qualification::test_historical_source_policy_decodes_but_cannot_authorize_new_execution
+    - tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[None]
+    - tests.test_release_adopter_qualification::test_qualification_receipt_requires_exact_subject_assets_and_adopters[1.3]
+    - tests.test_release_adopter_qualification::test_qualification_receipt_requires_exact_subject_assets_and_adopters[1.4]
+    negative_controls:
+    - cause: provider-source-freshness-id-456
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[id-456]
+    - cause: provider-source-freshness-branch-other
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[branch-other]
+    - cause: provider-source-freshness-commit-cccccccccccccccccccccccccccccccccccccccc
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[commit-cccccccccccccccccccccccccccccccccccccccc]
+    - cause: provider-source-freshness-tree-dddddddddddddddddddddddddddddddddddddddd
+      test: tests.test_release_adopter_sources::test_provider_source_movement_rejects_frozen_inventory[tree-dddddddddddddddddddddddddddddddddddddddd]
+    - cause: source-population-before-provider-read-empty
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[empty]
+    - cause: source-population-before-provider-read-duplicate_repository
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[duplicate_repository]
+    - cause: source-population-before-provider-read-duplicate_id
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[duplicate_id]
+    - cause: source-population-before-provider-read-missing_profile
+      test: tests.test_release_adopter_sources::test_provider_source_inventory_rejects_before_reads[missing_profile]
+    - cause: provider-response-before-allocation-unavailable
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[unavailable]
+    - cause: provider-response-before-allocation-wrong_ref
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[wrong_ref]
+    - cause: provider-response-before-allocation-wrong_commit
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[wrong_commit]
+    - cause: provider-response-before-allocation-bad_id
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[bad_id]
+    - cause: provider-response-before-allocation-bad_tree
+      test: tests.test_release_adopter_sources::test_provider_source_failure_cannot_become_pinned_or_partial_success[bad_tree]
+    - cause: source-policy-before-provider-read-legacy
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[legacy]
+    - cause: source-policy-before-provider-read-missing
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[missing]
+    - cause: source-policy-before-provider-read-caller_role
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[caller_role]
+    - cause: source-policy-before-provider-read-freshness
+      test: tests.test_release_adopter_sources::test_source_policy_migration_block_precedes_provider_reads[freshness]
+    - cause: source-policy-schema-contradiction-source
+      test: tests.test_release_adopter_qualification::test_provider_source_policy_cannot_mix_legacy_selection_fields[source]
+    - cause: source-policy-schema-contradiction-caller_checkout_role
+      test: tests.test_release_adopter_qualification::test_provider_source_policy_cannot_mix_legacy_selection_fields[caller_checkout_role]
+    - cause: source-policy-schema-contradiction-source_freshness
+      test: tests.test_release_adopter_qualification::test_provider_source_policy_cannot_mix_legacy_selection_fields[source_freshness]
+    - cause: resource-policy-credential-before-allocation-stale-commit
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[stale-commit]
+    - cause: resource-policy-credential-before-allocation-stale-tree
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[stale-tree]
+    - cause: resource-policy-credential-before-allocation-legacy-policy
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[legacy-policy]
+    - cause: resource-policy-credential-before-allocation-missing-token
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[missing-token]
+    - cause: resource-policy-credential-before-allocation-wrong-repository
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[wrong-repository]
+    - cause: resource-policy-credential-before-allocation-duplicate-resource
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[duplicate-resource]
+    - cause: resource-policy-credential-before-allocation-missing-resource
+      test: tests.test_release_adopter_qualification::test_provider_selection_rejects_resources_before_first_allocation[missing-resource]
+    - cause: collection-freshness-no-output-id
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[id]
+    - cause: collection-freshness-no-output-branch
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[branch]
+    - cause: collection-freshness-no-output-commit
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[commit]
+    - cause: collection-freshness-no-output-tree
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[tree]
+    - cause: collection-freshness-no-output-unavailable
+      test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[unavailable]
+    remaining:
+    - Fresh/upgrade installed private-runtime probe is authored but unexecuted; native governance/exposure, actual provider-selected
+      isolated consumers and integration remain pending.
+    - Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.
+    - No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain
+      not_executed.

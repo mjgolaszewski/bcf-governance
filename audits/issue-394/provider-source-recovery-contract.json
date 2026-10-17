@@ -72,5 +72,6 @@
     "scope": "Extend existing fresh/upgrade mixed-toolchain installed-consumer fixture. Bare -I process must prove canonical BCF package absence, import only installed private runtime and exercise provider source capture, numeric identity, freshness rejection and legacy policy block.",
     "execution": "Run only in the next admitted qualification window; no additional heavy train while primary submission is active.",
     "limits": "Fixture-controlled provider GETs prove installed runtime behavior and dependency origin, not real provider or release certification. Existing actual real-provider source query is recorded separately."
-  }
+  },
+  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources"
 }
