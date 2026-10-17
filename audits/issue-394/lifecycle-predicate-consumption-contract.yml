@@ -215,3 +215,15 @@ exact_main_regular_lifecycle_blobs:
   correction: Share one exact provider tree decoder between the unchanged two-column query and an additive mode-preserving query; finalizer reads lifecycle data only from regular100644/100755 blobs
   invariants: [legacy complete_tree shape unchanged, full population retained, unrelated symlinks do not become lifecycle inputs, unknown modes reject in mode-preserving query, no second parser/graph/registry, no CLI grammar change]
   controls: Legacy exact inventory compatibility; actual Git regular/symlink modes; malformed/missing modes; finalizer rejection of a correctly hashed nonregular lifecycle blob
+independent_bounded_successor_projection:
+  owners: [bcf_governance/tooling/evidence_workitem_lifecycle.py, bcf_governance/tooling/ci_exact_main_truth.py, bcf_governance/tooling/ci_github_exact_main.py]
+  finding: Actual finalizer probe certifies bounded propositions naming an undeclared or self successor despite authenticated source declaring neither
+  correction: Extend the existing bounded successor validator with an optional untrusted claimed-successor projection; finalizer passes the authenticated truth proposition and validates it against reconstructed admitted source before phase proof or producer collection
+  invariants:
+    - Keep existing target, ambiguity and stranded-work checks in their sole lifecycle owner.
+    - Claimed successor IDs must be a unique nonempty-string list and cannot exceed the source-declared direct successor population.
+    - Structural membership does not manufacture verified eligibility; existing computed truth and evidence requirements remain separate.
+    - Preserve the ordinary two-argument validator and all CLI grammar; no graph, registry, receipt family or evaluator added.
+    - Reject invalid projection before a certificate bundle can be allocated; phase/PR authority remains distinct.
+  controls: Undeclared/self/duplicate/malformed successors, valid declared successor, empty safe projection, existing ambiguity/stranding, disabled source-membership guard and finalizer forwarding
+  limits: Full computed workitem/lifecycle conformance and installed qualification remain independently required.
