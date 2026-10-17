@@ -39,7 +39,7 @@ class RecordingProvider:
 
 
 PARENT_PROBE = r'''
-import base64, hashlib, importlib.util, json, sys
+import ast, base64, hashlib, importlib.util, io, json, sys, zipfile
 from pathlib import Path
 assert importlib.util.find_spec('bcf_governance') is None
 root = Path.cwd()
@@ -69,6 +69,22 @@ def decode(value):
     return value
 transcript = json.loads(Path(sys.argv[1]).read_text())
 mode = sys.argv[2]
+if mode == 'substituted_without_guard':
+    from _bcf_runtime import trusted_inputs as owner
+    tree = ast.parse(Path(owner.__file__).read_text())
+    count = 0
+    for node in ast.walk(tree):
+        if isinstance(node, ast.If) and any(
+            isinstance(value, ast.Constant)
+            and value.value == 'phase prerequisite artifact provider digest mismatch'
+            for statement in node.body for value in ast.walk(statement)
+        ):
+            node.test = ast.Constant(False)
+            count += 1
+    assert count == 1
+    exec(compile(ast.fix_missing_locations(tree), owner.__file__, 'exec'), owner.__dict__)
+    verify_phase_closure_input = owner.verify_phase_closure_input
+    mode = 'substituted'
 class Replay:
     index = 0
     downloads = 0
@@ -83,7 +99,10 @@ class Replay:
             if name == 'artifact_bytes':
                 self.downloads += 1
                 if mode == 'substituted':
-                    return b'substituted provider archive'
+                    stream = io.BytesIO(result)
+                    with zipfile.ZipFile(stream, 'a') as archive:
+                        archive.comment = b'substituted provider archive envelope'
+                    return stream.getvalue()
             return result
         return query
 api = Replay()
@@ -94,11 +113,11 @@ except GitHubControllerError as error:
     assert api.downloads == 1 and api.index < len(transcript['rows'])
     print(json.dumps({'outcome': 'rejected', 'reason': 'provider_digest_mismatch'}))
 else:
-    assert mode == 'valid'
+    assert mode == 'valid', 'substituted archive was accepted'
     assert verification.status == 'pass' and verification.computed_state == 'certified'
     proposition = verification.certified_proposition
     assert proposition['target'] == {'kind': 'phase', 'id': 'P01'}
-    assert proposition['kind'] == 'phase_closed'
+    assert proposition['predicate'] == 'phase_closed'
     assert hashlib.sha256(raw).hexdigest() == transcript['archive_sha256']
     assert artifact.artifact_id == '800' and api.downloads == 1
     assert api.index == len(transcript['rows'])

@@ -264,5 +264,12 @@
     "source_affected_passed": 73,
     "installed_lite_fresh_upgrade_passed": 2,
     "full_parent_and_distribution_qualification": false
+  },
+  "installed_parent_phase_proof": {
+    "verification": "audits/issue-394/installed-parent-phase-verification.json",
+    "final_passed": 7,
+    "sdk_absent": true,
+    "actual_normalized_parent_verified": true,
+    "live_provider_or_distribution_qualification": false
   }
 }

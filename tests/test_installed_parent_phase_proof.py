@@ -14,7 +14,21 @@ from test_installed_evidence_storage import (
 from tests.test_phase_closure_input import SHA_A, TREE, phase_input  # noqa: F401
 
 
-@pytest.mark.parametrize('mode', ['valid', 'substituted'])
+def test_parent_trace_contains_provider_facts_and_archive_not_verifier_results(phase_input):
+    provider, _ = phase_input
+    recording = RecordingProvider(provider)
+    _, verified, raw = verify_phase_closure_input(
+        recording, repository='owner/repo', phase_id='P01', source_commit=SHA_A, source_tree=TREE,
+    )
+    assert verified.computed_state == 'certified' and raw == provider.archive
+    serialized = json.dumps(recording.rows)
+    assert serialized and all(set(row) == {'port', 'args', 'kwargs', 'value'}
+                              for row in recording.rows)
+    assert sum(row['port'] == 'artifact_bytes' for row in recording.rows) == 1
+    assert recording.rows[-1]['port'] != 'artifact_bytes'  # Late freshness remains recorded.
+
+
+@pytest.mark.parametrize('mode', ['valid', 'substituted', 'substituted_without_guard'])
 def test_installed_parent_phase_proof_consumes_exact_provider_facts(
     installed_consumer, isolated_python, phase_input, mode,
 ):
@@ -35,6 +49,10 @@ def test_installed_parent_phase_proof_consumes_exact_provider_facts(
         [str(isolated_python), '-I', '-c', PARENT_PROBE, str(transcript), mode],
         cwd=installed_consumer, env=_environment(), capture_output=True, text=True,
     )
+    if mode == 'substituted_without_guard':
+        assert result.returncode == 1, _record(result)
+        assert 'AssertionError: substituted archive was accepted' in result.stderr
+        return
     assert result.returncode == 0, _record(result)
     outcome = json.loads(result.stdout)
     assert outcome['outcome'] == ('certified' if mode == 'valid' else 'rejected')

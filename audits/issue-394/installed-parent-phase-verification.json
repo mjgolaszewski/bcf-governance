@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_installed_parent_proof_qualified",
+  "contract_commit": "e000b0af",
+  "source_base_commit": "c8e9f855",
+  "execution_scope": "Actual source installer lite fresh/same-candidate upgrade; isolated SDK-absent Python. Actual normalized parent fixture and exact recorded provider-port facts. No live provider custody, previous-release upgrade, wheel/sdist or all-profile qualification.",
+  "initial_cohort": {
+    "passed": 5,
+    "elapsed_seconds": 19.91,
+    "archive_substitution": "unreadable bytes; retained original scoped result"
+  },
+  "final_cohort": {
+    "passed": 7,
+    "elapsed_seconds": 31.92,
+    "normal_parent_cases": 2,
+    "valid_zip_substitution_rejections": 2,
+    "in_memory_digest_guard_controls": 2,
+    "source_provider_trace_case": 1
+  },
+  "control_result": "Changing only archive envelope preserves readable ZIP and inner bundle. Normal verifier rejects provider digest mismatch. Disabling only that check in child memory restores acceptance and fails the exact rejection oracle in both installed contexts.",
+  "provider_trace": "Only provider query arguments and returned facts are serialized. SDK verification results are not replayed. Valid installed executions require complete exact call consumption, certified phase_closed P01, exact subject, original archive SHA256 and artifact identity.",
+  "evidence_retention": "Successful fixture transcripts follow existing failed-only tmp_path retention. Source identities and raw test/control output hashes retained; these are executable fixture evidence, not durable provider custody.",
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "governance": 0,
+    "pack": "unchanged production projection",
+    "semantic": "production source unchanged from c8e9f855 qualified21-operation observation"
+  },
+  "source_sha256": {
+    "tests/installed_phase_provider_trace.py": "eb21eefbaf1de6b9e12fb41080670202a49c354da8e80855d403ab6b00623df4",
+    "tests/test_installed_parent_phase_proof.py": "cd6e0ac4b6ab27157b0226fe2f834a49104a8d826162af15340375722477cbe7"
+  },
+  "raw_output_sha256": {
+    "installed-parent-phase-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "installed-parent-phase-source-trace.stdout": "cba387c748cc9ea770d84b2e5ca0a594f2affc4b6075014eae20b439d41bd925",
+    "installed-parent-phase-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "installed-parent-phase-final.stdout": "4aec11e528173762fcb4800d2e41b445f581b4e66c145f7ed5feb32287c991ab",
+    "installed-parent-phase-collection.stdout": "a5902cb520988775fab84b394852dbd439e239edca7eefa7826129a53b2b98a5",
+    "installed-parent-phase-execution.stdout": "ac6cfa75ebde859007cf1356a5068609f7d0828d9d3a526c9117c180fc2d1b92",
+    "installed-parent-phase-control-collection.stdout": "4c6978cd806d116eb1a5e36396d9232ebe35ce304083aba33b52941c6a76bcf2",
+    "installed-parent-phase-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "limits": [
+    "Complete production consumer matrix, all profiles/distributions and real provider-selected adopters remain open.",
+    "Source fixture coordinates and provider-port replay are not live external custody or a phase closure claim.",
+    "All82 whole requirements and38 slice objects unchanged; P32 active, P33-P35 dormant."
+  ]
+}
