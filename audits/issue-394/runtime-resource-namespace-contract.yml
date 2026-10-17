@@ -1,0 +1,18 @@
+schema_version: '1.0'
+authority: false
+phase: P32
+workitems: [P32-P0-03, P32-P0-04, P32-P0-07]
+bounded_context: Existing runtime source resource admission
+architectural_layer: Existing governance validation query
+operation_side: query
+owner: bcf_governance/tooling/governance_validation/source_inventory.py
+problem: Authored package-data patterns can make the runtime glob outside its source package before rejection; a symlinked package root can also substitute a namespace.
+required_behavior:
+  - Reject a symlinked package root before recursively discovering resources.
+  - Require package-data and exclusion tables to be mappings and their selected entries to be lists of nonempty strings.
+  - Validate all include and exclusion patterns before expanding any glob.
+  - Require portable package-relative patterns with no absolute, parent traversal or backslash paths.
+  - Preserve contained wildcard matching and exact source resource population and byte checks.
+  - Keep the existing query owner and typed source admission boundaries; add no alternate registry or caller assertion of safety.
+expected_controls: [absolute pattern, parent traversal, backslash traversal, malformed include, malformed exclusion, symlinked package root, valid contained pattern]
+limits: These are source namespace admission controls, not complete deadline, consumer, distribution or custody qualification.
