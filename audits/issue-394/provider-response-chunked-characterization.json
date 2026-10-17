@@ -1,0 +1,13 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "protocol": "Real stdlib urllib HTTPResponse with chunked transfer encoding",
+  "socket_inactivity_timeout_seconds": 0.04,
+  "chunk_header_drip_interval_seconds": 0.01,
+  "read1_requested_bytes": 1,
+  "read1_elapsed_seconds": 0.22448006700051337,
+  "finding": "Even a single read1 call consumes an internally read chunk header; drip-fed framing defeats a deadline checked only between read1 calls.",
+  "implementation_constraint": "Bound underlying framing reads or use a qualified whole-operation cancellation owner; changing read to read1 plus a clock check is insufficient.",
+  "cleanup": "server shutdown, socket closed, worker joined",
+  "limits": "Local characterization only; not installed matrix or production cancellation qualification."
+}

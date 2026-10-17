@@ -13,6 +13,7 @@ problem: Socket inactivity timeouts permit drip-fed bodies to exceed declared el
 required_behavior:
   - Derive finite body-consumption bounds from existing transport timeout policy, without inventing performance objectives.
   - Preserve exact repository, URL, token forwarding, redirect, digest, size and schema checks.
+  - A single HTTPResponse.read1 may internally consume drip-fed chunk framing; checks only between read1 calls are not a total bound.
   - Account for blocking-read overshoot and setup, retry, cleanup and headroom separately; a clock check after an unbounded read is insufficient.
   - Reject invalid bounds before opening a connection or allocating expensive proof.
   - Never retry a mutation because its response timed out; preserve uncertain mutation reconciliation through its existing concrete owner.
