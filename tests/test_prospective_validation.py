@@ -1358,8 +1358,9 @@ def test_terminal_reauthentication_rejects_base_movement(
         )
 
 
+@pytest.mark.parametrize("bound_context", [False, True])
 def test_full_walk_preserves_provider_boundary_and_exact_scope(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, bound_context: bool,
 ) -> None:
     trace: list[str] = []
     _front_door(monkeypatch, trace)
@@ -1461,13 +1462,28 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         },
     }
     truths = iter((pr_truth, bounded))
-    monkeypatch.setattr(prospective, "derive_truth", lambda *_args, **_kwargs: next(truths))
-    report = prospective.run_prospective_train(
+    api = object() if bound_context else None
+    observed_modes = []
+    def truth(*args, **kwargs):
+        assert kwargs.get("provider_api") is api
+        assert kwargs.get("repository") == ("owner/repo" if bound_context else None)
+        observed_modes.append(kwargs["evaluation_mode"])
+        return next(truths)
+    monkeypatch.setattr(prospective, "derive_truth", truth)
+    if bound_context:
+        context = LocalPRContext("origin", "main", BASE, HEAD, "feature",
+                                 repository="owner/repo", repository_id=42)
+        monkeypatch.setattr(prospective, "resolve_local_pr_context", lambda *a, **kw: context)
+    operation = prospective._run_prospective_train if bound_context else prospective.run_prospective_train
+    kwargs = {"provider_api": api} if bound_context else {}
+    report = operation(
         tmp_path,
         **TRAIN,
         python_executable=selected_python,
         runner=_runner,
+        **kwargs,
     )
+    assert observed_modes == ["pr", "workitem"]
     assert tuple(value["id"] for value in report["boundaries"]) == prospective.BOUNDARY_CHAIN
     assert report["provider_authority_substituted"] is False
     assert report["ephemeral_state"] == {
