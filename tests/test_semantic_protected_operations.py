@@ -264,3 +264,101 @@ def test_protected_schema_resolves_from_executing_portable_layout(inputs, monkey
         # Valid candidate schema must not become fallback for missing trusted bytes.
         with pytest.raises(owner.SemanticAuthorityError, match='cannot load schemas'):
             run(inputs)
+
+
+def _authored_query_inputs(inputs, monkeypatch, *, source_text=None, local_port=False):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+    from bcf_governance.tooling.semantic_ownership_inventory import resolve_python_imports
+
+    root, source, path, _ = inputs
+    if source_text is not None:
+        source.write_text(source_text)
+    if local_port:
+        payload = yaml.safe_load(path.read_text())
+        payload['operations'][0]['non_authoritative_output_effects'] = ['runtime.py::scoped']
+        path.write_text(yaml.safe_dump(payload, sort_keys=False))
+    (root / 'governance-profile.yml').write_text(
+        'semantic_capabilities: {application_operation_inventory: blocking}\n'
+    )
+    (root / 'governance/canonical-representations.yml').write_text('declared')
+    facts = resolve_python_imports(root, discover_python_source(root, files=[source]))
+    monkeypatch.setattr(scan, '_discover_ownership_inputs', lambda *_a, **_k: (facts, facts, {}, object()))
+    monkeypatch.setattr(scan, 'evaluate_discovery', lambda *_a: {
+        'verdict': 'conformant', 'blocking_violation_count': 0, 'violations': [],
+    })
+    return root, facts
+
+
+_SCOPED_SOURCE = '''from contextlib import contextmanager
+@contextmanager
+def scoped():
+    yield
+def work():
+    with scoped():
+        return 1
+COMMANDS = {"work": work}
+'''
+
+
+@pytest.mark.parametrize('defect', ['decorated_effect', 'dynamic_population'])
+def test_authored_query_rejects_operation_defects_before_normalization(inputs, monkeypatch, defect):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+    from bcf_governance.tooling.semantic_ownership_registry import SemanticOwnershipRegistryError
+
+    source = (_SCOPED_SOURCE if defect == 'decorated_effect' else
+              'def work():\n    return 1\nCOMMANDS = dict(work=work)\n')
+    root, _ = _authored_query_inputs(inputs, monkeypatch, source_text=source)
+    with pytest.raises(SemanticOwnershipRegistryError, match='authored application operations failed'):
+        scan.validate_authored_semantic_ownership(root)
+
+
+def test_authored_query_accepts_exact_declared_local_effect(inputs, monkeypatch):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+
+    root, facts = _authored_query_inputs(inputs, monkeypatch, source_text=_SCOPED_SOURCE, local_port=True)
+    report = scan.validate_authored_semantic_ownership(root)
+    assert report['authority'] is False and report['execution_qualified'] is False
+    assert report['operation_observations'] == owner.validate_application_operations(root, facts)
+    assert report['operation_observations'][0]['authority_effect_count'] == 0
+
+
+def _add_foreign_population(path):
+    payload = yaml.safe_load(path.read_text())
+    payload['populations'].append(dict(
+        id='foreign', adapter='typescript_exports', source='foreign.ts', symbol='exports',
+        public_only=True, tsconfig='tsconfig.json', package_lock='package-lock.json', node_executable='node',
+    ))
+    operation = dict(payload['operations'][0])
+    operation.update(id='example.foreign.v1', population='foreign', entrypoints=['foreign.ts::work'])
+    payload['operations'].append(operation)
+    path.write_text(yaml.safe_dump(payload, sort_keys=False))
+
+
+def test_authored_query_checks_python_without_foreign_compiler_and_preserves_full_gate(inputs, monkeypatch):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+
+    root, facts = _authored_query_inputs(inputs, monkeypatch)
+    _add_foreign_population(inputs[2])
+    monkeypatch.setattr('subprocess.run', lambda *_a, **_k: pytest.fail('materialized a toolchain in authored query'))
+    report = scan.validate_authored_semantic_ownership(root)
+    assert [row['operation'] for row in report['operation_observations']] == ['example.work.v1']
+    with pytest.raises(owner.SemanticAuthorityError):
+        owner.validate_application_operations(root, facts)
+
+
+def test_authored_query_cannot_hide_malformed_foreign_registry_structure(inputs, monkeypatch):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+    from bcf_governance.tooling.semantic_ownership_registry import SemanticOwnershipRegistryError
+
+    root, _ = _authored_query_inputs(inputs, monkeypatch)
+    _add_foreign_population(inputs[2])
+    payload = yaml.safe_load(inputs[2].read_text())
+    payload['operations'][1]['id'] = payload['operations'][0]['id']
+    inputs[2].write_text(yaml.safe_dump(payload, sort_keys=False))
+    with pytest.raises(SemanticOwnershipRegistryError, match='authored application operations failed'):
+        scan.validate_authored_semantic_ownership(root)
+
+
+def test_operation_source_scope_is_closed_and_typed(inputs):
+    with pytest.raises(owner.SemanticAuthorityError, match='source scope'):
+        owner.validate_application_operations(inputs[0], {}, source_language='unknown')
