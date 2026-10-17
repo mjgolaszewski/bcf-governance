@@ -32,3 +32,10 @@ def test_existing_readiness_consumes_authenticated_admitted_policy(
     assert api.reads == 1
     assert {ref for _, ref in calls} == {subject.checkout_sha}
     assert api.main != subject.checkout_sha
+
+
+def test_explicit_admitted_context_cannot_fall_back_to_unbound_success(tmp_path, advanced_admitted_population):
+    _, subject, _ = advanced_admitted_population
+    _repo(tmp_path, predicate=None)
+    with pytest.raises(lifecycle.WorkitemContractError, match="unverified"):
+        lifecycle.validate_bounded_target_authored_ready(tmp_path, "P02-W01", policy_subject=subject)
