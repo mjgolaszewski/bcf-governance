@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "authored_semantic_ownership_qualified_not_installed_or_full_lifecycle",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "source_base_commit": "92818bb2",
+  "initial_consumer_controls_failed": 4,
+  "initial_temporary_effect_controls_failed": 4,
+  "final_focused_passed": 8,
+  "prior_analyzer_causal_control_passed": 1,
+  "canonical_authorization_consumers_added": {
+    "families": [
+      "governance.ci-certification-verification.v1",
+      "governance.github-provider-artifact.v1"
+    ],
+    "consumers": [
+      "bcf_governance/tooling/trusted_inputs.py::verify_phase_closure_input",
+      "bcf_governance/tooling/trusted_inputs.py::verify_required_phase_closure_inputs"
+    ]
+  },
+  "temporary_observation_leaf_calls": [
+    "bcf_governance/tooling/trusted_inputs.py::path.parent.mkdir",
+    "bcf_governance/tooling/trusted_inputs.py::path.write_bytes"
+  ],
+  "actual_operation_population": {
+    "count": 21,
+    "verdict": "conformant",
+    "unchanged_rows": 19,
+    "changed_operations": [
+      "governance.cli.preflight.v1",
+      "governance.cli.truth.v1"
+    ],
+    "exact_delta": "Two temporary observation leaves added to each changed operation; every other field matches the retained baseline.",
+    "observations": "audits/issue-394/phase-context-operation-observations.json",
+    "sha256": "00daaea189bfb5b524cab72ecef66f198de38d8ac8e0a36a92c4fa3138c17212",
+    "baseline_retained": "audits/issue-394/operation-validator-local-pr-environment.json"
+  },
+  "preservation": [
+    "No factory, pure delegate or narrow suppression changed.",
+    "No analyzer or production implementation changed in this correction.",
+    "No authority/mutation or CLI population expansion.",
+    "Generated semantic locks remain for canonical reconciliation."
+  ],
+  "diagnostics_retained": [
+    "Initial composed scan rejected undeclared certification consumer; after consumer correction it rejected the two temporary write leaves.",
+    "Two failed edit assertions applied no registry change; corrected scripts compare full parsed artifacts against only the intended reference additions.",
+    "Broad unchanged-registry diagnostic interrupted intentionally after4fail/2pass/89.32s; no acceptance claim. Focused real-source consumer and leaf controls plus complete21-operation scan qualify this metadata correction."
+  ],
+  "project_checks": {
+    "lint": 0,
+    "pack_parity": 0,
+    "governance": 0
+  },
+  "raw_output_sha256": {
+    "phase-input-semantic-consumers-affected.stdout": "783e8fdc2ad0162064e9f0c7a73bc6c058fdf2f7a124e1c123070434d7889d9e",
+    "phase-input-semantic-consumers-focused.stdout": "2f0c44c0a88b1e14ec03669ddcd8362a70a44c235ee3219f1c5b80438508f7cf",
+    "phase-input-semantic-consumers-red.stdout": "da4861c20b2eb862f5c128161ddc835edb60a1dea4bf189b91374a5a0d255b57",
+    "phase-input-semantic-discovery.stdout": "d6972b9eb34e7cfe75b32a3efc8e697089fc2da5cf0fb29ba1dfa643e4e6188c",
+    "phase-input-semantic-effects-corrected-focused.stdout": "fe499f1f0f4ad28e3d8e1bb13ec3ff48645fde3c8c2d7ea9e62b321ab6324360",
+    "phase-input-semantic-effects-focused.stdout": "cd254107325340e9781566f0172afe5eeb4db30c33fbadd297f1895ded80c66a",
+    "phase-input-semantic-effects-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-input-semantic-effects-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-input-temporary-effects-red.stdout": "315fb7161bf3fdfdbe88c0ff92c44088b76944cb4eb4b35025383e0d4a1a6d2f",
+    "phase-context-composed-semantic-corrected.stdout": "2cb6f86b52ec0aa9e9350b62011d7b23d765f9f357683080c362fb27fd137ea2",
+    "phase-context-composed-semantic-final.stdout": "6fb37c6172604a132c3849dd4a92920d3e34846d1afca5ba94cd59fd2b1f1800",
+    "phase-context-composed-semantic.stdout": "a15e87356224c8fe1e45c72719dd7a4842ca3df878e3307c4e5af663643adc1f",
+    "phase-input-semantic-effects-governance.stdout": "e7758ccda42a3da4fbff10aaa95acacc75efc6a0540250e8fb444478545ebaee",
+    "phase-input-semantic-effects-formatted-focused.stdout": "4ce3413aa6fb3baa295bf79bb73131e01b11370497f32b55ee53ea060ec1a738",
+    "phase-input-semantic-effects-governance-corrected.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "phase-input-semantic-registry-format.json": "dd09ecafd3c9c15b1e40a9960f45104864510d465c46fd2207a1e995436e1afe"
+  },
+  "limits": [
+    "Authored Python semantic scope, not installed/runtime execution or complete lifecycle/effect conformance.",
+    "Exact-main finalizer prerequisite enforcement remains open.",
+    "All82 whole requirements remain open;38 slice records unchanged; P33-P35 dormant."
+  ],
+  "registry_format": {
+    "authority": false,
+    "decoded_document_unchanged": true,
+    "bytes_before": 65833,
+    "bytes_after": 64809,
+    "spaces_removed": 1024,
+    "decoded_sha256": "ee08237b5f49736c8a8ca46bbf125b1072767e3f42643b40d4cb2263b742e1b5",
+    "reason": "Four consumer references exceeded the64KiB budget; removed only1024 flow-separator spaces. Full decoded YAML document identical; no budget increase. Complete operation scan predates formatting;8 causal controls pass again on final formatted registry."
+  },
+  "acceptance_objects_unchanged": {
+    "requirements": 82,
+    "implementation_slices": 38
+  },
+  "metadata_sha256": {
+    "governance/canonical-representations.yml": "7303603228fbdd38e080546e0117c80387ac578e933637f24d4706544407d733",
+    "governance/application-operations.yml": "e844af7002dd701f471e6e139b3ca345f17b785a6a1e36e4b6fc89afaecb445f"
+  }
+}

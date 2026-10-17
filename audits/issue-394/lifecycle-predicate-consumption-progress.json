@@ -228,5 +228,15 @@
     "affected_passed": 310,
     "cause_controls": 5,
     "authority": false
+  },
+  "composed_authored_semantics": {
+    "verification": "audits/issue-394/phase-input-semantic-effects-verification.json",
+    "operations": 21,
+    "unchanged_rows": 19,
+    "changed_operations": [
+      "governance.cli.preflight.v1",
+      "governance.cli.truth.v1"
+    ],
+    "authority": false
   }
 }
