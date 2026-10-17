@@ -4320,6 +4320,14 @@ implementation_slices:
       test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[tree]
     - cause: collection-freshness-no-output-unavailable
       test: tests.test_release_adopter_qualification::test_release_subject_identity_cannot_be_replaced_by_adopter_iteration[unavailable]
+    - cause: same-provider-id-across-distinct-repository-names
+      test: tests.test_release_adopter_sources::test_source_capture_rejects_two_names_with_one_physical_repository
+    - cause: case-equivalent-required-repositories-before-provider
+      test: tests.test_release_adopter_sources::test_source_capture_rejects_case_equivalent_repository_names_before_reads
+    - cause: frozen-physical-id-before-freshness-reads
+      test: tests.test_release_adopter_sources::test_frozen_source_inventory_rejects_ambiguous_members_before_reads[physical-id]
+    - cause: frozen-case-alias-before-freshness-reads
+      test: tests.test_release_adopter_sources::test_frozen_source_inventory_rejects_ambiguous_members_before_reads[case-alias]
     remaining:
     - Fresh/upgrade installed private-runtime probe is authored but unexecuted; native governance/exposure, actual provider-selected
       isolated consumers and integration remain pending.

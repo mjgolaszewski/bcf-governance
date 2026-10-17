@@ -386,5 +386,103 @@
       "audits/issue-394/workplan.yml": "9fbb7a0e07fa8f78938d4e35ad47765ad7d8306f846d6a59a7c0c485d756fa8c"
     }
   },
-  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources"
+  "governed_binding_owner": "audits/issue-394/workplan.yml#implementation_slices.provider-derived-compatibility-sources",
+  "physical_inventory_uniqueness": {
+    "contract_commit": "77aa61b1",
+    "red": {
+      "authority": false,
+      "subject": "7aa6a87979e22e26d7064fed6ab0374a305d7d23",
+      "returncode": 1,
+      "elapsed_ms": 2248,
+      "stdout_sha256": "8c61c54ade584157b99f13cd62bd1e50ce82afa69b03d873e91229b177e26f5e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "boundary_red": {
+      "authority": false,
+      "subject": "5d9b7fc16463138d97816b0058e8edaf89cf8778",
+      "returncode": 1,
+      "stdout_sha256": "8503f5c581184fd3004b22858b23da8d7d43799453b857ab77e7a201e1f3ace1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "green": {
+      "authority": false,
+      "returncode": 0,
+      "elapsed_ms": 4565,
+      "stdout_sha256": "b1fd1e86bfd6f0c159bc4c0093a7f539ca9cad17b3dbe48733dc13a2722d577e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scope": "Two previously accepted ambiguous captures now reject; two corrupt frozen inventories reject before six avoidable GETs. Full84 source cases pass. Synthetic metadata now includes full_name; actual cross-feature shared resolver proof pending.",
+    "controls": [
+      "same-provider-id-across-distinct-repository-names",
+      "case-equivalent-required-repositories-before-provider",
+      "frozen-physical-id-before-freshness-reads",
+      "frozen-case-alias-before-freshness-reads"
+    ],
+    "remaining": [
+      "Native structural/pack/exact bindings pass. Full authored semantic query, governance/exposure, fresh/upgrade installed and integration remain pending.",
+      "Fresh/upgrade installed and current real-consumer execution after native admission.",
+      "Actual integration with shared repository source resolver before canonical proof."
+    ],
+    "native_checks": [
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 21118
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 8833
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 2068
+      },
+      {
+        "stage": "architecture-module-size",
+        "returncode": 0,
+        "elapsed_ms": 4950
+      },
+      {
+        "stage": "architecture-context-membership",
+        "returncode": 0,
+        "elapsed_ms": 4099
+      },
+      {
+        "stage": "bindings",
+        "returncode": 0,
+        "elapsed_ms": 21638
+      }
+    ],
+    "installed_probe_qualification": {
+      "authority": false,
+      "scope": "Actual fixture probe in bare private templates, plus exact old-module fault control; not fresh/upgrade execution",
+      "cases": [
+        {
+          "template": "template-repo",
+          "returncode": 0,
+          "stdout_sha256": "68ed8e5b2c8e29a66fff530a858d12f736a17d8f7d205791fd584c989ccc8133",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "template": "bcf_governance/pack/template-repo",
+          "returncode": 0,
+          "stdout_sha256": "68ed8e5b2c8e29a66fff530a858d12f736a17d8f7d205791fd584c989ccc8133",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "exact-pre-uniqueness-private-runtime-fault",
+          "subject": "005781d896e48598e6c12fa8587af1a98f6d082e",
+          "returncode": 1,
+          "named_fault_detected": true,
+          "archive_sha256": "519639417471b73a2858ff0a3c846f167ec3aeb851e42e40b623d1226d4ca53d",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "77ecc2eed40aaa7f1b0c3f50047bf63e1f8f2c91f25d64f359136bde80e61a5d"
+        }
+      ]
+    },
+    "source_sha256": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c",
+    "fixture_sha256": "14d17fb3f808a705bc841aeae2aaadd2a1ea9c06cfe7a4bb0efcd7338c644b83"
+  }
 }

@@ -70,13 +70,16 @@ def resolve_adopter_sources(
             or any(not isinstance(item, dict) or any(
                 not isinstance(item.get(key), str) or not item[key] for key in keys
             ) for item in required)
-            or any(len({item[key] for item in required}) != len(required)
+            or any(len({item[key].casefold() if key == 'repository' else item[key]
+                        for item in required}) != len(required)
                    for key in ('id', 'repository'))):
         raise AdopterSourceError('required adopter inventory is incomplete or ambiguous')
     result = []
     try:
         for item in required:
             main = resolve_main(api, item['repository'])
+            if any(source.repository_id == main.repository_id for source in result):
+                raise AdopterSourceError('required adopter provider inventory repeats repository ID')
             result.append(AdopterSourceIdentity(
                 id=item['id'], repository=item['repository'], profile=item['profile'],
                 repository_id=main.repository_id, default_branch=main.default_branch,
@@ -92,7 +95,8 @@ def authenticate_adopter_sources(
 ) -> None:
     """Recheck frozen provider identities before consuming completed observations."""
     if (not sources or any(not isinstance(source, AdopterSourceIdentity) for source in sources)
-            or len({source.repository for source in sources}) != len(sources)):
+            or len({source.repository.casefold() for source in sources}) != len(sources)
+            or len({source.repository_id for source in sources}) != len(sources)):
         raise AdopterSourceError('required adopter inventory is incomplete or ambiguous')
     try:
         for source in sources:

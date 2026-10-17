@@ -423,7 +423,8 @@ def request(self, method, path, **kwargs):
         return {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': state['commit']}}
     if '/git/commits/' in path:
         return {'sha': state['commit'], 'tree': {'sha': 'b' * 40}}
-    return {'id': 123, 'default_branch': 'main', 'full_name': 'owner/consumer'}
+    return {'id': 123, 'default_branch': 'main',
+            'full_name': '/'.join(path.split('/')[2:4])}
 GitHubAPI._request = request
 api = GitHubAPI(token='fixture-only')
 contract = {'schema_version': '1.4', 'required_adopters': [
@@ -441,6 +442,30 @@ except sources.AdopterSourceError as exc:
     assert 'stale' in str(exc)
 else:
     raise AssertionError('installed source freshness guard accepted moved head')
+state['commit'] = 'a' * 40
+from dataclasses import replace
+for cause in ('physical-id', 'case-alias'):
+    before = len(reads)
+    duplicate = replace(captured[0], id='duplicate',
+        repository='owner/other' if cause == 'physical-id' else 'OWNER/CONSUMER',
+        repository_id='123' if cause == 'physical-id' else '124')
+    try:
+        sources.authenticate_adopter_sources(api, (captured[0], duplicate))
+    except sources.AdopterSourceError as exc:
+        assert 'inventory' in str(exc)
+    else:
+        raise AssertionError('installed frozen inventory accepted ' + cause)
+    assert len(reads) == before
+    duplicate_contract = json.loads(json.dumps(contract))
+    duplicate_contract['required_adopters'].append({'id': 'duplicate', 'profile': 'lite',
+        'repository': 'owner/other' if cause == 'physical-id' else 'OWNER/CONSUMER'})
+    try:
+        sources.resolve_adopter_sources(api, duplicate_contract)
+    except sources.AdopterSourceError as exc:
+        assert 'inventory' in str(exc)
+    else:
+        raise AssertionError('installed capture accepted ' + cause)
+    assert len(reads) - before == (6 if cause == 'physical-id' else 0)
 before = len(reads)
 contract['schema_version'] = '1.3'
 try:
@@ -452,7 +477,7 @@ else:
 assert len(reads) == before
 print(json.dumps({'authority': False, 'publication_authority': False,
     'captured': [item.as_dict() for item in captured], 'freshness_rejection': True,
-    'legacy_rejection_before_reads': True}, sort_keys=True))
+    'legacy_rejection_before_reads': True, 'physical_and_case_uniqueness': True}, sort_keys=True))
 """
     provider_query = subprocess.run(
         [str(python), "-I", "-c", provider_code], cwd=consumer, env=_environment(),
