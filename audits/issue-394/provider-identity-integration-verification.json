@@ -161,5 +161,31 @@
     "early_binding_cases": 2,
     "scope": "Exact1fd combined source/profile/package and fresh-upgrade installed qualification before later timing-only data merge. Actual source distribution build is included; no immutable release or maintained-adopter custody authority."
   },
-  "next_action": "Use the canonical submit boundary for normalization, fresh exact subject and prospective/provider proof; retain required stale generated-manifest oracle until canonical owner refreshes it."
+  "next_action": "Use the canonical submit boundary for normalization, fresh exact subject and prospective/provider proof; retain required stale generated-manifest oracle until canonical owner refreshes it.",
+  "canonical_preflight_terminals": [
+    {
+      "authority": false,
+      "source_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "source_tree": "c233fd24f9cbfbb904737eceb45628b621195031",
+      "returncode": 1,
+      "elapsed_ms": 1947,
+      "ended_at": "2026-10-17T08:31:01.011264+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "13ccdbb6bf4c9ecf00d10a6a94c8571d340a433ccab509b4e84354feb823c123",
+      "final_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "disposition": "Required GITHUB_TOKEN absent; invocation stopped before normalization. No tracked tree or head change observed. Preserve originals; credential is now supplied in memory and changelog delta is authored."
+    },
+    {
+      "authority": false,
+      "source_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "source_tree": "c233fd24f9cbfbb904737eceb45628b621195031",
+      "returncode": 1,
+      "elapsed_ms": 6309,
+      "ended_at": "2026-10-17T08:33:58.372901+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "43d26f9e7ca7d313482a59b0b7b837f9853aaf6bc4deeda6cb7cb191015ede40",
+      "final_commit": "69043ef4578ad0b490d6ef9a490c6fa3478a0654",
+      "disposition": "Required leaf PR changelog delta absent; normalization emitted failed before completion. No tracked tree or head change observed. Preserve originals; credential is now supplied in memory and changelog delta is authored."
+    }
+  ]
 }

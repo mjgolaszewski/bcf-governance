@@ -27,6 +27,23 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Authenticate provider repository names before default-branch or run-subject
+  discovery, and reject duplicate physical repositories or case aliases in
+  provider-selected adopter inventories before qualification allocation.
+- Derive qualification sources from the complete provider-selected inventory.
+  Caller checkouts remain resources; stale sources and legacy execution policy
+  block before new qualification. Historical policy remains readable.
+- Supervise Linux evidence commands through kernel child custody, including
+  new sessions, double forks and threaded descendants. Unproved cleanup blocks
+  state retirement; ordinary output decoding failures retain their original
+  error after verified cleanup. Unqualified containment contexts block safely.
+- Project explicit cleanup allowances and include interpreter setup, execution,
+  cleanup and headroom in command deadline floors before allocation. Complete
+  pipeline and response-read envelopes remain foundation work.
+- Reject contradictory optional local timing-capture repository metadata while
+  preserving historical captures that omit it. Provider timings remain
+  observations until matched cohorts and targets are reviewed.
+
 - Derive nested qualification dependency roots from exact wheel requirements
   and installed origins, including active transitive and legacy dependencies.
   Reject incompatible identities, versions, Python constraints and unsafe roots
