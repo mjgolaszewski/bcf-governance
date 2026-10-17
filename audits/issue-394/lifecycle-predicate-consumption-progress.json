@@ -74,7 +74,16 @@
     "verification": "audits/issue-394/phase-input-acquisition-verification.json",
     "implemented": true,
     "live_provider_result": "certified",
-    "canonical_policy_derivation": "not_implemented",
+    "canonical_policy_derivation": "implemented_by_protected_phase_population",
+    "actual_phase_predicate_consumer": "not_implemented"
+  },
+  "protected_phase_population": {
+    "verification": "audits/issue-394/phase-population-verification.json",
+    "implemented": true,
+    "source": "Authenticated protected build-plan hard_dependencies and exact history/active subject locators",
+    "live_required_phases": [
+      "P31"
+    ],
     "actual_phase_predicate_consumer": "not_implemented"
   }
 }

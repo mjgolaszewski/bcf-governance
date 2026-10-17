@@ -21,7 +21,7 @@ from .ci_github_identity import GitHubControllerError, MainIdentity, exact_sha, 
 from .ci_github_release_inputs import _exact_finalizer_run
 from .controller_transition_provider_custody import github_is_ancestor
 from .evaluation_scope import is_terminal_phase_certification
-from .prior_evidence_transport import MAX_ARCHIVE_BYTES, _archive_files
+from .prior_evidence_transport import MAX_ARCHIVE_BYTES, _archive_files, _mapping
 
 
 class TrustedInputError(ValueError):
@@ -140,6 +140,73 @@ def verify_phase_closure_input(
     if fresh != artifact:
         raise GitHubControllerError("phase prerequisite artifact changed during verification")
     return artifact, verification, raw
+
+
+def verify_required_phase_closure_inputs(
+    api: GitHubAPI, *, repository: str, phase_id: str,
+) -> tuple[MainIdentity, dict[str, tuple[ProviderArtifact, CertificationVerification, bytes]]]:
+    """Derive and verify the protected plan's complete predecessor population."""
+
+    if not isinstance(phase_id, str) or re.fullmatch(r"P[0-9]+", phase_id) is None:
+        raise GitHubControllerError("phase prerequisite target is invalid")
+    packaged_repo_root()
+    current = resolve_main(api, repository)
+    documents: dict[str, dict[str, Any]] = {}
+    for path in ("plans/build-plan.yml", "plans/phase-ledger.yml", "plans/phase-history.yml"):
+        content = api.content(repository, path, ref=current.checkout_sha)
+        if content.path != path:
+            raise GitHubControllerError("protected lifecycle document path is not exact")
+        documents[path] = _mapping(content.content, label=f"protected {path}")
+    phases = documents["plans/build-plan.yml"].get("phase_sequence")
+    if not isinstance(phases, list) or not all(isinstance(value, dict) for value in phases):
+        raise GitHubControllerError("protected phase sequence is invalid")
+    matches = [value for value in phases if value.get("phase_id") == phase_id]
+    if len(matches) != 1:
+        raise GitHubControllerError("protected phase target is missing or ambiguous")
+    dependencies = matches[0].get("hard_dependencies")
+    if (not isinstance(dependencies, list)
+            or any(not isinstance(value, str) or re.fullmatch(r"P[0-9]+", value) is None
+                   for value in dependencies)
+            or len(dependencies) != len(set(dependencies)) or phase_id in dependencies):
+        raise GitHubControllerError("protected phase dependency population is invalid")
+    active = documents["plans/phase-ledger.yml"].get("active_phase")
+    if (not isinstance(active, dict) or not isinstance(active.get("id"), str)
+            or re.fullmatch(r"P[0-9]+", active["id"]) is None):
+        raise GitHubControllerError("protected active phase identity is invalid")
+    history = documents["plans/phase-history.yml"].get("entries")
+    if not isinstance(history, list) or not all(isinstance(value, dict) for value in history):
+        raise GitHubControllerError("protected phase history inventory is invalid")
+    subjects: dict[str, tuple[str, str]] = {}
+    for predecessor in sorted(dependencies):
+        retained = [value for value in history if value.get("phase_id") == predecessor]
+        if predecessor == active["id"]:
+            if retained:
+                raise GitHubControllerError("active phase prerequisite has contradictory retained history")
+            subjects[predecessor] = current.checkout_sha, current.tree_sha
+            continue
+        if len(retained) != 1:
+            raise GitHubControllerError("phase prerequisite history locator is missing or ambiguous")
+        snapshot = retained[0].get("verification_snapshot")
+        if not isinstance(snapshot, dict):
+            raise GitHubControllerError("phase prerequisite history snapshot is missing")
+        commit = exact_sha(snapshot.get("commit_sha"), field="retained phase commit")
+        tree = exact_sha(snapshot.get("tree_sha"), field="retained phase tree")
+        if retained[0].get("retention_ref") != commit:
+            raise GitHubControllerError("phase prerequisite retention locator is contradictory")
+        subjects[predecessor] = commit, tree
+    # Complete cheap population and coordinate validation before any proof download.
+    if resolve_main(api, repository) != current:
+        raise GitHubControllerError("protected phase dependency frontier moved")
+    inputs = {
+        predecessor: verify_phase_closure_input(
+            api, repository=repository, phase_id=predecessor,
+            source_commit=commit, source_tree=tree,
+        )
+        for predecessor, (commit, tree) in subjects.items()
+    }
+    if resolve_main(api, repository) != current:
+        raise GitHubControllerError("protected phase dependency frontier moved")
+    return current, inputs
 
 
 def verify_trusted_input(
