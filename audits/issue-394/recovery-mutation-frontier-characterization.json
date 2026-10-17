@@ -136,5 +136,14 @@
       "frontier_sha256": "1395cbfa824d62d0d57c9461c44e20ec8448c9d5867f27dadf3a70d4489e9f7f"
     }
   ],
-  "limit": "Pure generic action projection only; no mutation executed, no provider outcome authenticated and no runtime closure claim."
+  "limit": "Pure generic action projection only; no mutation executed, no provider outcome authenticated and no runtime closure claim.",
+  "rejection_tests_before": {
+    "failed": 12,
+    "passed": 0,
+    "cause": "All twelve expected unsupported-edge rejections failed because the generic action was emitted",
+    "streams": {
+      "stdout_sha256": "ab6f638e4f8a46e13d11c3e328db648a620c2e64cf8ede93250f968928c22820",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
 }
