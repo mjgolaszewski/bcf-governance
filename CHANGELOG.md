@@ -33,6 +33,9 @@ Release target: `2.5.0`
 - Independently validate complete CI node-pair populations at the consuming
   graph boundary before downstream checks. Reject missing, duplicate or malformed
   edges; preserve compiler imports and installed private-runtime behavior.
+- Close version3 backtrace structure over existing supplemental contracts and
+  reject undeclared primitive references and duplicate identities before derived
+  work. Preserve historical version2 reads without promoting structural evidence.
 - Authenticate provider repository names before default-branch or run-subject
   discovery, and reject duplicate physical repositories or case aliases in
   provider-selected adopter inventories before qualification allocation.

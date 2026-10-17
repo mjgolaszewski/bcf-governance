@@ -2526,3 +2526,12 @@ protected-merge and controller owners retain their supported projections and
 must authenticate facts at consumption. This retirement closes an unsupported
 projection ingress; complete transaction recovery and terminal conformance remain
 separate lifecycle obligations.
+
+### Supplemental backtrace structural coverage
+
+Backtrace version3 closes the root inventory and validates the existing five
+supplemental contracts, their34 states and13 fact-boundary edges before derived
+work. Each primitive must resolve in the existing canonical primitive list;
+negative-control fixture qualification uses PRIM-QUALIFICATION rather than the
+previous undeclared label. Historical version2 retains its weaker reader.
+Neither structural version establishes complete lifecycle/runtime conformance.

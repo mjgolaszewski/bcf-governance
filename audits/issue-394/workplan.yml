@@ -226,6 +226,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/recovery-mutation-frontier-contract.yml
+    - audits/issue-394/backtrace-structural-coverage-contract.yml
   foundation.deadlines:
     summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
     status: IN_PROGRESS

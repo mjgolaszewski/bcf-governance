@@ -413,7 +413,7 @@
     },
     "schemas/release-train-backtrace.schema.json": {
       "operation": "copy",
-      "sha256": "02c08e72c64911cd99303ae6cbe1da5bbf2f8ca5db8677ddf6d63171b38b90b9"
+      "sha256": "edaa652bcc34ace5d01ea1a87c8a92e1749dce5dcf4841261dab9a33db28ef16"
     },
     "schemas/repo-cleanup-contract.schema.json": {
       "operation": "copy",
@@ -1168,7 +1168,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/ci_state_matrix.py": {
       "operation": "copy",
-      "sha256": "a385ef3f67aa682da3980624804459ad4e935d3c074f85993d6df80f8cae4af3"
+      "sha256": "e38555a0a4c0aeaf061977ed39e6167f7f54da9fe52ce89c458fb9fb74208909"
     },
     "scripts/_bcf_runtime/governance_validation/common.py": {
       "operation": "copy",
