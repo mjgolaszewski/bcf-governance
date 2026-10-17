@@ -407,6 +407,58 @@ print(json.dumps(report, sort_keys=True))
         capture_output=True, text=True,
     )
     assert authored_query.returncode == 0, _record(authored_query)
+    provider_code = """import importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime import release_adopter_sources as sources
+from _bcf_runtime.ci_github_api import GitHubAPI
+from _bcf_runtime.release_adopter_qualification import ReleaseQualificationError
+state = {'commit': 'a' * 40}
+reads = []
+def request(self, method, path, **kwargs):
+    assert method == 'GET'
+    reads.append(path)
+    if '/git/ref/' in path:
+        return {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': state['commit']}}
+    if '/git/commits/' in path:
+        return {'sha': state['commit'], 'tree': {'sha': 'b' * 40}}
+    return {'id': 123, 'default_branch': 'main'}
+GitHubAPI._request = request
+api = GitHubAPI(token='fixture-only')
+contract = {'schema_version': '1.4', 'required_adopters': [
+    {'id': 'consumer', 'repository': 'owner/consumer', 'profile': 'lite'}],
+    'qualification': {'source': 'provider_default_branch_transaction',
+    'caller_checkout_role': 'materialization_resource_only',
+    'source_freshness': 'provider_exact_at_capture_and_collection'}}
+captured = sources.resolve_adopter_sources(api, contract)
+assert captured[0].repository_id == '123' and captured[0].default_branch == 'main'
+sources.authenticate_adopter_sources(api, captured)
+state['commit'] = 'c' * 40
+try:
+    sources.authenticate_adopter_sources(api, captured)
+except sources.AdopterSourceError as exc:
+    assert 'stale' in str(exc)
+else:
+    raise AssertionError('installed source freshness guard accepted moved head')
+before = len(reads)
+contract['schema_version'] = '1.3'
+try:
+    sources.resolve_adopter_sources(api, contract)
+except sources.AdopterSourceError as exc:
+    assert 'source policy' in str(exc)
+else:
+    raise AssertionError('installed query accepted caller-selected legacy policy')
+assert len(reads) == before
+print(json.dumps({'authority': False, 'publication_authority': False,
+    'captured': [item.as_dict() for item in captured], 'freshness_rejection': True,
+    'legacy_rejection_before_reads': True}, sort_keys=True))
+"""
+    provider_query = subprocess.run(
+        [str(python), "-I", "-c", provider_code], cwd=consumer, env=_environment(),
+        capture_output=True, text=True,
+    )
+    assert provider_query.returncode == 0, _record(provider_query)
     prepare_records = _exercise_prepare(consumer, python, fixture_root / "prepare")
     resolve_records = [
         _exercise_resolve(consumer, python, fixture_root / f"resolve-{case or 'valid'}", case)
@@ -417,6 +469,7 @@ print(json.dumps(report, sort_keys=True))
         "status": "pass", "consumer": str(consumer), "python": str(python),
         "bcf_package_absent": _record(probe), "semantic_commands": semantic_records,
         "authored_operation_query": _record(authored_query),
+        "provider_source_query": _record(provider_query),
         "prepare_commands": prepare_records, "resolve_commands": resolve_records,
         "installed_schemas_preserved": True,
     }

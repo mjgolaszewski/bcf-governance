@@ -480,7 +480,8 @@ def qualify_release(
     contract = load_contract(repo_root.resolve())
     try:
         require_provider_source_policy(contract)
-    except AdopterSourceError as exc:
+        api = GitHubAPI(token=os.environ.get('GITHUB_TOKEN', ''))
+    except (AdopterSourceError, GitHubAPIError) as exc:
         raise ReleaseQualificationError(str(exc)) from exc
     version, build_assets, assets = _release_assets(release_assets.resolve())
     try:
@@ -531,7 +532,6 @@ def qualify_release(
             "qualification producer identity is not exact"
         )
     try:
-        api = GitHubAPI(token=os.environ.get('GITHUB_TOKEN', ''))
         sources = resolve_adopter_sources(api, contract)
     except (GitHubAPIError, AdopterSourceError) as exc:
         raise ReleaseQualificationError(str(exc)) from exc

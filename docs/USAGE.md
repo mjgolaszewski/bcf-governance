@@ -521,6 +521,7 @@ subjects. A mismatched checkout rejects before runtime allocation; provider
 movement before result collection rejects the completed observation. Maintained
 checkouts remain unchanged, and compatibility results retain no publication
 authority or effect on the required release proof population.
+Missing provider credentials reject before asset reads or checkout inspection.
 
 The 1.3 caller-selected source policy remains readable for historical verification.
 Starting a new qualification requires an explicitly authored 1.4 contract:

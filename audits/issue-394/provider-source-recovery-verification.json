@@ -51,7 +51,7 @@
   },
   "residuals": [
     "Isolated source is not integrated into active primary transaction.",
-    "Native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
+    "Exact updated committed-source/native checks, native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
     "All82 whole requirements remain open; no P33 activation, provider certification, performance target or custody closure.",
     "Historical1.3 receipts remain observations; offline verification is not current provider freshness."
   ],
@@ -111,5 +111,179 @@
     ],
     "source_cases_passed": 77,
     "tree": "490c5e0ae988f00202766c38d683bb5c269b2431"
-  }
+  },
+  "real_provider_source_query": {
+    "raw_stdout_sha256": "a77d24bca7241c3c6f69abe0d37276cbc752d3c4874653bb8186b37de7f0f56f",
+    "raw_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority": false,
+    "execution_qualified": false,
+    "subject": "c217fb2b1d1646efd97726a6195bdbc67a6eee84",
+    "started_at": "2026-10-17T05:11:27.075952+00:00",
+    "scope": "read-only real-provider source capture and immediate freshness only; no adopter execution, installation or release authority",
+    "sources": [
+      {
+        "id": "tradeflow-lite",
+        "repository": "moranwm/tradeflow",
+        "repository_id": "1396203132",
+        "profile": "lite",
+        "default_branch": "main",
+        "commit_sha": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+        "tree_sha": "c6c6b001c765fbd30f12340620ee9eb9a8ff88aa"
+      },
+      {
+        "id": "racecar-standard-v3",
+        "repository": "mjgolaszewski/racecar",
+        "repository_id": "1357342339",
+        "profile": "standard",
+        "default_branch": "main",
+        "commit_sha": "38945f5aa3a90e0782cabb006c8c88a5463fcfbd",
+        "tree_sha": "11b3a874b5c3b18c9a4b8e94a804b68b02790583"
+      },
+      {
+        "id": "agentbus-standard-v3",
+        "repository": "mjgolaszewski/AgentBus",
+        "repository_id": "1390225113",
+        "profile": "standard",
+        "default_branch": "main",
+        "commit_sha": "8f2dbf5ced0f591bec21d561f3a39308bc3f373b",
+        "tree_sha": "da456291a35b858850be6756dc41c81e02ac8d5c"
+      }
+    ],
+    "source_inventory_sha256": "f2ae2ab8896eabaca1eb46d3b831e2fa3e74584cb98b02f957cc46afa95b230b",
+    "status": "pass",
+    "elapsed_ms": 7156,
+    "provider_read_observations": [
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "58cc7400d7271d83cc5d678b6ce292a163d0f8bc7f6b85a33c55386790a125bb",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "21c3f3d4b7b17095e5702b442015137e0be6b3e028dd0bffba03a1efa1268453",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "215109c1786e09554e4406e931cc85d8abc4f3ec7ab792c5ce25d805beaade8e",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "b024dcceb13b39e8243ea2a7c90e05135c02db4724a54ec093f4735aba952a39",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "acbd00713696aa5191627fe22d51497c522ee4a62da82cdd86f3b65196faa36f",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "f454b255fab302ac770cc1f71e414402ec7bece0501adb4c5e1dc3b9bc542fa2",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "6f2f1d17253cd6f76368d3d417661a1a389596ec7e77078c6e3b987f4de323ac",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "e994c8e621e90f9c8f86d712bf1796130082ed5ced422d6a012812341d7e2728",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "36b4cdad71af39734b91264b3bba4e8e48f7ae6aaf65d83462bf56253b41050f",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "58cc7400d7271d83cc5d678b6ce292a163d0f8bc7f6b85a33c55386790a125bb",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "21c3f3d4b7b17095e5702b442015137e0be6b3e028dd0bffba03a1efa1268453",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "215109c1786e09554e4406e931cc85d8abc4f3ec7ab792c5ce25d805beaade8e",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "b024dcceb13b39e8243ea2a7c90e05135c02db4724a54ec093f4735aba952a39",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "acbd00713696aa5191627fe22d51497c522ee4a62da82cdd86f3b65196faa36f",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "f454b255fab302ac770cc1f71e414402ec7bece0501adb4c5e1dc3b9bc542fa2",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "6f2f1d17253cd6f76368d3d417661a1a389596ec7e77078c6e3b987f4de323ac",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "e994c8e621e90f9c8f86d712bf1796130082ed5ced422d6a012812341d7e2728",
+        "delay_seconds": null
+      },
+      {
+        "ordinal": 1,
+        "outcome": "success",
+        "request_sha256": "36b4cdad71af39734b91264b3bba4e8e48f7ae6aaf65d83462bf56253b41050f",
+        "delay_seconds": null
+      }
+    ]
+  },
+  "early_credential_correction": {
+    "red": {
+      "capture_sha256": "a0e54e1fe75c552c0b36a3efb4f83ca8c02054ae9bd22fffe5cd21d73da17bed",
+      "authority": false,
+      "subject": "376ef72dc70ee90ea1b132ba91eb6f57af85b051",
+      "returncode": 1,
+      "elapsed_ms": 1885,
+      "stdout_sha256": "440356c95cd8e519a009d44f66b7a8820fb81667f77b5700aa997a81316c8ad5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "working_green": {
+      "capture_sha256": "a17a246f7050951b01663c4abbd69d41983c013c3bfb0d31b995c9872aa3ff1e",
+      "authority": false,
+      "subject": "4ba828a797b1d397d57580c2a71428ad12a10328",
+      "dirty": true,
+      "returncode": 0,
+      "elapsed_ms": 3100,
+      "stdout_sha256": "5244918c4574b631a914868faa2ae01a7b9f7e308e9a0c8993913c38a98bbe9f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scope": "Missing-token cause-specific control proves assets were read before fix; moved existing API constructor immediately after source policy validation.77 working-source controls pass2.41s. No provider reads are granted by credential presence."
+  },
+  "installed_consumer_probe": "Authored under contract4ba828a7 in existing fresh/upgrade mixed fixture; not executed while primary canonical submission owns heavy capacity."
 }
