@@ -1,0 +1,22 @@
+schema_version: '1.0'
+authority: false
+phase: P32
+workitems: [P32-P0-03, P32-P0-04, P32-P0-07]
+bounded_context: Existing release artifact qualification
+architectural_layer: Existing release verification script
+operation_side: query
+owner: .github/scripts/test_release_artifacts.py
+problem: Wheel runtime asset discovery sees only JavaScript modules; missing or substituted standalone runtime schemas can survive until installed execution.
+required_behavior:
+  - Independently discover every pack file plus non-Python package resource from the admitted source, excluding interpreter caches only.
+  - Keep ordinary package Python discovery separate from data selection; Python files embedded in the pack remain required pack resources.
+  - Check declared package-data coverage before build and exact required resource population and bytes before wheel execution or installation allocation.
+  - Reject missing, duplicated, substituted or symlinked required resources rather than selecting an arbitrary copy or silently omitting source members.
+  - Preserve the existing canonical package and release verification owners; no asset registry or alternate release gate.
+  - Qualify source, wheel and sdist resource parity separately from installed-runtime behavioral tests and live publication custody.
+targets: [.github/scripts/test_release_artifacts.py, tests/test_release_runtime_resource_inventory.py, pyproject.toml]
+forbidden_surfaces: [generated workflows, authority pins, maintained adopter upgrades, new receipt family, performance or release closure claims]
+expected_controls: [omitted schema population, omitted pack Python, metadata exclusion, substituted asset bytes, duplicate archive member, symlink source, valid complete resources, ordinary source Python exclusion, cache exclusion]
+limits:
+  - Source-root admission and final immutable artifact custody remain owned by their existing callers.
+  - Passing static or archive checks does not qualify all consumer behaviors or close any whole requirement.
