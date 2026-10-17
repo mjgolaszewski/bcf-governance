@@ -61,6 +61,7 @@
       "Process-group containment does not prove escaped group/cgroup isolation or bounded kernel scheduling.",
       "Unresolved host-wide admission/quarantine and complete namespace-removal elapsed bounds still require independent foundation/resource qualification."
     ],
-    "platform_qualification": "First qualified backend requires Linux procfs plus POSIX wait-without-reap. Other hosts block before namespace/process allocation until their own group inventory is independently qualified; killpg(0) alone cannot distinguish an unreaped zombie leader from live work."
+    "platform_qualification": "First qualified backend requires Linux procfs plus POSIX wait-without-reap. Other hosts block before namespace/process allocation until their own group inventory is independently qualified; killpg(0) alone cannot distinguish an unreaped zombie leader from live work.",
+    "thread_inventory": "Zombie thread-group leaders do not prove their worker threads are terminal. Inventory all thread tasks in the owned ordinary group and reject/retry unstable identity populations within the existing deadline; never infer quiescence from leader state alone."
   }
 }

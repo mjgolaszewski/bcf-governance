@@ -23,6 +23,14 @@ def test_evidence_command_preserves_successful_output(tmp_path):
     assert (result.returncode, result.stdout, result.stderr) == (0, 'governed\n', '')
 
 
+
+def test_evidence_command_preserves_nonzero_unicode_and_universal_newlines(tmp_path):
+    code = "import sys;sys.stdout.buffer.write(('é'*70000+'\\r\\n').encode());sys.stderr.write('failure\\r\\n');sys.exit(7)"
+    result = _run([sys.executable, '-c', code], cwd=tmp_path, timeout_seconds=2)
+    assert result.returncode == 7
+    assert result.stdout == 'é' * 70000 + '\n'
+    assert result.stderr == 'failure\n'
+
 def test_evidence_direct_child_timeout_keeps_typed_failure(tmp_path):
     result = _run([sys.executable, '-c', 'import time; time.sleep(20)'],
                   cwd=tmp_path, timeout_seconds=1)
@@ -32,13 +40,19 @@ def test_evidence_direct_child_timeout_keeps_typed_failure(tmp_path):
 
 def _live(pid):
     try:
-        raw = Path(f'/proc/{pid}/stat').read_text()
-        return raw[raw.rfind(')') + 2:].split()[0] not in {'Z', 'X'}
+        for path in Path(f'/proc/{pid}/task').glob('*/stat'):
+            try:
+                raw = path.read_text()
+            except FileNotFoundError:
+                continue
+            if raw[raw.rfind(')') + 2:].split()[0] not in {'Z', 'X'}:
+                return True
+        return False
     except FileNotFoundError:
         return False
 
 
-@pytest.mark.parametrize('mode', ['timeout', 'background-success'])
+@pytest.mark.parametrize('mode', ['timeout', 'background-success', 'threaded-background-success'])
 def test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog(tmp_path, mode):
     marker = tmp_path / 'owned-worker.json'
     worker = """import json, os, subprocess, sys, time
@@ -46,12 +60,21 @@ from pathlib import Path
 path=Path(sys.argv[1]); temporary=path.with_suffix('.tmp')
 metadata={'pid':os.getpid(),'group':os.getpgrp()}
 temporary.write_text(json.dumps(metadata));temporary.replace(path)
-background=sys.argv[2]=='background-success'
-child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(20)'],
+background=sys.argv[2]!='timeout'
+threaded=sys.argv[2]=='threaded-background-success'
+child_code="import threading,time,ctypes; threading.Thread(target=lambda:time.sleep(20)).start(); ctypes.CDLL(None).pthread_exit(None)" if threaded else 'import time; time.sleep(20)'
+child=subprocess.Popen([sys.executable,'-c',child_code],
     stdout=subprocess.DEVNULL if background else None,
     stderr=subprocess.DEVNULL if background else None)
 metadata['child_pid']=child.pid
 temporary.write_text(json.dumps(metadata));temporary.replace(path)
+if threaded:
+    deadline=time.monotonic()+1
+    while time.monotonic()<deadline:
+        raw=Path('/proc/'+str(child.pid)+'/stat').read_text()
+        if raw[raw.rfind(')')+2:].split()[0]=='Z' and len(list(Path('/proc/'+str(child.pid)+'/task').iterdir()))>1:break
+        time.sleep(0.01)
+    else:raise AssertionError('threaded fixture did not establish zombie leader')
 print('ready',flush=True)
 if background:sys.exit(0)
 time.sleep(20)
@@ -61,9 +84,15 @@ from pathlib import Path
 from bcf_governance.tooling import evidence_execution
 root=Path(sys.argv[1]);marker=Path(sys.argv[2]);worker=sys.argv[3];mode=sys.argv[4]
 assert Path(evidence_execution.__file__).resolve().is_relative_to(root)
+import os
+original_signal=evidence_execution.os.killpg
+def owned_signal(group, sig):
+    os.waitid(os.P_PID,group,os.WEXITED|os.WNOHANG|os.WNOWAIT)
+    return original_signal(group,sig)
+evidence_execution.os.killpg=owned_signal
 start=time.monotonic()
 result=evidence_execution._run([sys.executable,'-c',worker,str(marker),mode],
-    cwd=marker.parent,timeout_seconds=1)
+    cwd=marker.parent,timeout_seconds=2 if mode.startswith('threaded') else 1)
 print(json.dumps({'returncode':result.returncode,'stderr':result.stderr,
                   'elapsed':time.monotonic()-start}))
 """
