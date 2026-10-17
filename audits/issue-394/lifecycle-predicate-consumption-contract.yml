@@ -166,3 +166,9 @@ hosted_preflight_phase_readiness:
   compatibility: Preserve ordinary CLI grammar, trace existing owners, no new execution intent/receipt/evaluator, and keep each production owner within800 lines
   controls: Real missing/valid phase authority, incomplete authored target, preallocation/discovery ordering, CLI context forwarding, both prospective preflight call sites, and genuine unbound compatibility
   limits: Does not replace independent computed truth consumption after evidence or exact-main finalizer authentication.
+phase_input_semantic_consumers:
+  owners: [governance/canonical-representations.yml, bcf_governance/tooling/trusted_inputs.py]
+  problem: Composed authored semantic scan rejects verify_phase_closure_input as an undeclared downstream consumer of existing certified values
+  correction: Declare exact authorization consumers under existing certification/provider-artifact families only when source discovery proves they consume those canonical values
+  invariants: [existing factories remain sole constructors, no new family or registry, no pure-delegate promotion, no narrow suppression, no analyzer weakening, exact operation population changes must be separately explained rather than overwriting its golden]
+  controls: Discover actual verifier source independently; removing each added consumer declaration must restore its corresponding semantic violation
