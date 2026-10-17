@@ -21,6 +21,7 @@ measurement_policy:
   - current isolated-adopter successful runtime observations
   - dispatch-to-terminal-custody and merge-to-terminal-custody matched cohorts
   - approved resource and performance budgets
+  additional_capture_sample_unit: Additional captures retain their own exact subjects; the top-level historical subject scopes only the original observations. All captures remain unmatched and targets remain unfrozen.
 observations:
 - pipeline: exact_main
   run_id: 38744874952
@@ -434,6 +435,23 @@ additional_pipeline_captures:
   uncovered_ms: 60000
   cpu_ms: unknown
   interpretation: One evidence producer took 1416 seconds while three evidence peers took 24 33 and 36 seconds; investigate after matched baselines and reviewed targets. Uncovered time is unattributed, not automatically provider queue or external wait.
+  authority: false
+
+- path: audits/issue-394/observations/pr-429-attempt-1.json
+  run_id: 39010254772
+  attempt: 1
+  subject_commit: 17d2b4f3890ed4b5999428115c3d8eb13ab8321a
+  subject_tree: abe040021492da066bcd28ea2b82c8c2736393c7
+  classification: preactivation_25_PR_observation_not_matched_benchmark
+  source_snapshot_sha256: 33283e45b92eddab163f9d9f280a92fdbbb782fbaef8658ea3f7dd9a51c9f719
+  elapsed_ms: 1599000
+  execution_union_ms: 1538000
+  execution_sum_ms: 1636000
+  uncovered_ms: 61000
+  cpu_ms: unknown
+  interpretation: All7 jobs retained from exact attempt endpoint. Independent repository/commit/PR facts bind17d/treeabe040;
+    terminal run, complete jobs and commit rereads agree. External waits and CPU are unmeasured. Source/policy/cohort differences
+    preclude percentile, improvement, target or custody claims.
   authority: false
 
 local_command_observations:
