@@ -462,6 +462,72 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
     assert not (tmp_path / 'receipt.json').exists()
 
 
+@pytest.mark.parametrize('defect', ['stale-commit', 'stale-tree', 'legacy-policy'])
+def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, monkeypatch, defect):
+    from bcf_governance.tooling.ci_github_api import GitHubAPI
+
+    contract = copy.deepcopy(load_contract(REPO_ROOT))
+    contract['schema_version'] = '1.4'
+    contract['qualification'].update(
+        source='provider_default_branch_transaction',
+        caller_checkout_role='materialization_resource_only',
+        source_freshness='provider_exact_at_capture_and_collection',
+    )
+    assets = tmp_path / 'assets'
+    assets.mkdir()
+    digests = _assets(assets)
+    release = ('mjgolaszewski/bcf-governance', 'a' * 40, 'b' * 40)
+    manifest = _build_manifest(tmp_path / 'build.json', _build_assets(assets, digests),
+                               commit=release[1], tree=release[2])
+    identities = {REPO_ROOT.resolve(): release}
+    provider = {}
+    roots = []
+    for index, item in enumerate(contract['required_adopters'], 1):
+        root = tmp_path / item['id']
+        root.mkdir()
+        (root / 'governance-profile.yml').write_text(f"profile: {{selected: {item['profile']}}}\n")
+        identities[root.resolve()] = (item['repository'], str(index) * 40, str(index) * 40)
+        provider[item['repository']] = (index, str(index) * 40)
+        roots.append(root)
+    effects = []
+    reads = []
+
+    def request(_self, method, path, **_kwargs):
+        assert method == 'GET'
+        reads.append(path)
+        repository = '/'.join(path.split('/')[2:4])
+        number, sha = provider[repository]
+        if '/git/ref/' in path:
+            return {'ref': 'refs/heads/main', 'object': {'type': 'commit', 'sha': sha}}
+        if '/git/commits/' in path:
+            return {'sha': sha, 'tree': {'sha': sha}}
+        return {'id': number, 'default_branch': 'main'}
+
+    def allocation(**_kwargs):
+        effects.append('allocation')
+        raise AssertionError('invalid source reached allocation')
+
+    if defect == 'legacy-policy':
+        contract['schema_version'] = '1.3'
+    else:
+        repo, commit, tree = identities[roots[-1].resolve()]
+        identities[roots[-1].resolve()] = (repo, 'f' * 40 if defect == 'stale-commit' else commit,
+                                          'e' * 40 if defect == 'stale-tree' else tree)
+    monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
+    monkeypatch.setattr(GitHubAPI, '_request', request)
+    monkeypatch.setattr(qualification, 'load_contract', lambda _root: contract)
+    monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
+    monkeypatch.setattr(qualification.tempfile, 'TemporaryDirectory', allocation)
+    with pytest.raises(ReleaseQualificationError, match='source policy|provider source'):
+        qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
+                        release_build_manifest=manifest, adopter_roots=roots,
+                        adopter_pythons={}, producer=PRODUCER, output=tmp_path / 'receipt.json')
+    assert effects == []
+    assert not (tmp_path / 'receipt.json').exists()
+    if defect == 'legacy-policy':
+        assert reads == []
+
+
 def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
