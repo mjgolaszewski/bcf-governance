@@ -341,5 +341,54 @@
       "tests/test_ordinary_protection_projection.py"
     ],
     "scope": "Seven further source consumer suites; additional to original399. No installed or full canonical claim."
+  },
+  "admitted_exact_subject_qualification": {
+    "authority": false,
+    "subject": "f64d8825b5c509f17ce6ffb4bd96824773742cfc",
+    "tree_sha": "e5894d33a6ee934704c902b2c6ee6f09aa48c7f6",
+    "stages": [
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 138274,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-bindings",
+        "returncode": 0,
+        "elapsed_ms": 27197,
+        "stdout_sha256": "3546502b7f5f0bd6c6f4dc0c813470cfde137d1fc29d24aa782bfc1423676dce",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed-mixed",
+        "returncode": 0,
+        "elapsed_ms": 6779,
+        "stdout_sha256": "5c4acd843e4b1f471ef0bd9ae2ac616a2c418d3d556a1a04f419b4d15d543003",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 27743,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 781,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:15:07.782684+00:00",
+    "ended_at": "2026-10-17T07:18:28.835998+00:00",
+    "returncode": 0,
+    "capture_sha256": "b4066a474aca8109cabf3bdefedcf5235f3ce5801b02821e3d8107aa41a9f60b",
+    "source_cases": 401,
+    "installed_cases": 2,
+    "scope": "401 affected source/binding cases and2 actual fresh/upgrade source-absent installed cases; authored21-operation golden, governance and exposure PASS. Existing architecture/native checks are separately retained. No provider, whole acceptance or single merged-subject qualification implied."
   }
 }
