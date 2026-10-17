@@ -18,6 +18,7 @@ scope:
   - spec/phase0/release-train-backtrace.yml
   - bcf_governance/tooling/governance_validation/ci_state_matrix.py
   - tests/test_ci_state_matrix.py
+  - tests/test_backtrace_structural_coverage.py
   - spec/RELEASE_TRAIN_STATE_DAG.md
   - docs/MAINTAINING.md
   - canonical private runtime mirrors
