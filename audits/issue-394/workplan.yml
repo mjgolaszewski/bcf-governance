@@ -99,6 +99,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/admission-implementation-completion.json
+    - audits/issue-394/independent-admission-review.json
   foundation.residuals:
     summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
     status: IN_PROGRESS
@@ -2648,7 +2649,7 @@ implementation_slices:
     - Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.
     - Provider PR/exact-main authority and full terminal custody are not certified by these local tests.
     - 'Authored Python operation admission: audits/issue-394/authored-operation-admission-contract.json and authored-operation-admission-verification.json;46
-      focused checks pass, whole-source/installed/native and canonical successor proof remain pending.'
+      focused checks plus151 source and2 installed mixed cases and native checks pass;1required stale-lock oracle and canonical successor proof remain pending.'
   separate-pipeline-clock-observation:
     id: separate-pipeline-clock-observation
     workitem: P32-P0-06
