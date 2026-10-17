@@ -483,6 +483,28 @@
       ]
     },
     "source_sha256": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c",
-    "fixture_sha256": "14d17fb3f808a705bc841aeae2aaadd2a1ea9c06cfe7a4bb0efcd7338c644b83"
+    "fixture_sha256": "14d17fb3f808a705bc841aeae2aaadd2a1ea9c06cfe7a4bb0efcd7338c644b83",
+    "cross_feature_compatibility": {
+      "source_matrix_observation": {
+        "authority": false,
+        "scope": "Cross-feature compatibility probe only; no merged or single-subject proof",
+        "source_subject": "b6f0c35845cb4db78a075cd44d4e3c5258a7f6f8",
+        "identity_subject": "6c0717c8eafc2810147c206d819a4ae73a69ddcc",
+        "identity_module_sha256": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+        "returncode": 0,
+        "elapsed_ms": 5342
+      },
+      "actual_bound_consumer": {
+        "authority": false,
+        "scope": "Cross-feature test-only exact-module consumer probe; no merged tree or installed proof",
+        "source_subject": "b6f0c35845cb4db78a075cd44d4e3c5258a7f6f8",
+        "identity_subject": "6c0717c8eafc2810147c206d819a4ae73a69ddcc",
+        "returncode": 0,
+        "elapsed_ms": 445,
+        "stdout_sha256": "b1b543c507b8e86367c2ce144102ced9d08105493b431e7e4998219f73f73b5c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "scope": "Mixed exact modules in disposable test processes only:84 source observations plus authenticated binding and contradictory capture/collection rejection before reference/commit reads. This is not an integrated single-subject, installed, provider certification or publication proof."
+    }
   }
 }
