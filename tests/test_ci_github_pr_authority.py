@@ -70,7 +70,7 @@ class FakePRAuthorityAPI:
 
     def repository(self, repository: str) -> dict[str, object]:
         assert repository == REPOSITORY
-        return {"id": REPOSITORY_ID, "default_branch": "main"}
+        return {"full_name": repository, "id": REPOSITORY_ID, "default_branch": "main"}
 
     def reference(self, repository: str, ref: str) -> dict[str, object]:
         assert repository == REPOSITORY and ref == "heads/main"
@@ -351,7 +351,7 @@ class FakeProtectionAPI:
         self.updated = False
 
     def repository(self, repository: str) -> dict[str, object]:
-        return {"id": REPOSITORY_ID, "default_branch": "main"}
+        return {"full_name": repository, "id": REPOSITORY_ID, "default_branch": "main"}
 
     def pull_requests(self, repository: str, *, state: str) -> tuple[dict[str, object], ...]:
         assert state == "open"

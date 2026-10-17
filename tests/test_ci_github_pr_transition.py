@@ -277,7 +277,7 @@ class TransitionAPI:
         self.artifact_records = tuple(records)
 
     def repository(self, repository: str) -> dict[str, object]:
-        return {"id": int(REPOSITORY_ID), "default_branch": "main"}
+        return {"full_name": repository, "id": int(REPOSITORY_ID), "default_branch": "main"}
 
     def reference(self, repository: str, ref: str) -> dict[str, object]:
         return {"object": {"type": "commit", "sha": MAIN}}

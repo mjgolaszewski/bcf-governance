@@ -768,6 +768,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-repository-source
     - authenticated-bound-pr-comparison-context
     - separate-pipeline-clock-observation
   I04:
@@ -1132,6 +1133,7 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
     implementation_slices:
+    - authenticated-provider-repository-source
     - committed-tree-before-provider
     - authenticated-bound-pr-comparison-context
     - migrated-mutant-owner-and-early-control-admission
@@ -4223,3 +4225,51 @@ implementation_slices:
     remaining:
     - Exact installed nested projection and new canonical real pinned-adopter transaction remain required.
     - Entire independent consumer/failure populations, targets and custody remain open; no CP07 closure.
+
+  authenticated-provider-repository-source:
+    id: authenticated-provider-repository-source
+    workitem: P32-P0-01
+    scope: Provider full_name must bind the requested repository before default-main or provider-run source reconstruction; case-insensitive identity
+      retained.
+    contract: audits/issue-394/main-repository-authentication-contract.json
+    producer: bcf_governance/tooling/ci_github_identity.py::_repository_default_identity
+    consumer: resolve_main and resolve_run_subject; later source reconstruction retains existing exact facts
+    status: focused_tests_passed
+    authority: false
+    positive_tests:
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[owner/repo-default]
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[owner/repo-run]
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[Owner/Repo-default]
+    - tests.test_ci_github_main_identity::test_source_identity_retains_case_insensitive_repository_binding[Owner/Repo-run]
+    negative_controls:
+    - cause: wrong-owner-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-owner-default]
+    - cause: wrong-owner-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-owner-run]
+    - cause: wrong-name-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-name-default]
+    - cause: wrong-name-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[wrong-name-run]
+    - cause: blank-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[blank-default]
+    - cause: blank-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[blank-run]
+    - cause: missing-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[missing-default]
+    - cause: missing-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[missing-run]
+    - cause: null-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[null-default]
+    - cause: null-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[null-run]
+    - cause: number-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[number-default]
+    - cause: number-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[number-run]
+    - cause: object-default
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-default]
+    - cause: object-run
+      test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-run]
+    remaining:
+    - Native architecture and source/installed/runtime qualification before integration.
+    - No whole acceptance, matched performance, phase activation or release certification.
