@@ -386,6 +386,25 @@ def exercise_installed_consumer(consumer: Path, python: Path, fixture_root: Path
     }}}
     profile_path.write_text(yaml.safe_dump(profile, sort_keys=False))
     semantic_records = exercise_consumer(consumer, python, consumer / "scripts/semantic_ownership.py")
+    authored_code = """import importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime import semantic_ownership_scan as scan
+def unexpected_compiler(*args, **kwargs):
+    raise AssertionError('authored Python query executed a foreign compiler')
+scan.compiler_contracts = unexpected_compiler
+report = scan.validate_authored_semantic_ownership(Path.cwd())
+assert report['authority'] is False and report['execution_qualified'] is False
+assert 'operation_observations' in report
+assert all('.py::' in row['entrypoint'] for row in report['operation_observations'])
+print(json.dumps(report, sort_keys=True))
+"""
+    authored_query = subprocess.run(
+        [str(python), "-I", "-c", authored_code], cwd=consumer, env=_environment(),
+        capture_output=True, text=True,
+    )
+    assert authored_query.returncode == 0, _record(authored_query)
     prepare_records = _exercise_prepare(consumer, python, fixture_root / "prepare")
     resolve_records = [
         _exercise_resolve(consumer, python, fixture_root / f"resolve-{case or 'valid'}", case)
@@ -395,6 +414,7 @@ def exercise_installed_consumer(consumer: Path, python: Path, fixture_root: Path
     return {
         "status": "pass", "consumer": str(consumer), "python": str(python),
         "bcf_package_absent": _record(probe), "semantic_commands": semantic_records,
+        "authored_operation_query": _record(authored_query),
         "prepare_commands": prepare_records, "resolve_commands": resolve_records,
         "installed_schemas_preserved": True,
     }
