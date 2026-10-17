@@ -148,3 +148,19 @@ def test_active_predecessor_uses_admitted_subject_not_new_default(admitted_polic
     assert list(inputs) == ["P01"]
     assert inputs["P01"][1].computed_state == "certified"
     assert inputs["P01"][2] == api.archive and api.reads == 1
+
+
+def test_admitted_source_can_derive_its_own_active_phase(admitted_policy):
+    api, subject, calls = admitted_policy
+    selected, inputs = trusted_inputs.verify_required_phase_closure_inputs(
+        api, repository="owner/repo", phase_id=None, policy_subject=subject,
+    )
+    assert selected == subject and inputs == {}
+    assert len(calls) == 3 and {ref for _, ref in calls} == {SHA_A}
+
+
+def test_active_phase_derivation_requires_explicit_admitted_subject(protected_population):
+    api, _, calls = protected_population
+    with pytest.raises(GitHubControllerError, match="target"):
+        trusted_inputs.verify_required_phase_closure_inputs(api, repository="owner/repo", phase_id=None)
+    assert calls == [] and api.reads == 0
