@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document", "populations", "operations", "migrations"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "application_operation_registry"},
+        "id": {"type": "string", "minLength": 1},
+        "version": {"const": "1.0.0"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/application-operations.yml"}
+      }
+    },
+    "populations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/population"}},
+    "operations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/operation"}},
+    "migrations": {"type": "array", "items": {"$ref": "#/$defs/migration"}}
+  },
+  "$defs": {
+    "safePath": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"},
+    "stringArray": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "migration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subject_kind", "subject_id", "change", "base_sha", "previous_sha256", "current_sha256", "owner", "reason"],
+      "properties": {
+        "subject_kind": {"enum": ["operation"]},
+        "subject_id": {"type": "string", "minLength": 1},
+        "change": {"enum": ["retired", "reassigned", "semantic_kind_changed", "effect_changed"]},
+        "base_sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+        "previous_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "current_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "owner": {"type": "string", "minLength": 1},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "population": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "adapter", "source", "symbol", "public_only"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+        "adapter": {"enum": ["python_mapping", "python_decorators", "python_module_exports", "canonical_yaml_catalog", "typescript_exports"]},
+        "source": {"$ref": "#/$defs/safePath"},
+        "symbol": {"type": "string", "minLength": 1},
+        "public_only": {"type": "boolean"},
+        "decorators": {"$ref": "#/$defs/stringArray"},
+        "catalog_path": {"$ref": "#/$defs/stringArray"},
+        "tsconfig": {"$ref": "#/$defs/safePath"},
+        "package_lock": {"$ref": "#/$defs/safePath"},
+        "node_executable": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+$"}
+      },
+      "allOf": [
+        {"if": {"properties": {"adapter": {"const": "python_decorators"}}}, "then": {"required": ["decorators"]}},
+        {"if": {"properties": {"adapter": {"const": "canonical_yaml_catalog"}}}, "then": {"required": ["catalog_path"]}},
+        {"if": {"properties": {"adapter": {"const": "typescript_exports"}}}, "then": {"required": ["tsconfig", "package_lock", "node_executable"]}}
+      ]
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "population", "population_key", "family", "bounded_context", "entrypoints", "semantic_kind", "authoritative_read", "authoritative_mutation", "authority_conferral", "produces_projection", "model_callable", "allowed_mutation_ports", "allowed_authority_ports", "non_authoritative_output_effects"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9_.-]+\\.v[1-9][0-9]*$"},
+        "population": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+        "population_key": {"type": "string", "minLength": 1},
+        "family": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+        "bounded_context": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+        "entrypoints": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "::"}},
+        "semantic_kind": {"enum": ["command", "query", "projection", "proposal", "validation", "execution", "event_handler"]},
+        "authoritative_read": {"type": "boolean"},
+        "authoritative_mutation": {"type": "boolean"},
+        "authority_conferral": {"type": "boolean"},
+        "produces_projection": {"type": "boolean"},
+        "model_callable": {"type": "boolean"},
+        "allowed_mutation_ports": {"$ref": "#/$defs/stringArray"},
+        "allowed_authority_ports": {"$ref": "#/$defs/stringArray"},
+        "non_authoritative_output_effects": {"$ref": "#/$defs/stringArray"}
+      }
+    }
+  }
+}

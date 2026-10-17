@@ -1,0 +1,183 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF provider-neutral CI authority contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "repository", "producers", "trusted_external_inputs"],
+  "properties": {
+    "schema_version": {"enum": ["1.0", "1.1"]},
+    "repository": {"$ref": "#/$defs/repository"},
+    "admission_workflow": {"$ref": "#/$defs/workflow"},
+    "workflow_registry": {"$ref": "#/$defs/workflowRegistry"},
+    "roles": {"$ref": "#/$defs/roles"},
+    "admission_jobs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/job"}
+    },
+    "controller_builder_jobs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/job"}
+    },
+    "producers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/producer"}
+    },
+    "trusted_external_inputs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/trustedExternalInput"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "1.1"}}, "required": ["schema_version"]},
+      "then": {"required": ["workflow_registry", "roles", "admission_jobs"]}
+    }
+  ],
+  "$defs": {
+    "nonEmpty": {"type": "string", "minLength": 1},
+    "providerId": {"type": "string", "pattern": "^[A-Za-z0-9._:-]+$"},
+    "sha": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "safePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*//)[A-Za-z0-9._/-]+$"
+    },
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository_id"],
+      "properties": {
+        "provider": {"$ref": "#/$defs/providerId"},
+        "repository_id": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "workflow_id",
+        "active_path",
+        "trusted_workflow_blob_oid",
+        "trusted_workflow_sha256",
+        "trusted_workflow_definition_commit",
+        "allowed_events"
+      ],
+      "properties": {
+        "workflow_id": {"$ref": "#/$defs/providerId"},
+        "active_path": {"$ref": "#/$defs/safePath"},
+        "trusted_workflow_blob_oid": {"$ref": "#/$defs/sha"},
+        "trusted_workflow_sha256": {"$ref": "#/$defs/sha256"},
+        "trusted_workflow_definition_commit": {"$ref": "#/$defs/sha"},
+        "expected_jobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/job"}
+        },
+        "job_roles": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": {"$ref": "#/$defs/providerId"},
+          "additionalProperties": {"enum": ["admission", "producer", "observer", "controller-builder"]}
+        },
+        "allowed_events": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/providerId"}
+        }
+      }
+    },
+    "workflowRegistry": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"$ref": "#/$defs/providerId"},
+      "additionalProperties": {"$ref": "#/$defs/workflow"}
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "admission", "reusable_producers", "finalizer", "status_publisher",
+        "release_authorizer", "release_build",
+        "release_verifier", "release_collector", "release_publisher",
+        "authority_canary"
+      ],
+      "properties": {
+        "admission": {"$ref": "#/$defs/providerId"},
+        "reusable_producers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/providerId"}},
+        "finalizer": {"$ref": "#/$defs/providerId"},
+        "status_publisher": {"$ref": "#/$defs/providerId"},
+        "bootstrap": {"$ref": "#/$defs/providerId"},
+        "probe": {"$ref": "#/$defs/providerId"},
+        "release_authorizer": {"$ref": "#/$defs/providerId"},
+        "release_build": {"$ref": "#/$defs/providerId"},
+        "release_verifier": {"$ref": "#/$defs/providerId"},
+        "release_collector": {"$ref": "#/$defs/providerId"},
+        "release_publisher": {"$ref": "#/$defs/providerId"},
+        "authority_canary": {"$ref": "#/$defs/providerId"},
+        "controller_rotation": {"$ref": "#/$defs/providerId"},
+        "controller_rotation_callback": {"$ref": "#/$defs/providerId"}
+      }
+    },
+    "scalar": {"type": ["string", "number", "boolean"]},
+    "job": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["job_id"],
+      "properties": {
+        "job_id": {"$ref": "#/$defs/nonEmpty"},
+        "role": {"enum": ["admission", "producer", "observer", "controller-builder"]},
+        "matrix": {
+          "type": "object",
+          "propertyNames": {"pattern": "^[A-Za-z0-9_.-]+$"},
+          "additionalProperties": {"$ref": "#/$defs/scalar"}
+        }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "expected_jobs"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/providerId"},
+        "workflow": {"$ref": "#/$defs/workflow"},
+        "workflow_ref": {"$ref": "#/$defs/providerId"},
+        "expected_jobs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/job"}
+        }
+      },
+      "oneOf": [
+        {"required": ["workflow"], "not": {"required": ["workflow_ref"]}},
+        {"required": ["workflow_ref"], "not": {"required": ["workflow"]}}
+      ]
+    },
+    "trustedExternalInput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_id",
+        "source_repository",
+        "producer_ref",
+        "artifact_name",
+        "digest_algorithm",
+        "required"
+      ],
+      "properties": {
+        "input_id": {"$ref": "#/$defs/providerId"},
+        "source_repository": {"$ref": "#/$defs/repository"},
+        "producer_ref": {"$ref": "#/$defs/sha"},
+        "artifact_name": {"$ref": "#/$defs/nonEmpty"},
+        "digest_algorithm": {"const": "sha256"},
+        "required": {"type": "boolean"}
+      }
+    }
+  }
+}

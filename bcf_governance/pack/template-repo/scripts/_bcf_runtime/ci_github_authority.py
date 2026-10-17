@@ -24,7 +24,9 @@ from .ci_github_identity import (
 def packaged_repo_root() -> Path:
     """Return the installed, schema-bearing BCF pack root."""
 
-    root = Path(__file__).resolve().parents[1] / "pack/template-repo"
+    module = Path(__file__).resolve()
+    root = (module.parent / "resources" if __package__ == "_bcf_runtime"
+            else module.parents[1] / "pack/template-repo")
     if not (root / "schemas/ci-authority.schema.json").is_file():
         raise GitHubControllerError("installed BCF package lacks CI authority schemas")
     return root

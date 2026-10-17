@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/evidence-storage-topology.schema.json",
+  "title": "BCF closed evidence-storage topology classification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "state", "activation", "durable_sources", "durable_references", "legacy_candidates", "reasons"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "governance.evidence-storage-topology.v1"},
+    "state": {"enum": ["available_not_adopted", "compact_run_evidence", "durable", "legacy", "mixed", "unknown"]},
+    "activation": {"enum": ["absent", "disabled", "enabled", "unknown"]},
+    "durable_sources": {"$ref": "#/$defs/identifiers"},
+    "durable_references": {"$ref": "#/$defs/identifiers"},
+    "legacy_candidates": {"$ref": "#/$defs/identifiers"},
+    "reasons": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+  },
+  "$defs": {
+    "identifier": {"type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"},
+    "identifiers": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}}
+  }
+}

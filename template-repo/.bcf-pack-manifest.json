@@ -612,7 +612,7 @@
     },
     "scripts/_bcf_runtime/ci_github_authority.py": {
       "operation": "copy",
-      "sha256": "86f6ff8ad2563be179476c139b3dc5a8b7bf138ffb85f6a60543717ab40bfec7"
+      "sha256": "d1826c84179c72910f9a68f791b66bc1b6b80745b3f8cce137800d0e2f36a7ac"
     },
     "scripts/_bcf_runtime/ci_github_automation.py": {
       "operation": "copy",
@@ -1452,6 +1452,270 @@
     "scripts/_bcf_runtime/repository_comparison_context.py": {
       "operation": "copy",
       "sha256": "db243b6cbcba48148a3764c23aa8c9d22c8a8f83d1089ef69313a595e61da330"
+    },
+    "scripts/_bcf_runtime/resources/schemas/agents.schema.json": {
+      "operation": "copy",
+      "sha256": "8b0817ca99db767515f644afc8429ab5ab3f5fc460ef2ca8330f8e23affb5fff"
+    },
+    "scripts/_bcf_runtime/resources/schemas/application-operations.schema.json": {
+      "operation": "copy",
+      "sha256": "3b5b6133f7b2cba47fda6e50a3d45b0b046127dbfe36806ca3f08724408bee6a"
+    },
+    "scripts/_bcf_runtime/resources/schemas/architecture-boundaries.schema.json": {
+      "operation": "copy",
+      "sha256": "fa7ac5f2397307553976b9d592e7fbe5f3e76199dd33c82c1b1013e641486d48"
+    },
+    "scripts/_bcf_runtime/resources/schemas/artifact-manifest.schema.json": {
+      "operation": "copy",
+      "sha256": "50fe308568dd36872c6c587d2a00cbbfc496013ec5723b6ff3a7c5a5e26180ce"
+    },
+    "scripts/_bcf_runtime/resources/schemas/authored-phase-state-result.schema.json": {
+      "operation": "copy",
+      "sha256": "72518be5539a7a50fc411ba0ed44c219cc651b61af5048d42b6c37c10b07d92c"
+    },
+    "scripts/_bcf_runtime/resources/schemas/automation-producers.schema.json": {
+      "operation": "copy",
+      "sha256": "e6b583eb991edd1ed4403d8c77f17baed23221ec65be639bcd28ba474cfa5d27"
+    },
+    "scripts/_bcf_runtime/resources/schemas/bcf-runtime-lock.schema.json": {
+      "operation": "copy",
+      "sha256": "0ccc711f909a0e00a77621c43ba86a2f5508f744181377861da567b1930302a6"
+    },
+    "scripts/_bcf_runtime/resources/schemas/break-glass-recovery-policy.schema.json": {
+      "operation": "copy",
+      "sha256": "4a1ce466c678a8f942fdb0c35488a757d7065a60aa8141de7f43ace12963ed40"
+    },
+    "scripts/_bcf_runtime/resources/schemas/break-glass-recovery-receipt.schema.json": {
+      "operation": "copy",
+      "sha256": "e7fafb062a2c98118ff93b0419eca9327670a27e3c42aedac77f5ff8450b0453"
+    },
+    "scripts/_bcf_runtime/resources/schemas/build-plan.schema.json": {
+      "operation": "copy",
+      "sha256": "88908d8fb214c5b594056ed2abfc6524163a77ab62a4cf88fb27b4b415aaa42d"
+    },
+    "scripts/_bcf_runtime/resources/schemas/canonical-representations.schema.json": {
+      "operation": "copy",
+      "sha256": "b01312633c4fd3fbdacd042cd5a49e620b0772278aca3b8f07a17684628bcfea"
+    },
+    "scripts/_bcf_runtime/resources/schemas/capability-na.schema.json": {
+      "operation": "copy",
+      "sha256": "3894ee3c78ea90e6fc7131b3bfbc03ceae12b79098a49517fb6827ad46b2e8ca"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-authority.schema.json": {
+      "operation": "copy",
+      "sha256": "6f505d9672b607ca2eba98b3cda5aaadc4e5c2a6f6d0fe743f8b31689b182f06"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-certification.schema.json": {
+      "operation": "copy",
+      "sha256": "1c5b2cf7f4ae49c18030be25ec1ff51622c4894810798e6f5afc86ea688169db"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-graph-extension.schema.json": {
+      "operation": "copy",
+      "sha256": "83175670beeac31d19834dcb9f30bfec55e71b5a02a4d604fd1600f99c26a6da"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-graph.schema.json": {
+      "operation": "copy",
+      "sha256": "f31b97e7645722a1865399603b24b4e955ad34382ea6c56e54d01f3cacea0399"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-lifecycle-composition.schema.json": {
+      "operation": "copy",
+      "sha256": "dc1e233ec3483f648cb26abd5b4a548933cdab41684516951213a2ac4e5f43ba"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-provider-snapshot.schema.json": {
+      "operation": "copy",
+      "sha256": "a16f344547dafff61fc2cc7c78a25bf5c8640bb2a0ef6db323d4b2cfc2e14b32"
+    },
+    "scripts/_bcf_runtime/resources/schemas/ci-workflow-inventory.schema.json": {
+      "operation": "copy",
+      "sha256": "1b5ed6eff718997dc40e1cf396196fa483996eb9c186fac230b6603d7aa2103b"
+    },
+    "scripts/_bcf_runtime/resources/schemas/controller-transition.schema.json": {
+      "operation": "copy",
+      "sha256": "e529711d2c38e9673c2d9a3b712965b773ffdca65e96a0d742462aa405fe44b5"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-input-manifest.schema.json": {
+      "operation": "copy",
+      "sha256": "ab2829fc0154cef9f8f9318def829ebbeee149b32f2eb3858db14aa0e55b7a53"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-input-reference.schema.json": {
+      "operation": "copy",
+      "sha256": "5212b0f87dc32c32b2b270c60f247f4891fbd9a0687871288a65a3f7ea674976"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-policy.schema.json": {
+      "operation": "copy",
+      "sha256": "40a63f9b0a50647e964ee612d96cfd6b3e82d44e97bb5a6464bfe8a77defee49"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-receipt.schema.json": {
+      "operation": "copy",
+      "sha256": "5a6da58af8635647b408d6ec3e826f41bae97459a73d3d19672b76b1feb1fe94"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-retention-snapshot.schema.json": {
+      "operation": "copy",
+      "sha256": "244931ad558f52bc3603c8eba43cbd8bb30f395d848ed45afcc7472fdd61de44"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-session-v3.schema.json": {
+      "operation": "copy",
+      "sha256": "64cc217379b66072d22d1e8f71beb37dd75ff15ec918442890ba885f06bcbe77"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-session.schema.json": {
+      "operation": "copy",
+      "sha256": "a5a611ce01b0fc332348f6a5258e6d3a034a7a22691d353eae039e73678f94cb"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-storage-migration-plan.schema.json": {
+      "operation": "copy",
+      "sha256": "02a0ff7da6d36cca2df2c848a4422fb7f93ed0777cdb5a261e072fd4a4fd556c"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-storage-topology.schema.json": {
+      "operation": "copy",
+      "sha256": "b1273aeededec7203786938d291b4138afa8d4720f60190f57f5405944591cee"
+    },
+    "scripts/_bcf_runtime/resources/schemas/evidence-storage.schema.json": {
+      "operation": "copy",
+      "sha256": "200cf5466024ee361762697c5cca784493e0ca9b23cab428c90082e6a6775055"
+    },
+    "scripts/_bcf_runtime/resources/schemas/findings.schema.json": {
+      "operation": "copy",
+      "sha256": "1920e7216eb71f47a4127180968626013bc8d8317656cd304035e25b87826dda"
+    },
+    "scripts/_bcf_runtime/resources/schemas/gate-contracts.schema.json": {
+      "operation": "copy",
+      "sha256": "4d4cb19c3be7825e384fa572a6ae3fab809d1fb5aa9641291a099458a522634d"
+    },
+    "scripts/_bcf_runtime/resources/schemas/github-ci-topology.schema.json": {
+      "operation": "copy",
+      "sha256": "76abd98e4d6d1388e2e78f6852bdd7932466f83a16755a84c4d54e04a41082fd"
+    },
+    "scripts/_bcf_runtime/resources/schemas/github-protection.schema.json": {
+      "operation": "copy",
+      "sha256": "42ec73058f91cfd52af27ba0ed514b5c3d6324fbf5855895d6b1ada75b46b4cc"
+    },
+    "scripts/_bcf_runtime/resources/schemas/governance-profile.schema.json": {
+      "operation": "copy",
+      "sha256": "975becb09554778a16aca02987df201fb943df77ee8c4b9efae16fa3cb50c223"
+    },
+    "scripts/_bcf_runtime/resources/schemas/hotfix-log.schema.json": {
+      "operation": "copy",
+      "sha256": "28173b8327ca6322ae27e42f9b1c9b70cbcf4adc7958b84d62111ab676a96386"
+    },
+    "scripts/_bcf_runtime/resources/schemas/memory.schema.json": {
+      "operation": "copy",
+      "sha256": "f9bb4a5f66b11e806bb166331b6ae6d515baee11e1d33979b98577ce8ec0a4e2"
+    },
+    "scripts/_bcf_runtime/resources/schemas/observability-contract.schema.json": {
+      "operation": "copy",
+      "sha256": "fd87d65939e09aa889dac0a31bc22bf491c525d9eb8580420c115bd9d27c5762"
+    },
+    "scripts/_bcf_runtime/resources/schemas/operational-observation.schema.json": {
+      "operation": "copy",
+      "sha256": "c28e35236a3c717c43a73cc7c1332b9c00c7f65f20aefdced249c7e11def1a18"
+    },
+    "scripts/_bcf_runtime/resources/schemas/phase-history.schema.json": {
+      "operation": "copy",
+      "sha256": "24ec4489091f01f75ca11ee0dd5514924e0588e16a544b3ce788b625b753b555"
+    },
+    "scripts/_bcf_runtime/resources/schemas/phase-ledger.schema.json": {
+      "operation": "copy",
+      "sha256": "f3846bfa8d064a45135789b8ec7f23e801ed3b096bff57cbe6241374339fad4f"
+    },
+    "scripts/_bcf_runtime/resources/schemas/phase-log.schema.json": {
+      "operation": "copy",
+      "sha256": "dc30830b03ff29b1633e538f29bf923712c770dac5a5b219641b95d31526deba"
+    },
+    "scripts/_bcf_runtime/resources/schemas/phase-plan.schema.json": {
+      "operation": "copy",
+      "sha256": "0559c956ef86a72a6397b849515fd69e11407c765311578962245f140699cdbe"
+    },
+    "scripts/_bcf_runtime/resources/schemas/phase-workitems.schema.json": {
+      "operation": "copy",
+      "sha256": "073f15d70ffc16b379dcdadafa96a6eb32eabebbdf83b3845317efa3dcca5add"
+    },
+    "scripts/_bcf_runtime/resources/schemas/pr-transition.schema.json": {
+      "operation": "copy",
+      "sha256": "bc151292652720ab656f29cf5dba6bc42bcb2f9c2ac1ff07de6ecab7d67fa51d"
+    },
+    "scripts/_bcf_runtime/resources/schemas/prior-evidence-transport.schema.json": {
+      "operation": "copy",
+      "sha256": "0e938ebd2bf4d82d57bc7f50fc97bfe155f99e7dcddded297440f8a1da25e884"
+    },
+    "scripts/_bcf_runtime/resources/schemas/product-certification.schema.json": {
+      "operation": "copy",
+      "sha256": "75ed050652b6139d1aaedfdf6d68e2663b4dc15bf66a3b698254015564d5d8e9"
+    },
+    "scripts/_bcf_runtime/resources/schemas/product-parity.schema.json": {
+      "operation": "copy",
+      "sha256": "899a19c5de7c25b372c213df4044947ef923e64b217ff14fa88427d333910ce0"
+    },
+    "scripts/_bcf_runtime/resources/schemas/product-spec.schema.json": {
+      "operation": "copy",
+      "sha256": "354a2404471958e066bbab7e36194e31101ac3dd67a0d8bb4013ada734aae4db"
+    },
+    "scripts/_bcf_runtime/resources/schemas/proof-bundle.schema.json": {
+      "operation": "copy",
+      "sha256": "8da9ec2a5b33b13fea763bc8fe36238dcf08d0d158fff8ac30b369f767478be2"
+    },
+    "scripts/_bcf_runtime/resources/schemas/prospective-train-telemetry.schema.json": {
+      "operation": "copy",
+      "sha256": "25b0d5e9b6ca126277349f30e3390e655d374576d374c0e6db48ab71135fa1bb"
+    },
+    "scripts/_bcf_runtime/resources/schemas/public-contracts.schema.json": {
+      "operation": "copy",
+      "sha256": "9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7"
+    },
+    "scripts/_bcf_runtime/resources/schemas/reconcile-ledger.schema.json": {
+      "operation": "copy",
+      "sha256": "be21d6545c057029b797cbc92089731379c8490bba50bd749dfbf4278364a0b9"
+    },
+    "scripts/_bcf_runtime/resources/schemas/recovery-reentry-authorization.schema.json": {
+      "operation": "copy",
+      "sha256": "a4f3699ed4cb9dfb5f5b48246cfcc823313051cc228f951c1efa14bfa6bea4be"
+    },
+    "scripts/_bcf_runtime/resources/schemas/release-qualification.schema.json": {
+      "operation": "copy",
+      "sha256": "b48107c428992d76045e765fa67a5f8f4fcee80e6e88aab627d4306403e88881"
+    },
+    "scripts/_bcf_runtime/resources/schemas/release-train-backtrace.schema.json": {
+      "operation": "copy",
+      "sha256": "edaa652bcc34ace5d01ea1a87c8a92e1749dce5dcf4841261dab9a33db28ef16"
+    },
+    "scripts/_bcf_runtime/resources/schemas/repo-cleanup-contract.schema.json": {
+      "operation": "copy",
+      "sha256": "311cb3b6965f4a8ee83e76da2f88056b260554618fcf3bf4ec0a63eb1891c045"
+    },
+    "scripts/_bcf_runtime/resources/schemas/reuse-attestation.schema.json": {
+      "operation": "copy",
+      "sha256": "3f383ac9df34bb3f5db2ca2c79700dab8d145d9cd288c1d43e2047aad1a60985"
+    },
+    "scripts/_bcf_runtime/resources/schemas/runtime-capacity.schema.json": {
+      "operation": "copy",
+      "sha256": "88d803c38b14406210a067c249b1aea55d8506fee05a6a57043d9f59fd97015b"
+    },
+    "scripts/_bcf_runtime/resources/schemas/self-authority-overlays.schema.json": {
+      "operation": "copy",
+      "sha256": "1df494b1dbc5b23bf4c276325386cb71782ec004c6b28a018e2fdf3bffd0f6f3"
+    },
+    "scripts/_bcf_runtime/resources/schemas/semantic-call-contracts.schema.json": {
+      "operation": "copy",
+      "sha256": "e812ce939497056f4551e70a9773cb4d44da11348645493f0ea2846c034db149"
+    },
+    "scripts/_bcf_runtime/resources/schemas/semantic-families.schema.json": {
+      "operation": "copy",
+      "sha256": "952a979c9ea51b30c44adfac8ce8b1bf490be1a9fd7d4ee1189ccea65f4c9b77"
+    },
+    "scripts/_bcf_runtime/resources/schemas/semantic-initialization-contracts.schema.json": {
+      "operation": "copy",
+      "sha256": "ef58f8d9eef278a28a22a02995a022896c86402a03cee54df231aba18dc4dc9c"
+    },
+    "scripts/_bcf_runtime/resources/schemas/semantic-lock.schema.json": {
+      "operation": "copy",
+      "sha256": "bf8f06dc9bcd1ad869de204db363711d4265aae00880232d68241e717f6491ae"
+    },
+    "scripts/_bcf_runtime/resources/schemas/test-tombstones.schema.json": {
+      "operation": "copy",
+      "sha256": "f601fef9cbc1e1e2e5a082b9554114acc2f5fe7ff7f43e3840b87e0e274430d8"
+    },
+    "scripts/_bcf_runtime/resources/schemas/trusted-controller-policy.schema.json": {
+      "operation": "copy",
+      "sha256": "8a87d2812cfbddfce55331246fde43f427865aa8481b40b1a497f8e422c8523f"
     },
     "scripts/_bcf_runtime/routine_controller_admission_custody.py": {
       "operation": "copy",

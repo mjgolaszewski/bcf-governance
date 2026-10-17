@@ -202,6 +202,11 @@ def check() -> list[str]:
         template_root / "schemas", suffixes={".json"}
     ):
         issues.append("template schemas differ from canonical schemas")
+    for root in (template_root, packaged_root):
+        if _tree_bytes(REPO_ROOT / "schemas", suffixes={".json"}) != _tree_bytes(
+            root / "scripts/_bcf_runtime/resources/schemas", suffixes={".json"}
+        ):
+            issues.append(f"{root.relative_to(REPO_ROOT)} private schemas differ from canonical schemas")
     expected_version = (REPO_ROOT / "bcf_governance/_version.py").read_bytes()
     for root in (template_root, packaged_root):
         if (root / "scripts/_bcf_runtime/_version.py").read_bytes() != expected_version:
@@ -248,6 +253,10 @@ def main() -> None:
         suffixes={".py", ".mjs"},
     )
     _sync_tree(REPO_ROOT / "schemas", template_root / "schemas", suffixes={".json"})
+    _sync_tree(
+        REPO_ROOT / "schemas", template_root / "scripts/_bcf_runtime/resources/schemas",
+        suffixes={".json"},
+    )
     packaged_root = REPO_ROOT / "bcf_governance/pack/template-repo"
     _sync_packaged_template(template_root, packaged_root)
     for root in (template_root, packaged_root):

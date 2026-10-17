@@ -1,6 +1,7 @@
 """Private authority schemas belong to the loaded runtime, never the checkout."""
 
 import json
+import importlib.util
 from pathlib import Path
 import shutil
 import subprocess
@@ -9,12 +10,15 @@ import sys
 import pytest
 
 from bcf_governance.tooling.ci_github_authority import packaged_repo_root
+from bcf_governance.tooling import ci_github_authority
 
 
 ROOT = Path(__file__).resolve().parents[1]
 PROBE = r'''
-import json, sys
+import importlib.util, json, sys
 from pathlib import Path
+if len(sys.argv) > 2:
+    assert importlib.util.find_spec('bcf_governance') is None
 sys.path.insert(0, sys.argv[1])
 from _bcf_runtime import ci_github_authority as owner
 from _bcf_runtime.ci_authority_contracts import CIAuthorityContractError, validate_ci_contract
@@ -104,3 +108,35 @@ else:
 
 def test_sdk_schema_root_preserves_existing_package_location():
     assert packaged_repo_root() == ROOT / 'bcf_governance/pack/template-repo'
+
+
+def test_loaded_private_context_binds_resources_before_checkout(tmp_path, monkeypatch):
+    runtime = tmp_path / 'scripts/_bcf_runtime'
+    schemas = runtime / 'resources/schemas'
+    schemas.mkdir(parents=True)
+    (schemas / 'ci-authority.schema.json').write_bytes(
+        (ROOT / 'schemas/ci-authority.schema.json').read_bytes(),
+    )
+    candidate = tmp_path / 'schemas'
+    candidate.mkdir()
+    (candidate / 'ci-authority.schema.json').write_text('{}')
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(ci_github_authority, '__file__', str(runtime / 'ci_github_authority.py'))
+    monkeypatch.setattr(ci_github_authority, '__package__', '_bcf_runtime')
+    assert packaged_repo_root() == runtime / 'resources'
+
+
+def test_generator_discovers_private_schema_drift_independently(monkeypatch):
+    spec = importlib.util.spec_from_file_location(
+        'private_schema_pack_generator', ROOT / '.github/scripts/build_pack_manifest.py',
+    )
+    generator = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(generator)
+    original = generator._tree_bytes
+    def omit_private_population(root, *, suffixes):
+        if root.parts[-3:] == ('_bcf_runtime', 'resources', 'schemas'):
+            return {}
+        return original(root, suffixes=suffixes)
+    monkeypatch.setattr(generator, '_tree_bytes', omit_private_population)
+    issues = generator.check()
+    assert sum('private schemas differ from canonical schemas' in issue for issue in issues) == 2

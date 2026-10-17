@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "package", "cli", "contracts", "ci_graph", "compatibility", "diagnostics"],
+  "properties": {
+    "document": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "public_contract_registry"}, "name": {"type": "string", "minLength": 1},
+        "id": {"type": "string", "minLength": 1}, "version": {"const": "1.0.0"},
+        "status": {"const": "active"}, "path": {"const": "governance/public-contracts.yml"}
+      }
+    },
+    "package": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "distribution", "executable_ci_providers", "platforms", "python_minors"],
+      "properties": {
+        "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:(a|b|rc)(0|[1-9][0-9]*))?$"},
+        "distribution": {"const": "github_releases"},
+        "executable_ci_providers": {"const": ["github"]},
+        "platforms": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["linux_x86_64"]}},
+        "python_minors": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^[0-9]+\\.[0-9]+$"}}
+      }
+    },
+    "cli": {
+      "type": "object", "additionalProperties": false,
+      "required": ["scope", "top_level_commands", "exit_codes"],
+      "properties": {
+        "scope": {"const": "top_level_commands_and_exit_classes"},
+        "top_level_commands": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"}},
+        "exit_codes": {"const": {"success": 0, "contract_failure": 1, "usage_error": 2}}
+      }
+    },
+    "contracts": {
+      "type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/versionedContract"},
+      "required": ["profile", "receipt", "evidence_session", "ci_authority", "ci_graph", "ci_graph_extension"]
+    },
+    "ci_graph": {
+      "type": "object", "additionalProperties": false,
+      "required": ["canonical_path", "extension_points", "executor_kinds", "generated_header", "renderer", "parity_check"],
+      "properties": {
+        "canonical_path": {"const": "governance/ci-graph.yml"},
+        "extension_points": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "executor_kinds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "generated_header": {"type": "string", "minLength": 1},
+        "renderer": {"const": "bcf_governance/tooling/ci_graph_render.py::render_ci_graph"},
+        "parity_check": {"const": "bcf_governance/tooling/ci_graph_render.py::check_ci_graph"}
+      }
+    },
+    "compatibility": {
+      "type": "object", "additionalProperties": false,
+      "required": ["project_owned_paths", "preserved_unrelated_workflows", "generated_workflow_manual_edits", "deprecated_contracts_require_migration_command", "breaking_change_notice"],
+      "properties": {
+        "project_owned_paths": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "preserved_unrelated_workflows": {"const": true},
+        "generated_workflow_manual_edits": {"const": "rejected"},
+        "deprecated_contracts_require_migration_command": {"const": true},
+        "breaking_change_notice": {"enum": ["one_release_candidate_or_minor_release"]}
+      }
+    },
+    "diagnostics": {
+      "type": "object", "additionalProperties": false,
+      "required": ["prerequisite_kinds", "required_fields"],
+      "properties": {
+        "prerequisite_kinds": {"const": ["runner", "tool", "permission", "secret", "event", "graph_input"]},
+        "required_fields": {"const": ["kind", "identifier", "status", "remediation"]}
+      }
+    }
+  },
+  "$defs": {
+    "versionedContract": {
+      "type": "object", "additionalProperties": false,
+      "required": ["path", "version_field", "readable_versions", "active_version", "migration_only_versions"],
+      "properties": {
+        "path": {"type": "string", "pattern": "^schemas/[A-Za-z0-9._-]+\\.json$"},
+        "version_field": {"type": "string", "minLength": 1},
+        "readable_versions": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "active_version": {"type": "string", "minLength": 1},
+        "migration_only_versions": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }
+    }
+  }
+}

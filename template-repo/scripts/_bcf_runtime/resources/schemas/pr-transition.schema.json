@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BCF one-shot PR transition contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "repository", "activation", "assurance_mapping"],
+  "properties": {
+    "document": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "name", "id", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "pr_transition"}, "name": {"type": "string", "minLength": 1},
+        "id": {"const": "bcf-2-transition"}, "version": {"const": "1.0.0"},
+        "status": {"const": "active"}, "path": {"const": "governance/pr-transition.yml"}
+      }
+    },
+    "schema_version": {"const": "1.0"},
+    "repository": {
+      "type": "object", "additionalProperties": false,
+      "required": ["full_name", "numeric_id", "base_branch"],
+      "properties": {
+        "full_name": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "numeric_id": {"type": "integer", "minimum": 1}, "base_branch": {"const": "main"}
+      }
+    },
+    "activation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["successor_head_branch", "current_topology", "successor_topology", "retired_producer", "successor_producer"],
+      "properties": {
+        "successor_head_branch": {"type": "string", "minLength": 1},
+        "current_topology": {"$ref": "#/$defs/currentTopology"},
+        "successor_topology": {"$ref": "#/$defs/successorTopology"},
+        "retired_producer": {"$ref": "#/$defs/producer"},
+        "successor_producer": {"$ref": "#/$defs/successorProducer"}
+      }
+    },
+    "assurance_mapping": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": {"$ref": "#/$defs/mapping"}
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+    "file": {
+      "type": "object", "additionalProperties": false, "required": ["path", "sha256"],
+      "properties": {"path": {"$ref": "#/$defs/path"}, "sha256": {"$ref": "#/$defs/sha256"}}
+    },
+    "currentTopology": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ci_graph", "protection", "package_workflow"],
+      "properties": {"ci_graph": {"$ref": "#/$defs/file"}, "protection": {"$ref": "#/$defs/file"}, "package_workflow": {"$ref": "#/$defs/file"}}
+    },
+    "successorTopology": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ci_graph", "protection", "github_topology", "governance_workflow"],
+      "properties": {"ci_graph": {"$ref": "#/$defs/file"}, "protection": {"$ref": "#/$defs/file"}, "github_topology": {"$ref": "#/$defs/file"}, "governance_workflow": {"$ref": "#/$defs/file"}}
+    },
+    "producer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "required_job_names"],
+      "properties": {"id": {"type": "string", "minLength": 1}, "path": {"$ref": "#/$defs/path"}, "required_job_names": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}}
+    },
+    "successorProducer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "required_job_names", "artifact_shards", "required_gate_inventory", "profile", "profile_contract_version", "session_schema_version", "truth_schema_version"],
+      "properties": {
+        "id": {"const": "governance"}, "path": {"const": ".github/workflows/governance.yml"},
+        "required_job_names": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "artifact_shards": {"type": "integer", "minimum": 1, "maximum": 16},
+        "required_gate_inventory": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+        "profile": {"type": "string", "minLength": 1},
+        "profile_contract_version": {"type": "string", "minLength": 1}, "session_schema_version": {"type": "string", "minLength": 1}, "truth_schema_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "mapping": {
+      "type": "object", "additionalProperties": false,
+      "required": ["old_fact", "disposition", "claim", "evidence"],
+      "properties": {
+        "old_fact": {"type": "string", "minLength": 1},
+        "disposition": {"enum": ["successor_claim", "successor_test", "trusted_main_rotation"]},
+        "claim": {"type": ["string", "null"]}, "evidence": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}

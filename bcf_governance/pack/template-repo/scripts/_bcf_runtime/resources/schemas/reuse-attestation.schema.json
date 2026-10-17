@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Immutable main-side reuse decision. This contract references canonical claim and dependency owners; it does not create a second claim or dependency registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "attestation_id", "claim", "source_receipt", "source_subject", "main_subject", "dependency_closure", "qualification", "provider_custody", "decision", "rejection_reasons", "emitted_at"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "reuse_attestation"},
+    "attestation_id": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "claim": {"$ref": "#/$defs/claimIdentity"},
+    "source_receipt": {"$ref": "#/$defs/evidenceReference"},
+    "source_subject": {"$ref": "#/$defs/subjectIdentity"},
+    "main_subject": {"$ref": "#/$defs/subjectIdentity"},
+    "dependency_closure": {"$ref": "#/$defs/digestEquivalence"},
+    "qualification": {"$ref": "#/$defs/digestEquivalence"},
+    "provider_custody": {"$ref": "#/$defs/providerCustody"},
+    "decision": {"enum": ["reuse_admitted", "canonical_execution_required"]},
+    "rejection_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/invalidationReason"}
+    },
+    "emitted_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "reuse_admitted"}}, "required": ["decision"]},
+      "then": {
+        "properties": {
+          "rejection_reasons": {"maxItems": 0},
+          "dependency_closure": {"properties": {"equivalent": {"const": true}}},
+          "qualification": {"properties": {"equivalent": {"const": true}}}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"decision": {"const": "canonical_execution_required"}}, "required": ["decision"]},
+      "then": {"properties": {"rejection_reasons": {"minItems": 1}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "gitObject": {"type": "string", "pattern": "^[a-f0-9]{40,64}$"},
+    "subjectIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit_sha", "tree_sha"],
+      "properties": {
+        "commit_sha": {"$ref": "#/$defs/gitObject"},
+        "tree_sha": {"$ref": "#/$defs/gitObject"}
+      }
+    },
+    "claimIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["claim_id", "execution_group_id"],
+      "properties": {
+        "claim_id": {"type": "string", "minLength": 1},
+        "execution_group_id": {"type": "string", "minLength": 1}
+      }
+    },
+    "evidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "receipt_sha256", "artifact_sha256", "immutable_reference"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "receipt_sha256": {"$ref": "#/$defs/sha256"},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"},
+        "immutable_reference": {"type": "string", "minLength": 1}
+      }
+    },
+    "digestEquivalence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha256", "main_sha256", "equivalent"],
+      "properties": {
+        "source_sha256": {"$ref": "#/$defs/sha256"},
+        "main_sha256": {"$ref": "#/$defs/sha256"},
+        "equivalent": {"type": "boolean"}
+      }
+    },
+    "workflowIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "workflow_id", "definition_commit", "definition_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "workflow_id": {"type": "string", "minLength": 1},
+        "definition_commit": {"$ref": "#/$defs/gitObject"},
+        "definition_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "executionProvenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "run_attempt", "workflow"],
+      "properties": {
+        "run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "run_attempt": {"type": "integer", "minimum": 1},
+        "workflow": {"$ref": "#/$defs/workflowIdentity"}
+      }
+    },
+    "authorityIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["controller_commit_sha", "controller_bundle_sha256"],
+      "properties": {
+        "controller_commit_sha": {"$ref": "#/$defs/gitObject"},
+        "controller_bundle_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifactIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "artifact_sha256"],
+      "properties": {
+        "artifact_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "providerCustody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "repository_id", "pull_request_number", "candidate", "merge_commit_sha", "main", "producer", "artifact", "authority", "protection_sha256", "authenticated_at"],
+      "properties": {
+        "provider": {"const": "github"},
+        "repository_id": {"type": "string", "pattern": "^[1-9][0-9]*$"},
+        "pull_request_number": {"type": "integer", "minimum": 1},
+        "candidate": {"$ref": "#/$defs/subjectIdentity"},
+        "merge_commit_sha": {"$ref": "#/$defs/gitObject"},
+        "main": {"$ref": "#/$defs/subjectIdentity"},
+        "producer": {"$ref": "#/$defs/executionProvenance"},
+        "artifact": {"$ref": "#/$defs/artifactIdentity"},
+        "authority": {"$ref": "#/$defs/authorityIdentity"},
+        "protection_sha256": {"$ref": "#/$defs/sha256"},
+        "authenticated_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "invalidationReason": {
+      "enum": [
+        "prior_evidence_absent",
+        "provider_authentication_failed",
+        "repository_mismatch",
+        "pull_request_mismatch",
+        "candidate_mismatch",
+        "merge_relationship_mismatch",
+        "main_subject_mismatch",
+        "workflow_untrusted",
+        "run_attempt_mismatch",
+        "artifact_identity_mismatch",
+        "artifact_digest_mismatch",
+        "controller_untrusted",
+        "protection_unverified",
+        "source_receipt_digest_mismatch",
+        "dependency_closure_mismatch",
+        "qualification_mismatch",
+        "freshness_expired",
+        "replay_detected",
+        "lifecycle_ineligible",
+        "authority_ambiguous"
+      ]
+    }
+  }
+}

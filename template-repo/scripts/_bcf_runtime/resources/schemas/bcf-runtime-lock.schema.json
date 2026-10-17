@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "version", "source_commit", "release_id", "release_url",
+    "wheel_sha256", "source_archive_sha256", "checksum_manifest_sha256",
+    "official_installer_adaptations", "files", "preserved_consumer_files"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:(a|b|rc)(0|[1-9][0-9]*))?$"},
+    "source_repository": {"const": "mjgolaszewski/bcf-governance"},
+    "source_repository_id": {"const": 1207503211},
+    "source_commit": {"type": "string", "pattern": "^[a-f0-9]{40}$"},
+    "release_id": {"type": "integer", "minimum": 1},
+    "release_url": {"type": "string", "pattern": "^https://github\\.com/mjgolaszewski/bcf-governance/releases/tag/v[0-9][A-Za-z0-9.]*$"},
+    "wheel_sha256": {"$ref": "#/$defs/sha256"},
+    "source_archive_sha256": {"$ref": "#/$defs/sha256"},
+    "checksum_manifest_sha256": {"$ref": "#/$defs/sha256"},
+    "official_installer_adaptations": {
+      "type": "object",
+      "propertyNames": {"$ref": "#/$defs/path"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["released_sha256", "installed_sha256", "reason"],
+        "properties": {
+          "released_sha256": {"$ref": "#/$defs/sha256"},
+          "installed_sha256": {"$ref": "#/$defs/sha256"},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "consumer_wrapper_adaptations": {
+      "type": "object",
+      "propertyNames": {"$ref": "#/$defs/path"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["released_sha256", "installed_sha256", "reason"],
+        "properties": {
+          "released_sha256": {"$ref": "#/$defs/sha256"},
+          "installed_sha256": {"$ref": "#/$defs/sha256"},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "files": {"$ref": "#/$defs/fileInventory"},
+    "preserved_consumer_files": {"$ref": "#/$defs/fileInventory"}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "path": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*$"},
+    "fileInventory": {
+      "type": "object",
+      "propertyNames": {"$ref": "#/$defs/path"},
+      "additionalProperties": {"$ref": "#/$defs/sha256"}
+    }
+  }
+}

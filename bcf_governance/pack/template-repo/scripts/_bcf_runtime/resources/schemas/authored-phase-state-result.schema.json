@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bcf:authored-phase-state-result:1.0",
+  "title": "Authored phase consistency result 1.0",
+  "description": "Exact result of validate_authored_phase_state. Structural authored consistency only; this object supplies no authenticated subject, computed verification, closure or authorization.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "phase_id",
+    "build_block",
+    "paths",
+    "hotfix_paths"
+  ],
+  "properties": {
+    "phase_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "build_block": {
+      "type": "string",
+      "minLength": 1
+    },
+    "paths": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "prefixItems": [
+        {
+          "type": "string",
+          "pattern": "^plans/phase-[0-9]+-plan\\.yml$"
+        },
+        {
+          "type": "string",
+          "pattern": "^plans/phase-[0-9]+-workitems\\.yml$"
+        },
+        {
+          "type": "string",
+          "pattern": "^phases/phase-[0-9]+-log\\.yml$"
+        }
+      ],
+      "description": "Canonical plan, workitem ledger and log order; matching phase/build identity is enforced by the producer."
+    },
+    "hotfix_paths": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Referenced hotfix paths validated by the existing phase owner; no new hotfix population or ordering rule."
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf.dev/schemas/product-certification.schema.json",
+  "title": "BCF empirical product certification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["document", "schema_version", "equivalent_transitions", "selective_invalidation", "routine_rotations", "simplicity", "derived_metrics", "release_authority"],
+  "properties": {
+    "document": {"type": "object", "required": ["kind", "id", "version", "status", "path"], "properties": {"kind": {"const": "product_certification"}, "id": {"const": "bcf-2.1-product-certification"}, "version": {"const": "1.0.0"}, "status": {"const": "active"}, "path": {"const": "governance/product-certification.yml"}}, "additionalProperties": true},
+    "schema_version": {"const": "1.0"},
+    "equivalent_transitions": {"type": "object"},
+    "selective_invalidation": {"type": "array"},
+    "routine_rotations": {"type": "object"},
+    "simplicity": {"type": "object"},
+    "derived_metrics": {"type": "object"},
+    "release_authority": {"const": false}
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://bcf-governance.invalid/schemas/evidence-retention-snapshot.schema.json",
+  "title": "BCF evidence retention candidate snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "kind", "repository", "repository_id", "observed_at_utc", "actions_handoffs", "durable_references", "leases"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "kind": {"const": "governance.evidence-retention-snapshot.v1"},
+    "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+    "repository_id": {"type": "integer", "minimum": 1},
+    "observed_at_utc": {"type": "string", "format": "date-time"},
+    "actions_handoffs": {"type": "array", "items": {"$ref": "#/$defs/handoff"}},
+    "durable_references": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
+    "leases": {"type": "array", "items": {"$ref": "#/$defs/lease"}}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "safePath": {"type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+$"},
+    "handoff": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifact_id", "artifact_name", "provider_digest", "run_id", "run_attempt", "size", "published_manifest_sha256"],
+      "properties": {
+        "artifact_id": {"type": "integer", "minimum": 1}, "artifact_name": {"type": "string", "pattern": "^bcf-[a-zA-Z0-9._-]+-[1-9][0-9]*-[1-9][0-9]*$"},
+        "provider_digest": {"type": "string", "pattern": "^sha256:[a-f0-9]{64}$"},
+        "run_id": {"type": "string", "pattern": "^[1-9][0-9]*$"}, "run_attempt": {"type": "integer", "minimum": 1},
+        "size": {"type": "integer", "minimum": 1},
+        "published_manifest_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
+      }
+    },
+    "reference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["manifest_sha256", "release_id", "tag", "reference_path", "reference_sha256", "protected_roots"],
+      "properties": {
+        "manifest_sha256": {"$ref": "#/$defs/sha256"}, "release_id": {"type": "integer", "minimum": 1},
+        "tag": {"type": "string", "pattern": "^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$"},
+        "reference_path": {"$ref": "#/$defs/safePath"}, "reference_sha256": {"$ref": "#/$defs/sha256"},
+        "protected_roots": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "lease": {
+      "type": "object", "additionalProperties": false, "required": ["manifest_sha256", "expires_at_utc"],
+      "properties": {"manifest_sha256": {"$ref": "#/$defs/sha256"}, "expires_at_utc": {"type": "string", "format": "date-time"}}
+    }
+  }
+}

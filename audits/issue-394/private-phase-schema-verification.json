@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_private_resource_and_source_install_qualified_full_parent_distribution_pending",
+  "contract_commit": "eb0d0201",
+  "source_baseline": "08b6f2ac",
+  "execution_scope": "Existing source installer, lite fresh/upgrade with skip-validation, isolated SDK-absent interpreter and provider-port fixture; not wheel/sdist/all-profile/current adopter assurance.",
+  "initial_results": {
+    "failed": 3,
+    "passed": 2
+  },
+  "affected_passed": 73,
+  "final_focused": {
+    "private_resource_tests": 7,
+    "architecture": 5
+  },
+  "installed_passed": 2,
+  "installed_elapsed_seconds": 11.89,
+  "canonical_schema_population": 66,
+  "resource_projection": "Complete existing canonical schemas, generated into private runtime resources through existing pack owner. SDK root unchanged; candidate schema fallback forbidden.",
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "semantic": {
+      "returncode": 0,
+      "operations": 21,
+      "all_rows_unchanged": true
+    },
+    "governance": 0,
+    "pack": 0,
+    "exposure": 0
+  },
+  "cause_controls": {
+    "sdk_only": {
+      "pytest_returncode": 1,
+      "named_control_failed": true,
+      "harness_returncode": 0
+    },
+    "checkout": {
+      "pytest_returncode": 1,
+      "named_control_failed": true,
+      "harness_returncode": 0
+    },
+    "population": {
+      "pytest_returncode": 1,
+      "named_control_failed": true,
+      "harness_returncode": 0
+    }
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_github_authority.py": "d1826c84179c72910f9a68f791b66bc1b6b80745b3f8cce137800d0e2f36a7ac",
+    ".github/scripts/build_pack_manifest.py": "36e65dcda02f53d5fde204b41602decee0d53012c4993c4ee7a58c49cc7659f1"
+  },
+  "raw_output_sha256": {
+    "private-phase-schema-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "private-phase-schema-affected.stdout": "2a2186188a3313d5be18976c2c850387ac319e7f0f87e737dee31464a7eaf821",
+    "private-phase-schema-cause-checkout.stdout": "6e588fb694538a54273488e5d37b41ecc4921fe52489fab099ad27356a23e1a4",
+    "private-phase-schema-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "private-phase-schema-semantic.stdout": "5bc1ca371b73cf7d538141871003a501905ab80f58817224bc780d6f80d87321",
+    "private-phase-schema-installed.stdout": "5f6ea78796044a6ea90507afcf1e196e407fdb463d1b24ce8920ae27842495bd",
+    "private-phase-schema-final-focused.stdout": "4f9daef6e238d176110c95aa7cad13b9812a29b13cbf985f43d34bd781a0b9f3",
+    "private-phase-schema-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "private-phase-schema-red.stdout": "b655162ebfc6ab7a20cb662fc15ab9fc83d259cf59cd196ca8ce9f1d3c9c5892",
+    "private-phase-schema-cause-sdk_only.stdout": "d6d535a23de91ccb497e7a0651d7004dd9cf84494695571b6eb7bd187165e76b",
+    "private-phase-schema-cause-population.stdout": "7dcaef245e1535ccc19b9cf0b26d71e50e20ff749bea0e96730271343bde121d",
+    "private-phase-schema-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "private-phase-schema-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "private-phase-schema-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "private-phase-schema-typecheck-final.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "private-phase-schema-lint-final.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Protected no-parent query is qualified; complete parent certificate verification in installed consumers remains pending.",
+    "No whole requirement advances, P33 activation, performance or immutable custody claim.",
+    "All82 requirement and38 slice objects retained.",
+    "Upgrade fixture exercises same-candidate owned-wrapper repair and product-byte preservation; no v2.3.4 upgrade qualification."
+  ],
+  "previous_release_upgrade_qualified": false
+}

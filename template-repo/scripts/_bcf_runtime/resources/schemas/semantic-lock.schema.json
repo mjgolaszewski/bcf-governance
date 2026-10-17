@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document", "contracts", "source_inventory_sha256", "projection_outputs"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "version", "status", "path"],
+      "properties": {
+        "kind": {"const": "semantic_authority_lock"},
+        "version": {"const": "1.0.0"},
+        "status": {"const": "active"},
+        "path": {"const": "governance/semantic-lock.yml"}
+      }
+    },
+    "contracts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["semantic_families", "application_operations", "canonical_representations"],
+      "properties": {
+        "semantic_families": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "application_operations": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "canonical_representations": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "source_inventory_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "projection_outputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "canonical_source", "recipe_sha256", "source_sha256", "output_sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "canonical_source": {"type": "string", "minLength": 1},
+          "recipe_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "output_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    }
+  }
+}

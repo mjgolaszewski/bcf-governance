@@ -258,5 +258,11 @@
     "affected_passed": 335,
     "cause_controls_passed": 4,
     "full_computed_eligibility_claim": false
+  },
+  "private_runtime_schema_authority": {
+    "verification": "audits/issue-394/private-phase-schema-verification.json",
+    "source_affected_passed": 73,
+    "installed_lite_fresh_upgrade_passed": 2,
+    "full_parent_and_distribution_qualification": false
   }
 }
