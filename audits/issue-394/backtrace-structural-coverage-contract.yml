@@ -19,6 +19,7 @@ scope:
   - bcf_governance/tooling/governance_validation/ci_state_matrix.py
   - tests/test_ci_state_matrix.py
   - tests/test_backtrace_structural_coverage.py
+  - tests/test_installed_backtrace_structural_coverage.py
   - spec/RELEASE_TRAIN_STATE_DAG.md
   - docs/MAINTAINING.md
   - canonical private runtime mirrors
@@ -30,6 +31,7 @@ contract:
 - Keep state names and edge endpoint vocabulary distinct: supplemental edge from/to values describe existing fact boundaries, not necessarily state IDs. Do not invent equality or reachability from names.
 - Legacy version2 input remains readable only as its historical weaker structural scope; it cannot satisfy version3 supplemental coverage by assertion or relabeling.
 verification:
+- Execute fresh and upgrade installed version3 validators with the source SDK absent; prove valid coverage, primitive/root rejection and legacy2 weaker scope against the actual installed schema.
 - Retain actual pre-change acceptances for undeclared primitive, empty states, nonboolean normative and an invented normative root.
 - Test all five supplemental blocks, missing blocks, malformed states/edges/exclusions, duplicate IDs and undeclared primitive references through authored-only admission.
 - Qualify unchanged legacy version2 reads and current version3 positive behavior separately; retain source/private parity and required architecture/governance/semantic checks.
