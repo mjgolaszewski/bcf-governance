@@ -68,5 +68,33 @@
     "exclusive_wait_owner": "Require default SIGCHLD disposition before namespace/process allocation. Ignored or custom disposition makes the exclusive unreaped-leader contract unavailable; reject before any command effect.",
     "noninterference": "Owned-command terminal proof must not require a stable host-global PID population. Real unrelated process births cannot turn a completed ordinary command into a timeout or unresolved cleanup. Retain missing-anchor and zombie-thread rejection controls; do not weaken them to obtain this positive control.",
     "next_backend_review": "Evaluate per-command kernel-owned child supervision using a private ephemeral Linux subreaper and waitid/waitpid ECHILD terminal proof. This is not an approved implementation or a claim of cgroup isolation. Commit the bounded ownership, interruption, setup/cleanup and unsupported-host contract before changing that backend."
+  },
+  "owned_child_backend_contract": {
+    "scope": "Private ephemeral single-command Linux supervisor beneath existing evidence_execution owner. No persistent worker, scheduling broker, new public interface or receipt family.",
+    "authority": "Kernel parent-child relationships and exclusive waitid/waitpid determine custody. ECHILD after reaping the exact command and all adopted descendants is the terminal proof; host-global PID population stability is never required.",
+    "startup": "Supervisor establishes PR_SET_CHILD_SUBREAPER and verifies it, default SIGCHLD and single-threaded exclusive waiting before allocating the command. A dedicated control/result pipe is separate from command stdout/stderr. Existing command timeout and declared cleanup budget remain explicit.",
+    "execution": "Preserve argv/cwd/env/stdout/stderr and ordinary return codes. A direct child exit with live adopted descendants is an infrastructure failure after bounded cleanup. Zombie thread-group leader with live worker threads is not waitable terminal and cannot yield success.",
+    "cleanup": "Supervisor repeatedly discovers only its kernel direct children, signals still-owned unreaped children, reaps terminal children and adopts orphaned descendants until ECHILD. Descendant forks or new sessions cannot escape ordinary child ancestry. Missing ownership information or deadline exhaustion yields typed unresolved custody; never signal unrelated children from the caller process.",
+    "interruption": "Caller interruption requests bounded cleanup through the same channel. Supervisor death, malformed/missing result, lost exclusive wait ownership or incomplete pipe drain retain execution-state custody. Do not substitute leader exit or process-group disappearance for terminal proof.",
+    "tests": [
+      "Real foreign-process churn cannot suppress successful command completion.",
+      "Existing timeout/background/zombie-thread controls remain required.",
+      "Real double-fork and setsid descendants are retired before returning typed failure.",
+      "Supervisor readiness failure cannot execute the command.",
+      "Lost/malformed completion cannot retire execution state.",
+      "Fresh and upgraded private runtimes use the same canonical backend."
+    ],
+    "limits": [
+      "Kernel scheduling and uninterruptible tasks may exhaust the bound and must block.",
+      "Same-UID malicious tampering with the supervisor is not a cgroup/sandbox security boundary.",
+      "Full pipeline allocation, namespace removal and host admission remain unqualified."
+    ],
+    "forbidden": [
+      "Provider workflow or authority pins",
+      "Maintained adopter bytes",
+      "Other agents processes",
+      "New scheduler/claim registry/receipt family"
+    ],
+    "status": "contract_only; implementation and cause-specific qualification pending"
   }
 }
