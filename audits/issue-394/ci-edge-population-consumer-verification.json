@@ -1,0 +1,16 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "before_subject": "78555f7ca915084001da9682a621e005ab4b822b",
+  "before": {
+    "failed": 7,
+    "passed": 0,
+    "failure": "corrupt producer population reached downstream timeout consumer",
+    "streams": {
+      "stdout_sha256": "2c3e124c42df2ba3fe0eeef70cc9ec669a46183bb57c00fc30a25de41bcc7c5b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "scope": "Independent consuming-boundary complete compiled CI node-pair population; not full lifecycle/runtime conformance",
+  "next_action": "Implement canonical node-derived consumer check, then reexecute controls and required parity after admitted peer terminal."
+}
