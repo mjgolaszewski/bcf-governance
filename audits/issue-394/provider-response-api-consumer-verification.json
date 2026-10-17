@@ -1,0 +1,23 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "source_commit": "74eb9dbc290c19ada8d257ce900a56caa5dc0513",
+  "source_tree": "825fca54b1c1ca496b1d6bd1b177c426725d6e99",
+  "scope": "Direct GitHub API construction/consumer cohort, not complete dynamic provider or lifecycle conformance",
+  "passed": 159,
+  "returncode": 0,
+  "raw_output_sha256": "5d6aed0e8702f116e00813e1f6035a6d9fa4d1f34319791f15a6595fbd36ac90",
+  "selectors": [
+    "tests/test_release_adopter_sources.py",
+    "tests/test_ci_github_tree.py",
+    "tests/test_ci_github_controller.py",
+    "tests/test_release_versions.py",
+    "tests/test_evidence_storage.py::test_every_authenticated_github_request_uses_the_redirect_policy"
+  ],
+  "reader_sha256": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+  "limits": [
+    "Fresh/upgrade installed execution remains pending.",
+    "Semantic and full canonical qualification of this separate branch remain pending.",
+    "These passing cases do not establish complete runtime effect or context populations."
+  ]
+}
