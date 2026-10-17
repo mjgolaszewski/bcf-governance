@@ -105,7 +105,7 @@ def validate_direct_protection_prospective(
         or not (root / PROTECTION_PATH).is_file()
     ):
         return
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=api)
     validate_ordinary_protection_submission(
         api,
         repo_root=root,

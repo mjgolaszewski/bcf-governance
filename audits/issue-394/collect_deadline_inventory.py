@@ -77,14 +77,39 @@ def collect_provider_read_consumers(repo_root: Path) -> dict:
     })
 
 
-def _collect_direct_consumers(repo_root: Path, *, kind: str, targets: set[str]) -> dict:
+def collect_provider_io_candidates(repo_root: Path) -> dict:
+    """Observe transport calls and all lexical reads, without inferring receivers."""
+    targets = {
+        'bcf_governance/tooling/provider_read.py::open_provider_get',
+        'bcf_governance/tooling/ci_github_downloads.py::open_download',
+        'bcf_governance/tooling/protection_inspection_client.py::_open_inspection',
+        'urllib.request::urlopen', 'urllib.request::build_opener',
+    }
+    read_names = {'read', 'read1', 'readinto', 'readinto1'}
+    result = _collect_direct_consumers(
+        repo_root, kind='provider_io', targets=targets, read_names=read_names,
+    )
+    for row in result['consumers']:
+        row['classification'] = (
+            'resolved_transport_call' if row['producer'] in targets else 'lexical_read_candidate'
+        )
+    result['selectors'] = {'resolved_transport_symbols': sorted(targets),
+                           'lexical_read_names': sorted(read_names)}
+    result['scope'] = 'Exact committed Python-tree resolved transport calls and lexical read candidates; tests and file reads retained.'
+    result['unqualified'].append('response-object identity and total response-body read bounds')
+    return result
+
+
+def _collect_direct_consumers(
+    repo_root: Path, *, kind: str, targets: set[str], read_names: set[str] | None = None,
+) -> dict:
     subject = _subject(repo_root)
     inventory = resolve_python_imports(repo_root, discover_python_source(
         repo_root, call_contracts_version='1.0', source_subject=subject,
     ))
     calls = [{'consumer': function['symbol'], 'producer': call['called_symbol'], 'call': copy.deepcopy(call)}
              for function in inventory['functions'] for call in function['calls']
-             if call['called_symbol'] in targets]
+             if call['called_symbol'] in targets or call.get('call_name') in (read_names or set())]
     if _subject(repo_root) != subject:
         raise ValueError(f'{kind} consumer inventory source changed during capture')
     population = sorted(inventory['files'], key=lambda row: row['path'])

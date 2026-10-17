@@ -1,0 +1,56 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "contract": "c16cfd66",
+  "red_control_commit": "4e420aab",
+  "first_terminal": "audits/issue-394/pinned-qualification-2328e076-terminal.json",
+  "red_before_fix": "Existing end-to-end fixture fails canonical install must precede environment derivation using real dependency owner; no plan exists in source v2 fixture.",
+  "implementation": "Existing exact canonical install/strict-validation/commit precede project interpreter selection; native environment validation and all later proof remain.",
+  "checks": {
+    "qualification_and_sources": {
+      "passed": 45,
+      "elapsed_seconds": 0.95
+    },
+    "actual_racecar_declarations": "Disposable copy starts with no plan; existing canonical _upgrade_interpreter_contract projects governed_requirements_source, Python==3.12, four authored packages plus exact installer.",
+    "governance_yaml": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_module_size": "passed",
+    "architecture_context_membership": "passed",
+    "authored_semantic_ownership": "passed",
+    "pack_and_exact_references": {
+      "passed": 9,
+      "elapsed_seconds": 34.62
+    },
+    "exact_installed_qualification_and_sources": {
+      "passed": 45,
+      "elapsed_seconds": 1.38,
+      "origin": "asserted exact installed wheel"
+    },
+    "governance_yaml_after_terminal_checkpoint": "passed",
+    "governance_exposure_scan": "passed"
+  },
+  "verification_history": [
+    "Real canonical dependency projection required an actual CI Python-resource declaration in the old mock fixture; added declared3.12 graph without weakening projection checks.",
+    "Portable failure summary now omits machine-local command/PID details; original2328 invocation remains retained externally with raw SHA256. No historical failure outcome changed."
+  ],
+  "remaining": [
+    "Scoped installed checks and canonical pinned compatibility pass; full consumer matrix and independent completeness remain required.",
+    "Original2328 failure preserved; corrected3ec has one actual successful terminal, no retry in flight.",
+    "Full goal and all82 whole requirements remain open."
+  ],
+  "exact_build": {
+    "authority": false,
+    "subject": {
+      "commit_sha": "3ec171d064eda93b07d709e19c54cfb559ed97f8",
+      "tree_sha": "0f75aa49d98bf958d34610cf02b2bac8673f7b87"
+    },
+    "package_files_equal": 712,
+    "extra_or_missing_members": false,
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "36981413503c3288e613c5766d2bca06a791f375273ebe491b4a6a7a7a22fad9",
+      "bcf_governance-2.5.0.tar.gz": "2597eed5f0227352ab86ec1abc37a3a2eb1641e55fa8758ca4b0545417578ebc"
+    }
+  },
+  "canonical_pinned_qualification": "audits/issue-394/pinned-qualification-3ec171d0-terminal.json"
+}

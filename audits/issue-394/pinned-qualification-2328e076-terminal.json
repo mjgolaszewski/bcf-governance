@@ -1,0 +1,32 @@
+{
+  "authority": false,
+  "kind": "qualification_terminal_observation",
+  "invocation": {
+    "authority": false,
+    "kind": "qualification_invocation_capture",
+    "subject": {
+      "commit_sha": "2328e076bdc5bd1397616812997fa44dad65abf7",
+      "tree_sha": "38a211391c1e462a24904a577389cbf775402501"
+    },
+    "status": "terminal",
+    "started_at": "2026-10-17T00:09:00.062807+00:00",
+    "performance_qualification": false,
+    "returncode": 1,
+    "ended_at": "2026-10-17T00:10:18.512865+00:00",
+    "elapsed_ms": 78450,
+    "receipt_present": false,
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr_sha256": "e0d70e3fdf3b5343206c0f136275a0cdbccf826ecfb10a08340a96e11b9a9489"
+  },
+  "first_cause": "repository declares no interpreter dependency contract",
+  "classification": "Pinned Racecar v2 source lacks interpreter_contract; existing canonical installer can derive it, but qualification consumes project environment before installation. No runtime fallback or manual source patch authorized.",
+  "receipt": false,
+  "adopter_wide_success_claim": false,
+  "capacity_returned_bus_cursor": 8736,
+  "remaining": [
+    "Correct ordering through existing canonical installer and qualify cause controls before a new invocation.",
+    "Retain all original inputs/streams; maintained agent baseline remains2.3.4, candidate qualification remains isolated and non-authoritative."
+  ],
+  "invocation_raw_sha256": "5fea8d36161d2464dba9c4d95a1079a93ed4cf79e5e203e745fc0f3337e61a38",
+  "history_disposition": "Original exact invocation and command/PID paths remain hashed in machine-local recovery custody. Governed summary now contains portable terminal facts only; original failure is not erased or recast."
+}

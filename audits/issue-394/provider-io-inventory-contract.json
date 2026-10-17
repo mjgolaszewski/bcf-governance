@@ -1,0 +1,34 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/provider-io-inventory-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-05",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "audit query using existing semantic ownership inventory",
+  "operation_side": "query",
+  "targets": [
+    "audits/issue-394/collect_deadline_inventory.py",
+    "tests/test_ci_graph_deadline_inventory.py"
+  ],
+  "contract": [
+    "Extend the existing committed full-Python-tree direct-call query; use the same source capture, import resolution, population digest and subject stability boundary.",
+    "Retain exact calls to existing GET retry, download and protection openers plus urllib.request urlopen/build_opener. Independently retain every lexical read/read1/readinto/readinto1 call, including tests and ordinary file reads, as candidates without claiming response-object identity.",
+    "Preserve every repeated occurrence and canonical call contract; unrelated non-read calls remain excluded. Existing controller and retry-owner outputs remain compatible.",
+    "Outputs explicitly distinguish source-resolved transport calls from lexical read candidates, disclose exact selectors and carry authority false and execution_qualified false. No dynamic population, total response-read bound or deadline sufficiency claim."
+  ],
+  "expected_tests": [
+    "Independent candidate populations cover aliased resolved openers, direct stdlib transport, renamed response variables, repeated calls and tests.",
+    "Ordinary file reads retained as unresolved candidates; unrelated non-read calls excluded; deterministic nonmutating capture and moving-subject rejection.",
+    "Existing compiled jobs/controller/retry-owner controls unchanged."
+  ],
+  "forbidden_surfaces": [
+    "Production runtime behavior",
+    "Workflow/authority pins",
+    "Retained historical snapshots",
+    "Maintained adopters"
+  ],
+  "dependency_acceptance": "Dormant inventory research only; requires-workitem-closure:P32-P0-03 unresolved; no activation or acceptance closure."
+}

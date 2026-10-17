@@ -7,6 +7,7 @@ from pathlib import Path
 import subprocess
 import sys
 import venv
+import zipfile
 
 import pytest
 
@@ -76,14 +77,30 @@ def test_qualification_cli_ignores_ambient_provider_workflow_identity(
     assert observed["producer"] == PRODUCER
 
 
+def _installed_distribution(name, version, root, *, requires=(), extras=(), metadata_name=None):
+    from email.message import Message
+    from types import SimpleNamespace
+    info=Message(); info['Metadata-Version']='2.1'; info['Name']=name if metadata_name is None else metadata_name; info['Version']=version
+    for extra in extras:info['Provides-Extra']=extra
+    for required in requires:info['Requires-Dist']=required
+    return SimpleNamespace(version=version,requires=requires,metadata=info,locate_file=lambda _:root)
+
+
+def _metadata_wheel(path: Path) -> None:
+    version = path.name.split('-')[1]
+    with zipfile.ZipFile(path, 'w') as archive:
+        archive.writestr(f'bcf_governance-{version}.dist-info/METADATA',
+            f'Metadata-Version: 2.1\nName: bcf-governance\nVersion: {version}\n')
+
+
 def _assets(root: Path) -> dict[str, str]:
     names = {
         "bcf_governance-2.2.1-py3-none-any.whl": b"wheel",
         "bcf_governance-2.2.1.tar.gz": b"sdist",
     }
     for name, data in names.items():
-        (root / name).write_bytes(data)
-    digests = {name: hashlib.sha256(data).hexdigest() for name, data in names.items()}
+        _metadata_wheel(root / name) if name.endswith(".whl") else (root / name).write_bytes(data)
+    digests = {name: hashlib.sha256((root / name).read_bytes()).hexdigest() for name in names}
     (root / "SHA256SUMS").write_text(
         "".join(f"{digest}  {name}\n" for name, digest in sorted(digests.items())),
         encoding="utf-8",
@@ -258,7 +275,7 @@ def test_exact_release_runtime_projects_wheel_over_admitted_dependencies(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     wheel = tmp_path / "bcf_governance-2.2.1-py3-none-any.whl"
-    wheel.write_bytes(b"wheel")
+    _metadata_wheel(wheel)
     controller = tmp_path / "controller"
     calls: list[tuple[list[str], dict[str, str] | None]] = []
 
@@ -329,7 +346,7 @@ def test_exact_release_runtime_rejects_shadowing_or_incompatible_dependencies(
     message: str,
 ) -> None:
     wheel = tmp_path / "bcf_governance-2.2.1-py3-none-any.whl"
-    wheel.write_bytes(b"wheel")
+    _metadata_wheel(wheel)
     controller = tmp_path / "controller"
     observation: dict[str, object] = {
         "distribution_root": str(controller),
@@ -394,6 +411,57 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
     assert not (tmp_path / "receipt.json").exists()
 
 
+@pytest.mark.parametrize('defect', ['profile', 'missing-profile', 'missing-python', 'nonexecutable-python', None])
+def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path, monkeypatch, defect):
+    contract = load_contract(REPO_ROOT)
+    assets = tmp_path / 'assets'
+    assets.mkdir()
+    digests = _assets(assets)
+    release = ('mjgolaszewski/bcf-governance', 'a' * 40, 'b' * 40)
+    manifest = _build_manifest(tmp_path / 'build.json', _build_assets(assets, digests),
+                               commit=release[1], tree=release[2])
+    identities = {REPO_ROOT.resolve(): release}
+    roots = []
+    for index, item in enumerate(contract['required_adopters'], 1):
+        root = tmp_path / item['id']
+        root.mkdir()
+        (root / 'governance-profile.yml').write_text(
+            f"profile:\n  selected: {item['profile']}\n", encoding='utf-8',
+        )
+        identities[root.resolve()] = (item['repository'], str(index) * 40, str(index) * 40)
+        roots.append(root)
+    last = roots[-1]
+    python = last / 'python'
+    python.write_text('#!/bin/sh\n', encoding='utf-8')
+    python.chmod(0o755)
+    if defect == 'profile':
+        (last / 'governance-profile.yml').write_text('profile: {selected: wrong}\n')
+    elif defect == 'missing-profile':
+        (last / 'governance-profile.yml').unlink()
+    elif defect == 'missing-python':
+        python.unlink()
+    elif defect == 'nonexecutable-python':
+        python.chmod(0o644)
+    effects = []
+    def allocation(**kwargs):
+        effects.append('allocation')
+        raise AssertionError('first allocation reached')
+    monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
+    monkeypatch.setattr(qualification.tempfile, 'TemporaryDirectory', allocation)
+    if defect is None:
+        expected, message = AssertionError, 'first allocation reached'
+    else:
+        expected = ReleaseQualificationError
+        message = 'profile' if 'profile' in defect else 'interpreter is unavailable'
+    with pytest.raises(expected, match=message):
+        qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
+                        release_build_manifest=manifest, adopter_roots=roots,
+                        adopter_pythons={contract['required_adopters'][-1]['repository']: python},
+                        producer=PRODUCER, output=tmp_path / 'receipt.json')
+    assert effects == (['allocation'] if defect is None else [])
+    assert not (tmp_path / 'receipt.json').exists()
+
+
 def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -414,9 +482,15 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     profiles: dict[str, str] = {}
     source_trees: dict[str, str] = {}
     calls: list[list[str]] = []
+    profile_checks: list[tuple[Path, str]] = []
+    original_profile_check = qualification.require_adopter_profile
+    environment_requests: list[Path | None] = []
     for index, item in enumerate(contract["required_adopters"], start=1):
         root = tmp_path / item["id"]
         root.mkdir()
+        (root / 'governance-profile.yml').write_text(
+            f"profile:\n  selected: {item['profile']}\n", encoding='utf-8',
+        )
         python = root / ".venv/bin/python"
         python.parent.mkdir(parents=True)
         python.write_text("#!/bin/sh\n", encoding="utf-8")
@@ -424,7 +498,8 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         identity = str(index) * 40
         identities[root.resolve()] = (item["repository"], identity, identity)
         adopter_roots.append(root)
-        adopter_pythons[item["repository"]] = python
+        if index != 2:
+            adopter_pythons[item["repository"]] = python
         profiles[item["id"]] = item["profile"]
         source_trees[item["id"]] = identity
 
@@ -457,6 +532,21 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
                 f"profile:\n  selected: {profiles[destination.name]}\n",
                 encoding="utf-8",
             )
+            (destination / 'governance').mkdir()
+            (destination / 'governance/gate-contracts.yml').write_text(
+                "profile_contract_version: '2.0'\ngates:\n"
+                "  test:\n    invocation: {argv: [python3, gate.py]}\n",
+                encoding='utf-8',
+            )
+            (destination / 'requirements-governance.txt').write_text('pytest>=8\n', encoding='utf-8')
+            (destination / 'governance/ci-graph.yml').write_text(
+                "resource_classes: {candidate: {python_version: '3.12'}}\n", encoding='utf-8',
+            )
+        if argv[4:5] == ['install']:
+            from bcf_governance.tooling.governance_install.upgrade import _upgrade_interpreter_contract
+            from bcf_governance.tooling.interpreter_environment import derive_interpreter_environment
+            assert derive_interpreter_environment(cwd) is None
+            assert _upgrade_interpreter_contract(cwd) == [cwd / 'governance/gate-contracts.yml']
         if argv[:3] == ["git", "remote", "get-url"]:
             repository = identities[cwd.resolve()][0]
             return f"https://github.com/{repository}.git"
@@ -471,17 +561,22 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         return ""
 
     monkeypatch.setenv("GITHUB_TOKEN", "observation-only")
-    monkeypatch.setattr(qualification, "require_adopter_profile", lambda *_args: None)
+    def check_profile(root, source):
+        original_profile_check(root, source)
+        profile_checks.append((root, source.id))
+    monkeypatch.setattr(qualification, "require_adopter_profile", check_profile)
     monkeypatch.setattr(qualification, "_source_identity", source_identity)
     monkeypatch.setattr(qualification, "_run", run)
     monkeypatch.setattr(
         qualification, "_isolated_project_python",
         lambda _source, source_python, _destination, _environment: source_python,
     )
-    monkeypatch.setattr(
-        qualification, "ensure_local_project_python",
-        lambda _root, _controller, requested=None: requested or Path(sys.executable),
-    )
+    def ensure_project_python(root, controller, requested=None):
+        from bcf_governance.tooling.interpreter_environment import derive_interpreter_environment
+        assert derive_interpreter_environment(root) is not None, 'canonical install must precede environment derivation'
+        environment_requests.append(requested)
+        return requested or root / '.venv/bin/python'
+    monkeypatch.setattr(qualification, "ensure_local_project_python", ensure_project_python)
     monkeypatch.setattr(qualification, "_commit", lambda *_args, **_kwargs: None)
 
     receipt = qualify_release(
@@ -495,6 +590,12 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         output=tmp_path / "receipt.json",
     )
 
+    ids = [item['id'] for item in contract['required_adopters']]
+    assert [identifier for _, identifier in profile_checks] == ids + ids
+    assert len(environment_requests) == len(ids)
+    assert sum(value is None for value in environment_requests) == 1
+    assert all(root == tmp_path / identifier for root, identifier in profile_checks[:len(ids)])
+    assert all(root != tmp_path / identifier for root, identifier in profile_checks[len(ids):])
     assert receipt["subject"] == {
         "repository": release_identity[0],
         "commit_sha": release_identity[1],
@@ -711,3 +812,66 @@ def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
     for mutation in mutations:
         with pytest.raises(ReleaseQualificationError):
             validate_qualification_receipt(mutation, **kwargs)
+
+
+@pytest.mark.parametrize('needed_version',['1.0','1.0-post1'])
+@pytest.mark.parametrize('dependency_source',['headers','legacy'])
+def test_nested_runtime_projects_actual_required_distribution_origins_before_allocation(tmp_path, monkeypatch, needed_version, dependency_source):
+    import importlib.metadata as metadata
+    from types import SimpleNamespace
+    import zipfile
+    wheel = tmp_path/'bcf_governance-2.5.0-py3-none-any.whl'
+    with zipfile.ZipFile(wheel,'w') as archive:
+        archive.writestr('bcf_governance-2.5.0.dist-info/METADATA',
+            'Metadata-Version: 2.1\nName: bcf-governance\nVersion: 2.5.0\nRequires-Dist: needed[feature]>=1\n')
+    immediate=tmp_path/'immediate'; immediate.mkdir()
+    needed=tmp_path/'needed'; needed.mkdir()
+    transitive=tmp_path/'transitive'; transitive.mkdir()
+    monkeypatch.setattr(qualification.sysconfig,'get_paths',lambda:{'purelib':str(immediate)})
+    def distribution(name):
+        if name=='needed':
+            result=_installed_distribution(name,needed_version,needed,requires=['child>=2; extra == "feature"','unrelated; python_version < "0"'],extras=['feature'])
+            if dependency_source=='legacy':del result.metadata['Requires-Dist']
+            return result
+        if name=='child':return _installed_distribution(name,'2.0',transitive,requires=['needed[feature]>=1'])
+        if name=='packaging':return _installed_distribution(name,'26.0',immediate)
+        pytest.fail('unrelated distribution queried: '+name)
+    monkeypatch.setattr(metadata,'distribution',distribution)
+    controller=tmp_path/'controller'; calls=[]
+    def run(argv, **_kwargs):
+        calls.append(list(argv))
+        if list(argv)[1:3]==['-P','-c']:
+            return json.dumps({'distribution_root':str(controller),'executable':str(controller/'bin/python'),
+                'module_file':str(controller/'bcf_governance/__init__.py'),'requirements':[],'version':'2.5.0'})
+        return ''
+    monkeypatch.setattr(qualification,'_run',run)
+    _exact_release_runtime(wheel,controller,version='2.5.0',cwd=tmp_path,environment={})
+    projected=(controller/'lib'/f'python{sys.version_info.major}.{sys.version_info.minor}'/'site-packages/bcf-admitted-runtime.pth').read_text().splitlines()
+    assert projected==sorted(map(str,[immediate,needed,transitive]))
+
+
+@pytest.mark.parametrize('defect',['missing','version','unsafe-root','direct-url','identity','ambiguous','invalid-requirement','unknown-extra','distribution-identity','malformed-headers','wheel-python','dependency-python'])
+def test_required_dependency_origins_reject_before_runtime_allocation(tmp_path,monkeypatch,defect):
+    from types import SimpleNamespace
+    wheel=tmp_path/'bcf_governance-2.5.0-py3-none-any.whl'
+    required='needed>=1'
+    if defect=='unknown-extra':required='needed[unknown]>=1'
+    if defect=='direct-url':required='needed @ https://example.invalid/needed.whl'
+    if defect=='invalid-requirement':required='not a requirement @@@'
+    with zipfile.ZipFile(wheel,'w') as archive:
+        archive.writestr('bcf_governance-2.5.0.dist-info/METADATA',
+            'Metadata-Version: 2.1\nName: '+('other' if defect=='identity' else 'bcf-governance')+
+            '\nVersion: 2.5.0\n'+('Requires-Python: >=1000\n' if defect=='wheel-python' else '')+('bad header\n' if defect=='malformed-headers' else '')+'Requires-Dist: '+required+'\n')
+        if defect=='ambiguous':archive.writestr('other.dist-info/METADATA','Name: other\nVersion: 2.5.0\n')
+    origin=tmp_path/('unsafe\nroot' if defect=='unsafe-root' else 'dependencies');origin.mkdir()
+    def distribution(name):
+        if defect=='missing' and name=='needed':raise qualification.metadata.PackageNotFoundError(name)
+        observed = _installed_distribution(name,'0.5' if defect=='version' and name=='needed' else '26.0',origin,
+            metadata_name='other' if defect=='distribution-identity' else name)
+        if defect=='dependency-python':observed.metadata['Requires-Python']='>=1000'
+        return observed
+    monkeypatch.setattr(qualification.metadata,'distribution',distribution)
+    monkeypatch.setattr(qualification,'_run',lambda *_a,**_k:pytest.fail('invalid origins allocated runtime'))
+    with pytest.raises(ReleaseQualificationError,match='dependency origins are invalid'):
+        _exact_release_runtime(wheel,tmp_path/'controller',version='2.5.0',cwd=tmp_path,environment={})
+    assert not (tmp_path/'controller').exists()

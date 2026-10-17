@@ -1,0 +1,25 @@
+{
+  "authority": false,
+  "kind": "qualified_source_integration_observation",
+  "parents": {
+    "primary": "bf629fa1",
+    "feature": "0fd9dbefcbd207f2c055c966ced07d876c0d97f5",
+    "authenticated_main": "f911f21c29114b8280866b75281673018a231c9c"
+  },
+  "matrix": "audits/issue-394/bound-pr-consumer-matrix-0fd9.json",
+  "real_pinned_compatibility": "audits/issue-394/pinned-qualification-3ec171d0-terminal.json",
+  "history": "audits/issue-394/recovery-memory-history.json",
+  "resolutions": [
+    "Production implementation auto-merged without conflicts.",
+    "Both parent histories retained; four metadata conflicts merged without scalar authority/status choice.",
+    "Target2.5/P32-P35 and main Issue427 current-session source/control preserved.",
+    "Memory120-line budget failure corrected by lossless29-line rendering; caps unchanged.",
+    "Generated workflow/authority/lock previous-primary bytes retained provisionally, not new authorization."
+  ],
+  "whole_requirements_open": 82,
+  "remaining": [
+    "Combined affected behavioral/native/package checks and canonical reconciliation under fresh native admission.",
+    "One canonical ci submit transaction with fixed bytes through its actual terminal.",
+    "Independent foundation/lifecycle/effect completeness, approved targets and remaining P33-P35 work."
+  ]
+}

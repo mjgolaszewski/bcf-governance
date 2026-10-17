@@ -237,9 +237,17 @@ def proof_identity(
     policy: Mapping[str, Any],
     toolchain: Mapping[str, Any],
     python_executable: Path,
+    comparison_context: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Bind every mechanically knowable input to one local proof proposition."""
 
+    if comparison_context is not None and (
+        not isinstance(comparison_context, Mapping)
+        or comparison_context.get("base_sha") != base_commit
+        or comparison_context.get("head_sha") != candidate_commit
+        or comparison_context.get("repository", repository) != repository
+    ):
+        raise LocalProofBundleError("comparison context does not bind the exact proof subject")
     executable = python_executable.resolve()
     if executable.is_symlink() or not executable.is_file():
         raise LocalProofBundleError("proof toolchain executable is missing or symlinked")
@@ -250,6 +258,7 @@ def proof_identity(
         raise LocalProofBundleError("proof toolchain version is unreadable")
     return {
         "repository": repository,
+        **({"comparison_context": dict(comparison_context)} if comparison_context is not None else {}),
         "base": {"commit_sha": base_commit, "tree_sha": base_tree},
         "candidate": {"commit_sha": candidate_commit, "tree_sha": candidate_tree},
         "evaluation": {"mode": evaluation_mode, "target": evaluation_target},

@@ -1,0 +1,17 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "contract": "audits/issue-394/protected-evaluator-source-contract.json",
+  "evidence": {
+    "before": "Existing v3 rendered projection test rejected feature-base checkout; new comparison-base negative control reproduced DID NOT RAISE.",
+    "after": "286 graph/provider-authority/prospective/local-PR/protection cases passed in 75.77s before extending the same negative control to publisher.",
+    "source": "Both ordinary executable authority checkouts now bind github.workflow_sha; candidate material retains exact triggering head in its run-owned directory.",
+    "policy": "Recovered policy context propagation binds protected default independently and rejects incomplete or wrong snapshots.",
+    "additional": "174 candidate-submit/PR/retry/recovery cases passed in 11.37s; four finalizer/publisher cause controls plus rendered projection and private-runtime parity passed six cases in 2.91s; 13 actual-operation/pack/exact-authored-reference checks passed in 133.94s. Native lint/typecheck, module-size/context and governance validation pass."
+  },
+  "limits": [
+    "Full feature remains isolated and nonmergeable pending protected authority/normalization and installed consumer proof.",
+    "Existing provider current-default identity guard is preserved.",
+    "No whole requirement acceptance or authority activation."
+  ]
+}

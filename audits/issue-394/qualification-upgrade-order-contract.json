@@ -1,0 +1,32 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/qualification-upgrade-order-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-02",
+  "bounded_context": "evidence",
+  "architectural_layer": "tooling",
+  "operation_side": "command orchestration through existing canonical installer",
+  "targets": [
+    "bcf_governance/tooling/release_adopter_qualification.py",
+    "tests/test_release_adopter_qualification.py"
+  ],
+  "contract": [
+    "Preserve full input admission before allocation and source/profile reauthentication in disposable clones.",
+    "Execute existing exact candidate install/upgrade with strict validation and commit its generated projection before deriving or validating an adopter project environment. Existing upgrade owner supplies missing v2/v3 interpreter contracts from governed dependency declarations; never invent a controller fallback or manually repair adopter dependencies.",
+    "Preserve independent requested-interpreter projection, native ensure_local_project_python validation, reconciliation, candidate proof, exact runtime probes and observation-only receipts.",
+    "An installer failure cannot reach project environment setup, reconciliation or proof. Both explicit and automatically derived interpreter paths consume installed canonical contract."
+  ],
+  "expected_tests": [
+    "Existing end-to-end orchestration fixture uses real canonical _upgrade_interpreter_contract and derive_interpreter_environment; fails before install when source v2 contract is missing.",
+    "Both explicit and derived interpreter branches occur after actual canonical projection; all existing exact source/asset/receipt/profile checks remain."
+  ],
+  "forbidden_surfaces": [
+    "Maintained adopter sources or installed baselines",
+    "Immutable releases, provider workflows and authority pins",
+    "Manual interpreter-contract projection or controller-as-project fallback"
+  ],
+  "remaining": "New exact package/install proof and separately admitted canonical qualification remain required."
+}

@@ -85,3 +85,49 @@ def test_controller_consumer_inventory_uses_exact_full_source_and_retains_every_
     monkeypatch.setattr(module, '_subject', lambda root: next(subjects))
     with pytest.raises(ValueError, match=f'{kind} consumer inventory source changed'):
         collect(tmp_path)
+
+
+def test_provider_io_candidates_retain_unresolved_reads_and_transport_occurrences(monkeypatch, tmp_path):
+    module = collector()
+    subject = {'commit_sha': 'a' * 40, 'tree_sha': 'b' * 40}
+    targets = {
+        'bcf_governance/tooling/provider_read.py::open_provider_get',
+        'bcf_governance/tooling/ci_github_downloads.py::open_download',
+        'bcf_governance/tooling/protection_inspection_client.py::_open_inspection',
+        'urllib.request::urlopen', 'urllib.request::build_opener',
+    }
+    calls = [{'called_symbol': target, 'call_name': 'alias', 'line': line}
+             for line, target in enumerate(sorted(targets), 1)]
+    calls += [{'called_symbol': f'caller.py::renamed.{name}', 'call_name': name, 'line': line}
+              for line, name in enumerate(('read', 'read1', 'readinto', 'readinto1'), 10)]
+    calls += [{'called_symbol': 'caller.py::ordinary_file.read', 'call_name': 'read', 'line': line}
+              for line in (20, 21)]
+    unrelated = {'called_symbol': 'other.py::write', 'call_name': 'write', 'line': 22}
+    inventory = {'files': [{'path': 'caller.py', 'sha256': 'c' * 64}], 'functions': [
+        {'symbol': 'caller.py::first', 'calls': calls + [unrelated]},
+        {'symbol': 'tests/control.py::case', 'calls': [calls[-1]]},
+    ]}
+    monkeypatch.setattr(module, '_subject', lambda root: subject)
+    def discover(root, **kwargs):
+        assert root == tmp_path
+        assert kwargs == {'call_contracts_version': '1.0', 'source_subject': subject}
+        return inventory
+    monkeypatch.setattr(module, 'discover_python_source', discover)
+    monkeypatch.setattr(module, 'resolve_python_imports', lambda root, value: value)
+    value = module.collect_provider_io_candidates(tmp_path)
+    assert value == module.collect_provider_io_candidates(tmp_path)
+    assert not list(tmp_path.iterdir())
+    assert value['authority'] is False and value['execution_qualified'] is False
+    assert set(value['selectors']['resolved_transport_symbols']) == targets
+    assert set(value['selectors']['lexical_read_names']) == {'read', 'read1', 'readinto', 'readinto1'}
+    assert len(value['consumers']) == len(calls) + 1
+    assert {row['producer'] for row in value['consumers'] if row['classification'] == 'resolved_transport_call'} == targets
+    reads = [row for row in value['consumers'] if row['classification'] == 'lexical_read_candidate']
+    assert len(reads) == 7
+    assert {row['call']['line'] for row in reads} == {10, 11, 12, 13, 20, 21}
+    assert any(row['consumer'].startswith('tests/') for row in reads)
+    assert any('response-object identity' in item for item in value['unqualified'])
+    subjects = iter([subject, {**subject, 'tree_sha': 'd' * 40}])
+    monkeypatch.setattr(module, '_subject', lambda root: next(subjects))
+    with pytest.raises(ValueError, match='provider_io consumer inventory source changed'):
+        module.collect_provider_io_candidates(tmp_path)

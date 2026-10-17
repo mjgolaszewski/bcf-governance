@@ -12,7 +12,7 @@ import time
 from typing import Any, Callable, Mapping
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_post_merge import post_merge_evaluation
+from .ci_graph_post_merge import candidate_post_merge_evaluation, post_merge_evaluation
 from .ci_authority_pins import verify_provider_workflow_authority
 from .ci_controller_policy import graph_controller_policy_path
 from .ci_authority_prospective_lanes import (
@@ -39,6 +39,7 @@ from .evidence_workitem_lifecycle import (
 )
 from .governance_truth import TruthfulnessError, derive_truth
 from .preflight import PreflightError, _exposure_scan, _negative_control_targets, _pack_manifest, _semantic_ownership, run_preflight
+from .ci_authority_prospective_truth import require_truth as _require_truth
 from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
@@ -87,7 +88,7 @@ from .local_pr_context import (
     ProspectiveValidationError,
     Runner,
     _checked,
-    _candidate_identity,
+    _candidate_identity, require_clean_candidate_root,
     _changed_paths,
     _confirm_unchanged as _confirm_context_unchanged,
     _pr_environment,
@@ -109,6 +110,7 @@ def _confirm_unchanged(
     initial_identity: CandidateIdentity,
     remote: str,
     runner: Runner,
+    provider_api: GitHubAPI | None = None,
 ) -> None:
     """Reauthenticate through this module's injectable canonical resolvers."""
 
@@ -118,7 +120,8 @@ def _confirm_unchanged(
         initial_identity=initial_identity,
         remote=remote,
         runner=runner,
-        context_resolver=resolve_local_pr_context,
+        context_resolver=lambda root, **kwargs: resolve_local_pr_context(
+            root, provider_api=provider_api, **kwargs),
         identity_resolver=_candidate_identity,
     )
 
@@ -137,14 +140,6 @@ BOUNDARY_CHAIN = (
     "successor_or_release_eligibility",
 )
 
-
-def _require_truth(report: Mapping[str, Any], *, boundary: str) -> dict[str, Any]:
-    if report.get("status") != "pass":
-        detail = ", ".join(str(value) for value in report.get("issues") or ())
-        raise ProspectiveValidationError(
-            f"{boundary} rejected candidate: {detail or 'truth failed'}"
-        )
-    return dict(report)
 
 
 def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None:
@@ -175,7 +170,7 @@ def _run_prospective_train(
     """Walk every knowable boundary while preserving provider-required authority."""
 
     root = repo_root.resolve()
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     effective_validation_lane = derive_local_validation_lane(
         root,
         context,
@@ -247,6 +242,7 @@ def _run_prospective_train(
             ]
         )
         evaluation, custody_contract = validate_controller_custody_graph(root, python_executable=python_executable)
+        evaluation = candidate_post_merge_evaluation(evaluation, context=context)
         post_merge_mode, post_merge_target = evaluation.mode, evaluation.target
         emit("fixed_point", "complete")
     except (
@@ -288,6 +284,8 @@ def _run_prospective_train(
             base_tree=base_tree,
             candidate_sha=identity.commit_sha,
             candidate_tree=identity.tree_sha,
+            policy_context=context,
+            runner=runner,
         )
     except ProspectiveLaneError as exc:
         raise ProspectiveValidationError(str(exc)) from exc
@@ -299,9 +297,9 @@ def _run_prospective_train(
             raise ProspectiveValidationError(str(exc)) from exc
     for stage, check in (
         ("exposure", _exposure_scan),
+        ("source_distribution", lambda root: _pack_manifest(root, python_executable=python_executable)),
         ("negative_controls", _negative_control_targets),
         ("semantic_ownership", _semantic_ownership),
-        ("source_distribution", lambda root: _pack_manifest(root, python_executable=python_executable)),
     ):
         emit(stage, "started")
         try:
@@ -472,6 +470,7 @@ def _run_prospective_train(
                 initial_identity=identity,
                 remote=remote,
                 runner=runner,
+                provider_api=provider_api,
             )
             return report
 
@@ -511,7 +510,7 @@ def _run_prospective_train(
                         "authority": dict(controller_authority or {}),
                         "custody": custody_contract,
                     },
-                    policy=policy_identity,
+                    policy=policy_identity, comparison_context={**context.as_dict(), "validation_lane": effective_validation_lane.value},
                     toolchain=dict(toolchain_identity or {}),
                     python_executable=python_executable,
                 )
@@ -663,6 +662,7 @@ def _run_prospective_train(
         initial_identity=identity,
         remote=remote,
         runner=runner,
+        provider_api=provider_api,
     )
     emit("prospective_train", "complete")
     validate_progress_stream(progress)
@@ -751,7 +751,7 @@ def run_prospective_train(
             subject_commit=subject_commit,
         )
         validate_evaluation_authored_ready(
-            repo_root.resolve(), intent=requested_scope.intent.value, target=requested_scope.target_id
+            require_clean_candidate_root(repo_root, runner=runner), intent=requested_scope.intent.value, target=requested_scope.target_id
         )
     except (EvaluationScopeError, WorkitemContractError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
@@ -788,7 +788,7 @@ def run_prospective_train(
                     python_executable=python_executable,
                     execute_evidence=True,
                     repository=repository if lane == "trusted_exact_main" else None,
-                    provider_api=provider_api if lane == "trusted_exact_main" else None,
+                    provider_api=provider_api,
                     toolchain_identity=admission.as_dict(),
                     validation_lane=validation_lane,
                     runner=runner,

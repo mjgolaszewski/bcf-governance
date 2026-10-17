@@ -27,6 +27,27 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Derive nested qualification dependency roots from exact wheel requirements
+  and installed origins, including active transitive and legacy dependencies.
+  Reject incompatible identities, versions, Python constraints and unsafe roots
+  before allocating a fresh controller.
+
+- Run generated-pack and rendered-budget admission after exposure checks and
+  before costly local control qualification, preserving canonical generation
+  prerequisites and every later required check.
+
+- Reject dirty committed-candidate inputs before provider discovery or proof
+  allocation. Ordinary local context reads still support edited trees, and
+  later exact-subject checks continue to detect new edits.
+
+- Reject provider commit/ref responses whose returned identity contradicts the
+  exact requested subject. Bound PR comparison checks also require the exact
+  returned ref name even when the object SHA matches.
+
+- Reject missing PR changelog deltas before normalization allocation using the
+  resolved comparison base and canonical candidate scope. Stacked-base changes
+  and ambient validation flags cannot substitute for the leaf PR obligation.
+
 - Submission now settles derived governance through the existing canonical
   reconciliation owner before deriving lifecycle scope and capturing the exact
   candidate. Authored contradictions, incorrect intent assertions, busy local

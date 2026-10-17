@@ -29,6 +29,8 @@ workitems:
   status: IN_PROGRESS
   summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
   acceptance:
+  - Derive exact qualification dependency origins and reject incompatible inputs before controller allocation; preserve independent child probes
+  - Bind returned provider commit and ref identity to exact request subjects before authority consumption
   - requires-workitem-closure:P32-P0-01
   - Commit complete affected-surface contract and executable bindings before production changes
   - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
@@ -110,6 +112,8 @@ workitems:
   acceptance:
   - requires-workitem-closure:P32-P0-01
   - Complete the exact affected-surface contract in audits/issue-394/submit-normalization-slice.yml
+  - Reject exact PR changelog omissions under canonical candidate scope before normalization allocation
+  - Reject known dirty committed candidates before provider discovery and proof allocation while retaining fresh consuming rechecks
   - Reject authored contradiction wrong intent assertion busy lease and normalization failure before dependent mutation or
     proof
   - Capture the fresh canonical subject after normalization and preserve exact prospective push and provider boundaries

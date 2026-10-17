@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from .ci_graph_errors import CIGraphError
 from .ci_graph_execution import (
@@ -29,6 +29,9 @@ from .repository_comparison_context import (
     PUSH_COMPARISON_BASE_EXPRESSION,
     comparison_base_input_contract,
 )
+
+if TYPE_CHECKING:
+    from .local_pr_context import LocalPRContext
 
 
 CALLER_MODE = "${{ inputs.evaluation_mode || 'pr' }}"
@@ -59,6 +62,33 @@ class PostMergeEvaluation:
             "workflow_id": self.workflow_id,
             "terminal_job_id": self.terminal_job_id,
         }
+
+
+def candidate_post_merge_evaluation(
+    evaluation: PostMergeEvaluation, *, context: LocalPRContext,
+) -> PostMergeEvaluation:
+    """A nondefault PR is progress, never the future protected-main terminal.
+
+    The caller supplies the independently resolved local/provider context. This
+    candidate projection does not change the compiled default-main workflow.
+    """
+    mode, target = candidate_semantic_scope(evaluation.mode, evaluation.target, context=context)
+    if (mode, target) == (evaluation.mode, evaluation.target):
+        return evaluation
+    return replace(evaluation, mode=mode, target=target)
+
+
+def candidate_semantic_scope(
+    mode: str, target: str | None, *, context: LocalPRContext,
+) -> tuple[str, str | None]:
+    """Project one authenticated comparison context without requiring generated state."""
+    if context.comparison_base_ref == context.default_branch:
+        return mode, target
+    if (not context.repository or type(context.repository_id) is not int
+            or type(context.pull_request_number) is not int
+            or not context.pull_request_node_id or not context.provider_head_sha):
+        raise CIGraphError("nondefault candidate lacks its authenticated PR binding")
+    return "pr", None
 
 
 def _strings(value: Any) -> tuple[str, ...]:

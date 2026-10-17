@@ -1,0 +1,94 @@
+{
+  "authority": false,
+  "status": "blocking_contract_research",
+  "workitem": "P32-P0-02",
+  "contract": "audits/issue-394/bound-pr-context-contract.json",
+  "source_files": [
+    {
+      "path": "bcf_governance/tooling/local_pr_context.py",
+      "sha256": "5424d888e02bb129ac80dc01373aefcca0ea2a4591a3998e54867fa66b404291"
+    },
+    {
+      "path": "bcf_governance/tooling/ci_authority_prospective_lanes.py",
+      "sha256": "9fc6ba4bad93632e9680b7092c9e7148f5397b42af429fc78de7ff1ba6ffdaa6"
+    },
+    {
+      "path": "bcf_governance/tooling/ci_graph_pr_evaluator.py",
+      "sha256": "6d15e51eec9144f13196bc162f0086c9f1d6f1fad2e54ddb475d6f4d0c42b5b8"
+    },
+    {
+      "path": "bcf_governance/tooling/ci_github_pr.py",
+      "sha256": "817377526f7741288dd307818b16f6000f5a192008536ae2042636450d2e997c"
+    },
+    {
+      "path": "bcf_governance/tooling/ordinary_protection_projection.py",
+      "sha256": "56653d488309ce84b3cd0f396a187b069e8f6a0bfd6188e374dcc0fa782b7d06"
+    }
+  ],
+  "observed": [
+    "Local provider-bound comparison may be a feature/stack branch; current source stores its exact SHA independently of repository default branch name.",
+    "prospective_policy_binding currently consumes the comparison base and changed paths; a feature base must not become the protected source policy/evaluator anchor.",
+    "Ordinary Standard-v3 graph currently checks out workflow_run.pull_requests[0].base.sha for executable evaluator code.",
+    "ci_github_pr._evaluator_identity currently requires comparison base equal current protected default main, so merely removing that guard would erase required independence.",
+    "Managed self authority is installed independently; this does not prove ordinary executable profile compatibility."
+  ],
+  "required_before_integration": [
+    "Capture and bind exact authenticated protected-default commit/tree independently from semantic PR comparison base/head.",
+    "Use protected-default or independently installed policy/evaluator owners; keep product comparison base for applicable product/changelog/claim facts.",
+    "Trust-sensitive changes already present in a feature base must remain in policy/authority invalidation closure relative to the protected source.",
+    "Authenticate evaluator source before executing candidate-controlled base bytes; use a provider-authenticated immutable protected workflow/runtime subject, not PR base checkout.",
+    "Preserve current default-base output/guards and old evidence readability; explicitly expand compatible installed consumers before allowing new comparison contexts.",
+    "Model main/workflow/runtime movement, queued/retried callbacks, wrong repository/attempt, and partial installation as reject/replan paths.",
+    "Authenticate base ref/default identity at merge mutation consumption; provider target movement must reject before write, with no caller boolean authority.",
+    "Keep nondefault PR progress observation-only with no protected-default merge, bounded/phase, controller, release or custody authority."
+  ],
+  "primary_documentation": [
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/variables",
+      "fact": "GITHUB_WORKFLOW_SHA identifies the workflow-file commit."
+    },
+    {
+      "url": "https://docs.github.com/en/enterprise-cloud%40latest/actions/reference/workflows-and-actions/contexts",
+      "fact": "github.workflow_sha identifies the workflow-file commit."
+    },
+    {
+      "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows",
+      "fact": "workflow_run is associated with default branch and its last commit; requires workflow file on default branch."
+    }
+  ],
+  "inference": "An immutable protected workflow-definition source is a candidate for ordinary evaluator checkout. This is design research, not verification that any proposed expression or installed producer meets all custody/runtime requirements.",
+  "coordination": {
+    "peer": "bcf-governance:closure-engine",
+    "bus_cursor": 7489,
+    "constraint": "Preserve immutable v2.3.4 and #425 result/base-identity regressions; semantic comparison may differ from protected evaluator/policy authority. No backport."
+  },
+  "activation": "BLOCKED until all required source/consumer/authority proofs above pass; current isolated branch must not be merged as a completed feature.",
+  "recovery_disposition": {
+    "authority": false,
+    "source_checkpoint": "02672ac2deff651d4c813d6647853421f48757e5",
+    "historical_observations_preserved": true,
+    "bounded_followups": [
+      {
+        "area": "protected-default policy and ordinary executable source",
+        "evidence": "audits/issue-394/bound-pr-integrated-verification.json",
+        "limit": "focused source/graph/installed consumers; not complete lifecycle/runtime population"
+      },
+      {
+        "area": "candidate-aware normalization and provider comparison freshness",
+        "evidence": "audits/issue-394/bound-pr-integrated-verification.json",
+        "limit": "exact authored selectors and consuming-boundary controls; no independent whole requirement closure"
+      },
+      {
+        "area": "local proof cache context and consuming protected source movement",
+        "evidence": "audits/issue-394/bounded-context-diagnostics-verification.json",
+        "limit": "local nonauthoritative identity; exact installed affected suites only"
+      }
+    ],
+    "remaining": [
+      "Run canonical real pinned-adopter compatibility transaction; inputs prepared in bound-pr-pinned-adopter-preparation.json.",
+      "Independently qualify complete consumer matrix, authority paths and installed supported profile populations before integration.",
+      "No current source progress implies protected-main, phase/controller, activation, release or custody progress."
+    ],
+    "execution_dependency": "Heavy host lane reserved by Closure Engine7959 for maintenance427; actual handback awaited."
+  }
+}

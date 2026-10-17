@@ -16,6 +16,7 @@ from bcf_governance.tooling.local_pr import (
 
 
 def _state(monkeypatch: pytest.MonkeyPatch) -> tuple[LocalPRContext, CandidateIdentity]:
+    monkeypatch.setattr(submit, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(submit, "_normalize_submission", lambda *_a, **_k: None, raising=False)
     context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
     identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
@@ -547,6 +548,7 @@ def test_submit_rejects_incomplete_proof_before_push(
 
 
 def _normalization_state(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(submit, 'validate_pull_request_changelog_update', lambda *_a: None)
     monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories', lambda *_a, **_k: None)
     monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext(), raising=False)
 
@@ -905,6 +907,80 @@ def test_authored_semantic_ownership_rejects_before_lease_and_reconciliation(mon
     assert caught.value.__cause__ is failure
 
 
+@pytest.mark.parametrize("mode", ["pr", "workitem", "closure"])
+def test_nondefault_target_never_invokes_protected_merge_mutations(mode):
+    context = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack",
+        repository="owner/repo", repository_id=17, pull_request_number=7,
+        pull_request_node_id="PR_exact7", provider_head_sha="2" * 40)
+    identity = CandidateIdentity("2" * 40, "3" * 40, "1" * 40)
+    authority = submit.SubmissionAuthority(mode, "P32-P0-01" if mode == "workitem" else None,
+        "direct_protected_main", "owner/repo", 17, "9" * 64)
+    api = SimpleNamespace(enable_pull_request_auto_merge=lambda *_a, **_k: pytest.fail("stacked target requested auto merge"),
+                          merge_clean_pull_request=lambda *_a, **_k: pytest.fail("stacked target requested normal merge"))
+    arguments = dict(provider_api=api, authority=authority, identity=identity,
+        pull_request={"number": 7, "node_id": "PR_exact7", "repository_id": 17},
+        prospective_frontier_sha256="4" * 64, context=context)
+    if mode != "pr":
+        with pytest.raises(ProspectiveValidationError, match="default-main terminal authority"):
+            submit._request_protected_auto_merge(**arguments)
+    else:
+        result, frontier = submit._request_protected_auto_merge(**arguments)
+        assert result["status"] == "provider_proof_required_no_default_main_authority"
+        assert frontier["state"] == "nondefault_base" and frontier["release_authority"] is False
+        assert frontier["action"]["kind"] == "observe_same_subject"
+
+
+@pytest.mark.parametrize('asserted,valid', [('pr', True), ('closure', False)])
+def test_bound_pr_normalization_assertion_uses_candidate_scope(monkeypatch, tmp_path, asserted, valid):
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda *_a: ('closure', 'P32'))
+    context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'leaf', base_ref='stack',
+        repository='owner/repo', repository_id=17, pull_request_number=7,
+        pull_request_node_id='PR_node', provider_head_sha='2' * 40)
+    calls = []
+    @contextmanager
+    def lease(*_args):
+        calls.append('lease')
+        yield
+    monkeypatch.setattr(submit, 'local_gate_lease', lease)
+    def run(*_args, **_kwargs):
+        calls.append('reconcile')
+        return SimpleNamespace(returncode=0, stdout='', stderr='')
+    if valid:
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+            semantic_intent=asserted, runner=run, context=context)
+        assert calls == ['lease', 'reconcile']
+    else:
+        with pytest.raises(ProspectiveValidationError, match='intent'):
+            submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+                semantic_intent=asserted, runner=run, context=context)
+        assert calls == []
+
+
+def test_submit_supplies_authenticated_context_to_normalization(monkeypatch, tmp_path):
+    context, _identity = _state(monkeypatch)
+    def normalize(*_args, **kwargs):
+        assert kwargs['context'] is context
+        raise RuntimeError('normalization context observed')
+    monkeypatch.setattr(submit, '_normalize_submission', normalize)
+    with pytest.raises(RuntimeError, match='normalization context observed'):
+        submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object())
+
+
+@pytest.mark.parametrize('field', ['repository', 'repository_id', 'pull_request_number', 'pull_request_node_id', 'provider_head_sha'])
+def test_bound_pr_normalization_rejects_incomplete_binding_before_lease(monkeypatch, tmp_path, field):
+    from dataclasses import replace
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda *_a: ('closure', 'P32'))
+    context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'leaf', base_ref='stack',
+        repository='owner/repo', repository_id=17, pull_request_number=7,
+        pull_request_node_id='PR_node', provider_head_sha='2' * 40)
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('lease before valid binding'))
+    with pytest.raises(ProspectiveValidationError, match='authenticated PR binding'):
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+            semantic_intent='pr', runner=lambda *_a, **_k: pytest.fail('reconcile before binding'),
+            context=replace(context, **{field: None}))
+
 def test_authored_source_distribution_rejects_before_lease_and_reconciliation(monkeypatch, tmp_path):
     _normalization_state(monkeypatch)
     failure = ValueError('source manifest omits governed audit collector')
@@ -917,3 +993,96 @@ def test_authored_source_distribution_rejects_before_lease_and_reconciliation(mo
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source declaration'))
     assert caught.value.__cause__ is failure
+
+
+@pytest.mark.parametrize('stacked', [False, True])
+@pytest.mark.parametrize('changed', [False, True])
+def test_exact_pr_changelog_precedes_normalization_allocation(monkeypatch, tmp_path, stacked, changed):
+    import os
+    import subprocess
+
+    def git(*args):
+        return subprocess.run(['git', '-C', str(tmp_path), *args], capture_output=True,
+            text=True, check=True).stdout.strip()
+    git('init', '-b', 'main')
+    git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'user.name', 'Fixture')
+    (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n')
+    git('add', '.'); git('commit', '-m', 'base')
+    base = git('rev-parse', 'HEAD')
+    if stacked:
+        (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\nStack only\n')
+        git('add', '.'); git('commit', '-m', 'stack changelog')
+        base = git('rev-parse', 'HEAD')
+    git('checkout', '-b', 'feature')
+    (tmp_path / 'source.py').write_text('VALUE = 1\n')
+    if changed:
+        (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\nLeaf change\n')
+    git('add', '.'); git('commit', '-m', 'leaf')
+    head = git('rev-parse', 'HEAD')
+    context = LocalPRContext('origin', 'main', base, head, 'feature',
+        base_ref='stack' if stacked else None, repository='owner/repo', repository_id=17,
+        pull_request_number=7, pull_request_node_id='PR_exact7', provider_head_sha=head)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda _: ('closure', None) if stacked else ('pr', None))
+    trace = []
+    monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories',
+        lambda *_a, **_k: trace.append('collection') if changed else pytest.fail('collected tests before deterministic changelog rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext() if changed else pytest.fail('lease before changelog rejection'))
+    monkeypatch.setenv('BCF_ENFORCE_PR_CHANGELOG', 'false')
+    monkeypatch.setenv('BCF_VALIDATION_LANE', 'isolated_candidate_qualification')
+    def normalize():
+        submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id=head,
+            semantic_intent=None, context=context,
+            runner=lambda *_a, **_k: SimpleNamespace(returncode=0) if changed else pytest.fail('reconciliation before changelog rejection'))
+    if changed:
+        normalize()
+        assert trace == ['collection']
+    else:
+        with pytest.raises(ProspectiveValidationError, match='every pull request must update CHANGELOG.md'):
+            normalize()
+    assert os.environ['BCF_ENFORCE_PR_CHANGELOG'] == 'false'
+    assert os.environ['BCF_VALIDATION_LANE'] == 'isolated_candidate_qualification'
+
+
+def test_default_main_closure_normalization_keeps_release_changelog_scope(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    monkeypatch.setattr(submit, 'authored_post_merge_scope', lambda _: ('closure', 'P32'))
+    monkeypatch.setattr(submit, 'validate_pull_request_changelog_update',
+        lambda *_a: pytest.fail('release scope acquired PR changelog obligation'))
+    context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'feature')
+    submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+        semantic_intent=None, context=context, runner=lambda *_a, **_k: SimpleNamespace(returncode=0))
+
+
+@pytest.mark.parametrize('entry', ['submit', 'prospective', 'canonical'])
+@pytest.mark.parametrize('change', ['tracked', 'untracked', 'clean'])
+def test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation(monkeypatch, tmp_path, entry, change):
+    import subprocess
+    from bcf_governance.tooling import local_pr, prospective_candidate_identity
+    def git(*args):
+        return subprocess.run(['git', '-C', str(tmp_path), *args], capture_output=True,
+            text=True, check=True).stdout.strip()
+    git('init', '-b', 'main'); git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'user.name', 'Fixture')
+    (tmp_path/'source.py').write_text('VALUE = 1\n')
+    git('add', '.'); git('commit', '-m', 'committed subject')
+    head, tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
+    if change != 'clean':
+        (tmp_path/('source.py' if change == 'tracked' else 'untracked.py')).write_text('VALUE = 2\n')
+    def forbidden(*_a, **_k):
+        if change == 'clean': raise RuntimeError('clean input reached next boundary')
+        pytest.fail('dirty input reached provider discovery or allocation')
+    for owner in [submit, local_pr, prospective_candidate_identity]:
+        monkeypatch.setattr(owner, 'resolve_local_pr_context', forbidden)
+    monkeypatch.setattr(submit, '_normalize_submission', forbidden)
+    monkeypatch.setattr(local_pr, 'local_gate_lease', forbidden)
+    expected_error = RuntimeError if change == 'clean' else ProspectiveValidationError
+    expected_message = 'clean input reached next boundary' if change == 'clean' else 'clean committed tree'
+    with pytest.raises(expected_error, match=expected_message):
+        if entry == 'submit':
+            submit.submit_candidate(tmp_path, python_executable=Path('/python'), provider_api=object())
+        elif entry == 'prospective':
+            local_pr.run_prospective_train(tmp_path, semantic_intent='pr', evaluation_target=None,
+                subject_commit=head, subject_tree=tree, python_executable=Path('/python'))
+        else:
+            prospective_candidate_identity.canonical_prospective_inputs(tmp_path)

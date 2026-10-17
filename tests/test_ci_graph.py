@@ -3280,7 +3280,7 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
         if str(step.get("uses", "")).startswith("actions/checkout@")
     ]
     assert checkout_refs == [
-        "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
+        "${{ github.workflow_sha }}",
         "${{ github.event.workflow_run.head_sha }}",
     ]
     candidate_checkout = next(
@@ -3648,3 +3648,41 @@ def test_component_minimum_floors_remain_nonsummable_job_constraints():
             {'id': 'route', 'timeout_minutes': 11, 'executor': {'kind': 'component_sequence',
                 'components': ['first', 'second']}}]}]}
     validate_component_job_timeouts(graph)
+
+
+def test_stacked_candidate_progress_cannot_claim_rendered_default_main_terminal():
+    from bcf_governance.tooling.ci_graph_post_merge import PostMergeEvaluation, candidate_post_merge_evaluation
+    from bcf_governance.tooling.local_pr_context import LocalPRContext
+    evaluation = PostMergeEvaluation("workitem", "P32-P0-01", "trusted_exact_main", "exact-main", "governance")
+    default = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
+    assert candidate_post_merge_evaluation(evaluation, context=default) is evaluation
+    bound = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack",
+        repository="owner/repository", repository_id=17, pull_request_number=7,
+        pull_request_node_id="PR_exact7", provider_head_sha="2" * 40)
+    projected = candidate_post_merge_evaluation(evaluation, context=bound)
+    assert (projected.mode, projected.target) == ("pr", None)
+    assert evaluation.mode == "workitem" and evaluation.target == "P32-P0-01"
+    assert (projected.lane, projected.workflow_id, projected.terminal_job_id) == (evaluation.lane, evaluation.workflow_id, evaluation.terminal_job_id)
+
+
+def test_nondefault_candidate_projection_rejects_unbound_context():
+    from bcf_governance.tooling.ci_graph_post_merge import PostMergeEvaluation, candidate_post_merge_evaluation
+    from bcf_governance.tooling.local_pr_context import LocalPRContext
+    evaluation = PostMergeEvaluation("closure", None, "trusted_exact_main", "exact-main", "governance")
+    with pytest.raises(CIGraphError, match="authenticated PR binding"):
+        candidate_post_merge_evaluation(evaluation, context=LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack"))
+
+
+@pytest.mark.parametrize("source", ["${{ github.event.workflow_run.pull_requests[0].base.sha }}", "${{ github.event.workflow_run.head_sha }}"], ids=["comparison-base", "candidate-head"])
+@pytest.mark.parametrize("component", ["checkout-protected-pr-base", "checkout-protected-finalizer-base"], ids=["finalizer", "publisher"])
+def test_ordinary_evaluator_rejects_untrusted_executable_checkout(tmp_path: Path, source: str, component: str) -> None:
+    graph = build_reference_ci_graph(
+        project_id="v3-fixture", profile="standard", profile_contract_version="3.0",
+        gates=["governance-validate", "test", "contract-test", "runtime-smoke"],
+        candidate_labels=["ubuntu-24.04"], trusted_labels=["self-hosted", "fixture-trusted"],
+        candidate_hosted=True, trusted_hosted=False,
+    )
+    graph["step_components"][component]["with"]["ref"] = source
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="invalid exact checkout/controller contract"):
+        validate_ci_graph(tmp_path)
