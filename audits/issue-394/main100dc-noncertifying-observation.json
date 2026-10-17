@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "scope": "Existing provider-role authenticated noncertifying finalizer observation; no certification object exists",
+  "subject": {
+    "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+    "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+  },
+  "artifact": {
+    "run_id": "39063994031",
+    "run_attempt": 1,
+    "artifact_id": "12112074414",
+    "artifact_name": "bcf-exact-main-certification-39063994031-1",
+    "provider_digest": "sha256:ac828d32558cedeff815352e79f2f962de411d9846c87f2d3f6070633e42a13d",
+    "workflow": {
+      "provider": "github",
+      "repository_id": "1207503211",
+      "workflow_id": "346274484",
+      "active_path": ".github/workflows/bcf-trusted-finalizer.yml",
+      "trusted_workflow_blob_oid": "d74afc7b6491e9aeb44f3ff4a939ce2ff28b1a2c",
+      "trusted_workflow_sha256": "49a087f7149fceee41c4b299e253f0d23c73f9cc5b8d752ff01c9df57d767825",
+      "trusted_workflow_definition_commit": "929fddeda09f577fe2bcc791be175fcf1ee6582b",
+      "event": "workflow_run"
+    }
+  },
+  "observation": {
+    "admission": {
+      "admission_ordinal": "39063214914001001",
+      "run_attempt": 1,
+      "run_id": "39063214914"
+    },
+    "collector": {
+      "run_attempt": 1,
+      "run_id": "39063994031",
+      "workflow": {
+        "active_path": ".github/workflows/bcf-trusted-finalizer.yml",
+        "event": "workflow_run",
+        "provider": "github",
+        "repository_id": "1207503211",
+        "trusted_workflow_blob_oid": "d74afc7b6491e9aeb44f3ff4a939ce2ff28b1a2c",
+        "trusted_workflow_definition_commit": "929fddeda09f577fe2bcc791be175fcf1ee6582b",
+        "trusted_workflow_sha256": "49a087f7149fceee41c4b299e253f0d23c73f9cc5b8d752ff01c9df57d767825",
+        "workflow_id": "346274484"
+      }
+    },
+    "computed_state": "noncertifying",
+    "kind": "authority_observation",
+    "reason": "pending_controller_rotation",
+    "schema_version": "1.1",
+    "subject": {
+      "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+      "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+    }
+  },
+  "exact_inventory_and_digests_verified": true,
+  "collector_identity_matches_authenticated_artifact_role": true,
+  "admission_authenticated": true,
+  "initial_probe_disposition": "An inapplicable certification-file probe found no ci-authority.json; actual two-file authority_observation inventory is valid and intentionally noncertifying. Originals retained.",
+  "raw_archive_sha256": "ac828d32558cedeff815352e79f2f962de411d9846c87f2d3f6070633e42a13d",
+  "file_sha256": {
+    "bundle-manifest.json": "220d6557227e22e03fe7e23d359e6ea3fe4ab136755e2920cce71fdd5d992c0c",
+    "authority-observation.json": "52ec04ae247ec1f59ff5587bedcaf52066e96fbdc7e887b0232485b571692857"
+  },
+  "next_action": "Observe controller rotation and subsequent exact-subject admission/finalizer through existing owners; never infer certification from green workflow jobs.",
+  "limits": [
+    "No phase or bounded workitem certification is granted by this observation.",
+    "No whole requirement closure or release custody claim."
+  ]
+}
