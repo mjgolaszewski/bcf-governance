@@ -35,6 +35,8 @@ def version3(tmp_path):
     _write(repo, payload)
     report = validate_ci_state_matrix(repo, authored_only=True)
     assert report['authority'] is False and report['execution_qualified'] is False
+    assert report['machine_backtrace']['backtrace_schema_version'] == 3
+    assert report['machine_backtrace']['supplemental_states'] == 34
     return repo, payload
 
 
@@ -105,6 +107,8 @@ def test_version2_retains_its_weaker_historical_scope(tmp_path):
     _write(repo, payload)
     report = validate_ci_state_matrix(repo, authored_only=True)
     assert report['authority'] is False and report['execution_qualified'] is False
+    assert report['machine_backtrace']['backtrace_schema_version'] == 2
+    assert report['machine_backtrace']['supplemental_contracts'] == 0
 
 
 def test_version3_fact_boundary_edges_are_not_invented_state_edges(version3):

@@ -82,7 +82,7 @@ def _transition_contract(path: str) -> bool:
 
 
 
-def _validate_backtrace_references(payload: dict[str, Any]) -> None:
+def _validate_backtrace_references(payload: dict[str, Any]) -> dict[str, int]:
     """Check authored references, never runtime population or authority truth."""
     populations: dict[str, set[str]] = {}
     for section in ("invariants", "primitives", "states", "transitions"):
@@ -108,6 +108,43 @@ def _validate_backtrace_references(payload: dict[str, Any]) -> None:
     for exclusion in payload["exclusions"]:
         if "invariant" in exclusion and exclusion["invariant"] not in populations["invariants"]:
             raise CIStateMatrixError("machine-readable backtrace exclusion has an undeclared invariant reference")
+    return _validate_supplemental_references(payload, populations)
+
+
+def _validate_supplemental_references(payload, populations) -> dict[str, int]:
+    """Close version3 supplemental IDs without reinterpreting legacy version2.
+
+    The schema closes the block population first. Fact-boundary edge endpoints
+    remain distinct from state identities; structural references never qualify
+    source ownership, execution or authority.
+    """
+    version = payload['document']['schema_version']
+    result = dict(backtrace_schema_version=version, supplemental_contracts=0,
+                  supplemental_states=0, supplemental_edges=0)
+    if version != 3:
+        return result
+    identities = {
+        'states': set(populations['states']),
+        'edge_contracts': set(populations['transitions']),
+        'exclusions': {row['id'] for row in payload['exclusions']},
+    }
+    for name, block in payload.items():
+        if (not isinstance(block, dict) or 'primitive' not in block
+                or name == 'bounded_workitem_frontier_contract'):
+            continue
+        if block['primitive'] not in populations['primitives']:
+            raise CIStateMatrixError('machine-readable backtrace has undeclared supplemental primitive')
+        result['supplemental_contracts'] += 1
+        for collection, known in identities.items():
+            for row in block.get(collection, []):
+                if row['id'] in known:
+                    raise CIStateMatrixError(
+                        f'machine-readable backtrace has duplicate supplemental {collection} identity'
+                    )
+                known.add(row['id'])
+        result['supplemental_states'] += len(block['states'])
+        result['supplemental_edges'] += len(block.get('edge_contracts', []))
+    return result
 
 
 def _validate_machine_backtrace(repo_root: Path) -> dict[str, int]:
@@ -175,7 +212,7 @@ def _validate_machine_backtrace(repo_root: Path) -> dict[str, int]:
     error = next(Draft202012Validator(schema).iter_errors(payload), None)
     if error is not None:
         raise CIStateMatrixError(f"machine-readable backtrace schema violation: {error.message}")
-    _validate_backtrace_references(payload)
+    supplemental = _validate_backtrace_references(payload)
     try:
         validate_authority_separation(
             edges,
@@ -186,7 +223,7 @@ def _validate_machine_backtrace(repo_root: Path) -> dict[str, int]:
         )
     except CIGraphError as exc:
         raise CIStateMatrixError(str(exc)) from exc
-    return {"edges": len(edges), "transitions": len(transitions)}
+    return {"edges": len(edges), "transitions": len(transitions), **supplemental}
 
 
 def validate_ci_state_matrix(repo_root: Path, *, authored_only: bool = False) -> dict[str, Any]:

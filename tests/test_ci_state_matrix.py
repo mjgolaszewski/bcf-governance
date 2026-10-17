@@ -74,6 +74,10 @@ def test_changed_ci_contract_requires_same_candidate_matrix_update(tmp_path: Pat
     assert report["machine_backtrace"] == {
         "edges": len(machine["adopter_compatibility_observation"]["edges"]),
         "transitions": len(machine["transitions"]),
+        "backtrace_schema_version": 3,
+        "supplemental_contracts": 5,
+        "supplemental_states": 34,
+        "supplemental_edges": 13,
     }
 
 

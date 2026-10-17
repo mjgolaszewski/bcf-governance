@@ -1,7 +1,7 @@
 document:
   kind: release_train_phase0_backtrace
   id: bcf.release-train.phase0-backtrace.v1
-  schema_version: 2
+  schema_version: 3
   status: active_machine_backtrace
   issue: 394
   source:
@@ -292,7 +292,7 @@ protected_merge_provider_result_contract:
   - {id: PMRX-004, reason: provider_error_text_alone_cannot_select_retry_merge_or_success}
 negative_control_fixture_reachability_contract:
   normative: true
-  primitive: PRIM-CAUSE-SPECIFIC-NEGATIVE-CONTROL
+  primitive: PRIM-QUALIFICATION
   canonical_owner: tests/test_preflight.py::test_stale_pack_manifest_fails_before_evidence
   inputs: [current_closed_input_schema, exact_single_mutation, intended_rejection_class, earliest_authoritative_consumer]
   outputs: [schema_valid_adversarial_fixture, observed_cause_specific_rejection, typed_oracle_drift]

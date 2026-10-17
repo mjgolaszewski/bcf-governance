@@ -2512,3 +2512,13 @@ the candidate rather than increasing the budget or dropping controls.
 ### Evidence command terminal and cleanup boundary
 
 TR-003 execution consumes the gate registry's execution and cleanup bounds. The existing timeout compiler accounts for both before CI allocation. The candidate runtime holds the temporary supervisor unreaped until exact command termination, kernel child-tree quiescence and output drain are authenticated. An ordinary command that leaves live descendants fails after bounded child cleanup. New sessions and double forks retain kernel ancestry; missing terminal proof preserves execution-state custody. This replacement avoids host-global PID stability and remains subject to complete source/private/installed qualification. Source controls cover timeout, background-success, invalid preallocation budgets, inadequate outer deadlines and unresolved cleanup. The complete context-qualified lifecycle, escaped-process isolation and total setup/namespace-removal envelopes remain P32/P33 obligations; this prose does not confer their adoption or terminal authority.
+
+
+### Supplemental backtrace structural coverage
+
+Backtrace version3 closes the root inventory and validates the existing five
+supplemental contracts, their34 states and13 fact-boundary edges before derived
+work. Each primitive must resolve in the existing canonical primitive list;
+negative-control fixture qualification uses PRIM-QUALIFICATION rather than the
+previous undeclared label. Historical version2 retains its weaker reader.
+Neither structural version establishes complete lifecycle/runtime conformance.

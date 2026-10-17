@@ -447,3 +447,19 @@ creating or resuming a draft.
 The BCF repository is itself standard-governed. Its generated governance
 workflow and gate contracts must pass on the merge commit; a release tag never
 turns older-tree evidence into current evidence.
+
+
+## Release-train backtrace structural versions
+
+The current authored backtrace uses version3. Its closed schema includes every
+existing supplemental contract and session-transport block; the structural
+consumer additionally rejects undeclared primitive references and duplicate
+supplemental identities. Version2 remains readable under its original weaker
+schema. The report identifies the decoded version and supplemental population;
+a legacy read does not prove version3 coverage. A consumer must implement the
+version3 reference checks before claiming that structural scope.
+
+Schema/reference acceptance grants no runtime or lifecycle authority. Source,
+test/control execution, protected context completeness, freshness and terminal
+custody remain separate requirements. Supplemental fact-boundary edge names
+are not implicitly state IDs or proof of reachability.
