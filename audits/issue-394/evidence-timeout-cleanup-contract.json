@@ -15,7 +15,8 @@
     "bcf_governance/tooling/governance_profiles.py",
     "schemas/gate-contracts.schema.json",
     "governance/gate-contracts.yml",
-    "docs/USAGE.md"
+    "docs/USAGE.md",
+    "bcf_governance/tooling/evidence_process_supervisor.py"
   ],
   "finding": "Actual Linux control: the runner returns typed timeout126 while the grandchild remains live. Direct-child termination is not descendant cleanup or authenticated execution-state retirement.",
   "contract": [
@@ -95,6 +96,9 @@
       "Other agents processes",
       "New scheduler/claim registry/receipt family"
     ],
-    "status": "contract_only; implementation and cause-specific qualification pending"
+    "status": "contract_only; implementation and cause-specific qualification pending",
+    "startup_budget": "Supervisor startup/readiness/command allocation consume the existing body timeout, measured from before supervisor allocation on the same monotonic clock. No additional hidden startup allowance. The separate declared cleanup budget covers interrupted cleanup and output drain.",
+    "protocol": "Private inherited socket carries readiness, one command request, cancellation and a single typed completion. Match supervisor PID, exact command PID and quiescent true; parent holds supervisor wait ownership until result and stdout/stderr EOF. Missing/malformed completion is unknown, even if supervisor exits0. Command close_fds prevents inheriting the private socket.",
+    "oracle_migration": "Replace obsolete global-inventory fault injection with missing/empty/missing-anchor kernel-completion transport controls, preserving rejection intent and real zombie-thread control. Replace foreign-birth snapshot hooks with real unrelated process births while the command runs. Never remove genuine ordinary-output or descendant controls."
   }
 }
