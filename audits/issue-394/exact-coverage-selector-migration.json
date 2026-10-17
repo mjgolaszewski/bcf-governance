@@ -1,0 +1,1513 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/exact-coverage-selector-contract.json",
+  "source_commit": "624add3639107bb1e3b758bae0a5cea0a4abd190",
+  "original_inventory_sha256": "74854afd0f142ff3dbc0d96c0af378dcf3dc10ed36ed9faaff3bdc15a558b91b",
+  "collection_owner": "bcf_governance/tooling/test_manifests.py::collect_selector_map",
+  "collected_node_count": 3317,
+  "collected_population_sha256": "1237cf8f5c51e032a6e5ae4320af9cd203940e8a09f4daa4cbc783817bdea425",
+  "expanded_bare_selectors": {
+    "tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs": [
+      "tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs[changed_during_collection]",
+      "tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs[invalid_model]"
+    ],
+    "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent": [
+      "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[adopter-workflow_dispatch]",
+      "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[controller-workflow_run]",
+      "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[exact_main-push]",
+      "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[periodic-schedule]",
+      "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent[release-workflow_dispatch]"
+    ],
+    "tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy": [
+      "tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy[adopter]",
+      "tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy[controller]"
+    ],
+    "tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks": [
+      "tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks[pr-421-attempt-1.json]",
+      "tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks[pr-426-attempt-1.json]"
+    ],
+    "tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success": [
+      "tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[cancelled-cancelled]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[failure-failed]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[skipped-skipped]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success[timed_out-failed]"
+    ],
+    "tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints": [
+      "tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[developer_interruption]",
+      "tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[dispatch_to_custody]",
+      "tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[merge_to_custody]",
+      "tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints[publication_to_custody]"
+    ],
+    "tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts": [
+      "tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[empty_event]",
+      "tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[malformed_expected_event]",
+      "tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[missing_event]",
+      "tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts[wrong_expected_event]"
+    ],
+    "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts": [
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[attempt]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[count]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[duplicate]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[head]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[job_head]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[job_run]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[missing_time]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[naive_time]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[run]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[running]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts[unknown_conclusion]"
+    ],
+    "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges": [
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[boolean_count]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[boolean_expected]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[job_attempt]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[malformed_snapshot]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[nonterminal_run]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[reversed_job]",
+      "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges[submillisecond]"
+    ],
+    "tests.test_operational_observations::test_provider_naive_clock_is_unknown": [
+      "tests.test_operational_observations::test_provider_naive_clock_is_unknown[completed_at-execution_ms]",
+      "tests.test_operational_observations::test_provider_naive_clock_is_unknown[created_at-provider_queue_ms]",
+      "tests.test_operational_observations::test_provider_naive_clock_is_unknown[started_at-execution_ms]"
+    ],
+    "tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function": [
+      "tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-001]",
+      "tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-002]",
+      "tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-004]",
+      "tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function[AC-005]"
+    ],
+    "tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority": [
+      "tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority[False]",
+      "tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority[True]"
+    ],
+    "tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references": [
+      "tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references[adopter_compatibility_observation]",
+      "tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references[bounded_workitem_frontier_contract]"
+    ],
+    "tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths": [
+      "tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[extra_recovery]",
+      "tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[no_recovery]",
+      "tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[preserved]",
+      "tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths[reordered]"
+    ],
+    "tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants": [
+      "tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants[False]",
+      "tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants[True]"
+    ],
+    "tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant": [
+      "tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant[paths]",
+      "tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant[references]"
+    ],
+    "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end": [
+      "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[None]",
+      "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[invented_crosswalk]",
+      "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[omitted_compiled_effect]",
+      "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end[omitted_crosswalk]"
+    ],
+    "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner": [
+      "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[None]",
+      "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[extra]",
+      "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[missing]",
+      "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[second_entrypoint]",
+      "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner[wrong_effect]"
+    ],
+    "tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects": [
+      "tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects[1.0]",
+      "tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects[1.1]"
+    ],
+    "tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery": [
+      "tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[changed_symbol]",
+      "tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[invented_binding]",
+      "tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[missing_binding]",
+      "tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery[missing_compiled]"
+    ],
+    "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery": [
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[empty_context]",
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[malformed_port]",
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[mutable_context]",
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_context]",
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_kind]",
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_operation]",
+      "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery[unknown_role]"
+    ],
+    "tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse": [
+      "tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse[ambiguous]",
+      "tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse[empty]"
+    ],
+    "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources": [
+      "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots0]",
+      "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots1]",
+      "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots2]",
+      "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots3]",
+      "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots4]",
+      "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources[roots5]"
+    ],
+    "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery": [
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[empty]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[missing_mapping]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[missing_policy]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[omission]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[unknown_pair]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_entrypoint]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_operation]",
+      "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery[wrong_subject]"
+    ],
+    "tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy": [
+      "tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy[None]",
+      "tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy[false]",
+      "tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy[{malformed]"
+    ],
+    "tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout": [
+      "tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout[malformed]",
+      "tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout[missing]",
+      "tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout[valid]"
+    ],
+    "tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob": [
+      "tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob[gitlink]",
+      "tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob[missing]",
+      "tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob[symlink]"
+    ],
+    "tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population": [
+      "tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population[malformed]",
+      "tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population[unavailable]",
+      "tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population[wrong_tree]"
+    ],
+    "tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks": [
+      "tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks[substituted]",
+      "tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks[unavailable]"
+    ],
+    "tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery": [
+      "tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery[False]",
+      "tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery[True]",
+      "tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery[failure_report]"
+    ],
+    "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths": [
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[direct]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[duplicate_pair]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[effect]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[failure]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[false_exclusion]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[indirect]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[missing_exclusion]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[producer]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[recovery]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths[unknown_exclusion]"
+    ],
+    "tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels": [
+      "tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels[authority_marker]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels[indirect_marker]",
+      "tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels[unknown_effect]"
+    ],
+    "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls": [
+      "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[cancelled]",
+      "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[consumer]",
+      "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[cycle]",
+      "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[deep_failure]",
+      "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[missing_custody]",
+      "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls[unavailable]"
+    ],
+    "tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source": [
+      "tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source[missing_edge]",
+      "tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source[stale_graph]"
+    ],
+    "tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate": [
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate[edge_and_tests]",
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate[second_edge]"
+    ],
+    "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity": [
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity[graph]",
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity[integrity]",
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity[source]"
+    ],
+    "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion": [
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion[False]",
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion[None]",
+      "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion[]"
+    ],
+    "tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations": [
+      "tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations[declaration0]",
+      "tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations[declaration1]",
+      "tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations[declaration2]"
+    ],
+    "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps": [
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[dangling_symlink---apply]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[dangling_symlink---check]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[dangling_symlink-factory]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_policy---apply]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_policy---check]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_policy-factory]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_timeout---apply]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_timeout---check]",
+      "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps[null_timeout-factory]"
+    ],
+    "tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile": [
+      "tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile[dangling_symlink]",
+      "tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile[null_policy]",
+      "tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile[null_timeout]"
+    ],
+    "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations": [
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration0-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration0-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration1-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration1-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration2-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration2-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration3-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration3-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration4-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration4-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration5-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration5-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration6-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration6-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration7-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations[declaration7-policy]"
+    ],
+    "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource": [
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[dangling_symlink-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[dangling_symlink-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[directory-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[directory-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[fifo-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[fifo-policy]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[symlink-graph]",
+      "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource[symlink-policy]"
+    ],
+    "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary": [
+      "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_phase-computed]",
+      "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_phase-projection]",
+      "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_phase-readiness]",
+      "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_status-computed]",
+      "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_status-projection]",
+      "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary[duplicate_status-readiness]"
+    ],
+    "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources": [
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[dangling_symlink-computed]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[dangling_symlink-projection]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[dangling_symlink-readiness]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[directory-computed]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[directory-projection]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[directory-readiness]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[symlink-computed]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[symlink-projection]",
+      "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources[symlink-readiness]"
+    ],
+    "tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed": [
+      "tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed[computed]",
+      "tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed[projection]",
+      "tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed[readiness]"
+    ],
+    "tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys": [
+      "tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys[? [unsupported, key]\\n: value\\n]",
+      "tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys[? {unsupported: key}\\n: value\\n]"
+    ],
+    "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts": [
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[absolute_path]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[authority]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[closed]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[empty_build]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_build]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_hotfixes]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_paths]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[missing_phase]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[reordered_paths]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[short_paths]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[traversal_path]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[verified]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[wrong_hotfix_type]",
+      "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts[wrong_phase_type]"
+    ],
+    "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources": [
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[anchor]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[catalog_relative]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[dynamic]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[internal]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[nested_id]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[recursive]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources[ref_shaped_data]"
+    ],
+    "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast": [
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[ambiguous_id]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[bad_json]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[bad_meta]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[duplicate_json]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[missing_catalog]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[missing_file]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[missing_relationship]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[shadow_catalog_uri]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[swapped]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[symlink]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[unknown_anchor]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[unknown_ref]",
+      "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast[wrong_digest]"
+    ]
+  },
+  "whole_requirements_changed": false,
+  "limits": [
+    "Exact collected cases are local source observations; governed manifests still require canonical owner normalization.",
+    "Migration retains original causes with exact case suffixes; it is not independent behavioral qualification."
+  ],
+  "bindings_before": {
+    "dormant-composition-and-static-bindings": {
+      "positive_tests": [
+        "tests.test_ci_state_matrix::test_actual_machine_adoption_inventory_references_existing_owners_without_qualification",
+        "tests.test_ci_graph_composition::test_valid_composition_has_no_authority_and_is_byte_stable",
+        "tests.test_semantic_python_inventory_characterization::test_python_inventory_matches_pre_deconstruction_characterization",
+        "tests.test_ci_graph_composition::test_binding_conformance_uses_existing_source_and_pytest_collection_owners",
+        "tests.test_ci_graph_composition::test_binding_conformance_traces_actual_compiler_and_projection_calls",
+        "tests.test_ci_graph_composition::test_contract_view_is_stable_across_bound_subjects",
+        "tests.test_ci_graph_composition::test_machine_contract_round_trip_preserves_every_relationship",
+        "tests.test_ci_graph_composition::test_machine_contract_bytes_are_stable_across_subjects_and_order",
+        "tests.test_semantic_operation_inventory::test_validated_inventory_preserves_port_classes_and_legacy_counts",
+        "tests.test_ci_graph_composition::test_discovered_source_authority_port_survives_candidate_effect_omission"
+      ],
+      "negative_controls": [
+        {
+          "cause": "invalid-or-moving-native-model-before-adoption-inventory",
+          "test": "tests.test_ci_state_matrix::test_machine_adoption_inventory_rejects_invalid_or_moving_native_inputs"
+        },
+        {
+          "cause": "source-call-mutation-hidden-by-inventory",
+          "test": "tests.test_semantic_python_inventory_characterization::test_python_inventory_characterization_observes_source_call_mutation"
+        },
+        {
+          "cause": "deleted-edge-and-test",
+          "test": "tests.test_ci_graph_composition::test_removed_relationship_and_its_tests_cannot_hide_population"
+        },
+        {
+          "cause": "false-exclusion",
+          "test": "tests.test_ci_graph_composition::test_false_exclusion_cannot_erase_reachable_guard_failure"
+        },
+        {
+          "cause": "omitted-effect",
+          "test": "tests.test_ci_graph_composition::test_omitted_runtime_effect_rejects_independently"
+        },
+        {
+          "cause": "authentication-boolean",
+          "test": "tests.test_ci_graph_composition::test_candidate_cannot_supply_authentication_boolean"
+        },
+        {
+          "cause": "missing-causal-control",
+          "test": "tests.test_ci_graph_composition::test_binding_conformance_rejects_missing_cause_even_with_existing_negative"
+        },
+        {
+          "cause": "deleted-terminal-function",
+          "test": "tests.test_ci_graph_composition::test_binding_conformance_rejects_deleted_function[terminal_consumers]"
+        },
+        {
+          "cause": "removed-source-call",
+          "test": "tests.test_ci_graph_composition::test_binding_conformance_rejects_removed_call_with_both_functions_present"
+        },
+        {
+          "cause": "unresolved-source-call",
+          "test": "tests.test_ci_graph_composition::test_binding_conformance_rejects_unresolved_required_call"
+        },
+        {
+          "cause": "authored-runtime-source-injection",
+          "test": "tests.test_ci_graph_composition::test_authored_machine_contract_cannot_inject_runtime_source"
+        },
+        {
+          "cause": "legacy-runtime-source-missing",
+          "test": "tests.test_ci_graph_composition::test_legacy_machine_contract_still_requires_source"
+        },
+        {
+          "cause": "missing-protected-source",
+          "test": "tests.test_ci_graph_composition::test_authored_machine_contract_requires_complete_protected_source[source1]"
+        },
+        {
+          "cause": "current-graph-mismatch",
+          "test": "tests.test_ci_graph_composition::test_authored_machine_contract_rejects_wrong_current_graph[graph_sha256]"
+        },
+        {
+          "cause": "authored-relationship-omission",
+          "test": "tests.test_ci_graph_composition::test_authored_machine_contract_cannot_omit_protected_population[relationship]"
+        },
+        {
+          "cause": "authored-effect-omission",
+          "test": "tests.test_ci_graph_composition::test_authored_machine_contract_cannot_omit_protected_population[effect]"
+        },
+        {
+          "cause": "machine-view-bound-snapshot-tamper",
+          "test": "tests.test_ci_graph_composition::test_machine_view_rejects_tampered_bound_envelope"
+        },
+        {
+          "cause": "unsupported-machine-schema",
+          "test": "tests.test_ci_graph_composition::test_authored_machine_contract_rejects_unknown_schema_version"
+        },
+        {
+          "cause": "tracked-view-bound-snapshot-tamper",
+          "test": "tests.test_ci_graph_composition::test_contract_view_still_rejects_tampered_bound_identity"
+        },
+        {
+          "cause": "undeclared-source-authority",
+          "test": "tests.test_semantic_operation_inventory::test_deleted_port_cannot_hide_source_effect[allowed_authority_ports-undeclared authority]"
+        },
+        {
+          "cause": "unresolved-source-effect-path",
+          "test": "tests.test_semantic_operation_inventory::test_effect_inventory_rejects_unresolved_path_before_projection"
+        },
+        {
+          "cause": "substituted-fact-id",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[id]"
+        },
+        {
+          "cause": "substituted-fact-producer",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[producer]"
+        },
+        {
+          "cause": "substituted-fact-verifier",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[verifier]"
+        },
+        {
+          "cause": "substituted-fact-subject_binding",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[subject_binding]"
+        },
+        {
+          "cause": "substituted-fact-proposition",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[proposition]"
+        },
+        {
+          "cause": "substituted-fact-authority",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[authority]"
+        },
+        {
+          "cause": "substituted-fact-freshness",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_substitution_from_independent_owner[freshness]"
+        },
+        {
+          "cause": "incomplete-fact-relationship-population",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_requires_complete_independent_relationship_population"
+        },
+        {
+          "cause": "missing-protected-fact-population",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_invalid_protected_fact_population[missing]"
+        },
+        {
+          "cause": "duplicate-protected-fact-population",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_invalid_protected_fact_population[duplicate]"
+        },
+        {
+          "cause": "changed-protected-fact-population",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_invalid_protected_fact_population[changed]"
+        },
+        {
+          "cause": "orphan-fact-producer",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[producer]"
+        },
+        {
+          "cause": "orphan-fact-verifier",
+          "test": "tests.test_ci_graph_composition::test_fact_binding_rejects_orphan_source_owner[verifier]"
+        }
+      ]
+    },
+    "canonical-submit-normalization": {
+      "positive_tests": [
+        "tests.test_candidate_submit::test_submit_normalizes_before_capturing_the_proved_subject",
+        "tests.test_candidate_submit::test_fixed_point_submit_normalization_does_not_generate",
+        "tests.test_candidate_submit::test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout",
+        "tests.test_candidate_submit::test_submit_valid_release_target_uses_the_existing_fixed_point_check",
+        "tests.test_reconcile_governance::test_candidate_file_projection_commits_exact_derived_bytes_and_is_idempotent",
+        "tests.test_reconcile_governance::test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry",
+        "tests.test_reconcile_governance::test_commit_derived_preserves_trusted_workflow_definition_authority_pair",
+        "tests.test_reconcile_governance::test_commit_derived_cli_preserves_existing_projection_owner_result"
+      ],
+      "negative_controls": [
+        {
+          "cause": "dirty-projection-source",
+          "test": "tests.test_reconcile_governance::test_candidate_file_projection_rejects_dirty_source_before_shadow"
+        },
+        {
+          "cause": "source-movement-during-projection",
+          "test": "tests.test_reconcile_governance::test_candidate_file_projection_preserves_concurrent_source_movement"
+        },
+        {
+          "cause": "projection-owner-failure",
+          "test": "tests.test_reconcile_governance::test_candidate_file_projection_failure_preserves_original_tree"
+        },
+        {
+          "cause": "late-trusted-workflow-mutation",
+          "test": "tests.test_reconcile_governance::test_candidate_file_projection_rejects_late_trusted_workflow_change"
+        },
+        {
+          "cause": "projection-promotion-failure",
+          "test": "tests.test_reconcile_governance::test_candidate_file_projection_promotion_failure_restores_exact_source"
+        },
+        {
+          "cause": "contradictory-force-apply-before-runtime",
+          "test": "tests.test_reconcile_governance::test_reconcile_force_apply_rejects_before_runtime_allocation"
+        },
+        {
+          "cause": "commit-derived-check-mode",
+          "test": "tests.test_reconcile_governance::test_commit_derived_rejects_check_before_runtime_allocation"
+        },
+        {
+          "cause": "dirty-source-before-runtime",
+          "test": "tests.test_reconcile_governance::test_commit_derived_rejects_dirty_before_runtime_allocation"
+        },
+        {
+          "cause": "standalone-authored-phase-before-allocation",
+          "test": "tests.test_reconcile_governance::test_reconcile_authored_phase_rejects_before_runtime_or_shadow"
+        },
+        {
+          "cause": "standalone-authored-release-before-allocation",
+          "test": "tests.test_reconcile_governance::test_reconcile_authored_release_rejects_before_runtime_or_shadow"
+        },
+        {
+          "cause": "authored-phase-contradiction",
+          "test": "tests.test_candidate_submit::test_authored_contradiction_rejects_before_any_normalization"
+        },
+        {
+          "cause": "wrong-intent-assertion",
+          "test": "tests.test_candidate_submit::test_wrong_intent_assertion_cannot_generate"
+        },
+        {
+          "cause": "busy-execution-lease",
+          "test": "tests.test_candidate_submit::test_busy_submit_cannot_normalize_another_active_train"
+        },
+        {
+          "cause": "partial-normalization",
+          "test": "tests.test_candidate_submit::test_partial_canonical_apply_requires_a_verified_fixed_point"
+        },
+        {
+          "cause": "authored-release-target",
+          "test": "tests.test_reconcile_governance::test_authored_release_target_precedes_every_projection_mutation"
+        },
+        {
+          "cause": "progress-is-not-proof",
+          "test": "tests.test_candidate_submit::test_submit_forwards_existing_progress_without_conferring_authority"
+        },
+        {
+          "cause": "release-contradiction-before-lease",
+          "test": "tests.test_candidate_submit::test_submit_release_contradiction_rejects_before_lease_or_reconcile[missing_target]"
+        },
+        {
+          "cause": "partial-release-owner-before-lease",
+          "test": "tests.test_candidate_submit::test_submit_release_contradiction_rejects_before_lease_or_reconcile[partial_owner]"
+        },
+        {
+          "cause": "malformed-runtime-version",
+          "test": "tests.test_candidate_submit::test_submit_invalid_runtime_version_rejects_before_admission"
+        }
+      ]
+    },
+    "separate-pipeline-clock-observation": {
+      "positive_tests": [
+        "tests.test_operational_observations::test_provider_attempt_retains_protected_non_pr_context_intent",
+        "tests.test_operational_observations::test_provider_event_does_not_invent_workflow_context_policy",
+        "tests.test_operational_observations::test_retained_provider_capture_has_exact_snapshot_binding_and_honest_clocks",
+        "tests.test_operational_observations::test_provider_snapshot_projection_matches_retained_intervals",
+        "tests.test_operational_observations::test_provider_snapshot_projection_retains_non_success",
+        "tests.test_operational_observations::test_provider_snapshot_zero_jobs_and_explicit_offsets_remain_honest",
+        "tests.test_operational_observations::test_pipeline_timing_keeps_parallel_elapsed_separate_from_sum_and_cpu",
+        "tests.test_operational_observations::test_pipeline_timing_retains_waits_gaps_cancellation_and_supersession",
+        "tests.test_operational_observations::test_pipeline_timing_is_deterministic_detached_and_schema_valid"
+      ],
+      "negative_controls": [
+        {
+          "cause": "workflow-window-cannot-claim-unobserved-custody-or-interruption-endpoints",
+          "test": "tests.test_operational_observations::test_provider_attempt_cannot_claim_unobserved_clock_endpoints"
+        },
+        {
+          "cause": "absent-or-independent-policy-mismatched-event-before-clock-reconstruction",
+          "test": "tests.test_operational_observations::test_provider_attempt_context_must_match_explicit_event_facts"
+        },
+        {
+          "cause": "raw-provider-snapshot-identity-population-or-clock-contradiction",
+          "test": "tests.test_operational_observations::test_provider_snapshot_projection_rejects_unbound_or_incomplete_facts"
+        },
+        {
+          "cause": "provider-clock-or-identity-type-ambiguity",
+          "test": "tests.test_operational_observations::test_provider_snapshot_projection_rejects_other_clock_and_identity_edges"
+        },
+        {
+          "cause": "naive-provider-time-cannot-acquire-ambient-authority",
+          "test": "tests.test_operational_observations::test_provider_naive_clock_is_unknown"
+        },
+        {
+          "cause": "mixed-clock",
+          "test": "tests.test_operational_observations::test_pipeline_timing_rejects_ambiguous_or_invalid_intervals[mixed_clock]"
+        },
+        {
+          "cause": "wrong-subject-or-window",
+          "test": "tests.test_operational_observations::test_pipeline_timing_rejects_wrong_subject_and_reversed_window"
+        },
+        {
+          "cause": "missing-snapshot",
+          "test": "tests.test_operational_observations::test_pipeline_timing_rejects_unbound_repository_or_snapshot[source_snapshot_sha256-missing]"
+        }
+      ]
+    },
+    "finite-provider-retry-bound": {
+      "positive_tests": [
+        "tests.test_provider_read::test_provider_retry_preserves_finite_inclusive_delay_bounds[0]",
+        "tests.test_provider_read::test_provider_retry_preserves_finite_inclusive_delay_bounds[0.5]",
+        "tests.test_provider_read::test_provider_retry_preserves_finite_inclusive_delay_bounds[30]"
+      ],
+      "negative_controls": [
+        {
+          "cause": "invalid-retry-delay-NaN",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[NaN]"
+        },
+        {
+          "cause": "invalid-retry-delay-nan",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[nan]"
+        },
+        {
+          "cause": "invalid-retry-delay-+nan",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[+nan]"
+        },
+        {
+          "cause": "invalid-retry-delay--nan",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[-nan]"
+        },
+        {
+          "cause": "invalid-retry-delay-inf",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[inf]"
+        },
+        {
+          "cause": "invalid-retry-delay--inf",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[-inf]"
+        },
+        {
+          "cause": "invalid-retry-delay-Infinity",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[Infinity]"
+        },
+        {
+          "cause": "invalid-retry-delay-31",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[31]"
+        },
+        {
+          "cause": "invalid-retry-delay--1",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[-1]"
+        },
+        {
+          "cause": "invalid-retry-delay-invalid",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_invalid_delay_before_sleep_or_repeat[invalid]"
+        },
+        {
+          "cause": "mutation-retry-forbidden",
+          "test": "tests.test_provider_read::test_provider_retry_rejects_mutation_method"
+        }
+      ]
+    },
+    "opt-in-python-call-facts": {
+      "positive_tests": [
+        "tests.test_semantic_python_call_contracts::test_call_contracts_cover_all_calls_and_retain_unknowns",
+        "tests.test_semantic_python_call_contracts::test_call_contracts_retain_slots_without_plaintext_literals",
+        "tests.test_semantic_python_call_contracts::test_identical_call_occurrences_are_distinct_per_function",
+        "tests.test_semantic_python_call_contracts::test_explicit_none_preserves_default_inventory",
+        "tests.test_semantic_python_call_contracts::test_nested_calls_each_receive_facts_without_source_mutation",
+        "tests.test_semantic_python_call_contracts::test_import_resolution_preserves_lexical_call_contracts"
+      ],
+      "negative_controls": [
+        {
+          "cause": "argument-source-mutation",
+          "test": "tests.test_semantic_python_call_contracts::test_call_contracts_are_stable_under_line_movement_and_observe_mutation"
+        },
+        {
+          "cause": "unsupported-version-before-source-read",
+          "test": "tests.test_semantic_python_call_contracts::test_unknown_call_contract_version_rejects_before_source_reads[2.0]"
+        },
+        {
+          "cause": "authority-claim-or-missing-call-facts",
+          "test": "tests.test_semantic_python_call_contracts::test_call_contracts_validate_and_reject_authority_and_missing_calls"
+        }
+      ]
+    },
+    "source-operation-call-population": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_binding_checks_protected_operation_call_populations",
+        "tests.test_ci_graph_composition::test_legacy_binding_result_does_not_claim_operation_population_checks",
+        "tests.test_semantic_operation_call_population::test_operation_call_population_crosses_ports_and_terminates_cycles",
+        "tests.test_semantic_operation_call_population::test_ambiguous_dispatch_stays_unresolved_and_is_not_followed"
+      ],
+      "negative_controls": [
+        {
+          "cause": "hidden-call-behind-retained-endpoint",
+          "test": "tests.test_ci_graph_composition::test_binding_rejects_added_call_beyond_retained_declared_endpoint"
+        },
+        {
+          "cause": "missing-protected-operation-root",
+          "test": "tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[root]"
+        },
+        {
+          "cause": "incompatible-protected-operation-version",
+          "test": "tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[version]"
+        },
+        {
+          "cause": "protected-operation-authority-claim",
+          "test": "tests.test_ci_graph_composition::test_binding_rejects_incomplete_or_incompatible_operation_population[authority_claim]"
+        },
+        {
+          "cause": "added-call-beyond-port",
+          "test": "tests.test_semantic_operation_call_population::test_added_call_changes_population_without_removing_functions"
+        },
+        {
+          "cause": "duplicate-call-identity",
+          "test": "tests.test_semantic_operation_call_population::test_operation_call_population_rejects_incompatible_or_ambiguous_input[duplicate_call]"
+        },
+        {
+          "cause": "unbound-source-file",
+          "test": "tests.test_semantic_operation_call_population::test_operation_call_population_requires_bound_source_files[unbound_source_file]"
+        }
+      ]
+    },
+    "authored-machine-backtrace-validation": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_lifecycle_views_match_retained_characterization",
+        "tests.test_ci_graph_composition::test_lifecycle_renderer_keeps_public_identity_guard_before_formatting",
+        "tests.test_ci_graph_composition::test_lifecycle_view_bytes_keep_existing_source_owner",
+        "tests.test_ci_state_matrix::test_active_executable_edge_owner_resolves_exact_source_function",
+        "tests.test_ci_state_matrix::test_active_receipt_owner_is_registered_factory_called_by_real_collector",
+        "tests.test_ci_state_matrix::test_active_qualification_owners_follow_existing_command_and_loader_calls",
+        "tests.test_ci_state_matrix::test_actual_backtrace_declares_every_active_primitive",
+        "tests.test_ci_state_matrix::test_actual_backtrace_binds_all_retained_p26_primitive_owners",
+        "tests.test_ci_state_matrix::test_retained_primitive_references_resolve_current_schema_and_source",
+        "tests.test_ci_state_matrix::test_changed_ci_contract_requires_same_candidate_matrix_update",
+        "tests.test_ci_state_matrix::test_matrix_guard_is_self_required_and_adopter_inapplicable"
+      ],
+      "negative_controls": [
+        {
+          "cause": "rejected-historical-provider-design-reactivated-as-authority",
+          "test": "tests.test_ci_state_matrix::test_rejected_provider_design_cannot_become_active_primitive_authority"
+        },
+        {
+          "cause": "undeclared-active-primitive-reference",
+          "test": "tests.test_ci_state_matrix::test_all_primitive_consumers_reject_undeclared_references"
+        },
+        {
+          "cause": "duplicated-typed-state-id",
+          "test": "tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[duplicate_state]"
+        },
+        {
+          "cause": "undeclared-state-reference",
+          "test": "tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[state_reference]"
+        },
+        {
+          "cause": "candidate-field-list-bypass",
+          "test": "tests.test_ci_state_matrix::test_machine_backtrace_rejects_typed_identity_and_shape_defects[declared_field_bypass]"
+        },
+        {
+          "cause": "duplicate-yaml-key",
+          "test": "tests.test_ci_state_matrix::test_machine_backtrace_rejects_duplicate_yaml_keys"
+        },
+        {
+          "cause": "symlinked-authored-model",
+          "test": "tests.test_ci_state_matrix::test_machine_backtrace_rejects_symlinked_input"
+        },
+        {
+          "cause": "machine-contradiction-before-runtime",
+          "test": "tests.test_reconcile_governance::test_reconcile_authored_machine_rejects_before_runtime_or_shadow"
+        },
+        {
+          "cause": "machine-contradiction-before-lease",
+          "test": "tests.test_candidate_submit::test_submit_authored_machine_rejects_before_lease_or_reconcile"
+        }
+      ]
+    },
+    "early-active-phase-schema": {
+      "positive_tests": [
+        "tests.test_preflight::test_authored_phase_state_accepts_current_complete_triplet"
+      ],
+      "negative_controls": [
+        {
+          "cause": "mapping-valued-note-before-allocation",
+          "test": "tests.test_preflight::test_mapping_phase_note_rejects_before_reconcile_allocation"
+        },
+        {
+          "cause": "missing-active-phase-schema",
+          "test": "tests.test_preflight::test_authored_phase_state_requires_active_triplet_schema"
+        },
+        {
+          "cause": "duplicate-authored-phase-key",
+          "test": "tests.test_preflight::test_authored_phase_state_rejects_duplicate_yaml_keys"
+        },
+        {
+          "cause": "malformed-referenced-hotfix",
+          "test": "tests.test_preflight::test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work"
+        }
+      ]
+    },
+    "typed-lifecycle-path-binding": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_rejection_invariants_preserve_valid_bounded_paths",
+        "tests.test_ci_state_matrix::test_authored_recovery_preserves_rejection_invariants",
+        "tests.test_ci_graph_composition::test_typed_paths_allow_only_bounded_recovery_outside_attempt_graph",
+        "tests.test_ci_graph_composition::test_typed_paths_allow_explicit_terminal_rejection_without_retry"
+      ],
+      "negative_controls": [
+        {
+          "cause": "recovery-drops-invariant-added-on-rejection-path",
+          "test": "tests.test_ci_graph_composition::test_recovery_cannot_drop_rejection_path_invariant"
+        },
+        {
+          "cause": "same-attempt-cycle",
+          "test": "tests.test_ci_graph_composition::test_typed_paths_reject_incomplete_or_unbound_attempts[same-attempt-cycle]"
+        },
+        {
+          "cause": "wrong-terminal-class",
+          "test": "tests.test_ci_graph_composition::test_typed_paths_reject_incomplete_or_unbound_attempts[wrong-terminal-class]"
+        },
+        {
+          "cause": "unbound-recovery",
+          "test": "tests.test_ci_graph_composition::test_typed_paths_bind_every_composition_outcome[recovery-UNDECLARED]"
+        },
+        {
+          "cause": "boolean-retry-limit",
+          "test": "tests.test_ci_graph_composition::test_backtrace_schema_checks_opt_in_typed_paths[boolean-limit]"
+        }
+      ]
+    },
+    "publication-metadata-revalidation": {
+      "positive_tests": [
+        "tests.test_ci_github_release::test_publication_continues_after_lost_mutation_response[publish]",
+        "tests.test_ci_github_release::test_release_publication_is_read_only_when_exact_release_already_exists"
+      ],
+      "negative_controls": [
+        {
+          "cause": "metadata-before-mutation",
+          "test": "tests.test_ci_github_release::test_publication_rejects_metadata_movement_before_publish[body-foreign notes]"
+        },
+        {
+          "cause": "metadata-at-publication",
+          "test": "tests.test_ci_github_release::test_publication_rejects_metadata_movement_at_publish[body-foreign notes]"
+        },
+        {
+          "cause": "integer-draft-before-tag",
+          "test": "tests.test_ci_github_release::test_publication_rejects_untyped_draft_before_tag_mutation[1]"
+        }
+      ]
+    },
+    "typed-reference-before-allocation": {
+      "positive_tests": [
+        "tests.test_ci_state_matrix::test_authored_backtrace_accepts_declared_typed_transition_references[True]"
+      ],
+      "negative_controls": [
+        {
+          "cause": "missing-typed-retry",
+          "test": "tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[missing-retry_of]"
+        },
+        {
+          "cause": "self-typed-rejection",
+          "test": "tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[self-rejection_transition]"
+        },
+        {
+          "cause": "recovery-source-bypass",
+          "test": "tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[wrong-source-retry_of]"
+        },
+        {
+          "cause": "recovery-invariant-loss",
+          "test": "tests.test_ci_state_matrix::test_authored_backtrace_rejects_unbound_typed_transition_reference[lost-invariant-retry_of]"
+        }
+      ]
+    },
+    "typed-guard-preservation": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_typed_paths_cannot_omit_a_compiled_guard_obligation"
+      ],
+      "negative_controls": [
+        {
+          "cause": "compiled-guard-population-omitted",
+          "test": "tests.test_ci_graph_composition::test_typed_paths_reject_dropped_or_poisoned_guard_references[missing-all]"
+        },
+        {
+          "cause": "recovery-guard-changed-before-allocation",
+          "test": "tests.test_ci_state_matrix::test_authored_only_recovery_preserves_declared_guard_before_allocation[True]"
+        },
+        {
+          "cause": "recovery-guard-dropped-before-allocation",
+          "test": "tests.test_ci_state_matrix::test_authored_only_recovery_preserves_declared_guard_before_allocation[False]"
+        },
+        {
+          "cause": "duplicate-guard-reference",
+          "test": "tests.test_ci_graph_composition::test_typed_paths_reject_dropped_or_poisoned_guard_references[duplicate]"
+        }
+      ]
+    },
+    "terminal-proposition-binding": {
+      "positive_tests": [
+        "tests.test_evaluation_scope::test_bounded_proposition_never_authorizes_failed_evaluation[True-pass]",
+        "tests.test_evaluation_scope::test_terminal_predicate_preserves_valid_certification_without_truth_status"
+      ],
+      "negative_controls": [
+        {
+          "cause": "failed-evaluation-with-closed-target",
+          "test": "tests.test_evaluation_scope::test_bounded_proposition_never_authorizes_failed_evaluation[True-fail]"
+        },
+        {
+          "cause": "workitem-intent-with-phase-kind",
+          "test": "tests.test_evaluation_scope::test_proposition_decoder_binds_intent_to_canonical_target_kind[phase-workitem]"
+        },
+        {
+          "cause": "bounded-authority-on-phase-terminal",
+          "test": "tests.test_evaluation_scope::test_terminal_predicate_rejects_scope_or_authority_confusion[bounded-authority]"
+        },
+        {
+          "cause": "scope-target-before-authenticated-snapshots",
+          "test": "tests.test_ci_certification::test_invalid_scope_identity_rejects_before_authenticated_snapshot_loading[workitem-workitem-P01]"
+        }
+      ]
+    },
+    "authenticated-provider-retry-consumption": {
+      "positive_tests": [
+        "tests.test_candidate_provider_recovery::test_transient_terminal_upload_selects_one_exact_provider_rerun",
+        "tests.test_candidate_provider_recovery::test_exact_retry_is_not_repeated_after_provider_attempt_advances",
+        "tests.test_candidate_submit::test_submit_executes_only_the_recovery_frontier_selected_provider_retry"
+      ],
+      "negative_controls": [
+        {
+          "cause": "caller-plan-mutation-at-final-read",
+          "test": "tests.test_candidate_provider_recovery::test_retry_plan_cannot_change_during_final_provider_observation"
+        },
+        {
+          "cause": "self-consistent-forged-run",
+          "test": "tests.test_candidate_provider_recovery::test_retry_executor_rejects_unbound_frontier_before_mutation[run]"
+        },
+        {
+          "cause": "context-before-provider-reads",
+          "test": "tests.test_candidate_provider_recovery::test_invalid_retry_context_rejects_before_provider_reads[candidate]"
+        },
+        {
+          "cause": "late-attempt-movement",
+          "test": "tests.test_candidate_provider_recovery::test_retry_executor_reauthenticates_exact_attempt_at_consumption[last-attempt]"
+        },
+        {
+          "cause": "cancelled-run-not-reanimated",
+          "test": "tests.test_candidate_provider_recovery::test_nonfailure_terminal_state_never_selects_transport_retry[cancelled]"
+        },
+        {
+          "cause": "lost-post-response",
+          "test": "tests.test_candidate_provider_recovery::test_response_loss_never_blindly_repeats_rerun_mutation"
+        }
+      ]
+    },
+    "opt-in-python-initialization-facts": {
+      "positive_tests": [
+        "tests.test_semantic_python_initialization::test_initialization_excludes_deferred_bodies_and_retains_definition_effects",
+        "tests.test_semantic_python_initialization::test_default_inventory_and_existing_function_facts_are_unchanged"
+      ],
+      "negative_controls": [
+        {
+          "cause": "unsupported-initialization-version-before-source-read",
+          "test": "tests.test_semantic_python_initialization::test_unknown_initialization_version_rejects_before_reads[2.0]"
+        },
+        {
+          "cause": "authority-elevation-and-malformed-source-identities",
+          "test": "tests.test_semantic_python_initialization::test_initialization_schema_rejects_authority_and_malformed_sites"
+        },
+        {
+          "cause": "deferred-body-misclassification-and-hidden-import-uncertainty",
+          "test": "tests.test_semantic_python_initialization::test_imports_annotations_and_deferred_expressions_remain_conservative"
+        },
+        {
+          "cause": "changed-call-expression",
+          "test": "tests.test_semantic_python_initialization::test_initialization_identity_is_stable_and_literal_values_are_not_emitted"
+        }
+      ]
+    },
+    "initialization-operation-consumer-binding": {
+      "positive_tests": [
+        "tests.test_semantic_operation_call_population::test_opted_initialization_population_covers_every_discovered_module",
+        "tests.test_ci_graph_composition::test_lifecycle_binding_checks_source_initialization_population"
+      ],
+      "negative_controls": [
+        {
+          "cause": "missing-module-before-function-traversal",
+          "test": "tests.test_semantic_operation_call_population::test_invalid_initialization_rejects_before_function_closure_traversal"
+        },
+        {
+          "cause": "removed-initialization-module",
+          "test": "tests.test_ci_graph_composition::test_lifecycle_binding_rejects_initialization_omission_or_substitution[removed_module]"
+        },
+        {
+          "cause": "substituted-initialization-site",
+          "test": "tests.test_ci_graph_composition::test_lifecycle_binding_rejects_initialization_omission_or_substitution[changed_site]"
+        },
+        {
+          "cause": "removed-initialization-uncertainty",
+          "test": "tests.test_ci_graph_composition::test_lifecycle_binding_rejects_initialization_omission_or_substitution[removed_unknown]"
+        },
+        {
+          "cause": "candidate-schema-self-exemption",
+          "test": "tests.test_semantic_operation_call_population::test_candidate_schema_cannot_weaken_initialization_contract"
+        }
+      ]
+    },
+    "exact-committed-source-population": {
+      "positive_tests": [
+        "tests.test_semantic_source_paths::test_exact_population_uses_committed_blobs_without_executing_source",
+        "tests.test_semantic_source_paths::test_discovery_binds_exact_tree_and_preserves_default_output",
+        "tests.test_semantic_source_paths::test_unusual_paths_and_executable_mode_are_preserved"
+      ],
+      "negative_controls": [
+        {
+          "cause": "symbolic-source-subject-before-git",
+          "test": "tests.test_semantic_source_paths::test_nonexact_subject_rejects_before_git[HEAD]"
+        },
+        {
+          "cause": "wrong-source-tree-before-enumeration",
+          "test": "tests.test_semantic_source_paths::test_wrong_tree_rejects_before_population_enumeration"
+        },
+        {
+          "cause": "replacement-source-object",
+          "test": "tests.test_semantic_source_paths::test_git_replacement_cannot_substitute_the_source_subject"
+        },
+        {
+          "cause": "removed-source-module",
+          "test": "tests.test_semantic_source_paths::test_source_delta_retains_removed_and_changed_python_population"
+        },
+        {
+          "cause": "unresolved-symlink-or-submodule",
+          "test": "tests.test_semantic_source_paths::test_symlinks_and_gitlinks_are_unresolved_even_without_python_suffix"
+        },
+        {
+          "cause": "dirty-source-before-parsing",
+          "test": "tests.test_semantic_source_paths::test_discovery_rejects_source_mismatch_before_parsing[dirty]"
+        },
+        {
+          "cause": "source-subset-before-parsing",
+          "test": "tests.test_semantic_source_paths::test_discovery_rejects_source_mismatch_before_parsing[subset]"
+        }
+      ]
+    },
+    "derived-comparison-context-before-preflight-work": {
+      "positive_tests": [
+        "tests.test_ci_state_matrix::test_valid_comparison_context_preserves_changed_contract_requirement[pull_request-direct_event]",
+        "tests.test_ci_state_matrix::test_noncomparison_context_does_not_invent_a_local_merge_base[schedule]",
+        "tests.test_ci_state_matrix::test_matching_bare_local_comparison_assertion_is_preserved"
+      ],
+      "negative_controls": [
+        {
+          "cause": "caller-head-substitution-hides-changed-contract",
+          "test": "tests.test_ci_state_matrix::test_substituted_comparison_head_cannot_hide_changed_contract"
+        },
+        {
+          "cause": "bare-local-base-override",
+          "test": "tests.test_ci_state_matrix::test_bare_local_comparison_assertion_cannot_choose_a_new_base"
+        },
+        {
+          "cause": "invalid-context-before-matrix-decoding",
+          "test": "tests.test_ci_state_matrix::test_invalid_comparison_rejects_before_matrix_decoding"
+        },
+        {
+          "cause": "invalid-context-before-preflight-session-allocation",
+          "test": "tests.test_ci_state_matrix::test_invalid_comparison_stops_real_preflight_before_session_allocation"
+        },
+        {
+          "cause": "invalid-context-before-authored-and-runtime-work",
+          "test": "tests.test_preflight::test_invalid_comparison_context_rejects_before_authored_or_runtime_work"
+        }
+      ]
+    },
+    "reconstructed-lifecycle-source-binding": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end",
+        "tests.test_ci_graph_composition::test_reconstructed_zero_effects_close_existing_schema",
+        "tests.test_ci_graph_composition::test_reconstructed_nonempty_effect_population_uses_existing_owner",
+        "tests.test_ci_graph_composition::test_zero_source_effects_compile_without_fabricated_effects",
+        "tests.test_ci_graph_composition::test_reconstructed_binding_passes_import_roots_to_exact_discovery",
+        "tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle",
+        "tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction",
+        "tests.test_ci_graph_composition::test_reconstructed_source_binding_uses_exact_protected_subject",
+        "tests.test_ci_graph_composition::test_reconstructed_binding_delegates_to_existing_conformance_owner"
+      ],
+      "negative_controls": [
+        {
+          "cause": "deterministic-effect-declaration-contradiction-before-source-discovery",
+          "test": "tests.test_ci_graph_composition::test_effect_declaration_contradictions_reject_before_discovery"
+        },
+        {
+          "cause": "matching-declaration-omissions-cannot-erase-actual-source-port",
+          "test": "tests.test_ci_graph_composition::test_matching_effect_omissions_cannot_erase_actual_source"
+        },
+        {
+          "cause": "fabricated-compiled-effect-absent-from-captured-source",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_effects_reject_fabricated_compiled_effect"
+        },
+        {
+          "cause": "strict-effects-without-protected-policy-before-discovery",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_effects_require_protected_policy_before_discovery"
+        },
+        {
+          "cause": "effect-context-outside-protected-operation-before-discovery",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_effect_contexts_reject_before_discovery"
+        },
+        {
+          "cause": "ambiguous-or-empty-import-path-population-before-ast",
+          "test": "tests.test_semantic_import_roots::test_import_path_population_rejects_before_ast_parse"
+        },
+        {
+          "cause": "invalid-declared-import-resource-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_import_resources"
+        },
+        {
+          "cause": "invalid-import-resource-before-protected-policy-capture",
+          "test": "tests.test_ci_graph_composition::test_import_resource_rejection_precedes_public_policy_capture"
+        },
+        {
+          "cause": "duplicate-protected-operation-identity-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery"
+        },
+        {
+          "cause": "missing-or-unbound-public-operation-relationship-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery"
+        },
+        {
+          "cause": "candidate-policy-substitution-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_dirty_public_policy_rejects_before_source_discovery"
+        },
+        {
+          "cause": "added-public-source-entry-with-retained-functions",
+          "test": "tests.test_ci_graph_composition::test_added_public_source_entry_cannot_escape_lifecycle_population"
+        },
+        {
+          "cause": "substituted-protected-source-subject-before-discovery",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[subject]"
+        },
+        {
+          "cause": "missing-protected-operation-root-before-discovery",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[root]"
+        },
+        {
+          "cause": "weakened-operation-observation-scope",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_invalid_inputs_before_discovery[scope]"
+        },
+        {
+          "cause": "malformed-protected-call-endpoint-before-io",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_malformed_declarations_before_io[call_endpoint]"
+        },
+        {
+          "cause": "authority-bearing-observation-catalogue",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_malformed_declarations_before_io[authority]"
+        },
+        {
+          "cause": "dirty-source-hidden-by-endpoint-inventory",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_rejects_source_movement[dirty]"
+        },
+        {
+          "cause": "caller-source-inventory-injection",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_binding_accepts_no_caller_inventory"
+        }
+      ]
+    },
+    "authenticated-base-registry-reads": {
+      "positive_tests": [
+        "tests.test_semantic_base_registry_reads::test_true_registry_absence_and_valid_mapping_remain_supported",
+        "tests.test_semantic_base_registry_reads::test_file_and_text_semantic_yaml_decoders_share_duplicate_rejection"
+      ],
+      "negative_controls": [
+        {
+          "cause": "unavailable-base-laundered-as-no-registry",
+          "test": "tests.test_semantic_base_registry_reads::test_unavailable_base_cannot_disable_full_migration_validation"
+        },
+        {
+          "cause": "unreadable-registry-hides-retired-operation",
+          "test": "tests.test_semantic_base_registry_reads::test_unreadable_base_cannot_hide_operation_retirement"
+        },
+        {
+          "cause": "replacement-object-erases-base-population",
+          "test": "tests.test_semantic_base_registry_reads::test_git_replacement_cannot_erase_base_operation_population"
+        },
+        {
+          "cause": "tree-object-before-registry-reads",
+          "test": "tests.test_semantic_base_registry_reads::test_full_migration_validation_requires_a_real_ancestor_commit_before_reads[tree]"
+        },
+        {
+          "cause": "unrelated-base-before-registry-reads",
+          "test": "tests.test_semantic_base_registry_reads::test_full_migration_validation_requires_a_real_ancestor_commit_before_reads[unrelated_commit]"
+        },
+        {
+          "cause": "malformed-present-registry-not-absence",
+          "test": "tests.test_semantic_base_registry_reads::test_malformed_present_registry_is_a_typed_base_failure"
+        }
+      ]
+    },
+    "protected-public-operation-population": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_public_operations_bind_to_reconstructed_lifecycle",
+        "tests.test_ci_graph_composition::test_public_policy_capture_is_not_reread_after_source_reconstruction",
+        "tests.test_semantic_protected_operations::test_candidate_schema_cannot_reject_valid_protected_policy",
+        "tests.test_semantic_protected_operations::test_ordinary_authored_factory_keeps_authored_schema",
+        "tests.test_semantic_protected_operations::test_protected_operations_are_source_derived_and_deterministic",
+        "tests.test_semantic_operation_deconstruction::test_actual_public_operation_observations_match_pre_deconstruction_bytes",
+        "tests.test_semantic_operation_deconstruction::test_legacy_operation_validator_alias_has_one_implementation",
+        "tests.test_semantic_operation_deconstruction::test_extracted_validator_helpers_keep_resolved_source_owners",
+        "tests.test_semantic_protected_operations::test_protected_factory_preserves_legacy_decode",
+        "tests.test_semantic_protected_operations::test_committed_policy_derives_digest_and_reuses_existing_population",
+        "tests.test_semantic_protected_operations::test_replacement_ref_cannot_change_committed_policy"
+      ],
+      "negative_controls": [
+        {
+          "cause": "duplicate-protected-operation-identity-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_duplicate_protected_operation_identity_rejects_before_source_discovery"
+        },
+        {
+          "cause": "missing-or-unbound-public-operation-relationship-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_public_operation_declarations_reject_before_source_discovery"
+        },
+        {
+          "cause": "candidate-policy-substitution-before-source-work",
+          "test": "tests.test_ci_graph_composition::test_dirty_public_policy_rejects_before_source_discovery"
+        },
+        {
+          "cause": "added-public-source-entry-with-retained-functions",
+          "test": "tests.test_ci_graph_composition::test_added_public_source_entry_cannot_escape_lifecycle_population"
+        },
+        {
+          "cause": "candidate-schema-relaxes-protected-policy",
+          "test": "tests.test_semantic_protected_operations::test_permissive_candidate_schema_cannot_relax_protected_policy"
+        },
+        {
+          "cause": "unavailable-trusted-schema-falls-back-to-candidate",
+          "test": "tests.test_semantic_protected_operations::test_protected_schema_resolves_from_executing_portable_layout"
+        },
+        {
+          "cause": "candidate-selects-required-policy-digest",
+          "test": "tests.test_semantic_protected_operations::test_dirty_policy_cannot_supply_its_own_required_digest"
+        },
+        {
+          "cause": "nonregular-or-absent-committed-policy",
+          "test": "tests.test_semantic_protected_operations::test_committed_policy_requires_a_regular_blob"
+        },
+        {
+          "cause": "mismatched-or-unavailable-policy-subject",
+          "test": "tests.test_semantic_protected_operations::test_committed_policy_subject_rejects_before_population"
+        },
+        {
+          "cause": "unavailable-or-substituted-policy-blob",
+          "test": "tests.test_semantic_protected_operations::test_committed_policy_blob_read_failure_or_substitution_blocks"
+        },
+        {
+          "cause": "caller-registry-substitution-before-discovery",
+          "test": "tests.test_semantic_protected_operations::test_registry_substitution_rejects_before_discovery"
+        },
+        {
+          "cause": "removed-source-and-registry-entry-self-exemption",
+          "test": "tests.test_semantic_protected_operations::test_removing_registry_entry_and_source_entry_cannot_self_exempt"
+        },
+        {
+          "cause": "candidate-capability-disables-required-population",
+          "test": "tests.test_semantic_protected_operations::test_required_population_cannot_be_disabled_by_candidate_capabilities"
+        },
+        {
+          "cause": "registry-reread-after-identity-capture",
+          "test": "tests.test_semantic_protected_operations::test_registry_digest_and_decode_use_the_same_captured_bytes"
+        },
+        {
+          "cause": "unclassified-public-source-entry",
+          "test": "tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[added]"
+        },
+        {
+          "cause": "dynamic-public-entry-inventory",
+          "test": "tests.test_semantic_protected_operations::test_public_population_changes_cannot_erase_required_operations[dynamic]"
+        }
+      ]
+    },
+    "compatibility-authority-separation": {
+      "positive_tests": [
+        "tests.test_ci_state_matrix::test_current_compatibility_policy_preserves_reporting_and_publisher_recovery"
+      ],
+      "negative_controls": [
+        {
+          "cause": "forged-or-missing-exclusion-and-direct-indirect-failure-recovery-authority-path",
+          "test": "tests.test_ci_state_matrix::test_compatibility_cannot_enter_release_authority_paths"
+        },
+        {
+          "cause": "authority-effect-claim-on-observational-or-intermediate-edge",
+          "test": "tests.test_ci_state_matrix::test_compatibility_cannot_launder_authority_through_effect_labels"
+        },
+        {
+          "cause": "unavailable-cancelled-deep-failure-cycle-or-missing-terminal-population",
+          "test": "tests.test_ci_state_matrix::test_compatibility_authority_branch_and_population_controls"
+        }
+      ]
+    },
+    "canonical-ci-edge-reference-coverage": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_reconstructed_ci_coverage_delegates_to_existing_owner",
+        "tests.test_ci_graph_composition::test_committed_public_port_reconstructs_end_to_end",
+        "tests.test_ci_graph_composition::test_complete_ci_edge_coverage_is_kernel_derived_stable_and_read_only",
+        "tests.test_ci_graph_composition::test_ci_edge_coverage_retains_all_context_bindings_without_double_count",
+        "tests.test_ci_graph_composition::test_empty_ci_edge_population_does_not_claim_runtime_qualification"
+      ],
+      "negative_controls": [
+        {
+          "cause": "incomplete-or-stale-ci-graph-before-policy-and-source-discovery",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_ci_coverage_rejects_before_policy_and_source"
+        },
+        {
+          "cause": "omitted-canonical-edge-or-edge-and-test-pair",
+          "test": "tests.test_ci_graph_composition::test_ci_edge_coverage_cannot_be_selected_by_candidate"
+        },
+        {
+          "cause": "wrong-source-stale-population-or-integrity",
+          "test": "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_wrong_identity"
+        },
+        {
+          "cause": "candidate-resealed-unreachable-reference",
+          "test": "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_resealed_unreachable_reference"
+        },
+        {
+          "cause": "duplicate-canonical-edge-pair",
+          "test": "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_duplicate_canonical_pairs"
+        },
+        {
+          "cause": "ungrounded-canonical-exclusion",
+          "test": "tests.test_ci_graph_composition::test_ci_edge_coverage_rejects_ungrounded_canonical_exclusion"
+        }
+      ]
+    },
+    "timeout-policy-resource-admission": {
+      "positive_tests": [
+        "tests.test_candidate_submit::test_submit_valid_timeout_policy_keeps_fixed_point_owner",
+        "tests.test_ci_graph::test_gate_timeout_policy_preserves_omitted_optional_declarations",
+        "tests.test_ci_graph::test_gate_timeout_policy_keeps_absence_and_regular_file_contracts"
+      ],
+      "negative_controls": [
+        {
+          "cause": "malformed-timeout-policy-before-direct-reconcile-runtime-and-step-construction",
+          "test": "tests.test_reconcile_governance::test_reconcile_timeout_policy_rejects_before_runtime_or_steps"
+        },
+        {
+          "cause": "malformed-timeout-policy-before-canonical-submit-lease-and-reconciliation",
+          "test": "tests.test_candidate_submit::test_submit_timeout_policy_rejects_before_lease_or_reconcile"
+        },
+        {
+          "cause": "explicit-malformed-timeout-declarations-cannot-select-defaults",
+          "test": "tests.test_ci_graph::test_gate_timeout_policy_rejects_explicit_malformed_declarations"
+        },
+        {
+          "cause": "invalid-present-timeout-resource-before-graph-rendering",
+          "test": "tests.test_ci_graph::test_gate_timeout_policy_does_not_default_over_invalid_resource"
+        }
+      ]
+    },
+    "unambiguous-authored-lifecycle-inputs": {
+      "positive_tests": [
+        "tests.test_governance_truth::test_unambiguous_authored_done_does_not_supply_verified_truth"
+      ],
+      "negative_controls": [
+        {
+          "cause": "duplicate-active-phase-or-workitem-status-before-proof-resolution",
+          "test": "tests.test_governance_truth::test_authored_lifecycle_duplicates_reject_through_shared_read_boundary"
+        },
+        {
+          "cause": "invalid-workitem-file-resource-in-all-three-consumers",
+          "test": "tests.test_governance_truth::test_authored_lifecycle_consumers_reject_invalid_workitem_resources"
+        },
+        {
+          "cause": "complex-yaml-key-remains-typed-lifecycle-input-error",
+          "test": "tests.test_governance_truth::test_authored_lifecycle_complex_key_errors_remain_typed"
+        },
+        {
+          "cause": "unsupported-key-rejected-at-existing-strict-decoder",
+          "test": "tests.test_ci_graph::test_strict_yaml_decoder_types_invalid_complex_mapping_keys"
+        }
+      ]
+    },
+    "authored-phase-result-contract": {
+      "positive_tests": [
+        "tests.test_preflight::test_authored_phase_result_has_typed_contract_without_changing_producer",
+        "tests.test_preflight::test_authored_phase_result_primitive_and_real_consumers_have_one_source_owner"
+      ],
+      "negative_controls": [
+        {
+          "cause": "incomplete-mistyped-path-substituted-or-authority-promoted-result",
+          "test": "tests.test_preflight::test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts"
+        }
+      ]
+    },
+    "exact-committed-lifecycle-schema-bindings": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_reconstructed_schema_binding_captures_exact_committed_resources",
+        "tests.test_ci_graph_composition::test_reconstructed_schema_reference_closure_uses_dialect_resources"
+      ],
+      "negative_controls": [
+        {
+          "cause": "wrong-population-binding-digest-source-resource-reference-or-ambiguous-URI",
+          "test": "tests.test_ci_graph_composition::test_reconstructed_schema_contradictions_reject_before_ast"
+        }
+      ]
+    },
+    "provider-authority-progress-and-exposure-frontier": {
+      "positive_tests": [
+        "tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[None]",
+        "tests.test_prospective_validation::test_provider_authority_progress_absent_when_no_provider_is_required",
+        "tests.test_candidate_submit::test_submission_progress_separates_initial_and_normalized_subject_streams",
+        "tests.test_operational_observations::test_progress_kind_extension_preserves_legacy_bytes_and_rejects_unknown_kind"
+      ],
+      "negative_controls": [
+        {
+          "cause": "provider-workflow-controller-graph-or-transport-failure",
+          "test": "tests.test_prospective_validation::test_provider_authority_progress_brackets_existing_queries_without_changing_errors[controller]"
+        },
+        {
+          "cause": "exposure-error-before-provider-work",
+          "test": "tests.test_prospective_validation::test_exposure_failure_stops_before_provider_authority_and_retains_cause"
+        },
+        {
+          "cause": "normalization-failure-must-retain-cause-and-stop-before-provider",
+          "test": "tests.test_candidate_submit::test_submission_progress_retains_failed_stage_and_identical_error[ValueError-normalization]"
+        },
+        {
+          "cause": "provider-input-failure-must-retain-cause-and-stop-before-proof",
+          "test": "tests.test_candidate_submit::test_submission_progress_retains_failed_stage_and_identical_error[OSError-submission_authority]"
+        },
+        {
+          "cause": "diagnostic-sink-masks-original-failure",
+          "test": "tests.test_candidate_submit::test_submission_progress_sink_failure_cannot_replace_operation_failure[normalization]"
+        },
+        {
+          "cause": "mixed-execution-kinds-corrupt-progress-stream",
+          "test": "tests.test_operational_observations::test_progress_stream_cannot_mix_or_accept_unknown_event_kinds[submission_progress]"
+        },
+        {
+          "cause": "unit-resource-isolation-must-preserve-real-exclusion",
+          "test": "tests.test_prospective_validation::test_prospective_unit_namespace_retains_real_lease_exclusion"
+        }
+      ]
+    },
+    "migrated-mutant-owner-and-early-control-admission": {
+      "positive_tests": [
+        "tests.test_mutant_harness::test_every_mutant_targets_exactly_one_canonical_semantic_owner",
+        "tests.test_mutant_harness::test_migrated_operation_completeness_mutant_keeps_positive_and_cause_specific_kill"
+      ],
+      "negative_controls": [
+        {
+          "cause": "stale-control-before-provider-work",
+          "test": "tests.test_prospective_validation::test_static_control_failure_stops_before_provider_and_preserves_cause"
+        }
+      ]
+    },
+    "typed-deadline-envelopes": {
+      "positive_tests": [
+        "tests.test_ci_graph_composition::test_typed_deadline_composes_internal_work_allowances_and_integer_quantization",
+        "tests.test_ci_graph_composition::test_typed_deadline_survives_every_generated_view_and_machine_round_trip"
+      ],
+      "negative_controls": [
+        {
+          "cause": "568-seconds-plus-allowances-exceed-600-second-actual-consumer",
+          "test": "tests.test_ci_graph_composition::test_typed_deadline_rejects_inadequate_or_unbound_inputs[outer]"
+        },
+        {
+          "cause": "missing-or-inflated-consumer-budget-reference",
+          "test": "tests.test_ci_graph_composition::test_typed_deadline_cannot_self_exempt_from_actual_ci_consumer_budget[missing-ci-reference]"
+        },
+        {
+          "cause": "smaller-sibling-outer-budget",
+          "test": "tests.test_ci_graph_composition::test_typed_deadline_uses_every_protected_sibling_consumer_budget"
+        },
+        {
+          "cause": "expiry-erases-larger-authenticated-floor-and-admits-short-outer-budget",
+          "test": "tests.test_ci_graph_composition::test_typed_deadline_expiry_cannot_erase_a_larger_authenticated_floor[11]"
+        },
+        {
+          "cause": "expiry-shrinks-relationship-or-job-envelope",
+          "test": "tests.test_ci_graph_composition::test_typed_deadline_expiry_cannot_erase_a_larger_authenticated_floor[14]"
+        }
+      ]
+    }
+  }
+}

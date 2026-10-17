@@ -197,6 +197,10 @@ def test_cli_application_operations_are_closed_and_effect_safe() -> None:
 
     assert len(observations) == len(declared)
     assert len({row["operation"] for row in observations}) == len(observations)
+    for row in observations:
+        assert isinstance(row["effect_ports"], list)
+        assert row["write_effect_count"] == sum(port["classification"] == "mutation" for port in row["effect_ports"])
+        assert row["authority_effect_count"] == sum(port["classification"] == "authority" for port in row["effect_ports"])
 
 
 def test_cli_and_source_wrappers_remain_thin() -> None:

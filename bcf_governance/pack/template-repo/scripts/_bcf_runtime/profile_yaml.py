@@ -35,9 +35,7 @@ _ProfileSurfaceDumper.add_representer(_SharedScalar, yaml.SafeDumper.represent_s
 
 
 def _compact_control_mappings(
-    value: Any,
-    scalars: dict[str, _SharedScalar],
-    sequences: dict[tuple[str, ...], list[Any]],
+    value: Any, scalars: dict[str, _SharedScalar], sequences: dict[tuple[str, ...], list[Any]],
 ) -> Any:
     if isinstance(value, str) and len(value) >= 8:
         return scalars.setdefault(value, _SharedScalar(value))
@@ -56,10 +54,10 @@ def _compact_control_mappings(
             result[key] = compact
         return result
     if isinstance(value, list):
-        compact_items = [_compact_control_mappings(item, scalars, sequences) for item in value]
-        if value and all(isinstance(item, str) for item in value):
-            return sequences.setdefault(tuple(value), compact_items)
-        return compact_items
+        compact = [_compact_control_mappings(item, scalars, sequences) for item in value]
+        if value and all(isinstance(item, str) for item in value) and sum(map(len, value)) >= 8:
+            return sequences.setdefault(tuple(value), compact)
+        return compact
     return value
 
 

@@ -1,0 +1,31 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "reason": "local_pr.py is 799 LOC; bound-context propagation must not exceed the unchanged 800 LOC cap or compress unrelated code.",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "existing prospective truth-result acceptance boundary",
+  "operation_side": "query",
+  "targets": [
+    "bcf_governance/tooling/local_pr.py",
+    "bcf_governance/tooling/ci_authority_prospective_truth.py",
+    "tests/test_prospective_validation.py"
+  ],
+  "contract": [
+    "Characterize existing _require_truth exact successful detached mapping and cause-specific error type/messages before extraction.",
+    "Move this one coherent existing responsibility unchanged to ci_authority_prospective_truth.require_truth. Keep local_pr._require_truth as imported compatibility alias. Its two actual PR and bounded truth calls remain unchanged.",
+    "This query checks existing truth result status; it is not a new truth engine, receipt, evaluator or authority source. No policy/claim/closure semantics change.",
+    "Preserve source/package/template parity via canonical generator and existing architecture/actual operation characterization.",
+    "Do not merge isolated bound context subset until complete downstream and independent authority controls are proved."
+  ],
+  "expected_tests": [
+    "Golden successful map is copied and exact errors for missing/failed status and empty or populated issues are unchanged.",
+    "Existing complete prospective validation and actual public-operation golden.",
+    "LOC/context/private-runtime parity, native static checks and governance validation."
+  ],
+  "forbidden": [
+    "New truth semantics or exception class",
+    "LOC cap increase, blank-line removal or arbitrary formatting to evade cap",
+    "Primary in-flight source mutation"
+  ],
+  "dependency_acceptance": "Separate coherent extraction after candidate PR projection checkpoint 016b8236; all whole requirements remain open."
+}

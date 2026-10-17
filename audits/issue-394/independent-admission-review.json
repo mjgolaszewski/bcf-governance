@@ -1,0 +1,109 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Independent P32-P0-01 predecessor admission observation; no successor workitem/phase acceptance granted",
+  "reviewer": "bcf-governance:closure-engine",
+  "reviewed_successor_commit": "3f4d594d14acc2f20959de4ee8518a41eda5936b",
+  "predecessor": {
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+    "asset_hashes": {
+      "SHA256SUMS": "1c29a86add2e50e8315c084cc7d168172822882d85866a84a73a425d8e9b2c9d",
+      "bcf_governance-2.3.4-py3-none-any.whl": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
+      "bcf_governance-2.3.4.tar.gz": "9fe8cddee2e81f451f0bece4b28cbdf71b0ef715fbf23503ff8dcfce2f454b10"
+    },
+    "verified_bundle_payloads": 6,
+    "native_certification": {
+      "status": "pass",
+      "computed_state": "certified",
+      "admission_ordinal": 38858875383002001,
+      "selected_attempts": [
+        [
+          "governance",
+          2
+        ]
+      ],
+      "reasons": [],
+      "certification_sha256": "fbafafc457753764544079ed4f5c55c5f7cfa6ccd3a2447a21a9c60bda951324",
+      "session_manifest_sha256": "f9fb8db826f4970223a2e23932b7cc23dfe1627f3257a0d5d2388073d8b998f6",
+      "raw_snapshot_sha256": [
+        [
+          "governance",
+          "8d76369ca06d1447170ebdb6604c99a7325226cbd8ba3d5beb29ece9b8c59b23"
+        ]
+      ],
+      "evaluation_scope": {
+        "intent": "closure",
+        "target": {
+          "id": "P31",
+          "kind": "phase"
+        }
+      },
+      "certified_proposition": {
+        "authorizes": [],
+        "conclusion": "success",
+        "eligible_successors": [],
+        "predicate": "phase_closed",
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "target": {
+          "id": "P31",
+          "kind": "phase"
+        }
+      }
+    },
+    "closed_phases": [
+      "P31"
+    ],
+    "source_archive_parity": {
+      "files": 689,
+      "python_files": 579,
+      "mismatches": [],
+      "population_sha256": "e48b06933a7c4729e7eeab11ff850b1e45af07fc921de69d59228c598bd61d3b"
+    },
+    "ancestor_of_reviewed_successor": true
+  },
+  "provider_release_observation": {
+    "status": "verified",
+    "tag": "v2.3.4",
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "immutable": true,
+    "draft": false,
+    "assets": {
+      "SHA256SUMS": "1c29a86add2e50e8315c084cc7d168172822882d85866a84a73a425d8e9b2c9d",
+      "bcf_governance-2.3.4-py3-none-any.whl": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
+      "bcf_governance-2.3.4.tar.gz": "9fe8cddee2e81f451f0bece4b28cbdf71b0ef715fbf23503ff8dcfce2f454b10"
+    }
+  },
+  "compatible_installed_inspector": {
+    "version": "2.3.4",
+    "files_compared_to_published_wheel": 689,
+    "mismatches": []
+  },
+  "historical_controller_observation": {
+    "controller_commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "controller_bundle_sha256": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba"
+  },
+  "current_controller_observation": {
+    "controller_commit_sha": "f911f21c29114b8280866b75281673018a231c9c",
+    "controller_bundle_sha256": "bd3de5b9805a05c3af44a0921071b41cd924c4e1061ff059161c1b44a6039f9d"
+  },
+  "excluded_other_bundle": {
+    "subject_prefix": "2d2d00b2",
+    "reason": "Exact subject does not match admitted d02f11ef; not used despite similar retained naming."
+  },
+  "raw_report_sha256": {
+    "offline-independent-review.json": "283985e26fca360c9845e97a9c87d6166f99a80072fa3c5766aa9a3a3f877d13",
+    "fresh-provider-review.json": "3302ab47df936a5c6754acbd8a6e5b0d3edae3962c733c5233170de204bbd3eb",
+    "review-conclusion.json": "ac23d2ed3a144b3ffa93d0aa5311c640d3687e9efbff95a25e8a258ad835b662"
+  },
+  "residuals": [
+    "No successor workitem, phase or whole Issue394 verified/closed acceptance inferred.",
+    "Current provider controller f911/2.3.5 is separate from historical d02/2.3.4 predecessor and installed2.3.4 inspector.",
+    "Historical optional adopter compatibility residual and all82 whole requirements remain under owner policy.",
+    "Read-only recomputation is an independent observation; canonical governed successor evidence is still required.",
+    "Inspector-specific byte comparison does not establish every maintained adopter runtime; consumption still requires fresh authenticated authority."
+  ]
+}

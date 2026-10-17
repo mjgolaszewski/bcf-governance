@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .ci_github_api import GitHubAPI
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
+from .ci_graph_post_merge import authored_candidate_title, candidate_post_merge_evaluation, post_merge_evaluation
 from .local_pr_context import (
     ProspectiveValidationError,
     Runner,
     _candidate_identity,
+    require_clean_candidate_root,
     _run,
     resolve_local_pr_context,
 )
@@ -20,14 +22,15 @@ def canonical_prospective_inputs(
     *,
     remote: str = "origin",
     runner: Runner = _run,
+    provider_api: GitHubAPI | None = None,
 ) -> dict[str, str | None]:
     """Derive the immutable subject, proposition, and submit-ready metadata."""
 
-    root = repo_root.resolve()
-    context = resolve_local_pr_context(root, remote=remote, runner=runner)
+    root = require_clean_candidate_root(repo_root, runner=runner)
+    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     identity = _candidate_identity(root, context, runner=runner)
     try:
-        evaluation = post_merge_evaluation(validate_ci_graph(root).graph)
+        evaluation = candidate_post_merge_evaluation(post_merge_evaluation(validate_ci_graph(root).graph), context=context)
         authored_candidate_title(root, mode=evaluation.mode, target=evaluation.target)
     except CIGraphError as exc:
         raise ProspectiveValidationError(str(exc)) from exc

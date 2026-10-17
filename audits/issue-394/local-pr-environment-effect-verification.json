@@ -1,0 +1,50 @@
+{
+  "authority": false,
+  "contract_commit": "321ff903",
+  "red_control_commit": "4aa0dddb",
+  "canonical_terminal": "audits/issue-394/successor-a750-submission-terminals.json",
+  "diagnosis": {
+    "old_unresolved_import_golden": "Passed110.34s; does not qualify canonical import-resolved operation path.",
+    "qualified_red": "Failed40.68s at exact canonical unresolved _pr_environment effect.",
+    "correction": "One exact local nonauthoritative output-effect function port in existing CI operation; no normalizer/suppression/runtime/authority changes."
+  },
+  "checks": [
+    {
+      "name": "effect-controls",
+      "returncode": 0,
+      "elapsed_ms": 290628,
+      "stdout_sha256": "5c7e8c06c78a6d71a52b91ca42ebb38f5782f0b6d9499038fd9b00ee78ed56d3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "effect-governance",
+      "returncode": 0,
+      "elapsed_ms": 29803,
+      "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "effect-lint",
+      "returncode": 0,
+      "elapsed_ms": 4044,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "effect-typecheck",
+      "returncode": 0,
+      "elapsed_ms": 1183,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "cases": {
+    "passed": 117,
+    "pytest_elapsed_seconds": 290.04,
+    "warnings": 2
+  },
+  "remaining": [
+    "Canonical reconciliation/submission must independently authenticate exact corrected bytes.",
+    "All82 whole requirements, complete lifecycle/effect conformance, approved performance targets and immutable2.5 custody remain open."
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/deadline-inventory-contract.json",
+  "unit_controls": {
+    "passed": 4,
+    "seconds": 0.18,
+    "environment": "Existing interpreter owner admitted the dedicated research project environment before passing run."
+  },
+  "initial_test_history": "Before recipe implementation, three setup errors reported the intentionally absent audit recipe; not behavioral red evidence. Initial setup used the existing successor interpreter, not claimed as research runtime evidence.",
+  "real_capture": {
+    "path": "audits/issue-394/actual-deadline-inventory.json",
+    "subject": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "jobs": 41,
+    "jobs_with_declared_component_floors": 4
+  },
+  "result": "All compiled logical jobs and exact executor declarations retained; sibling floor consumers remain visible.",
+  "limits": [
+    "This is audit-only preparation, not production deadline composition.",
+    "Internal provider request/retry counts, bounded setup/cleanup, measured lower bounds, headroom and complete runtime consumers still require contracts and qualification.",
+    "minimum_job_timeout_minutes remains a job floor; no summation as internal work duration.",
+    "P32-P0-05 remains TODO on canonical integration branch; no dependency closure or deadline activation claimed."
+  ],
+  "controller_source_capture": {
+    "path": "audits/issue-394/controller-direct-consumers.json",
+    "source_files_checked": 1066,
+    "direct_calls": 12,
+    "production_source_calls": 11,
+    "test_calls": 1,
+    "scope": "Exact committed Python-tree direct source-resolved calls to two existing resolver owners; reflection/runtime completeness unqualified."
+  },
+  "history_extension": "New direct-consumer control failed before the source-query imports/entrypoint existed; after implementation all four audit controls passed. Actual graph and source captures rerun through final recipe hash."
+}

@@ -1,0 +1,265 @@
+{
+  "authority": false,
+  "source_commit": "6307b83bfd1520524194448861bea7e26c7b73a5",
+  "source_tree": "43cd00c5f6fe4a4acbfa795a3a72f100d38e2b80",
+  "argv": [
+    ".venv/bin/bcf",
+    "ci",
+    "submit",
+    "--repo-root",
+    "."
+  ],
+  "started_at": "2026-10-17T02:17:25.720338+00:00",
+  "returncode": 1,
+  "elapsed_ms": 4448514,
+  "ended_at": "2026-10-17T03:31:34.234665+00:00",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "a37bdb4cb16d3a7da2a608d9c471b2e6f8f80f31b99088354d64f8988a711da6",
+  "final_commit": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+  "raw_capture_sha256": "86b75991026fcc3ced3ad680942820088d724b95addf03b77482c5b7bfc114c3",
+  "source_terminal": "actual process exit1; no unchanged retry",
+  "normalized_subject": {
+    "commit_sha": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+    "tree_sha": "622f6c9fab3ad74febb5d76a4b94915af11c7673"
+  },
+  "progress": [
+    {
+      "authority": false,
+      "execution_id": "submission:6307b83bfd1520524194448861bea7e26c7b73a5",
+      "kind": "submission_progress",
+      "monotonic_ms": 0,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "normalization",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:6307b83bfd1520524194448861bea7e26c7b73a5",
+      "kind": "submission_progress",
+      "monotonic_ms": 1033500,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "normalization",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:6307b83bfd1520524194448861bea7e26c7b73a5",
+      "kind": "submission_progress",
+      "monotonic_ms": 1037721,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "submission_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "submission:6307b83bfd1520524194448861bea7e26c7b73a5",
+      "kind": "submission_progress",
+      "monotonic_ms": 1039497,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "submission_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 8,
+      "schema_version": "1.0",
+      "sequence": 1,
+      "stage": "fixed_point",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 7559,
+      "schema_version": "1.0",
+      "sequence": 2,
+      "stage": "fixed_point",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 7695,
+      "schema_version": "1.0",
+      "sequence": 3,
+      "stage": "exposure",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 8372,
+      "schema_version": "1.0",
+      "sequence": 4,
+      "stage": "exposure",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 8373,
+      "schema_version": "1.0",
+      "sequence": 5,
+      "stage": "source_distribution",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 9866,
+      "schema_version": "1.0",
+      "sequence": 6,
+      "stage": "source_distribution",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 9867,
+      "schema_version": "1.0",
+      "sequence": 7,
+      "stage": "negative_controls",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 33774,
+      "schema_version": "1.0",
+      "sequence": 8,
+      "stage": "negative_controls",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 33775,
+      "schema_version": "1.0",
+      "sequence": 9,
+      "stage": "semantic_ownership",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 198350,
+      "schema_version": "1.0",
+      "sequence": 10,
+      "stage": "semantic_ownership",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 198351,
+      "schema_version": "1.0",
+      "sequence": 11,
+      "stage": "provider_authority",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 697352,
+      "schema_version": "1.0",
+      "sequence": 12,
+      "stage": "provider_authority",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 697353,
+      "schema_version": "1.0",
+      "sequence": 13,
+      "stage": "preflight",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 946290,
+      "schema_version": "1.0",
+      "sequence": 14,
+      "stage": "preflight",
+      "state": "complete"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 1194267,
+      "schema_version": "1.0",
+      "sequence": 15,
+      "stage": "evidence",
+      "state": "started"
+    },
+    {
+      "authority": false,
+      "execution_id": "c1887f4540b2b528e7abbc9538868759fa330c9b",
+      "kind": "prospective_progress",
+      "monotonic_ms": 3397214,
+      "schema_version": "1.0",
+      "sequence": 16,
+      "stage": "evidence",
+      "state": "failed"
+    }
+  ],
+  "test_result": {
+    "passed": 3577,
+    "failed": 8,
+    "executed": 3585,
+    "shard_summaries": [
+      "1 failed, 896 passed, 4 warnings in 1743.78s (0:29:03)",
+      "2 failed, 894 passed, 4 warnings in 1298.25s (0:21:38)",
+      "3 failed, 893 passed, 4 warnings in 2153.53s (0:35:53)",
+      "2 failed, 894 passed, 4 warnings in 1238.68s (0:20:38)"
+    ],
+    "failed_selectors": [
+      "tests/test_installed_evidence_storage.py::test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output[fresh-None]",
+      "tests/test_installed_evidence_storage.py::test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output[fresh-asset]",
+      "tests/test_installed_evidence_storage.py::test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output[upgrade-None]",
+      "tests/test_installed_evidence_storage.py::test_combined_installed_consumer_uses_real_compiler_and_durable_runtime[fresh]",
+      "tests/test_installed_evidence_storage.py::test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output[fresh-missing_asset]",
+      "tests/test_installed_evidence_storage.py::test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output[upgrade-asset]",
+      "tests/test_installed_evidence_storage.py::test_combined_installed_consumer_uses_real_compiler_and_durable_runtime[upgrade]",
+      "tests/test_installed_evidence_storage.py::test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output[upgrade-missing_asset]"
+    ],
+    "cause": "Installed HTTPS fixture omits requested Git reference identity; strict production ref guard rejects before intended successful/asset-corruption paths."
+  },
+  "failure_bundle": {
+    "identity_sha256": "a9e14ca8cb300edec69b4cce5878f75eb64fac4f98020471475b42ee5b928fc7",
+    "manifest_sha256": "55dc837bf1474571754244465c4c74c15790fcc0f36fd90026bb0ccff7dd75e0",
+    "retained_file_hashes_verified": true,
+    "limits": "Native diagnostic bundle explicitly bounds large evidence/JUnit/partition files by head-tail projection with original and retained hashes; these are not complete parseable receipts. Exact42KiB stdout retains all four shard summaries. Three complete shard XMLs were retained independently before cleanup; fourth complete XML is unavailable."
+  },
+  "disposition": [
+    "Normalization succeeded through existing canonical owner;5 derived files committed, workflows/authority required no new commit.",
+    "All structural/negative/full semantic/provider authority and PR/postmerge preflight checks passed; test evidence rejected.",
+    "Contracte77c797f precedes fixture correction; production reference identity check remains unchanged.",
+    "Actual terminal/capacity returned to Racecar then AgentBus; subsequent corrected-source validation requires a fresh native-admitted window.",
+    "Unmatched failed pipeline observations do not establish approved targets, percentiles, CPU savings or acceptance closure."
+  ],
+  "remaining": [
+    "Whole82 requirements and full P32-P35 independent conformance/approved targets/immutable2.5 custody remain open."
+  ]
+}

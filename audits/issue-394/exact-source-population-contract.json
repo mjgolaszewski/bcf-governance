@@ -1,0 +1,68 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/exact-source-population-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/semantic_source_paths.py",
+  "dependency_acceptance": "Existing source initialization producer and consumer controls passed at d1fc7913/72d6b566; complete requires-workitem-closure:P32-P0-03 remains unmet and forbids normative adoption.",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_source_paths.py",
+    "tests/test_semantic_source_paths.py",
+    "bcf_governance/tooling/semantic_ownership_inventory.py"
+  ],
+  "contract": [
+    "Add a read-only exact committed Python source population query to the existing source-path owner; retain legacy candidate discovery unchanged.",
+    "Require exact commit/tree SHA identities before invoking Git. Verify object kind and commit-to-tree binding, with Git replacement objects disabled.",
+    "Inventory the complete recursive exact tree using NUL-delimited Git records; no candidate source roots filters authored inventories imports or executable code determine the population.",
+    "Retain every regular Python blob with its exact mode and object identity; retain all symlink/gitlink entries as unresolved, including names without a Python suffix. Never follow or execute them.",
+    "Preserve exact UTF-8 paths including spaces tabs and newlines; reject malformed or unsafe records.",
+    "Add base/candidate population comparison that retains complete source snapshots and explicit added/removed/changed Python paths and unresolved entry changes. No deletion can disappear solely because candidate source inventory omits it.",
+    "These local Git observations never authenticate provider repository identity or authority and cannot interpret effects, approve retirement or authorize proof suppression. Protected caller must bind repository/subject and independently handle all unresolved entries.",
+    "Empty interior tree records are malformed, distinct from a genuinely empty Git tree, and reject during decoding.",
+    "Existing Python discovery accepts an optional exact source_subject, compares its full discovered file population to the exact tree, and authenticates each raw source blob plus executable mode before ast.parse. Reject unknown tree entries and population gaps before parsing.",
+    "No caller-selected file subset can narrow the exact-subject population. Dirty or untracked source and subject/tree substitutions reject. Default discovery remains unchanged.",
+    "The returned source_population observation binds the exact Git tree and each parser input; it never authenticates provider or repository authority, continued filesystem freshness or full runtime effects.",
+    "Exact-subject discovery normalizes equivalent complete file populations to canonical path order; caller file order cannot choose output bytes.",
+    "Source read/stat disappearance after population discovery yields a typed source blocker before parsing; default legacy exception behavior remains unchanged."
+  ],
+  "forbidden_surfaces": [
+    "new source parser or effect evaluator",
+    "provider mutation",
+    "normative DAG adoption",
+    "proof suppression",
+    "canonical normalization",
+    "installer/adopter/custody",
+    "workflow or authority pins"
+  ],
+  "expected_tests": [
+    "Exact commit/tree mismatch fails before source enumeration",
+    "Unsupported symbolic or malformed subjects fail before Git",
+    "Complete population includes nested files and unusual UTF-8 filenames; ignores uncommitted changes",
+    "Base-to-candidate removal/change/addition stays explicit",
+    "Symlink and submodule entries remain unresolved without following them",
+    "Git replacement refs cannot substitute committed source",
+    "Git failures and malformed records fail closed",
+    "Legacy candidate discovery unchanged"
+  ],
+  "completion": "Behavioral plus architecture/parity/static checks; independent parser byte binding, runtime effect interpretation and installed consumer authority remain required.",
+  "local_execution": {
+    "contract_red_commits": [
+      "7f98d74c",
+      "557cd523",
+      "79614574",
+      "09d79f37"
+    ],
+    "final_affected": "100 passed in 5.20 seconds",
+    "final_cli_effect": "1 passed in 91.94 seconds",
+    "governance_static_parity": "governance-yaml-ok; lint/typecheck and canonical pack --check passed",
+    "verification": "audits/issue-394/exact-source-population-verification.json",
+    "remaining": "Protected provider/repository/base/candidate binding, runtime effect interpretation, actual lifecycle adoption, canonical oracle normalization and installed consumer/custody qualification remain open."
+  }
+}

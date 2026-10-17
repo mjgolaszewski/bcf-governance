@@ -1,0 +1,60 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/reconstructed-source-binding-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/ci_graph_composition.py",
+  "dependency_acceptance": "Exact source population/parser binding a80a2e6c and initialization consumers 72d6b566 passed local controls. Complete requires-workitem-closure:P32-P0-03 remains unmet; new query stays dormant.",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "tests/test_ci_graph_composition.py"
+  ],
+  "contract": [
+    "Add a separate source-reconstructing query to the existing composition owner; pure compiler and legacy binding query remain compatible.",
+    "No source_inventory argument or caller file list is accepted. Derive exact commit/tree solely from protected expected_source after compiled-envelope/source checks.",
+    "Require complete initialization-aware protected operation populations and reject malformed/incomplete roots or weakened scopes before source discovery. Reuse one root derivation within the existing owner.",
+    "Always reconstruct call and initialization facts using existing exact-subject discovery and existing import resolution. Import-root configuration qualifies identities without narrowing the exact source population.",
+    "Delegate all effect/fact/call/test/control conformance to the existing validate_lifecycle_bindings owner; do not introduce another evaluator.",
+    "Return detached source subject/population digest/import-root observations with authority false and execution_qualified false. No provider repository authority or complete runtime effect interpretation is inferred.",
+    "Dirty missing substituted extra or unresolved source inputs block; no fallback to a caller-authored inventory. Protected caller still authenticates repository/context and all expected populations.",
+    "Extract existing source-independent population/fact/test/control declaration checks into one shared pure helper used by both binding queries; reject those contradictions before reconstruction I/O.",
+    "Malformed protected mapping/fact/control/selector declarations, unbound call endpoints and authority-bearing observation catalogues reject with CIGraphError before source I/O.",
+    "Shared ingress preserves legacy list and tuple call-edge pairs with identical semantics; shape validation must not introduce a minor-release incompatibility."
+  ],
+  "forbidden_surfaces": [
+    "normative DAG activation",
+    "proof suppression",
+    "provider dispatch",
+    "candidate-authored source inventory acceptance",
+    "installer/adopter/custody",
+    "canonical workflow/pin/lock/test-manifest normalization"
+  ],
+  "expected_tests": [
+    "Reconstruct real committed fixture from protected subject and exact initialization population",
+    "Wrong compiled/source identities reject before source discovery",
+    "Missing roots weakened scope and malformed protected catalogues reject before discovery",
+    "Dirty/untracked/deleted source cannot pass with retained endpoint declarations",
+    "Wrong import-root resource configuration fails closed",
+    "Legacy binding output remains unchanged",
+    "No source execution or provider authority from reconstruction"
+  ],
+  "completion": "Focused behavioral plus parity/static/architecture controls; actual provider-owned invocation and full independent guard/effect populations remain required.",
+  "local_execution": {
+    "contract_red_commits": [
+      "b65ec3d6",
+      "c533034a",
+      "f06f6bb9"
+    ],
+    "final_combined": "284 passed, one retained canonical manifest oracle failure in 109.51 seconds, including final CLI effect and restored legacy sequence compatibility",
+    "static_parity": "governance-yaml-ok; lint/typecheck, LOC/context/private copies and canonical pack --check passed",
+    "verification": "audits/issue-394/reconstructed-source-binding-verification.json",
+    "remaining": "Actual protected provider-owned invocation independent required populations runtime effects installed consumers canonical oracle normalization normative adoption performance and custody remain unqualified."
+  }
+}

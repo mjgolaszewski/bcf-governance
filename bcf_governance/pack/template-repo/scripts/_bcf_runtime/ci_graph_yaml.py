@@ -24,6 +24,10 @@ def _construct_unique_mapping(
     result: dict[Any, Any] = {}
     for key_node, value_node in node.value:
         key = loader.construct_object(key_node, deep=deep)
+        try:
+            hash(key)
+        except TypeError as exc:
+            raise GraphYAMLError("YAML mapping key must be hashable") from exc
         if key in result:
             raise GraphYAMLError(f"duplicate YAML key {key!r}")
         result[key] = loader.construct_object(value_node, deep=deep)

@@ -1,0 +1,48 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/primitive-backtrace-verification.json"
+  },
+  "status": "reference_checks_passed_with_canonical_blocker",
+  "contract_test_commit": "f04dd588",
+  "source_hashes": {
+    "spec/phase0/release-train-backtrace.yml": "1e763abcac44d99ddcee6bc13692cb9c3218fecaccb2601011b02464ba22bab3",
+    "tests/test_ci_state_matrix.py": "822f26f87c003f8cfe6bfb1331a9ce8d29f3bb2d65c3ea5c42cc8a2f4c4a04bf",
+    "audits/issue-394/primitive-backtrace-contract.json": "072a3d84b06305fc7fb1cb162ea77aad165346f667e55740a096e43811b37aae"
+  },
+  "red_evidence": {
+    "original": "3 failures and 4 passes in 2.52s. One real population failure: six P26 canonical names absent. Two failures reflected an incorrect assumption that rejected source-transaction references were active; those expectations and defect claims are withdrawn.",
+    "correction": "An uncommitted extra transaction guard introduced by this work failed rejected-design boundary control (1 failed, 1 passed in 1.48s). Removed the extra guard and its invented credential declaration/obligation; no such change is retained."
+  },
+  "final_behavior": {
+    "primitives": 23,
+    "p26_names_with_exact_references": 15,
+    "added_names": [
+      "TreeIdentity",
+      "ExecutionProvenance",
+      "Qualification",
+      "EvidenceReference",
+      "InvalidationReason",
+      "ReuseAttestation"
+    ],
+    "metadata": "canonical_reference and executable_owner copy the retained P26 inventory exactly; schema fragments and module/function references resolve in current source.",
+    "excluded_design": "adopter_source_transaction remains normative:false/rejected_provider_coupled_design with unchanged fields. Historical credential reference is not an active obligation; attempted normative:true fails existing schema.",
+    "preserved": "Existing primitive IDs/owner fields, historical source envelope, P26 audit bytes, runtime validator and schema bytes remain unchanged. Primitive runtime qualification remains explicitly unresolved."
+  },
+  "tests": {
+    "intermediate": "66 state/backtrace cases passed in 22.05s before correcting the rejected-design scope; not claimed as final scope qualification.",
+    "final": "290 passed, 1 retained canonical oracle failure in 38.19s; state-matrix/backtrace/composition/pack suites.",
+    "blocker": "test_requirement_slice_bindings_resolve_through_canonical_oracle_owner: test-node oracle is absent from governed manifests. No skip or assertion change.",
+    "final_actual_model": "authored_structurally_valid; authority false; execution_qualified false; 7 compatibility edges and 15 transitions.",
+    "static": "lint/typecheck passed",
+    "coverage": "coverage-schema-ok; 21 slices preserved",
+    "pack": "canonical generator and --check passed; no runtime/schema/package delta remains."
+  },
+  "remaining": [
+    "Reference resolution is not execution qualification, authority authenticity or independent complete runtime-effect coverage.",
+    "Canonical semantic lock and test-node normalization remain held; no full canonical green.",
+    "Normative machine DAG adoption/prose retirement, installed-consumer qualification, approved performance targets and independent custody remain open."
+  ],
+  "whole_requirement_closure": false
+}

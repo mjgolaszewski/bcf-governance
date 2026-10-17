@@ -1,0 +1,122 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 33 Workitems
+  id: bcf-governance-phase-33-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-10-15T00:00:00Z'
+  status: planned
+  path: plans/phase-33-workitems.yml
+  phase_id: P33
+workitems:
+- id: P33-P0-01
+  priority: P0
+  status: TODO
+  summary: Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary
+  acceptance:
+  - requires-phase-closure:P32
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.early-checks
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P33-P0-02
+  priority: P0
+  status: TODO
+  summary: Authenticate proof applicability and exact resumable coalesced submit release and adopter transactions
+  acceptance:
+  - requires-workitem-closure:P33-P0-01
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.continuation
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P33-P0-03
+  priority: P0
+  status: TODO
+  summary: Derive conservative claim test control impact with independently checked required populations
+  acceptance:
+  - requires-workitem-closure:P33-P0-02
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.impact
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P33-P0-04
+  priority: P0
+  status: TODO
+  summary: Schedule only the unresolved sound closure with deterministic resource-safe bounded fanout
+  acceptance:
+  - requires-workitem-closure:P33-P0-03
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.scheduling
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P33-P0-05
+  priority: P0
+  status: TODO
+  summary: Derive complete exact adopter subjects and safely reuse isolated outcomes through exact-byte custody
+  acceptance:
+  - requires-workitem-closure:P33-P0-04
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.release
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P33-P0-06
+  priority: P0
+  status: TODO
+  summary: Project approved periodic policy and profile-specific dormant capabilities through canonical installation
+  acceptance:
+  - requires-workitem-closure:P33-P0-05
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context installation; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.projection
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P33-P0-07
+  priority: P0
+  status: TODO
+  summary: Prove full governed versus shadow differential behavior and isolated installed-adopter parity
+  acceptance:
+  - requires-workitem-closure:P33-P0-06
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.dormant.shadow
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test

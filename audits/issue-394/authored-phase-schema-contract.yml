@@ -1,0 +1,42 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/authored-phase-schema-contract.yml
+  status: planned
+  authority: false
+phase: P32
+workitem: P32-P0-07
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+target_modules:
+- bcf_governance/tooling/governance_validation/authored_phase_state.py
+canonical_schema_owner: bcf_governance/tooling/governance_validation/phase_artifacts.py::_validate_phase_artifact_triplet
+trigger:
+  source_commit: 026889cc
+  observed_failure: An evidence note with an unquoted colon parsed as a mapping and passed early identity/status checks before failing the final phase-log structural schema.
+  repair_commit: 456232a7
+contract:
+- Reuse the existing phase artifact triplet schema consistency and closeout validator in the early authored phase query; do not introduce a second schema or status engine.
+- Preserve cause precedence for computed statuses and ledger/log completion contradictions before the full structural schema check.
+- Wrap existing structural failures in AuthoredPhaseStateError without losing their exact artifact/location/cause.
+- Reuse the existing strict YAML decoder to reject duplicate authored keys and symlinked input before runtime or shadow allocation.
+- Existing submit reconcile and preflight consumers receive the stronger pure check through the existing entrypoint; no new mutation command or authorization is added.
+- Scope this slice to the active authored triplet; full independently retained historical population validation remains a separate obligation.
+expected_tests:
+- Current exact phase state passes without changing files.
+- Mapping-valued evidence note fails before reconciliation runtime/shadow allocation.
+- Missing active schema and duplicate authored YAML keys fail with exact typed causes.
+- Existing computed-status completion-pair and malformed-hotfix causes retain their priority.
+forbidden_surfaces: [generated-state checks before necessary generation, new phase authority, authored DONE as computed truth, workflow pins, maintenance bytes]
+remaining: Complete historical source/package/profile/runtime pre-dispatch admission and independent provider authority remain unqualified.
+
+fixture_and_runtime_corrections:
+- The inherited malformed-hotfix control named a retired P31 filename; construct and register a disposable current-phase hotfix through existing owners instead of altering retained maintenance evidence.
+- A broad direct test run correctly rejected the convenience controller venv because it exposes system site packages; use the canonical materialized isolated project interpreter for runtime-sensitive tests. Earlier local fixture passes are not declared-runtime certification.
+
+local_execution:
+  red: Three new structural controls failed before implementation while the complete current triplet passed.
+  initial_broad_run: 164 passed with three convenience-controller environment-cause mismatches and one stale inherited hotfix fixture; these were not accepted as a qualified pass.
+  corrected_runtime_run: All 168 preflight submit reconcile and machine-state cases passed in 20.18 seconds under the canonically materialized isolated project interpreter after native disposable-fixture correction.
+  architecture: Ten source/package/private-copy CLI-effect context and module-cap checks passed under the isolated project interpreter; lint and typecheck passed.
+  remaining_checks: Canonical normalization and exact current-tree full semantic conformance remain required.

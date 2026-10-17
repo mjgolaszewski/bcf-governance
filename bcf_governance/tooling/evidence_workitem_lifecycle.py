@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
-import yaml  # type: ignore[import-untyped]
+from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 from .truth_reporting import eligible_receipts
 
@@ -17,14 +17,14 @@ class WorkitemContractError(ValueError):
     """Raised when ordinary workitem dependency declarations are ambiguous."""
 
 
-def _authored_yaml(path: Path) -> object:
+def _authored_yaml(path: Path) -> dict[str, Any]:
     """Load authored lifecycle YAML through one typed fail-closed boundary."""
 
     try:
-        return yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as exc:
+        return load_yaml_path(path)
+    except (OSError, UnicodeError, GraphYAMLError) as exc:
         raise WorkitemContractError(
-            f"authored lifecycle contract is unreadable: {path.as_posix()}"
+            f"authored lifecycle contract is unreadable: {path.as_posix()}: {exc}"
         ) from exc
 
 
@@ -237,14 +237,12 @@ def workitem_observation(
     reuse_attestations: Mapping[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Compute bounded workitem closure without conferring parent authority."""
-    ledger = yaml.safe_load(
-        (repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8")
-    )
+    ledger = _authored_yaml(repo_root / "plans/phase-ledger.yml")
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
     workitems_path = active.get("workitems") if isinstance(active, dict) else None
     if not isinstance(workitems_path, str):
         return {"satisfied": False, "issue": "active_workitem_ledger_missing"}
-    payload = yaml.safe_load((repo_root / workitems_path).read_text(encoding="utf-8"))
+    payload = _authored_yaml(repo_root / workitems_path)
     raw_entries = payload.get("workitems") if isinstance(payload, dict) else None
     if not isinstance(raw_entries, list) or not raw_entries:
         return {"satisfied": False, "issue": "workitems_missing"}

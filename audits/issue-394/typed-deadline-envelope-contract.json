@@ -1,0 +1,59 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/typed-deadline-envelope-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-05",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "existing timeout/composition domain queries",
+  "operation_side": "query",
+  "dependency_acceptance": "Dormant foundation contract construction only. requires-workitem-closure:P32-P0-03 remains unresolved; no normative adoption or activation.",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_timeouts.py",
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "bcf_governance/tooling/ci_graph_composition_costs.py",
+    "schemas/ci-lifecycle-composition.schema.json",
+    "governance/canonical-representations.yml",
+    "tests/test_ci_graph.py",
+    "tests/test_ci_graph_composition.py"
+  ],
+  "single_owner_decisions": [
+    "Typed cost declaration belongs to existing lifecycle composition schema; do not introduce a second lifecycle graph or independent schema parser.",
+    "Deadline arithmetic belongs to existing ci_graph_timeouts owner; shared arithmetic must have actual legacy gate and component-floor consumers before reuse by lifecycle cost projection.",
+    "Use existing compiled identity/source checks and exact protected relationship population; source/runtime completeness and evidence authenticity remain caller/trusted-consumer obligations."
+  ],
+  "proposed_contract": [
+    "Optional versioned deadline descriptor preserves legacy composition 1.0/1.1 readability and output when absent; strict protected consumer input makes omitted descriptors reject rather than self-exempt.",
+    "Each ordered operation has stable ID, existing source owner, positive bounded per-attempt milliseconds, positive maximum attempts and nonnegative maximum retry delay. Duplicate operation identities or mismatched protected specifications reject.",
+    "Compose conservative sequential work as sum(attempt_bound * attempts + retry_delay * (attempts - 1)); add explicit setup and cleanup, take maximum with applicable authenticated measured lower bound, then add explicit headroom.",
+    "Quantize once to existing GitHub job minute unit (60000 ms), using integer arithmetic. No hidden provider budget, cadence or activation default.",
+    "Measurement source/subject/freshness must match protected expected metadata. Missing or stale measurement obeys explicit protected block-or-bounded-fallback policy; no silent measured value substitution.",
+    "Strict projection requires every protected reachable relationship cost contract or independently grounded exclusion and returns authority false / execution_qualified false. It never declares real runtime bounded merely because declared arithmetic validates.",
+    "Do not sum legacy minimum_job_timeout_minutes floors as component durations. Existing gate and component acceptance and diagnostic behavior must be characterized unchanged.",
+    "Regenerate all human views and source/schema/package mirrors through existing owners; preserve byte-stable legacy views.",
+    "Bind existing compiled CI graph/edge identities and independently supplied complete CI consumer references. Derive available outer milliseconds mechanically from the minimum actual referenced consumer job timeout; do not author a duplicate outer budget. Candidate deletion of CI references cannot self-exempt. Non-CI contexts with no bound runtime budget block rather than inventing one.",
+    "Compose across every relationship feeding each actual CI consumer job. Operation IDs identify one physical execution per job; repeated references must have identical owner/bounds and are counted once. Distinct operation IDs accumulate. Job-level setup/cleanup/headroom declarations must agree across references; ambiguity rejects. Authenticated measurement lower bounds apply to the whole job and combine by maximum. This models identity, not execution suppression or proof reuse."
+  ],
+  "required_controls": [
+    "Reproduce 568000 ms internal work plus setup/cleanup/headroom exceeding a 600000 ms envelope; reject before any render/allocation.",
+    "Positive exact envelope and canonical quantization boundary; large integer values without floating point.",
+    "Missing/duplicate operations, boolean/negative/fractional bounds, wrong source/subject, missing/stale/expired measurement and policy mismatch.",
+    "Missing protected relationship, matching candidate/policy omission, excluded pair with cost, and candidate attempt to omit cost descriptor.",
+    "Legacy gate/component characterization, exact graph population, generated-view parity and architecture/LOC/context tests."
+  ],
+  "constraints": [
+    "No approved performance/headroom policy is invented; input policies remain explicit and unqualified until independently adopted.",
+    "Source inventory exposes unqualified body-read/runtime bounds. Do not claim measured lower bounds or per-socket timeouts prove a total operation upper bound.",
+    "No full runtime consumer completeness, normative lifecycle adoption, active deadline projection or proof suppression in this slice.",
+    "Composition root is 782 LOC; keep within 800 or perform characterization-led deconstruction before feature additions."
+  ],
+  "forbidden_surfaces": [
+    "Active canonical submission checkout or transaction",
+    "Workflow/authority pins or manual generated projection",
+    "Provider request/retry behavior, permission policy, dispatch or release bytes",
+    "Maintained adopters and installer/custody mutations",
+    "Agent-authored approval or authority from timing output"
+  ]
+}

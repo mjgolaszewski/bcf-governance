@@ -1,0 +1,75 @@
+{
+  "authority": false,
+  "subject": "4ab0f999d3469c6195928536ea3e737e30da1241",
+  "started_at": "2026-10-17T03:48:01.916925+00:00",
+  "stages": [
+    {
+      "stage": "installed-fixture-controls",
+      "returncode": 0,
+      "elapsed_ms": 307560,
+      "stdout_sha256": "33d6b7e4ccf21e1b8e5809b0484f4205105c7148cd08af3167c63875ea1e9534",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed-fixture-governance",
+      "returncode": 0,
+      "elapsed_ms": 33337,
+      "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed-fixture-exposure",
+      "returncode": 0,
+      "elapsed_ms": 1489,
+      "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed-fixture-lint",
+      "returncode": 0,
+      "elapsed_ms": 6365,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed-fixture-typecheck",
+      "returncode": 0,
+      "elapsed_ms": 1080,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed-fixture-architecture-module-size",
+      "returncode": 0,
+      "elapsed_ms": 2841,
+      "stdout_sha256": "63666262609cff772df33f9b25c9d6a2f55668c9028953f476842f31ddc09e3b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed-fixture-architecture-context-membership",
+      "returncode": 0,
+      "elapsed_ms": 2565,
+      "stdout_sha256": "0cddb2f9522c5fc98e9503738cea759bed811b3ad3b391083a46a5d5f403e174",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "returncode": 0,
+  "ended_at": "2026-10-17T03:53:57.424022+00:00",
+  "raw_capture_sha256": "a590665bde33bf4995c1b7cd3e20133de99c8911d76c41e5017f22f1e6a055c9",
+  "tree_sha": "f26294b76d4912cffbb2aef812a76787c0af9687",
+  "cases": {
+    "passed": 47,
+    "pytest_elapsed_seconds": 307.02
+  },
+  "contract": "e77c797f",
+  "behavior": [
+    "Normal HTTPS fixture returns exact requested reference identity.",
+    "Fresh and upgraded installed consumers reject substituted ref before asset retrieval or partial output.",
+    "Existing success/asset/reference/missing-input and mixed real-compiler consumer cases retain their required outcomes."
+  ],
+  "remaining": [
+    "Corrected-source canonical normalization and full governed train remain required.",
+    "All82 whole requirements and complete independent population conformance/approved targets/immutable2.5 custody remain open."
+  ],
+  "production_reference_guard_changed": false
+}

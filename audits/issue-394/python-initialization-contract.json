@@ -1,0 +1,49 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source",
+  "dependency_acceptance": "Retain existing characterized default discovery and call-contract 1.0 behavior; isolated dormant scope under AgentBus 6870.",
+  "contract": [
+    "Add optional initialization_contracts_version 1.0, rejecting unsupported versions before reads.",
+    "Use the already parsed source tree; inventory possible initialization call sites, imports, implicit decorator applications and class construction without executing source.",
+    "Exclude deferred function and lambda bodies; retain generator uncertainty and annotation uncertainty explicitly.",
+    "All sites are possible effects, never proof of execution, purity, completeness or suppression eligibility. Dynamic execution and implicit language hooks remain unresolved.",
+    "Hash syntax with occurrence ordinals and source lines; do not emit literal expressions or fabricated call nodes.",
+    "Default inventory remains byte-equivalent; no import resolution or source operation consumer activation in this slice.",
+    "Every module result explicitly sets completeness_qualified false and declares implicit protocol and external/native/dynamic execution limitations even when the explicit site population is empty."
+  ],
+  "target_modules": [
+    "bcf_governance/tooling/semantic_ownership_inventory.py",
+    "bcf_governance/tooling/semantic_python_calls.py",
+    "schemas/semantic-initialization-contracts.schema.json"
+  ],
+  "forbidden_surfaces": [
+    "runtime authority",
+    "proof suppression",
+    "normative DAG adoption",
+    "provider dispatch",
+    "installer/custody",
+    "workflow and pin normalization"
+  ],
+  "expected_tests": [
+    "default compatibility",
+    "unsupported versions before reads",
+    "module and class body calls",
+    "function defaults and decorators without deferred bodies",
+    "implicit decorator and class effects",
+    "imports including conditional/star",
+    "annotation and generator uncertainty",
+    "deterministic hashes and distinct occurrences",
+    "Schema rejects authority elevation malformed site identities and untyped calls"
+  ],
+  "completion": "Focused tests and existing characterization; full independently protected source population and downstream consumer binding remain open.",
+  "ownership_decision": "Keep initialization syntax traversal in the existing semantic_python_calls owner; no context-policy or compiled graph digest changes."
+}

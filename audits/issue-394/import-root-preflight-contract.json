@@ -1,0 +1,40 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/import-root-preflight-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend existing reconstructed-lifecycle-source-binding slice after 069cb92d. No whole requirement or phase closure.",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_ownership_inventory.py",
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "tests/test_semantic_import_roots.py"
+  ],
+  "contract": [
+    "Extract existing source-independent Python import-root declaration/resource checks into one same-owner helper. Preserve normalization, uniqueness, safe path, nonoverlap and regular-directory semantics.",
+    "Existing resolver delegates to that helper, retaining module inventory/collision/empty-population checks after source discovery. No second import interpretation.",
+    "Reconstructed lifecycle query calls the same helper before protected policy capture and AST reconstruction. Invalid declared resources reject before expensive source work; no evidence or authority allocation.",
+    "Preserve legacy root acceptance and error categories; post-discovery resource revalidation remains because early observation is not continued filesystem freshness.",
+    "Optional parser import roots validate the complete discovered path population through the same owner before any AST parse. Module ambiguity and no-importable-source failures depend on paths only and must reject before parsing; retain post-parse resolver revalidation. Default discovery bytes remain unchanged when no roots are supplied."
+  ],
+  "expected_tests": [
+    "Existing missing duplicate escape roots reject before discovery",
+    "Empty overlapping and symlink roots reject before discovery",
+    "Existing resolver import/collision/empty population behavior and reconstructed-source cases preserved",
+    "Governance/static/context/LOC/pack parity",
+    "Ambiguous module and empty import-root population reject before first AST parse",
+    "Reconstructed query passes declared roots into exact source discovery"
+  ],
+  "forbidden_surfaces": [
+    "new source resolver",
+    "canonical normalization",
+    "provider installer custody activation"
+  ],
+  "completion": "Local deterministic rejection ordering only; no performance certification or authority admission."
+}

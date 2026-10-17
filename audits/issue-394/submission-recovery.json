@@ -1,0 +1,54 @@
+{
+  "authority": false,
+  "status": "recovered_interrupted_normalization",
+  "workitem": "P32-P0-07",
+  "subject": {
+    "commit_sha": "2e936c4dbbce8c8bf9a4b0b04e5e0d424a587fbc"
+  },
+  "attempt": 6,
+  "observations": {
+    "raw_progress_count": 1,
+    "last_stage": "normalization",
+    "last_state": "started",
+    "terminal_capture_present": false,
+    "matching_submit_process_present": false,
+    "matching_host_lease_owned": false,
+    "lease_record_matches_subject": true,
+    "primary_head_matches_subject": true,
+    "primary_was_clean": true,
+    "shadow_head_matches_subject": true,
+    "shadow_changed_paths": [
+      "governance/test-duration-observations.json",
+      "governance/test-manifests/contract-test.txt",
+      "governance/test-manifests/test.txt"
+    ],
+    "promoted_reconciliation_ref_present": false,
+    "remote_successor_branch_present": false,
+    "matching_provider_pr_present": false,
+    "matching_provider_workflow_present": false,
+    "provider_main_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03"
+  },
+  "raw_progress_sha256": "857bc22b1a30c75838e6fb507b927eea2a895cfe0165695d134e2262ea307911",
+  "classification": "Interrupted local normalization with no observed promotion or provider submission; original exit code and timing are unknown.",
+  "recovery": "Preserve shadow diff and original capture outside distribution; restart only through canonical submit after authored recovery and affected-source checks. Unfinished bound-PR source stays isolated; its integration requires separate qualification. Recheck lease and provider state at submission.",
+  "limitations": [
+    "Not a successful prospective proof or terminal certification.",
+    "No percentile or elapsed-duration claim.",
+    "No acceptance requirement closes from recovery observations."
+  ],
+  "integration_audit": {
+    "admission_closeout": "already_in_ancestry",
+    "deadline_envelopes": "already_in_ancestry",
+    "source_admission": "already_in_ancestry",
+    "residual_admitted_evidence": "recovered_by_merge",
+    "bound_pr_context": "isolated_unfinished"
+  },
+  "subsequent_transaction": {
+    "source_commit": "3519822033c94e997d5cab4eaa547359991e42a2",
+    "normalized_commit": "67825aacdad4e62a96af4933db7c76219c5da464",
+    "terminal": "failed_closed_provider_inventory_stability",
+    "evidence": "audits/issue-394/recovered-submission-terminal.json",
+    "original_attempt_six_outcome_unchanged": true,
+    "new_retry_launched": false
+  }
+}

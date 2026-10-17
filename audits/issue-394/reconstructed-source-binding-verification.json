@@ -1,0 +1,43 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/reconstructed-source-binding-verification.json"
+  },
+  "status": "focused_checks_passed_with_retained_oracle_blocker",
+  "contract_red_commits": [
+    "b65ec3d6",
+    "c533034a",
+    "f06f6bb9"
+  ],
+  "source_hashes": {
+    "bcf_governance/tooling/ci_graph_composition.py": "8543704feb37e52d5f3cd80b250e69aa1fabcc09c5cc7122414fd550f9fb908e",
+    "tests/test_ci_graph_composition.py": "723ad2b8aaf27d5871274ebaef29ccf2f5b287e9943b569af3e1187f7be89b17"
+  },
+  "red_controls": {
+    "port_staged": "8 actual failures after API staging: missing reconstruction result and invalid source/context/root/scope/catalogue inputs not rejected. Initial absent-import failures were preliminary API evidence only.",
+    "malformed_inputs": "9 actual failures before correction: 7 malformed-input type failures plus authority-bearing population and unbound call endpoint reached discovery; all now produce CIGraphError before I/O.",
+    "legacy_sequence_compatibility": "One actual failure exposed overly strict tuple-only call-pair ingress introduced by the helper extraction; list-form legacy pairs restored before feature commit."
+  },
+  "tests": {
+    "composition": "193 passed plus known governed oracle failure after the shared-helper refactor.",
+    "expanded": "282 passed plus known governed oracle failure in 15.62s, before adding a second reconstruction equality assertion.",
+    "repeat_determinism": "Passed in the final combined run.",
+    "cli_effect": "Passed in the final combined run; earlier 83.85s standalone observation retained as intermediate evidence.",
+    "governance": "governance-yaml-ok",
+    "static": "lint/typecheck passed",
+    "parity": "canonical pack --check and affected LOC/context/private-runtime/pack tests passed",
+    "final_compatibility_run": "Final corrected-source combined run: 284 passed, one retained governed-manifest oracle failure in 109.51 seconds, including CLI effect, sequence compatibility, source reconstruction determinism, source/parity/LOC/context controls."
+  },
+  "remaining": [
+    "Actual protected provider-owned invocation and independent repository/context/population authentication remain unimplemented.",
+    "No complete runtime-effect guard/recovery execution or installed-consumer qualification.",
+    "No normative machine DAG adoption/prose retirement performance certification or independent custody.",
+    "Canonical test manifests remain held and the oracle failure remains visible."
+  ],
+  "whole_requirement_closure": false,
+  "intermediate_source_hashes": {
+    "bcf_governance/tooling/ci_graph_composition.py": "0e5d007f245af552f08e2fad893fb214637ee19123919cace4ee3b51f6092d75",
+    "tests/test_ci_graph_composition.py": "bd62d7501a2b2f0e2f53348e4c853f8d7d2e4ce741f9cc3304eea2ef00580dc5"
+  }
+}

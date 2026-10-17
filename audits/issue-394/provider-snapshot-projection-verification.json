@@ -1,0 +1,69 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/baseline-measurement-slice.yml",
+  "naive_clock_red": {
+    "failed": 3,
+    "seconds": 0.74,
+    "behavior": "Timezone-free provider facts manufactured 1000 ms durations through ambient timezone conversion."
+  },
+  "verification": {
+    "passed": 61,
+    "seconds": 1.25,
+    "scope": "Full operational observations plus LOC/context/private-runtime parity",
+    "lint": "passed",
+    "typecheck": "passed",
+    "governance_yaml": "passed",
+    "coverage_schema": "passed",
+    "pack_parity": "passed"
+  },
+  "constraints": [
+    "Snapshot projection is not provider authentication or job-attempt custody; caller authenticates exact response endpoint and expected run/attempt.",
+    "No matched cohort, percentile, approved target, full lifecycle timeline or performance certification.",
+    "No provider/controller mutation or installer/custody writes."
+  ],
+  "provider_capture_followup": {
+    "path": "audits/issue-394/observations/pr-426-attempt-1.json",
+    "source_snapshot_sha256": "6177af65cd62ad328fe3704244508e7d7901724ad0a0c05e0024cba3e755fa3f",
+    "producer_commit": "b05a380598a45295ca0cdd45f7456568df4581d0",
+    "raw_interval_reconstruction": "Both retained PR 421 and PR 426 captures reproduce exactly.",
+    "observations_suite": {
+      "passed": 59,
+      "seconds": 0.24
+    },
+    "job_count": 7,
+    "run_and_population_rereads": "matched",
+    "matched_cohort": false,
+    "percentile_certification": false,
+    "governance_yaml": "passed",
+    "coverage_schema": "passed"
+  },
+  "context_followup": {
+    "initial_red": {
+      "failed": 8,
+      "passed": 5,
+      "seconds": 0.31,
+      "valid_failures": 6,
+      "withdrawn_expectations": 2,
+      "correction": "PR event does not uniquely classify workflow context; initial PR/controller and push/PR inference rules were withdrawn. Protected caller owns context intent; optional expected event is compared exactly."
+    },
+    "broad": {
+      "passed": 77,
+      "seconds": 0.69,
+      "scope": "Full observations plus LOC/context/private-runtime parity; retained PR captures unchanged."
+    },
+    "early_boundary_controls": {
+      "passed": 8,
+      "seconds": 0.23,
+      "behavior": "Context/event contradictions reject before timestamp reconstruction."
+    },
+    "checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "governance_yaml": "passed",
+      "coverage_schema": "passed",
+      "pack_parity": "passed"
+    },
+    "remaining": "Provider/endpoint authentication and complete protected workflow context binding remain caller obligations; custody/interruption windows require independent endpoint facts."
+  }
+}

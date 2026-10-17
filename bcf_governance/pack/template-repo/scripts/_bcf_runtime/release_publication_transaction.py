@@ -57,17 +57,17 @@ def _matching_release(
 
 
 def _validate_release_identity(
-    release: dict[str, Any], *, tag: str, body: str
+    release: dict[str, Any], *, tag: str, body: str | None
 ) -> None:
     prerelease = release_asset_version_from_tag(tag)
     if (
         release.get("tag_name") != tag
         or release.get("name") != tag
-        or release.get("body") != body
+        or (body is not None and release.get("body") != body)
         or release.get("prerelease") is not prerelease
     ):
         raise GitHubControllerError("release provider identity conflicts with transaction")
-    if release.get("draft") not in {True, False}:
+    if not isinstance(release.get("draft"), bool):
         raise GitHubControllerError("release provider lifecycle is invalid")
 
 
@@ -104,6 +104,7 @@ def inspect_release(
     tag: str,
     expected_commit: str,
     expected_assets: dict[str, str],
+    expected_body: str | None = None,
 ) -> dict[str, Any]:
     """Fail closed unless a release has exact immutable provider custody."""
 
@@ -128,6 +129,7 @@ def inspect_release(
     ):
         raise GitHubControllerError("release tag does not match annotated unsigned policy")
     release = api.release_by_tag(repository, tag)
+    _validate_release_identity(release, tag=tag, body=expected_body)
     if release.get("immutable") is not True or release.get("draft") is not False:
         raise GitHubControllerError("published release must be immutable and non-draft")
     observed = _asset_inventory(release)
@@ -182,6 +184,7 @@ def publish_release(
                 tag=tag,
                 expected_commit=expected_commit,
                 expected_assets=expected_assets,
+                expected_body=body,
             )
             return {**result, "transaction_sha256": transaction, "decision": "already_published"}
         observed = _asset_inventory(existing)
@@ -205,6 +208,7 @@ def publish_release(
                 tag=tag,
                 expected_commit=expected_commit,
                 expected_assets=expected_assets,
+                expected_body=body,
             )
             return {**result, "transaction_sha256": transaction, "decision": "race_converged"}
 
@@ -233,7 +237,10 @@ def publish_release(
             raise GitHubControllerError("provider release asset bytes differ before publication")
 
     current = _matching_release(api, repository, tag)
-    if current is None or _asset_inventory(current) != expected_assets:
+    if current is None:
+        raise GitHubControllerError("provider release asset inventory is incomplete")
+    _validate_release_identity(current, tag=tag, body=body)
+    if _asset_inventory(current) != expected_assets:
         raise GitHubControllerError("provider release asset inventory is incomplete")
     if current["draft"] is True:
         try:
@@ -246,5 +253,6 @@ def publish_release(
         tag=tag,
         expected_commit=expected_commit,
         expected_assets=expected_assets,
+        expected_body=body,
     )
     return {**result, "transaction_sha256": transaction, "decision": "published"}

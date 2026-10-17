@@ -267,3 +267,63 @@ def compile_edge_contracts(graph: dict[str, Any]) -> tuple[EdgeContract, ...]:
                 f"unreachable CI graph edge {contract.producer} -> {contract.consumer} lacks an exclusion"
             )
     return tuple(contracts)
+
+
+def validate_authority_separation(
+    edges: list[dict[str, Any]], *, non_authoritative_states: frozenset[str],
+    authority_states: frozenset[str], required_exclusions: dict[tuple[str, str], str],
+    permitted_non_authority_effects: frozenset[str],
+) -> None:
+    """Check lifecycle policy paths through the canonical ancestor owner.
+
+    Inputs are schema-validated contracts and consumer-owned policy populations.
+    Failure/recovery outcome references carry their consumer context; an excluded
+    edge's repair outcomes carry its producer context. This neither executes
+    recovery nor qualifies bounded inter-attempt cycles or runtime authority.
+    """
+    if not non_authoritative_states or not authority_states or non_authoritative_states & authority_states:
+        raise CIGraphError("authority separation policy population is empty or overlapping")
+    dependencies: dict[str, set[str]] = {}
+    pairs: set[tuple[str, str]] = set()
+    exclusions: set[tuple[str, str]] = set()
+    states: set[str] = set()
+    for edge in edges:
+        source, target = edge['from'], edge['to']
+        pair = source, target
+        if pair in pairs:
+            raise CIGraphError('authority separation has a duplicate producer-consumer pair')
+        pairs.add(pair)
+        states.update(pair)
+        dependencies.setdefault(source, set())
+        dependencies.setdefault(target, set())
+        if 'exclusion' in edge:
+            if (pair not in required_exclusions or required_exclusions[pair] != edge['exclusion']
+                    or any(edge[field] != 'none' for field in ('producer', 'consumer', 'authority_effect'))):
+                raise CIGraphError('authority separation has a forged structural exclusion')
+            exclusions.add(pair)
+            origin = source
+        else:
+            dependencies[target].add(source)
+            origin = target
+        for field in ('failure_transition', 'recovery_transition'):
+            dependencies.setdefault(edge[field], set()).add(origin)
+    if exclusions != required_exclusions.keys():
+        raise CIGraphError('authority separation required structural exclusion is missing')
+    if (non_authoritative_states | authority_states) - states:
+        raise CIGraphError('authority separation policy state population is incomplete')
+    upstream_by_state: dict[str, set[str]] = {}
+    for state in sorted(dependencies):
+        try:
+            upstream_by_state[state] = ancestors(state, dependencies)
+        except CIGraphError as exc:
+            raise CIGraphError(f'authority path conformance failed: {exc}') from exc
+    for target in sorted(authority_states):
+        if upstream_by_state[target] & non_authoritative_states:
+            raise CIGraphError(f'non-authoritative lifecycle path reaches authority state: {target}')
+    for edge in edges:
+        observational = any(
+            state in non_authoritative_states or upstream_by_state[state] & non_authoritative_states
+            for state in (edge['from'], edge['to'])
+        )
+        if observational and edge['authority_effect'] not in permitted_non_authority_effects:
+            raise CIGraphError('non-authoritative lifecycle edge declares an unknown or authority effect')

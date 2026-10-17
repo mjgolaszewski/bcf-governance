@@ -1,0 +1,80 @@
+{
+  "authority": false,
+  "status": "affected_checks_passed_full_acceptance_open",
+  "contracts": [
+    "9d2fff3f",
+    "45646979"
+  ],
+  "checks": {
+    "affected_cache_prospective_controller_pr_authority": {
+      "passed": 207,
+      "elapsed_seconds": 9.04
+    },
+    "lint": "passed",
+    "typecheck": "passed",
+    "architecture_module_size": "passed",
+    "architecture_context_membership": "passed",
+    "governance_yaml": "passed",
+    "installed_wheel_affected": {
+      "passed": 350,
+      "elapsed_seconds": 27.38,
+      "imports": "isolated_mode_asserted_installed_module_origin"
+    },
+    "installed_wheel_profile_controller_recovery": {
+      "passed": 62,
+      "elapsed_seconds": 92.28,
+      "imports": "isolated_mode_asserted_installed_module_origin"
+    },
+    "late_protected_source_consumption": {
+      "passed": 1,
+      "elapsed_seconds": 1.69,
+      "subject": "real_git_stacked_PR_comparison_candidate_and_provider_head_unchanged_protected_source_moved"
+    },
+    "authored_semantic_ownership": "passed",
+    "canonical_source_profile_flows_and_pack_sync": {
+      "passed": 33,
+      "elapsed_seconds": 441.3
+    },
+    "workplan_schema_and_exact_authored_selectors": {
+      "passed": 2,
+      "elapsed_seconds": 10.82
+    }
+  },
+  "inventory": {
+    "bounded_attempt_outcomes_preserved": true,
+    "read_budget_unchanged": true,
+    "success_output_unchanged": true,
+    "subsequent_read_only_diagnostic": {
+      "requests": 78,
+      "result": "stable_complete_inventory",
+      "original_failure_cause": "unknown_original_payloads_not_retained"
+    }
+  },
+  "proof_context": {
+    "new_front_door_identity": "canonical_resolved_context_plus_validation_lane",
+    "legacy_shape": "preserved_when_optional_context_absent",
+    "changed_context": "cache_miss_requires_applicable_proof",
+    "authority": "local_non_authoritative"
+  },
+  "remaining": [
+    "Independent complete consumer and runtime-effect conformance.",
+    "Canonical normalization and provider admission; installed parity passed for stated affected and profile/controller/recovery suites, not full runtime-effect conformance.",
+    "Real isolated consumer acceptance, approved matched performance targets and custody.",
+    "All82 whole requirements remain open."
+  ],
+  "exact_build": {
+    "authority": false,
+    "commit": "02672ac2deff651d4c813d6647853421f48757e5",
+    "tree": "f36e8ea6d11a08a28726f014f24f3d6a07543081",
+    "python_files_equal": 597,
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "929053c2b6ebf02158b57a5c6cc21610225433ffdd3fe0c79ffb95c471746811",
+      "bcf_governance-2.5.0.tar.gz": "06792091ccb9be21c02e0faaeb413d0bec9af841218b678cbe795281fc6cf73d"
+    }
+  },
+  "rejected_collection": {
+    "suite": "installed profile_flows",
+    "cause": "repository compatibility scripts not importable under python -I",
+    "disposition": "no cases executed in that batch; run source wrappers under canonical source environment separately"
+  }
+}

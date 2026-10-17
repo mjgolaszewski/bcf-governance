@@ -2342,3 +2342,84 @@ def test_authored_verified_cannot_be_promoted_by_consistent_yaml(tmp_path: Path)
 
     with pytest.raises(TruthfulnessError, match="verified and closed are computed"):
         derive_truth(repo, evidence_dir)
+
+
+
+@pytest.mark.parametrize('consumer', ['readiness', 'computed', 'projection'])
+@pytest.mark.parametrize('defect', ['duplicate_phase', 'duplicate_status'])
+def test_authored_lifecycle_duplicates_reject_through_shared_read_boundary(tmp_path, consumer, defect, monkeypatch):
+    monkeypatch.setattr("bcf_governance.tooling.evidence_workitem_lifecycle.eligible_receipts",
+                        lambda *a, **kw: pytest.fail("ambiguous lifecycle reached proof resolution"))
+    from bcf_governance.tooling.evidence_workitem_lifecycle import active_workitem_entries, workitem_observation
+    from bcf_governance.tooling.operational_observations import OperationalObservationError, lifecycle_projection
+    plans = tmp_path / 'plans'
+    plans.mkdir()
+    ledger = plans / 'phase-ledger.yml'
+    ledger.write_text('active_phase: {id: P01, workitems: plans/items.yml}\n')
+    items = plans / 'items.yml'
+    items.write_text('workitems:\n- id: P01-W01\n  status: DONE\n  acceptance_evidence: [test]\n')
+    if defect == 'duplicate_phase':
+        ledger.write_text('active_phase: {id: P99, workitems: plans/other.yml}\n' + ledger.read_text())
+    else:
+        items.write_text(items.read_text().replace('  status: DONE', '  status: TODO\n  status: DONE'))
+    error = OperationalObservationError if consumer == 'projection' else WorkitemContractError
+    with pytest.raises(error, match='duplicate YAML key'):
+        if consumer == 'readiness':
+            active_workitem_entries(tmp_path)
+        elif consumer == 'computed':
+            workitem_observation(tmp_path, {}, {'claims': {}}, set(), {'commit_sha': 'a'*40, 'tree_sha': 'b'*40})
+        else:
+            lifecycle_projection(tmp_path)
+
+
+def test_unambiguous_authored_done_does_not_supply_verified_truth(tmp_path):
+    from bcf_governance.tooling.evidence_workitem_lifecycle import active_workitem_entries, workitem_observation
+    from bcf_governance.tooling.operational_observations import lifecycle_projection
+    plans = tmp_path / 'plans'
+    plans.mkdir()
+    (plans / 'phase-ledger.yml').write_text('active_phase: {id: P01, workitems: plans/items.yml}\n')
+    (plans / 'items.yml').write_text('workitems:\n- id: P01-W01\n  status: DONE\n  acceptance_evidence: [test]\n')
+    assert active_workitem_entries(tmp_path)[1][0]['status'] == 'DONE'
+    computed = workitem_observation(tmp_path, {}, {'claims': {}}, set(), {'commit_sha': 'a'*40, 'tree_sha': 'b'*40})
+    assert computed['satisfied'] is False
+    assert computed['items'][0]['verification_state'] == 'unverified'
+    assert computed['items'][0]['authority_scope'] == 'workitem_only'
+    assert lifecycle_projection(tmp_path)['completed_prefix'] == ['P01-W01']
+
+
+@pytest.mark.parametrize('consumer', ['readiness', 'computed', 'projection'])
+@pytest.mark.parametrize('resource', ['symlink', 'dangling_symlink', 'directory'])
+def test_authored_lifecycle_consumers_reject_invalid_workitem_resources(tmp_path, consumer, resource):
+    from bcf_governance.tooling.evidence_workitem_lifecycle import active_workitem_entries, workitem_observation
+    from bcf_governance.tooling.operational_observations import OperationalObservationError, lifecycle_projection
+    plans = tmp_path / 'plans'
+    plans.mkdir()
+    (plans / 'phase-ledger.yml').write_text('active_phase: {id: P01, workitems: plans/items.yml}\n')
+    path = plans / 'items.yml'
+    if resource == 'directory':
+        path.mkdir()
+    else:
+        target = plans / 'target.yml'
+        if resource == 'symlink':
+            target.write_text('workitems: [{id: P01-W01, status: DONE}]\n')
+        path.symlink_to(target)
+    error = OperationalObservationError if consumer == 'projection' else WorkitemContractError
+    with pytest.raises(error, match='regular nonsymlink file'):
+        if consumer == 'readiness': active_workitem_entries(tmp_path)
+        elif consumer == 'computed': workitem_observation(tmp_path, {}, {'claims': {}}, set(), {})
+        else: lifecycle_projection(tmp_path)
+
+
+@pytest.mark.parametrize('consumer', ['readiness', 'computed', 'projection'])
+def test_authored_lifecycle_complex_key_errors_remain_typed(tmp_path, consumer):
+    from bcf_governance.tooling.evidence_workitem_lifecycle import active_workitem_entries, workitem_observation
+    from bcf_governance.tooling.operational_observations import OperationalObservationError, lifecycle_projection
+    plans = tmp_path / 'plans'
+    plans.mkdir()
+    (plans / 'phase-ledger.yml').write_text('active_phase: {id: P01, workitems: plans/items.yml}\n')
+    (plans / 'items.yml').write_text('workitems: [{id: P01-W01, status: DONE}]\n? [unsupported, key]\n: value\n')
+    error = OperationalObservationError if consumer == 'projection' else WorkitemContractError
+    with pytest.raises(error, match='authored lifecycle contract is unreadable'):
+        if consumer == 'readiness': active_workitem_entries(tmp_path)
+        elif consumer == 'computed': workitem_observation(tmp_path, {}, {'claims': {}}, set(), {})
+        else: lifecycle_projection(tmp_path)

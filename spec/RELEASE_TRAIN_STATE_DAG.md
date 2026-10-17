@@ -2462,6 +2462,32 @@ violation; characterization precedes it; one governed change extracts at most
 one coherent existing responsibility; public CLI, authority, evidence,
 ordering, failures, and source/package/template parity remain compatible; and
 replaced code is deleted. No extraction may create a new agent-selected stage.
+# Issue #394 migration checkpoint
+
+The 2.5.0 foundation introduces `ci-lifecycle-composition.schema.json` and the
+pure `ci_graph_composition` compiler. The compiler composes the existing CI edge
+population with an independently supplied lifecycle relationship and runtime
+effect population. Its output has no truth or execution authority.
+
+This document remains historical and explanatory context during adoption. It
+must be replaced by generated views of the complete adopted machine-readable
+contract, including all edge contracts and canonical structural exclusions.
+The dormant compiler alone does not establish complete lifecycle coverage,
+executable conformance, profile parity, or retirement of the historical matrix.
+
+### Issue 394 authored release and static binding checkpoint
+
+Canonical reconciliation now checks the authored current-version changelog target
+before any derived-state mutation. A stale, absent, duplicated, or misplaced target
+rejects; an existing exact released entry remains compatible. Release-version cache
+applicability includes every inspected text surface and both runtime owner locations.
+
+The dormant lifecycle compiler also resolves implementation and terminal references
+against the independently supplied semantic source inventory, and test selectors
+against verified collection. Each reachable relationship must retain the protected
+cause-specific negative-control population. These static checks grant no execution
+qualification; actual protected-consumer wiring and runtime conformance still block
+retirement of this prose view.
 
 ### Issue 427 current-session input handoff
 

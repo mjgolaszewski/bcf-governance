@@ -253,7 +253,7 @@ def _record(result: subprocess.CompletedProcess) -> dict:
 
 
 @contextlib.contextmanager
-def _provider(tmp_path: Path, api):
+def _provider(tmp_path: Path, api, *, reference_ref: str | None = None):
     """Serve only the read endpoints needed by the real vendored HTTPS adapter."""
     certificate, key = tmp_path / "fixture-cert.pem", tmp_path / "fixture-key.pem"
     subprocess.run(
@@ -280,7 +280,7 @@ def _provider(tmp_path: Path, api):
                 payload = api.releases.get(tag)
             elif path.startswith(prefix + "git/ref/tags/"):
                 tag = path.removeprefix(prefix + "git/ref/tags/")
-                payload = {"object": {"type": "commit", "sha": api.tags[tag]}}
+                payload = {"ref": reference_ref if reference_ref is not None else f"refs/tags/{tag}", "object": {"type": "commit", "sha": api.tags[tag]}}
             elif path.startswith(prefix + "attestations/"):
                 payload = {"attestations": [{"subject_digest": path.rsplit("/", 1)[-1]}]}
             elif path.startswith(prefix + "releases/assets/"):
@@ -339,7 +339,9 @@ def _exercise_resolve(consumer: Path, python: Path, fixture_root: Path, corrupti
     elif corruption == "missing_reference":
         target_reference.unlink()
     output = consumer / f".artifacts/cold-inputs-{corruption or 'valid'}"
-    with _provider(fixture_root, api) as (environment, requests):
+    with _provider(
+        fixture_root, api, reference_ref="refs/tags/different-subject" if corruption == "ref" else None,
+    ) as (environment, requests):
         result = _cli(python, consumer, "resolve-github", "--repo-root", ".", "--reference", str(target_reference), "--output", str(output), environment=environment)
     if corruption is None:
         assert result.returncode == 0, result.stderr
@@ -350,12 +352,14 @@ def _exercise_resolve(consumer: Path, python: Path, fixture_root: Path, corrupti
     else:
         assert result.returncode == 1, result.stdout + result.stderr
         assert not output.exists()
-        message = {"asset": "identity mismatch", "reference": "different storage contract", "missing_asset": "returned 404", "missing_reference": "reference must remain"}[corruption]
+        message = {"asset": "identity mismatch", "reference": "different storage contract", "missing_asset": "returned 404", "missing_reference": "reference must remain", "ref": "Git reference response does not match requested ref"}[corruption]
         assert message in result.stderr
+        if corruption == "ref":
+            assert not any("/releases/assets/" in path for _, path, _ in requests)
     return {**_record(result), "case": corruption or "valid", "provider_requests": requests}
 
 
-@pytest.mark.parametrize("corruption", [None, "asset", "reference", "missing_asset", "missing_reference"])
+@pytest.mark.parametrize("corruption", [None, "asset", "reference", "missing_asset", "missing_reference", "ref"])
 def test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_output(
     installed_consumer, isolated_python, tmp_path, corruption,
 ):
@@ -382,15 +386,37 @@ def exercise_installed_consumer(consumer: Path, python: Path, fixture_root: Path
     }}}
     profile_path.write_text(yaml.safe_dump(profile, sort_keys=False))
     semantic_records = exercise_consumer(consumer, python, consumer / "scripts/semantic_ownership.py")
+    authored_code = """import importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime import semantic_ownership_scan as scan
+from _bcf_runtime import semantic_source_discovery as discovery
+def unexpected_compiler(*args, **kwargs):
+    raise AssertionError('authored Python query executed a foreign compiler')
+discovery.compiler_contracts = unexpected_compiler
+discovery.discover_typescript_source = unexpected_compiler
+report = scan.validate_authored_semantic_ownership(Path.cwd())
+assert report['authority'] is False and report['execution_qualified'] is False
+assert 'operation_observations' in report
+assert isinstance(report['operation_observations'], list)
+print(json.dumps(report, sort_keys=True))
+"""
+    authored_query = subprocess.run(
+        [str(python), "-I", "-c", authored_code], cwd=consumer, env=_environment(),
+        capture_output=True, text=True,
+    )
+    assert authored_query.returncode == 0, _record(authored_query)
     prepare_records = _exercise_prepare(consumer, python, fixture_root / "prepare")
     resolve_records = [
         _exercise_resolve(consumer, python, fixture_root / f"resolve-{case or 'valid'}", case)
-        for case in (None, "asset", "reference", "missing_asset", "missing_reference")
+        for case in (None, "asset", "reference", "missing_asset", "missing_reference", "ref")
     ]
     assert schemas == {path: path.read_bytes() for path in (consumer / "schemas").glob("*.json")}
     return {
         "status": "pass", "consumer": str(consumer), "python": str(python),
         "bcf_package_absent": _record(probe), "semantic_commands": semantic_records,
+        "authored_operation_query": _record(authored_query),
         "prepare_commands": prepare_records, "resolve_commands": resolve_records,
         "installed_schemas_preserved": True,
     }

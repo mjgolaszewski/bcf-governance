@@ -1,0 +1,1247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "requirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "requirement",
+        "owner",
+        "workitem",
+        "contract_owner",
+        "implementation_targets",
+        "producer",
+        "consumer",
+        "positive_binding",
+        "negative_binding",
+        "terminal_gate",
+        "evidence_status"
+      ],
+      "properties": {
+        "requirement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workitem": {
+          "enum": [
+            "foundation.admission",
+            "foundation.residuals",
+            "foundation.composition",
+            "foundation.conformance",
+            "foundation.deadlines",
+            "foundation.baseline",
+            "dormant.early-checks",
+            "dormant.continuation",
+            "dormant.impact",
+            "dormant.scheduling",
+            "dormant.release",
+            "dormant.projection",
+            "dormant.shadow",
+            "activation.authority",
+            "activation.periodic",
+            "activation.rollback",
+            "certification.tuning",
+            "certification.benchmarks",
+            "certification.distribution",
+            "certification.custody",
+            "foundation.submit-normalization"
+          ]
+        },
+        "contract_owner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implementation_targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "positive_binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "scenario"
+          ],
+          "properties": {
+            "status": {
+              "const": "required_before_implementation"
+            },
+            "scenario": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "negative_binding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "status",
+            "scenario"
+          ],
+          "properties": {
+            "status": {
+              "const": "required_before_implementation"
+            },
+            "scenario": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "terminal_gate": {
+          "const": "certification.custody"
+        },
+        "evidence_status": {
+          "const": "not_executed"
+        },
+        "implementation_slices": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "workitem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "status",
+        "owner",
+        "bounded_context",
+        "architectural_layer",
+        "operation_side",
+        "target_modules",
+        "forbidden_surfaces",
+        "depends_on",
+        "expected_tests",
+        "acceptance",
+        "evidence"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "TODO",
+            "IN_PROGRESS",
+            "BLOCKED",
+            "DONE"
+          ]
+        },
+        "owner": {
+          "const": "home:bcf-governance:bcf-394-ironwatch"
+        },
+        "bounded_context": {
+          "type": "string",
+          "minLength": 1
+        },
+        "architectural_layer": {
+          "const": "tooling"
+        },
+        "operation_side": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target_modules": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "forbidden_surfaces": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "depends_on": {
+          "type": "array",
+          "minItems": 0,
+          "items": {
+            "enum": [
+              "foundation.admission",
+              "foundation.residuals",
+              "foundation.composition",
+              "foundation.conformance",
+              "foundation.deadlines",
+              "foundation.baseline",
+              "dormant.early-checks",
+              "dormant.continuation",
+              "dormant.impact",
+              "dormant.scheduling",
+              "dormant.release",
+              "dormant.projection",
+              "dormant.shadow",
+              "activation.authority",
+              "activation.periodic",
+              "activation.rollback",
+              "certification.tuning",
+              "certification.benchmarks",
+              "certification.distribution",
+              "certification.custody",
+              "foundation.submit-normalization"
+            ]
+          }
+        },
+        "expected_tests": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "scenario"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "positive",
+                  "cause_specific_negative"
+                ]
+              },
+              "scenario": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "acceptance": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "References to nonauthoritative completion observations; independent verified/closed truth is computed by BCF."
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "DONE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "implementation_slice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "workitem",
+        "scope",
+        "contract",
+        "producer",
+        "consumer",
+        "status",
+        "authority",
+        "positive_tests",
+        "remaining",
+        "negative_controls"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "workitem": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contract": {
+          "type": "string",
+          "minLength": 1
+        },
+        "producer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "consumer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "focused_tests_passed"
+        },
+        "authority": {
+          "const": false
+        },
+        "positive_tests": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "remaining": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "negative_controls": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cause",
+              "test"
+            ],
+            "properties": {
+              "cause": {
+                "type": "string",
+                "minLength": 1
+              },
+              "test": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "document",
+    "source",
+    "target_version",
+    "admission",
+    "stages",
+    "workitems",
+    "requirements",
+    "additional_regressions",
+    "measurement_policy",
+    "verification_commands",
+    "completion",
+    "canonical_workitem_mapping",
+    "implementation_slices"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "path",
+        "status",
+        "authority"
+      ],
+      "properties": {
+        "kind": {
+          "const": "issue_394_pre_admission_workplan"
+        },
+        "path": {
+          "const": "audits/issue-394/workplan.yml"
+        },
+        "status": {
+          "const": "registered"
+        },
+        "authority": {
+          "const": false
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "issue",
+        "issue_updated_at",
+        "issue_body_sha256",
+        "repository",
+        "commit_sha",
+        "tree_sha"
+      ],
+      "properties": {
+        "issue": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue_updated_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "issue_body_sha256": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "commit_sha": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tree_sha": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "target_version": {
+      "const": "2.5.0"
+    },
+    "admission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "canonical_phase_ids",
+        "canonical_release_train_id",
+        "rule",
+        "canonical_active_phase_preserved",
+        "blocker",
+        "unblock_condition",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "admitted_under_current_policy",
+            "local_construction_provider_hold"
+          ]
+        },
+        "canonical_phase_ids": {
+          "const": [
+            "P32",
+            "P33",
+            "P34",
+            "P35"
+          ]
+        },
+        "canonical_release_train_id": {
+          "const": "release_27"
+        },
+        "rule": {
+          "type": "string",
+          "minLength": 1
+        },
+        "canonical_active_phase_preserved": {
+          "const": "P32"
+        },
+        "blocker": {
+          "type": "string",
+          "minLength": 1
+        },
+        "unblock_condition": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "issue_label",
+          "depends_on",
+          "workitems",
+          "activation"
+        ],
+        "properties": {
+          "id": {
+            "enum": [
+              "foundation",
+              "dormant",
+              "activation",
+              "certification"
+            ]
+          },
+          "issue_label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "depends_on": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "workitems": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "enum": [
+                "foundation.admission",
+                "foundation.residuals",
+                "foundation.composition",
+                "foundation.conformance",
+                "foundation.deadlines",
+                "foundation.baseline",
+                "dormant.early-checks",
+                "dormant.continuation",
+                "dormant.impact",
+                "dormant.scheduling",
+                "dormant.release",
+                "dormant.projection",
+                "dormant.shadow",
+                "activation.authority",
+                "activation.periodic",
+                "activation.rollback",
+                "certification.tuning",
+                "certification.benchmarks",
+                "certification.distribution",
+                "certification.custody",
+                "foundation.submit-normalization"
+              ]
+            }
+          },
+          "activation": {
+            "enum": [
+              "active",
+              "planned"
+            ]
+          }
+        }
+      }
+    },
+    "workitems": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "foundation.admission",
+        "foundation.residuals",
+        "foundation.composition",
+        "foundation.conformance",
+        "foundation.deadlines",
+        "foundation.baseline",
+        "dormant.early-checks",
+        "dormant.continuation",
+        "dormant.impact",
+        "dormant.scheduling",
+        "dormant.release",
+        "dormant.projection",
+        "dormant.shadow",
+        "activation.authority",
+        "activation.periodic",
+        "activation.rollback",
+        "certification.tuning",
+        "certification.benchmarks",
+        "certification.distribution",
+        "certification.custody",
+        "foundation.submit-normalization"
+      ],
+      "properties": {
+        "foundation.admission": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.residuals": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.composition": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.conformance": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.deadlines": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.baseline": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.early-checks": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.continuation": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.impact": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.scheduling": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.release": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.projection": {
+          "$ref": "#/$defs/workitem"
+        },
+        "dormant.shadow": {
+          "$ref": "#/$defs/workitem"
+        },
+        "activation.authority": {
+          "$ref": "#/$defs/workitem"
+        },
+        "activation.periodic": {
+          "$ref": "#/$defs/workitem"
+        },
+        "activation.rollback": {
+          "$ref": "#/$defs/workitem"
+        },
+        "certification.tuning": {
+          "$ref": "#/$defs/workitem"
+        },
+        "certification.benchmarks": {
+          "$ref": "#/$defs/workitem"
+        },
+        "certification.distribution": {
+          "$ref": "#/$defs/workitem"
+        },
+        "certification.custody": {
+          "$ref": "#/$defs/workitem"
+        },
+        "foundation.submit-normalization": {
+          "$ref": "#/$defs/workitem"
+        }
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "I01",
+        "I02",
+        "I03",
+        "I04",
+        "I05",
+        "I06",
+        "I07",
+        "I08",
+        "I09",
+        "I10",
+        "I11",
+        "I12",
+        "I13",
+        "I14",
+        "I15",
+        "I16",
+        "I17",
+        "I18",
+        "I19",
+        "I20",
+        "I21",
+        "I22",
+        "I23",
+        "I24",
+        "I25",
+        "I26",
+        "I27",
+        "I28",
+        "I29",
+        "I30",
+        "I31",
+        "I32",
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "F06",
+        "F07",
+        "F08",
+        "CP01",
+        "CP02",
+        "CP03",
+        "CP04",
+        "CP05",
+        "CP06",
+        "CP07",
+        "CP08",
+        "CP09",
+        "CP10",
+        "AC01",
+        "AC02",
+        "AC03",
+        "AC04",
+        "AC05",
+        "AC06",
+        "AC07",
+        "AC08",
+        "AC09",
+        "AC10",
+        "AC11",
+        "AC12",
+        "AC13",
+        "AC14",
+        "AC15",
+        "AC16",
+        "AC17",
+        "AC18",
+        "AC19",
+        "AC20",
+        "AC21",
+        "AC22",
+        "AC23",
+        "AC24",
+        "AC25",
+        "AC26",
+        "AC27",
+        "AC28",
+        "AC29",
+        "AC30",
+        "AC31",
+        "AC32"
+      ],
+      "properties": {
+        "I01": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I02": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I03": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I04": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I05": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I06": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I07": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I08": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I09": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I10": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I11": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I12": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I13": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I14": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I15": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I16": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I17": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I18": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I19": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I20": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I21": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I22": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I23": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I24": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I25": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I26": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I27": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I28": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I29": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I30": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I31": {
+          "$ref": "#/$defs/requirement"
+        },
+        "I32": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F01": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F02": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F03": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F04": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F05": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F06": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F07": {
+          "$ref": "#/$defs/requirement"
+        },
+        "F08": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP01": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP02": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP03": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP04": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP05": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP06": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP07": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP08": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP09": {
+          "$ref": "#/$defs/requirement"
+        },
+        "CP10": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC01": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC02": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC03": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC04": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC05": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC06": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC07": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC08": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC09": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC10": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC11": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC12": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC13": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC14": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC15": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC16": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC17": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC18": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC19": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC20": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC21": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC22": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC23": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC24": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC25": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC26": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC27": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC28": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC29": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC30": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC31": {
+          "$ref": "#/$defs/requirement"
+        },
+        "AC32": {
+          "$ref": "#/$defs/requirement"
+        }
+      }
+    },
+    "additional_regressions": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "workitem",
+          "positive",
+          "negative",
+          "source"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "workitem": {
+            "enum": [
+              "foundation.admission",
+              "foundation.residuals",
+              "foundation.composition",
+              "foundation.conformance",
+              "foundation.deadlines",
+              "foundation.baseline",
+              "dormant.early-checks",
+              "dormant.continuation",
+              "dormant.impact",
+              "dormant.scheduling",
+              "dormant.release",
+              "dormant.projection",
+              "dormant.shadow",
+              "activation.authority",
+              "activation.periodic",
+              "activation.rollback",
+              "certification.tuning",
+              "certification.benchmarks",
+              "certification.distribution",
+              "certification.custody",
+              "foundation.submit-normalization"
+            ]
+          },
+          "positive": {
+            "type": "string",
+            "minLength": 1
+          },
+          "negative": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "measurement_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "proposed_pr",
+        "separate_required_targets",
+        "reporting",
+        "approved_targets"
+      ],
+      "properties": {
+        "status": {
+          "const": "requires_review_after_baseline_before_optimization"
+        },
+        "proposed_pr": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "p50_improvement_percent",
+            "p95_improvement_percent",
+            "max_risk_class_p95_regression_percent"
+          ],
+          "properties": {
+            "p50_improvement_percent": {
+              "const": 25
+            },
+            "p95_improvement_percent": {
+              "const": 20
+            },
+            "max_risk_class_p95_regression_percent": {
+              "const": 10
+            }
+          }
+        },
+        "separate_required_targets": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reporting": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "approved_targets": {
+          "type": "null"
+        }
+      }
+    },
+    "verification_commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "completion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "requires"
+      ],
+      "properties": {
+        "status": {
+          "const": "not_complete"
+        },
+        "requires": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "canonical_workitem_mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "foundation.admission",
+        "foundation.residuals",
+        "foundation.composition",
+        "foundation.conformance",
+        "foundation.deadlines",
+        "foundation.baseline",
+        "dormant.early-checks",
+        "dormant.continuation",
+        "dormant.impact",
+        "dormant.scheduling",
+        "dormant.release",
+        "dormant.projection",
+        "dormant.shadow",
+        "activation.authority",
+        "activation.periodic",
+        "activation.rollback",
+        "certification.tuning",
+        "certification.benchmarks",
+        "certification.distribution",
+        "certification.custody",
+        "foundation.submit-normalization"
+      ],
+      "properties": {
+        "foundation.admission": {
+          "const": "P32-P0-01"
+        },
+        "foundation.residuals": {
+          "const": "P32-P0-02"
+        },
+        "foundation.composition": {
+          "const": "P32-P0-03"
+        },
+        "foundation.conformance": {
+          "const": "P32-P0-04"
+        },
+        "foundation.deadlines": {
+          "const": "P32-P0-05"
+        },
+        "foundation.baseline": {
+          "const": "P32-P0-06"
+        },
+        "dormant.early-checks": {
+          "const": "P33-P0-01"
+        },
+        "dormant.continuation": {
+          "const": "P33-P0-02"
+        },
+        "dormant.impact": {
+          "const": "P33-P0-03"
+        },
+        "dormant.scheduling": {
+          "const": "P33-P0-04"
+        },
+        "dormant.release": {
+          "const": "P33-P0-05"
+        },
+        "dormant.projection": {
+          "const": "P33-P0-06"
+        },
+        "dormant.shadow": {
+          "const": "P33-P0-07"
+        },
+        "activation.authority": {
+          "const": "P34-P0-01"
+        },
+        "activation.periodic": {
+          "const": "P34-P0-02"
+        },
+        "activation.rollback": {
+          "const": "P34-P0-03"
+        },
+        "certification.tuning": {
+          "const": "P35-P0-01"
+        },
+        "certification.benchmarks": {
+          "const": "P35-P0-02"
+        },
+        "certification.distribution": {
+          "const": "P35-P0-03"
+        },
+        "certification.custody": {
+          "const": "P35-P0-04"
+        },
+        "foundation.submit-normalization": {
+          "const": "P32-P0-07"
+        }
+      }
+    },
+    "implementation_slices": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/implementation_slice"
+      }
+    }
+  }
+}

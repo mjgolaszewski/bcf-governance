@@ -1,0 +1,37 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/active-edge-owner-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend source conformance of the existing active compatibility/publication model after 2b644d96. No provider invocation or normative adoption.",
+  "target_modules": [
+    "spec/phase0/release-train-backtrace.yml",
+    "tests/test_ci_state_matrix.py"
+  ],
+  "contract": [
+    "Bind active executable AC-001/002/004/005 owners to exact existing source module/function identities. Preserve all edge identity/required/rejection/recovery/policy semantics.",
+    "AC-001 must name the registered ReleaseReceipt factory actually called by collect_release; derive that intersection from the existing representation registry and resolved source calls. No new receipt constructor.",
+    "Classify all seven active model owner references: four executable owners, declared structural policy exclusion, policy/report owner and unresolved independent terminal-custody binding. Do not substitute installer custody for release terminal custody.",
+    "All observations remain authority false. Source reference/call conformance does not qualify execution, guards, source custody, full producer populations or independent terminal custody.",
+    "Historical rejected source transaction, provider behavior, old source envelope, schema and runtime code remain unchanged."
+  ],
+  "expected_tests": [
+    "Every chosen executable owner resolves through shared source inventory",
+    "Receipt edge owner is the unique registered factory reached by actual collector source",
+    "Existing state/backtrace/composition/parity behavior and policy exclusions preserved"
+  ],
+  "forbidden_surfaces": [
+    "new receipt or custody truth owner",
+    "installer custody broadened to release closure",
+    "historical audit or rejected design rewrite",
+    "normalization provider/installer/custody activation"
+  ],
+  "completion": "Exact source binding of implemented active owners and explicit unresolved custody inventory; no full machine DAG adoption or prose retirement."
+}

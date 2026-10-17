@@ -1,0 +1,45 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/state-comparison-context-verification.json"
+  },
+  "status": "focused_checks_passed",
+  "contract_red_commits": [
+    "6d2a8bfa",
+    "5e9c2c03",
+    "9c2ef93a"
+  ],
+  "source_hashes": {
+    "bcf_governance/tooling/governance_validation/ci_state_matrix.py": "caf903600426baaf5281661beb09e35120bdde7f35488d40960724d12b86b540",
+    "bcf_governance/tooling/preflight.py": "337173595a4062b50def9b68e3ae6172f46baa6c28be67c3ce0a968437567c85",
+    "tests/test_ci_state_matrix.py": "f8ac166f4abfda9518e1c122915fad6d917afd30162e8dae51be7b90881d95b8",
+    "tests/test_preflight.py": "efdb66e88499fa1a4afd1e1097489a0be1197020bab284ff303ec03105fef812"
+  },
+  "red_controls": {
+    "bypass": "Two actual DID NOT RAISE failures: substituted head hid changed CI contract despite origin/PR mismatch, and bare local assertion selected a newer base.",
+    "matrix_order": "One actual failure reached machine decoding before rejecting inconsistent context.",
+    "all_profile_order": "One actual failure reached authored-state work before the canonical comparison step."
+  },
+  "tests": {
+    "behavioral": "150 state-matrix/preflight/candidate-submit cases passed in 24.71 seconds after global step reorder.",
+    "additional_edges": "12 invalid-context/local-assertion cases passed in 1.83 seconds, overlapping earlier cases and adding wrong caller, zero subject and matching local assertion.",
+    "prior": "120 initial matrix/preflight and 158 intermediate affected cases passed before the final global reorder; not presented as final current-tree certification.",
+    "governance": "governance-yaml-ok",
+    "static": "lint/typecheck passed",
+    "parity": "canonical build_pack_manifest.py --check passed",
+    "architecture": "10 LOC/context/private-runtime/pack/CLI-effect cases passed in 91.93 seconds on unchanged production source."
+  },
+  "qualification_limits": [
+    "Disposable preflight later-gate unit fixtures stub comparison applicability; the real comparison owner is exercised separately by direct/event permutations and the real-Git preflight rejection control.",
+    "Authored-only structural validation remains independent of comparison context and confers no comparison/provider authority.",
+    "Inherited provider environment is cleared only inside disposable state-matrix Git fixtures, which seed their own exact positive/negative contexts."
+  ],
+  "remaining": [
+    "Independent provider repository/head/source authority and complete lifecycle/effect conformance remain required.",
+    "No full pipeline early-failure latency or frozen performance target qualification.",
+    "Canonical governed test manifests remain held and the known oracle failure remains unsuppressed.",
+    "No provider/adopter/integration/installer/custody action and no prose retirement."
+  ],
+  "whole_requirement_closure": false
+}

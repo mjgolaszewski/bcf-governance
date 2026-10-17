@@ -1,0 +1,40 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/protected-operation-schema-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend protected-public-operation-population after 04155d57 exact policy identity and 71da1415 characterized deconstruction. Preserve all legacy authored validation and closure holds.",
+  "defect": "Protected operation factory and validator both resolve schemas from candidate repo_root; a candidate can alter the protected consumer interpretation or reject a valid protected policy through schema replacement.",
+  "target_modules": [
+    "bcf_governance/tooling/semantic_authority_contracts.py",
+    "bcf_governance/tooling/semantic_authority_operations.py"
+  ],
+  "contract": [
+    "Protected digest and committed-policy paths validate application-operation bytes with the executing distribution schema, before population discovery.",
+    "Use the existing schema validator with an explicit consumer-owned mode; no second interpreter or weaker schema.",
+    "Protected downstream operation validation uses that same consumer-owned mode; candidate schema absence, malformed data or rejecting schema cannot alter protected interpretation.",
+    "Ordinary authored factory and operation validation continue to use authored repository schemas.",
+    "Executing package and portable private-runtime layouts locate their own schema; missing or invalid executing schema blocks without candidate fallback."
+  ],
+  "expected_tests": [
+    "Permissive candidate schema cannot accept an invalid protected semantic kind; reject before discovery.",
+    "Valid protected policy survives absent, rejecting or malformed candidate schema.",
+    "Legacy authored validation retains candidate schema behavior.",
+    "Portable installed-layout resolution uses its own schema; missing trusted schema blocks.",
+    "Exact actual-self observation equality and affected pack/LOC/context gates."
+  ],
+  "forbidden_surfaces": [
+    "schema content changes",
+    "new schema evaluator",
+    "normalization or authority activation",
+    "provider/adopter/installer/custody"
+  ],
+  "completion": "Local protected parser boundary only. No actual installed-adopter or provider-owned qualification."
+}

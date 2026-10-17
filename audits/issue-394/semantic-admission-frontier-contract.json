@@ -1,0 +1,49 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/semantic-admission-frontier-contract.json",
+    "authority": false,
+    "status": "planned"
+  },
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority consuming existing semantics/validation queries",
+  "architectural_layer": "existing semantic registry and scan tooling; submission orchestration",
+  "operation_side": "read-only static checks before mutation/provider commands",
+  "targets": [
+    "governance/canonical-representations.yml",
+    "bcf_governance/tooling/semantic_ownership_scan.py",
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "bcf_governance/tooling/local_pr.py",
+    "tests/test_semantic_ownership.py",
+    "tests/test_candidate_provider_recovery.py",
+    "tests/test_candidate_submit.py",
+    "tests/test_prospective_validation.py",
+    "governance/application-operations.yml",
+    "audits/issue-394/operation-validator-semantic-admission.json",
+    "tests/test_semantic_operation_deconstruction.py"
+  ],
+  "contract": [
+    "Declare the actual retry executor as LocalPRContext authorization consumer through existing registry field only. Constructors, owner, pure delegates and suppressions remain identical; runtime permissions/retry behavior do not change.",
+    "Prove actual source uses independently captured context unchanged; noncanonical identity/branch fields reject without rerun. Removing only the consumer declaration must reproduce the exact downstream_normalization violation.",
+    "Preserve evaluate_discovery normalization rules byte-for-byte. Factor existing discovery into one owner. A Python-qualified authored scan checks every authoritative Python source and Python-declared family before generation without requiring a not-yet-admitted TypeScript toolchain; it is explicitly partial and never replaces the complete mixed-toolchain scan.",
+    "Authored Python ownership rejects before lease/reconciliation/provider, omits generated locks/projections and reports authority false/execution_qualified false with Python-only scope. Full mixed-toolchain semantic preflight remains mandatory after generation/toolchain admission and before provider, plus the original later full preflight.",
+    "After necessary generation, run the unchanged full semantic preflight owner before provider verification in prospective orchestration. Retain original later full preflight; no proof suppression/reuse or weakening.",
+    "Model source-violation rejection before effects, generated-state rejection after fixed point, known errors with same cause, no provider/evidence allocation, and independent future lifecycle/custody gates.",
+    "local_pr.py is 795 LOC: natural three-check loop must stay at most 800. No budget increase or blank-line reductions; further growth requires characterization-led deconstruction.",
+    "Declare the new authored read-only query as a non-authoritative CI observation port, matching the existing full-scan boundary. Preserve all prior 21-operation rows and every mutation/authority count; add exactly one observation port in a separate characterized golden, retaining prior goldens unchanged. No authority/mutation ports added."
+  ],
+  "expected_tests": [
+    "Actual source/registry positive and declaration-only removal negative; constructors/ownership unchanged.",
+    "Noncanonical context base/head/ref/default branch values reject without provider mutation.",
+    "Authored source violation prevents normalization lease/reconciliation; stale generated lock does not block the authored query.",
+    "Full semantic failure stops before provider and preserves cause; full later check retained.",
+    "Existing ownership causal/constructor/import controls, provider retry tests, submission/prospective tests, source/package parity, LOC/context and actual operation characterization."
+  ],
+  "forbidden_surfaces": [
+    "Normalizer rule weakening or new narrow suppression",
+    "Registering retry executor as constructor/delegate/context owner",
+    "Live/frozen release assets, maintained adopters, manual generated pins/locks",
+    "Claiming authored static conformance as runtime truth or full machine DAG adoption"
+  ],
+  "dependency_acceptance": "Foundation source admission only; all full Issue 394 acceptance gates remain open. Reproduction scan after audit-only daf36f22 has unchanged authoritative code from failed 97c1e986."
+}

@@ -438,9 +438,9 @@ def job_execution_issues(
         if evaluator_source == "protected_base":
             refs = [component.get("with", {}).get("ref") for component in checkouts]
             allowed_sets = {
-                ("${{ github.event.workflow_run.head_sha }}",),
+                ("${{ github.workflow_sha }}",),
                 (
-                    "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
+                    "${{ github.workflow_sha }}",
                     "${{ github.event.workflow_run.head_sha }}",
                 ),
             }

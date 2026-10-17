@@ -1,0 +1,122 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 32 Workitems
+  id: bcf-governance-phase-32-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-10-15T00:00:00Z'
+  status: active
+  path: plans/phase-32-workitems.yml
+  phase_id: P32
+workitems:
+- id: P32-P0-01
+  priority: P0
+  status: DONE
+  summary: Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody
+  acceptance:
+  - requires-phase-closure:P31
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.foundation.admission
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P32-P0-02
+  priority: P0
+  status: IN_PROGRESS
+  summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
+  acceptance:
+  - Derive exact qualification dependency origins and reject incompatible inputs before controller allocation; preserve independent child probes
+  - Bind returned provider commit and ref identity to exact request subjects before authority consumption
+  - requires-workitem-closure:P32-P0-01
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side query; affected surfaces and tests in audits/issue-394/workplan.yml workitems.foundation.residuals
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P32-P0-03
+  priority: P0
+  status: IN_PROGRESS
+  summary: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
+  acceptance:
+  - requires-workitem-closure:P32-P0-02
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.foundation.composition
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P32-P0-04
+  priority: P0
+  status: IN_PROGRESS
+  summary: Independently trace implementation effects and producer consumer populations in both directions
+  acceptance:
+  - requires-workitem-closure:P32-P0-03
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.foundation.conformance
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P32-P0-05
+  priority: P0
+  status: IN_PROGRESS
+  summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
+  acceptance:
+  - requires-workitem-closure:P32-P0-04
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.foundation.deadlines
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P32-P0-06
+  priority: P0
+  status: IN_PROGRESS
+  summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets using naturally occurring governed provider runs plus controlled isolated local/adopter trials
+  acceptance:
+  - requires-workitem-closure:P32-P0-01
+  - requires-workitem-closure:P32-P0-02
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context operations; layer tooling; side query; affected surfaces and tests in audits/issue-394/workplan.yml workitems.foundation.baseline
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P32-P0-07
+  priority: P0
+  status: IN_PROGRESS
+  summary: Normalize derived governance before deriving submission scope and exact subject
+  acceptance:
+  - requires-workitem-closure:P32-P0-01
+  - Complete the exact affected-surface contract in audits/issue-394/submit-normalization-slice.yml
+  - Reject exact PR changelog omissions under canonical candidate scope before normalization allocation
+  - Reject known dirty committed candidates before provider discovery and proof allocation while retaining fresh consuming rechecks
+  - Reject authored contradiction wrong intent assertion busy lease and normalization failure before dependent mutation or
+    proof
+  - Capture the fresh canonical subject after normalization and preserve exact prospective push and provider boundaries
+  acceptance_evidence:
+  - test
+  - contract-test

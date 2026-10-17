@@ -1,0 +1,41 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/ci-edge-coverage-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "After characterized view deconstruction638b38ad. Extend existing compiled lifecycle owner; no change to legacy partial compilation or view bytes.",
+  "target_modules": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "tests/test_ci_graph_composition.py"
+  ],
+  "contract": [
+    "Derive mandatory reachable CI edge population only from caller-authenticated CompiledCIGraph/EdgeContract, not candidate lists or switches. Require every reachable edge to be referenced by at least one lifecycle contract.",
+    "Bind exact compiled composition/source identity to canonical graph and complete CI edge digest before coverage checks. Reject missing/extra/unreachable references and ambiguous canonical pair populations.",
+    "Project all unreachable edge exclusions directly from existing owner; do not author a second CI graph or duplicate its semantics.",
+    "Return deterministic canonical edge-to-context bindings and exclusion references, authority false and execution unqualified. Static coverage cannot certify execution or terminal authority, including an empty canonical population.",
+    "Preserve legacy partial compilation; only this explicit complete-population conformance can claim CI-reference coverage. Complete semantic/context/source/effect qualification remains separately required."
+  ],
+  "expected_tests": [
+    "Complete/reordered CI population produces stable result without mutation",
+    "Second canonical reachable edge omitted from candidate contracts rejects",
+    "Removing both candidate CI references and their tests cannot self-exempt",
+    "Wrong source/stale CI population/tampered composition rejects",
+    "Unreachable canonical edges project exact owner exclusions; forged unreachable reference rejects even after candidate reseals hash",
+    "Duplicate canonical pairs and malformed exclusions reject",
+    "Empty canonical population remains nonauthoritative and unqualified"
+  ],
+  "forbidden_surfaces": [
+    "candidate-selected required edge list or waiver",
+    "new graph/compiler/truth owner",
+    "normative adoption/prose retirement",
+    "normalization provider/installer/custody/frozen bytes"
+  ],
+  "completion": "Canonical CI-reference population conformance only; no complete runtime-effect proof, installed qualification or custody closure."
+}

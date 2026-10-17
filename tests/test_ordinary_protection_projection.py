@@ -329,3 +329,39 @@ def test_submission_distinguishes_exact_proposal_from_reviewed_provider_parity(
     assert validate_ordinary_protection_submission(
         api, repo_root=root, repository=REPOSITORY, base_sha=reviewed
     ) == "reviewed_provider_match"
+
+
+def test_direct_protection_prospective_uses_supplied_authenticated_context_client(monkeypatch, tmp_path):
+    from bcf_governance.tooling import ordinary_protection_projection as projection
+    owner = tmp_path / projection.PROTECTION_PATH
+    owner.parent.mkdir(parents=True, exist_ok=True)
+    owner.write_text('fixture\n')
+    api, runner = object(), object()
+    calls = []
+    def resolve(root, **kwargs):
+        assert root == tmp_path
+        assert kwargs == {'remote': 'selected', 'runner': runner, 'provider_api': api}
+        return SimpleNamespace(base_sha='a' * 40)
+    monkeypatch.setattr(projection, 'resolve_local_pr_context', resolve)
+    monkeypatch.setattr(projection, 'validate_ordinary_protection_submission', lambda client, **kwargs: calls.append((client, kwargs)))
+    projection.validate_direct_protection_prospective(api, repo_root=tmp_path, repository='owner/repo',
+        lane='direct_protected_main', remote='selected', runner=runner)
+    assert calls == [(api, {'repo_root': tmp_path, 'repository': 'owner/repo', 'base_sha': 'a' * 40})]
+
+
+def test_direct_protection_prospective_context_failure_cannot_continue(monkeypatch, tmp_path):
+    from bcf_governance.tooling import ordinary_protection_projection as projection
+    owner = tmp_path / projection.PROTECTION_PATH
+    owner.parent.mkdir(parents=True, exist_ok=True)
+    owner.write_text('fixture\n')
+    failure = GitHubControllerError('authenticated PR inventory unavailable')
+    api = object()
+    def reject(*_a, **kwargs):
+        assert kwargs['provider_api'] is api
+        raise failure
+    monkeypatch.setattr(projection, 'resolve_local_pr_context', reject)
+    monkeypatch.setattr(projection, 'validate_ordinary_protection_submission', lambda *_a, **_k: pytest.fail('protection consumed unavailable comparison context'))
+    with pytest.raises(GitHubControllerError, match='inventory unavailable') as caught:
+        projection.validate_direct_protection_prospective(api, repo_root=tmp_path, repository='owner/repo',
+            lane='direct_protected_main', remote='origin', runner=object())
+    assert caught.value is failure

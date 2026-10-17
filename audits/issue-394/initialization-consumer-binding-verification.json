@@ -1,0 +1,39 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/initialization-consumer-binding-verification.json"
+  },
+  "status": "focused_checks_passed",
+  "contract_red_commits": [
+    "f5db5dd1",
+    "a2da6859",
+    "3af3f0fd"
+  ],
+  "source_hashes": {
+    "bcf_governance/tooling/semantic_operation_effects.py": "1db7a2b2fb863a1d7bb98b7216397263441127d82ce2142ed3c4769927187324",
+    "bcf_governance/tooling/ci_graph_composition.py": "b3cc6d7b742dbf1e9d763a910cec75c91443b60c7b4820f66d64e9cd0c18df0f",
+    "tests/test_semantic_operation_call_population.py": "b416014975700172ab5f1669887c4ab70c0967e861f78a04978903039f05d0c9",
+    "tests/test_ci_graph_composition.py": "9737c8a4d88cb8b6fdbb6b5448fd558044c0396725029cdf3a8898f9f13d76b2"
+  },
+  "red_controls": {
+    "query": "12 actual failures and 16 passes after adding the option port before behavior.",
+    "lifecycle": "One valid initialized population was rejected before consumer integration; three negative controls already passed and are not claimed as causal red evidence.",
+    "earliest_boundary": "One failure showed invalid initialization was examined after malformed function calls instead of before closure traversal."
+  },
+  "tests": {
+    "broad": "244 passed and one known canonical-oracle failure in 13.28 seconds; no skip or weakened assertion.",
+    "focused": "46 first operation/initialization/lifecycle cases passed before adding ordering and distribution controls.",
+    "final": "36 passed in 91.26 seconds: operation population including candidate-schema/private-runtime controls, lifecycle initialization controls, and CLI effect boundary on final unchanged source.",
+    "governance": "governance-yaml-ok",
+    "static": "lint and typecheck passed",
+    "parity": "canonical build_pack_manifest.py --check passed"
+  },
+  "remaining": [
+    "New selectors remain absent from governed test manifests until authorized canonical normalization.",
+    "No actual independently protected complete runtime-effect population or lifecycle adoption is claimed.",
+    "Source rows are observations, not self-authentication or provider/adopter execution qualification.",
+    "Implicit native dynamic external and cross-language execution remain unresolved; execution/completeness flags stay false."
+  ],
+  "whole_requirement_closure": false
+}

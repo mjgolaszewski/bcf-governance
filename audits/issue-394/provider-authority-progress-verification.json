@@ -1,0 +1,40 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "contract": "audits/issue-394/provider-authority-progress-contract.json",
+  "before_change": {
+    "provider_stage_controls": "Three controls failed: provider calls observed last fixed_point event instead of provider_authority started.",
+    "early_exposure_control": "Failed by reaching provider before exposure rejection.",
+    "fixture_correction": "Success case initially hit real compatibility query against dummy repository; added scoped compatibility fixture stub, no product fallback changes."
+  },
+  "behavioral_and_structural": {
+    "passed": 120,
+    "seconds": 2.11,
+    "scope": "Full prospective validation and operational observations plus production LOC, context ownership and exact runtime-copy gates."
+  },
+  "public_operation_characterization": {
+    "passed": 1,
+    "seconds": 76.85,
+    "scope": "Actual 21-operation output remains exact integrated expectation; no effect port population change."
+  },
+  "checks": {
+    "lint": "passed",
+    "typecheck": "passed",
+    "pack_parity": "passed",
+    "coverage_schema": "passed; 82 whole requirements open, 28 bounded slices"
+  },
+  "result": "Required provider workflow/controller authentication emits non-authoritative progress and preserves known failures. Existing exposure query rejects after necessary generation before provider work; full later check retained.",
+  "constraints": [
+    "Source is separate construction until integrated and normalized through canonical execution.",
+    "No claimed elapsed/percentile improvement, full earliest-boundary coverage, independent runtime population or deadline sufficiency.",
+    "Progress events grant no certification, receipt or terminal authority."
+  ],
+  "module_loc": 794,
+  "merged_integration": {
+    "passed": 123,
+    "seconds": 8.06,
+    "scope": "Full prospective, operational and deadline inventory tests plus both earlier installer/preflight failure controls on combined successor source.",
+    "exposure_scan": "passed",
+    "canonical_normalization": "pending new source after merged progress and guard"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "authority": false,
+  "upstream_main": "f911f21c29114b8280866b75281673018a231c9c",
+  "upstream_hotfix_record_historical": {
+    "id": "P31-HF06",
+    "mode": "full",
+    "status": "active",
+    "triggered_by_commits": [
+      "d02f11ef3eafd99e451c1482c5d3403c2feefd03"
+    ],
+    "failing_workflows": [
+      "local-prospective-dependent-security-review"
+    ],
+    "root_cause": "canonical receipt namespace stayed repository-local after prospective sessions moved to external custody",
+    "remediated_in_phase": "P31",
+    "canonical_artifacts": [
+      "bcf_governance/tooling/governance_evidence.py",
+      "bcf_governance/tooling/evidence_session_inputs.py",
+      "spec/phase0/release-train-backtrace.yml"
+    ],
+    "hotfix_log": "phases/phase-31-hotfix06.yml"
+  },
+  "resolutions": [
+    "Preserved target2.5 version/contracts and authored P32 active state.",
+    "Retained current-session owner and capture wiring auto-merge; appended exact main causal control and test selectors.",
+    "Kept existing successor renderer implementation (minimum string-sequence length8), merged main preservation test; semantic/budget tests required.",
+    "Imported maintenance changelog, session documentation and backtrace transport fact.",
+    "Recorded P31-HF06 as remediation history without reopening predecessor active hotfixes.",
+    "Retained existing generated parent projections as provisional seeds; no new authority authored. Canonical reconciliation required."
+  ],
+  "remaining": [
+    "Generated mirror regeneration, affected behavioral/native checks and canonical projection reconciliation.",
+    "Bound-PR feature remains unmerged pending its full matrix.",
+    "No successor acceptance/phase advance."
+  ]
+}

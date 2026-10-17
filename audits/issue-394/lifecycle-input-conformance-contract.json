@@ -1,0 +1,42 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/lifecycle-input-conformance-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-04",
+  "bounded_context": "evidence",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "target_modules": [
+    "bcf_governance/tooling/evidence_workitem_lifecycle.py",
+    "bcf_governance/tooling/operational_observations.py",
+    "tests/test_governance_truth.py",
+    "bcf_governance/tooling/ci_graph_yaml.py",
+    "tests/test_ci_graph.py"
+  ],
+  "contract": [
+    "Reuse existing strict regular-file YAML owner at the canonical authored lifecycle read boundary; reject duplicate keys rather than silently choosing a value.",
+    "Computed workitem observation and telemetry lifecycle projection must use the same typed read boundary as readiness checks.",
+    "Preserve valid legacy projection schema/authority labels and output bytes; telemetry does not replace computed verified/closed truth.",
+    "Authored DONE without eligible evidence remains unverified. No new truth owner, receipts or authority semantics.",
+    "Classify unhashable mapping keys at existing strict decoder, where the malformed key is first known; do not catch unrelated TypeError at lifecycle boundary."
+  ],
+  "expected_tests": [
+    "Duplicate active phase rejects in readiness/computed/projection consumers.",
+    "Duplicate workitem status rejects in all three consumers.",
+    "Valid authored DONE yields unverified computed truth without proof; projection remains readable.",
+    "Existing readiness, governance truth, observation and source parity suites retain valid behavior.",
+    "Unsupported complex YAML mapping keys remain typed lifecycle input failures across all three consumers."
+  ],
+  "forbidden_surfaces": [
+    "new parser or truth owner",
+    "schema/legacy authority-label changes",
+    "normalization/workflow/authority pins",
+    "provider/installer/custody writes"
+  ],
+  "shared_boundary_decision": "Reuse established strict YAML decoding already consumed by governance_evidence and authored_phase_state; evidence owns lifecycle semantics and typed exception translation, operations consumes the existing read boundary. No new decoder, shared abstraction or context ownership is introduced.",
+  "dependency_acceptance": "Local dormant construction only under P32-P0-04. Its requires-workitem-closure:P32-P0-03 acceptance remains unresolved; no phase closure, normative activation or provider integration is claimed."
+}

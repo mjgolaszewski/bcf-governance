@@ -1,0 +1,90 @@
+{
+  "authority": false,
+  "source_checkpoint": "e0eed33ccc495bb3a1a2f57504519919ddc3f87f",
+  "scope": "Disposable authored-state fixtures through existing lifecycle queries; no computed closure or provider authority.",
+  "cases": [
+    {
+      "case": "done-prefix-1",
+      "scope": [
+        "workitem",
+        "foundation.admission"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "done-prefix-2",
+      "scope": [
+        "workitem",
+        "foundation.residuals"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "done-prefix-3",
+      "scope": [
+        "workitem",
+        "foundation.submit-normalization"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "done-prefix-4",
+      "scope": [
+        "workitem",
+        "foundation.composition"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "done-prefix-5",
+      "scope": [
+        "workitem",
+        "foundation.conformance"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "done-prefix-6",
+      "scope": [
+        "workitem",
+        "foundation.deadlines"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "done-prefix-7",
+      "scope": [
+        "workitem",
+        "foundation.baseline"
+      ],
+      "bounded_successor": "accepted"
+    },
+    {
+      "case": "completed-all-done",
+      "scope": [
+        "closure",
+        null
+      ]
+    },
+    {
+      "case": "completed-with-unfinished",
+      "outcome": "rejected",
+      "reason": "completed phase contains unfinished workitems"
+    },
+    {
+      "case": "forward-or-cycle",
+      "outcome": "rejected",
+      "reason": "workitem foundation.admission predecessor foundation.residuals is forward or cyclic"
+    },
+    {
+      "case": "ambiguous-fanout",
+      "outcome": "rejected",
+      "reason": "bounded workitem target foundation.admission has ambiguous successors"
+    },
+    {
+      "case": "done-before-predecessor",
+      "outcome": "rejected",
+      "reason": "workitem foundation.residuals is authored DONE before predecessor foundation.admission"
+    }
+  ]
+}

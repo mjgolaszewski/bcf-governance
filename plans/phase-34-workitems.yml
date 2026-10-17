@@ -1,0 +1,58 @@
+document:
+  kind: execution_phase_workitem_ledger
+  name: Phase 34 Workitems
+  id: bcf-governance-phase-34-workitems
+  version: 1.0.0
+  generated_at_utc: '2026-10-15T00:00:00Z'
+  status: planned
+  path: plans/phase-34-workitems.yml
+  phase_id: P34
+workitems:
+- id: P34-P0-01
+  priority: P0
+  status: TODO
+  summary: Expand compatible trusted consumers before protected context-specific opt-in activation
+  acceptance:
+  - requires-phase-closure:P33
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context ci_authority; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.activation.authority
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P34-P0-02
+  priority: P0
+  status: TODO
+  summary: Activate approved due expiry grace catch-up findings and foreground priority semantics
+  acceptance:
+  - requires-workitem-closure:P34-P0-01
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context evidence; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.activation.periodic
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test
+- id: P34-P0-03
+  priority: P0
+  status: TODO
+  summary: Prove automatic unsafe-suppression disable opt-out and exact rollback preserving proof and history
+  acceptance:
+  - requires-workitem-closure:P34-P0-02
+  - Commit complete affected-surface contract and executable bindings before production changes
+  - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
+  - Prove source package template and applicable profile parity
+  - Require independent scoped BCF closure rather than authored DONE
+  - Bounded context installation; layer tooling; side contract_then_command_and_query; affected surfaces and tests in audits/issue-394/workplan.yml
+    workitems.activation.rollback
+  - All mapped issue requirements and positive plus cause-specific negative bindings are independently evidenced before closure
+  acceptance_evidence:
+  - test
+  - contract-test

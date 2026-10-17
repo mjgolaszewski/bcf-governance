@@ -1,0 +1,19 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "contract": "audits/issue-394/bound-pr-provider-evaluator-contract.json",
+  "evidence": {
+    "initial_red": "Valid stacked finalizer was rejected by comparison/default conflation; wrong-ref/tree controls preserved before producer consumption.",
+    "movement_red": "Late reference-only movement with stale PR responses reproduced two DID NOT RAISE failures before correction.",
+    "behavior": "All154 provider-controller/transition/PR-authority cases pass in10.43s, including21 complete PR authority cases.",
+    "source": "Evaluator base stays protected default; nondefault comparison is separately bound. Default observation shape preserved.",
+    "freshness": "Current PR/default source rechecked after producer reads and before publication; independent comparison-ref check prevents stale PR responses laundering a moved ref.",
+    "scope": "Nondefault PR cannot consume default-main transition equivalence; protected merge guards unchanged.",
+    "module": "Native module-size gate passes; shared ref query serves three real consuming boundaries."
+  },
+  "remaining": [
+    "Complete exact installed consumer source/package/template and real-adopter qualification.",
+    "Full runtime deadline/conformance and feature integration proof remain required.",
+    "No local/fake-provider result grants provider certification or whole requirement closure."
+  ]
+}

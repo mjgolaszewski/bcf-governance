@@ -69,6 +69,34 @@ def test_reconcile_ledger_skips_only_exact_clean_stage(tmp_path: Path) -> None:
     assert third["stages"][0]["state"] == "checked"
 
 
+@pytest.mark.parametrize("version_source", ["bcf_governance/_version.py", "scripts/_bcf_runtime/_version.py"])
+def test_version_only_change_invalidates_clean_release_projection_cache(tmp_path, monkeypatch, version_source):
+    _git(tmp_path, "init", "--quiet", "--initial-branch=main")
+    root = Path(__file__).resolve().parents[1]
+    for directory in ("schemas", "governance", "bcf_governance"):
+        (tmp_path / directory).mkdir()
+    (tmp_path / "schemas/reconcile-ledger.schema.json").write_bytes(
+        (root / "schemas/reconcile-ledger.schema.json").read_bytes()
+    )
+    (tmp_path / "manifest.yml").write_text("document:\n  version: 1.0.0\n")
+    (tmp_path / "governance/public-contracts.yml").write_text("package:\n  version: 1.0.0\n")
+    source = tmp_path / version_source
+    source.parent.mkdir(parents=True, exist_ok=True)
+    source.write_text('__version__ = "1.0.0"\n')
+    monkeypatch.setattr(scaffold, "__version__", "1.0.0")
+    monkeypatch.setattr(scaffold, "capability_states", lambda *_a: {})
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda *_a: [])
+    def stage():
+        return next(item for item in reconcile_steps(tmp_path, Path(sys.executable))
+                    if item.step_id == "release-version-surfaces")
+    check_reconcile_steps(tmp_path, [stage()])
+    assert check_reconcile_steps(tmp_path, [stage()])["stages"][0]["state"] == "skipped_clean"
+    source.write_text('__version__ = "2.0.0"\n')
+    monkeypatch.setattr(scaffold, "__version__", "2.0.0")
+    with pytest.raises(ReleaseVersionProjectionError, match="stale"):
+        check_reconcile_steps(tmp_path, [stage()])
+
+
 def test_reconcile_derives_project_python_before_compiling_test_stages(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -227,9 +255,10 @@ def test_new_release_editorial_base_rejects_untracked_branch(tmp_path: Path) -> 
 def test_reconcile_declares_one_closed_dependency_order() -> None:
     root = Path(__file__).resolve().parents[1]
     ids = [step.step_id for step in reconcile_steps(root, Path(sys.executable))]
-    assert ids[:11] == [
+    assert ids[:12] == [
         "authored-phase-state",
         "ci-state-matrix",
+        "authored-release-target",
         "ci-provider-permissions",
         "interpreter-environment",
         "structural-limits",
@@ -846,3 +875,373 @@ def test_reconcile_rejects_graph_declared_default_branch_without_remote_head(
             converge=converge,
             snapshot=_transition_snapshot,
         )
+
+
+def _release_surface_fixture(root: Path, version: str = '2.5.0') -> None:
+    (root / 'governance').mkdir(exist_ok=True)
+    (root / 'manifest.yml').write_text(f'document:\n  version: {version}\n')
+    (root / 'governance/public-contracts.yml').write_text(f'package:\n  version: {version}\n')
+
+
+@pytest.mark.parametrize('changelog', [
+    '# Changelog\n\n## [Unreleased]\n',
+    '# Changelog\n\n## [Unreleased]\n\nRelease target: `2.3.2`\n',
+    '# Changelog\n\n## [Unreleased]\n\nRelease target: `2.5.0`\nRelease target: `2.5.0`\n',
+    '# Changelog\n\n## [Unreleased]\n\n## [2.3.2] - 2026-10-13\nRelease target: `2.5.0`\n',
+])
+def test_release_target_contradiction_rejects_before_any_projection(tmp_path, changelog):
+    _release_surface_fixture(tmp_path, '2.3.2')
+    (tmp_path / 'CHANGELOG.md').write_text(changelog)
+    before = {path: path.read_bytes() for path in tmp_path.rglob('*') if path.is_file()}
+    with pytest.raises(ReleaseVersionProjectionError, match='changelog'):
+        reconcile_release_version_surfaces(tmp_path, version='2.5.0', apply=True)
+    assert {path: path.read_bytes() for path in before} == before
+
+
+@pytest.mark.parametrize('changelog', [
+    '# Changelog\n\n## [Unreleased]\n\nRelease target: `2.5.0`\n',
+    '# Changelog\n\n## [Unreleased]\n\n## [2.5.0] - 2026-10-15\n',
+])
+def test_release_target_or_existing_release_is_accepted(tmp_path, changelog):
+    _release_surface_fixture(tmp_path)
+    (tmp_path / 'CHANGELOG.md').write_text(changelog)
+    assert reconcile_release_version_surfaces(tmp_path, version='2.5.0', apply=False) == ()
+    assert (tmp_path / 'CHANGELOG.md').read_text() == changelog
+
+
+@pytest.mark.parametrize('surface', ['README.md', 'docs/USAGE.md', 'CHANGELOG.md'])
+def test_release_text_change_invalidates_clean_projection_cache(tmp_path, monkeypatch, surface):
+    _git(tmp_path, 'init', '--quiet', '--initial-branch=main')
+    _release_surface_fixture(tmp_path)
+    (tmp_path / 'schemas').mkdir()
+    root = Path(__file__).resolve().parents[1]
+    (tmp_path / 'schemas/reconcile-ledger.schema.json').write_bytes(
+        (root / 'schemas/reconcile-ledger.schema.json').read_bytes()
+    )
+    (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n\nRelease target: `2.5.0`\n')
+    monkeypatch.setattr(scaffold, '__version__', '2.5.0')
+    monkeypatch.setattr(scaffold, 'capability_states', lambda *_a: {})
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *_a: [])
+    stage = next(item for item in reconcile_steps(tmp_path, Path(sys.executable))
+                 if item.step_id == 'release-version-surfaces')
+    check_reconcile_steps(tmp_path, [stage])
+    assert check_reconcile_steps(tmp_path, [stage])['stages'][0]['state'] == 'skipped_clean'
+    path = tmp_path / surface
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = '# Changelog\n\n## [Unreleased]\n' if surface == 'CHANGELOG.md' else 'Supported package version: `v2.3.2`.\n'
+    path.write_text(text)
+    with pytest.raises(ReleaseVersionProjectionError):
+        check_reconcile_steps(tmp_path, [stage])
+
+
+def test_authored_release_target_precedes_every_projection_mutation(tmp_path, monkeypatch):
+    _release_surface_fixture(tmp_path, '2.3.2')
+    (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n')
+    monkeypatch.setattr(scaffold, '__version__', '2.5.0')
+    monkeypatch.setattr(scaffold, 'capability_states', lambda *_a: {})
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *_a: [])
+    steps = reconcile_steps(tmp_path, Path(sys.executable))
+    assert steps[0].step_id == 'authored-release-target'
+    with pytest.raises(ReleaseVersionProjectionError, match='changelog'):
+        steps[0].apply()
+    assert yaml.safe_load((tmp_path / 'manifest.yml').read_text())['document']['version'] == '2.3.2'
+
+
+def test_partial_release_ownership_rejects_in_first_authored_stage(tmp_path, monkeypatch):
+    (tmp_path / 'manifest.yml').write_text('document:\n  version: 2.5.0\n')
+    monkeypatch.setattr(scaffold, 'capability_states', lambda *_a: {})
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *_a: [])
+    steps = reconcile_steps(tmp_path, Path(sys.executable))
+    assert steps[0].step_id == 'authored-release-target'
+    with pytest.raises(ReleaseVersionProjectionError, match='ownership is partial'):
+        steps[0].apply()
+
+
+def _candidate_projection_steps(root: Path) -> tuple[ReconcileStep, ...]:
+    output = root / 'derived.txt'
+
+    def project() -> None:
+        output.write_text('derived\n')
+
+    def check() -> None:
+        assert output.read_text() == 'derived\n'
+
+    return (
+        ReconcileStep('projection', check, project),
+        ReconcileStep('workflow-authority', lambda: None, lambda: None),
+    )
+
+
+def test_candidate_file_projection_commits_exact_derived_bytes_and_is_idempotent(tmp_path):
+    import json
+
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    workflow = (root / '.github/workflows/admission.yml').read_bytes()
+    authority = (root / 'governance/ci-authority.yml').read_bytes()
+    result = apply_workflow_authority_transition(
+        root, step_factory=_candidate_projection_steps, converge=converge,
+        snapshot=_transition_snapshot, commit_projection=True,
+    )
+    assert result.source_commit == base
+    assert _git(root, 'rev-parse', result.projection_commit + '^') == base
+    assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
+    assert _git(root, 'status', '--porcelain') == ''
+    assert _git(root, 'diff-tree', '--no-commit-id', '--name-only', '-r', 'HEAD') == 'derived.txt'
+    assert (root / '.github/workflows/admission.yml').read_bytes() == workflow
+    assert (root / 'governance/ci-authority.yml').read_bytes() == authority
+    report = json.loads(authority_transition.result_json(result))
+    assert report['status'] == 'committed_candidate_projection'
+    assert report['projection_commit'] == result.projection_commit
+    assert 'authority_commit' not in report
+    assert apply_workflow_authority_transition(
+        root, step_factory=_candidate_projection_steps, converge=converge,
+        snapshot=_transition_snapshot, commit_projection=True,
+    ) is None
+    assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
+
+
+def test_candidate_file_projection_rejects_dirty_source_before_shadow(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'intent').write_text('uncommitted\n')
+    with pytest.raises(ReconcileAuthorityTransitionError, match='clean committed'):
+        apply_workflow_authority_transition(
+            root, step_factory=lambda _root: pytest.fail('dirty candidate allocated shadow owners'),
+            converge=converge, snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert (root / 'intent').read_text() == 'uncommitted\n'
+
+
+def test_candidate_file_projection_preserves_concurrent_source_movement(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+
+    def steps(candidate):
+        first, authority = _candidate_projection_steps(candidate)
+
+        def project():
+            first.apply()
+            (root / 'intent').write_text('concurrent\n')
+
+        return (ReconcileStep('projection', first.check, project), authority)
+
+    with pytest.raises(ReconcileAuthorityTransitionError, match='repository changed'):
+        apply_workflow_authority_transition(
+            root, step_factory=steps, converge=converge,
+            snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert _git(root, 'rev-parse', 'HEAD') == base
+    assert (root / 'intent').read_text() == 'concurrent\n'
+    assert not (root / 'derived.txt').exists()
+
+
+def test_candidate_file_projection_failure_preserves_original_tree(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    original = _transition_snapshot(root)
+
+    def steps(candidate):
+        def fail():
+            (candidate / 'derived.txt').write_text('partial\n')
+            raise ReconcileError('injected projection failure')
+        return (ReconcileStep('projection', lambda: None, fail), _candidate_projection_steps(candidate)[1])
+
+    with pytest.raises(ReconcileError, match='injected projection failure'):
+        apply_workflow_authority_transition(
+            root, step_factory=steps, converge=converge,
+            snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert _git(root, 'rev-parse', 'HEAD') == base
+    assert _transition_snapshot(root) == original
+    assert _git(root, 'status', '--porcelain') == ''
+
+
+def test_candidate_file_projection_rejects_late_trusted_workflow_change(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    original = _transition_snapshot(root)
+
+    def steps(candidate):
+        def late():
+            (candidate / '.github/workflows/admission.yml').write_text('name: late\n')
+        return (*_candidate_projection_steps(candidate), ReconcileStep('late', lambda: None, late))
+
+    with pytest.raises(ReconcileAuthorityTransitionError, match='file-only.*trusted workflow'):
+        apply_workflow_authority_transition(
+            root, step_factory=steps, converge=converge,
+            snapshot=_transition_snapshot, commit_projection=True,
+        )
+    assert _transition_snapshot(root) == original
+    assert _git(root, 'status', '--porcelain') == ''
+
+
+def test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'governance/ci-authority.yml').unlink()
+    _git(root, 'add', '--all')
+    _git(root, 'commit', '--quiet', '-m', 'ordinary adopter')
+    result = apply_workflow_authority_transition(
+        root, step_factory=lambda candidate: _candidate_projection_steps(candidate)[:1],
+        converge=converge, snapshot=_transition_snapshot, commit_projection=True,
+    )
+    assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
+    assert _git(root, 'status', '--porcelain') == ''
+    assert not (root / 'governance/ci-authority.yml').exists()
+
+
+def test_commit_derived_rejects_check_before_runtime_allocation(monkeypatch, tmp_path):
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for invalid assertion'))
+    with pytest.raises(SystemExit) as error:
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--check', '--commit-derived'])
+    assert error.value.code == 2
+
+
+def test_commit_derived_rejects_dirty_before_runtime_allocation(monkeypatch, tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'intent').write_text('dirty\n')
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for dirty candidate'))
+    with pytest.raises(SystemExit, match='clean committed'):
+        scaffold.reconcile_main(['--repo-root', str(root), '--apply', '--commit-derived'])
+
+
+def test_commit_derived_cli_preserves_existing_projection_owner_result(monkeypatch, tmp_path, capsys):
+    import json
+
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ())
+    monkeypatch.setattr(scaffold, 'reconcile_steps', lambda *_args: _candidate_projection_steps(root))
+    monkeypatch.setattr(scaffold, 'record_reconcile_steps', lambda *_args: None)
+
+    def project(observed_root, **kwargs):
+        assert observed_root == root
+        assert kwargs['commit_projection'] is True
+        return authority_transition.ReconcileProjectionResult(2, base, 'a' * 40)
+
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', project)
+    scaffold.reconcile_main(['--repo-root', str(root), '--apply', '--commit-derived'])
+    report = json.loads(capsys.readouterr().out)
+    assert report['status'] == 'committed_candidate_projection'
+    assert report['authority'] is False
+    assert report['source_commit'] == base
+
+
+def test_commit_derived_preserves_trusted_workflow_definition_authority_pair(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    (root / 'intent').write_text('new\n')
+    _git(root, 'add', 'intent')
+    _git(root, 'commit', '--quiet', '-m', 'authored candidate')
+    base = _git(root, 'rev-parse', 'HEAD')
+    result = apply_workflow_authority_transition(
+        root, step_factory=_transition_steps, converge=converge,
+        snapshot=_transition_snapshot, commit_projection=True,
+    )
+    assert _git(root, 'rev-parse', result.definition_commit + '^') == base
+    assert _git(root, 'rev-parse', result.authority_commit + '^') == result.definition_commit
+    assert _git(root, 'rev-parse', 'HEAD') == result.authority_commit
+    assert _git(root, 'status', '--porcelain') == ''
+
+
+def test_candidate_file_projection_promotion_failure_restores_exact_source(tmp_path):
+    root = _authority_transition_repository(tmp_path)
+    base = _git(root, 'rev-parse', 'HEAD')
+    original = _transition_snapshot(root)
+    failed = False
+
+    def snapshot(candidate):
+        nonlocal failed
+        if candidate == root and not failed and _git(root, 'rev-parse', 'HEAD') != base:
+            failed = True
+            raise ReconcileAuthorityTransitionError('injected file projection promotion failure')
+        return _transition_snapshot(candidate)
+
+    with pytest.raises(ReconcileAuthorityTransitionError, match='injected file projection promotion failure'):
+        apply_workflow_authority_transition(
+            root, step_factory=_candidate_projection_steps, converge=converge,
+            snapshot=snapshot, commit_projection=True,
+        )
+    assert failed
+    assert _git(root, 'rev-parse', 'HEAD') == base
+    assert _transition_snapshot(root) == original
+    assert _git(root, 'status', '--porcelain') == ''
+    assert _git(root, 'for-each-ref', '--format=%(refname)', 'refs/bcf/') == ''
+
+
+def test_reconcile_force_apply_rejects_before_runtime_allocation(monkeypatch, tmp_path):
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ('test',))
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime for contradictory force/apply'))
+    with pytest.raises(SystemExit, match='--force is valid only with --check'):
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply', '--force'])
+
+
+def test_reconcile_authored_phase_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation import authored_phase_state
+
+    (tmp_path / 'plans').mkdir()
+    (tmp_path / 'plans/phase-ledger.yml').write_text('{}')
+
+    def reject(_root):
+        raise authored_phase_state.AuthoredPhaseStateError('authored phase contradiction')
+
+    monkeypatch.setattr(authored_phase_state, 'validate_authored_phase_state', reject)
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ('test',))
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime before authored phase rejection'))
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', lambda *_a, **_k: pytest.fail('created shadow before authored phase rejection'))
+    with pytest.raises(SystemExit, match='authored phase contradiction'):
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply'])
+
+
+def test_reconcile_authored_release_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
+    def reject(_root, _version):
+        raise ReleaseVersionProjectionError('authored release contradiction')
+
+    monkeypatch.setattr(scaffold, 'validate_authored_release_target', reject)
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda _root: ('test',))
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *_a, **_k: pytest.fail('allocated runtime before authored release rejection'))
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition', lambda *_a, **_k: pytest.fail('created shadow before authored release rejection'))
+    with pytest.raises(SystemExit, match='authored release contradiction'):
+        scaffold.reconcile_main(['--repo-root', str(tmp_path), '--apply'])
+
+
+def test_reconcile_authored_machine_rejects_before_runtime_or_shadow(monkeypatch, tmp_path):
+    from bcf_governance.tooling.governance_validation import ci_state_matrix
+
+    def reject(_root, **_kwargs):
+        raise ci_state_matrix.CIStateMatrixError("machine-readable authored contradiction")
+
+    monkeypatch.setattr(ci_state_matrix, "validate_ci_state_matrix", reject)
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(scaffold, "ensure_local_project_python", lambda *_a, **_k: pytest.fail("allocated runtime before authored machine rejection"))
+    monkeypatch.setattr(scaffold, "apply_workflow_authority_transition", lambda *_a, **_k: pytest.fail("created shadow before authored machine rejection"))
+    with pytest.raises(SystemExit, match="machine-readable authored contradiction"):
+        scaffold.reconcile_main(["--repo-root", str(tmp_path), "--apply"])
+
+
+
+@pytest.mark.parametrize('mode', ['--check', '--apply', 'factory'])
+@pytest.mark.parametrize('defect', ['null_policy', 'null_timeout', 'dangling_symlink'])
+def test_reconcile_timeout_policy_rejects_before_runtime_or_steps(monkeypatch, tmp_path, mode, defect):
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    path = governance / 'gate-contracts.yml'
+    if defect == 'dangling_symlink':
+        path.symlink_to(tmp_path / 'absent-timeouts.yml')
+    elif defect == 'null_policy':
+        path.write_text('execution_policy: null\n')
+    else:
+        path.write_text('gates: {example: {invocation: {timeout_seconds: null}}}\n')
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', lambda *a, **kw: pytest.fail('invalid timeout prepared interpreter'))
+    monkeypatch.setattr(scaffold, 'declared_test_gates', lambda *a, **kw: pytest.fail('invalid timeout inspected test runtime'))
+    monkeypatch.setattr(scaffold, 'declared_graph_value_source_paths', lambda *a, **kw: pytest.fail('invalid timeout constructed graph steps'))
+    before = path.lstat()
+    if mode == 'factory':
+        from bcf_governance.tooling.ci_graph_errors import CIGraphError
+        with pytest.raises(CIGraphError, match='timeout|regular nonsymlink'):
+            reconcile_steps(tmp_path, Path(sys.executable))
+    else:
+        monkeypatch.setattr(scaffold, 'reconcile_steps', lambda *a, **kw: pytest.fail('invalid timeout constructed steps'))
+        with pytest.raises(SystemExit, match='timeout|regular nonsymlink'):
+            scaffold.reconcile_main(['--repo-root', str(tmp_path), mode])
+    after = path.lstat()
+    assert (after.st_mode, after.st_ino, after.st_size, after.st_mtime_ns) == (
+        before.st_mode, before.st_ino, before.st_size, before.st_mtime_ns,
+    )

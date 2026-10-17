@@ -1,0 +1,151 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/submit-normalization-slice.yml
+  status: planned
+  authority: false
+workitem: P32-P0-07
+trigger: canonical submit rejected incomplete P32 as phase closure because it consumed the inherited generated scope before
+  canonical normalization
+invariants:
+- I20
+- I21
+- I22
+- I25
+- I26
+- AC17
+- AC21
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+owner: bcf_governance/tooling/ci_authority_submit.py::submit_candidate
+targets:
+- bcf_governance/tooling/ci_authority_submit.py
+- tests/test_candidate_submit.py
+- bcf_governance/tooling/scaffold_governance_artifacts.py
+- tests/test_reconcile_governance.py
+- governance/application-operations.yml
+existing_owners:
+  authored_state: bcf_governance/tooling/governance_validation/authored_phase_state.py::validate_authored_phase_state
+  normalization: bcf_governance/tooling/scaffold_governance_artifacts.py::reconcile_main
+  lease: bcf_governance/tooling/local_execution_admission.py::local_gate_lease
+contract:
+- reject authored contradiction or wrong intent assertion before any normalization mutation
+- acquire the existing local lease before normalization so a concurrent admitted train cannot be mutated
+- reuse canonical selective fixed-point checks; invoke the existing exact-runtime reconcile owner only for dirty derived state
+- normalize through the canonical atomic workflow-authority transition; never edit generated pins or choose stages
+- derive fresh context commit tree scope and title after normalization; never prove or push the old subject
+- release the normalization lease before the existing prospective owner acquires its own execution lease
+- normalization failure or partial state blocks prospective proof and push
+- The canonical release-version stage cache includes the actual authoritative version source; a version-only change cannot
+  inherit an old clean projection
+positive_tests:
+- stale generated scope normalizes before title proof and push
+- fixed-point submission performs no generation
+negative_tests:
+- authored contradiction mutates nothing
+- normalization failure cannot prove or push
+- busy lease performs no normalization
+- wrong intent assertion mutates nothing
+- A source-version-only change rejects stale projections even after an earlier clean cache entry
+forbidden:
+- intent-flag workaround
+- false phase completion
+- manual generated pins
+- new mutation authority
+- new broker or principal
+- weakening prospective or provider proof
+coordination_effect:
+  symbol: bcf_governance/tooling/local_execution_admission.py::local_gate_lease
+  classification: non_authoritative_output_effects
+  scope: Existing fixed host-local lease path and authenticated execution namespace only
+  rejection: Invalid execution identity or busy lease blocks before normalization
+  cleanup: Existing finally block unlocks and closes its descriptor
+  authority_effect: none; no provider or truth effect
+
+release_surface_completeness:
+  target_module: bcf_governance/tooling/release_version_projection.py
+  bounded_context: evidence
+  architectural_layer: tooling
+  operation_side: query_before_existing_projection_command
+  trigger: Package parity found a missing current-version changelog target after normalization had accepted the tree.
+  contract:
+  - Validate an authored unreleased target or existing exact release heading before any projection mutation.
+  - Reject absent stale duplicate or misplaced unreleased target when no compatible exact released entry permits it.
+  - Never fabricate release history or automatically author a release target.
+  - Preserve graphless and fixture roots without package surfaces or an optional changelog.
+  - Include every inspected README usage and changelog surface in release-version cache applicability.
+  expected_tests: [tests/test_reconcile_governance.py, tests/test_pack_sync.py]
+  forbidden: [release publication, phase activation, workflow edits, authority relaxation]
+
+  admission_boundary: The canonical submit caller invokes this same pure owner before acquiring its local lease or requesting reconciliation; partial release ownership rejects there as well.
+  runtime_version_owner: bcf_governance/tooling/runtime_capacity.py::executing_runtime_version
+
+submission_progress_projection:
+  targets: [bcf_governance/tooling/ci_authority_submit.py, bcf_governance/tooling/ci_commands.py, tests/test_candidate_submit.py, docs/USAGE.md]
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: existing_command_with_non_authoritative_observation
+  contract:
+  - Forward the existing prospective progress sink through canonical submit; use the unchanged operational-observation schema.
+  - CLI progress is flushed JSON on stderr; stdout retains its single terminal result.
+  - No event grants proof or provider authority; incomplete proof still prevents push.
+  - Keep the optional callback additive and preserve behavior for callers without a sink.
+  expected_tests: [test_submit_forwards_existing_progress_without_conferring_authority, test_submit_cli_keeps_progress_on_stderr_and_result_on_stdout]
+  forbidden: [new progress authority, second execution path, provider polling loop, fabricated progress on silent stages]
+
+file_projection_custody_correction:
+  workitem: P32-P0-07
+  bounded_context: operations
+  submission_consumer_context: ci_authority
+  architectural_layer: tooling
+  operation_side: command
+  target_modules:
+  - bcf_governance/tooling/reconcile_authority_transition.py
+  - bcf_governance/tooling/scaffold_governance_artifacts.py
+  - bcf_governance/tooling/ci_authority_submit.py
+  expected_tests: [tests/test_reconcile_governance.py, tests/test_candidate_submit.py]
+  defect: Ordinary file-only reconciliation leaves generated tracked changes uncommitted, so the subsequent exact candidate query correctly rejects.
+  shared_kernel_decision: The existing operations-owned reconciliation transaction remains the sole Git projection-custody owner; ci_authority invokes it through the existing exact nested CLI boundary.
+  compatibility:
+  - Preserve ordinary standalone reconcile --apply file-only behavior and the workflow-definition/authority pair.
+  - Add an internal front-door-selected --commit-derived assertion for apply; callers still select no reconciliation stages or lifecycle intent.
+  - Ordinary adopters without a self-authority registry retain their canonical projection ownership and receive no invented controller requirement.
+  contract:
+  - Reject contradictory apply/check assertions before runtime allocation and require a clean committed source before any shadow owner runs.
+  - Prove all canonical projection bytes in the existing isolated transaction shadow and commit only that resulting derived candidate.
+  - Keep every existing exact branch subject snapshot concurrency and rollback check before promotion.
+  - If trusted workflows change, retain the exact two-commit definition then authority transaction.
+  - Reject late trusted-workflow changes from a purported file-only path rather than bypassing pin custody.
+  - Repeat fixed points produce no empty commit; a projection failure or concurrent source movement cannot mutate the original candidate.
+  - Submission recaptures the fresh commit/tree and runs unchanged prospective/provider proof boundaries afterward.
+  - No local Git commit confers provider certification merge release or custody authority.
+  exact_tests:
+  - tests.test_reconcile_governance::test_candidate_file_projection_commits_exact_derived_bytes_and_is_idempotent
+  - tests.test_reconcile_governance::test_candidate_file_projection_rejects_dirty_source_before_shadow
+  - tests.test_reconcile_governance::test_candidate_file_projection_preserves_concurrent_source_movement
+  - tests.test_reconcile_governance::test_candidate_file_projection_failure_preserves_original_tree
+  - tests.test_reconcile_governance::test_candidate_file_projection_rejects_late_trusted_workflow_change
+  - tests.test_reconcile_governance::test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry
+  - tests.test_reconcile_governance::test_commit_derived_rejects_check_before_runtime_allocation
+  - tests.test_reconcile_governance::test_commit_derived_rejects_dirty_before_runtime_allocation
+  - tests.test_reconcile_governance::test_commit_derived_cli_preserves_existing_projection_owner_result
+  - tests.test_reconcile_governance::test_commit_derived_preserves_trusted_workflow_definition_authority_pair
+  - tests.test_reconcile_governance::test_candidate_file_projection_promotion_failure_restores_exact_source
+  - tests.test_reconcile_governance::test_reconcile_force_apply_rejects_before_runtime_allocation
+  - tests.test_candidate_submit::test_dirty_submit_uses_canonical_normalization_then_rechecks
+  forbidden_surfaces: [direct Git commit in submission owner, provider mutation, selected reconciliation stages, hand-authored workflow pins, maintained adopters, frozen maintenance distribution]
+
+standalone_authored_preflight_correction:
+  workitem: P32-P0-07
+  bounded_context: operations
+  architectural_layer: tooling
+  operation_side: command
+  targets: [bcf_governance/tooling/scaffold_governance_artifacts.py]
+  contract:
+  - Invoke the existing pure authored phase and release-target validators before runtime allocation and reconciliation shadow creation.
+  - Keep their existing first-stage checks and cause-specific errors; generated-state checks still follow necessary generation.
+  - Preserve graphless fixtures and standalone apply/check behavior.
+  exact_controls:
+  - tests.test_reconcile_governance::test_reconcile_authored_phase_rejects_before_runtime_or_shadow
+  - tests.test_reconcile_governance::test_reconcile_authored_release_rejects_before_runtime_or_shadow
+  forbidden: [new state evaluator, bypassing authored contradictions, manual generated hashes, provider mutation]

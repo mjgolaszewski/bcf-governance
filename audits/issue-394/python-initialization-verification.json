@@ -1,0 +1,40 @@
+{
+  "document": {
+    "kind": "issue_394_local_verification",
+    "authority": false,
+    "path": "audits/issue-394/python-initialization-verification.json"
+  },
+  "status": "focused_checks_passed",
+  "source_hashes": {
+    "bcf_governance/tooling/semantic_python_calls.py": "b1289030f086c0c05550e7909f503e5d0ab6ee897b86100332c34c0a951b1523",
+    "bcf_governance/tooling/semantic_ownership_inventory.py": "64db13d8f8f1a002dac5da2a349401a3dd503a374d5497cc9ab7de9ff6b3cb3e",
+    "schemas/semantic-initialization-contracts.schema.json": "ef58f8d9eef278a28a22a02995a022896c86402a03cee54df231aba18dc4dc9c",
+    "tests/test_semantic_python_initialization.py": "04fc14700e6b8c2a8e7e417bff94c1d978203d12f37523dda8baefbfbe39463e"
+  },
+  "red_controls": {
+    "initial_absent_api": "Seven TypeErrors were preliminary port failures, not behavioral proof.",
+    "port_staged_behavior": "Seven failures: two missing module_initializers facts and five unsupported-version cases reached source reads; observed in local tool transcript before implementation. No committed red-source snapshot exists.",
+    "empty_site_completeness": "One actual KeyError for missing completeness_qualified before implementation; contract and red control committed as 93ec1086 before adding result fields."
+  },
+  "tests": {
+    "affected_suite": "56 passed in 84.17s: initialization, call facts, retained characterization, operation population, LOC/context/private copies, pack sync and CLI effect-boundary check on the final source.",
+    "governance": "governance-yaml-ok",
+    "static": "lint and typecheck passed",
+    "pack": "build_pack_manifest.py --check passed"
+  },
+  "corrections": [
+    "Initial new-module proposal lacked context registration; context gate rejected it.",
+    "Adding registration invalidated the authenticated policy digest; governance gate rejected it.",
+    "Moved helper into the existing semantic_python_calls owner and restored policy byte-for-byte. No graph digest, workflow or authority pin was edited."
+  ],
+  "remaining": [
+    "Governed test selector manifests are not normalized under current hold.",
+    "Protected complete source census and actual runtime effect interpretation are not established.",
+    "Downstream lifecycle consumer binding and installed-consumer qualification remain pending."
+  ],
+  "whole_requirement_closure": false,
+  "contract_commits": [
+    "e5d4ab99",
+    "93ec1086"
+  ]
+}

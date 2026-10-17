@@ -1,0 +1,1853 @@
+{
+  "document": {
+    "kind": "issue_394_operator_disposition",
+    "authority": false,
+    "path": "audits/issue-394/operator-disposition.json"
+  },
+  "observed_at": "2026-10-16T01:52:25.148308+00:00",
+  "source": {
+    "issue": "https://github.com/mjgolaszewski/bcf-governance/issues/394",
+    "issue_updated_at": "2026-10-15T15:46:46Z",
+    "issue_body_sha256": "7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e",
+    "local_head": "ddb35d6c0c13c9b92f5d7d197ea858fee25863b5",
+    "workplan_sha256": "a1e42d7197c3ad55fbc1ef491df6db919cb63fc1bdb0f4f22d8b73760c56a5aa",
+    "working_tree_is_dirty": true,
+    "workspace_role": "isolated_issue_394_construction"
+  },
+  "status": "in_progress_isolated_construction_integration_held",
+  "target_version": "2.5.0",
+  "phase_identity_warning": "P32-P35 and release_27 are local provisional identifiers, not successor admission; rederive on corrected maintenance custody.",
+  "whole_requirements_verified": 0,
+  "requirement_count": 82,
+  "phase_plan": [
+    {
+      "phase": "P32",
+      "plan": "plans/phase-32-plan.yml",
+      "workitems_path": "plans/phase-32-workitems.yml",
+      "log": "phases/phase-32-log.yml",
+      "workitems": [
+        {
+          "id": "P32-P0-01",
+          "status": "IN_PROGRESS",
+          "summary": "Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody"
+        },
+        {
+          "id": "P32-P0-02",
+          "status": "IN_PROGRESS",
+          "summary": "Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers"
+        },
+        {
+          "id": "P32-P0-03",
+          "status": "IN_PROGRESS",
+          "summary": "Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges"
+        },
+        {
+          "id": "P32-P0-04",
+          "status": "IN_PROGRESS",
+          "summary": "Independently trace implementation effects and producer consumer populations in both directions"
+        },
+        {
+          "id": "P32-P0-05",
+          "status": "TODO",
+          "summary": "Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early"
+        },
+        {
+          "id": "P32-P0-06",
+          "status": "IN_PROGRESS",
+          "summary": "Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets"
+        },
+        {
+          "id": "P32-P0-07",
+          "status": "IN_PROGRESS",
+          "summary": "Normalize derived governance before deriving submission scope and exact subject"
+        }
+      ]
+    },
+    {
+      "phase": "P33",
+      "plan": "plans/phase-33-plan.yml",
+      "workitems_path": "plans/phase-33-workitems.yml",
+      "log": "phases/phase-33-log.yml",
+      "workitems": [
+        {
+          "id": "P33-P0-01",
+          "status": "TODO",
+          "summary": "Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary"
+        },
+        {
+          "id": "P33-P0-02",
+          "status": "TODO",
+          "summary": "Authenticate proof applicability and exact resumable coalesced submit release and adopter transactions"
+        },
+        {
+          "id": "P33-P0-03",
+          "status": "TODO",
+          "summary": "Derive conservative claim test control impact with independently checked required populations"
+        },
+        {
+          "id": "P33-P0-04",
+          "status": "TODO",
+          "summary": "Schedule only the unresolved sound closure with deterministic resource-safe bounded fanout"
+        },
+        {
+          "id": "P33-P0-05",
+          "status": "TODO",
+          "summary": "Derive complete exact adopter subjects and safely reuse isolated outcomes through exact-byte custody"
+        },
+        {
+          "id": "P33-P0-06",
+          "status": "TODO",
+          "summary": "Project approved periodic policy and profile-specific dormant capabilities through canonical installation"
+        },
+        {
+          "id": "P33-P0-07",
+          "status": "TODO",
+          "summary": "Prove full governed versus shadow differential behavior and isolated installed-adopter parity"
+        }
+      ]
+    },
+    {
+      "phase": "P34",
+      "plan": "plans/phase-34-plan.yml",
+      "workitems_path": "plans/phase-34-workitems.yml",
+      "log": "phases/phase-34-log.yml",
+      "workitems": [
+        {
+          "id": "P34-P0-01",
+          "status": "TODO",
+          "summary": "Expand compatible trusted consumers before protected context-specific opt-in activation"
+        },
+        {
+          "id": "P34-P0-02",
+          "status": "TODO",
+          "summary": "Activate approved due expiry grace catch-up findings and foreground priority semantics"
+        },
+        {
+          "id": "P34-P0-03",
+          "status": "TODO",
+          "summary": "Prove automatic unsafe-suppression disable opt-out and exact rollback preserving proof and history"
+        }
+      ]
+    },
+    {
+      "phase": "P35",
+      "plan": "plans/phase-35-plan.yml",
+      "workitems_path": "plans/phase-35-workitems.yml",
+      "log": "phases/phase-35-log.yml",
+      "workitems": [
+        {
+          "id": "P35-P0-01",
+          "status": "TODO",
+          "summary": "Tune measured critical paths only after complete assurance and isolation proof"
+        },
+        {
+          "id": "P35-P0-02",
+          "status": "TODO",
+          "summary": "Meet separately frozen PR exact-main release adopter custody and interruption targets"
+        },
+        {
+          "id": "P35-P0-03",
+          "status": "TODO",
+          "summary": "Certify exact source wheel sdist template installed-runtime and real-adopter equivalence"
+        },
+        {
+          "id": "P35-P0-04",
+          "status": "TODO",
+          "summary": "Publish admitted exact bytes and independently verify immutable custody without rebuilding"
+        }
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "I01",
+      "requirement": "Assurance monotonicity. Optimization changes execution strategy, never required propositions, negative controls, evidence standards, independence, authority, failure semantics or protection. Redundant mechanisms may be consolidated only through an explicit proposition-preserving governed change.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "finite-provider-retry-bound",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-read-bounds-slice.yml",
+          "remaining": [
+            "Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.",
+            "These local transport controls confer no provider certification or custody authority."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I02",
+      "requirement": "Claim-first. `ClaimIdentity`, `Qualification` and their dependency closures determine required proof. Jobs/groups/shards are execution containers, not evidence identities or authority shortcuts.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I03",
+      "requirement": "Exact identity. Plans bind repository ID, source/base/head/tree as applicable, policy, installed controller/evaluator, graph, toolchain, environment, test/control manifest, dependency model, source evidence, freshness evaluation, algorithm version and execution session. Nonapplicable fields require canonical typed treatment, not invented values.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "separate-pipeline-clock-observation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/baseline-measurement-slice.yml",
+          "remaining": [
+            "Adequate matched self/isolated-adopter cohorts and separately approved frozen performance/resource targets remain required.",
+            "Independent complete producer populations, terminal custody clocks and measured CPU are not inferred from these observations."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I04",
+      "requirement": "Independent completeness. Trusted truth independently derives/verifies required claims, impact, exclusions, selected execution and reuse. A candidate planner's internally consistent omissions cannot certify themselves.",
+      "owner": "ci_authority",
+      "workitem": "foundation.conformance",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I05",
+      "requirement": "Conservative ambiguity. Unknown imports/reflection/generated inputs/fixtures/cross-language/configuration/environment/security/trust effects expand the assurance closure. Lack of observed coverage is not proof of non-dependence. Missing mandatory authorization blocks; it is not cured by running more tests.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "finite-provider-retry-bound",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-read-bounds-slice.yml",
+          "remaining": [
+            "Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.",
+            "These local transport controls confer no provider certification or custody authority."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I06",
+      "requirement": "Negative controls preserved. Each applicable cause-specific control must execute or have independently applicable qualification/reuse. Reusing a positive result does not automatically reuse its detector qualification. Syntax mutation success is not proof of the proposition.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I07",
+      "requirement": "Provider independence. Local, shadow and isolated qualification observations cannot certify provider PR, protected merge, exact-main, controller, release or custody authority. Preserve provenance and authority classes through every handoff.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I08",
+      "requirement": "No time-based laundering. Periodic evidence satisfies a consumer only after exact proposition, dependencies, policy, source, toolchain/environment, qualification, freshness and authority validation. \u201cGreen last night\u201d is insufficient.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I09",
+      "requirement": "Stable protection. Required provider status identities and admission boundaries remain stable. Internal dynamic fanout, zero-work plans, skipped/missing jobs and nonapplicable lanes never manufacture terminal success.",
+      "owner": "ci_authority",
+      "workitem": "activation.authority",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I10",
+      "requirement": "Replan on invalidation. PR/base movement, subject changes, relevant policy/graph/controller/toolchain/environment changes and evidence expiry trigger a new exact plan/applicability decision. Old plans are immutable and cannot authorize new subjects.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I11",
+      "requirement": "Deterministic planning. Identical canonical input snapshots produce byte-identical model, plan, partition and reason outputs. Bind duration/resource observations and evaluation time when used; deterministic tie-breaking is mandatory.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        },
+        {
+          "id": "separate-pipeline-clock-observation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/baseline-measurement-slice.yml",
+          "remaining": [
+            "Adequate matched self/isolated-adopter cohorts and separately approved frozen performance/resource targets remain required.",
+            "Independent complete producer populations, terminal custody clocks and measured CPU are not inferred from these observations."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I12",
+      "requirement": "Closed dispositions. Required behavioral claims are exactly authenticated-reuse, execute, or blocked. Structural obligations retain the canonical `captured_by_preflight` channel; preflight observations cannot become behavioral receipts. The catalog separately types monitoring/nonapplicability; required merge/release proof cannot be relabeled monitoring. All exclusions are independently checked.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I13",
+      "requirement": "No candidate self-exemption. Candidate bytes cannot redefine impact, evaluator, policy, tests or exclusions so as to grant themselves authority. Candidate content is data only under explicit source contracts; protected-base/managed-controller ownership remains enforced.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I14",
+      "requirement": "Periodic drift stays separate. Scheduled observations create typed findings/invalidation for applicable future consumers. They cannot retroactively authorize a merge or erase its historical evidence.",
+      "owner": "evidence",
+      "workitem": "activation.periodic",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I15",
+      "requirement": "Exact inventory. Test selection includes canonical test IDs, fixtures, parameter/generated identities, discovery tooling and negative controls. New/uncollected/dynamic tests require conservative fallback; a narrow test command cannot redefine the required population.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I16",
+      "requirement": "Complete execution. SPLINTER preserves exact union, zero overlap within a partitioned obligation, resource isolation, cleanup, canonical JUnit identities and manifest checks. Distinct policy-required independent executions remain distinct obligations, not \u201cduplicates\u201d to optimize away.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I17",
+      "requirement": "Failure containment. Timeout, partial execution, unavailable/invalid proof and planner defects cannot grant success. Retain unaffected applicable proof, derive a bounded recovery frontier and distinguish infrastructure failure from a real product/control failure.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "terminal-proposition-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/terminal-proposition-binding-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.",
+            "No local proposition or static terminal predicate authenticates provider custody or closes the whole train."
+          ]
+        },
+        {
+          "id": "publication-metadata-revalidation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/publication-metadata-fix-contract.json",
+          "remaining": [
+            "Concurrent invocation qualification, installed consumer parity, exact provider custody and complete release/adopter continuation remain unqualified.",
+            "No provider or successor admission authority is derived from local fixture evidence."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I18",
+      "requirement": "Observations have no truth authority. Timing, cache hits, historical failure frequency, queue waits, costs and predicted critical paths may influence ordering/placement only after correctness is established. They cannot waive proof or grant permission; explain/report artifacts remain `authority: false`.",
+      "owner": "evidence",
+      "workitem": "foundation.baseline",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I19",
+      "requirement": "Adopter parity. Self-managed BCF, Lite, Standard-v3, Regulated, Python-only and mixed toolchains retain their own requirements. The same product semantics must be installable; BCF-self controller/release/toolchain fixtures cannot be imposed on ordinary consumers.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I20",
+      "requirement": "No hidden operator procedure. The canonical front door derives ordinary intent/target, source/base, proof population, reuse, partition, next action and recovery from authenticated state. No agent-selected skip list, lane, test subset, artifact IDs, arbitrary adopter ref or copied provider facts.",
+      "owner": "ci_authority",
+      "workitem": "dormant.early-checks",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "canonical-submit-normalization",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/submit-normalization-slice.yml",
+          "remaining": [
+            "Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.",
+            "Provider PR/exact-main authority and full terminal custody are not certified by these local tests."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I21",
+      "requirement": "Earliest-valid rejection. Every deterministic obligation names the earliest boundary at which its authentic inputs and required authority are available. Execute it there, before avoidable downstream model/provider allocation or mutation. Do not claim provider-only facts can be proved locally. Measure detection latency and downstream work avoided for seeded failures.",
+      "owner": "ci_authority",
+      "workitem": "dormant.early-checks",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "terminal-proposition-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/terminal-proposition-binding-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.",
+            "No local proposition or static terminal predicate authenticates provider custody or closes the whole train."
+          ]
+        },
+        {
+          "id": "typed-guard-preservation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-guard-preservation-contract.json",
+          "remaining": [
+            "Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations remain unqualified.",
+            "Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required."
+          ]
+        },
+        {
+          "id": "typed-reference-before-allocation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-reference-preflight-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization is required before governed oracle closure.",
+            "Independent guard/effect populations, installed consumer behavior, complete typed model adoption and terminal custody remain unqualified."
+          ]
+        },
+        {
+          "id": "publication-metadata-revalidation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/publication-metadata-fix-contract.json",
+          "remaining": [
+            "Concurrent invocation qualification, installed consumer parity, exact provider custody and complete release/adopter continuation remain unqualified.",
+            "No provider or successor admission authority is derived from local fixture evidence."
+          ]
+        },
+        {
+          "id": "early-active-phase-schema",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/authored-phase-schema-contract.yml",
+          "remaining": [
+            "Full retained historical phase population and all source/package/profile/runtime earliest boundaries remain unqualified.",
+            "These local controls grant no computed verified or closed truth and no provider authority."
+          ]
+        },
+        {
+          "id": "canonical-submit-normalization",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/submit-normalization-slice.yml",
+          "remaining": [
+            "Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.",
+            "Provider PR/exact-main authority and full terminal custody are not certified by these local tests."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I22",
+      "requirement": "Authority derivation, not procedural prompting. Eliminate each agent choice for which authenticated state plus approved policy yields a decision. Agent-selected defaults, CLI flags, environment variables, hand-edited receipts and silent recovery overrides must not recreate the choice. Genuine policy/intent changes retain explicit human authorization; absence of derivable authority yields a typed blocker.",
+      "owner": "ci_authority",
+      "workitem": "dormant.early-checks",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "terminal-proposition-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/terminal-proposition-binding-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.",
+            "No local proposition or static terminal predicate authenticates provider custody or closes the whole train."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I23",
+      "requirement": "Composed semantic closure. Extend existing `CompiledCIGraph`/`EdgeContract` ownership through lifecycle, facts, costs, recovery, release/adopter and custody terminal consumers. Validate populations as well as edges. Every reachable context-specific relationship has a complete contract; each structurally absent relationship has one canonical typed exclusion. No independent graph copy or second truth engine.",
+      "owner": "ci_authority",
+      "workitem": "foundation.composition",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "terminal-proposition-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/terminal-proposition-binding-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.",
+            "No local proposition or static terminal predicate authenticates provider custody or closes the whole train."
+          ]
+        },
+        {
+          "id": "typed-guard-preservation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-guard-preservation-contract.json",
+          "remaining": [
+            "Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations remain unqualified.",
+            "Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required."
+          ]
+        },
+        {
+          "id": "typed-lifecycle-path-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-path-binding-contract.json",
+          "remaining": [
+            "Actual backtrace enrichment, independent complete runtime effect/population reconstruction, guard authority and installed consumer proof remain required.",
+            "Prose retirement and workitem phase release/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "finite-provider-retry-bound",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-read-bounds-slice.yml",
+          "remaining": [
+            "Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.",
+            "These local transport controls confer no provider certification or custody authority."
+          ]
+        },
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I24",
+      "requirement": "Mechanical subject selection. Use the existing provider resolver for the entire required adopter/source inventory before expensive qualification. Freeze exact subjects; supplied roots/interpreters are resources, not selection authority. Provider movement must follow current freshness/invalidation policy\u2014never silently alter an in-flight inventory, choose older green sources, or relax collection-time checks.",
+      "owner": "ci_authority",
+      "workitem": "dormant.release",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I25",
+      "requirement": "Single canonical handoff. One admitted candidate/operation has one tracked submit/release transaction and resumable exact continuation. A second frontend invocation must observe/join or reject duplicate in-flight work under policy, not launch another identical train. Transport ambiguity is not \u201cexactly once\u201d; authenticate outcome before retrying a mutation. No duplicate local gate train solely because the operation crosses a workflow boundary.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "publication-metadata-revalidation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/publication-metadata-fix-contract.json",
+          "remaining": [
+            "Concurrent invocation qualification, installed consumer parity, exact provider custody and complete release/adopter continuation remain unqualified.",
+            "No provider or successor admission authority is derived from local fixture evidence."
+          ]
+        },
+        {
+          "id": "canonical-submit-normalization",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/submit-normalization-slice.yml",
+          "remaining": [
+            "Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.",
+            "Provider PR/exact-main authority and full terminal custody are not certified by these local tests."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I26",
+      "requirement": "Safe parallelism. Readiness requires satisfied semantic dependencies, producer/artifact availability, valid authority and compatible resources. Independent nodes may overlap; shared worktrees, migration/database state, ports, runner budgets, credentials, mutation fixtures and publisher/controller writes require explicit isolation or exclusion. A faster plan must not remove a real assurance dependency.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I27",
+      "requirement": "Honest adaptive optimization. Compute the minimal sound unresolved execution closure within the conservative model, then use bounded deterministic scheduling heuristics to reduce its measured critical path. Do not claim a globally optimal schedule. Duration/cost models cannot select away required work or trigger speculative duplicate execution by default.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I28",
+      "requirement": "Bounded resources and custody. Admission respects CPU/RAM/disk/I/O/concurrency/API budgets. Reuse immutable verified inputs where allowed; mutation-specific environments and evidence outputs remain isolated. Retire exact execution-owned ephemeral state on terminal paths, preserve referenced evidence/retention roots, and diagnose undeclared growth. No global prune or cache hit treated as proof.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I29",
+      "requirement": "End-to-end release identity. Build, verifier, adopter qualification, trusted collector, immutable publisher and custody audit preserve exact authorized bytes and independent trust roles. Source proof is not artifact proof; publisher/collector must not rebuild already-certified artifacts or silently requalify all adopters. Every remaining repeated check must identify its distinct proposition or changed applicability.",
+      "owner": "ci_authority",
+      "workitem": "dormant.release",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I30",
+      "requirement": "Pipeline-specific outcomes. Material wall-clock reduction must be measured separately for PR, exact-main/controller, release/adopter and terminal custody, plus end-to-end developer interruption. Faster PRs, fewer jobs or shorter summed CPU time cannot substitute for unchanged release-to-custody latency; shifting work to nights is reported, not hidden.",
+      "owner": "evidence",
+      "workitem": "foundation.baseline",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "separate-pipeline-clock-observation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/baseline-measurement-slice.yml",
+          "remaining": [
+            "Adequate matched self/isolated-adopter cohorts and separately approved frozen performance/resource targets remain required.",
+            "Independent complete producer populations, terminal custody clocks and measured CPU are not inferred from these observations."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I31",
+      "requirement": "Scheduled work is an obligation, not a clock guarantee. Define due/expiry/grace, missed/delayed run detection, bounded catch-up, nonoverlap, invalidation and on-demand execute/block fallback. No scheduled/queued/started/skipped job extends evidence validity or satisfies a required consumer without completed qualified proof.",
+      "owner": "evidence",
+      "workitem": "activation.periodic",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "I32",
+      "requirement": "Minimum operational surface. Extend existing BCF owners and provider facilities; no new broker/controller/agent orchestrator merely to schedule CI. Every additional process, principal, receipt family, manual handoff or bookkeeping commit must justify a unique assurance function and measured cost. Keep the ordinary agent interface small.",
+      "owner": "evidence",
+      "workitem": "foundation.baseline",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F01",
+      "requirement": "one normative owner per affected transition; no second evaluator.",
+      "owner": "ci_authority",
+      "workitem": "foundation.composition",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F02",
+      "requirement": "guards reference typed authenticated facts, their producer, subject/proposition/authority/freshness and independent verification\u2014not caller booleans.",
+      "owner": "ci_authority",
+      "workitem": "foundation.composition",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F03",
+      "requirement": "every transition closes source, trigger/operation, guards, effects, successor, rejection and bounded recovery.",
+      "owner": "ci_authority",
+      "workitem": "foundation.composition",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "terminal-proposition-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/terminal-proposition-binding-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.",
+            "No local proposition or static terminal predicate authenticates provider custody or closes the whole train."
+          ]
+        },
+        {
+          "id": "typed-guard-preservation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-guard-preservation-contract.json",
+          "remaining": [
+            "Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations remain unqualified.",
+            "Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required."
+          ]
+        },
+        {
+          "id": "typed-reference-before-allocation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-reference-preflight-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization is required before governed oracle closure.",
+            "Independent guard/effect populations, installed consumer behavior, complete typed model adoption and terminal custody remain unqualified."
+          ]
+        },
+        {
+          "id": "typed-lifecycle-path-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-path-binding-contract.json",
+          "remaining": [
+            "Actual backtrace enrichment, independent complete runtime effect/population reconstruction, guard authority and installed consumer proof remain required.",
+            "Prose retirement and workitem phase release/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        },
+        {
+          "id": "authored-machine-backtrace-validation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/backtrace-validation-contract.yml",
+          "remaining": [
+            "Complete independent protected context populations actual effect interpretation recovery and installed-consumer conformance are not established by authored structural checks.",
+            "Prose retirement generated dependency views and exact terminal custody remain blocked."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F04",
+      "requirement": "human matrix/DAG/transition semantics are deterministically generated.",
+      "owner": "ci_authority",
+      "workitem": "foundation.conformance",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F05",
+      "requirement": "establish conformance to existing assurances before optimization; observed defects require governed correction, not silent semantic redefinition.",
+      "owner": "ci_authority",
+      "workitem": "foundation.conformance",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "finite-provider-retry-bound",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-read-bounds-slice.yml",
+          "remaining": [
+            "Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.",
+            "These local transport controls confer no provider certification or custody authority."
+          ]
+        },
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F06",
+      "requirement": "independently trace contract\u2192implementation\u2192positive/control evidence\u2192consumer and reverse-trace every authority effect.",
+      "owner": "ci_authority",
+      "workitem": "foundation.conformance",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        },
+        {
+          "id": "opt-in-python-call-facts",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/python-call-facts-contract.yml",
+          "remaining": [
+            "Independent actual effect interpretation and complete protected runtime populations remain unimplemented.",
+            "Same-parser determinism is not a cross-Python AST compatibility or installed-consumer qualification claim."
+          ]
+        },
+        {
+          "id": "source-operation-call-population",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/operation-call-population-contract.yml",
+          "remaining": [
+            "Complete module initialization native external dynamic and cross-language effect populations still require protected independent acquisition and interpretation.",
+            "No installed runtime consumer or authority activation uses this query."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F07",
+      "requirement": "scope adoption to all transitions consumed/changed by this train and their necessary closure, not an unrelated historical rewrite.",
+      "owner": "ci_authority",
+      "workitem": "foundation.composition",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "F08",
+      "requirement": "foundation work does not activate suppression, modify protection or grant controller/release/custody authority.",
+      "owner": "ci_authority",
+      "workitem": "foundation.composition",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP01",
+      "requirement": "Consumer ownership: preserve adopter graph nodes/claims/tests/dependencies/extensions/release/protection semantics; mutate only declared BCF-owned projections.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP02",
+      "requirement": "Canonical distribution: one scheduler/composition implementation and profile-aware install/upgrade projection across source, wheel/sdist, packaged runtime and templates; no copied consumer-specific planner.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP03",
+      "requirement": "Preserve-first upgrade: authenticate predecessor/current bytes, derive minimal owned changes, retain unrelated content, prove idempotent second run/fixed point and safe rollback.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP04",
+      "requirement": "Profile specificity: Lite, Standard-v3, Regulated, Python-only and mixed Python/Node/TypeScript have explicit supported capabilities and typed nonapplicability. No self-controller, self-release or irrelevant toolchain requirements imposed on ordinary adopters.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP05",
+      "requirement": "Consumer-local proof: derive each adopter's own source\u2192owner\u2192claim\u2192test/control closure and proof inventory; another repository's application results cannot supply its authority.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP06",
+      "requirement": "Provider boundary: preserve required statuses, exact provider repository/base/head, protected evaluator/controller and protection declarations. No candidate-controlled skip authority or unreviewed protection mutation.",
+      "owner": "ci_authority",
+      "workitem": "activation.authority",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP07",
+      "requirement": "Actual adoption proof: fixture/schema/installer success is insufficient. Qualify isolated real consumer checkouts with their own test/control execution and independently verified completeness. Preserve provider-only proof requirements rather than simulating certification.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP08",
+      "requirement": "Safe absence: old/malformed/missing declarations are mechanically migrated with proof or yield a typed blocker; no silent capability loss or inferred permissions.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP09",
+      "requirement": "Periodic isolation: project schedules from each consumer's approved proposition catalog, not BCF-self cron controls. Installed feature availability does not establish adoption or applicable periodic proof.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "CP10",
+      "requirement": "Parity/custody: verify exact installed runtime, source/package/template equivalence, repository/subject/policy/toolchain/freshness/provider scope and cold reconstruction of required evidence.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC01",
+      "requirement": "Docs-only candidate: every required proposition still accounted for through valid reuse/execution; no blanket path skip.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC02",
+      "requirement": "Direct unit/shared helper/fixture/schema/dependency/generated/semantic-registry/trust/controller changes invalidate their sound closure.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC03",
+      "requirement": "Dynamic import/reflection/native/plugin/cross-language effects, missing test discovery and stale/partial coverage expand; omission never means unaffected.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC04",
+      "requirement": "Detector/mutation-only change retains exact negative qualification; stale syntactic oracle/zero-or-multiple target fails at earliest valid boundary.",
+      "owner": "ci_authority",
+      "workitem": "dormant.early-checks",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC05",
+      "requirement": "Candidate edits its planner/impact map/evaluator/tests/exclusions to self-pass: independent trusted required-population and effect checks reject.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC06",
+      "requirement": "Local green or isolated adopter observation without mandatory provider authority cannot certify PR/main/release/custody.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC07",
+      "requirement": "Wrong-subject/policy/controller/toolchain/repository or expired nightly proof cannot satisfy a current consumer.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC08",
+      "requirement": "Periodic red, missing/delayed/disabled/skipped run or expired source opens typed debt/finding/invalidation; no historical rewrite or fresh-proof assumption.",
+      "owner": "evidence",
+      "workitem": "activation.periodic",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC09",
+      "requirement": "Missing claim/producer/consumer, false exclusion, unmodeled terminal, duplicate test, overlapping/gapped partition or absent shard blocks truth.",
+      "owner": "ci_authority",
+      "workitem": "foundation.conformance",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "typed-guard-preservation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-guard-preservation-contract.json",
+          "remaining": [
+            "Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations remain unqualified.",
+            "Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required."
+          ]
+        },
+        {
+          "id": "typed-reference-before-allocation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-reference-preflight-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization is required before governed oracle closure.",
+            "Independent guard/effect populations, installed consumer behavior, complete typed model adoption and terminal custody remain unqualified."
+          ]
+        },
+        {
+          "id": "typed-lifecycle-path-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-path-binding-contract.json",
+          "remaining": [
+            "Actual backtrace enrichment, independent complete runtime effect/population reconstruction, guard authority and installed consumer proof remain required.",
+            "Prose retirement and workitem phase release/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC10",
+      "requirement": "Base/head/policy movement between plan, dispatch and finalizer creates an explicit new subject or rejection; in-flight bytes never change silently.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC11",
+      "requirement": "Provider 429/5xx/transient timeout versus 401/403/404, digest mismatch, artifact churn or wrong attempt: exact bounded retry/terminal classification; ambiguity is not an empty inventory.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "finite-provider-retry-bound",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-read-bounds-slice.yml",
+          "remaining": [
+            "Full sibling-consumer deadline composition and authenticated measured lower bounds remain required.",
+            "These local transport controls confer no provider certification or custody authority."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC12",
+      "requirement": "Bounded workitem/phase/exact-main/ordinary-current/no-transition/pending-rotation/recovery/release/custody permutations preserve exact distinct authority.",
+      "owner": "ci_authority",
+      "workitem": "activation.authority",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "terminal-proposition-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/terminal-proposition-binding-contract.json",
+          "remaining": [
+            "Canonical test-manifest normalization and independent installed-consumer/guard/effect qualification remain required.",
+            "No local proposition or static terminal predicate authenticates provider custody or closes the whole train."
+          ]
+        },
+        {
+          "id": "typed-guard-preservation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-guard-preservation-contract.json",
+          "remaining": [
+            "Digest references preserve declared guard identity; source verifier execution freshness authority and full independent guard/effect populations remain unqualified.",
+            "Actual backtrace enrichment, installed consumers, canonical oracle normalization and independent terminal custody remain required."
+          ]
+        },
+        {
+          "id": "typed-lifecycle-path-binding",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/typed-path-binding-contract.json",
+          "remaining": [
+            "Actual backtrace enrichment, independent complete runtime effect/population reconstruction, guard authority and installed consumer proof remain required.",
+            "Prose retirement and workitem phase release/custody qualification remain blocked."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC13",
+      "requirement": "Self/Lite/Standard-v3/Regulated plus pure/mixed toolchains retain actual adopter requirements and installation/projection parity.",
+      "owner": "installation",
+      "workitem": "dormant.projection",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC14",
+      "requirement": "Scheduler timeout, unavailable cache, resource conflict, interrupted/partial job or cancelled stale candidate produces a safe complete fallback/recovery, never an omitted obligation.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC15",
+      "requirement": "Full-governed versus shadow-selected differential corpus and seeded behavioral defects: zero missed required failing propositions accepted for activation.",
+      "owner": "ci_authority",
+      "workitem": "activation.authority",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC16",
+      "requirement": "Source\u2192contract\u2192producer\u2192consumer and reverse runtime-effect conformance catch a removed edge/test pair and unbound side effect; all exclusions independently grounded.",
+      "owner": "ci_authority",
+      "workitem": "foundation.conformance",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "dormant-composition-and-static-bindings",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/composition-slice.yml",
+          "remaining": [
+            "Actual protected consumer populations and complete independent runtime-effect reverse tracing remain unadopted.",
+            "Full lifecycle recovery, deadline, installed profile and terminal-context execution qualifications remain required."
+          ]
+        },
+        {
+          "id": "authored-machine-backtrace-validation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/backtrace-validation-contract.yml",
+          "remaining": [
+            "Complete independent protected context populations actual effect interpretation recovery and installed-consumer conformance are not established by authored structural checks.",
+            "Prose retirement generated dependency views and exact terminal custody remain blocked."
+          ]
+        },
+        {
+          "id": "opt-in-python-call-facts",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/python-call-facts-contract.yml",
+          "remaining": [
+            "Independent actual effect interpretation and complete protected runtime populations remain unimplemented.",
+            "Same-parser determinism is not a cross-Python AST compatibility or installed-consumer qualification claim."
+          ]
+        },
+        {
+          "id": "source-operation-call-population",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/operation-call-population-contract.yml",
+          "remaining": [
+            "Complete module initialization native external dynamic and cross-language effect populations still require protected independent acquisition and interpretation.",
+            "No installed runtime consumer or authority activation uses this query."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC17",
+      "requirement": "Historical ledger/log mismatch rejects before reconciliation worktree/commit/adopter mutation; merely stale derived projections proceed through the one canonical generator.",
+      "owner": "ci_authority",
+      "workitem": "dormant.early-checks",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "early-active-phase-schema",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/authored-phase-schema-contract.yml",
+          "remaining": [
+            "Full retained historical phase population and all source/package/profile/runtime earliest boundaries remain unqualified.",
+            "These local controls grant no computed verified or closed truth and no provider authority."
+          ]
+        },
+        {
+          "id": "canonical-submit-normalization",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/submit-normalization-slice.yml",
+          "remaining": [
+            "Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.",
+            "Provider PR/exact-main authority and full terminal custody are not certified by these local tests."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC18",
+      "requirement": "Graph-generated evaluator workflow absent from promotion inventory, invalid component order or artifact path without custody fails before costly fanout; no static duplicate destination list.",
+      "owner": "ci_authority",
+      "workitem": "dormant.early-checks",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC19",
+      "requirement": "Wrong adopter branch/root/interpreter, partial inventory, ambient BCF/package, wrong profile or malformed exact assets fails at the earliest boundary with sufficient facts. Current provider resolver is retained.",
+      "owner": "ci_authority",
+      "workitem": "dormant.release",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC20",
+      "requirement": "One required adopter source advances after snapshot/before collection: current freshness rule enforced, sound affected remainder derived, no hidden older-green fallback or global unnecessary requalification.",
+      "owner": "ci_authority",
+      "workitem": "dormant.release",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC21",
+      "requirement": "Retry exact prospective\u2192submit or release\u2192qualification continuation: only invalidated/unobserved work executes; duplicate concurrent invocation cannot create duplicate admitted mutation or claim credit.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "partial_local_evidence",
+      "local_slices": [
+        {
+          "id": "authenticated-provider-retry-consumption",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/provider-retry-consumption-contract.json",
+          "remaining": [
+            "No atomic provider compare-and-mutate or distributed operation lease is established.",
+            "Durable unknown-outcome journaling and strong outcome authentication under delayed provider visibility remain required; one observed advancement fixture does not certify all ambiguity recovery.",
+            "Dormant phase remains planned; canonical oracle normalization, installed consumers and independent provider/custody qualification remain blocked."
+          ]
+        },
+        {
+          "id": "publication-metadata-revalidation",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/publication-metadata-fix-contract.json",
+          "remaining": [
+            "Concurrent invocation qualification, installed consumer parity, exact provider custody and complete release/adopter continuation remain unqualified.",
+            "No provider or successor admission authority is derived from local fixture evidence."
+          ]
+        },
+        {
+          "id": "canonical-submit-normalization",
+          "status": "focused_tests_passed",
+          "contract": "audits/issue-394/submit-normalization-slice.yml",
+          "remaining": [
+            "Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.",
+            "Provider PR/exact-main authority and full terminal custody are not certified by these local tests."
+          ]
+        }
+      ],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC22",
+      "requirement": "Required same-session prerequisite versus equivalent historical proof: reuse permitted only where the canonical dependency contract allows it.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC23",
+      "requirement": "Highly skewed 23-minute producer / subminute peers, missing/corrupt/adversarial timings and changing capacity preserve coverage and bounded resource use; compare real critical paths.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC24",
+      "requirement": "Concurrent fixtures/worktrees/ports/databases/caches/credentials, nested fanout and cancellation prove isolation, exact cleanup and no predecessor-state leakage.",
+      "owner": "evidence",
+      "workitem": "dormant.scheduling",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC25",
+      "requirement": "Crash after provider accepts dispatch/publish but before receipt, duplicate/out-of-order callback, partial collector and interrupted credential retirement reconcile exact state; no retry-until-green.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC26",
+      "requirement": "Archive/manifest/receipt substitution, wrong run/attempt or caller-authored qualification JSON rejected independently before immutable publication/custody.",
+      "owner": "ci_authority",
+      "workitem": "dormant.release",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC27",
+      "requirement": "Retention/GC race, vanished durable input or warm-cache-only success rejects; required original evidence remains cold-resolvable without duplicated bulk archives.",
+      "owner": "evidence",
+      "workitem": "dormant.continuation",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC28",
+      "requirement": "Late/missed periodic refresh under resource contention does not starve foreground required work or extend TTL; due-state catch-up is bounded and observable.",
+      "owner": "evidence",
+      "workitem": "activation.periodic",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC29",
+      "requirement": "A real runtime upgrade preserves the existing one-implementation-PR/no-bookkeeping-only follow-up outcome where applicable; a truly new policy change remains separately authorized.",
+      "owner": "ci_authority",
+      "workitem": "activation.authority",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC30",
+      "requirement": "Every seeded deterministic failure records earliest-valid detection and no avoidable downstream allocation/mutation; checks requiring provider/build facts remain correctly later.",
+      "owner": "evidence",
+      "workitem": "foundation.baseline",
+      "workitem_status": "IN_PROGRESS",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC31",
+      "requirement": "Empty execution remainder still undergoes independent required-claim/reuse verification and emits legitimate stable terminal status; no empty matrix implies green.",
+      "owner": "evidence",
+      "workitem": "dormant.impact",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    },
+    {
+      "id": "AC32",
+      "requirement": "Fresh install, authenticated upgrade, opt-out and rollback preserve consumer graph/protection/history/applicable proof; dormant compatibility expansion cannot activate itself.",
+      "owner": "installation",
+      "workitem": "activation.rollback",
+      "workitem_status": "TODO",
+      "whole_requirement_evidence_status": "not_executed",
+      "disposition": "no_new_qualified_requirement_evidence",
+      "local_slices": [],
+      "next_acceptance": "Prove the entire stated requirement under its governed workitem; existing local slices do not establish closure.",
+      "terminal_gate": "certification.custody"
+    }
+  ],
+  "current_uncommitted_construction": {
+    "task": "Python module initialization and definition-time possible effect inventory",
+    "workitem": "P32-P0-04",
+    "contract": "audits/issue-394/python-initialization-contract.json",
+    "tests": "26 initialization/call-contract/retained-characterization tests passed; local lint/typecheck passed before latest schema addition",
+    "pending": [
+      "source/template/schema parity",
+      "complete independent protected population and consumer binding",
+      "canonical governed test manifest normalization"
+    ],
+    "authority": false
+  },
+  "blockers": [
+    "Successor admission/integration held pending corrected maintenance custody and authorization; no provider/adopter dispatch push PR merge installer workflow/pin or custody mutation.",
+    "Canonical test-manifest normalization held; known requirement oracle remains failing because new selectors are not in canonical manifests.",
+    "No matched performance certification or approved frozen targets.",
+    "No installed consumer qualification for new capabilities.",
+    "No complete normative machine DAG adoption; prose DAG retirement remains pending.",
+    "No release/publication/independent terminal custody for 2.5.0."
+  ],
+  "performance_targets": "25% p50 / 20% p95 eligible PR improvement and no >10% risk-class p95 regression are proposals only, not approved or achieved.",
+  "policy": "Optional adopter compatibility failures remain residuals under current policy; no new mandatory publication prerequisite.",
+  "delivery": {
+    "recipient": "bcf-governance:closure-engine",
+    "receipts": [
+      {
+        "part": "overview",
+        "cursor": 7081
+      },
+      {
+        "part": 1,
+        "cursor": 7085
+      },
+      {
+        "part": 2,
+        "cursor": 7087
+      },
+      {
+        "part": 3,
+        "cursor": 7089
+      },
+      {
+        "part": 4,
+        "cursor": 7091
+      },
+      {
+        "part": 5,
+        "cursor": 7093
+      },
+      {
+        "part": 6,
+        "cursor": 7094
+      },
+      {
+        "part": 7,
+        "cursor": 7097
+      },
+      {
+        "part": 8,
+        "cursor": 7099
+      },
+      {
+        "part": 9,
+        "cursor": 7101
+      },
+      {
+        "part": 10,
+        "cursor": 7103
+      },
+      {
+        "part": 11,
+        "cursor": 7105
+      },
+      {
+        "part": 12,
+        "cursor": 7107
+      },
+      {
+        "part": 13,
+        "cursor": 7109
+      },
+      {
+        "part": 14,
+        "cursor": 7111
+      },
+      {
+        "part": 15,
+        "cursor": 7113
+      },
+      {
+        "part": 16,
+        "cursor": 7115
+      }
+    ],
+    "note": "Overview sent at 7081; oversized second message was rejected with HTTP 422, then all item continuations were delivered in bounded chunks. Rejected transport is not a delivered report."
+  }
+}

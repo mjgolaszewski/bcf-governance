@@ -38,6 +38,8 @@ def _stub_authored_phase_state_for_unit_fixtures(
         lambda _: {"phase_id": "P00", "paths": []},
     )
     monkeypatch.setattr(preflight, "validate_ci_state_matrix", lambda _: {"status": "covered"})
+    # Later-gate unit fixtures have no provider context; real context controls are separate.
+    monkeypatch.setattr(preflight, "_pr_context", lambda *_: {"applicable": False})
 
 
 def _git(repo: Path, *args: str) -> None:
@@ -618,7 +620,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         lambda _: {"status": "conformant", "blocking_violation_count": 0},
     )
     monkeypatch.setattr(preflight, "_vendored_source_locks", lambda _: 0)
-    monkeypatch.setattr(preflight, "_pack_manifest", lambda _: {"applicable": False})
+    monkeypatch.setattr(preflight, "_pack_manifest", lambda _, **kwargs: {"applicable": False})
     monkeypatch.setattr(
         preflight,
         "compile_migration_plan",
@@ -667,7 +669,7 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
 
     assert calls == [
         "git-state",
-        "authored-phase-state",
+        "pr-context",        "authored-phase-state",
         "ci-state-matrix",
         "structural-limits",
         "bounded-target",
@@ -679,7 +681,6 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         "governance",
         "self-workflows",
         "workflow-authority",
-        "pr-context",
         "self-controller",
         "negative-controls",
         "semantic-ownership",
@@ -741,7 +742,7 @@ def test_context_budget_failure_precedes_evidence_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits"]
+    assert calls == ["git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits"]
 
 
 def test_required_pr_changelog_fails_before_structural_or_expensive_validation(
@@ -772,7 +773,7 @@ def test_required_pr_changelog_fails_before_structural_or_expensive_validation(
 
     assert calls == [
         "git-state",
-        "authored-phase-state",
+        "pr-context",        "authored-phase-state",
         "ci-state-matrix",
         "pr-changelog",
     ]
@@ -943,6 +944,9 @@ def test_stale_pack_manifest_fails_before_evidence(
     monkeypatch.setattr(preflight, "check_all", lambda *_, **__: {})
     monkeypatch.setattr(preflight, "_pr_context", lambda *_: {})
     monkeypatch.setattr(preflight, "_required_gates", lambda _: ["test"])
+    monkeypatch.setattr(preflight, "compile_migration_plan", lambda *_a, **_k: {})
+    monkeypatch.setattr(preflight, "check_editorial", lambda *_a, **_k: {})
+    monkeypatch.setattr(preflight, "build_verification_plan", lambda *_a, **_k: {"execution_dag": {"nodes": []}})
     monkeypatch.setattr(
         preflight,
         "allocate_session",
@@ -1004,7 +1008,7 @@ def test_workflow_authority_failure_prevents_session_allocation(
 
     assert calls == [
         "git-state",
-        "authored-phase-state",
+        "pr-context",        "authored-phase-state",
         "ci-state-matrix",
         "structural-limits",
         "syntax",
@@ -1153,7 +1157,7 @@ def test_wrong_prior_transport_subject_stops_before_evidence_fanout(
             prior_transport_dir=transport_dir,
             artifact_root=tmp_path / "evidence", trace=calls.append,
         )
-    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "prior-transport"]
+    assert calls == ["git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "prior-transport"]
 
 
 def test_explicit_controller_authority_cannot_compete_with_prior_transport(
@@ -1208,7 +1212,7 @@ def test_interpreter_failure_prevents_session_allocation(
         )
 
     assert calls == [
-        "git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
+        "git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
     ]
 
 
@@ -1241,7 +1245,7 @@ def test_undeclared_runtime_import_stops_full_preflight_before_evidence(
             trace=calls.append,
         )
     assert calls == [
-        "git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
+        "git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax", "exposure", "interpreter"
     ]
 
 
@@ -1271,7 +1275,7 @@ def test_deterministic_failure_prevents_session_allocation(
             trace=calls.append,
         )
 
-    assert calls == ["git-state", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax"]
+    assert calls == ["git-state", "pr-context", "authored-phase-state", "ci-state-matrix", "structural-limits", "syntax"]
 
 
 def _copy_current_authored_phase_state(repo: Path) -> dict:
@@ -1343,8 +1347,22 @@ def test_authored_phase_state_rejects_malformed_referenced_hotfix_before_work(
     tmp_path: Path,
 ) -> None:
     repo = tmp_path / "repo"
-    _copy_current_authored_phase_state(repo)
-    malformed = repo / "phases/phase-31-hotfix04.yml"
+    active = _copy_current_authored_phase_state(repo)
+    from bcf_governance.tooling.hotfix_scaffolding import scaffold_hotfix_log, register_hotfix_log
+
+    hotfix_id = f"{active['id']}-HF99"
+    malformed = scaffold_hotfix_log(
+        repo_root=repo, project_id="fixture", hotfix_id=hotfix_id, mode="full",
+        hotfix_number=99, summary="Disposable malformed-log control",
+        related_phase_id=active["id"], date="2026-10-15",
+        validation_commands=["make governance-validate"], force=False,
+    )
+    register_hotfix_log(
+        repo_root=repo, hotfix_log=malformed, hotfix_id=hotfix_id, mode="full",
+        related_phase_id=active["id"], triggered_by_commits=["a" * 40],
+        failing_workflows=[], root_cause="disposable schema control",
+        canonical_artifacts=["plans/phase-ledger.yml"],
+    )
     payload = yaml.safe_load(malformed.read_text(encoding="utf-8"))
     payload["execution_evidence"]["notes"][0] = {"not": "a string"}
     malformed.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
@@ -1416,3 +1434,168 @@ def test_semantic_ownership_failure_prevents_session_allocation(
         preflight._semantic_ownership(repo)
 
     assert calls == []
+
+
+def test_authored_phase_state_accepts_current_complete_triplet(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    before = {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob("*") if path.is_file()}
+    assert validate_authored_phase_state(repo)["phase_id"] == active["id"]
+    assert {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob("*") if path.is_file()} == before
+
+
+def test_mapping_phase_note_rejects_before_reconcile_allocation(tmp_path: Path, monkeypatch) -> None:
+    from bcf_governance.tooling import scaffold_governance_artifacts as scaffold
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    path = repo / active["log"]
+    log = yaml.safe_load(path.read_text())
+    log["execution_evidence"]["notes"].append({"unquoted note": "not a string"})
+    path.write_text(yaml.safe_dump(log, sort_keys=False))
+    monkeypatch.setattr(scaffold, "declared_test_gates", lambda _root: ("test",))
+    monkeypatch.setattr(scaffold, "ensure_local_project_python", lambda *_a, **_k: pytest.fail("allocated runtime before phase schema rejection"))
+    monkeypatch.setattr(scaffold, "apply_workflow_authority_transition", lambda *_a, **_k: pytest.fail("created shadow before phase schema rejection"))
+    with pytest.raises(SystemExit, match="failed structural schema.*phase-log.schema.json"):
+        scaffold.reconcile_main(["--repo-root", str(repo), "--apply"])
+
+
+def test_authored_phase_state_rejects_duplicate_yaml_keys(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    active = _copy_current_authored_phase_state(repo)
+    path = repo / active["log"]
+    path.write_text(path.read_text() + "\nnext_work: []\n")
+    with pytest.raises(AuthoredPhaseStateError, match="duplicate YAML key"):
+        validate_authored_phase_state(repo)
+
+
+def test_authored_phase_state_requires_active_triplet_schema(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _copy_current_authored_phase_state(repo)
+    (repo / "schemas/phase-log.schema.json").unlink()
+    with pytest.raises(AuthoredPhaseStateError, match="phase-log.schema.json"):
+        validate_authored_phase_state(repo)
+
+
+def test_invalid_comparison_context_rejects_before_authored_or_runtime_work(tmp_path, monkeypatch):
+    repo = _committed_repo(tmp_path, 'source.py', 'pass\n')
+    calls = []
+    def invalid(*args):
+        raise ValueError('comparison origin differs')
+    monkeypatch.setattr(preflight, '_pr_context', invalid)
+    monkeypatch.setattr(preflight, 'validate_authored_phase_state', lambda *_: pytest.fail('authored state visited before invalid comparison'))
+    monkeypatch.setattr(preflight, '_syntax_checks', lambda *_: pytest.fail('syntax visited before invalid comparison'))
+    monkeypatch.setattr(preflight, 'allocate_session', lambda *a, **kw: pytest.fail('allocated after invalid comparison'))
+    with pytest.raises(ValueError, match='comparison origin'):
+        preflight.run_preflight(repo, mode='pr', python_executable=Path(sys.executable), artifact_root=tmp_path / 'evidence', trace=calls.append)
+    assert calls == ['git-state', 'pr-context']
+    assert not (tmp_path / 'evidence').exists()
+
+
+
+def test_authored_phase_result_has_typed_contract_without_changing_producer(tmp_path):
+    from jsonschema import Draft202012Validator
+    repo = tmp_path / 'repo'
+    _copy_current_authored_phase_state(repo)
+    schema = json.loads((REPO_ROOT / 'schemas/authored-phase-state-result.schema.json').read_text())
+    Draft202012Validator.check_schema(schema)
+    before = {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob('*') if path.is_file()}
+    result = validate_authored_phase_state(repo)
+    Draft202012Validator(schema).validate(result)
+    assert set(result) == {'phase_id', 'build_block', 'paths', 'hotfix_paths'}
+    assert validate_authored_phase_state(repo) == result
+    assert {str(path.relative_to(repo)): path.read_bytes() for path in repo.rglob('*') if path.is_file()} == before
+
+
+@pytest.mark.parametrize('defect', ['missing_phase', 'missing_build', 'missing_paths', 'missing_hotfixes', 'wrong_phase_type', 'empty_build', 'short_paths', 'reordered_paths', 'absolute_path', 'traversal_path', 'wrong_hotfix_type', 'authority', 'verified', 'closed'])
+def test_authored_phase_result_contract_rejects_incomplete_or_promoted_facts(defect):
+    from jsonschema import Draft202012Validator, ValidationError
+    schema = json.loads((REPO_ROOT / 'schemas/authored-phase-state-result.schema.json').read_text())
+    value = dict(phase_id='P01', build_block='example', paths=['plans/phase-01-plan.yml', 'plans/phase-01-workitems.yml', 'phases/phase-01-log.yml'], hotfix_paths=[])
+    if defect.startswith('missing_'):
+        value.pop({'missing_phase':'phase_id','missing_build':'build_block','missing_paths':'paths','missing_hotfixes':'hotfix_paths'}[defect])
+    elif defect == 'wrong_phase_type': value['phase_id'] = True
+    elif defect == 'empty_build': value['build_block'] = ''
+    elif defect == 'short_paths': value['paths'].pop()
+    elif defect == 'reordered_paths': value['paths'].reverse()
+    elif defect == 'absolute_path': value['paths'][0] = '/plans/phase-01-plan.yml'
+    elif defect == 'traversal_path': value['paths'][0] = 'plans/../plans/phase-01-plan.yml'
+    elif defect == 'wrong_hotfix_type': value['hotfix_paths'] = {}
+    elif defect == 'authority': value['authority'] = True
+    else: value['effective_state'] = defect
+    with pytest.raises(ValidationError):
+        Draft202012Validator(schema).validate(value)
+
+
+
+def test_authored_phase_result_primitive_and_real_consumers_have_one_source_owner():
+    from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
+    binding = json.loads((REPO_ROOT / 'audits/issue-394/tr-001-authored-subcontract.json').read_text())
+    model = yaml.safe_load((REPO_ROOT / 'spec/phase0/release-train-backtrace.yml').read_text())
+    primitive = next(row for row in model['primitives'] if row['id'] == binding['primitive'])
+    assert primitive['canonical_reference'] == binding['result_schema']
+    assert primitive['executable_owner'] == binding['producer']
+    assert primitive['invariants'] == binding['invariants']
+    assert primitive['qualification'] == 'schema_and_source_conformance_only'
+    from jsonschema import Draft202012Validator
+    for path in binding['input_contract_owners']:
+        Draft202012Validator.check_schema(json.loads((REPO_ROOT / path).read_text()))
+    symbols = {binding['producer'], *(row['symbol'] for row in binding['consumers'])}
+    files = [REPO_ROOT / path for path in sorted({symbol.partition('::')[0] for symbol in symbols})]
+    inventory = resolve_python_imports(REPO_ROOT, discover_python_source(REPO_ROOT, files=files, call_contracts_version='1.0'))
+    functions = {row['symbol']: row for row in inventory['functions']}
+    assert symbols <= functions.keys()
+    actual_consumers = {symbol for symbol, function in functions.items()
+                        if binding['producer'] in {call['called_symbol'] for call in function['calls']}}
+    assert actual_consumers == {row['symbol'] for row in binding['consumers']}
+    assert binding['document']['authority'] is False
+    assert binding['execution_qualified'] is False
+    assert binding['normative_adoption_qualified'] is False
+
+
+@pytest.mark.parametrize("case", ["no-pack", "valid", "bad-digest", "missing-manifest"])
+def test_pack_admission_extraction_preserves_existing_result_and_error_bytes(tmp_path, case):
+    import hashlib
+    root = tmp_path
+    if case == "no-pack":
+        assert preflight._pack_manifest(root) == {"applicable": False}
+        return
+    template = root / "bcf_governance/pack/template-repo"
+    template.mkdir(parents=True)
+    (template / "owned.txt").write_text("current\n")
+    if case != "missing-manifest":
+        digest = hashlib.sha256(b"current\n").hexdigest() if case == "valid" else "0" * 64
+        (template / ".bcf-pack-manifest.json").write_text(json.dumps({"schema_version": "2.0",
+            "files": {"owned.txt": {"sha256": digest, "operation": "copy"}}, "generated": [], "retired_files": {}}))
+    if case == "valid":
+        assert preflight._pack_manifest(root) == {"applicable": True, "file_count": 1, "template_interpreter": "not_declared"}
+    else:
+        message = ("template pack is missing .bcf-pack-manifest.json" if case == "missing-manifest"
+                   else "pack manifest mismatch: missing=[], stale=[], digest_mismatch=['owned.txt']")
+        with pytest.raises(preflight.PreflightError) as observed:
+            preflight._pack_manifest(root)
+        assert str(observed.value) == message
+
+
+@pytest.mark.parametrize('response', ['[]', '{"authority":true}', '{"authority":false,"built_bytes_verified":false,"scope":"static_source_declaration_coverage","file_count":true}', 'invalid-json'])
+def test_source_distribution_observation_rejects_malformed_or_authoritative_response(monkeypatch, tmp_path, response):
+    from bcf_governance.tooling.governance_validation import preflight_distribution as distribution
+    from types import SimpleNamespace
+    (tmp_path / 'bcf_governance/pack/template-repo').mkdir(parents=True)
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname="fixture"\n')
+    owner = tmp_path / '.github/scripts/release_source_inventory.py'
+    owner.parent.mkdir(parents=True)
+    owner.write_text('# fixture\n')
+    monkeypatch.setattr(distribution, 'project_python_environment', lambda *_a: {})
+    monkeypatch.setattr(distribution.subprocess, 'run', lambda *_a, **_k: SimpleNamespace(returncode=0, stdout=response, stderr=''))
+    with pytest.raises(ValueError):
+        distribution.validate_source_distribution(tmp_path, python_executable=Path('/project-python'))
+
+
+def test_pack_preflight_translates_source_query_io_failure_preserving_cause(monkeypatch, tmp_path):
+    failure = OSError('project interpreter unavailable')
+    def reject(*_a, **_k):
+        raise failure
+    monkeypatch.setattr(preflight, 'validate_distribution_pack', reject)
+    with pytest.raises(preflight.PreflightError, match='project interpreter unavailable') as caught:
+        preflight._pack_manifest(tmp_path, python_executable=Path('/project-python'))
+    assert caught.value.__cause__ is failure

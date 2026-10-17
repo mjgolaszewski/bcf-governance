@@ -5,9 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+from ..ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 from .common import GovernanceValidationError
+from .phase_artifacts import _validate_phase_artifact_triplet
 
 
 class AuthoredPhaseStateError(GovernanceValidationError):
@@ -28,8 +29,8 @@ def _string(value: Any, *, context: str) -> str:
 
 def _load(path: Path) -> dict[str, Any]:
     try:
-        return _mapping(yaml.safe_load(path.read_text(encoding="utf-8")), context=str(path))
-    except (OSError, yaml.YAMLError) as exc:
+        return load_yaml_path(path)
+    except (OSError, GraphYAMLError) as exc:
         raise AuthoredPhaseStateError(f"cannot read authored phase state {path}: {exc}") from exc
 
 
@@ -141,6 +142,12 @@ def validate_authored_phase_state(repo_root: Path) -> dict[str, Any]:
     for key, expected in expected_memory.items():
         if artifacts.get(key) != expected:
             raise AuthoredPhaseStateError(f"MEMORY active_artifacts.{key} must be {expected!r}")
+    try:
+        _validate_phase_artifact_triplet(
+            repo_root, {}, phase_id=phase_id, build_block=build_block
+        )
+    except GovernanceValidationError as exc:
+        raise AuthoredPhaseStateError(str(exc)) from exc
     return {
         "phase_id": phase_id,
         "build_block": build_block,

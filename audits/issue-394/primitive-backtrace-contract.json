@@ -1,0 +1,40 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "status": "planned",
+    "authority": false,
+    "path": "audits/issue-394/primitive-backtrace-contract.json"
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-03",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "dependency_acceptance": "Extend existing machine backtrace and reference guard. Existing adoption_blocker still requires independent implementation/positive/control/terminal/recovery tracing; no activation or prose retirement.",
+  "target_modules": [
+    "spec/phase0/release-train-backtrace.yml",
+    "tests/test_ci_state_matrix.py"
+  ],
+  "contract": [
+    "Only normative compatibility/frontier primitive consumers enter the active reference population. The source transaction is rejected_provider_coupled_design and must remain excluded from active authority; historical references must not require new implementation.",
+    "Reuse retained P26 inventory by exact canonical names, canonical schema references and executable owner strings. Add six missing names; preserve existing primitive IDs and owner fields. New fields are additive reference metadata, not authority verdicts.",
+    "Resolve existing P26 schema fragments and executable module/functions independently against current source. Preserve retained P26 audit bytes and historical source envelope. Reference resolution is not execution proof.",
+    "Document source schema remains version 2; additive fields preserve old reader compatibility. Existing open primitive records already accept additive reference metadata; no schema or runtime validator change is needed."
+  ],
+  "expected_tests": [
+    "Active primitive consumers reject undeclared references; rejected provider design remains nonauthoritative and schema rejects attempted reactivation.",
+    "Actual source transaction has no undeclared primitive IDs",
+    "All fifteen P26 names have exact retained canonical/executable references",
+    "Current canonical schema fragments and executable references resolve for P26 names",
+    "Existing backtrace/schema/preflight behavior and parity remain intact"
+  ],
+  "forbidden_surfaces": [
+    "invented provider credential implementation",
+    "historical P26 audit rewrite",
+    "new truth registry",
+    "authority activation or prose retirement",
+    "canonical normalization provider/installer/custody"
+  ],
+  "completion": "Existing primitive reference enrichment only; rejected design remains rejected. No full runtime conformance or normative DAG adoption.",
+  "scope_correction": "Original source-transaction missing-reference and credential-implementation claims were withdrawn after reading its explicit normative:false exclusion; no guard/type implementation from that proposal is retained."
+}

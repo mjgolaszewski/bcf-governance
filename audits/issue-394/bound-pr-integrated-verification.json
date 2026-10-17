@@ -1,0 +1,86 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "source_checkpoint": {
+    "commit_sha": "def4d6e2543da189e084bf8688ff5588718dd590",
+    "tree_sha": "de39892f3f2382024efa5bb7e34b3a180cf23e5c"
+  },
+  "integration": {
+    "primary_parent": "3519822033c94e997d5cab4eaa547359991e42a2",
+    "feature_parent": "49cf9af7",
+    "partial_slices": 33,
+    "whole_requirements_open": 82,
+    "candidate_submit_functions_retained": 42,
+    "prospective_functions_retained": 53,
+    "primary_live_transaction_touched": false
+  },
+  "checks": {
+    "canonical_isolated_project_environment": {
+      "passed": 396,
+      "elapsed_seconds": 44.87,
+      "scope": [
+        "candidate submit",
+        "prospective validation",
+        "PR provider authority",
+        "local PR",
+        "operational observations",
+        "release artifacts including complete governed sdist inventory",
+        "preflight",
+        "profile YAML"
+      ]
+    },
+    "installed_wheel": {
+      "passed": 226,
+      "elapsed_seconds": 23.16,
+      "isolated_mode": true,
+      "imports": "installed package outside source checkout",
+      "scope": [
+        "PR provider authority",
+        "candidate submit",
+        "local PR",
+        "ordinary protection",
+        "operational observations"
+      ]
+    },
+    "packaged_python_parity": {
+      "files": 597,
+      "source_wheel_sdist_equal": true
+    },
+    "governance": "passed",
+    "native_lint_typecheck": "passed",
+    "module_and_context_gates": "passed",
+    "combined_characterization_and_exact_references": {
+      "passed": 7,
+      "elapsed_seconds": 94.59
+    },
+    "complete_pack_parity": {
+      "passed": 7,
+      "elapsed_seconds": 12.19
+    }
+  },
+  "artifacts": [
+    {
+      "name": "bcf_governance-2.5.0-py3-none-any.whl",
+      "sha256": "9e3f4985a3f51cd20cca275cceb28250fb5e5e448722585cec7bb10632613485"
+    },
+    {
+      "name": "bcf_governance-2.5.0.tar.gz",
+      "sha256": "3c0a20b538598b33c10776ed7a78c73d88aee858548e057d4b48edbb7a49baa1"
+    }
+  ],
+  "prior_rejected_run": {
+    "failed": 4,
+    "passed": 392,
+    "cause": "Research interpreter exposed system packages and used incompatible build backend; canonical isolated project interpreter rerun passed all396 without changing checks."
+  },
+  "compatibility_boundary": {
+    "maintenance_confirmation_cursor": 7641,
+    "rule": "Adopter compatibility stays nonauthoritative and pinned; it cannot confer or block immutable publication. CP07 successor acceptance remains required; no historical provider resolver/publication gate is restored."
+  },
+  "remaining": [
+    "Full actual producer/consumer/runtime conformance beyond characterized operations remains open.",
+    "Real isolated-consumer qualification with explicit pinned inputs; fixture/library tests alone do not close CP07.",
+    "Integrate only after primary transaction terminates and exact source qualification permits.",
+    "No full foundation, whole requirement, performance, activation or custody claim."
+  ]
+}

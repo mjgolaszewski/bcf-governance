@@ -1,0 +1,1081 @@
+{
+  "kind": "provider_timing_review",
+  "authority": false,
+  "version": "2.3.4",
+  "collection": "Authenticated read-only GitHub run/job metadata and available step logs; originals retained outside governed distribution with hashes.",
+  "sampling_strategy": "User selected naturally occurring governed provider runs plus controlled isolated local/adopter trials.",
+  "limitations": [
+    "Historical individual observations; not matched cohorts or approved performance targets.",
+    "Created-to-first-reported-job interval is observed scheduling/startup time; these records alone do not identify its cause.",
+    "Created-to-updated includes provider bookkeeping; it is not CPU or sum of parallel jobs.",
+    "Logs from the PR workflow returned partial output and nonzero exit; retain metadata separately and do not treat the log as complete.",
+    "Job step durations use provider timestamps at second precision.",
+    "Failed nightly run retained; it is a different pipeline context and not pooled into PR or release cohorts."
+  ],
+  "runs": [
+    {
+      "run_id": 38872840385,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38872840385",
+      "workflow": "governance-mutants-nightly",
+      "event": "schedule",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "failure",
+      "created_at": "2026-10-16T08:18:45Z",
+      "updated_at": "2026-10-16T08:30:16Z",
+      "created_to_updated_seconds": 691.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Exercise nightly high-value governance mutants",
+          "conclusion": "failure",
+          "started_at": "2026-10-16T08:18:47Z",
+          "completed_at": "2026-10-16T08:30:15Z",
+          "seconds": 688.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Exercise nightly high-value governance mutants",
+          "step": "Validate selected interpreter and governance before mutants",
+          "seconds": 400.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Exercise nightly high-value governance mutants",
+          "step": "Run the complete nightly scheduled control profile",
+          "seconds": 267.0,
+          "conclusion": "failure"
+        },
+        {
+          "job": "Exercise nightly high-value governance mutants",
+          "step": "Install the declared governance environment",
+          "seconds": 10.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Exercise nightly high-value governance mutants",
+          "step": "Select the exact real-compiler test Node runtime",
+          "seconds": 5.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Exercise nightly high-value governance mutants",
+          "step": "Check out the exact candidate commit",
+          "seconds": 2.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "84aad18de50197ed44313bfb03c63a2dea4b33962c61346ead869be059beb902",
+        "jobs_json_sha256": "9a4d8efede8d97aab757b9dac41aac9378f2b4c6ae409ff9414767de507bf836",
+        "log_sha256": "841eb415efc3d1212344a704fe2070198377091a2de9de425273a8a1de475346",
+        "log_bytes": 75191,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38867648790,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867648790",
+      "workflow": "bcf/immutable-release-publisher",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T07:30:27Z",
+      "updated_at": "2026-10-16T07:45:16Z",
+      "created_to_updated_seconds": 889.0,
+      "created_to_first_reported_job_seconds": 3.0,
+      "jobs": [
+        {
+          "name": "Observe provider-effective controller for non-authoritative publication routing",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:30Z",
+          "completed_at": "2026-10-16T07:37:01Z",
+          "seconds": 391.0
+        },
+        {
+          "name": "Publish one exact idempotent transaction after governed qualification",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:37:04Z",
+          "completed_at": "2026-10-16T07:45:15Z",
+          "seconds": 491.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Publish one exact idempotent transaction after governed qualification",
+          "step": "Resolve the newest exact-main release receipt mechanically",
+          "seconds": 442.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Observe provider-effective controller for non-authoritative publication routing",
+          "step": "Observe provider-effective controller for non-authoritative routing",
+          "seconds": 378.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish one exact idempotent transaction after governed qualification",
+          "step": "Publish only the authenticated pre-certified bytes",
+          "seconds": 28.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish one exact idempotent transaction after governed qualification",
+          "step": "Set up job",
+          "seconds": 8.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Observe provider-effective controller for non-authoritative publication routing",
+          "step": "Install the declared governance environment",
+          "seconds": 7.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "5cf248dce2f33e772d1f858da54bc4638072a6c7e32399c63f8a95847169f849",
+        "jobs_json_sha256": "5ae80d1fbbdd564752e4101a50fdb15a75118ad2b45754ee14d2d8907bcd3377",
+        "log_sha256": "865542aff39be97882271bfde340c224fbaed52e0130597735d9652d3ba5585b",
+        "log_bytes": 121740,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38867337948,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948",
+      "workflow": "bcf/release-byte-verifier",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T07:27:32Z",
+      "updated_at": "2026-10-16T07:30:25Z",
+      "created_to_updated_seconds": 173.0,
+      "created_to_first_reported_job_seconds": 3.0,
+      "jobs": [
+        {
+          "name": "Execute token-free offline wheel and sdist verification",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:35Z",
+          "completed_at": "2026-10-16T07:29:21Z",
+          "seconds": 106.0
+        },
+        {
+          "name": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:24Z",
+          "completed_at": "2026-10-16T07:30:25Z",
+          "seconds": 61.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Execute token-free offline wheel and sdist verification",
+          "step": "Execute package verification without provider credentials",
+          "seconds": 74.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+          "step": "Install the triggering run's checksum-admitted controller",
+          "seconds": 14.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+          "step": "Recompute provider, Git, dependency, runtime, and exact-asset custody",
+          "seconds": 13.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+          "step": "Authenticate provider state and recompute evidence hashes only",
+          "seconds": 9.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Execute token-free offline wheel and sdist verification",
+          "step": "Select the closed release interpreter",
+          "seconds": 8.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "21cd5a62dbdf9b84905e0cfc4f50e0ad5086847e93d85c09dc0cc38695c64687",
+        "jobs_json_sha256": "0f04abde4c536d218d781e1c8ad29d5bf4fa011c03a2973d54ddd12d77b1328c",
+        "log_sha256": "9edef42e7845be8fbfa3874fd7620eb17f48a0f1ca6b3c7564b467a666d8d2d1",
+        "log_bytes": 127578,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38865931369,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865931369",
+      "workflow": "bcf/release-authority-cutover",
+      "event": "workflow_dispatch",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T07:14:14Z",
+      "updated_at": "2026-10-16T07:27:30Z",
+      "created_to_updated_seconds": 796.0,
+      "created_to_first_reported_job_seconds": 3.0,
+      "jobs": [
+        {
+          "name": "Observe provider-effective controller for non-authoritative release routing",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:14:17Z",
+          "completed_at": "2026-10-16T07:18:49Z",
+          "seconds": 272.0
+        },
+        {
+          "name": "Authorize newest certified exact main without candidate checkout",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:50Z",
+          "completed_at": "2026-10-16T07:26:45Z",
+          "seconds": 475.0
+        },
+        {
+          "name": "Build exact certified release bytes on a fresh hosted runner",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:47Z",
+          "completed_at": "2026-10-16T07:27:30Z",
+          "seconds": 43.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Authorize newest certified exact main without candidate checkout",
+          "step": "Resolve provider-authenticated release inputs",
+          "seconds": 449.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Observe provider-effective controller for non-authoritative release routing",
+          "step": "Observe provider-effective controller for non-authoritative routing",
+          "seconds": 259.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Build exact certified release bytes on a fresh hosted runner",
+          "step": "Test and build the exact authorized release bundle",
+          "seconds": 13.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Build exact certified release bytes on a fresh hosted runner",
+          "step": "Select the closed release interpreter",
+          "seconds": 12.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Authorize newest certified exact main without candidate checkout",
+          "step": "Authorize exact provider and Git custody",
+          "seconds": 10.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "ec901f2c8559cff303d8b69008cf41a58de6a3e129bc54c1610636c76226f26e",
+        "jobs_json_sha256": "e08b903404608e5eff2bbc8b1b7cf6dd7b15c8d39a0340eb451db1cccb2fdd98",
+        "log_sha256": "3d13f02b5bf0917c35d098d2d5dee95d610a63952e893d8cf30c10dc2c292668",
+        "log_bytes": 218464,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38865134783,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865134783",
+      "workflow": "bcf/exact-main-status-publisher",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T07:06:35Z",
+      "updated_at": "2026-10-16T07:06:57Z",
+      "created_to_updated_seconds": 22.0,
+      "created_to_first_reported_job_seconds": 1.0,
+      "jobs": [
+        {
+          "name": "Publish newest authenticated exact-main status or revocation",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:06:36Z",
+          "completed_at": "2026-10-16T07:06:56Z",
+          "seconds": 20.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Publish authenticated exact-main status with the effective controller",
+          "seconds": 7.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Set up job",
+          "seconds": 5.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Download exact finalizer certification bundle",
+          "seconds": 2.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Download finalizer-preserved admission controller custody",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Post Provision the declared Python runtime",
+          "seconds": 1.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "779f22dfc77502f38c01e85abb6135900c507f7de5b0f1e3099e4c5a2f9272e8",
+        "jobs_json_sha256": "49f44a7634cf33eb892e84e8722a902b1d64151fefd49eef408bfd053e388a6f",
+        "log_sha256": "caee2a42cb5fb8736bb31e980d5358282df07ea2949738a0d84c20d2f35e53e2",
+        "log_bytes": 22545,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38865134364,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865134364",
+      "workflow": "bcf/exact-main-status-publisher",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T07:06:34Z",
+      "updated_at": "2026-10-16T07:14:02Z",
+      "created_to_updated_seconds": 448.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Dispatch post-rotation exact-main certification",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:06:36Z",
+          "completed_at": "2026-10-16T07:14:01Z",
+          "seconds": 445.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Authenticate activation and request fresh exact-main certification",
+          "seconds": 433.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Set up job",
+          "seconds": 6.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Download the triggering rotation outcome",
+          "seconds": 2.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Post Provision the declared Python runtime",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Validate all required environment inputs before work",
+          "seconds": 0.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "4c692f33043257fc8138a1a0085ad4254f4a39adce61bf0adec9f0f6b6496e02",
+        "jobs_json_sha256": "644fbc065ff19295b10cbcc7321d0723f04e686a0626dca60ae298ed6f61ae5d",
+        "log_sha256": "d684524f8d12910f88265bb103d71b921dfd921da1f33c1efeacbbc39af9db95",
+        "log_bytes": 15571,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38864317679,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38864317679",
+      "workflow": "bcf/trusted-evidence-finalizer",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:58:46Z",
+      "updated_at": "2026-10-16T07:06:33Z",
+      "created_to_updated_seconds": 467.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Reconstruct the newest same-admission exact-main evidence",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:58:48Z",
+          "completed_at": "2026-10-16T07:06:32Z",
+          "seconds": 464.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Reconstruct exact-main evidence with the effective controller",
+          "seconds": 447.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Set up job",
+          "seconds": 7.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Download the triggering admission controller custody",
+          "seconds": 2.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Upload exact-main certification bundle",
+          "seconds": 2.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Preserve triggering admission controller custody for publication",
+          "seconds": 2.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "d0aa0501e8bc2d4c1f569930d78952252730cda0d803e7988f7e4dc58e4cf0fc",
+        "jobs_json_sha256": "438e556129b7581c81e194f7d8792ca4bfd5763cbef6541cc4d727e26900d00f",
+        "log_sha256": "fef5d3c6d19d2e8ff68572fb6447d437ad3d5e285ac095e447e2c97a13769ea6",
+        "log_bytes": 26196,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38864317567,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38864317567",
+      "workflow": "bcf/controller-rotation",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:58:46Z",
+      "updated_at": "2026-10-16T07:06:33Z",
+      "created_to_updated_seconds": 467.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Authorize protected routine controller transition",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:58:48Z",
+          "completed_at": "2026-10-16T07:06:16Z",
+          "seconds": 448.0
+        },
+        {
+          "name": "Project the unique routine rotation outcome",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:06:18Z",
+          "completed_at": "2026-10-16T07:06:32Z",
+          "seconds": 14.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Authorize protected routine controller transition",
+          "step": "Authorize the exact protected-merge controller transition",
+          "seconds": 432.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Authorize protected routine controller transition",
+          "step": "Set up job",
+          "seconds": 6.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Project the unique routine rotation outcome",
+          "step": "Set up job",
+          "seconds": 6.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Authorize protected routine controller transition",
+          "step": "Publish the exact rotation decision",
+          "seconds": 2.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Project the unique routine rotation outcome",
+          "step": "Select the no-transition outcome",
+          "seconds": 2.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "34a987692d4d689216fa4e02b0a3415baab92e9e00bcdeff8cd85981196b81b0",
+        "jobs_json_sha256": "09b4833cf10b2fc60f2ab2d7d8b3fea69b227670b28cc7ce7065632db830c8fa",
+        "log_sha256": "6e78e48e9af830b18869199746d7ef4162644d0350f8375deb38d3b3a1ade704",
+        "log_bytes": 41444,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38861252045,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38861252045",
+      "workflow": "bcf/exact-main-status-publisher",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:26:53Z",
+      "updated_at": "2026-10-16T06:34:30Z",
+      "created_to_updated_seconds": 457.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Dispatch post-rotation exact-main certification",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:26:55Z",
+          "completed_at": "2026-10-16T06:34:29Z",
+          "seconds": 454.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Authenticate activation and request fresh exact-main certification",
+          "seconds": 443.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Set up job",
+          "seconds": 4.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Validate all required environment inputs before work",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Download the triggering rotation outcome",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Dispatch post-rotation exact-main certification",
+          "step": "Provision the declared Python runtime",
+          "seconds": 0.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "f34fe5a5f1f5f07846865b7dbd21229a1fe810797a3c08c5e95158481f87b323",
+        "jobs_json_sha256": "9401120563e6f529dabc157f9cce850c370fa42fad00779237d1bf56fe123b8d",
+        "log_sha256": "8d86a13d32c3b91b9e828377ca517f1aac58410fb2094cec25d56a973c05ee25",
+        "log_bytes": 15794,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38860146772,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38860146772",
+      "workflow": "bcf/exact-main-status-publisher",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:15:04Z",
+      "updated_at": "2026-10-16T06:15:24Z",
+      "created_to_updated_seconds": 20.0,
+      "created_to_first_reported_job_seconds": 3.0,
+      "jobs": [
+        {
+          "name": "Publish newest authenticated exact-main status or revocation",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:15:07Z",
+          "completed_at": "2026-10-16T06:15:23Z",
+          "seconds": 16.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Set up job",
+          "seconds": 5.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Publish authenticated exact-main status with the effective controller",
+          "seconds": 5.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Download exact finalizer certification bundle",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Download finalizer-preserved admission controller custody",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Publish newest authenticated exact-main status or revocation",
+          "step": "Project non-authoritative routing from finalizer-preserved admission custody",
+          "seconds": 1.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "ff8b14b9e629bc1fc4a52ed67667c725e599074ffe052bea306c89010934bc1a",
+        "jobs_json_sha256": "e8689c3c74b335961e4552de81cd0df01a0f00d3eb487654c44b78d2fc4e2fb3",
+        "log_sha256": "029c8985818ed8b4bb2ee79d0b4f887fb226ba3546339fa35675cab63335eb62",
+        "log_bytes": 22486,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38860101325,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38860101325",
+      "workflow": "bcf/trusted-evidence-finalizer",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:14:36Z",
+      "updated_at": "2026-10-16T06:15:02Z",
+      "created_to_updated_seconds": 26.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Reconstruct the newest same-admission exact-main evidence",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:14:38Z",
+          "completed_at": "2026-10-16T06:15:02Z",
+          "seconds": 24.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Set up job",
+          "seconds": 7.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Reconstruct exact-main evidence with the effective controller",
+          "seconds": 7.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Preserve triggering admission controller custody for publication",
+          "seconds": 2.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Download the triggering admission controller custody",
+          "seconds": 1.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Reconstruct the newest same-admission exact-main evidence",
+          "step": "Project non-authoritative routing from authenticated controller custody",
+          "seconds": 1.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "d72416fdb21f95f52b61f274250f884c819f3358e3ee9ff217a16090b7517b82",
+        "jobs_json_sha256": "ae496796d7e39de981f00603ac8c0f17fdbadf737a155e8d1df42f482434721d",
+        "log_sha256": "134bea0d98827387c30a02d6a7a795ed05f7f46573738349092b588252c19ba8",
+        "log_bytes": 26184,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38860101229,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38860101229",
+      "workflow": "bcf/controller-rotation",
+      "event": "workflow_run",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:14:36Z",
+      "updated_at": "2026-10-16T06:26:51Z",
+      "created_to_updated_seconds": 735.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Authorize protected routine controller transition",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:14:38Z",
+          "completed_at": "2026-10-16T06:22:45Z",
+          "seconds": 487.0
+        },
+        {
+          "name": "Bootstrap routine controller / bcf-trusted-control-2",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:22:47Z",
+          "completed_at": "2026-10-16T06:23:26Z",
+          "seconds": 39.0
+        },
+        {
+          "name": "Bootstrap routine controller / bcf-trusted-control-1",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:22:46Z",
+          "completed_at": "2026-10-16T06:23:27Z",
+          "seconds": 41.0
+        },
+        {
+          "name": "Authenticate routine bootstrap inventory",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:23:28Z",
+          "completed_at": "2026-10-16T06:24:05Z",
+          "seconds": 37.0
+        },
+        {
+          "name": "Probe routine controller / bcf-trusted-control-1",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:24:07Z",
+          "completed_at": "2026-10-16T06:24:41Z",
+          "seconds": 34.0
+        },
+        {
+          "name": "Probe routine controller / bcf-trusted-control-2",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:24:06Z",
+          "completed_at": "2026-10-16T06:24:41Z",
+          "seconds": 35.0
+        },
+        {
+          "name": "Authenticate routine probe inventory",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:24:42Z",
+          "completed_at": "2026-10-16T06:25:19Z",
+          "seconds": 37.0
+        },
+        {
+          "name": "Promote routine controller / bcf-trusted-control-2",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:25:20Z",
+          "completed_at": "2026-10-16T06:25:55Z",
+          "seconds": 35.0
+        },
+        {
+          "name": "Promote routine controller / bcf-trusted-control-1",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:25:20Z",
+          "completed_at": "2026-10-16T06:25:55Z",
+          "seconds": 35.0
+        },
+        {
+          "name": "Activate authenticated routine controller transition",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:25:57Z",
+          "completed_at": "2026-10-16T06:26:35Z",
+          "seconds": 38.0
+        },
+        {
+          "name": "Project the unique routine rotation outcome",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:26:36Z",
+          "completed_at": "2026-10-16T06:26:51Z",
+          "seconds": 15.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Authorize protected routine controller transition",
+          "step": "Authorize the exact protected-merge controller transition",
+          "seconds": 455.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Bootstrap routine controller / bcf-trusted-control-1",
+          "step": "Stage the transition-bound routine controller",
+          "seconds": 17.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Probe routine controller / bcf-trusted-control-2",
+          "step": "Stage the bootstrap-authenticated routine controller",
+          "seconds": 17.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Bootstrap routine controller / bcf-trusted-control-2",
+          "step": "Stage the transition-bound routine controller",
+          "seconds": 16.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Probe routine controller / bcf-trusted-control-1",
+          "step": "Stage the bootstrap-authenticated routine controller",
+          "seconds": 16.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "cdd087d3e7da89edd2850a0928987db3c6578c96b1b07729fe6f871f49e2da7e",
+        "jobs_json_sha256": "410bf2b15a6c5231d5321cf17512fc637392c5efc9265973c885c6586f16e271",
+        "log_sha256": "b0328891e2e20015d065724acf9d3866f352af8eaa9b66631f618afe3e9ed067",
+        "log_bytes": 379545,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38858875383,
+      "attempt": 2,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38858875383",
+      "workflow": "bcf/exact-main-admission",
+      "event": "push",
+      "subject_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+      "conclusion": "success",
+      "created_at": "2026-10-16T06:01:30Z",
+      "updated_at": "2026-10-16T06:58:44Z",
+      "created_to_updated_seconds": 3434.0,
+      "created_to_first_reported_job_seconds": 1979.0,
+      "jobs": [
+        {
+          "name": "Build independent exact-main trusted controller",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:34:29Z",
+          "completed_at": "2026-10-16T06:47:31Z",
+          "seconds": 782.0
+        },
+        {
+          "name": "Authenticate exact-main admission and publish pending authority",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:47:34Z",
+          "completed_at": "2026-10-16T06:55:13Z",
+          "seconds": 459.0
+        },
+        {
+          "name": "Run exact-main governance evidence / Validate governance front door",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:55:15Z",
+          "completed_at": "2026-10-16T06:57:49Z",
+          "seconds": 154.0
+        },
+        {
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 3",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:10Z",
+          "seconds": 19.0
+        },
+        {
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 1",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:10Z",
+          "seconds": 19.0
+        },
+        {
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 2",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:14Z",
+          "seconds": 23.0
+        },
+        {
+          "name": "Run exact-main governance evidence / Evidence / Evidence shard 0",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:57:51Z",
+          "completed_at": "2026-10-16T06:58:10Z",
+          "seconds": 19.0
+        },
+        {
+          "name": "Run exact-main governance evidence / Verify exact-tree governance evidence",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:58:17Z",
+          "completed_at": "2026-10-16T06:58:43Z",
+          "seconds": 26.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Authenticate exact-main admission and publish pending authority",
+          "step": "Authenticate and preserve prior merged-PR evidence",
+          "seconds": 441.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Build independent exact-main trusted controller",
+          "step": "Observe provider-effective controller for non-authoritative routing",
+          "seconds": 387.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Build independent exact-main trusted controller",
+          "step": "Project the provider-authenticated controller custody capsule",
+          "seconds": 374.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Run exact-main governance evidence / Validate governance front door",
+          "step": "Run canonical cheap preflight with exact prior evidence",
+          "seconds": 140.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Run exact-main governance evidence / Validate governance front door",
+          "step": "Install the declared governance environment",
+          "seconds": 7.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "d25f3075dcc63457dfe3e96968137611bbf3d07ef0a8cdeb83f6ce9e82c9b031",
+        "jobs_json_sha256": "5d2aa64fd1104a84e1207a107a21f2c19163423cc253ad38c6ff6e8950fe4389",
+        "log_sha256": "92b139c92bce5df053c38a8ab2691b26f42ee83ccc117fbc33307421bc93a311",
+        "log_bytes": 1505628,
+        "log_command_exit_code": 0,
+        "log_complete": true
+      }
+    },
+    {
+      "run_id": 38856273908,
+      "attempt": 1,
+      "url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38856273908",
+      "workflow": "governance",
+      "event": "pull_request",
+      "subject_commit": "4dec14dc15beecaa7416f302cc251fd9afbd3e06",
+      "conclusion": "success",
+      "created_at": "2026-10-16T05:32:03Z",
+      "updated_at": "2026-10-16T06:00:15Z",
+      "created_to_updated_seconds": 1692.0,
+      "created_to_first_reported_job_seconds": 2.0,
+      "jobs": [
+        {
+          "name": "Validate governance front door",
+          "conclusion": "success",
+          "started_at": "2026-10-16T05:32:05Z",
+          "completed_at": "2026-10-16T05:34:38Z",
+          "seconds": 153.0
+        },
+        {
+          "name": "Evidence / Evidence shard 1",
+          "conclusion": "success",
+          "started_at": "2026-10-16T05:34:40Z",
+          "completed_at": "2026-10-16T05:35:05Z",
+          "seconds": 25.0
+        },
+        {
+          "name": "Evidence / Evidence shard 3",
+          "conclusion": "success",
+          "started_at": "2026-10-16T05:34:40Z",
+          "completed_at": "2026-10-16T05:35:01Z",
+          "seconds": 21.0
+        },
+        {
+          "name": "Evidence / Evidence shard 2",
+          "conclusion": "success",
+          "started_at": "2026-10-16T05:34:40Z",
+          "completed_at": "2026-10-16T05:59:40Z",
+          "seconds": 1500.0
+        },
+        {
+          "name": "Evidence / Evidence shard 0",
+          "conclusion": "success",
+          "started_at": "2026-10-16T05:34:41Z",
+          "completed_at": "2026-10-16T05:35:14Z",
+          "seconds": 33.0
+        },
+        {
+          "name": "Verify exact-tree governance evidence",
+          "conclusion": "success",
+          "started_at": "2026-10-16T05:59:43Z",
+          "completed_at": "2026-10-16T06:00:15Z",
+          "seconds": 32.0
+        },
+        {
+          "name": "bcf/pr-certification",
+          "conclusion": "success",
+          "started_at": "2026-10-16T06:01:16Z",
+          "completed_at": "2026-10-16T06:01:16Z",
+          "seconds": 0.0
+        }
+      ],
+      "longest_steps": [
+        {
+          "job": "Evidence / Evidence shard 2",
+          "step": "Capture the mechanically derived evidence shard",
+          "seconds": 1480.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Validate governance front door",
+          "step": "Run canonical cheap preflight and allocate one evidence session",
+          "seconds": 136.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Verify exact-tree governance evidence",
+          "step": "Verify exact-tree governance evidence",
+          "seconds": 14.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Evidence / Evidence shard 0",
+          "step": "Capture the mechanically derived evidence shard",
+          "seconds": 12.0,
+          "conclusion": "success"
+        },
+        {
+          "job": "Validate governance front door",
+          "step": "Install the declared governance environment",
+          "seconds": 9.0,
+          "conclusion": "success"
+        }
+      ],
+      "capture": {
+        "run_json_sha256": "fb03e19ffaed25a8d062e188f516667ae28d9aa53a018dda737247b3b12c97a3",
+        "jobs_json_sha256": "cb78c68f351b05374453000c9f3831d9341775942f631b30bc2e68bdfb055ff2",
+        "log_sha256": "2a6829035c4c56f026f3a627520261034943e2b0df58f733337f56b986b63bd4",
+        "log_bytes": 611858,
+        "log_command_exit_code": 1,
+        "log_complete": false
+      }
+    }
+  ]
+}

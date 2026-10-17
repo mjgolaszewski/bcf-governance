@@ -1,0 +1,170 @@
+{
+  "authority": false,
+  "status": "canonical_reconciliation_required",
+  "contract_commit": "a75d57ee",
+  "red_control_commits": [
+    "454e1bee",
+    "4e40d85f"
+  ],
+  "behavior": [
+    "Existing operation validator has additive Python source scope; default full path remains unchanged.",
+    "Full registry identity/structure and declaration semantics are checked even for deferred foreign populations.",
+    "Actual Python catalog source absence rejects; unavailable foreign sources remain subject to full verification.",
+    "Existing authored query reuses import-resolved Python facts before normalization lease; no authority, toolchain or runtime proof is conferred."
+  ],
+  "focused": {
+    "passed": 46,
+    "pytest_elapsed_seconds": 2.1,
+    "initial_red": "6 failed0.54s; expanded7 failed0.43s before production implementation.",
+    "catalog_followup": "Initial control had a missing test import and was not qualifying evidence; after correction42376e63, actual missing-Python-function red reproduced1fail/2pass0.37s before the scope correction.",
+    "captures": {
+      "authored-operation-admission-red": {
+        "stdout_sha256": "ea039d8e0d158f6925f6d62f6fd1224362a7105e9bcfcc3f4786ded8c9e4e56d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-admission-red-expanded": {
+        "stdout_sha256": "28cc4a94f1580e317f7850956587e2d94199c588b5ada3d3c054f4111821db03",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-catalog-red": {
+        "stdout_sha256": "cbdadbf8624bdef60e6a3f4024eddaee61a6f8f09ee101b35fcf1be57786c4af",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-catalog-qualified-red": {
+        "stdout_sha256": "62506000320d93bb6a62a9ec7d0c83a4d2713237a2aaf3837f103ddfa60d6a4d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-focused-green": {
+        "stdout_sha256": "4d654bf902ca80f2df933ed77bc00ab2d43e0b42434b73a421fc583e128e7a3b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_authority_contracts.py": "3254b02c0d03096bb046e530b74fa1fc416023a6359bb1da78d25a48c682b7af",
+    "bcf_governance/tooling/semantic_authority_operations.py": "b4c46d2578899ea6cd9a8aaed360dba3ebd185c091be815bdca51c786a453323",
+    "bcf_governance/tooling/semantic_ownership_scan.py": "0c745b1a12bf49a37ea299f83db975191c66864d8e99ddffd9f33a82d384b6db"
+  },
+  "generated_runtime_copies_equal": true,
+  "remaining": [
+    "Required semantic-lock freshness oracle remains failed until canonical reconciliation; no hand edit, skipped oracle or whole-source pass is claimed.",
+    "Corrected-source full canonical train/provider proof and all82 whole requirements remain open; no phase/controller/release activation."
+  ],
+  "verification_attempts": [
+    {
+      "authority": false,
+      "subject": "3f4d594d14acc2f20959de4ee8518a41eda5936b",
+      "tree_sha": "5872315381738deff8a150c90ef6f624dc85d987",
+      "started_at": "2026-10-17T04:12:58.266831+00:00",
+      "stages": [
+        {
+          "stage": "operation-lint",
+          "returncode": 0,
+          "elapsed_ms": 4509,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-typecheck",
+          "returncode": 0,
+          "elapsed_ms": 953,
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-architecture-module-size",
+          "returncode": 0,
+          "elapsed_ms": 2524,
+          "stdout_sha256": "818471def591c9f64bfe0125b52112f949d00ec9633edcbbf0414328a7f152ef",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-architecture-context-membership",
+          "returncode": 0,
+          "elapsed_ms": 2140,
+          "stdout_sha256": "41c3b06b1f0237013bf2a2d9555cfc394501d11435eed1ea4fe0a018aef42c2e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-actual-authored-query",
+          "returncode": 0,
+          "elapsed_ms": 153205,
+          "stdout_sha256": "c97dc9bd9aa95ef845c41d0bb95885d85d02de01989ac6b75f323839443c4d80",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-source-controls",
+          "returncode": 1,
+          "elapsed_ms": 743466,
+          "stdout_sha256": "365b24a0c7dae6140a66beebd0b5206476712bf02735bd35d16dcecebbca84c4",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "returncode": 1,
+      "ended_at": "2026-10-17T04:28:05.326313+00:00",
+      "raw_capture_sha256": "094dfc4e2d7864f9f92575d4a24ed29fda6a8c9b31b7aa8e8950c28ef0dec70c"
+    },
+    {
+      "authority": false,
+      "subject": "3f4d594d14acc2f20959de4ee8518a41eda5936b",
+      "tree_sha": "5872315381738deff8a150c90ef6f624dc85d987",
+      "started_at": "2026-10-17T04:33:20.757894+00:00",
+      "stages": [
+        {
+          "stage": "operation-control-targets",
+          "returncode": 0,
+          "elapsed_ms": 25415,
+          "stdout_sha256": "41ce9fbdebee3e1eb9d0b2291510ad32b3db960ebe1ea10ef64dbe046a2358a3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-installed-mixed",
+          "returncode": 0,
+          "elapsed_ms": 198286,
+          "stdout_sha256": "2cb22de2f2dc5563782fe90ce2f88f585fbbf01969c9b556f1b85dccaa50b3f2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-governance",
+          "returncode": 0,
+          "elapsed_ms": 30488,
+          "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "stage": "operation-exposure",
+          "returncode": 0,
+          "elapsed_ms": 1322,
+          "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ],
+      "prior_attempt_sha256": "094dfc4e2d7864f9f92575d4a24ed29fda6a8c9b31b7aa8e8950c28ef0dec70c",
+      "scope": "Previously unexecuted installed/native stages; failed source oracle is retained, not rerun",
+      "returncode": 0,
+      "ended_at": "2026-10-17T04:37:36.421896+00:00",
+      "raw_capture_sha256": "dfb2a968c8da2d0bae58a811d210ec109ea348cfdbd146bd8bfa257f251c443d"
+    }
+  ],
+  "whole_source": {
+    "actual_authored_query": "21-operation observations exactly match retained golden;conformant/authorityfalse",
+    "source_regression": {
+      "passed": 151,
+      "failed": 1,
+      "pytest_elapsed_seconds": 742.75,
+      "failure": "tests/test_semantic_ownership.py::test_current_bcf_registry_is_conformant_and_report_is_compact",
+      "cause": "governance/semantic-lock.yml is stale after authored source changes; canonical reconciliation remains required."
+    },
+    "installed_mixed": {
+      "passed": 2,
+      "pytest_elapsed_seconds": 197.33,
+      "profiles": [
+        "fresh",
+        "upgrade"
+      ],
+      "source_package_absent": true,
+      "foreign_compiler_forbidden_in_authored_query": true
+    },
+    "structural_targets_only": 276
+  }
+}

@@ -126,3 +126,23 @@ def test_mutant_harness_emits_exact_subject_result(tmp_path: Path) -> None:
         "infrastructure_failures": 0,
     }
     assert report["mutants"][0]["status"] == "killed"
+
+
+def test_migrated_operation_completeness_mutant_keeps_positive_and_cause_specific_kill(tmp_path):
+    harness = runpy.run_path(HARNESS)
+    mutant = next(row for row in harness['MUTANTS'] if row.mutant_id == 'application-operation-completeness')
+    assert mutant.target_path == 'scripts/semantic_authority_operations.py'
+    assert harness['KILLER_NODES'][mutant.mutant_id] == (
+        'tests/test_semantic_authority.py::test_unclassified_operation_is_rejected',)
+    positive_root, negative_root = tmp_path / 'positive', tmp_path / 'negative'
+    positive_root.mkdir()
+    negative_root.mkdir()
+    harness['_copy_runtime_package'](positive_root)
+    entry = harness['_runtime_entrypoint'](positive_root, 'semantic_authority_contracts')
+    positive = harness['_run_tests'](mutant, entry)
+    assert positive.returncode == 0, positive.stdout + positive.stderr
+    mutated = harness['_mutate_source'](mutant, negative_root)
+    result = harness['_run_tests'](mutant, mutated)
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert 'test_unclassified_operation_is_rejected' in result.stdout
+    assert 'DID NOT RAISE' in result.stdout

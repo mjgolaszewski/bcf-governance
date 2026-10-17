@@ -3280,7 +3280,7 @@ def test_v3_reference_graph_projects_proof_transport_and_planned_shards(
         if str(step.get("uses", "")).startswith("actions/checkout@")
     ]
     assert checkout_refs == [
-        "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
+        "${{ github.workflow_sha }}",
         "${{ github.event.workflow_run.head_sha }}",
     ]
     candidate_checkout = next(
@@ -3552,3 +3552,137 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
         "automation_dependency_versions_and_changelog",
     }
     assert report["mechanical_findings"] == []
+
+
+
+@pytest.mark.parametrize('consumer', ['policy', 'graph'])
+@pytest.mark.parametrize('resource', ['symlink', 'dangling_symlink', 'directory', 'fifo'])
+def test_gate_timeout_policy_does_not_default_over_invalid_resource(tmp_path, resource, consumer):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    if consumer == 'graph':
+        _write_graph(tmp_path)
+    governance = tmp_path / 'governance'
+    governance.mkdir(exist_ok=True)
+    path = governance / 'gate-contracts.yml'
+    if resource == 'directory':
+        path.mkdir()
+    elif resource == 'fifo':
+        os.mkfifo(path)
+    else:
+        target = tmp_path / 'declared-timeouts.yml'
+        if resource == 'symlink':
+            target.write_text('execution_policy: {default_timeout_seconds: 7200}\n')
+        path.symlink_to(target)
+    with pytest.raises(CIGraphError, match='regular nonsymlink file'):
+        if consumer == 'graph':
+            validate_ci_graph(tmp_path)
+        else:
+            gate_timeout_contract(tmp_path)
+
+
+def test_gate_timeout_policy_keeps_absence_and_regular_file_contracts(tmp_path):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    assert gate_timeout_contract(tmp_path) == (1800, {})
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    path = governance / 'gate-contracts.yml'
+    path.write_text('execution_policy: {default_timeout_seconds: 7200}\ngates: {example: {invocation: {timeout_seconds: 9000}}}\n')
+    assert gate_timeout_contract(tmp_path) == (7200, {'example': 9000})
+
+
+
+@pytest.mark.parametrize('consumer', ['policy', 'graph'])
+@pytest.mark.parametrize('declaration', [
+    {'execution_policy': None}, {'execution_policy': []}, {'execution_policy': 'default'},
+    {'gates': {'example': None}}, {'gates': {'example': []}},
+    {'gates': {'example': {'invocation': None}}},
+    {'gates': {'example': {'invocation': []}}},
+    {'gates': {'example': {'invocation': {'timeout_seconds': None}}}},
+])
+def test_gate_timeout_policy_rejects_explicit_malformed_declarations(tmp_path, consumer, declaration):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    if consumer == 'graph':
+        _write_graph(tmp_path)
+    governance = tmp_path / 'governance'
+    governance.mkdir(exist_ok=True)
+    (governance / 'gate-contracts.yml').write_text(yaml.safe_dump(declaration))
+    with pytest.raises(CIGraphError, match='gate .*timeout'):
+        if consumer == 'graph':
+            validate_ci_graph(tmp_path)
+        else:
+            gate_timeout_contract(tmp_path)
+
+
+@pytest.mark.parametrize('declaration', [{}, {'gates': {'example': {}}}, {'gates': {'example': {'invocation': {}}}}])
+def test_gate_timeout_policy_preserves_omitted_optional_declarations(tmp_path, declaration):
+    from bcf_governance.tooling.ci_graph_timeouts import gate_timeout_contract
+    governance = tmp_path / 'governance'
+    governance.mkdir()
+    (governance / 'gate-contracts.yml').write_text(yaml.safe_dump(declaration))
+    assert gate_timeout_contract(tmp_path) == (1800, {})
+
+
+@pytest.mark.parametrize('content', [b'? [unsupported, key]\n: value\n', b'? {unsupported: key}\n: value\n'])
+def test_strict_yaml_decoder_types_invalid_complex_mapping_keys(content):
+    from bcf_governance.tooling.ci_graph_yaml import GraphYAMLError, load_yaml_bytes
+    with pytest.raises(GraphYAMLError, match='mapping key must be hashable'):
+        load_yaml_bytes(content, source='authored-fixture.yml')
+
+
+def test_deadline_quantization_preserves_exact_integer_boundaries():
+    from bcf_governance.tooling.ci_graph_timeouts import quantized_deadline_ms
+    def required(work):
+        return quantized_deadline_ms(bounded_work_ms=work, setup_ms=0, cleanup_ms=0,
+            measured_lower_bound_ms=0, headroom_ms=0)
+    assert required(60000) == 60000
+    assert required(60001) == 120000
+    assert required(60000 * 2**70 + 1) == 60000 * (2**70 + 1)
+    for malformed in (True, -1, 0.5):
+        with pytest.raises(CIGraphError, match='deadline bounds'):
+            required(malformed)
+
+
+def test_component_minimum_floors_remain_nonsummable_job_constraints():
+    graph = {'step_components': {'first': {'minimum_job_timeout_minutes': 10},
+        'second': {'minimum_job_timeout_minutes': 11}}, 'workflows': [{'id': 'release', 'jobs': [
+            {'id': 'route', 'timeout_minutes': 11, 'executor': {'kind': 'component_sequence',
+                'components': ['first', 'second']}}]}]}
+    validate_component_job_timeouts(graph)
+
+
+def test_stacked_candidate_progress_cannot_claim_rendered_default_main_terminal():
+    from bcf_governance.tooling.ci_graph_post_merge import PostMergeEvaluation, candidate_post_merge_evaluation
+    from bcf_governance.tooling.local_pr_context import LocalPRContext
+    evaluation = PostMergeEvaluation("workitem", "P32-P0-01", "trusted_exact_main", "exact-main", "governance")
+    default = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature")
+    assert candidate_post_merge_evaluation(evaluation, context=default) is evaluation
+    bound = LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack",
+        repository="owner/repository", repository_id=17, pull_request_number=7,
+        pull_request_node_id="PR_exact7", provider_head_sha="2" * 40)
+    projected = candidate_post_merge_evaluation(evaluation, context=bound)
+    assert (projected.mode, projected.target) == ("pr", None)
+    assert evaluation.mode == "workitem" and evaluation.target == "P32-P0-01"
+    assert (projected.lane, projected.workflow_id, projected.terminal_job_id) == (evaluation.lane, evaluation.workflow_id, evaluation.terminal_job_id)
+
+
+def test_nondefault_candidate_projection_rejects_unbound_context():
+    from bcf_governance.tooling.ci_graph_post_merge import PostMergeEvaluation, candidate_post_merge_evaluation
+    from bcf_governance.tooling.local_pr_context import LocalPRContext
+    evaluation = PostMergeEvaluation("closure", None, "trusted_exact_main", "exact-main", "governance")
+    with pytest.raises(CIGraphError, match="authenticated PR binding"):
+        candidate_post_merge_evaluation(evaluation, context=LocalPRContext("origin", "main", "1" * 40, "2" * 40, "feature", base_ref="stack"))
+
+
+@pytest.mark.parametrize("source", ["${{ github.event.workflow_run.pull_requests[0].base.sha }}", "${{ github.event.workflow_run.head_sha }}"], ids=["comparison-base", "candidate-head"])
+@pytest.mark.parametrize("component", ["checkout-protected-pr-base", "checkout-protected-finalizer-base"], ids=["finalizer", "publisher"])
+def test_ordinary_evaluator_rejects_untrusted_executable_checkout(tmp_path: Path, source: str, component: str) -> None:
+    graph = build_reference_ci_graph(
+        project_id="v3-fixture", profile="standard", profile_contract_version="3.0",
+        gates=["governance-validate", "test", "contract-test", "runtime-smoke"],
+        candidate_labels=["ubuntu-24.04"], trusted_labels=["self-hosted", "fixture-trusted"],
+        candidate_hosted=True, trusted_hosted=False,
+    )
+    graph["step_components"][component]["with"]["ref"] = source
+    _write_graph(tmp_path, graph)
+    with pytest.raises(CIGraphError, match="invalid exact checkout/controller contract"):
+        validate_ci_graph(tmp_path)

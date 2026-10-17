@@ -1,0 +1,30 @@
+{
+  "authority": false,
+  "status": "contract_before_implementation",
+  "workitem": "P32-P0-06",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "targets": [
+    "bcf_governance/tooling/ci_github_artifact_inventory.py",
+    "tests/test_ci_github_controller.py"
+  ],
+  "trigger": "Recovered primary67825aac failed provider_authority before evidence because complete repository inventory did not stabilize; final exception discarded individual bounded attempt causes.",
+  "contract": [
+    "Retain each bounded attempt outcome in the existing inventory-change failure, preserving its base error family and outer GitHub API causal chain.",
+    "Expose cause-specific pagination versus complete-snapshot disagreement without dumping provider objects, tokens or receipt contents.",
+    "Keep four attempts, consecutive complete identical relevant objects, exact pagination/count/identity checks and all existing name-filter behavior unchanged.",
+    "Schema/identity errors remain immediate failures; availability diagnostics cannot make them retryable.",
+    "Successful inventory output and ordering remain unchanged; no extra provider calls, fallback, gate restart, mutation or acceptance authority."
+  ],
+  "tests": [
+    "pagination drift retains four distinct failed-read outcomes and exact eight-call bound",
+    "relevant metadata churn retains complete-snapshot disagreement and exact four-read bound",
+    "malformed response rejects immediately without retry classification",
+    "all existing stable/prefix/name/pagination and provider/controller tests pass"
+  ],
+  "remaining": [
+    "Independent diagnostic subsequently obtained a stable inventory in78 requests; original failing payloads were not captured, so no original churn cause or product fix is claimed.",
+    "Automatic exact recovery and safe caching remain separate unqualified work."
+  ]
+}

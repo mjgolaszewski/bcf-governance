@@ -1,0 +1,19 @@
+{
+  "authority": false,
+  "contract": "audits/issue-394/bound-pr-context-contract.json",
+  "runtime": "existing canonical isolated project interpreter",
+  "passed": 0,
+  "failed": 7,
+  "elapsed_seconds": 3.43,
+  "scope": "Real local Git stack with intercepted authenticated provider read methods; production resolver unchanged.",
+  "failures": [
+    "Resolver chose remote default base instead of bound stacked PR base.",
+    "Synthetic event used default branch as PR base ref.",
+    "Ambiguous provider PR inventory did not reject.",
+    "Terminal provider read failure did not reject.",
+    "Wrong repository binding did not reject.",
+    "Wrong provider head did not reject.",
+    "Missing provider base SHA did not reject."
+  ],
+  "remaining": "Complete consumer and authority-context implementation and controls; no activation or whole requirement closure."
+}

@@ -1,0 +1,83 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-02",
+  "contracts": [
+    "64a71138",
+    "2039525c",
+    "13a62ea5",
+    "7fce7a1a"
+  ],
+  "original_failure": "audits/issue-394/pinned-qualification-7f82a29f-terminal.json",
+  "red_before_fix": "Actual nested canonical qualification failed packaging import; isolated root fixture reproduced omission of external required distribution origins.",
+  "implementation": [
+    "Exact candidate wheel metadata and active installed dependency requirements determine origins; markers/extras/cycles and PEP440 versions handled through existing packaging/metadata APIs.",
+    "Candidate/dependency identities, formats, Requires-Python and roots checked before creating controller; direct URL/unknown authority fail closed.",
+    "Only declared required dependencies queried, with standard legacy installed requirements preserved. No path-hook code executed or manual dependency repair.",
+    "Existing exact wheel origin/version/dependency probe and child pip checks retained."
+  ],
+  "checks": {
+    "qualification_module": {
+      "passed": 37,
+      "elapsed_seconds": 1.89
+    },
+    "typecheck": "passed",
+    "settled_source_archive_inventory": {
+      "passed": 1,
+      "elapsed_seconds": 14.28
+    },
+    "governance_yaml": "passed",
+    "authored_semantic_ownership": "passed",
+    "lint": "passed",
+    "architecture_module_size": "passed",
+    "architecture_context_membership": "passed",
+    "pack_schema_exact_references": {
+      "passed": 9,
+      "elapsed_seconds": 48.93
+    },
+    "exact_installed_qualification_module": {
+      "passed": 37,
+      "elapsed_seconds": 1.85,
+      "module_origin": "asserted exact installed wheel"
+    }
+  },
+  "precursor_focused_real_nested_probe": {
+    "original_parent_and_candidate_preserved": true,
+    "completed": true,
+    "packaging_version": "26.3",
+    "child_package_origin": "fresh_exact_controller",
+    "manual_dependency_installation": false,
+    "source_module_sha256": "8acb16f001db226a369dfaa9c1c26913a785fe6f501f9ee4ff35cb66a8f55bc8",
+    "limit": "Precursor root derivation before final Python-compatibility guards; does not certify final package."
+  },
+  "verification_history": [
+    "Dummy wheel bytes in old command/probe fixtures replaced by minimal valid wheel metadata; original assertions retained.",
+    "Full installed metadata serialization caused description false rejection; removed in favor of dependency-relevant headers and standard installed requirements.",
+    "One90pass/1fail broader run overlapped pack regeneration with archive verification. Settled archive check rerun passes; no oracle weakened."
+  ],
+  "remaining": [
+    "Two installed projections passed; separately coordinated canonical pinned-adopter transaction remains required.",
+    "No complete goal, CP07 or whole requirement claim."
+  ],
+  "exact_build": {
+    "authority": false,
+    "subject": {
+      "commit_sha": "2ca040efd30e542cbc2e27dfa09221bb1805e4e1",
+      "tree_sha": "25cfed72814f52ce0e2f0910da69cfeafd138104"
+    },
+    "package_files_equal": 712,
+    "extra_or_missing_members": false,
+    "assets": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "3da1c6603621e0d8aa9bd26c261d67105bfebb8a9287c5ee56d1d6faa6368cce",
+      "bcf_governance-2.5.0.tar.gz": "931f7521ee2099e39764beb66198d71cbd9d279b1031c963700323e153f6c887"
+    }
+  },
+  "installed_two_level_proof": {
+    "authority": false,
+    "subject": "2ca040efd30e542cbc2e27dfa09221bb1805e4e1",
+    "two_successive_projections": true,
+    "second_helper_from_exact_installed_wheel": true,
+    "second_package_origin_verified": true,
+    "packaging_version": "26.3",
+    "manual_dependency_installation": false
+  }
+}
