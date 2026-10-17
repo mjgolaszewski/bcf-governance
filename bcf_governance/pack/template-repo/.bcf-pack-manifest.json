@@ -1623,7 +1623,7 @@
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",
-      "sha256": "64a9454abe247230d5a66e020b569d28bd15ae20fecf6df391384379928d277c"
+      "sha256": "a1e794a71d8bb286c60b57b2dcd786552275b5a674525d7939a0edccaca4fcac"
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",

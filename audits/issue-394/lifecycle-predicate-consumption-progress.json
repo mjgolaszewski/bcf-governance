@@ -69,5 +69,12 @@
     "loaded_sdk_schema_recomputation": "certified",
     "product_consumer": "not_implemented",
     "whole_requirement_status_advanced": false
+  },
+  "phase_input_acquisition": {
+    "verification": "audits/issue-394/phase-input-acquisition-verification.json",
+    "implemented": true,
+    "live_provider_result": "certified",
+    "canonical_policy_derivation": "not_implemented",
+    "actual_phase_predicate_consumer": "not_implemented"
   }
 }
