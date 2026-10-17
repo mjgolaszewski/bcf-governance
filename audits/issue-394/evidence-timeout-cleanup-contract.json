@@ -16,7 +16,8 @@
     "schemas/gate-contracts.schema.json",
     "governance/gate-contracts.yml",
     "docs/USAGE.md",
-    "bcf_governance/tooling/evidence_process_supervisor.py"
+    "bcf_governance/tooling/evidence_process_supervisor.py",
+    "tests/test_installed_evidence_cleanup.py"
   ],
   "finding": "Actual Linux control: the runner returns typed timeout126 while the grandchild remains live. Direct-child termination is not descendant cleanup or authenticated execution-state retirement.",
   "contract": [
@@ -100,6 +101,7 @@
     "startup_budget": "Supervisor startup/readiness/command allocation consume the existing body timeout, measured from before supervisor allocation on the same monotonic clock. No additional hidden startup allowance. The separate declared cleanup budget covers interrupted cleanup and output drain.",
     "protocol": "Private inherited socket carries readiness, one command request, cancellation and a single typed completion. Match supervisor PID, exact command PID and quiescent true; parent holds supervisor wait ownership until result and stdout/stderr EOF. Missing/malformed completion is unknown, even if supervisor exits0. Command close_fds prevents inheriting the private socket.",
     "oracle_migration": "Replace obsolete global-inventory fault injection with missing/empty/missing-anchor kernel-completion transport controls, preserving rejection intent and real zombie-thread control. Replace foreign-birth snapshot hooks with real unrelated process births while the command runs. Never remove genuine ordinary-output or descendant controls.",
-    "unstarted_commands": "Preserve existing typed infrastructure126 for a missing executable or working directory. If supervisor allocation itself fails, subprocess has reaped its failed child. If command exec fails after readiness, supervisor must independently obtain ECHILD and send a distinct not-started/quiescent terminal with no command PID. Missing ordinary complete anchors still reject; a missing result never implies no allocation."
+    "unstarted_commands": "Preserve existing typed infrastructure126 for a missing executable or working directory. If supervisor allocation itself fails, subprocess has reaped its failed child. If command exec fails after readiness, supervisor must independently obtain ECHILD and send a distinct not-started/quiescent terminal with no command PID. Missing ordinary complete anchors still reject; a missing result never implies no allocation.",
+    "installed_qualification": "Reuse existing fresh/upgrade installed_consumer and isolated_python fixtures. Under -I prove bcf_governance absent, import only installed _bcf_runtime owner/helper, and run normal Unicode/nonzero plus real timeout/background/threaded/setsid/doublefork children with fixture-owned watchdog cleanup. Invalid budgets/default-SIGCHLD guard must precede effects. Exact canonical/private helper bytes must agree. No moving maintained-adopter or full train authority inferred."
   }
 }
