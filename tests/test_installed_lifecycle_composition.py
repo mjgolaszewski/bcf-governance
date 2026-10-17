@@ -71,3 +71,49 @@ print(json.dumps({'result': actual, 'rejected': rejected}, sort_keys=True))
         'result': expected,
         'rejected': ['omitted-edge-and-tests', 'false-exclusion'],
     }
+
+
+def test_installed_recovery_rejects_generic_mutation_claims(installed_consumer, isolated_python):
+    code = """import importlib.util, json, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+sys.path.insert(0, str(Path('scripts').resolve()))
+from _bcf_runtime.ci_recovery_frontier import (
+    RecoveryFrontierError, compile_recovery_frontier, provider_read_frontier,
+)
+import _bcf_runtime.ci_recovery_frontier as owner
+assert Path(owner.__file__).resolve().is_relative_to(Path.cwd())
+positive = rejected = 0
+for outcome, action in [('transient', 'retry_identical_read'),
+                        ('success', 'consume_exact_read'),
+                        ('terminal', 'stop'), ('exhausted', 'stop')]:
+    result = provider_read_frontier(request_sha256='4' * 64, outcome=outcome)
+    assert result['action']['kind'] == action and result['release_authority'] is False
+    positive += 1
+for state in ('unknown', 'committed', 'not_committed', 'conflict'):
+    for variant in ('unbound', 'key-only', 'asserted-authentication'):
+        identity = {'unbound': 'value'}
+        if variant == 'asserted-authentication':
+            identity['authenticated'] = True
+        try:
+            compile_recovery_frontier(
+                operation='mutation_result', state=state, identity=identity,
+                owner='caller_selected', prerequisites=('authenticated_mutation_outcome',),
+                idempotency_key='caller-key' if variant != 'unbound' else None,
+            )
+        except RecoveryFrontierError as exc:
+            assert 'no governed recovery edge' in str(exc)
+            rejected += 1
+        else:
+            raise AssertionError('installed generic mutation claim accepted')
+print(json.dumps({'authority': False, 'positive': positive, 'rejected': rejected,
+                  'source_package_absent': True}, sort_keys=True))
+"""
+    result = subprocess.run(
+        [str(isolated_python), '-I', '-c', code], cwd=installed_consumer,
+        env=_environment(), capture_output=True, text=True,
+    )
+    assert result.returncode == 0, _record(result)
+    assert json.loads(result.stdout) == {
+        'authority': False, 'positive': 4, 'rejected': 12, 'source_package_absent': True,
+    }
