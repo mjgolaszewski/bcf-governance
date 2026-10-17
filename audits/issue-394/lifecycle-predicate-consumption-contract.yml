@@ -52,3 +52,11 @@ authenticated_phase_input_contract:
   expected_adversarial_controls: [wrong repository, wrong phase, substituted source or tree, artifact digest mismatch, omitted bundle file, altered authority, substituted schema source, later failed finalizer, expired artifact, moved provider subject, PR proposition, bounded workitem proposition]
   cold_predecessor_observation: audits/issue-394/phase31-finalizer-cold-verification.json
   remaining: Implement the authenticated input through existing owners and wire actual authored/computed phase-predicate consumers; the observation alone grants no eligibility.
+phase_input_implementation_scope:
+  owner: bcf_governance/tooling/trusted_inputs.py
+  operation: verify_phase_closure_input
+  arguments: Authenticated API port, repository, expected phase, exact expected historical commit and tree
+  result: Existing ProviderArtifact and CertificationVerification plus exact original archive bytes; no new receipt or activation grant
+  expected_tests: tests/test_phase_closure_input.py using existing exact-main finalizer fixture and real normalized bundles
+  forbidden_files: [primary submitted worktree, workflows, authority pins, public CLI grammar, maintained adopter repositories]
+  integration_limit: Caller coordinates are expected-value assertions only; canonical protected-policy derivation and actual lifecycle consumption remain required before integration.
