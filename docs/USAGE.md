@@ -513,6 +513,26 @@ compatibility `release verify` command remains available, but BCF's governed top
 requires the split operations. The trusted collector recomputes the bindings; a
 candidate-authored pass label is not authority.
 
+Optional `bcf ci qualify-release` compatibility observations use the 1.4
+`governance/release-qualification.yml` source policy. BCF resolves every declared
+adopter's current default branch, commit and tree through authenticated provider
+reads. Supplied checkout roots and interpreters provide resources for those exact
+subjects. A mismatched checkout rejects before runtime allocation; provider
+movement before result collection rejects the completed observation. Maintained
+checkouts remain unchanged, and compatibility results retain no publication
+authority or effect on the required release proof population.
+Missing provider credentials reject before asset reads or checkout inspection.
+
+The 1.3 caller-selected source policy remains readable for historical verification.
+Starting a new qualification requires an explicitly authored 1.4 contract:
+`source: provider_default_branch_transaction`,
+`caller_checkout_role: materialization_resource_only`, and
+`source_freshness: provider_exact_at_capture_and_collection`, with document version
+`1.4.0` and schema version `1.4`. BCF blocks legacy execution before allocation;
+it does not silently upgrade the policy or substitute an older checkout. The CLI
+grammar and nonauthoritative 1.1 receipt format remain unchanged. Offline receipt
+validation does not establish current provider freshness.
+
 BCF retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable
 callback envelope: a pending envelope contains no candidate artifact, while a

@@ -409,7 +409,7 @@
     },
     "schemas/release-qualification.schema.json": {
       "operation": "copy",
-      "sha256": "eb22a4fe38f803681eaccfd5142d2e0daab90b58025ad8a2c5ef1c98ed67c90b"
+      "sha256": "b48107c428992d76045e765fa67a5f8f4fcee80e6e88aab627d4306403e88881"
     },
     "schemas/release-train-backtrace.schema.json": {
       "operation": "copy",
@@ -1391,11 +1391,11 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "6e8892fd83d5ce6d33180f5b4926f13495631e29cfb333760b8bb47d9cecf13d"
+      "sha256": "8a0a3305bd35339530a73a3db06d18e9341ace80b9d323dcfb153fb4b5c58324"
     },
     "scripts/_bcf_runtime/release_adopter_sources.py": {
       "operation": "copy",
-      "sha256": "dced5b5b9151fe774c46bf21a7feb578b186078f3c293c895a8c5d6e0021b89e"
+      "sha256": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c"
     },
     "scripts/_bcf_runtime/release_asset_inventory.py": {
       "operation": "copy",
