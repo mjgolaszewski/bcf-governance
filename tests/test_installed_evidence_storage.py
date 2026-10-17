@@ -391,9 +391,11 @@ from pathlib import Path
 assert importlib.util.find_spec('bcf_governance') is None
 sys.path.insert(0, str(Path('scripts').resolve()))
 from _bcf_runtime import semantic_ownership_scan as scan
+from _bcf_runtime import semantic_source_discovery as discovery
 def unexpected_compiler(*args, **kwargs):
     raise AssertionError('authored Python query executed a foreign compiler')
-scan.compiler_contracts = unexpected_compiler
+discovery.compiler_contracts = unexpected_compiler
+discovery.discover_typescript_source = unexpected_compiler
 report = scan.validate_authored_semantic_ownership(Path.cwd())
 assert report['authority'] is False and report['execution_qualified'] is False
 assert 'operation_observations' in report
