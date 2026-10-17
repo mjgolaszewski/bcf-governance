@@ -1,7 +1,7 @@
 {
   "authority": false,
   "execution_qualified": false,
-  "status": "focused_controls_passed_installed_pending",
+  "status": "committed_source_and_pack_passed_installed_pending",
   "contract_commit": "37a9fb46",
   "test_commits": [
     "31fd9dfa",
@@ -51,7 +51,7 @@
   },
   "residuals": [
     "Isolated source is not integrated into active primary transaction.",
-    "Exact committed-source repeat, native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
+    "Native governance/exposure, installed runtime parity and actual provider-selected isolated consumers remain pending.",
     "All82 whole requirements remain open; no P33 activation, provider certification, performance target or custody closure.",
     "Historical1.3 receipts remain observations; offline verification is not current provider freshness."
   ],
@@ -88,5 +88,28 @@
         "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
       }
     ]
+  },
+  "fixed_source": {
+    "capture_sha256": "17b3ebb6c88d3043c53d68cdd0c6d68e19f52c307e4e00152343f7c562af610c",
+    "authority": false,
+    "subject": "959fcdaa91a7145bef6591e3af3522bff571c5ea",
+    "stages": [
+      {
+        "stage": "source-controls",
+        "returncode": 0,
+        "elapsed_ms": 2430,
+        "stdout_sha256": "2057d58ed2c89955b2ea275c10156eecfbf05c4db9f54746e0504d72c7d6208e",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack-check",
+        "returncode": 0,
+        "elapsed_ms": 13181,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "source_cases_passed": 77,
+    "tree": "490c5e0ae988f00202766c38d683bb5c269b2431"
   }
 }
