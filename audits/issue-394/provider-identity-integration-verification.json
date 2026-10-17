@@ -75,5 +75,91 @@
       }
     },
     "limits": "Exact integrated source checks; fresh combined installed and canonical prospective/provider proof remain required."
-  }
+  },
+  "four_corrections_admitted_qualification": {
+    "authority": false,
+    "subject": "1fd924d7286a51faa78af877d6c5442c54624541",
+    "tree_sha": "02514730e7b77e7b5a493e7e4bd397780e095659",
+    "source_sha256": {
+      "bcf_governance/tooling/evidence_process_supervisor.py": "71fd1f0627f2556feeaf7cd9c39f7a8c36d2089d3ac4956446abaee78d9b796f",
+      "bcf_governance/tooling/ci_github_identity.py": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+      "bcf_governance/tooling/release_adopter_sources.py": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c",
+      "bcf_governance/tooling/operational_observations.py": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311",
+      "audits/issue-394/workplan.yml": "b7acb09982d118e5d98a0496d6870f3d11cae5029e4326cf2f438973d1500873"
+    },
+    "stages": [
+      {
+        "stage": "bindings",
+        "returncode": 0,
+        "elapsed_ms": 9538,
+        "stdout_sha256": "4875c30fef80275ebe91aba590558fbd396e1d2e88837fc50fd4f12dac53fef9",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "elapsed_ms": 11822,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 4501,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 1252,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 140583,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-profile-package",
+        "returncode": 0,
+        "elapsed_ms": 826609,
+        "stdout_sha256": "5274ea452b4a1e0b98378c0afe60dbc514f528a4245086a561b3d06bbf65906c",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed",
+        "returncode": 0,
+        "elapsed_ms": 195025,
+        "stdout_sha256": "3b7a9eed9ba422cc83d7fd5f8537a429d5a5adb4f16b70544b41d5aace9e1ee8",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 25041,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 661,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T08:04:14.762377+00:00",
+    "ended_at": "2026-10-17T08:24:30.439296+00:00",
+    "returncode": 0,
+    "capture_sha256": "f0a8ab07b04fe69fbaf0ed3291d92344c066bb6141c6d43474080efa2745a5da",
+    "source_profile_package_cases": 1188,
+    "installed_cases": 6,
+    "early_binding_cases": 2,
+    "scope": "Exact1fd combined source/profile/package and fresh-upgrade installed qualification before later timing-only data merge. Actual source distribution build is included; no immutable release or maintained-adopter custody authority."
+  },
+  "next_action": "Use the canonical submit boundary for normalization, fresh exact subject and prospective/provider proof; retain required stale generated-manifest oracle until canonical owner refreshes it."
 }
