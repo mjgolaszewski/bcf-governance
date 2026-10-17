@@ -17,6 +17,7 @@ def test_installed_backtrace_preserves_versioned_structural_scope(
 ):
     data = {
         'backtrace': (ROOT / 'spec/phase0/release-train-backtrace.yml').read_text(),
+        'matrix': (ROOT / 'spec/RELEASE_TRAIN_STATE_DAG.md').read_text(),
         'schema_sha256': hashlib.sha256(
             (ROOT / 'schemas/release-train-backtrace.schema.json').read_bytes(),
         ).hexdigest(),
@@ -41,6 +42,9 @@ payload = yaml.safe_load(data['backtrace'])
 def write(value):
     path.write_text(yaml.safe_dump(value, sort_keys=False))
 write(payload)
+assert validate_ci_state_matrix(root, authored_only=True)['status'] == 'not_applicable_to_adopter'
+# Supply the existing project-owned applicability contract as fixture data.
+(root / 'spec/RELEASE_TRAIN_STATE_DAG.md').write_text(data['matrix'])
 report = validate_ci_state_matrix(root, authored_only=True)
 assert report['authority'] is False and report['execution_qualified'] is False
 population = report['machine_backtrace']
