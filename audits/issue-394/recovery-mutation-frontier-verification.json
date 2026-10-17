@@ -1,6 +1,6 @@
 {
   "authority": false,
-  "status": "focused_tests_passed_broad_installed_checks_pending",
+  "status": "local_scoped_source_and_installed_checks_passed_canonical_proof_pending",
   "subject": "af5229b9d5176102d15687a77a266d80bf617991",
   "tree_sha": "c97cee7190c0c94f2296b6371ff61d6fecd81cd2",
   "source_sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
@@ -25,8 +25,24 @@
   "scope": "Retirement of4 unsupported generic projections;21 existing supported edge values and all function ASTs unchanged",
   "limits": [
     "No full mutation-recovery lifecycle or provider authority qualification.",
+    "Scoped source/native/private checks pass for unchanged implementation; original e639 full-train terminal1 and corrected unrelated backtrace probes are retained separately.",
+    "Fresh canonical whole-candidate proof and complete protected recovery conformance remain required; all82 whole requirements remain open."
+  ],
+  "next_action": "Integrate locally checked source, then run canonical fresh candidate proof; complete concrete recovery/context conformance without generic retry authority.",
+  "joint_qualification": {
+    "subject": "e6391155a9d747c738b53005820597433e8fb45e",
+    "evidence": "audits/issue-394/joint-foundation-e639-qualification.json",
+    "source_cases_passed": 1056,
+    "generic_recovery_installed_cases_passed": 2,
+    "overall_native_returncode": 1,
+    "overall_failure": "Two separate backtrace fixture cases; original failure retained.",
+    "implementation_unchanged_by_fixture_correction": true,
+    "remaining": "Fresh canonical whole-candidate proof and full lifecycle recovery conformance."
+  },
+  "previous_limits": [
+    "No full mutation-recovery lifecycle or provider authority qualification.",
     "Native broad source/private/governance/semantic qualification and integration remain pending.",
     "All82 whole requirements remain open."
   ],
-  "next_action": "After peer native handback, qualify existing concrete consumers, package/private runtimes and required gates before integrating."
+  "previous_next_action": "After peer native handback, qualify existing concrete consumers, package/private runtimes and required gates before integrating."
 }

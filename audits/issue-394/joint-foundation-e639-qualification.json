@@ -144,5 +144,11 @@
     "No whole-requirement, phase, provider or release closure.",
     "Current primary remains328efe40; joint candidate not integrated."
   ],
-  "next_action": "Execute affected fresh/upgrade probes on corrected fixture under a fresh native lease. Preserve unchanged production-source applicability evidence and run fresh canonical candidate proof before submission."
+  "next_action": "Execute affected fresh/upgrade probes on corrected fixture under a fresh native lease. Preserve unchanged production-source applicability evidence and run fresh canonical candidate proof before submission.",
+  "corrected_fixture_disposition": {
+    "evidence": "audits/issue-394/installed-backtrace-e9f-correction.json",
+    "affected_cases_passed": 2,
+    "production_schema_policy_and_unaffected_tests_unchanged": true,
+    "limits": "Original native terminal remains1; fresh canonical candidate proof is required."
+  }
 }
