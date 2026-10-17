@@ -9,7 +9,7 @@ from urllib.request import Request
 
 from .ci_github_downloads import GitHubDownloadKind, build_download_request
 from .provider_read import ProviderReadAttempt, ProviderReadError, open_provider_get
-from .ci_github_response import provider_response_deadline
+from .ci_github_response import provider_response_deadline, valid_provider_byte_limit
 
 
 class GitHubTransportError(ValueError):
@@ -84,8 +84,8 @@ def request_bytes(
 ) -> bytes:
     if not path.startswith("/") or "\n" in path or "\r" in path:
         raise GitHubTransportError("GitHub API path is unsafe")
-    if maximum_bytes < 1:
-        raise GitHubTransportError("GitHub byte response limit must be positive")
+    if not valid_provider_byte_limit(maximum_bytes):
+        raise GitHubTransportError("GitHub byte response limit must be a positive integer")
     request = build_download_request(
         api_url=api_url,
         path=path,

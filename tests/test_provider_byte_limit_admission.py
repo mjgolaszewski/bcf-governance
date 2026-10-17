@@ -1,5 +1,4 @@
 """Byte-budget errors precede filesystem and network allocation."""
-from pathlib import Path
 from types import SimpleNamespace
 
 import pytest

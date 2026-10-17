@@ -1,0 +1,58 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Strict byte-limit admission at five existing GitHub transport/evidence entry points before network or filesystem allocation",
+  "contract": "audits/issue-394/provider-response-bounds-contract.yml",
+  "before": {
+    "failed": 39,
+    "passed": 6,
+    "output_sha256": "d2888fc3c4fac45b44868f32796cc42884528ef68099e1d90b14c9a722862804"
+  },
+  "after": {
+    "affected_source_passed": 193,
+    "output_sha256": "2a2388471ae89f7d999dd7eee54e036a067e5bd5a860c90d36a46e4bade2792a"
+  },
+  "final_checks": {
+    "authority": false,
+    "stages": [
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d"
+      }
+    ]
+  },
+  "source_sha256": {
+    "ci_github_response.py": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+    "ci_github_transport.py": "e7287b57a2e2d5dfbeb5eb1871ad641b5da26e47ed1268dfdffbe74e701e5a9d",
+    "evidence_storage_github_api.py": "3a2cb5dcc5457d80e8264de8dbce32dff99efd308ba64ff19e26f670028f75d2"
+  },
+  "control_sha256": "049ba5dcd2aaafb94b479480ee31930318713c2a6fa7fce01ad1449cea2b219a",
+  "supported_behavior": "Existing positive integer limits, byte caps, streamed write bounds, exact download validation and ordinary CLI grammar retained. Invalid limits raise the existing caller-owned API error.",
+  "limits": [
+    "General JSON response byte cap remains open.",
+    "Source-absent fresh/upgrade installed qualification remains pending.",
+    "Full API/semantic/protected lifecycle and outer pipeline bounds remain open.",
+    "All82 whole requirements remain not_executed; no phase or release authority."
+  ]
+}

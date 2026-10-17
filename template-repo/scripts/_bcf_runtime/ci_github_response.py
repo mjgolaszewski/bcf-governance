@@ -18,6 +18,11 @@ class ProviderResponseError(OSError):
     """A response transport cannot establish its required elapsed bound."""
 
 
+def valid_provider_byte_limit(value):
+    """The caller owns its typed error; no coercion or allocation is permitted."""
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
 def validate_provider_timeout(timeout):
     """Reject unusable elapsed budgets before the caller allocates a request."""
     try:

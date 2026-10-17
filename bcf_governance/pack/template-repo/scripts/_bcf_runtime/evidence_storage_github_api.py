@@ -19,7 +19,7 @@ from .ci_github_downloads import (
     open_download,
 )
 from .provider_read import ProviderReadError, open_provider_get
-from .ci_github_response import provider_response_deadline
+from .ci_github_response import provider_response_deadline, valid_provider_byte_limit
 
 
 EVIDENCE_TAG = re.compile(r"^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$")
@@ -131,6 +131,8 @@ class GitHubEvidenceAPI(GitHubAPI):
         path: Path,
         maximum_bytes: int,
     ) -> dict[str, Any]:
+        if not valid_provider_byte_limit(maximum_bytes):
+            raise GitHubAPIError("evidence asset byte limit must be a positive integer")
         numeric = _positive_id(release_id, field="release ID")
         base = upload_url.split("{", 1)[0]
         expected = (
@@ -185,6 +187,8 @@ class GitHubEvidenceAPI(GitHubAPI):
         destination: Path,
         maximum_bytes: int,
     ) -> None:
+        if not valid_provider_byte_limit(maximum_bytes):
+            raise GitHubAPIError("GitHub evidence download limit must be a positive integer")
         numeric = _positive_id(asset_id, field="release asset ID")
         if destination.exists() or destination.is_symlink():
             raise GitHubAPIError("evidence asset destination must not already exist")
@@ -207,6 +211,8 @@ class GitHubEvidenceAPI(GitHubAPI):
         destination: Path,
         maximum_bytes: int,
     ) -> None:
+        if not valid_provider_byte_limit(maximum_bytes):
+            raise GitHubAPIError("GitHub evidence download limit must be a positive integer")
         numeric = _positive_id(artifact_id, field="Actions artifact ID")
         if destination.exists() or destination.is_symlink():
             raise GitHubAPIError("Actions artifact destination must not already exist")
@@ -229,8 +235,8 @@ class GitHubEvidenceAPI(GitHubAPI):
         destination: Path,
         maximum_bytes: int,
     ) -> None:
-        if maximum_bytes < 1:
-            raise GitHubAPIError("GitHub evidence download limit must be positive")
+        if not valid_provider_byte_limit(maximum_bytes):
+            raise GitHubAPIError("GitHub evidence download limit must be a positive integer")
         request = build_download_request(
             api_url=self._api_url,
             path=path,

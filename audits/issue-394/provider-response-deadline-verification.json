@@ -72,5 +72,17 @@
     "DNS, connection, header setup, retry, filesystem flush and cleanup bounds are not established by this guard.",
     "General JSON byte cap and complete typed dynamic byte-limit admission remain open.",
     "All82 whole requirements remain not_executed; P32 active, P33-P35 dormant."
+  ],
+  "subsequent_dispositions": [
+    {
+      "topic": "Actual TLS chain and interpreter matrix",
+      "disposition": "Three real authenticated local TLS framing cases pass on current interpreter; other supported interpreters remain pending.",
+      "evidence": "audits/issue-394/provider-response-real-tls-verification.json"
+    },
+    {
+      "topic": "Dynamic byte limit admission and JSON cap",
+      "disposition": "Five entry points reject invalid limits before allocation with193 affected source passes; general JSON byte cap remains open.",
+      "evidence": "audits/issue-394/provider-byte-limit-verification.json"
+    }
   ]
 }
