@@ -107,9 +107,11 @@ def test_unqualified_group_inventory_host_blocks_before_allocation(tmp_path, mon
     assert seen == []
 
 
-def test_unstable_process_population_cannot_become_verified_cleanup(tmp_path, monkeypatch):
+@pytest.mark.parametrize('population', [None, ({}, {}), ({'unrelated': 'old'}, {})],
+                         ids=['missing', 'empty', 'missing-anchor'])
+def test_unstable_process_population_cannot_become_verified_cleanup(tmp_path, monkeypatch, population):
     import sys
-    monkeypatch.setattr(execution, '_process_group_snapshot', lambda group: None)
+    monkeypatch.setattr(execution, '_process_group_snapshot', lambda group: population)
     with pytest.raises(execution.EvidenceProcessCleanupError, match='cleanup'):
         execution._run([sys.executable, '-c', "print('done')"], cwd=tmp_path,
                        timeout_seconds=1, cleanup_timeout_seconds=1)

@@ -63,6 +63,7 @@
     ],
     "platform_qualification": "First qualified backend requires Linux procfs plus POSIX wait-without-reap. Other hosts block before namespace/process allocation until their own group inventory is independently qualified; killpg(0) alone cannot distinguish an unreaped zombie leader from live work.",
     "thread_inventory": "Zombie thread-group leaders do not prove their worker threads are terminal. Inventory all thread tasks in the owned ordinary group and reject/retry unstable identity populations within the existing deadline; never infer quiescence from leader state alone.",
-    "interpreter_setup": "Route the existing30-second selected-interpreter metadata subprocess through the same owned command boundary. Compile that setup bound and its cleanup, plus main execution and cleanup and independent headroom. This still excludes namespace/filesystem and other complete-pipeline bounds."
+    "interpreter_setup": "Route the existing30-second selected-interpreter metadata subprocess through the same owned command boundary. Compile that setup bound and its cleanup, plus main execution and cleanup and independent headroom. This still excludes namespace/filesystem and other complete-pipeline bounds.",
+    "anchor_completeness": "A stable inventory still requires the unreaped leader PID and leader task in a terminal state. Empty or missing-anchor snapshots are unknown and cannot authorize success or namespace retirement."
   }
 }
