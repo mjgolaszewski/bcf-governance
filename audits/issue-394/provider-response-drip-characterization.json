@@ -1,0 +1,16 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "subject": "93b553e1fef5da63e6054832a53de6e943d89b51",
+  "source_sha256": "063c1d76a59fe5bb4f093a327e93479f035aa63b3406a50b9d51bb1343470757",
+  "actual_transport": "canonical request_json with local-only injected urllib opener",
+  "socket_inactivity_timeout_seconds": 0.04,
+  "drip_interval_seconds": 0.01,
+  "elapsed_seconds": 0.34825690500019846,
+  "completed_despite_elapsed_exceeding_twice_socket_timeout": true,
+  "cleanup": "server shutdown, socket closed, worker joined",
+  "limits": "Characterizes inactivity versus elapsed time only; no production deadline or performance claim. Canonical timeout passed to injected opener retained separately.",
+  "canonical_requested_timeout_seconds": [
+    30
+  ]
+}
