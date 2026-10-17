@@ -1,0 +1,52 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "source_commit": "349084a78734691f4356d17769a6097fc0f39eab",
+  "scope": "Independent AST census of direct response.read calls; not complete dynamic network-effect conformance",
+  "sites": [
+    {
+      "path": "bcf_governance/tooling/ci_github_api.py",
+      "line": 127,
+      "expression": "response.read(1048577)",
+      "source_sha256": "781f38fe0a1dd04bf67b379848078de72225c6939d14feaa0d9ec13410bb41d5"
+    },
+    {
+      "path": "bcf_governance/tooling/ci_github_transport.py",
+      "line": 57,
+      "expression": "response.read()",
+      "source_sha256": "063c1d76a59fe5bb4f093a327e93479f035aa63b3406a50b9d51bb1343470757"
+    },
+    {
+      "path": "bcf_governance/tooling/ci_github_transport.py",
+      "line": 99,
+      "expression": "response.read(maximum_bytes + 1)",
+      "source_sha256": "063c1d76a59fe5bb4f093a327e93479f035aa63b3406a50b9d51bb1343470757"
+    },
+    {
+      "path": "bcf_governance/tooling/evidence_storage_github_api.py",
+      "line": 162,
+      "expression": "response.read(1048577)",
+      "source_sha256": "4fa1db5e38e0f454951551eed10a8b89ff1d5b9465d2deb2768ae09ae8d9b3ab"
+    },
+    {
+      "path": "bcf_governance/tooling/evidence_storage_github_api.py",
+      "line": 248,
+      "expression": "response.read(1024 * 1024)",
+      "source_sha256": "4fa1db5e38e0f454951551eed10a8b89ff1d5b9465d2deb2768ae09ae8d9b3ab"
+    },
+    {
+      "path": "bcf_governance/tooling/governance_install/release_custody.py",
+      "line": 89,
+      "expression": "response.read(4 * 1024 * 1024 + 1)",
+      "source_sha256": "9d919d61cb5e237ce4b17caa35678345c955d7f69f812570a259d3df627c37ff"
+    },
+    {
+      "path": "bcf_governance/tooling/protection_inspection_client.py",
+      "line": 79,
+      "expression": "response.read(_MAX_RESPONSE + 1)",
+      "source_sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
+    }
+  ],
+  "finding": "Socket inactivity timeouts and byte caps alone do not bound elapsed body consumption under drip-fed responses.",
+  "next_action": "Commit contract before production changes; qualify real delayed and drip-fed responses and installed consumers."
+}

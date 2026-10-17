@@ -1,0 +1,42 @@
+schema_version: '1.0'
+authority: false
+issue: 394
+phase: P32
+workitem: P32-P0-05
+status: authored_contract
+bounded_context: canonical provider transport and response consumption
+layer: infrastructure adapters; existing deadline compiler remains policy owner
+command_query_scope: immutable GET consumption and mutation response observation
+starting_subject: 349084a78734691f4356d17769a6097fc0f39eab
+census: audits/issue-394/provider-response-read-census.json
+problem: Socket inactivity timeouts permit drip-fed bodies to exceed declared elapsed bounds; JSON transport also has an unbounded byte read.
+required_behavior:
+  - Derive finite body-consumption bounds from existing transport timeout policy, without inventing performance objectives.
+  - Preserve exact repository, URL, token forwarding, redirect, digest, size and schema checks.
+  - Account for blocking-read overshoot and setup, retry, cleanup and headroom separately; a clock check after an unbounded read is insufficient.
+  - Reject invalid bounds before opening a connection or allocating expensive proof.
+  - Never retry a mutation because its response timed out; preserve uncertain mutation reconciliation through its existing concrete owner.
+  - Preserve immutable GET retry taxonomy and identity; any new body retry requires explicit qualification.
+  - Cover every independently discovered response-read consumer, including installed custody and streamed evidence.
+  - Keep incomplete or unsupported transport bounds typed and non-authoritative; do not manufacture a successful terminal.
+  - Update runtime deadline floors from mechanically justified bounds before claiming full sibling-consumer coverage.
+expected_controls:
+  - Real local response that drips bytes often enough to avoid socket inactivity timeout must still terminate within the declared conservative elapsed bound.
+  - Delayed headers, stalled body, oversize body, empty body, malformed JSON and partial body have distinct retained outcomes.
+  - Deadline expiry after accepted mutation cannot trigger a second write.
+  - Invalid, nonfinite, negative and boolean limits fail before opener allocation.
+  - Removing a read site and its test together cannot erase independent inventory obligations.
+  - Existing authenticated redirect, release digest, provider identity and retry controls remain effective.
+  - Fresh and upgrade installations run source-absent probes of the actual shared bounded reader.
+implementation_sequence:
+  - Characterize real transport behavior and supported response protocols before selecting cancellation or chunking mechanics.
+  - Commit failing cause-specific controls before production changes.
+  - Extend existing provider transport owners; add no broker, parallel deadline policy, evaluator or receipt family.
+  - Synchronize canonical template runtimes and qualify affected consumers before integration.
+forbidden_surfaces:
+  - Primary successor bytes while canonical submission is active.
+  - Maintained adopter installations and immutable predecessor custody.
+  - Provider status identities, ordinary CLI grammar and release authority separation.
+limits:
+  - This contract and AST census do not prove dynamic network-effect completeness or deadline conformance.
+  - Full lifecycle, outer pipeline bounds and approved performance targets remain separate open obligations.
