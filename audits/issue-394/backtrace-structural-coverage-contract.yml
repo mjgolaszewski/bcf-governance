@@ -40,3 +40,12 @@ forbidden:
 - Treating schema closure as complete lifecycle context or runtime effect conformance.
 - Generated workflow or authority pin edits, maintained adopters, immutable predecessor bytes and parallel registries/evaluators.
 next_action: Commit contract and genuine structural rejection tests before production/schema changes; all82 whole requirements remain open.
+
+installed_fixture_correction:
+  actual_evidence: audits/issue-394/joint-foundation-e639-qualification.json
+  cause: Probe supplied the backtrace without its existing DAG applicability artifact and assumed an ordinary-adopter not-applicable result carried authority metadata.
+  contract:
+  - Assert unchanged ordinary-adopter non-applicability before installing fixture-owned contract data.
+  - Materialize the complete canonical DAG reference as fixture data alongside the versioned backtrace; do not invent policy or relax production applicability.
+  - Reexecute both fresh and upgrade source-absent probes with existing positive, primitive/root/state rejection and legacy-scope assertions intact.
+  - Compare runtime, schema and unaffected test inputs to exact failed subject before treating prior scoped passes as applicable; fresh canonical proof remains required.

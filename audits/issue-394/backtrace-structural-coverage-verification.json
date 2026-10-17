@@ -40,5 +40,12 @@
     "Full source/profile/private-installed/governance/semantic qualification and integration remain pending.",
     "All82 whole requirements remain open; no P33 activation or release certification."
   ],
-  "next_action": "After actual peer terminal and native admission, qualify complete affected suites and installed consumers, then integrate only qualified source. Continue full protected context/effect populations."
+  "next_action": "After actual peer terminal and native admission, qualify complete affected suites and installed consumers, then integrate only qualified source. Continue full protected context/effect populations.",
+  "joint_e639_disposition": {
+    "status": "source_and_early_gates_passed_installed_fixture_failed",
+    "evidence": "audits/issue-394/joint-foundation-e639-qualification.json",
+    "source_cases_passed": 1056,
+    "installed_fixture_failures": 2,
+    "correction": "Supply complete applicable fixture data and prove ordinary non-applicability first; production guard unchanged."
+  }
 }

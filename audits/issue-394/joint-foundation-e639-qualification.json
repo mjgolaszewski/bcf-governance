@@ -1,0 +1,148 @@
+{
+  "authority": false,
+  "status": "qualification_incomplete_installed_fixture_correction_required",
+  "subject": "e6391155a9d747c738b53005820597433e8fb45e",
+  "tree_sha": "fb891a1ca89137d9a3e4f81b064f2538f611069e",
+  "native_returncode": 1,
+  "ended_at": "2026-10-17T16:58:08.309070+00:00",
+  "raw_tracker_sha256": "698ed3c69ac4e765eecf7fdf4d7911faa05d86bccc0c13b38d22b69293864a12",
+  "stages": [
+    {
+      "name": "authored",
+      "started_at": "2026-10-17T16:46:35.820234+00:00",
+      "returncode": 0,
+      "elapsed_ms": 2055,
+      "ended_at": "2026-10-17T16:46:37.875942+00:00",
+      "streams": {
+        "stdout_sha256": "8fbdf197b135ebd23ad9f5f5f782abc4b461fb2020b712f34951109dedbeca38",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "collection",
+      "started_at": "2026-10-17T16:46:37.898441+00:00",
+      "returncode": 0,
+      "elapsed_ms": 3366,
+      "ended_at": "2026-10-17T16:46:41.265938+00:00",
+      "streams": {
+        "stdout_sha256": "3399080dea39dfbff0109adf089bd41579018bbec57b423b4477ecaa6ec21251",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "pack",
+      "started_at": "2026-10-17T16:46:41.322228+00:00",
+      "returncode": 0,
+      "elapsed_ms": 13063,
+      "ended_at": "2026-10-17T16:46:54.385934+00:00",
+      "streams": {
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "lint",
+      "started_at": "2026-10-17T16:46:54.407581+00:00",
+      "returncode": 0,
+      "elapsed_ms": 4706,
+      "ended_at": "2026-10-17T16:46:59.113935+00:00",
+      "streams": {
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "typecheck",
+      "started_at": "2026-10-17T16:46:59.134020+00:00",
+      "returncode": 0,
+      "elapsed_ms": 1258,
+      "ended_at": "2026-10-17T16:47:00.393409+00:00",
+      "streams": {
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "governance",
+      "started_at": "2026-10-17T16:47:00.414618+00:00",
+      "returncode": 0,
+      "elapsed_ms": 31220,
+      "ended_at": "2026-10-17T16:47:31.635101+00:00",
+      "streams": {
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "exposure",
+      "started_at": "2026-10-17T16:47:31.654406+00:00",
+      "returncode": 0,
+      "elapsed_ms": 747,
+      "ended_at": "2026-10-17T16:47:32.401398+00:00",
+      "streams": {
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "structural",
+      "started_at": "2026-10-17T16:47:32.420192+00:00",
+      "returncode": 0,
+      "elapsed_ms": 7354,
+      "ended_at": "2026-10-17T16:47:39.774250+00:00",
+      "streams": {
+        "stdout_sha256": "3cf21b916026d9bdf5505677d70e1415dfb908088c33333bdefe35727ce62fce",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "semantic",
+      "started_at": "2026-10-17T16:47:39.794409+00:00",
+      "returncode": 0,
+      "elapsed_ms": 168697,
+      "ended_at": "2026-10-17T16:50:28.491716+00:00",
+      "streams": {
+        "stdout_sha256": "f527f34ef306730797f2d6bf647847a37837f917d17506f25a74c7d1a61fe7f8",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "source",
+      "started_at": "2026-10-17T16:50:28.509435+00:00",
+      "returncode": 0,
+      "elapsed_ms": 242720,
+      "ended_at": "2026-10-17T16:54:31.230307+00:00",
+      "streams": {
+        "stdout_sha256": "dae587210aeadae15255fde828ec1ae402634aa7a1683877d6f7d4bc558e0a29",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    {
+      "name": "installed",
+      "started_at": "2026-10-17T16:54:31.251154+00:00",
+      "returncode": 1,
+      "elapsed_ms": 217038,
+      "ended_at": "2026-10-17T16:58:08.290128+00:00",
+      "streams": {
+        "stdout_sha256": "ed516b4b345279afb1d22ecda6227bf07560541c32e330c971b13ee517943572",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  ],
+  "source_cases_passed": 1056,
+  "structural_cases_passed": 7,
+  "collected_selected_nodes": 1069,
+  "installed_cases_passed": 6,
+  "installed_cases_failed": 2,
+  "failed_cases": [
+    "tests.test_installed_backtrace_structural_coverage::test_installed_backtrace_preserves_versioned_structural_scope[fresh]",
+    "tests.test_installed_backtrace_structural_coverage::test_installed_backtrace_preserves_versioned_structural_scope[upgrade]"
+  ],
+  "cause": "Both installed fixtures contain backtrace and matching schema but no DAG matrix or self policy. Existing ordinary-adopter applicability correctly returns not_applicable_to_adopter; the probe indexes absent authority metadata.",
+  "disposition": "Correct fixture context with complete canonical DAG data and assert ordinary not-applicable behavior before enabling the fixture. Do not relax production applicability. Retain this terminal1 and all raw streams.",
+  "limits": [
+    "No whole-requirement, phase, provider or release closure.",
+    "Current primary remains328efe40; joint candidate not integrated."
+  ],
+  "next_action": "Execute affected fresh/upgrade probes on corrected fixture under a fresh native lease. Preserve unchanged production-source applicability evidence and run fresh canonical candidate proof before submission."
+}
