@@ -309,6 +309,7 @@ def test_release_assets_require_exact_wheel_sdist_and_digests(tmp_path: Path) ->
 def test_archive_projection_cannot_replace_complete_build_inventory(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
     assets = tmp_path / "assets"
     assets.mkdir()
     archive_digests = _assets(assets)
@@ -582,6 +583,9 @@ def test_provider_selection_rejects_resources_before_first_allocation(tmp_path, 
     monkeypatch.setenv('GITHUB_TOKEN', 'test-only')
     if defect == 'missing-token':
         monkeypatch.delenv('GITHUB_TOKEN')
+        def forbidden_asset_read(*_args):
+            raise AssertionError('missing credential reached asset reads')
+        monkeypatch.setattr(qualification, '_release_assets', forbidden_asset_read)
     monkeypatch.setattr(GitHubAPI, '_request', request)
     monkeypatch.setattr(qualification, 'load_contract', lambda _root: contract)
     monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
