@@ -266,7 +266,58 @@ def compile_edge_contracts(graph: dict[str, Any]) -> tuple[EdgeContract, ...]:
             raise CIGraphError(
                 f"unreachable CI graph edge {contract.producer} -> {contract.consumer} lacks an exclusion"
             )
-    return tuple(contracts)
+    result = tuple(contracts)
+    validate_edge_population(graph, result)
+    return result
+
+
+def validate_edge_population(
+    graph: dict[str, Any], contracts: tuple[EdgeContract, ...],
+) -> None:
+    """Check the consumed population against nodes, independently of edge rows.
+
+    The graph owner validates the canonical input first. This check protects the
+    producer and its consumer separately: deleting producer output and its own
+    assertion cannot erase a required node pair at the consuming boundary.
+    It proves pair coverage and disposition shape, not runtime applicability or
+    the semantic reachability of an independently forged exclusion.
+    """
+    nodes = [_node(workflow, job) for workflow in graph['workflows']
+             for job in workflow['jobs']]
+    if len(nodes) != len(set(nodes)):
+        raise CIGraphError('CI edge population has ambiguous workflow/job identity')
+    expected = {(producer, consumer) for producer in nodes for consumer in nodes
+                if producer != consumer}
+    if any(not isinstance(row, EdgeContract) for row in contracts):
+        raise CIGraphError('CI edge population contains an invalid contract')
+    if any(not isinstance(value, str) or not value
+           for row in contracts for value in (row.producer, row.consumer)):
+        raise CIGraphError('CI edge population contains an invalid node identity')
+    pairs = [(row.producer, row.consumer) for row in contracts]
+    if len(pairs) != len(set(pairs)):
+        raise CIGraphError('CI edge population contains duplicate pairs')
+    if set(pairs) != expected:
+        raise CIGraphError('CI edge population differs from canonical workflow/job pairs')
+    exclusions = {'reverse_dependency', 'profile_lane_disconnected', 'no_dependency_or_event_path'}
+    for row in contracts:
+        if type(row.reachable) is not bool:
+            raise CIGraphError('CI edge population reachability must be boolean')
+        if row.reachable:
+            if row.exclusion_reason is not None:
+                raise CIGraphError('CI edge population reachable pair has an exclusion')
+            if any(not isinstance(value, str) or not value for value in (
+                row.mechanism, row.subject_binding, row.custody, row.applicability,
+                row.lifecycle, row.authority, row.failure_semantics,
+            )):
+                raise CIGraphError('CI edge population reachable contract is incomplete')
+        else:
+            if not isinstance(row.exclusion_reason, str) or row.exclusion_reason not in exclusions:
+                raise CIGraphError('CI edge population has an unknown exclusion')
+            if any(value is not None for value in (
+                row.mechanism, row.subject_binding, row.custody, row.applicability,
+                row.lifecycle, row.authority, row.failure_semantics,
+            )) or row.artifacts or row.permissions:
+                raise CIGraphError('CI edge population excluded pair has reachable effects')
 
 
 def validate_authority_separation(
