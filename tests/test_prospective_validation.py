@@ -1388,6 +1388,8 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
     preflight_expectations: list[str | None] = []
 
     def run_preflight(*_args: object, **kwargs: object) -> dict:
+        assert kwargs.get("provider_api") is api
+        assert kwargs.get("repository") == ("owner/repo" if bound_context else None)
         expectation = kwargs.get("controller_state_expectation")
         assert expectation is None or isinstance(expectation, str)
         preflight_expectations.append(expectation)
