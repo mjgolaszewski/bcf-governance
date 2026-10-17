@@ -1,4 +1,19 @@
 schema_version: '1.0'
+private_runtime_schema_projection:
+  context: Existing CI authority query and canonical installation projection
+  side: query; generation remains owned by build_pack_manifest.py
+  problem: Standalone private runtime cannot resolve SDK-only packaged schema location.
+  required_behavior:
+    - Preserve SDK schema authority at its existing packaged template root.
+    - Project the complete existing canonical schema population into private runtime resources through the existing generator and manifest.
+    - Select private schema resources from the loaded private module; never discover caller, checkout or current-working-directory schemas.
+    - Missing owned resources fail closed even when candidate schemas exist and accept arbitrary documents.
+    - Qualify actual protected phase queries and schema rejection with SDK absent in fresh and upgrade source installations.
+    - Keep installed runtime resources framework owned under existing installation and upgrade ownership.
+  target_modules: [bcf_governance/tooling/ci_github_authority.py, .github/scripts/build_pack_manifest.py]
+  forbidden_surfaces: [candidate schema fallback, new schema registry, workflow or authority pins, lifecycle status promotion]
+  expected_tests: [private module resource binding, canonical population parity, candidate schema substitution, missing resources, protected no-parent phase query, fresh and upgrade SDK-absent consumers]
+  limits: Source installation is distinct from wheel/sdist, all profiles, real adopter and full parent-proof qualification.
 authority: false
 phase: P32
 workitems: [P32-P0-03, P32-P0-04]
