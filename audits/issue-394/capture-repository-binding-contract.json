@@ -9,7 +9,13 @@
     "bcf_governance/tooling/operational_observations.py",
     "tests/test_operational_observations.py"
   ],
-  "invariants": ["I03", "I18", "I21", "AC07", "AC30"],
+  "invariants": [
+    "I03",
+    "I18",
+    "I21",
+    "AC07",
+    "AC30"
+  ],
   "contract": [
     "For local captures, every explicitly declared repository name or repository ID in the retained source snapshot and producer must agree exactly with the observation.",
     "A self-consistent source digest cannot repair a contradictory repository label or substitute float/bool/string IDs for the observation's positive integer identity.",
@@ -33,5 +39,19 @@
     "New source authentication or matched/statistical performance claims",
     "Provider writes, maintained adopters or immutable custody mutation"
   ],
-  "integration": "Isolated until the active primary transaction has an authenticated terminal and scoped source/runtime parity passes. All whole requirements stay open."
+  "integration": "Isolated until the active primary transaction has an authenticated terminal and scoped source/runtime parity passes. All whole requirements stay open.",
+  "installed_verification": {
+    "consumer": "tests/test_installed_evidence_storage.py::exercise_installed_consumer",
+    "profiles": [
+      "fresh",
+      "upgrade"
+    ],
+    "contract": [
+      "Extend the existing combined installed consumer probe; source package absent under isolated Python.",
+      "Consume immutable original capture JSON as input data, not source imports; read schemas from the actual installed consumer.",
+      "Accept the unchanged legacy capture, reject each contradictory source/producer identity type and preserve authority false.",
+      "Keep real compiler, durable evidence, archive/ref negative controls and schema preservation in the same existing fixture."
+    ],
+    "execution": "Defer full installed execution until actual primary transaction terminal and native admission."
+  }
 }
