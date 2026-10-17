@@ -162,3 +162,42 @@ assert not marker.exists()
         capture_output=True, text=True, timeout=5)
     assert result.returncode == 0, result.stdout + result.stderr
     assert not marker.exists()
+
+
+def test_owned_command_completion_is_independent_of_foreign_process_births(tmp_path, monkeypatch):
+    """Introduce real unrelated children between unmodified inventory reads."""
+    from bcf_governance.tooling import evidence_execution
+
+    original = evidence_execution._process_group_snapshot
+    foreign = []
+    calls = 0
+
+    def snapshot(group):
+        nonlocal calls
+        observed = original(group)
+        calls += 1
+        if calls % 2:
+            foreign.append(subprocess.Popen(
+                [sys.executable, '-c', 'import time;time.sleep(20)'],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                start_new_session=True,
+            ))
+        else:
+            child = foreign.pop()
+            child.kill()
+            child.wait(timeout=2)
+        return observed
+
+    monkeypatch.setattr(evidence_execution, '_process_group_snapshot', snapshot)
+    try:
+        result = evidence_execution._run(
+            [sys.executable, '-c', "print('owned-command-completed')"],
+            cwd=tmp_path, timeout_seconds=1, cleanup_timeout_seconds=1,
+        )
+        assert (result.returncode, result.stdout, result.stderr) == (
+            0, 'owned-command-completed\n', '',
+        )
+    finally:
+        for child in foreign:
+            child.kill()
+            child.wait(timeout=2)
