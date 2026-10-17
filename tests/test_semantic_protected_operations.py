@@ -346,14 +346,18 @@ def test_authored_query_checks_python_without_foreign_compiler_and_preserves_ful
         owner.validate_application_operations(root, facts)
 
 
-def test_authored_query_cannot_hide_malformed_foreign_registry_structure(inputs, monkeypatch):
+@pytest.mark.parametrize('defect', ['duplicate_id', 'query_mutation'])
+def test_authored_query_cannot_hide_malformed_foreign_registry_structure(inputs, monkeypatch, defect):
     from bcf_governance.tooling import semantic_ownership_scan as scan
     from bcf_governance.tooling.semantic_ownership_registry import SemanticOwnershipRegistryError
 
     root, _ = _authored_query_inputs(inputs, monkeypatch)
     _add_foreign_population(inputs[2])
     payload = yaml.safe_load(inputs[2].read_text())
-    payload['operations'][1]['id'] = payload['operations'][0]['id']
+    if defect == 'duplicate_id':
+        payload['operations'][1]['id'] = payload['operations'][0]['id']
+    else:
+        payload['operations'][1]['authoritative_mutation'] = True
     inputs[2].write_text(yaml.safe_dump(payload, sort_keys=False))
     with pytest.raises(SemanticOwnershipRegistryError, match='authored application operations failed'):
         scan.validate_authored_semantic_ownership(root)
