@@ -288,6 +288,9 @@ class FakeAPI:
         return tuple(sorted((path, self.content(repository, path, ref=self.main).blob_oid)
                             for path in self.lifecycle_documents))
 
+    def complete_tree_with_modes(self, repository: str, tree_sha: str):
+        return tuple((path, oid, "100644") for path, oid in self.complete_tree(repository, tree_sha))
+
     def compare_commits(self, repository: str, *, base: str, head: str):
         assert repository == "owner/repo"
         known = base == head or (base == SHA_A and head == SHA_B)

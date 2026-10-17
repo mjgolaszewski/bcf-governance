@@ -103,3 +103,16 @@ def test_finalizer_requires_independent_parent_certificate(tmp_path, monkeypatch
     with pytest.raises(GitHubControllerError):
         _finalize(api, tmp_path)
     assert not (tmp_path / "bundle").exists()
+
+
+def test_finalizer_rejects_nonregular_lifecycle_blob_even_when_bytes_and_oid_match(tmp_path, monkeypatch):
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    original = api.complete_tree_with_modes
+    def inventory(repository, tree):
+        return tuple((path, oid, "120000" if path == "plans/phase-01-workitems.yml" else mode)
+                     for path, oid, mode in original(repository, tree))
+    monkeypatch.setattr(api, "complete_tree_with_modes", inventory)
+    with pytest.raises(GitHubControllerError, match="regular"):
+        _finalize(api, tmp_path)
+    assert not (tmp_path / "bundle").exists()
