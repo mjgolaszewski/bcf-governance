@@ -53,3 +53,15 @@ forbidden:
 - Editing maintained adopters, immutable predecessor bytes, generated workflows or authority pins.
 - Treating caller booleans, bus reports, authored DONE or absence of observations as independent authority.
 next_action: Characterize existing full compiler, then perform one behavior-preserving pure extraction before population implementation.
+
+first_population_consumer:
+  scope: Existing compiled CI node-pair population, independently checked at consuming graph boundary before timeout/resource/authority evaluation
+  owner: bcf_governance/tooling/ci_graph_edges.py
+  consumer: bcf_governance/tooling/ci_graph_contracts.py::validate_ci_graph
+  tests: tests/test_ci_graph_edge_population.py
+  requirements:
+  - Derive the entire ordered distinct-node universe from canonical workflow/job inventory, independently of proposed edge rows and their tests.
+  - Reject omitted, invented, duplicate or self pairs and ambiguous node identity at the consuming boundary, even if the producer and its own checks omit an edge together.
+  - Reject contradictory reachable/excluded dispositions and unknown exclusion classes before downstream validation or allocation.
+  - Preserve valid ordinary graph outputs and existing CLI/schema contracts; keep the graph consumer within800 lines.
+  - This closes compiled CI pair population only; complete lifecycle contexts, source/runtime conformance and all82 whole requirements remain open.
