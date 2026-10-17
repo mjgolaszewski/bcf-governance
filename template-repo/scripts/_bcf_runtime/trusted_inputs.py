@@ -144,16 +144,36 @@ def verify_phase_closure_input(
 
 def verify_required_phase_closure_inputs(
     api: GitHubAPI, *, repository: str, phase_id: str,
+    policy_subject: MainIdentity | None = None,
 ) -> tuple[MainIdentity, dict[str, tuple[ProviderArtifact, CertificationVerification, bytes]]]:
     """Derive and verify the protected plan's complete predecessor population."""
 
     if not isinstance(phase_id, str) or re.fullmatch(r"P[0-9]+", phase_id) is None:
         raise GitHubControllerError("phase prerequisite target is invalid")
+    if policy_subject is not None:
+        if not isinstance(policy_subject, MainIdentity):
+            raise GitHubControllerError("admitted phase policy subject is invalid")
+        exact_sha(policy_subject.checkout_sha, field="admitted phase policy commit")
+        exact_sha(policy_subject.tree_sha, field="admitted phase policy tree")
     packaged_repo_root()
     current = resolve_main(api, repository)
+    selected = policy_subject if policy_subject is not None else current
+    if selected != current:
+        if (selected.repository_id != current.repository_id
+                or selected.default_branch != current.default_branch):
+            raise GitHubControllerError("admitted phase policy repository/default is contradictory")
+        commit = api.commit(repository, selected.checkout_sha)
+        tree = commit.get("tree")
+        if (commit.get("sha") != selected.checkout_sha or not isinstance(tree, dict)
+                or tree.get("sha") != selected.tree_sha):
+            raise GitHubControllerError("admitted phase policy source is not exact")
+        if not github_is_ancestor(
+            api, repository, base=selected.checkout_sha, head=current.checkout_sha,
+        ):
+            raise GitHubControllerError("admitted phase policy is outside default-branch lineage")
     documents: dict[str, dict[str, Any]] = {}
     for path in ("plans/build-plan.yml", "plans/phase-ledger.yml", "plans/phase-history.yml"):
-        content = api.content(repository, path, ref=current.checkout_sha)
+        content = api.content(repository, path, ref=selected.checkout_sha)
         if content.path != path:
             raise GitHubControllerError("protected lifecycle document path is not exact")
         documents[path] = _mapping(content.content, label=f"protected {path}")
@@ -182,7 +202,7 @@ def verify_required_phase_closure_inputs(
         if predecessor == active["id"]:
             if retained:
                 raise GitHubControllerError("active phase prerequisite has contradictory retained history")
-            subjects[predecessor] = current.checkout_sha, current.tree_sha
+            subjects[predecessor] = selected.checkout_sha, selected.tree_sha
             continue
         if len(retained) != 1:
             raise GitHubControllerError("phase prerequisite history locator is missing or ambiguous")
@@ -206,7 +226,7 @@ def verify_required_phase_closure_inputs(
     }
     if resolve_main(api, repository) != current:
         raise GitHubControllerError("protected phase dependency frontier moved")
-    return current, inputs
+    return selected, inputs
 
 
 def verify_trusted_input(

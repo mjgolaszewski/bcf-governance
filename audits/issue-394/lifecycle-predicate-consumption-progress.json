@@ -238,5 +238,11 @@
       "governance.cli.truth.v1"
     ],
     "authority": false
+  },
+  "admitted_phase_policy_query": {
+    "verification": "audits/issue-394/phase-policy-subject-verification.json",
+    "affected_passed": 95,
+    "cause_controls": 6,
+    "authority": false
   }
 }

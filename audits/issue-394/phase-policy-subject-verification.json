@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "admitted_policy_query_qualified_finalizer_wiring_pending",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "source_base_commit": "15287134",
+  "initial_controls_failed": 8,
+  "first_focused_passed": 54,
+  "expanded_results_retained": [
+    {
+      "passed": 93,
+      "failed": 1
+    },
+    {
+      "passed": 94,
+      "failed": 1
+    }
+  ],
+  "fixture_correction": "The advanced-default fixture modeled commits A and current C but omitted admitted B. Added only the exact B provider commit/tree; production guards unchanged.",
+  "final_affected_passed": 95,
+  "architecture_passed": 5,
+  "scope": [
+    "Authenticate asserted admitted policy subject repository/default, exact provider commit/tree and default lineage before lifecycle reads.",
+    "Read all lifecycle policy at selected admitted source while pinning current protected frontier independently.",
+    "Consume actual normalized predecessor certificate after default advances, including active predecessor at admitted source.",
+    "Preserve current-default caller behavior and reject malformed/caller-boolean/rewritten/foreign/nonlineage/moving facts."
+  ],
+  "cause_controls": {
+    "selection": {
+      "mutant": "selection",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "identity": {
+      "mutant": "identity",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "exact": {
+      "mutant": "exact",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "lineage": {
+      "mutant": "lineage",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "frontier": {
+      "mutant": "frontier",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "active_coordinates": {
+      "mutant": "active_coordinates",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    }
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/trusted_inputs.py": "ecef5636b2947db1c8f28a6c3a1e2755dc2811ced8fe6f5ee0066297db58d64d"
+  },
+  "source_lines": 265,
+  "raw_output_sha256": {
+    "phase-policy-subject-affected.stdout": "80c925c3fb77cb41964f2488f7a2e4c04876ba60784abbea73b38c393cd4444e",
+    "phase-policy-subject-architecture.stdout": "3a29287adcd5010bde66d34b4bbe6b91dd5d2641d0bf56a0bf36907f855e470e",
+    "phase-policy-subject-cause-active_coordinates.stdout": "2a36189dc6c8b91a714d5875f921e6805e6b112a5f035e479cf72f502360b26f",
+    "phase-policy-subject-cause-exact.stdout": "1dce45b2009beb279003240bfad67a0e3af4d46c6e2da472aa72d7009b01454f",
+    "phase-policy-subject-cause-frontier.stdout": "fe42546910d8541744c68c3dbc79c5fc8a155168731930464dc81ccc0ee7c851",
+    "phase-policy-subject-cause-identity.stdout": "39e05f4ef36e04b4b1463d2902281f5c826258f1c36b206d1c840d9feba4098a",
+    "phase-policy-subject-cause-lineage.stdout": "9732dcdc57d621bb2e248d96f56c907dd625e33a0973812d3d3b7fe376938a9f",
+    "phase-policy-subject-cause-selection.stdout": "703fb8745502cd3142d5bb6c002f305c4c147059053959c3e2b607ae0740b48d",
+    "phase-policy-subject-complete-affected.stdout": "8c1015a0d846b358549c974cdd4a9ac2b074976fbe0ba619e43f43ba5f0490aa",
+    "phase-policy-subject-corrected-affected.stdout": "7df73df8467b2f43be53494f5fca04088b88c2306bdef517af29c85eb3b5693f",
+    "phase-policy-subject-focused.stdout": "634a12750ccb1522c04b0b9f2007cbc32e49b15adcd6607dc28b32358d83a11e",
+    "phase-policy-subject-initial-red.stdout": "3cf6ba0ea46a2744d85608e8114c422438e0082df7eb1b7f4022a5019a5436c3",
+    "phase-policy-subject-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-policy-subject-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "phase-policy-subject-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "phase-policy-subject-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_passed": 5,
+    "governance": 0,
+    "pack_parity": 0
+  },
+  "limits": [
+    "Independent exact-main finalizer has not yet derived/consumed this policy subject; source query alone grants no certification.",
+    "Installed/runtime and final composed qualification remain required.",
+    "All82 whole requirements and38 slice records remain unchanged; P33-P35 dormant."
+  ]
+}

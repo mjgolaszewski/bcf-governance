@@ -85,6 +85,13 @@ def test_admitted_policy_does_not_hide_moving_current_frontier(admitted_policy, 
 def test_historical_policy_consumes_real_predecessor_bundle_after_default_advances(protected_population, monkeypatch):
     api, _, calls = protected_population
     api.main = "c" * 40
+    original_commit = api.commit
+    def commit(repository, sha):
+        if sha == SHA_B:
+            assert repository == "owner/repo"
+            return {"sha": SHA_B, "tree": {"sha": TREE}}
+        return original_commit(repository, sha)
+    monkeypatch.setattr(api, "commit", commit)
     original = api.compare_commits
     def compare(repository, *, base, head):
         if base == SHA_B:
@@ -120,3 +127,24 @@ def test_asserted_authority_is_not_a_policy_subject(admitted_policy, subject):
             api, repository="owner/repo", phase_id="P01", policy_subject=subject,
         )
     assert calls == [] and api.reads == 0
+
+
+def test_active_predecessor_uses_admitted_subject_not_new_default(admitted_policy, monkeypatch):
+    api, subject, _ = admitted_policy
+    original = api.content
+    def content(repository, path, *, ref):
+        if ref == SHA_A and path == "plans/build-plan.yml":
+            raw = yaml.safe_dump({"phase_sequence": [
+                {"phase_id": "P01", "hard_dependencies": []},
+                {"phase_id": "P02", "hard_dependencies": ["P01"]},
+            ]}).encode()
+            return GitHubContent(path, hashlib.sha1(raw).hexdigest(), raw)
+        return original(repository, path, ref=ref)
+    monkeypatch.setattr(api, "content", content)
+    selected, inputs = trusted_inputs.verify_required_phase_closure_inputs(
+        api, repository="owner/repo", phase_id="P02", policy_subject=subject,
+    )
+    assert selected == subject and api.main == SHA_B
+    assert list(inputs) == ["P01"]
+    assert inputs["P01"][1].computed_state == "certified"
+    assert inputs["P01"][2] == api.archive and api.reads == 1
