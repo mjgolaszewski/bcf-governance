@@ -171,6 +171,9 @@ def _run_prospective_train(
 
     root = repo_root.resolve()
     context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
+    if repository is not None and context.repository is not None and repository != context.repository:
+        raise ProspectiveValidationError("prospective repository disagrees with authenticated context")
+    phase_repository = context.repository or repository
     effective_validation_lane = derive_local_validation_lane(
         root,
         context,
@@ -208,7 +211,8 @@ def _run_prospective_train(
             subject_commit=subject_commit,
         )
         validate_evaluation_authored_ready(
-            root, intent=requested_scope.intent.value, target=requested_scope.target_id
+            root, intent=requested_scope.intent.value, target=requested_scope.target_id,
+            provider_api=provider_api, repository=phase_repository,
         )
     except (EvaluationScopeError, WorkitemContractError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
@@ -547,7 +551,10 @@ def _run_prospective_train(
             )
             truth_started = time.monotonic_ns()
             pr_truth = _require_truth(
-                derive_truth(root, session_root, evaluation_mode="pr"),
+                derive_truth(
+                    root, session_root, evaluation_mode="pr",
+                    provider_api=provider_api, repository=phase_repository,
+                ),
                 boundary="PR truth",
             )
             pr_truth_duration = _elapsed_ms(truth_started)
@@ -590,6 +597,7 @@ def _run_prospective_train(
                     session_root,
                     evaluation_mode=post_merge_mode,
                     evaluation_target=post_merge_target,
+                    provider_api=provider_api, repository=phase_repository,
                 ),
                 boundary="post-merge semantic truth projection",
             )
@@ -735,7 +743,8 @@ def run_prospective_train(
             subject_commit=subject_commit,
         )
         validate_evaluation_authored_ready(
-            require_clean_candidate_root(repo_root, runner=runner), intent=requested_scope.intent.value, target=requested_scope.target_id
+            require_clean_candidate_root(repo_root, runner=runner), intent=requested_scope.intent.value, target=requested_scope.target_id,
+            provider_api=provider_api, repository=repository,
         )
     except (EvaluationScopeError, WorkitemContractError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc

@@ -33,7 +33,7 @@
     "lifecycle-mandatory-predicates-focused.stdout": "adf05ced3f78f0ef69a6e00398bd51daced8df1829421effe664ceb7c23b41cf",
     "lifecycle-mandatory-predicates-consumers.stdout": "997d8820061382da78010f1957af065734aaf8395ff8116be3db3f0043d4c6a9"
   },
-  "next_action": "Deconstruct the800-line local prospective owner before forwarding authenticated provider context; qualify ordinary CLI/exact-main and installed consumers. Then complete full protected lifecycle populations and runtime conformance. Missing authority must remain unverified.",
+  "next_action": "Forward authenticated context through ordinary CLI/exact-main consumers; qualify installed/runtime parity and semantic operations before integration. Then complete protected lifecycle populations and runtime conformance.",
   "limits": [
     "No whole requirement closure or P33 activation.",
     "Actual phase predicates are now consumed; structural governance can pass without granting closure. Submission and installed authority forwarding remain unqualified."
@@ -203,6 +203,16 @@
     "source_lines": 784,
     "telemetry_lines": 76,
     "remaining_use_case_ast_identical": true,
-    "phase_context_forwarding": "not_implemented"
+    "phase_context_forwarding": "source_qualified_four_boundaries"
+  },
+  "historical_next_actions": [
+    "Deconstruct the800-line local prospective owner before forwarding authenticated provider context; qualify ordinary CLI/exact-main and installed consumers. Then complete full protected lifecycle populations and runtime conformance. Missing authority must remain unverified."
+  ],
+  "local_phase_forwarding": {
+    "verification": "audits/issue-394/local-phase-forwarding-verification.json",
+    "affected_passed": 319,
+    "cause_controls": 6,
+    "source_lines": 793,
+    "authority": false
   }
 }

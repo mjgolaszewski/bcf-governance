@@ -235,6 +235,7 @@ workitems:
     - audits/issue-394/truth-workflow-extraction-verification.json
     - audits/issue-394/phase-consumer-verification.json
     - audits/issue-394/local-progress-extraction-verification.json
+    - audits/issue-394/local-phase-forwarding-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

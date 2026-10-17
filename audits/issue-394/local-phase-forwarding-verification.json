@@ -1,0 +1,90 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_forwarding_qualified_integration_pending",
+  "source_base_commit": "0a040c6a",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "initial_control_results": {
+    "failed": 5,
+    "passed": 1
+  },
+  "focused_passed": 12,
+  "affected_passed": 319,
+  "architecture_passed": 5,
+  "forwarding_boundaries": [
+    "public pre-lease readiness",
+    "inner readiness",
+    "PR truth",
+    "post-merge bounded truth"
+  ],
+  "repository_binding": "Authenticated context repository remains separate from the managed workflow selector; contradictory explicit identity blocks before phase acquisition.",
+  "real_consumer_scope": "Normalized provider finalizer phase bundle is consumed through actual public readiness before intercepted gate; missing authority cannot allocate. Full walk truth-port checks are spies, not independently executed truth.",
+  "cause_controls": {
+    "public_ready": {
+      "mutant": "public_ready",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "inner_ready": {
+      "mutant": "inner_ready",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "pr_truth": {
+      "mutant": "pr_truth",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "post_truth": {
+      "mutant": "post_truth",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "ordinary_identity": {
+      "mutant": "ordinary_identity",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "contradiction": {
+      "mutant": "contradiction",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    }
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/local_pr.py": "6b336b3ea08d4c0e0b02b3fc28b9b6d061e75ef2483970d5f26d16c646660caf"
+  },
+  "raw_output_sha256": {
+    "local-phase-forwarding-affected.stdout": "2f93b85d40c38e7b66fd933490d8fd9fb6e504d75564f0741bcc320cef21f0ff",
+    "local-phase-forwarding-architecture.stdout": "7853e2961ca52f88b4774b02e20481c120fa72413a95f4f9e9fea81c25b29243",
+    "local-phase-forwarding-focused.stdout": "3a42fc55684905e924d0caf73e2d624d659c21164448ea54f48e0337b3904601",
+    "local-phase-forwarding-initial-red.stdout": "b0555352c17595c9de6abc6d68871c0ed014ebdf7267a80f62fb46f5e32fae9f",
+    "local-phase-forwarding-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-phase-forwarding-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-phase-cause-contradiction.stdout": "fdf2a8b6d75510c704af7d88a2caf56acdd1ea1a23fd6b05ef1a3252da1a5e35",
+    "local-phase-cause-inner_ready.stdout": "204927fec8e1d790af6a0fd31234b7ac0d2e8c04decfb697fb31be4668b8579e",
+    "local-phase-cause-ordinary_identity.stdout": "d6ff3e93ecb807846e38159b03b19127f9df5a93ee992ce95f55dd826d26a5b9",
+    "local-phase-cause-post_truth.stdout": "ad4b5cdd30daf2e3cf6536b423d37d815e3313001fb2914d139dabac8d400337",
+    "local-phase-cause-pr_truth.stdout": "be92896baeb350359a5583f4f22143363fbad7f816b845eb885f7167d0848f53",
+    "local-phase-cause-public_ready.stdout": "7260b4a234d177c3d60be086019901d545e8b8e2ccfbcd0c7e64f189c7d4d000",
+    "local-phase-forwarding-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "local-phase-forwarding-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Ordinary CLI and exact-main context forwarding remain open.",
+    "Installed/runtime authority parity and actual-operation semantic qualification remain required before integration.",
+    "Full protected lifecycle/effect populations and runtime conformance remain open.",
+    "All82 whole requirements remain open; P33-P35 dormant; performance targets unapproved."
+  ],
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "governance": 0,
+    "pack_parity": 0,
+    "architecture_passed": 5
+  },
+  "acceptance_objects_unchanged": {
+    "requirements": 82,
+    "implementation_slices": 38
+  }
+}
