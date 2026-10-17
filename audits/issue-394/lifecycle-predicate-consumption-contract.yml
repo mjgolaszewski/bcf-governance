@@ -110,3 +110,9 @@ phase_closure_early_authored_invariant:
   admission_order: Reject unfinished authored workitems before any provider query, artifact download, evidence allocation or expensive execution.
   compatibility: Keep computed verification independent; authored DONE is necessary and never sufficient.
   controls: tests/test_workitem_phase_consumption.py full phase readiness controls
+trusted_pr_phase_context_forwarding:
+  owner: bcf_governance/tooling/ci_github_pr.py
+  boundary: Existing independent trusted evaluator calling derive_truth
+  required: Forward the already authenticated provider API and expected repository; a candidate cannot disable protected predecessor discovery by removing its own phase predicates.
+  controls: Existing protected-evaluator rejection control must assert exact API and repository forwarding in addition to rejecting a candidate pass claim.
+  preserved: Existing candidate subject authentication, artifact inventory/digest checks, independent evaluation, required status identity and ordinary CLI grammar
