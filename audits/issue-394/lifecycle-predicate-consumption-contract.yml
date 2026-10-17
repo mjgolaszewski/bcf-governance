@@ -134,3 +134,8 @@ local_phase_context_forwarding:
   invariants: [missing phase authority blocks before proof allocation, computed consumption refreshes authority after evidence, candidate cannot shrink protected parent population, existing provider/head/context freshness stays enforced]
   tests: Source forwarding controls plus actual phase-consumer fixtures and existing full prospective suite
   remaining: Ordinary CLI/exact-main and installed consumer qualification remain required before integration.
+local_phase_repository_binding:
+  rule: Inner phase consumption uses the authenticated LocalPRContext repository independently of the managed workflow-authority repository selector.
+  compatibility: Keep ordinary lane workflow-authority behavior unchanged; do not enable managed-controller checks merely to supply phase identity.
+  mismatch: A contradictory asserted repository must block before phase-proof acquisition or evidence allocation.
+  controls: Public and inner preallocation forwarding, ordinary bound context, contradictory repository, and both actual full-train truth boundaries
