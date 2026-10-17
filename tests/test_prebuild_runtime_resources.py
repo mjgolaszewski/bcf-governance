@@ -76,6 +76,17 @@ def test_complete_metadata_does_not_execute_candidate_evaluator(framework_source
     assert not (framework_source / 'candidate-executed').exists()
 
 
+def test_standalone_cli_rejects_metadata_without_a_traceback(framework_source):
+    result = subprocess.run(
+        [sys.executable, '-I', str(Path(source_inventory.__file__)),
+         '--repo-root', str(framework_source)],
+        cwd=framework_source, capture_output=True, text=True,
+    )
+    assert result.returncode == 1
+    assert 'package data excludes runtime assets' in result.stderr
+    assert 'Traceback' not in result.stderr and not result.stdout
+
+
 def test_nonframework_source_retains_unbound_behavior(tmp_path, monkeypatch):
     def allocate(*args, **kwargs):
         raise AssertionError('nonframework source allocated an interpreter')

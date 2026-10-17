@@ -13,6 +13,7 @@ from ..local_execution_admission import project_python_environment
 from ..profile_yaml import render_profile_surface
 from .common import _load_yaml
 from .context_budgets import _validate_context_budgets
+from .source_inventory import validate_package_data_contract
 from ..interpreter_environment import derive_interpreter_environment, verify_interpreter_environment_projection
 
 
@@ -21,6 +22,10 @@ def validate_source_distribution(repo_root: Path, *, python_executable: Path) ->
     repo_root = repo_root.resolve()
     if not (repo_root / "bcf_governance/pack/template-repo").is_dir() or not (repo_root / "pyproject.toml").is_file():
         return {"applicable": False, "authority": False}
+    try:
+        validate_package_data_contract(repo_root)
+    except RuntimeError as exc:
+        raise ValueError(f"source distribution admission failed: {exc}") from exc
     source = Path(__file__).resolve().with_name("source_inventory.py")
     if not source.is_file() or source.is_symlink():
         raise ValueError("framework source distribution declaration owner is missing")

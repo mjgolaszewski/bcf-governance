@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path, PurePosixPath
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import subprocess
 import tarfile
 import hashlib
+from glob import glob
+import tomllib
+import zipfile
 
 
 def tracked_source_inventory(repo_root: Path) -> frozenset[str]:
@@ -77,6 +80,80 @@ def validate_sdist_source_inventory(repo_root: Path, sdist: Path) -> None:
         raise ValueError("source archive changes tracked source: " + ", ".join(changed))
 
 
+def discovered_wheel_runtime_assets(source_root: Path) -> tuple[str, ...]:
+    """Discover pack resources and ordinary non-Python package dependencies."""
+
+    package_root = source_root / "bcf_governance"
+    if package_root.is_symlink():
+        raise RuntimeError("runtime asset source is a symlink: bcf_governance")
+    pack_root = package_root / "pack/template-repo"
+    assets = []
+    for path in sorted(package_root.rglob("*")):
+        if "__pycache__" in path.parts or path.suffix == ".pyc":
+            continue
+        if path.is_symlink():
+            raise RuntimeError(f"runtime asset source is a symlink: {path.relative_to(source_root)}")
+        if not path.is_file() or (path.suffix == ".py" and not path.is_relative_to(pack_root)):
+            continue
+        assets.append(path.relative_to(source_root).as_posix())
+    return tuple(assets)
+
+def validate_package_data_contract(source_root: Path) -> tuple[str, ...]:
+    """Prove every discovered runtime asset is selected by package metadata."""
+
+    assets = discovered_wheel_runtime_assets(source_root)
+    if not assets:
+        raise RuntimeError("no package runtime assets discovered")
+    pyproject = tomllib.loads((source_root / "pyproject.toml").read_text(encoding="utf-8"))
+    tool = pyproject.get("tool", {})
+    if not isinstance(tool, dict) or not isinstance(tool.get("setuptools", {}), dict):
+        raise RuntimeError("package data metadata must contain tables")
+    setuptools = tool.get("setuptools", {})
+    tables = [setuptools.get(key, {}) for key in ("package-data", "exclude-package-data")]
+    if any(not isinstance(table, dict) for table in tables):
+        raise RuntimeError("package data patterns require table mappings")
+    patterns, exclusions = [table.get("bcf_governance", []) for table in tables]
+    for entries in (patterns, exclusions):
+        if (not isinstance(entries, list)
+                or any(not isinstance(pattern, str) or not pattern for pattern in entries)):
+            raise RuntimeError("package data patterns require lists of nonempty strings")
+        for pattern in entries:
+            if (PurePosixPath(pattern).is_absolute() or PureWindowsPath(pattern).drive
+                    or ".." in PurePosixPath(pattern).parts or "\\" in pattern):
+                raise RuntimeError("package data pattern is outside the package namespace")
+    package_root = source_root / "bcf_governance"
+    selections = [
+        {Path(path).as_posix() for pattern in entries
+         for path in glob(str(pattern), root_dir=package_root, recursive=True)}
+        for entries in (patterns, exclusions)
+    ]
+    package_prefix = "bcf_governance/"
+    missing = [
+        asset
+        for asset in assets
+        if asset.removeprefix(package_prefix) not in selections[0] - selections[1]
+    ]
+    if missing:
+        raise RuntimeError("package data excludes runtime assets: " + ", ".join(missing))
+    return assets
+
+def validate_wheel_runtime_assets(wheel: Path, source_root: Path) -> None:
+    """Prove the built wheel contains every mechanically discovered runtime file."""
+
+    required = validate_package_data_contract(source_root)
+    with zipfile.ZipFile(wheel) as archive:
+        names = archive.namelist()
+        payload = set(names)
+        missing = [asset for asset in required if asset not in payload]
+        if missing:
+            raise RuntimeError("wheel missing runtime assets: " + ", ".join(missing))
+        for asset in required:
+            if names.count(asset) != 1:
+                raise RuntimeError(f"wheel runtime asset is duplicated: {asset}")
+            if archive.read(asset) != (source_root / asset).read_bytes():
+                raise RuntimeError(f"wheel runtime asset differs from source: {asset}")
+
+
 def validate_sdist_manifest_coverage(repo_root: Path) -> dict[str, object]:
     """Check static setuptools declarations without building or running commands.
 
@@ -85,11 +162,6 @@ def validate_sdist_manifest_coverage(repo_root: Path) -> dict[str, object]:
     """
     from contextlib import closing
     import tomllib
-    from setuptools import Distribution
-    from setuptools.command.sdist import sdist
-    from setuptools._distutils.filelist import FileList
-    from setuptools._distutils.text_file import TextFile
-    from setuptools._distutils.errors import DistutilsError
 
     root = repo_root.resolve()
     if root != Path.cwd().resolve():
@@ -102,7 +174,14 @@ def validate_sdist_manifest_coverage(repo_root: Path) -> dict[str, object]:
     inputs = {name: (root / name).read_bytes() for name in ("pyproject.toml", "MANIFEST.in")}
     project = tomllib.loads(inputs["pyproject.toml"].decode("utf-8"))
     backend = project.get("build-system", {})
+    if (root / "bcf_governance/pack/template-repo").is_dir():
+        validate_package_data_contract(root)
     options = project.get("tool", {}).get("setuptools", {})
+    from setuptools import Distribution
+    from setuptools.command.sdist import sdist
+    from setuptools._distutils.filelist import FileList
+    from setuptools._distutils.text_file import TextFile
+    from setuptools._distutils.errors import DistutilsError
     dynamic = project.get("project", {}).get("dynamic", [])
     dynamic_options = options.get("dynamic", {})
     if dynamic:
@@ -179,7 +258,7 @@ def main() -> None:
     args = parser.parse_args()
     try:
         result = validate_sdist_manifest_coverage(args.repo_root)
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, RuntimeError) as exc:
         raise SystemExit(str(exc)) from exc
     print(json.dumps(result, sort_keys=True))
 

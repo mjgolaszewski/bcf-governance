@@ -15,11 +15,14 @@ root = Path.cwd()
 sys.path.insert(0, str(root / 'scripts'))
 from _bcf_runtime.governance_validation import preflight_distribution as owner
 assert Path(owner.__file__).resolve().is_relative_to(root)
+assert Path(owner.validate_package_data_contract.__globals__['__file__']).resolve().is_relative_to(
+    root / 'scripts/_bcf_runtime')
 project_python = Path(sys.argv[1])
 fixture = root / 'framework-fixture'
 fixture.mkdir()
 project = '[build-system]\nrequires=["setuptools"]\nbuild-backend="setuptools.build_meta"\n'
 project += '[project]\nname="fixture"\nversion="1.0"\n[tool.setuptools]\npackages=[]\n'
+project += '[tool.setuptools.package-data]\nbcf_governance=["pack/template-repo/**/*"]\n'
 # Convert explicit serialized newlines in this fixture data, not executable code.
 project = project.replace('\\n', '\n')
 files = {
@@ -42,6 +45,16 @@ availability = subprocess.run([str(project_python), '-I', '-c',
     "import importlib.util; assert importlib.util.find_spec('bcf_governance') is None; import setuptools"],
     cwd=fixture, capture_output=True, text=True)
 assert availability.returncode == 0, availability.stderr
+project_path = fixture / 'pyproject.toml'
+complete_project = project_path.read_bytes()
+project_path.write_text(project_path.read_text().split('[tool.setuptools.package-data]')[0])
+try:
+    owner.validate_source_distribution(fixture, python_executable=Path('/unused/project-python'))
+except ValueError as error:
+    assert 'package data excludes runtime assets' in str(error)
+else:
+    raise AssertionError('installed runtime allocated interpreter before metadata rejection')
+project_path.write_bytes(complete_project)
 try:
     owner.validate_source_distribution(fixture, python_executable=project_python)
 except ValueError as error:
@@ -63,6 +76,7 @@ assert result == {'authority': False, 'built_bytes_verified': False,
 assert not (fixture / 'candidate-executed').exists()
 assert not (fixture / 'shadow-executed').exists()
 print(json.dumps({'source_sdk_absent': True, 'project_sdk_absent': True,
+                  'missing_resource_metadata_rejected_before_project_interpreter': True,
                   'forged_report_rejected': True, 'candidate_and_shadow_not_executed': True,
                   'valid_file_count': result['file_count']}, sort_keys=True))
 '''
@@ -79,6 +93,7 @@ def test_installed_source_query_uses_runtime_owner_and_selected_project_interpre
     assert result.returncode == 0, _record(result)
     assert json.loads(result.stdout) == {
         'source_sdk_absent': True, 'project_sdk_absent': True,
+        'missing_resource_metadata_rejected_before_project_interpreter': True,
         'forged_report_rejected': True, 'candidate_and_shadow_not_executed': True,
         'valid_file_count': 7,
     }

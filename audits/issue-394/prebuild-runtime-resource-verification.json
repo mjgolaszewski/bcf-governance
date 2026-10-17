@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_and_lite_installed_qualified_distributions_and_full_matrix_pending",
+  "source_base_commit": "845c1f77",
+  "contract_commits": [
+    "6c8b7753",
+    "f55a571b"
+  ],
+  "scope": "Loaded-runtime source metadata query and standalone SDK query; namespace/ordering and release alias compatibility. Exact guarded wheel/sdist, installed profiles and current live adopters remain separately required.",
+  "initial_prebuild_results": {
+    "failed": 4,
+    "passed": 2
+  },
+  "initial_namespace_results": {
+    "failed": 19,
+    "passed": 1
+  },
+  "expanded_namespace_results": {
+    "failed": 27,
+    "passed": 1
+  },
+  "qualification_history": {
+    "first_affected_passed": 18,
+    "first_affected_failed": 3,
+    "corrected_affected_passed": 135,
+    "corrected_deselected_native_build": 1,
+    "final_affected_passed": 163,
+    "final_deselected_native_build": 1,
+    "current_affected_passed": 167,
+    "current_deselected_native_build": 1
+  },
+  "retained_fixture_correction": "Three legacy framework-source fixtures omitted package-data declarations. Added explicit coverage without changing file counts or rejection/shadow oracles; malformed-response tests now also prove their subprocess was consumed.",
+  "extraction": {
+    "observation_sha256": "d47974b8981eddfd36ea6f6005824cd06d301702c143588153c392e0d8263e46",
+    "three_functions_ast_identical_at_initial_move": true,
+    "followup": "Namespace contract deliberately hardens discovery and metadata functions after the exact extraction; wheel byte-verification function remains unchanged."
+  },
+  "cause_controls": {
+    "host_forwarding": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "standalone_forwarding": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "package_root": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "pattern_containment": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "pattern_shape": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "validation_order": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    }
+  },
+  "verified_behavior": [
+    "Existing release resource queries are provided by the loaded runtime owner through compatibility aliases, without a candidate evaluator import.",
+    "Framework metadata rejects before project subprocess and again before standalone backend allocation; nonframework unbound behavior remains separate.",
+    "All include/exclusion patterns are typed and namespace-checked before any glob; symlinked package root rejects before discovery.",
+    "Candidate evaluator/shadow code is not executed; malformed response checks remain causally reached after valid authored metadata."
+  ],
+  "installed_probe": {
+    "collected": 2,
+    "passed": 2,
+    "elapsed_seconds": 20.68,
+    "scope": "Lite source installer fresh/same-candidate upgrade. Both caller and selected-project SDK absence asserted, runtime-owned helper location bound, invalid metadata rejects before unused project interpreter, valid/missing-manifest/shadow cases preserved.",
+    "admission": "Existing common nonblocking fence, no containers/network",
+    "cleanup": "Native tool session terminal0, no matching cohort processes/common fence unowned at snapshot; initial PID inventory was too late and no exact PID claim is made."
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_passed": 5,
+    "semantic": {
+      "returncode": 0,
+      "operations": 21,
+      "all_rows_unchanged": true
+    },
+    "governance": 0,
+    "pack": 0,
+    "exposure": 0
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/governance_validation/source_inventory.py": "79488991ceb08c36465580e726fb270d9cc9c5a625379b36fd6579a6c6226202",
+    "bcf_governance/tooling/governance_validation/preflight_distribution.py": "f1091f250ebc4245aa5ac7e4a2acc02718ab154917ad30443fbdd27439517821",
+    ".github/scripts/test_release_artifacts.py": "b33ba4507f2404ce13d039b1c623d030a581f94fbb64ed341085390c76f13f8e",
+    "tests/test_prebuild_runtime_resources.py": "aabbc559bc9a136b89e4ce49b56fdaacb0435f83d3529fb9992e5173a39f6972",
+    "tests/test_runtime_resource_namespace.py": "33f793454ba90906ca78fd5d57a7b4bb85a27bbda79641c429769dcd5043e5b8",
+    "tests/test_installed_source_admission.py": "e5b24180ca9f550fad30ec050b601d5dc94e24f66a71f85af824233ae2977613"
+  },
+  "raw_output_sha256": {
+    "prebuild-runtime-resources-final-architecture.stdout": "7fbedd4641961d92092021488c26bed5afc4f5681c6f1816dcdb06104b7ff5d1",
+    "prebuild-runtime-resources-installed-collection.stdout": "774f8746a3829feebf6c50883c280ce4bbb0527aa97af14a34286301399676d3",
+    "prebuild-runtime-resource-cause-host.stdout": "2f1e56fa513ac7565147cfda25f8de7d771520eb31b37a142727cb63f8be7220",
+    "prebuild-runtime-resources-semantic.stdout": "5bc1ca371b73cf7d538141871003a501905ab80f58817224bc780d6f80d87321",
+    "prebuild-runtime-resources-red.stdout": "d2c0243ea496bbcdc04dcbe3dd4df643207b3762be870e360e23d7f6d35dbfa2",
+    "prebuild-runtime-resources-architecture.stdout": "8fd3fb189f9a78956531f736b555769a3da83c980d9b95038d8db0b486bee4b8",
+    "prebuild-runtime-resources-initial.stdout": "9b37522fd345164f02a33f3a42e85c09fa6f7ca71bf46be431249045c7fbc69c",
+    "prebuild-runtime-resources-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resources-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resources-generation-final.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resources-final-semantic.stdout": "5bc1ca371b73cf7d538141871003a501905ab80f58817224bc780d6f80d87321",
+    "prebuild-runtime-resources-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resource-cause-standalone.stdout": "7f77bb19c9143aab8e28b4e11c47ffd364df58e77291898dd513cb0162839e6f",
+    "prebuild-runtime-resources-namespace-focused.stdout": "d824755c6a98e22a63186d389c7bcbf6a60d4a4ddb29dbef629c0027b290aa20",
+    "prebuild-runtime-resources-final-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resources-final-affected.stdout": "62f9617c13d401d6c776c4de2e8265848e75cdf9a087d72e9917ac474fa35921",
+    "prebuild-runtime-resources-affected.stdout": "700e39c0ac5c209a21a39150655cbfd4723948ab4f6b0d5bbcfa3188b9d4641a",
+    "prebuild-runtime-resources-final-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-resource-namespace-cause-shape.stdout": "99d9d29cfd847846a5c1d3a650470c825b0db8f2eaae7929316a2f15f58785b8",
+    "prebuild-resource-namespace-cause-containment.stdout": "d630a634eddd09c99b1751a8fb4ce63cdcfea296d237826337784d342be6f378",
+    "prebuild-resource-namespace-cause-order.stdout": "1a71c35f5f2162687e7707792f6d186316b980ca9a336d7cd4c7a1a0ce765e4c",
+    "prebuild-resource-namespace-cause-root.stdout": "03af8691716fbbd4f7284b513a4522afe8e012191b493d3ddbc2346ebae8e63a",
+    "prebuild-resource-namespace-complete-red.stdout": "6dc9d328edbfcaa9d24de658ff78e32aa196f2b67e0cffbb13479395d506ba99",
+    "prebuild-resource-namespace-red.stdout": "931bdf0b3e96e54da415732198f88172f945e4e09a50875ce76af6a3a7d6c01b",
+    "prebuild-runtime-resources-installed.stdout": "b2d02e71b92cc8294e91e770cc02295d672f6781e83487a2f36e823b32ba1aaa",
+    "prebuild-runtime-resources-current-architecture.stdout": "b4dbd998b57975fcf82cc8a22522d8f6550058dfa58d2dc9663b31a65071eb08",
+    "prebuild-runtime-resources-current-affected.stdout": "bb9e1c7fe92f4ec2dae6101b0517d774d728f945cc5661975a5e7d400f36491d",
+    "prebuild-runtime-resources-current-semantic.stdout": "5bc1ca371b73cf7d538141871003a501905ab80f58817224bc780d6f80d87321",
+    "prebuild-runtime-resources-final-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resources-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "prebuild-runtime-resources-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "prebuild-runtime-resources-standalone-corrected.stdout": "5c0653d7f2c8c6dfd16d014971826450efde9f30ba2fe3d1f3e7032fc23a01b3",
+    "prebuild-runtime-resources-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-resource-namespace-standalone-red.stdout": "8498862afbaea8b5969bb8461458c68de82ccbe9fed5896e06efe1435fb97469",
+    "prebuild-runtime-resource-current-cause-host.stdout": "844068a783134acb0edd8822f69100ed80efea44a1f4f12487e93aba48eb3b42",
+    "prebuild-runtime-resources-current-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "prebuild-runtime-resources-current-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resources-current-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "prebuild-runtime-resource-current-cause-standalone.stdout": "7b00b693cdc7fd936597deee5b9c8349b0860289b8aefee9660d2e1bff3ae913",
+    "prebuild-resource-namespace-current-cause-order.stdout": "e410b287a9058bc852729dda8447501bb7799f8328c19a7938ba5ebbfda1120e",
+    "prebuild-resource-namespace-current-cause-root.stdout": "2ba67ee50534c3b56285b86ec5717dbe0eb5d2de85a1e683fa2bca82e67f02aa",
+    "prebuild-resource-namespace-current-cause-containment.stdout": "89d53f604d5cad948bd3fc311c3e7bea850ef1221f77aab4821cd73c28dd5857",
+    "prebuild-resource-namespace-current-cause-shape.stdout": "6569e2a56300ae7e5b1cfb456cb87a5a42396e95a93a7d25eed7992b0acd202c"
+  },
+  "limits": [
+    "Source namespace admission is not complete same-user isolation, total deadline or full lifecycle/effect conformance.",
+    "Exact committed-source guarded wheel/sdist and complete SDK/private/profile/adopter consumer matrix remain pending.",
+    "All82 whole requirement and38 slice objects unchanged; P32 active; P33-P35 dormant."
+  ],
+  "standalone_context_followup": {
+    "failed": 1,
+    "passed": 3,
+    "reason": "Standalone consumer accessed tool table before runtime shape validation; validation moved before that access",
+    "corrected_namespace_and_prebuild_passed": 39
+  }
+}

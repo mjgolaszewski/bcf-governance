@@ -1590,14 +1590,21 @@ def test_source_distribution_observation_rejects_malformed_or_authoritative_resp
     from bcf_governance.tooling.governance_validation import preflight_distribution as distribution
     from types import SimpleNamespace
     (tmp_path / 'bcf_governance/pack/template-repo').mkdir(parents=True)
-    (tmp_path / 'pyproject.toml').write_text('[project]\nname="fixture"\n')
+    (tmp_path / 'bcf_governance/pack/template-repo/owned.txt').write_text('owned\n')
+    (tmp_path / 'pyproject.toml').write_text('[project]\nname="fixture"\n'
+        '[tool.setuptools.package-data]\nbcf_governance=["pack/template-repo/**/*"]\n')
     owner = tmp_path / '.github/scripts/release_source_inventory.py'
     owner.parent.mkdir(parents=True)
     owner.write_text('# fixture\n')
     monkeypatch.setattr(distribution, 'project_python_environment', lambda *_a: {})
-    monkeypatch.setattr(distribution.subprocess, 'run', lambda *_a, **_k: SimpleNamespace(returncode=0, stdout=response, stderr=''))
+    calls = []
+    def observe(*args, **kwargs):
+        calls.append((args, kwargs))
+        return SimpleNamespace(returncode=0, stdout=response, stderr='')
+    monkeypatch.setattr(distribution.subprocess, 'run', observe)
     with pytest.raises(ValueError):
         distribution.validate_source_distribution(tmp_path, python_executable=Path('/project-python'))
+    assert len(calls) == 1
 
 
 def test_pack_preflight_translates_source_query_io_failure_preserving_cause(monkeypatch, tmp_path):

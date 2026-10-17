@@ -33,7 +33,7 @@
     "lifecycle-mandatory-predicates-focused.stdout": "adf05ced3f78f0ef69a6e00398bd51daced8df1829421effe664ceb7c23b41cf",
     "lifecycle-mandatory-predicates-consumers.stdout": "997d8820061382da78010f1957af065734aaf8395ff8116be3db3f0043d4c6a9"
   },
-  "next_action": "Forward resource metadata admission through the existing loaded-runtime source owner before build; qualify exact-source wheel/sdist, SDK/private profiles and provider-selected consumers. Integrate by ancestry/content only after composed qualification; full lifecycle/effect conformance and all82 whole requirements remain open.",
+  "next_action": "Qualify exact committed-source wheel/sdist and complete SDK/private/profile/adopter consumers; integrate by ancestry/content after composed qualification. Complete protected lifecycle/effect populations and runtime conformance; all82 whole requirements remain open.",
   "limits": [
     "No whole requirement closure or P33 activation.",
     "Actual phase predicates are now consumed; structural governance can pass without granting closure. Submission and installed authority forwarding remain unqualified."
@@ -210,7 +210,9 @@
     "Forward authenticated context through ordinary CLI/exact-main consumers; qualify installed/runtime parity and semantic operations before integration. Then complete protected lifecycle populations and runtime conformance.",
     "Authenticate exact-main finalizer prerequisites and move hosted authored readiness before expensive discovery/allocation; qualify installed/runtime parity and semantic operations, then full protected lifecycle conformance.",
     "Independently authenticate exact-main finalizer phase prerequisites, qualify installed/runtime authority parity and actual semantic operations before integration, then complete full protected lifecycle/effect populations.",
-    "Qualify installed SDK/private runtime schema authority and actual consumer behavior, then integrate by ancestry/content only after composed qualification. Complete full protected lifecycle/effect populations and runtime conformance; all82 whole requirements remain open."
+    "Qualify installed SDK/private runtime schema authority and actual consumer behavior, then integrate by ancestry/content only after composed qualification. Complete full protected lifecycle/effect populations and runtime conformance; all82 whole requirements remain open.",
+    "Forward resource metadata admission through the existing loaded-runtime source owner before build; qualify exact-source wheel/sdist, SDK/private profiles and provider-selected consumers. Integrate by ancestry/content only after composed qualification; full lifecycle/effect conformance and all82 whole requirements remain open.",
+    "Execute SDK-absent fresh/upgrade prebuild admission probes through actual shared native handoff; qualify exact committed-source wheel/sdist and complete SDK/private/profile/adopter consumers. Integrate by ancestry/content after composed qualification. Complete protected lifecycle/effect conformance; all82 whole requirements remain open."
   ],
   "local_phase_forwarding": {
     "verification": "audits/issue-394/local-phase-forwarding-verification.json",
@@ -279,5 +281,12 @@
     "source_passed": 34,
     "cause_controls_passed": 6,
     "actual_guarded_distribution_qualification": false
+  },
+  "runtime_owned_prebuild_resource_admission": {
+    "verification": "audits/issue-394/prebuild-runtime-resource-verification.json",
+    "source_passed": 167,
+    "cause_controls_passed": 6,
+    "installed_execution_qualified": true,
+    "installed_lite_fresh_same_candidate_upgrade_passed": 2
   }
 }

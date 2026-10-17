@@ -13,7 +13,8 @@ from bcf_governance.tooling.governance_validation.preflight_distribution import 
 def _fixture(root, *, coverage, program):
     files = {
         'pyproject.toml': '[build-system]\nrequires=["setuptools"]\nbuild-backend="setuptools.build_meta"\n'
-                          '[project]\nname="fixture"\nversion="1.0"\n[tool.setuptools]\npackages=[]\n',
+                          '[project]\nname="fixture"\nversion="1.0"\n[tool.setuptools]\npackages=[]\n'
+                          '[tool.setuptools.package-data]\nbcf_governance=["pack/template-repo/**/*"]\n',
         'MANIFEST.in': 'global-include *\n' if coverage else 'global-exclude *\n',
         'owned.txt': 'exact\n',
         'bcf_governance/pack/template-repo/owned.txt': 'exact template\n',

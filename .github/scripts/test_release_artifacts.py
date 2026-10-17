@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from glob import glob
 import os
 import subprocess
 import sys
@@ -28,6 +27,11 @@ from bcf_governance.tooling.release_runtime_verification import (
     SDIST_PORTABLE_TEST_ENV,
 )
 from bcf_governance.tooling.ci_github_bootstrap import verify_controller_inventory
+from bcf_governance.tooling.governance_validation.source_inventory import (
+    discovered_wheel_runtime_assets as discovered_wheel_runtime_assets,
+    validate_package_data_contract as validate_package_data_contract,
+    validate_wheel_runtime_assets as validate_wheel_runtime_assets,
+)
 from release_source_inventory import tracked_source_inventory, validate_sdist_source_inventory
 
 
@@ -162,69 +166,6 @@ def validate_sdist_test_skips(junit_path: Path) -> None:
             "sdist test skip contract mismatch: "
             f"expected {sorted(ALLOWED_SDIST_CUSTODY_SKIPS)}, observed {sorted(observed)}"
         )
-
-
-def discovered_wheel_runtime_assets(source_root: Path) -> tuple[str, ...]:
-    """Discover pack resources and ordinary non-Python package dependencies."""
-
-    package_root = source_root / "bcf_governance"
-    pack_root = package_root / "pack/template-repo"
-    assets = []
-    for path in sorted(package_root.rglob("*")):
-        if "__pycache__" in path.parts or path.suffix == ".pyc":
-            continue
-        if path.is_symlink():
-            raise RuntimeError(f"runtime asset source is a symlink: {path.relative_to(source_root)}")
-        if not path.is_file() or (path.suffix == ".py" and not path.is_relative_to(pack_root)):
-            continue
-        assets.append(path.relative_to(source_root).as_posix())
-    return tuple(assets)
-
-
-def validate_package_data_contract(source_root: Path) -> tuple[str, ...]:
-    """Prove every discovered runtime asset is selected by package metadata."""
-
-    assets = discovered_wheel_runtime_assets(source_root)
-    if not assets:
-        raise RuntimeError("no package runtime assets discovered")
-    pyproject = tomllib.loads((source_root / "pyproject.toml").read_text(encoding="utf-8"))
-    setuptools = pyproject.get("tool", {}).get("setuptools", {})
-    patterns = setuptools.get(
-        "package-data", {}
-    ).get("bcf_governance", [])
-    exclusions = setuptools.get("exclude-package-data", {}).get("bcf_governance", [])
-    package_root = source_root / "bcf_governance"
-    selections = [
-        {Path(path).as_posix() for pattern in entries
-         for path in glob(str(pattern), root_dir=package_root, recursive=True)}
-        for entries in (patterns, exclusions)
-    ]
-    package_prefix = "bcf_governance/"
-    missing = [
-        asset
-        for asset in assets
-        if asset.removeprefix(package_prefix) not in selections[0] - selections[1]
-    ]
-    if missing:
-        raise RuntimeError("package data excludes runtime assets: " + ", ".join(missing))
-    return assets
-
-
-def validate_wheel_runtime_assets(wheel: Path, source_root: Path) -> None:
-    """Prove the built wheel contains every mechanically discovered runtime file."""
-
-    required = validate_package_data_contract(source_root)
-    with zipfile.ZipFile(wheel) as archive:
-        names = archive.namelist()
-        payload = set(names)
-        missing = [asset for asset in required if asset not in payload]
-        if missing:
-            raise RuntimeError("wheel missing runtime assets: " + ", ".join(missing))
-        for asset in required:
-            if names.count(asset) != 1:
-                raise RuntimeError(f"wheel runtime asset is duplicated: {asset}")
-            if archive.read(asset) != (source_root / asset).read_bytes():
-                raise RuntimeError(f"wheel runtime asset differs from source: {asset}")
 
 
 def validate_controller_wheel_directory(directory: Path, source_root: Path) -> Path:

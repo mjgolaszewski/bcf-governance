@@ -22,7 +22,7 @@ def _configure(root, field, value):
 
 
 @pytest.mark.parametrize('field', ['package-data', 'exclude-package-data'])
-@pytest.mark.parametrize('pattern', ['/outside/**', '../outside/**', 'a/../../outside/*', r'..\outside\*', ''])
+@pytest.mark.parametrize('pattern', ['/outside/**', '../outside/**', 'a/../../outside/*', r'..\outside\*', '', 'C:/outside/**', 'C:outside/*'])
 def test_unsafe_patterns_reject_before_any_glob(framework_source, monkeypatch, field, pattern):
     _configure(framework_source, field, [pattern])
     calls = []
@@ -54,6 +54,32 @@ def test_symlinked_package_root_cannot_substitute_source_namespace(framework_sou
     package.symlink_to(outside, target_is_directory=True)
     with pytest.raises(RuntimeError, match='runtime asset source is a symlink'):
         owner.discovered_wheel_runtime_assets(framework_source)
+
+
+@pytest.mark.parametrize('metadata', [
+    'tool=[]\n', '[tool]\nsetuptools=[]\n',
+    '[tool.setuptools]\npackage-data=[]\n',
+    '[tool.setuptools]\nexclude-package-data=[]\n',
+])
+def test_malformed_tables_reject_before_any_glob(framework_source, monkeypatch, metadata):
+    (framework_source / 'pyproject.toml').write_text(metadata)
+    def expand(*args, **kwargs):
+        raise AssertionError('glob expanded before metadata table validation')
+    monkeypatch.setattr(owner, 'glob', expand)
+    with pytest.raises(RuntimeError, match='package data'):
+        owner.validate_package_data_contract(framework_source)
+
+
+@pytest.mark.parametrize('metadata', [
+    'tool=[]\n', '[tool]\nsetuptools=[]\n',
+    '[tool.setuptools]\npackage-data=[]\n',
+    '[tool.setuptools]\nexclude-package-data=[]\n',
+])
+def test_standalone_query_preserves_typed_table_rejection(framework_source, monkeypatch, metadata):
+    (framework_source / 'pyproject.toml').write_text(metadata)
+    monkeypatch.chdir(framework_source)
+    with pytest.raises(RuntimeError, match='package data'):
+        owner.validate_sdist_manifest_coverage(framework_source)
 
 
 def test_contained_patterns_keep_existing_resource_population(framework_source):
