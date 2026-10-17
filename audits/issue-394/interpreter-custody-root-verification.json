@@ -34,14 +34,14 @@
       "wheel_sha256": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
       "version": "2.3.4",
       "global_launcher_modified": false
-    }
+    },
+    "combined_successor": "audits/issue-394/combined-successor-f6-verification.json"
   },
   "verification_history": [
     "First ambient suite:26pass and real host mutex busy against Racecar active capture.",
     "Rerun uses existing authenticated execution-state allocation and real lock exclusion in owned test namespace; no oracle change, global owner bypass or heavy work."
   ],
   "remaining": [
-    "Combined behavioral/native/package and installed checks pending.",
     "Canonical normalization/submission and all82 whole requirements remain open."
   ]
 }
