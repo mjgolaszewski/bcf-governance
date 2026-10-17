@@ -179,3 +179,16 @@ phase_input_temporary_materialization_effects:
   classification: Declare only these two exact leaf calls as non-authoritative temporary output effects for actual reachable public operations; do not hide the whole verification function behind an effect port
   invariants: [verification and provider reads remain traversable, no new authority or mutation factory, no broader path/write wildcard, no golden replacement without exact population delta, canonical reconciliation alone owns generated semantic locks]
   controls: Independently discover the real helper and remove each exact leaf declaration; undeclared-write rejection must return. Then run the complete actual operation population and compare every changed operation against the retained baseline.
+exact_main_policy_subject_separation:
+  owner: bcf_governance/tooling/trusted_inputs.py
+  operation: Extend existing protected prerequisite acquisition with an optional exact admitted policy subject
+  authority: The supplied MainIdentity is an assertion only; authenticate repository/default identity, exact provider commit/tree and default-branch lineage before consuming its policy bytes
+  invariants:
+    - Existing callers without an admitted subject continue to derive policy from current authenticated default.
+    - Preserve current protected frontier separately from the exact admitted policy source; historical finalization cannot silently use a newer phase plan.
+    - Fetch every lifecycle document at the authenticated selected policy commit; active predecessor coordinates use that same selected subject.
+    - Reject malformed, foreign, rewritten or nonlineage subjects before lifecycle reads or proof download.
+    - Reauthenticate current default before proof allocation and after verification; moving state rejects without retrying mutations.
+    - Return the actual authenticated policy subject alongside the existing verified inputs; no caller boolean or new receipt family.
+  controls: Actual retained predecessor fixture, current/historical source distinction, wrong repository/default/tree/lineage, malformed coordinates, moving frontier and unchanged current-default behavior
+  followup: Independent exact-main finalizer derives its phase/target from that admitted provider subject and consumes these verified prerequisites before certification; source forwarding alone does not close that followup.
