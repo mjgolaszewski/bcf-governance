@@ -201,3 +201,60 @@ def test_owned_command_completion_is_independent_of_foreign_process_births(tmp_p
         for child in foreign:
             child.kill()
             child.wait(timeout=2)
+
+
+@pytest.mark.parametrize('double_fork', [False, True])
+def test_evidence_completion_cannot_abandon_escaped_descendants(tmp_path, double_fork):
+    """New sessions and double forks remain children of the execution owner."""
+    marker = tmp_path / 'escaped-worker.json'
+    escaped = """import json,os,sys,time
+from pathlib import Path
+if sys.argv[2]=='True':
+    if os.fork():os._exit(0)
+    os.setsid()
+    if os.fork():os._exit(0)
+Path(sys.argv[1]).write_text(json.dumps({'pid':os.getpid(),'group':os.getpgrp(),
+                                      'worker_group':int(sys.argv[3])}))
+time.sleep(20)
+"""
+    worker = """import os,subprocess,sys,time
+from pathlib import Path
+subprocess.Popen([sys.executable,'-c',sys.argv[2],sys.argv[1],sys.argv[3],str(os.getpgrp())],
+                 stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
+end=time.monotonic()+2
+while not Path(sys.argv[1]).exists():
+    assert time.monotonic()<end,'escaped fixture did not become ready'
+    time.sleep(0.01)
+"""
+    probe_code = """import json,sys
+from pathlib import Path
+from bcf_governance.tooling.evidence_execution import _run
+result=_run([sys.executable,'-c',sys.argv[2],sys.argv[1],sys.argv[3],sys.argv[4]],
+            cwd=Path(sys.argv[1]).parent,timeout_seconds=2,cleanup_timeout_seconds=1)
+print(json.dumps({'returncode':result.returncode,'stderr':result.stderr}))
+"""
+    probe = subprocess.Popen(
+        [sys.executable, '-c', probe_code, str(marker), worker, escaped, str(double_fork)],
+        cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
+    )
+    try:
+        output, error = probe.communicate(timeout=6)
+        assert probe.returncode == 0, error
+        assert marker.exists(), 'fixture never established escaped descendant'
+        metadata = json.loads(marker.read_text())
+        result = json.loads(output)
+        assert result['returncode'] == 126, 'normal exit abandoned an escaped descendant'
+        assert not _live(metadata['pid']), 'typed failure returned with a live escaped descendant'
+    finally:
+        groups = {probe.pid}
+        if marker.exists():
+            metadata = json.loads(marker.read_text())
+            groups.update((metadata['group'], metadata['worker_group']))
+        assert os.getpgrp() not in groups
+        for group in groups:
+            try:
+                os.killpg(group, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        probe.communicate(timeout=2)
