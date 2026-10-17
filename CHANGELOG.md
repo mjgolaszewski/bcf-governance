@@ -27,6 +27,9 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Independently validate complete CI node-pair populations at the consuming
+  graph boundary before downstream checks. Reject missing, duplicate or malformed
+  edges; preserve compiler imports and installed private-runtime behavior.
 - Authenticate provider repository names before default-branch or run-subject
   discovery, and reject duplicate physical repositories or case aliases in
   provider-selected adopter inventories before qualification allocation.
