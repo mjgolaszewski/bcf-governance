@@ -1,0 +1,74 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Runtime-owned early source declaration query; not built archive custody or full lifecycle conformance",
+  "original_commit": "fef9d488",
+  "original_script_sha256": "6513161fd1ddf55e07e26ed95e073e7f9c8047f053085adf610cdf12816f653f",
+  "unchanged_function_ast_sha256": {
+    "tracked_source_inventory": "81e51a00f7be476ad3365d22e6c1b6a953244a03085d0d8af7c3de2e25bb2025",
+    "sdist_source_inventory": "ccbd59d564f3f6f17f5f768323dcfb6c6e6f988c440519ab144d742cc4cbaab3",
+    "validate_sdist_source_inventory": "43f1dbbe5f39d263f17eb3d9366f95890f02260f04ae2448f0046c0da6aa265d",
+    "validate_sdist_manifest_coverage": "0ddef0d83a36d8c70d2263b08cf111755d8d8f9f7e94f4633c705b8e57967ad1"
+  },
+  "current_sources_sha256": {
+    ".github/scripts/release_source_inventory.py": "bd54464536c1ac1f07eb602f4a8c097933fff30adbe354fe736855b67111b370",
+    "bcf_governance/tooling/governance_validation/source_inventory.py": "3803dae471d1241155ae217f13229480dcf78aeb46a1de72eea180cd1c8a4bbb",
+    "bcf_governance/tooling/governance_validation/preflight_distribution.py": "7f6b78f0c50e449ecebbcd96a215b31f25febe439d8d1b3f63bb8c43072fd132"
+  },
+  "initial_controls_failed": 3,
+  "affected_consumers_passed": 18,
+  "runtime_owner_removed_controls_failed": 3,
+  "isolation_removal_experiment": {
+    "test_outcome": "1 passed",
+    "harness_outcome": "Expected-failure assertion rejected",
+    "disposition": "Not counted as a successful negative control. Environment projection strips PYTHONPATH independently and the evaluator path remains outside candidate root; this experiment does not isolate the -I fence."
+  },
+  "checks": {
+    "authority": false,
+    "stages": [
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "architecture",
+        "returncode": 0,
+        "stdout_sha256": "3efc219b4a7c964f30786f5ddd9f61369bfa66d6d5ac4533e92fcd62ee7366e2"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d"
+      }
+    ]
+  },
+  "raw_output_sha256": {
+    "source-admission-authority-initial-red.stdout": "3120b0ee0c0f5bb8562064bca92d62bdfab23d494416610ae9f4b00ac17925d2",
+    "source-admission-authority-first-green.stdout": "67eabb629a488b201eba9dd56dfb17e7fe23c96f478b78dd06322e08a5e45920",
+    "source-admission-authority-consumers.stdout": "635ae68771435f0ec001d7fb613241b2b15fab7de16da6921f053b966f06458b",
+    "source-admission-no-isolation-control.stdout": "195f63d284f6df02c593fb0a40018e3b7eee7c8c902996d5dec164de3f812d2d",
+    "source-admission-candidate-owner-control.stdout": "58fb7a5150243d17c678e80a249b50eac1ccc7f88e5741562e8876de47b66d44"
+  },
+  "limits": [
+    "Fresh/upgrade source-absent execution remains pending.",
+    "Full semantic and canonical qualification remain pending.",
+    "Framework applicability and loaded evaluator authentication remain owned by callers; this slice does not prove their full contextual conformance.",
+    "All82 whole requirements remain open; P32 active/P33-P35 dormant."
+  ]
+}

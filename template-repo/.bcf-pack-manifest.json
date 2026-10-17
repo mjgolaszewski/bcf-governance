@@ -1208,7 +1208,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_distribution.py": {
       "operation": "copy",
-      "sha256": "398ec7b9b0b39f399ed8ff3314d2708f538c3ff0fa382af10e3fdb871fe58481"
+      "sha256": "7f6b78f0c50e449ecebbcd96a215b31f25febe439d8d1b3f63bb8c43072fd132"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
@@ -1252,6 +1252,10 @@
       "installation_scope": "self_authority",
       "operation": "copy",
       "sha256": "80c0f05812a5353b68eb0ac2bb72676fd6b0e586e732c40feb64596a4c28d940"
+    },
+    "scripts/_bcf_runtime/governance_validation/source_inventory.py": {
+      "operation": "copy",
+      "sha256": "3803dae471d1241155ae217f13229480dcf78aeb46a1de72eea180cd1c8a4bbb"
     },
     "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
       "operation": "copy",

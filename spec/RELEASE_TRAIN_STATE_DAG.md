@@ -2537,3 +2537,5 @@ previous undeclared label. Historical version2 retains its weaker reader.
 Neither structural version establishes complete lifecycle/runtime conformance.
 
 P32 provider-body deadline refinement: the seven canonical response consumers share an elapsed budget below HTTP chunk framing, independent of socket inactivity. This structural projection retains setup, outer deadlines, cleanup and installed conformance as open work; it confers no phase or release authority.
+
+P32 source-admission refinement: the loaded runtime owns the static source inventory query, and the candidate provides declarations only. Forged candidate reports and candidate script side effects do not authorize admission. Canonical normalization still precedes fresh subject capture; built-archive custody and complete lifecycle conformance remain separate obligations.

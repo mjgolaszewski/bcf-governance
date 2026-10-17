@@ -21,11 +21,11 @@ def validate_source_distribution(repo_root: Path, *, python_executable: Path) ->
     repo_root = repo_root.resolve()
     if not (repo_root / "bcf_governance/pack/template-repo").is_dir() or not (repo_root / "pyproject.toml").is_file():
         return {"applicable": False, "authority": False}
-    source = repo_root / ".github/scripts/release_source_inventory.py"
+    source = Path(__file__).resolve().with_name("source_inventory.py")
     if not source.is_file() or source.is_symlink():
         raise ValueError("framework source distribution declaration owner is missing")
     result = subprocess.run(
-        [str(python_executable), str(source), "--repo-root", str(repo_root)],
+        [str(python_executable), "-I", str(source), "--repo-root", str(repo_root)],
         cwd=repo_root,
         env=project_python_environment(repo_root, python_executable, os.environ),
         capture_output=True, text=True, check=False,
