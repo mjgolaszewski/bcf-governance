@@ -81,3 +81,25 @@ def test_finalizer_rejects_uncertain_lifecycle_inventory(tmp_path, monkeypatch, 
     with pytest.raises(GitHubControllerError):
         _finalize(api, tmp_path)
     assert not (tmp_path / "bundle").exists()
+
+
+@pytest.mark.parametrize("authored_closed", [False, True])
+def test_finalizer_requires_independent_parent_certificate(tmp_path, monkeypatch, authored_closed):
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.lifecycle_documents["plans/build-plan.yml"]["phase_sequence"][0]["hard_dependencies"] = ["P00"]
+    api.lifecycle_documents["plans/phase-history.yml"]["entries"] = [{
+        "phase_id": "P00", "retention_ref": SHA_A,
+        "status": "completed" if authored_closed else "planned",
+        "derived_state_at_capture": "closed" if authored_closed else "unverified",
+        "verification_snapshot": {"commit_sha": SHA_A, "tree_sha": TREE},
+    }]
+    original = api.workflow_runs
+    def runs(repository, workflow_id, *, head_sha, event):
+        if str(workflow_id) == "98":
+            return ()
+        return original(repository, workflow_id, head_sha=head_sha, event=event)
+    monkeypatch.setattr(api, "workflow_runs", runs)
+    with pytest.raises(GitHubControllerError):
+        _finalize(api, tmp_path)
+    assert not (tmp_path / "bundle").exists()
