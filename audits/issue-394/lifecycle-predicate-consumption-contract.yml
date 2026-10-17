@@ -60,3 +60,17 @@ phase_input_implementation_scope:
   expected_tests: tests/test_phase_closure_input.py using existing exact-main finalizer fixture and real normalized bundles
   forbidden_files: [primary submitted worktree, workflows, authority pins, public CLI grammar, maintained adopter repositories]
   integration_limit: Caller coordinates are expected-value assertions only; canonical protected-policy derivation and actual lifecycle consumption remain required before integration.
+protected_phase_population_scope:
+  owner: bcf_governance/tooling/trusted_inputs.py
+  operation: verify_required_phase_closure_inputs
+  source: Authenticated current-default plans/build-plan.yml hard_dependencies, phase-ledger and phase-history at one exact provider subject
+  behavior:
+    - Derive the complete required phase population from the protected build plan; candidate acceptance removal cannot shrink it.
+    - Treat history verification snapshots solely as exact subject locators, then authenticate each independent finalizer certificate.
+    - Resolve an active predecessor against current protected main rather than requiring an archived history entry.
+    - Validate the full dependency and locator population before downloading any proof artifact.
+    - Reject malformed, duplicate, absent, contradictory or moving protected inputs without successful-history fallback.
+  result: Protected MainIdentity plus phase-keyed existing artifact and certification verification contexts with retained original bytes
+  forbidden_shortcuts: [local candidate lifecycle policy as authority, authored completed or closed labels as proof, caller-selected evidence run, missing dependency treated as empty population]
+  controls: tests/test_phase_closure_population.py
+  limits: This authenticated population query still needs wiring into authored readiness and computed lifecycle truth before integration.
