@@ -28,7 +28,7 @@ def test_gate_deadline_includes_real_cleanup_before_outer_allocation(tmp_path):
     ]}
     with pytest.raises(CIGraphError, match='cleanup'):
         validate_gate_job_timeouts(tmp_path, graph)
-    graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 11
+    graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 12
     validate_gate_job_timeouts(tmp_path, graph)
 
 
@@ -105,3 +105,11 @@ def test_unqualified_group_inventory_host_blocks_before_allocation(tmp_path, mon
             ['unused'], Path('/unused'), session_id='session', execution_id='run', require_state=True,
         )
     assert seen == []
+
+
+def test_unstable_process_population_cannot_become_verified_cleanup(tmp_path, monkeypatch):
+    import sys
+    monkeypatch.setattr(execution, '_process_group_snapshot', lambda group: None)
+    with pytest.raises(execution.EvidenceProcessCleanupError, match='cleanup'):
+        execution._run([sys.executable, '-c', "print('done')"], cwd=tmp_path,
+                       timeout_seconds=1, cleanup_timeout_seconds=1)
