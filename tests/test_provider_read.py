@@ -23,6 +23,15 @@ class _Response(BytesIO):
         self.close()
 
 
+@pytest.mark.parametrize("timeout", [True, False, 0, -1, float("nan"), float("inf"), "30", None])
+def test_invalid_provider_get_timeout_precedes_opener_allocation(timeout):
+    def opener(*_args, **_kwargs):
+        pytest.fail("invalid timeout allocated a provider request")
+
+    with pytest.raises(ProviderReadError, match="timeout"):
+        open_provider_get(Request("https://api.github.test/value"), timeout=timeout, opener=opener)
+
+
 def _http(code: int, retry_after: str | None = None) -> HTTPError:
     headers = Message()
     if retry_after is not None:
