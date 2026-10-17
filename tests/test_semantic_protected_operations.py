@@ -366,3 +366,30 @@ def test_authored_query_cannot_hide_malformed_foreign_registry_structure(inputs,
 def test_operation_source_scope_is_closed_and_typed(inputs):
     with pytest.raises(owner.SemanticAuthorityError, match='source scope'):
         owner.validate_application_operations(inputs[0], {}, source_language='unknown')
+
+
+@pytest.mark.parametrize('target', ['python', 'missing_python', 'foreign'])
+def test_authored_python_catalog_scope_uses_discovered_source_facts(inputs, monkeypatch, target):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+    from bcf_governance.tooling.semantic_ownership_registry import SemanticOwnershipRegistryError
+
+    root, facts = _authored_query_inputs(inputs, monkeypatch)
+    before = json.loads(json.dumps(facts))
+    entrypoint = {'python': 'runtime.py::work', 'missing_python': 'runtime.py::missing',
+                  'foreign': 'foreign.ts::work'}[target]
+    (root / 'catalog.yml').write_text(yaml.safe_dump({'catalog': {'work': entrypoint}}))
+    payload = yaml.safe_load(inputs[2].read_text())
+    payload['populations'][0].update(adapter='canonical_yaml_catalog', source='catalog.yml',
+                                     symbol='catalog', catalog_path=['catalog'])
+    payload['operations'][0]['entrypoints'] = [entrypoint]
+    inputs[2].write_text(yaml.safe_dump(payload, sort_keys=False))
+    if target == 'missing_python':
+        with pytest.raises(SemanticOwnershipRegistryError, match='shared source inventory'):
+            scan.validate_authored_semantic_ownership(root)
+    else:
+        report = scan.validate_authored_semantic_ownership(root)
+        assert len(report['operation_observations']) == (1 if target == 'python' else 0)
+        if target == 'foreign':
+            with pytest.raises(owner.SemanticAuthorityError):
+                owner.validate_application_operations(root, facts)
+    assert facts == before
