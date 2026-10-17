@@ -153,3 +153,16 @@ ordinary_truth_cli_phase_context:
     - Never emit a pass report, write output or create a release receipt after context rejection.
   controls: Actual CLI through real derive_truth and normalized phase bundle; absent and partial authority; mismatched remote; candidate predicate removal; genuinely unbound compatibility
   limits: This facade correction does not independently authenticate the exact-main finalizer lifecycle or complete early preflight/installed/semantic qualification.
+hosted_preflight_phase_readiness:
+  owners: [bcf_governance/tooling/preflight.py, bcf_governance/tooling/local_pr.py]
+  operation: Consume the existing authored evaluation readiness gate before syntax/discovery, semantic evaluation or session allocation
+  inputs: Explicit provider API and expected repository on run_preflight; CLI resolves existing connection assertions through provider_context_for_checkout; local prospective calls forward their authenticated phase context
+  ordering:
+    - Keep cheap Git/authored lifecycle/matrix/structural and evaluation grammar checks first.
+    - Validate the bounded target through its existing owner, then authored readiness before test discovery and allocation.
+    - Authored incomplete work must block without provider proof download; authored DONE remains necessary and insufficient.
+    - Missing phase authority and invalidated/moved proof block before downstream expensive work.
+    - Pure run_preflight does not discover ambient credentials; ordinary PR semantics stay unchanged.
+  compatibility: Preserve ordinary CLI grammar, trace existing owners, no new execution intent/receipt/evaluator, and keep each production owner within800 lines
+  controls: Real missing/valid phase authority, incomplete authored target, preallocation/discovery ordering, CLI context forwarding, both prospective preflight call sites, and genuine unbound compatibility
+  limits: Does not replace independent computed truth consumption after evidence or exact-main finalizer authentication.
