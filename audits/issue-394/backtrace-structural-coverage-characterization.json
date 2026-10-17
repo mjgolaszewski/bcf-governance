@@ -1,0 +1,67 @@
+{
+  "authority": false,
+  "cases": [
+    {
+      "defect": "undeclared-primitive",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    },
+    {
+      "defect": "empty-states",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    },
+    {
+      "defect": "invalid-normative-type",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    },
+    {
+      "defect": "invented-normative-root",
+      "rejected": false,
+      "result": {
+        "status": "not_applicable_to_adopter",
+        "comparison_base": null,
+        "changed_contracts": []
+      }
+    }
+  ],
+  "limit": "Structural authored-only validation gap; no evidence that these flags confer runtime authority. Full conformance remains open.",
+  "raw_sha256": "24d52a9c8be5e586156e9218e97050443c65ea29b3c9f0b61a63c72f2c20567d",
+  "source_commit": "aa2cd42034f5d625c91c8e4861ac29951b8da063",
+  "version3_before": {
+    "passed": 1,
+    "fixture_errors": 42,
+    "failed": 0,
+    "cause": "Version3 positive fixture is unsupported by the existing version2-only schema; these setup errors do not qualify cause-specific rejection. Original4 version2 malformed acceptances remain separate evidence.",
+    "streams": {
+      "stdout_sha256": "44dd3f641fb47033a0c84a95dc3f647bdd88caa08563cc3b07cff0af12dd7140",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "legacy_schema_original_sha256": "02c08e72c64911cd99303ae6cbe1da5bbf2f8ca5db8677ddf6d63171b38b90b9",
+  "legacy_schema_decoded_sha256": "7695f961fb0522f57e7446bc21c8b67b742c767e3a9f1fc12d39f573f9bddf0d",
+  "first_version3_implementation": {
+    "passed": 1,
+    "fixture_errors": 42,
+    "cause": "New reference guard rejects existing negative_control_fixture_reachability_contract primitive PRIM-CAUSE-SPECIFIC-NEGATIVE-CONTROL, absent from canonical primitive inventory. No cause-specific controls qualify until the ordinary positive fixture resolves.",
+    "backtrace_sha256": "466bca853b1c6c4f17fb2a0023e7ae5d19683a1e55d441e400ae0ab0e8593680",
+    "streams": {
+      "stdout_sha256": "86b6bbf7a007d712ee5a7c706020206b3ae24cb1b337338a274e8f1026d278d7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "disposition": "Bind the negative-control fixture contract to existing PRIM-QUALIFICATION; preserve historical dangling label here rather than inventing a second qualification primitive."
+  }
+}

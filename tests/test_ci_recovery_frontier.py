@@ -159,3 +159,18 @@ def test_nondefault_pr_frontier_rejects_missing_context_and_mutation(cause):
     else: state = "certified_mergeable"
     with pytest.raises(RecoveryFrontierError):
         protected_merge_frontier(identity=identity, state=state, certification_identity="prospective:" + "4" * 64)
+
+
+@pytest.mark.parametrize('state', ['unknown', 'committed', 'not_committed', 'conflict'])
+@pytest.mark.parametrize('variant', ['unbound', 'key-only', 'asserted-authentication'])
+def test_generic_mutation_claims_cannot_select_a_recovery_action(state, variant):
+    identity = {'unbound': 'value'}
+    if variant == 'asserted-authentication':
+        identity['authenticated'] = True
+    with pytest.raises(RecoveryFrontierError, match='no governed recovery edge'):
+        compile_recovery_frontier(
+            operation='mutation_result', state=state, identity=identity,
+            owner='caller_selected',
+            prerequisites=('authenticated_mutation_outcome',),
+            idempotency_key='caller-key' if variant != 'unbound' else None,
+        )

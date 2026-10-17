@@ -1,0 +1,96 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-03",
+  "subject": "a7efd151e06fb3de2d0640ef9a201b327221f1e0",
+  "tree_sha": "3a5e44e2ff421ccae46892b02b0579efb27d3d04",
+  "owner": "bcf_governance/tooling/ci_graph_composition.py",
+  "owner_sha256": "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd",
+  "source_lines": 783,
+  "full_composition_characterization": {
+    "passed": 331,
+    "failed": 1,
+    "failure_test": "tests.test_ci_graph_composition::test_requirement_slice_bindings_resolve_through_canonical_oracle_owner",
+    "cause": "test-node oracle is absent from governed manifests",
+    "streams": {
+      "stdout_sha256": "05b6fa7515faae98af79a1d4964af18ce4c26a8f54beb21c6daa7bc84a3d69e9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "disposition": "Historical required-oracle failure retained. Rebase onto canonically normalized e544 resolves manifest omission; complete332-case characterization passes with unchanged compiler bytes. Proceed with contracted pure extraction; full lifecycle/runtime population qualification remains open.",
+  "limits": [
+    "Existing compiler remains static non-authoritative validation.",
+    "Full protected/runtime population conformance is unqualified; all82 whole requirements remain open."
+  ],
+  "normalized_recharacterization": {
+    "subject": "305ffa74ba739268ad8ebc12260c0332bc3de1f9",
+    "passed": 332,
+    "failed": 0,
+    "elapsed_seconds": 35.02,
+    "owner_sha256": "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd",
+    "streams": {
+      "stdout_sha256": "9170c048506ed81be61e63dce9a595d24d210d0b782a87abfd7df4f5fe5f9842",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "pure_extraction": {
+    "authority": false,
+    "moved_functions": [
+      "_bytes",
+      "edge_population_sha256",
+      "lifecycle_effect_population"
+    ],
+    "ast_bodies_unchanged": true,
+    "public_imports_preserved": true,
+    "compiler_cases_passed": 332,
+    "package_template_cases_passed": 12,
+    "module_context_cases_passed": 2,
+    "lint": "passed",
+    "typecheck": "passed",
+    "streams": {
+      "characterization": {
+        "stdout_sha256": "26f0ea9c1d98680c4657fd0de328fa197ecbad02938ee9d38da3c3774eaa30b0",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "pack-architecture": {
+        "stdout_sha256": "cb62593186f0b0f4bb63350010456efe316e4d0de0b017f1c17c1c9921b5be62",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "boundaries": {
+        "stdout_sha256": "dec601d9ef58e89d3edab2411de63e0d2553749b2dd2228b0ff84f25a8e280d0",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "lint": {
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "typecheck": {
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "governance": {
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "first_governance_result": "required same-candidate state matrix update missing; oracle retained and explanatory matrix update added before rerun",
+    "limits": "No protected population derivation or runtime conformance qualification claimed.",
+    "governance": "passed after required state-matrix update",
+    "installed_consumers": {
+      "passed": 2,
+      "modes": [
+        "fresh",
+        "upgrade"
+      ],
+      "source_package_absent": true,
+      "controls": [
+        "omitted-edge-and-tests",
+        "false-exclusion"
+      ],
+      "canonical_output_matches_source": true,
+      "streams": {
+        "stdout_sha256": "5ce6607f26e3851fa27694e50c83c6bc386fc7efc04cd5c54c4013ca834f343b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  }
+}

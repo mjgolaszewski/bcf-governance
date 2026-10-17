@@ -2512,3 +2512,26 @@ the candidate rather than increasing the budget or dropping controls.
 ### Evidence command terminal and cleanup boundary
 
 TR-003 execution consumes the gate registry's execution and cleanup bounds. The existing timeout compiler accounts for both before CI allocation. The candidate runtime holds the temporary supervisor unreaped until exact command termination, kernel child-tree quiescence and output drain are authenticated. An ordinary command that leaves live descendants fails after bounded child cleanup. New sessions and double forks retain kernel ancestry; missing terminal proof preserves execution-state custody. This replacement avoids host-global PID stability and remains subject to complete source/private/installed qualification. Source controls cover timeout, background-success, invalid preallocation budgets, inadequate outer deadlines and unresolved cleanup. The complete context-qualified lifecycle, escaped-process isolation and total setup/namespace-removal envelopes remain P32/P33 obligations; this prose does not confer their adoption or terminal authority.
+
+### Lifecycle population query extraction
+
+The existing composition compiler delegates canonical byte serialization, CI-edge population hashing and static effect population validation to `ci_graph_composition_populations`. Public compiler imports, typed errors and function bodies are preserved. The full332-case compiler characterization passes before and after extraction. This change creates space for protected population derivation; it neither supplies the missing protected consumer nor qualifies complete runtime conformance. Caller-selected expected populations and static test references remain insufficient for lifecycle authority.
+
+The graph-consuming boundary independently derives all ordered distinct-node pairs from canonical workflow/job inventory and checks the edge producer output before timeout, resource and authority validation. Missing, duplicate, invented or self pairs, malformed reachability and contradictory dispositions reject there even if producer-side checks omit the same pair. This is a bounded CI pair-population invariant; it does not establish lifecycle-context completeness, semantic reachability of a forged canonical exclusion or runtime conformance.
+
+The unconsumed generic mutation-result frontier edges are retired. Arbitrary
+outcome labels, identity maps, prerequisite strings and caller keys cannot select
+a mutation retry. The existing exact submission, provider, immutable-read,
+protected-merge and controller owners retain their supported projections and
+must authenticate facts at consumption. This retirement closes an unsupported
+projection ingress; complete transaction recovery and terminal conformance remain
+separate lifecycle obligations.
+
+### Supplemental backtrace structural coverage
+
+Backtrace version3 closes the root inventory and validates the existing five
+supplemental contracts, their34 states and13 fact-boundary edges before derived
+work. Each primitive must resolve in the existing canonical primitive list;
+negative-control fixture qualification uses PRIM-QUALIFICATION rather than the
+previous undeclared label. Historical version2 retains its weaker reader.
+Neither structural version establishes complete lifecycle/runtime conformance.

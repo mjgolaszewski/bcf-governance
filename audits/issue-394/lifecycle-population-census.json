@@ -1,0 +1,232 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "subject": "13091b3a62e4d9e84cd7a704ceda13213c5bf110",
+  "tree_sha": "290b84985047b81626bf2e895c53e6906750ec31",
+  "graph_sha256": "b8aca2314a19a5696463a4d01b1d0bd27030cfdeb8e25b3295c81bb911b974e5",
+  "graph_workflows": [
+    {
+      "workflow": "governance",
+      "events": [
+        "pull_request",
+        "workflow_call"
+      ],
+      "jobs": 3
+    },
+    {
+      "workflow": "exact-main",
+      "events": [
+        "push"
+      ],
+      "jobs": 3
+    },
+    {
+      "workflow": "exact-main-finalizer",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "exact-main-publisher",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 2
+    },
+    {
+      "workflow": "scheduled-nightly-mutants",
+      "events": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "scheduled-weekly-mutants",
+      "events": [
+        "workflow_dispatch",
+        "schedule"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "break-glass-recovery",
+      "events": [
+        "workflow_dispatch"
+      ],
+      "jobs": 4
+    },
+    {
+      "workflow": "automation-admission",
+      "events": [
+        "pull_request_target"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "pr-finalizer",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "pr-status-publisher",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "evidence-storage-qualification-source",
+      "events": [
+        "workflow_dispatch"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "evidence-storage-qualification",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 2
+    },
+    {
+      "workflow": "release-authority",
+      "events": [
+        "workflow_dispatch"
+      ],
+      "jobs": 3
+    },
+    {
+      "workflow": "release-verifier",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 2
+    },
+    {
+      "workflow": "release-publisher",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 2
+    },
+    {
+      "workflow": "automation-reconcile",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 1
+    },
+    {
+      "workflow": "controller-rotation",
+      "events": [
+        "workflow_run"
+      ],
+      "jobs": 8
+    },
+    {
+      "workflow": "authority-canary",
+      "events": [
+        "workflow_dispatch"
+      ],
+      "jobs": 4
+    }
+  ],
+  "graph_nodes": [
+    "authority-canary:admit",
+    "authority-canary:observe",
+    "authority-canary:producer-a",
+    "authority-canary:producer-b",
+    "automation-admission:admit",
+    "automation-reconcile:reconcile",
+    "break-glass-recovery:build",
+    "break-glass-recovery:install",
+    "break-glass-recovery:probe",
+    "break-glass-recovery:receipt",
+    "controller-rotation:activate",
+    "controller-rotation:advance-bootstrap",
+    "controller-rotation:advance-probe",
+    "controller-rotation:authorize",
+    "controller-rotation:bootstrap",
+    "controller-rotation:outcome",
+    "controller-rotation:probe",
+    "controller-rotation:promote",
+    "evidence-storage-qualification-source:prepare-evidence-input",
+    "evidence-storage-qualification:publish-evidence-input",
+    "evidence-storage-qualification:reconstruct-evidence-input",
+    "exact-main-finalizer:finalize",
+    "exact-main-publisher:publish",
+    "exact-main-publisher:rotation-callback",
+    "exact-main:admit",
+    "exact-main:governance",
+    "exact-main:trusted-controller-build",
+    "governance:evidence",
+    "governance:governance-truthfulness",
+    "governance:preflight",
+    "pr-finalizer:finalize",
+    "pr-status-publisher:publish",
+    "release-authority:authorize",
+    "release-authority:build",
+    "release-authority:controller-route",
+    "release-publisher:controller-route",
+    "release-publisher:publish",
+    "release-verifier:collect",
+    "release-verifier:runtime",
+    "scheduled-nightly-mutants:high-value-mutants",
+    "scheduled-weekly-mutants:full-mutants"
+  ],
+  "edge_population": {
+    "total": 1640,
+    "reachable": 113,
+    "exclusions": {
+      "profile_lane_disconnected": 947,
+      "reverse_dependency": 46,
+      "no_dependency_or_event_path": 534
+    }
+  },
+  "backtrace": {
+    "states": [
+      "ST-RECONCILED",
+      "ST-INTENT",
+      "ST-PREFLIGHT",
+      "ST-PLAN",
+      "ST-EVIDENCE",
+      "ST-TRUTH",
+      "ST-PR-CERT",
+      "ST-MERGED",
+      "ST-MAIN-ADMIT",
+      "ST-MAIN-TRUTH",
+      "ST-LIFECYCLE-CERT",
+      "ST-CONTROLLER",
+      "ST-RELEASE-AUTH",
+      "ST-ASSET-VERIFY",
+      "ST-PUBLISHED",
+      "ST-ADOPTER-COMPAT",
+      "ST-CUSTODY"
+    ],
+    "transitions": [
+      "TR-000",
+      "TR-001",
+      "TR-002",
+      "TR-003",
+      "TR-004",
+      "TR-005",
+      "TR-006",
+      "TR-007",
+      "TR-008",
+      "TR-009",
+      "TR-010",
+      "TR-011",
+      "TR-012",
+      "TR-013",
+      "TR-014",
+      "TR-015"
+    ]
+  },
+  "production_compiler_consumers": [],
+  "finding": "No production compiler consumer discovers and binds the full protected context/operation/runtime population. Existing edge closure and backtrace are distinct retained owners; do not infer full lifecycle conformance from either or from passing static fixtures.",
+  "next_action": "Extend existing compiled graph population derivation and its protected consuming boundary; bind local/recovery/terminal contexts and source effects independently of proposed rows/test lists."
+}

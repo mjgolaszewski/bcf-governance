@@ -1,0 +1,51 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/backtrace-structural-coverage-contract.yml
+  status: planned
+  authority: false
+workitems: [P32-P0-03, P32-P0-04, P32-P0-07]
+bounded_context: validation
+architectural_layer: tooling
+operation_side: query
+canonical_owners:
+  backtrace: spec/phase0/release-train-backtrace.yml
+  schema: schemas/release-train-backtrace.schema.json
+  consumer: bcf_governance/tooling/governance_validation/ci_state_matrix.py
+scope:
+  problem: Five supplemental normative contract blocks,34 states and13 edges are outside the current schema/reference population; malformed and invented declarations pass authored structural admission.
+  targets:
+  - schemas/release-train-backtrace.schema.json
+  - spec/phase0/release-train-backtrace.yml
+  - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+  - tests/test_ci_state_matrix.py
+  - tests/test_backtrace_structural_coverage.py
+  - tests/test_installed_backtrace_structural_coverage.py
+  - spec/RELEASE_TRAIN_STATE_DAG.md
+  - docs/MAINTAINING.md
+  - canonical private runtime mirrors
+contract:
+- Freeze and retain the existing version2 structural reader; add an explicit version3 contract with closed root inventory covering all existing supplemental blocks and session transport, rather than silently changing legacy interpretation.
+- Migrate current authored backtrace to version3. Require complete known block populations, typed nonempty inputs/outputs/states/exclusions/edge contracts and exact primitive references; reject duplicate identities and invented root declarations before derived work.
+- Validate normative as a boolean and retain the authored-only non-authoritative status. Structural validation never grants execution, certification, phase, release or custody authority.
+- Preserve known schema and reference failure diagnostics where their causes remain applicable. Do not weaken source discovery, runtime conformance or existing negative controls.
+- Keep state names and edge endpoint vocabulary distinct: supplemental edge from/to values describe existing fact boundaries, not necessarily state IDs. Do not invent equality or reachability from names.
+- Legacy version2 input remains readable only as its historical weaker structural scope; it cannot satisfy version3 supplemental coverage by assertion or relabeling.
+verification:
+- Execute fresh and upgrade installed version3 validators with the source SDK absent; prove valid coverage, primitive/root rejection and legacy2 weaker scope against the actual installed schema.
+- Retain actual pre-change acceptances for undeclared primitive, empty states, nonboolean normative and an invented normative root.
+- Test all five supplemental blocks, missing blocks, malformed states/edges/exclusions, duplicate IDs and undeclared primitive references through authored-only admission.
+- Qualify unchanged legacy version2 reads and current version3 positive behavior separately; retain source/private parity and required architecture/governance/semantic checks.
+forbidden:
+- Editing a fixed subject under active qualification or submission.
+- Treating schema closure as complete lifecycle context or runtime effect conformance.
+- Generated workflow or authority pin edits, maintained adopters, immutable predecessor bytes and parallel registries/evaluators.
+next_action: Commit contract and genuine structural rejection tests before production/schema changes; all82 whole requirements remain open.
+
+installed_fixture_correction:
+  actual_evidence: audits/issue-394/joint-foundation-e639-qualification.json
+  cause: Probe supplied the backtrace without its existing DAG applicability artifact and assumed an ordinary-adopter not-applicable result carried authority metadata.
+  contract:
+  - Assert unchanged ordinary-adopter non-applicability before installing fixture-owned contract data.
+  - Materialize the complete canonical DAG reference as fixture data alongside the versioned backtrace; do not invent policy or relax production applicability.
+  - Reexecute both fresh and upgrade source-absent probes with existing positive, primitive/root/state rejection and legacy-scope assertions intact.
+  - Compare runtime, schema and unaffected test inputs to exact failed subject before treating prior scoped passes as applicable; fresh canonical proof remains required.

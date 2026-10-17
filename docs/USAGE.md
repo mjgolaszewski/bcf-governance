@@ -404,6 +404,11 @@ Administration read, Attestations read, and Contents write; the pinned token
 action revokes it in its post step. Operators never provision or remove a release
 token, and token format or length is not part of the contract.
 
+The canonical operation owner reconciles uncertain provider writes against the
+exact subject and provider outcome. Caller-authored outcome labels or an
+idempotency key do not authorize a retry. Historical recovery projections remain
+observations and cannot authorize a mutation.
+
 Workflow custody is compiled, not transcribed. Routine reconciliation owns the
 definition-plus-authority commit pair described above. The lower-level compiler
 remains available for diagnosis and reviewed recovery of an already committed
