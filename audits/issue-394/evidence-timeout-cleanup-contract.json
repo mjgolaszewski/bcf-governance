@@ -65,6 +65,8 @@
     "thread_inventory": "Zombie thread-group leaders do not prove their worker threads are terminal. Inventory all thread tasks in the owned ordinary group and reject/retry unstable identity populations within the existing deadline; never infer quiescence from leader state alone.",
     "interpreter_setup": "Route the existing30-second selected-interpreter metadata subprocess through the same owned command boundary. Compile that setup bound and its cleanup, plus main execution and cleanup and independent headroom. This still excludes namespace/filesystem and other complete-pipeline bounds.",
     "anchor_completeness": "A stable inventory still requires the unreaped leader PID and leader task in a terminal state. Empty or missing-anchor snapshots are unknown and cannot authorize success or namespace retirement.",
-    "exclusive_wait_owner": "Require default SIGCHLD disposition before namespace/process allocation. Ignored or custom disposition makes the exclusive unreaped-leader contract unavailable; reject before any command effect."
+    "exclusive_wait_owner": "Require default SIGCHLD disposition before namespace/process allocation. Ignored or custom disposition makes the exclusive unreaped-leader contract unavailable; reject before any command effect.",
+    "noninterference": "Owned-command terminal proof must not require a stable host-global PID population. Real unrelated process births cannot turn a completed ordinary command into a timeout or unresolved cleanup. Retain missing-anchor and zombie-thread rejection controls; do not weaken them to obtain this positive control.",
+    "next_backend_review": "Evaluate per-command kernel-owned child supervision using a private ephemeral Linux subreaper and waitid/waitpid ECHILD terminal proof. This is not an approved implementation or a claim of cgroup isolation. Commit the bounded ownership, interruption, setup/cleanup and unsupported-host contract before changing that backend."
   }
 }
