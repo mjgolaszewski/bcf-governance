@@ -1,0 +1,76 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Scoped provider body/framing guard and timeout preallocation; not full lifecycle or pipeline conformance",
+  "base_commit": "82fe5e7d3c1377c069fe60c6c968401f3a6a6c0e",
+  "production_sha256": {
+    "ci_github_response.py": "ea5a775256350946fa89521af50375639f5fc4d94282a097bc784adfb5b390db",
+    "provider_read.py": "b1674ad7593d4b50c828e685b06bfc8ad7e05ae9272fb504a49a7909f00e85e4",
+    "ci_github_api.py": "6e103db6ecdc4ec012bd737e7eb62ecccf45464148d929a9304414f029f18400",
+    "ci_github_transport.py": "9465d56070d340e2e88d4ba12a453a7c7dbbeaeb814ec15aa7cc0cca9397dba3",
+    "protection_inspection_client.py": "1519dda1fd3f39da2466a1c7388b62a979819d56977b195ffa9548366fceff24",
+    "evidence_storage_github_api.py": "5fe41b5897cfc8197c82b6b37b3a5c2ba278f322cc6591ef881864b29192ae08",
+    "governance_install/release_custody.py": "438a5bddae1ddfdfc962be6545fd9a0f686c06ddca14ce841f86378f7f166433"
+  },
+  "tests": {
+    "initial_deadline_red": 16,
+    "initial_preallocation_red": 8,
+    "latest_source_passed": 181,
+    "guard_and_binding_passed": 52,
+    "disabled_guard_expected_failures": 6,
+    "architecture_pack_prior_passed": 11
+  },
+  "retained_failures": [
+    {
+      "outcome": "178 passed, 1 failed",
+      "cause": "Added ownership entry invalidated existing policy digest; module moved into existing GitHub adapter ownership and original policy bytes restored."
+    },
+    {
+      "outcome": "governance failed",
+      "cause": "Upload with-statement refactoring removed exact negative-control search; original mutation point preserved with nested guard, oracle unchanged."
+    }
+  ],
+  "final_structural": {
+    "authority": false,
+    "stages": [
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "architecture",
+        "returncode": 0,
+        "output_sha256": "d8a663a81cc181eb028d17573d86a44e87e9eb4782bc7ccdebd61962aeaf7d77"
+      }
+    ]
+  },
+  "raw_output_sha256": {
+    "provider-response-deadline-initial-red.stdout": "435065a21b5e4b751185f80ff7dca04f03c326ea1429f2d1064bbb12e6fa8b31",
+    "provider-get-timeout-initial-red.stdout": "810c2c2f82603020f77e607ada7bb17785745d2664870b4596e47d4f7853b212",
+    "provider-response-bounded-consumer-suite.stdout": "5d5afe8b248d25de5368ba49be07c293c5d28b226dc09a9869d919db37e8b338",
+    "provider-response-guard-and-binding.stdout": "518c2ab8323f0c7110a1bea6fbf839b8ea2c0e22b98dd87026263f63b36fa58c",
+    "provider-response-disabled-guard.stdout": "f41306ba88072cfc5e6964d65df6df7bc4afc5f8fc65b36d15849a618abcd1d6",
+    "provider-response-governance.stdout": "e1cd782bc0511e7a6d557a72c9be2a03d90fe5d0fc68ff48cc0cce1ce95d0849",
+    "provider-response-final-source-suite.stdout": "4e9e5243a3177e7c06e2263a96a9576bafe15ebf25e8231a08bff2176e0b9413",
+    "provider-response-final-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "limits": [
+    "Fresh and upgrade installed-runtime probes remain pending.",
+    "Broader API consumer, semantic and full canonical qualification remain pending.",
+    "Actual TLS chain and supported interpreter matrix remain pending.",
+    "DNS, connection, header setup, retry, filesystem flush and cleanup bounds are not established by this guard.",
+    "General JSON byte cap and complete typed dynamic byte-limit admission remain open.",
+    "All82 whole requirements remain not_executed; P32 active, P33-P35 dormant."
+  ]
+}

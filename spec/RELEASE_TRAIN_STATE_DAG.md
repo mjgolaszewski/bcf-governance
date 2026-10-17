@@ -2535,3 +2535,5 @@ work. Each primitive must resolve in the existing canonical primitive list;
 negative-control fixture qualification uses PRIM-QUALIFICATION rather than the
 previous undeclared label. Historical version2 retains its weaker reader.
 Neither structural version establishes complete lifecycle/runtime conformance.
+
+P32 provider-body deadline refinement: the seven canonical response consumers share an elapsed budget below HTTP chunk framing, independent of socket inactivity. This structural projection retains setup, outer deadlines, cleanup and installed conformance as open work; it confers no phase or release authority.

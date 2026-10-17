@@ -9,6 +9,7 @@ from urllib.request import Request
 
 from .ci_github_downloads import GitHubDownloadKind, build_download_request
 from .provider_read import ProviderReadAttempt, ProviderReadError, open_provider_get
+from .ci_github_response import provider_response_deadline
 
 
 class GitHubTransportError(ValueError):
@@ -53,8 +54,8 @@ def request_json(
             if method == "GET"
             else opener(request, timeout=30)
         )
-        with operation as response:
-            raw = response.read()
+        with operation as response, provider_response_deadline(response, timeout=30) as bounded:
+            raw = bounded.read()
     except HTTPError as exc:
         if not_found_none and method == "GET" and exc.code == 404:
             return None
@@ -95,8 +96,8 @@ def request_bytes(
     try:
         with open_provider_get(
             request, timeout=30, opener=opener, observations=observations
-        ) as response:
-            raw = response.read(maximum_bytes + 1)
+        ) as response, provider_response_deadline(response, timeout=30) as bounded:
+            raw = bounded.read(maximum_bytes + 1)
     except HTTPError as exc:
         raise GitHubTransportError(f"GitHub API GET {path} returned {exc.code}") from exc
     except (OSError, URLError, ProviderReadError) as exc:

@@ -13,6 +13,8 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request
 
 from .ci_recovery_frontier import provider_read_frontier
+from .ci_github_response import provider_response_deadline as provider_response_deadline
+from .ci_github_response import validate_provider_timeout
 
 
 RETRYABLE_HTTP = frozenset({429, 500, 502, 503, 504})
@@ -69,6 +71,10 @@ def open_provider_get(
 
     if request.get_method() != "GET":
         raise ProviderReadError("provider retry transport accepts GET only")
+    try:
+        validate_provider_timeout(timeout)
+    except ValueError as exc:
+        raise ProviderReadError("provider GET timeout is invalid") from exc
     request_sha256 = hashlib.sha256(
         f"GET\0{request.full_url}".encode()
     ).hexdigest()

@@ -463,3 +463,5 @@ Schema/reference acceptance grants no runtime or lifecycle authority. Source,
 test/control execution, protected context completeness, freshness and terminal
 custody remain separate requirements. Supplemental fact-boundary edge names
 are not implicitly state IDs or proof of reachability.
+
+Provider body deadlines are owned by `ci_github_response.py` beneath the standard Python HTTP chunk parser. Canonical JSON, archive, protection, release-custody and evidence readers retain one body budget across repeated reads, including chunk headers and trailers. Unsupported transport adapters fail closed. Existing socket inactivity limits remain in force. This scoped guard does not establish total DNS, connection, header, retry, file-sync or cleanup bounds; full pipeline deadline validation remains required. Mutation response expiry is uncertain completion and must use the existing concrete reconciliation owner without a blind write retry.

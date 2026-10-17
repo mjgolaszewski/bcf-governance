@@ -20,6 +20,7 @@ from .ci_github_downloads import (
     open_download,
 )
 from .provider_read import ProviderReadAttempt
+from .ci_github_response import provider_response_deadline
 from .ci_github_errors import GitHubAPIConflictError, GitHubAPIError
 from .ci_github_release_api import GitHubReleaseAPIMixin
 from .ci_github_transport import GitHubTransportError, request_bytes, request_json
@@ -124,7 +125,8 @@ class GitHubAPI(
         )
         try:
             with open_download(request, timeout=60) as response:
-                raw = response.read(1_048_577)
+                with provider_response_deadline(response, timeout=60) as bounded:
+                    raw = bounded.read(1_048_577)
         except HTTPError as exc:
             if exc.code in {409, 422}:
                 raise GitHubAPIConflictError(

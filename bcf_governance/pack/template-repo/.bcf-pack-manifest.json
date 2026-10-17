@@ -600,7 +600,7 @@
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
-      "sha256": "781f38fe0a1dd04bf67b379848078de72225c6939d14feaa0d9ec13410bb41d5"
+      "sha256": "6e103db6ecdc4ec012bd737e7eb62ecccf45464148d929a9304414f029f18400"
     },
     "scripts/_bcf_runtime/ci_github_artifact_inventory.py": {
       "operation": "copy",
@@ -702,13 +702,17 @@
       "operation": "copy",
       "sha256": "8b9fad9ab7eb5cba34aeba69796554375ee5ea2c73feec89b42b5e47c3f404e7"
     },
+    "scripts/_bcf_runtime/ci_github_response.py": {
+      "operation": "copy",
+      "sha256": "ea5a775256350946fa89521af50375639f5fc4d94282a097bc784adfb5b390db"
+    },
     "scripts/_bcf_runtime/ci_github_status.py": {
       "operation": "copy",
       "sha256": "c247db4d4d986ef31690767bacb098411cba88523566aa945f113cd18c519249"
     },
     "scripts/_bcf_runtime/ci_github_transport.py": {
       "operation": "copy",
-      "sha256": "063c1d76a59fe5bb4f093a327e93479f035aa63b3406a50b9d51bb1343470757"
+      "sha256": "9465d56070d340e2e88d4ba12a453a7c7dbbeaeb814ec15aa7cc0cca9397dba3"
     },
     "scripts/_bcf_runtime/ci_github_values.py": {
       "operation": "copy",
@@ -992,7 +996,7 @@
     },
     "scripts/_bcf_runtime/evidence_storage_github_api.py": {
       "operation": "copy",
-      "sha256": "4fa1db5e38e0f454951551eed10a8b89ff1d5b9465d2deb2768ae09ae8d9b3ab"
+      "sha256": "5fe41b5897cfc8197c82b6b37b3a5c2ba278f322cc6591ef881864b29192ae08"
     },
     "scripts/_bcf_runtime/evidence_storage_github_releases.py": {
       "operation": "copy",
@@ -1100,7 +1104,7 @@
     },
     "scripts/_bcf_runtime/governance_install/release_custody.py": {
       "operation": "copy",
-      "sha256": "9d919d61cb5e237ce4b17caa35678345c955d7f69f812570a259d3df627c37ff"
+      "sha256": "438a5bddae1ddfdfc962be6545fd9a0f686c06ddca14ce841f86378f7f166433"
     },
     "scripts/_bcf_runtime/governance_install/reporting.py": {
       "operation": "copy",
@@ -1363,7 +1367,7 @@
     },
     "scripts/_bcf_runtime/protection_inspection_client.py": {
       "operation": "copy",
-      "sha256": "cf494b7d1ffbc69f3c279ae1139fa555f40652777db2b601a835c54dcd06225e"
+      "sha256": "1519dda1fd3f39da2466a1c7388b62a979819d56977b195ffa9548366fceff24"
     },
     "scripts/_bcf_runtime/provider_job_inventory.py": {
       "operation": "copy",
@@ -1371,7 +1375,7 @@
     },
     "scripts/_bcf_runtime/provider_read.py": {
       "operation": "copy",
-      "sha256": "7a2b8cd2d05aeedaf3d4167c74594ac57cf05e7b9a721a9c6f282071bda24c4b"
+      "sha256": "b1674ad7593d4b50c828e685b06bfc8ad7e05ae9272fb504a49a7909f00e85e4"
     },
     "scripts/_bcf_runtime/provider_reuse_closure.py": {
       "operation": "copy",

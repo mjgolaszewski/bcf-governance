@@ -242,15 +242,17 @@ def test_release_provider_exposes_get_only_exact_official_endpoints(
 ) -> None:
     requests: list[Request] = []
 
-    class _Response:
+    from io import BytesIO
+
+    class _Response(BytesIO):
+        def __init__(self):
+            super().__init__(b'{"id":1207503211,"full_name":"mjgolaszewski/bcf-governance"}')
+
         def __enter__(self) -> _Response:
             return self
 
         def __exit__(self, *_args: object) -> None:
             return None
-
-        def read(self, _limit: int) -> bytes:
-            return b'{"id":1207503211,"full_name":"mjgolaszewski/bcf-governance"}'
 
     def opened(request: Request, *, timeout: int) -> _Response:
         assert timeout == 30

@@ -298,6 +298,7 @@ closeout_requirements:
 known_constraints:
 - update canonical governed artifacts together when behavior or environment contracts change
 next_work:
+- "Isolated provider body guard passes181 affected cases,52 focused/binding cases and6 disabled-guard failures; final lint/type/pack/architecture/governance pass. Installed/semantic/API qualification and full outer bounds remain pending; all82 whole requirements open. See audits/issue-394/provider-response-deadline-verification.json."
 - Real chunked framing probe also defeats read1-only elapsed checks; preserve provider-response-chunked-characterization.json and qualify cancellation or underlying framing before implementing a bounded reader.
 - Provider response elapsed bounds contracted separately at93b553e1 with independent seven-site AST census; real local drip characterization exceeded socket inactivity timeout while canonical reader succeeded. Production unchanged; qualify body bounds and all consumers before claiming deadline closure.
 - Normalized305 compiler characterization passes332 cases with unchanged source; historical oracle failure retained in audits/issue-394/lifecycle-population-characterization.json; proceed with contracted pure extraction, full populations remain open

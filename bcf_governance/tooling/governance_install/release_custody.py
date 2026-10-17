@@ -17,6 +17,7 @@ import zipfile
 
 from ..ci_github_downloads import open_download
 from ..provider_read import ProviderReadError, open_provider_get
+from ..ci_github_response import provider_response_deadline
 from ..ci_github_artifacts import provider_digest
 from ..release_asset_inventory import (
     exact_assets,
@@ -85,8 +86,8 @@ class ReadOnlyReleaseProvider:
         try:
             with open_provider_get(
                 request, timeout=30, opener=open_download
-            ) as response:
-                raw = response.read(4 * 1024 * 1024 + 1)
+            ) as response, provider_response_deadline(response, timeout=30) as bounded:
+                raw = bounded.read(4 * 1024 * 1024 + 1)
         except (HTTPError, OSError, URLError, ProviderReadError) as exc:
             raise ReleaseCustodyError(f"release custody GET failed: {path}") from exc
         if len(raw) > 4 * 1024 * 1024:

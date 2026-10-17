@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Bound canonical provider response bodies and chunk framing with one elapsed budget while preserving inactivity limits, uncertain-write recovery and existing validation.
+
 Release target: `2.5.0`
 
 ### Added

@@ -19,6 +19,7 @@ from .ci_github_downloads import (
     open_download,
 )
 from .provider_read import ProviderReadError, open_provider_get
+from .ci_github_response import provider_response_deadline
 
 
 EVIDENCE_TAG = re.compile(r"^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$")
@@ -158,8 +159,10 @@ class GitHubEvidenceAPI(GitHubAPI):
                         "Content-Length": str(size),
                     },
                 )
-                with open_download(request, timeout=300) as response:
-                    raw = response.read(1_048_577)
+                with open_download(request, timeout=300) as response, provider_response_deadline(
+                    response, timeout=300
+                ) as bounded:
+                    raw = bounded.read(1_048_577)
         except HTTPError as exc:
             raise GitHubAPIError(f"GitHub evidence asset upload returned {exc.code}") from exc
         except (OSError, URLError) as exc:
@@ -244,8 +247,8 @@ class GitHubEvidenceAPI(GitHubAPI):
             with os.fdopen(descriptor, "wb") as output:
                 with open_provider_get(
                     request, timeout=300, opener=open_download
-                ) as response:  # noqa: S310
-                    for chunk in iter(lambda: response.read(1024 * 1024), b""):
+                ) as response, provider_response_deadline(response, timeout=300) as bounded:  # noqa: S310
+                    for chunk in iter(lambda: bounded.read(1024 * 1024), b""):
                         total += len(chunk)
                         if total > maximum_bytes:
                             raise GitHubAPIError(
