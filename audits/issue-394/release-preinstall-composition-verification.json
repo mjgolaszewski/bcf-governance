@@ -1,0 +1,109 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_ordering_qualified_exact_distribution_and_installed_matrix_pending",
+  "source_base_commit": "69851fa1a0e2e2fce6cefa523628733ff8c7526d",
+  "scope": "Existing run_release_runtime_verification archive and exact wheel/source checks now precede candidate installation/execution; malformed archive checks precede any subprocess and output allocation. Scratch sdist extraction precedes environment allocation. Strict metadata admission now precedes candidate installation using the dependency environment.",
+  "initial_failed": 5,
+  "initial_affected_passed": 29,
+  "expanded_affected_passed": 34,
+  "architecture_passed": 5,
+  "cause_controls": {
+    "archive_admission": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 6
+    },
+    "source_mapping_order": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 2
+    },
+    "metadata_order": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 1
+    }
+  },
+  "checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture": 0,
+    "governance": 0,
+    "exposure": 0
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/release_runtime_verification.py": "6bf0032e6fc1bdb329de2fdfc9f5868e0c4cb279b020284a81f925e6b5829a0f"
+  },
+  "raw_output_sha256": {
+    "release-preinstall-architecture.stdout": "1610f9de64b89ce6ed59560ba5747a5a6f4a6c1e8165155123df4d171611b1e9",
+    "release-preinstall-composition-expanded.stdout": "db0dfee7316f9bac553dcc28e6bd343e00f7d089975f347a8c8cf4cae40c5839",
+    "release-preinstall-composition-final.stdout": "32759dd13b3c2aa6c7319c9d88d537853144b4e116396b3579a60bd69c6f12f5",
+    "release-preinstall-composition-green.stdout": "09381dcb437678e13fe0c69735e49108330d0d3673a2cbacaee949c725a659f8",
+    "release-preinstall-composition-red.stdout": "b25323dd26c6003a5c3a2116ec868fcd4b9aea52e8610ff51ff3ba12360b153c",
+    "release-preinstall-control-archives-final.stdout": "d53a5ce91486e106bdd88012caebf17ed431852ddde6de7f79f28e62c35f2397",
+    "release-preinstall-control-archives.stdout": "f8ee8243de87725b4e32e247e7c25b9705a012b6b369d4934f82fe12f55d5918",
+    "release-preinstall-control-mapping-order-final.stdout": "969c17775dbd2a51d5cb9cda599ad58e33bcb3f5d7b74b0aca8cac391b6cc2d6",
+    "release-preinstall-control-mapping-order.stdout": "8edc548744ecc7e31b35ee0c3e0c20b49625bcc17eb5f37dda26a6e141585b31",
+    "release-preinstall-control-metadata-order-final.stdout": "db3257a8116f0a3c41698df5b911c0fc5470628587a932b68e961648c8c1bbcc",
+    "release-preinstall-current-control-archives.stdout": "bf003f0ef0318d10b2eaacb679b78453a32f73a3092819ecbe69f7da353d3f05",
+    "release-preinstall-current-control-mapping-order.stdout": "4f81b87c0c009c1f191ce315c9fd3064fc6a884f12087402963f3ac8aa3528bf",
+    "release-preinstall-current-control-metadata-order.stdout": "dabda77dd0dd5014519cb63df230c32c59a29b7df36f589f3e14dd4e23f985ba",
+    "release-preinstall-final-architecture.stdout": "8f64635097a2f19575e45764df2a04e6159ead4eb5a10f79284a4fc44d28c76b",
+    "release-preinstall-final-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "release-preinstall-final-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-preinstall-final-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-preinstall-governance-corrected.stdout": "65a224f1a210fb49c6d74b43a7a3428aa66b8b447c4fb0a2c4f92623d750fa2a",
+    "release-preinstall-governance-final.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "release-preinstall-governance.stdout": "7ff8c94a815d359fb6ba974b2531f2f38cf2b2183fe8ac238197201a619272fe",
+    "release-preinstall-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-preinstall-metadata-red.stdout": "32230bac455042c7d773df3b4468bd31b9734739c472dcb8cd950bea8016b4e7",
+    "release-preinstall-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "historical_distribution": {
+    "source_commit": "69851fa1a0e2e2fce6cefa523628733ff8c7526d",
+    "build_returncode": 0,
+    "wheel_source_mapped_files": 788,
+    "installed_started": false,
+    "disposition": "Historical exact-source development artifacts retained; subsequent source change requires fresh exact bytes and qualification.",
+    "artifacts": [
+      {
+        "name": "bcf_governance-2.5.0-py3-none-any.whl",
+        "bytes": 2088499,
+        "sha256": "2415f723d7cb53c21806d487b106271854d2dbe1db782b2954b0c081eff656e6"
+      },
+      {
+        "name": "bcf_governance-2.5.0.tar.gz",
+        "bytes": 9014839,
+        "sha256": "fdd1794c45cb4c56803fa961a9db6614f9e0bbfa0b6ff0e5df798dfe00363138"
+      }
+    ]
+  },
+  "limits": [
+    "No provider release/custody or independent certification claim.",
+    "No whole requirement, slice status or lifecycle activation advances.",
+    "Full SDK/private/profile/adopter runtime conformance and composed deadlines remain open."
+  ],
+  "next_action": "Complete source governance and semantic checks, commit bounded correction, then build and qualify exact corrected artifacts through existing owners at fresh nonblocking shared admission.",
+  "contract_commits": [
+    "7a5ba213",
+    "0f7fe72d"
+  ],
+  "metadata_followup_initial_failed": 1,
+  "final_affected_passed": 35,
+  "retained_deviations": [
+    {
+      "operation": "Initial broader semantic scan",
+      "terminal": 143,
+      "disposition": "Intentionally terminated after source changed; exact PID/command and zero children checked first. No final-source semantic claim from this superseded run."
+    },
+    {
+      "operation": "Governance ledger budget",
+      "returncodes": [
+        1,
+        1
+      ],
+      "disposition": "New verbose active-ledger projection exceeded existing16KiB bound. Removed only the new duplicate statement; existing history preserved, current priority updated and detailed evidence retained in existing audit/phase/MEMORY owners. Final ledger16367bytes; unchanged budget."
+    }
+  ]
+}

@@ -288,5 +288,10 @@
     "cause_controls_passed": 6,
     "installed_execution_qualified": true,
     "installed_lite_fresh_same_candidate_upgrade_passed": 2
+  },
+  "release_preinstall_composition": {
+    "verification": "audits/issue-394/release-preinstall-composition-verification.json",
+    "source_ordering_qualified": true,
+    "full_distribution_installed_profile_adopter_qualified": false
   }
 }

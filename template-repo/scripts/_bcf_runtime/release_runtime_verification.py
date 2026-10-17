@@ -243,6 +243,8 @@ def run_release_runtime_verification(
     lock = _regular(lock_path, "release lock")
     exact_wheel = _regular(wheel, "release wheel")
     exact_sdist = _regular(sdist, "release sdist")
+    verify_archive(exact_wheel)
+    verify_archive(exact_sdist)
     closure = verify_wheelhouse(manifest, lock, wheelhouse.resolve())
     identity = subprocess.run(
         [str(selected), "-c", "import platform;print(platform.python_version())"],
@@ -262,11 +264,20 @@ def run_release_runtime_verification(
     commands: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-verify-") as temporary:
         root = Path(temporary)
+        source = _extract_sdist(exact_sdist, root / "source")
+        source_mapping = _validate_wheel_source_mapping(exact_wheel, source)
         wheel_python, wheel_env, created = _environment(
             selected, root / "wheel-env", wheelhouse=wheelhouse.resolve(),
             lock_path=lock, output_dir=output_dir, label="wheel",
         )
         commands.extend(created)
+        commands.append(
+            _run(
+                "twine-check",
+                [str(wheel_python), "-m", "twine", "check", "--strict", str(exact_wheel), str(exact_sdist)],
+                cwd=root, env=wheel_env, output_dir=output_dir,
+            )
+        )
         commands.append(
             _run(
                 "wheel-install",
@@ -281,15 +292,6 @@ def run_release_runtime_verification(
                 cwd=root, env=wheel_env, output_dir=output_dir,
             )
         )
-        commands.append(
-            _run(
-                "twine-check",
-                [str(wheel_python), "-m", "twine", "check", "--strict", str(exact_wheel), str(exact_sdist)],
-                cwd=root, env=wheel_env, output_dir=output_dir,
-            )
-        )
-        source = _extract_sdist(exact_sdist, root / "source")
-        source_mapping = _validate_wheel_source_mapping(exact_wheel, source)
         sdist_python, sdist_env, created = _environment(
             selected, root / "sdist-env", wheelhouse=wheelhouse.resolve(),
             lock_path=lock, output_dir=output_dir, label="sdist",
