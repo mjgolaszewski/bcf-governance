@@ -1,0 +1,16 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Copied template-runtime rehearsal only; no installer or upgrade executed",
+  "returncode": 0,
+  "probe_sha256": "22abe226aa4513aac6e33ef25cc0dfaf2eb9794f4a1bad920f1ce450d70bbcef",
+  "stdout_sha256": "2a4cbd9ffc21748ae03af3f64a605448841cbf136d45672ed45c0c63066eba93",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source_inventory_sha256": "3803dae471d1241155ae217f13229480dcf78aeb46a1de72eea180cd1c8a4bbb",
+  "test_module_sha256": "a8d4544f6d1088a5a7f0ba7d3daa1b6a68f2dce767db7e2ce14f33025d909a69",
+  "collection": {
+    "fresh": true,
+    "upgrade": true,
+    "actual_installed_execution": "pending"
+  }
+}
