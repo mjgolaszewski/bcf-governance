@@ -61,14 +61,6 @@ _EDGES = {
     ("controller_transition", "protected_policy_change"): (
         "invoke_exact_alternate_lane", "ordinary_current"
     ),
-    ("mutation_result", "unknown"): (
-        "observe_mutation_state", "classified_mutation_result"
-    ),
-    ("mutation_result", "committed"): ("consume_exact_result", "operation_continues"),
-    ("mutation_result", "not_committed"): (
-        "retry_same_idempotent_operation", "classified_mutation_result"
-    ),
-    ("mutation_result", "conflict"): ("stop", "terminal_blocked"),
 }
 
 

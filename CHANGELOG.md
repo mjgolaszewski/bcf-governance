@@ -27,6 +27,9 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Retire unconsumed generic mutation recovery projections that accepted unbound
+  outcomes. Existing operation owners continue to derive exact recovery actions;
+  caller-supplied keys or authentication flags cannot create retry authority.
 - Independently validate complete CI node-pair populations at the consuming
   graph boundary before downstream checks. Reject missing, duplicate or malformed
   edges; preserve compiler imports and installed private-runtime behavior.

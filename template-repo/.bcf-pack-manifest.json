@@ -864,7 +864,7 @@
     },
     "scripts/_bcf_runtime/ci_recovery_frontier.py": {
       "operation": "copy",
-      "sha256": "17c678df108175df22190b921deb1686ba719f4c3b91c7cd1fed6040cb1fc31d"
+      "sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",

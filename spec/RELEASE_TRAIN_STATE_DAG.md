@@ -2518,3 +2518,11 @@ TR-003 execution consumes the gate registry's execution and cleanup bounds. The 
 The existing composition compiler delegates canonical byte serialization, CI-edge population hashing and static effect population validation to `ci_graph_composition_populations`. Public compiler imports, typed errors and function bodies are preserved. The full332-case compiler characterization passes before and after extraction. This change creates space for protected population derivation; it neither supplies the missing protected consumer nor qualifies complete runtime conformance. Caller-selected expected populations and static test references remain insufficient for lifecycle authority.
 
 The graph-consuming boundary independently derives all ordered distinct-node pairs from canonical workflow/job inventory and checks the edge producer output before timeout, resource and authority validation. Missing, duplicate, invented or self pairs, malformed reachability and contradictory dispositions reject there even if producer-side checks omit the same pair. This is a bounded CI pair-population invariant; it does not establish lifecycle-context completeness, semantic reachability of a forged canonical exclusion or runtime conformance.
+
+The unconsumed generic mutation-result frontier edges are retired. Arbitrary
+outcome labels, identity maps, prerequisite strings and caller keys cannot select
+a mutation retry. The existing exact submission, provider, immutable-read,
+protected-merge and controller owners retain their supported projections and
+must authenticate facts at consumption. This retirement closes an unsupported
+projection ingress; complete transaction recovery and terminal conformance remain
+separate lifecycle obligations.
