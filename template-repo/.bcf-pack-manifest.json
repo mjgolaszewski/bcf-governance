@@ -540,7 +540,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_prospective_telemetry.py": {
       "operation": "copy",
-      "sha256": "d7d57beed63bdd5f3f38c744384e681d57aae1ef2a6ed4f8646a1ace4302a653"
+      "sha256": "378c4a712e8c46232993dde8bd06f062af868c7426a9e4ee17953f38fe652aea"
     },
     "scripts/_bcf_runtime/ci_authority_prospective_truth.py": {
       "operation": "copy",
@@ -1295,7 +1295,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "824203662e3b6a690c0727d5561d7202eab6b5bf34f5117758e70891112e9934"
+      "sha256": "9851b7ce99ef208c09908a98fc8efdc008b5294a06833cc9e1c2e2a2ce608e4b"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",

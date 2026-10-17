@@ -44,6 +44,7 @@ from .ci_authority_prospective_telemetry import (
     ProspectiveTelemetryError,
     elapsed_ms as _elapsed_ms,
     validate_train_telemetry,
+    prospective_progress,
 )
 from .ci_github_api import GitHubAPI
 from .routine_controller_provider import effective_controller_authority
@@ -72,7 +73,6 @@ from .local_proof_bundles import (
 from .operational_observations import (
     amplification_observation,
     lifecycle_projection,
-    progress_event,
     validate_operational_observation,
     validate_progress_stream,
 )
@@ -179,25 +179,9 @@ def _run_prospective_train(
     )
     identity = _candidate_identity(root, context, runner=runner)
     measurements: list[dict[str, Any]] = []
-    progress: list[dict[str, Any]] = []
-    progress_started = time.monotonic_ns()
-
-    def emit(stage: str, state: str) -> None:
-        event = progress_event(
-            execution_id=subject_commit,
-            sequence=len(progress) + 1,
-            stage=stage,
-            state=state,
-            monotonic_ms=_elapsed_ms(progress_started),
-        )
-        progress.append(event)
-        validate_operational_observation(root, event)
-        if progress_sink is not None:
-            progress_sink(event)
-
-    def fail_stage(stage: str) -> None:
-        if progress and progress[-1]["stage"] == stage and progress[-1]["state"] == "started":
-            emit(stage, "failed")
+    progress, emit, fail_stage = prospective_progress(
+        root, subject_commit, progress_sink, validate_operational_observation
+    )
     if re.fullmatch(r"[a-f0-9]{40}", subject_commit) is None or re.fullmatch(
         r"[a-f0-9]{40}", subject_tree
     ) is None:

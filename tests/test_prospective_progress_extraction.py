@@ -1,6 +1,8 @@
 """Keep actual prospective event semantics while moving progress ownership."""
 
 from pathlib import Path
+import ast
+import inspect
 
 import pytest
 
@@ -97,4 +99,29 @@ def test_actual_progress_without_sink_still_validates_events(tmp_path, monkeypat
     monkeypatch.setattr(prospective, "validate_operational_observation", lambda root, event: events.append(event))
     _run(tmp_path, None)
     assert events
+    validate_progress_stream(events)
+
+
+def test_progress_bookkeeping_has_one_existing_owner_and_matching_start_failure():
+    from bcf_governance.tooling import ci_authority_prospective_telemetry as owner
+    code = ast.parse(inspect.getsource(prospective._run_prospective_train))
+    assert not any(isinstance(node, ast.FunctionDef) and node.name in {"emit", "fail_stage"}
+                   for node in ast.walk(code))
+    assert prospective.prospective_progress is owner.prospective_progress
+    events, emit, fail = owner.prospective_progress(REPO_ROOT, TRAIN["subject_commit"], None,
+                                                  validate_operational_observation)
+    fail("missing")
+    assert events == []
+    emit("first", "started")
+    fail("other")
+    assert len(events) == 1
+    emit("first", "complete")
+    fail("first")
+    assert len(events) == 2
+    emit("second", "started")
+    fail("second")
+    fail("second")
+    assert [(event["stage"], event["state"]) for event in events[-2:]] == [
+        ("second", "started"), ("second", "failed"),
+    ]
     validate_progress_stream(events)

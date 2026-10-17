@@ -5,9 +5,11 @@ from __future__ import annotations
 import json
 from pathlib import Path
 import time
-from typing import Any
+from typing import Any, Callable
 
 from jsonschema import Draft202012Validator
+
+from .operational_observations import progress_event
 
 
 class ProspectiveTelemetryError(ValueError):
@@ -44,3 +46,31 @@ def validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None
         raise ProspectiveTelemetryError(
             "prospective train telemetry is invalid: " + errors[0].message
         )
+
+
+def prospective_progress(
+    root: Path, subject_commit: str, progress_sink: Callable[[dict[str, Any]], None] | None,
+    validate_event: Callable[[Path, dict[str, Any]], None],
+) -> tuple[list[dict[str, Any]], Callable[[str, str], None], Callable[[str], None]]:
+    """Own existing progress bookkeeping without granting proof authority."""
+
+    progress: list[dict[str, Any]] = []
+    progress_started = time.monotonic_ns()
+
+    def emit(stage: str, state: str) -> None:
+        event = progress_event(
+            execution_id=subject_commit,
+            sequence=len(progress) + 1,
+            stage=stage,
+            state=state,
+            monotonic_ms=elapsed_ms(progress_started),
+        )
+        progress.append(event)
+        validate_event(root, event)
+        if progress_sink is not None:
+            progress_sink(event)
+
+    def fail_stage(stage: str) -> None:
+        if progress and progress[-1]["stage"] == stage and progress[-1]["state"] == "started":
+            emit(stage, "failed")
+    return progress, emit, fail_stage

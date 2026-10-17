@@ -197,5 +197,12 @@
     "source_implemented": true,
     "current_governance_returncode": 0,
     "context_forwarding_and_installed_qualification": "pending"
+  },
+  "local_owner_deconstruction": {
+    "verification": "audits/issue-394/local-progress-extraction-verification.json",
+    "source_lines": 784,
+    "telemetry_lines": 76,
+    "remaining_use_case_ast_identical": true,
+    "phase_context_forwarding": "not_implemented"
   }
 }

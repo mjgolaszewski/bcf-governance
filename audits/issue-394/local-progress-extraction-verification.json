@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "pure_source_extraction_qualified",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "source_base_commit": "3a454e77",
+  "characterization_before": 5,
+  "affected_after_passed": 142,
+  "final_characterization_and_architecture_passed": 10,
+  "ast_preservation": {
+    "authority": false,
+    "source_lines_before": 800,
+    "source_lines_after": 784,
+    "telemetry_owner_lines": 76,
+    "nested_progress_ast_preserved_after_declared_dependency_names": {
+      "emit": "d861a005e78e4f01d15f6c2d394c884cfee83bf6e4e5b49b6961527d666f4fc2",
+      "fail_stage": "59bfccf9ebe312ddcec9878869a406187885da4e52b8041add5564dbede6dc50"
+    },
+    "remaining_use_case_ast_identical": true,
+    "behavior_changed": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/local_pr.py": "9851b7ce99ef208c09908a98fc8efdc008b5294a06833cc9e1c2e2a2ce608e4b",
+    "bcf_governance/tooling/ci_authority_prospective_telemetry.py": "378c4a712e8c46232993dde8bd06f062af868c7426a9e4ee17953f38fe652aea"
+  },
+  "raw_output_sha256": {
+    "local-progress-before-extraction.stdout": "a14c60546d1147a2d59daa622b2d1384e38e0e5f909f0cefcb736300307f8fb0",
+    "local-progress-after-extraction.stdout": "d92616e890a06ea93fadc0a0043386c00048901c1d01d5f8c7d4aed3a6f25e95",
+    "local-progress-boundary-architecture.stdout": "90621a1a173ce802dc0316b5cd53470ac1573754d0ee2f80287fc150a4d6a7d1",
+    "local-progress-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-progress-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-progress-extraction-ast.json": "9c92d47d6be6aac7e900009b2d5f936e75e08ab21a0d43fdd2c5b157c495ec7d",
+    "local-progress-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "local-progress-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "governance": 0,
+    "pack_parity": 0
+  },
+  "limits": [
+    "Pure progress ownership extraction, not phase-context forwarding or new authority.",
+    "Local owner784 lines; telemetry owner76 lines.",
+    "Installed/semantic qualification remains required before integration.",
+    "All82 whole requirements remain open."
+  ]
+}
