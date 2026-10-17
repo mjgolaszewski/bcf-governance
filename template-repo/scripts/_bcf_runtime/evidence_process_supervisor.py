@@ -68,6 +68,8 @@ def _observe(process, connection, selector, buffers, deadline):
         if remaining <= 0:
             raise OwnedProcessError('child cleanup exceeded its composed command deadline')
         if ended is not None and not selector.get_map():
+            if data:
+                raise OwnedProcessError('partial extra child cleanup frame contradicts completion')
             value = _terminal_result(terminal, process.pid)
             if process.wait(timeout=0) != 0:
                 raise OwnedProcessError('supervisor failed after child cleanup')
@@ -110,7 +112,8 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
                 f'bcf execution infrastructure failure: {exc}')
         inherited.close()
         ready = _receive(connection, body_deadline)
-        if ready != {'type': 'ready', 'supervisor_pid': process.pid}:
+        if (not isinstance(ready, dict) or type(ready.get('supervisor_pid')) is not int
+                or ready != {'type': 'ready', 'supervisor_pid': process.pid}):
             raise OwnedProcessError('child supervisor could not establish exclusive custody')
         _send(connection, {'command': command})
         connection.setblocking(False)

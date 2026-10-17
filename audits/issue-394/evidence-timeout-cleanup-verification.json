@@ -55,7 +55,7 @@
       "elapsed_ms": 30581
     }
   ],
-  "scope": "Isolated kernel-owned replacement prototype:37 focused controls PASS and native lint/type/module/context checks PASS. Prior global-inventory failures remain retained below. Full consumer/cause-specific governance, semantic, package and installed qualification remain pending; no integration or whole deadline/acceptance closure.",
+  "scope": "Kernel-owned prototype: a9 exact qualification259 source/2 actual installed plus native/semantic/governance/exposurePASS. Later protocol review produced2genuine RED controls; corrected source has39 focused passes. Exact changed-byte consumer/package/private qualification remains pending; no integration or whole acceptance claim.",
   "limits": [
     "Complete semantic/cause-specific governance, source/private/install/package and actual consumer qualification before integration.",
     "Group observations do not prove escaped-session/cgroup isolation, global host admission, namespace-removal elapsed bounds, or full sibling deadline composition.",
@@ -395,5 +395,22 @@
     "source_cases": 259,
     "installed_cases": 2,
     "scope": "Bounded exact a9 source/private fresh-upgrade qualification. Integration remains pending additional protocol contradiction review; no complete isolation, whole deadline or acceptance claim."
+  },
+  "protocol_boundary_review": {
+    "authority": false,
+    "red_subject": "39f79f30",
+    "red_cases": 2,
+    "focused_cases_after_correction": 39,
+    "causes": [
+      "Readiness float PID was accepted and command allocation proceeded.",
+      "Partial trailing completion bytes were ignored after a valid frame."
+    ],
+    "streams": {
+      "evidence-owned-protocol-red.stdout": "67f885f9877aa8aa248d701268f72af74166519e60aad819ddb5d7e09d90c378",
+      "evidence-owned-protocol-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-protocol-green.stdout": "7119b99dc68904484d371781556f3a7ca6b97c290a50e02d2595864cddca26c4",
+      "evidence-owned-protocol-green.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "next_action": "Requalify exact changed source/private/installed bytes before integration; earlier a9 qualification remains scoped to its original subject."
   }
 }
