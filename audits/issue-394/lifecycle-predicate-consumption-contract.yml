@@ -192,3 +192,20 @@ exact_main_policy_subject_separation:
     - Return the actual authenticated policy subject alongside the existing verified inputs; no caller boolean or new receipt family.
   controls: Actual retained predecessor fixture, current/historical source distinction, wrong repository/default/tree/lineage, malformed coordinates, moving frontier and unchanged current-default behavior
   followup: Independent exact-main finalizer derives its phase/target from that admitted provider subject and consumes these verified prerequisites before certification; source forwarding alone does not close that followup.
+independent_exact_main_readiness:
+  owners: [bcf_governance/tooling/ci_exact_main_truth.py, bcf_governance/tooling/ci_github_exact_main.py, bcf_governance/tooling/evidence_workitem_lifecycle.py, bcf_governance/tooling/trusted_inputs.py]
+  operation: Independently enforce existing authored readiness and authenticated phase prerequisites for the exact admitted default subject before final certification
+  source:
+    - Derive active phase from admitted provider lifecycle policy only after subject authentication; optional phase_id null is allowed solely with an explicit admitted subject and never becomes a CLI choice.
+    - Use existing complete_tree inventory at the admitted tree, exact content paths and matching blob OIDs; reject missing or ambiguous inventory and unsafe referenced paths.
+    - Materialize only required lifecycle YAML data into one scoped temporary root; include every phase hotfix discovered by the independent complete tree population.
+  consumption:
+    - Extend existing readiness context with the authenticated admitted policy subject and forward it through the existing lifecycle owner; do not implement another evaluator or graph.
+    - Require full phase target to match provider active phase; existing owner checks completed phase/hotfix documents and all DONE workitems.
+    - Bounded target must be present and authored DONE through the same existing owner, with existing predecessor rules and fresh required phase proof.
+    - Consume readiness after authenticating exact truth scope but before collecting certification producers or writing a certification bundle.
+    - Keep PR progress explicitly noncertifying; it cannot request phase closure or use this gate to gain terminal authority.
+    - Preserve historical admitted-subject finalization after current main moves; pin current default independently at actual proof consumption.
+  evidence: Existing finalizer/certification/session/bundle owners retain authority; no new receipt family or caller verified boolean
+  controls: Exact phase/workitem positive paths; unfinished phase/workitem/hotfix; missing or forged prerequisite; wrong target; historical source vs current default; omitted/duplicate/wrong-blob/unsafe lifecycle inventory; no partial certificate after rejection; noncertifying PR compatibility
+  limits: Installed runtime parity, full lifecycle/effect conformance and whole Issue394 acceptance remain independently required.
