@@ -1,0 +1,24 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-03",
+  "subject": "a7efd151e06fb3de2d0640ef9a201b327221f1e0",
+  "tree_sha": "3a5e44e2ff421ccae46892b02b0579efb27d3d04",
+  "owner": "bcf_governance/tooling/ci_graph_composition.py",
+  "owner_sha256": "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd",
+  "source_lines": 783,
+  "full_composition_characterization": {
+    "passed": 331,
+    "failed": 1,
+    "failure_test": "tests.test_ci_graph_composition::test_requirement_slice_bindings_resolve_through_canonical_oracle_owner",
+    "cause": "test-node oracle is absent from governed manifests",
+    "streams": {
+      "stdout_sha256": "05b6fa7515faae98af79a1d4964af18ce4c26a8f54beb21c6daa7bc84a3d69e9",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "disposition": "Retain required oracle and all tests; no extraction or behavior change yet. Fresh collection bindings pass but new cleanup nodes await canonical normalization of governed manifests on the primary successor. Rebase the isolated population work onto normalized primary and recharacterize before extraction.",
+  "limits": [
+    "Existing compiler remains static non-authoritative validation.",
+    "Full protected/runtime population conformance is unqualified; all82 whole requirements remain open."
+  ]
+}
