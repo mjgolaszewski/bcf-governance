@@ -33,3 +33,22 @@ phase_proof_followup:
   owners_to_extend: [bcf_governance/tooling/evaluation_scope.py, bcf_governance/tooling/evidence_workitem_lifecycle.py, bcf_governance/tooling/prior_evidence_receipts.py]
   forbidden_shortcuts: [whitelisting the phase predicate without consumption, trusting authored history status, promoting caller booleans, accepting a PR or bounded workitem terminal as phase closure]
   current_disposition: Source/template syntax parity is retained; the stricter lifecycle branch fails its own phase admission and is not ready for integration until phase-proof consumption is implemented
+authenticated_phase_input_contract:
+  operation: Read and independently verify an existing historical exact-main finalizer certificate
+  context: Existing provider CI authority and evidence lifecycle
+  side: query
+  trusted_schema_source: Loaded SDK packaged template schemas; candidate schemas cannot supply authority
+  required_sequence:
+    - Derive expected phase and subject from protected canonical lifecycle policy; authored completion labels are selectors only.
+    - Authenticate repository, historical source and tree, default-branch ancestry, and source-bound CI authority.
+    - Select the latest exact-source independent finalizer through the existing provider owner; do not fall back to an older successful run.
+    - Authenticate role, attempt, job inventory, artifact identity and provider digest before reading the exact bounded archive.
+    - Verify exact bundle inventory and file hashes through existing bundle ownership.
+    - Require bundled authority to equal independently fetched source-bound provider authority.
+    - Recompute normalized certification through existing verifier using loaded SDK schemas.
+    - Require certified full phase_closed success for the exact expected phase and source/tree; PR and bounded workitem propositions are insufficient.
+    - Reauthenticate moving provider subjects at consuming boundaries.
+  forbidden_surfaces: [new receipt family, parallel evaluator, caller boolean authority, candidate-supplied schemas, admission provisional report as terminal certification]
+  expected_adversarial_controls: [wrong repository, wrong phase, substituted source or tree, artifact digest mismatch, omitted bundle file, altered authority, substituted schema source, later failed finalizer, expired artifact, moved provider subject, PR proposition, bounded workitem proposition]
+  cold_predecessor_observation: audits/issue-394/phase31-finalizer-cold-verification.json
+  remaining: Implement the authenticated input through existing owners and wire actual authored/computed phase-predicate consumers; the observation alone grants no eligibility.

@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "source_commit": "349084a78734691f4356d17769a6097fc0f39eab",
+  "normalized_candidate": "e2cec9c26efe71ed2909007e6c9cb8cd1c806634",
+  "native_result": {
+    "exit_code": 0,
+    "started_at_utc": "2026-10-17T17:20:26.313677Z",
+    "ended_at_utc": "2026-10-17T18:59:13.973024Z",
+    "elapsed_ms": 5926879
+  },
+  "stream_sha256": {
+    "stdout": "2b8ce9dd6d03824b5d25ce81c6d6e0ece13ac27b7eea404deafcdbde95692244",
+    "stderr": "a4e30cb04ce9d0f81ee083f89dbb1f093403f3eefbf97116489ccf7e87e44f35"
+  },
+  "provider_observation": {
+    "baseRefOid": "de7ade7f1708b6667a2fa7aae1d5960c808c9fdc",
+    "headRefOid": "e2cec9c26efe71ed2909007e6c9cb8cd1c806634",
+    "mergeStateStatus": "BLOCKED",
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T18:59:13Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471261/job/117477228337",
+        "name": "Authenticate an automation-authored dependency PR",
+        "startedAt": "2026-10-17T18:59:13Z",
+        "status": "COMPLETED",
+        "workflowName": "bcf/automation-admission"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:00:50Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477226272",
+        "name": "Validate governance front door",
+        "startedAt": "2026-10-17T18:59:14Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:01:27Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477579976",
+        "name": "Evidence / Evidence shard 0",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:01:20Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477580046",
+        "name": "Evidence / Evidence shard 1",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477579867",
+        "name": "Evidence / Evidence shard 2",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "IN_PROGRESS",
+        "workflowName": "governance"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-17T19:01:17Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39060471218/job/117477580018",
+        "name": "Evidence / Evidence shard 3",
+        "startedAt": "2026-10-17T19:00:52Z",
+        "status": "COMPLETED",
+        "workflowName": "governance"
+      }
+    ]
+  },
+  "pull_request": "https://github.com/mjgolaszewski/bcf-governance/pull/431",
+  "limits": [
+    "Native submission success is not provider merge, exact-main certification, phase closure or release custody.",
+    "Provider evidence remains incomplete at this observation.",
+    "Submitted primary bytes remain fixed.",
+    "This unmatched timing observation supports no p50 or p95 performance claim."
+  ]
+}

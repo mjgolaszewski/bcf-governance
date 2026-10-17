@@ -62,5 +62,12 @@
     "reason": "Declared P31 phase prerequisite has no authenticated phase-proof consumer yet; typed block retained.",
     "raw_output_sha256": "196676abd2902c29a541d129b813c539471aace6ff2e0dfb9c51145943d7a79b"
   },
-  "source_sha256": "20e11c72489866ff383e59cd8f518648faf4df2045c1e67695d26de42f9e0f03"
+  "source_sha256": "20e11c72489866ff383e59cd8f518648faf4df2045c1e67695d26de42f9e0f03",
+  "phase31_cold_verification": {
+    "observation": "audits/issue-394/phase31-finalizer-cold-verification.json",
+    "provider_authority_matches_bundle": true,
+    "loaded_sdk_schema_recomputation": "certified",
+    "product_consumer": "not_implemented",
+    "whole_requirement_status_advanced": false
+  }
 }
