@@ -137,6 +137,8 @@ workitems:
     - audits/issue-394/qualification-admission-order-verification.json
     - audits/issue-394/pinned-qualification-2328e076-terminal.json
     - audits/issue-394/qualification-upgrade-order-verification.json
+    - audits/issue-394/pinned-qualification-3ec171d0-terminal.json
+    - audits/issue-394/current-main-integration-observation.json
   foundation.composition:
     summary: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
     status: IN_PROGRESS

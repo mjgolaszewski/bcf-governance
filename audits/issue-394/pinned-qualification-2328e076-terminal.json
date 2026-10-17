@@ -8,34 +8,9 @@
       "commit_sha": "2328e076bdc5bd1397616812997fa44dad65abf7",
       "tree_sha": "38a211391c1e462a24904a577389cbf775402501"
     },
-    "command": [
-      "/tmp/bcf-394-bound-pr-2328e076-env/bin/python",
-      "-I",
-      "-c",
-      "from bcf_governance.cli import main; main()",
-      "ci",
-      "qualify-release",
-      "--repo-root",
-      "/docker/.superworkspace-tools/recovery/issue-394-20261016T151056Z/2328e076-qualification/source",
-      "--repository",
-      "mjgolaszewski/bcf-governance",
-      "--release-assets",
-      "/tmp/bcf-394-bound-pr-2328e076-assets",
-      "--release-build-manifest",
-      "/docker/.superworkspace-tools/recovery/issue-394-20261016T151056Z/2328e076-qualification/build.json",
-      "--output",
-      "/docker/.superworkspace-tools/recovery/issue-394-20261016T151056Z/2328e076-qualification/receipt.json",
-      "--adopter-root",
-      "/docker/.superworkspace-tools/recovery/issue-394-20261016T151056Z/2328e076-qualification/tradeflow",
-      "--adopter-root",
-      "/docker/.superworkspace-tools/recovery/issue-394-20261016T151056Z/2328e076-qualification/racecar",
-      "--adopter-root",
-      "/docker/.superworkspace-tools/recovery/issue-394-20261016T151056Z/2328e076-qualification/agentbus"
-    ],
     "status": "terminal",
     "started_at": "2026-10-17T00:09:00.062807+00:00",
     "performance_qualification": false,
-    "pid": 3663930,
     "returncode": 1,
     "ended_at": "2026-10-17T00:10:18.512865+00:00",
     "elapsed_ms": 78450,
@@ -51,5 +26,7 @@
   "remaining": [
     "Correct ordering through existing canonical installer and qualify cause controls before a new invocation.",
     "Retain all original inputs/streams; maintained agent baseline remains2.3.4, candidate qualification remains isolated and non-authoritative."
-  ]
+  ],
+  "invocation_raw_sha256": "5fea8d36161d2464dba9c4d95a1079a93ed4cf79e5e203e745fc0f3337e61a38",
+  "history_disposition": "Original exact invocation and command/PID paths remain hashed in machine-local recovery custody. Governed summary now contains portable terminal facts only; original failure is not erased or recast."
 }
