@@ -184,7 +184,7 @@ def active_workitem_entries(repo_root: Path) -> tuple[str, list[dict[str, Any]]]
 
 
 def validate_bounded_target_successor(
-    repo_root: Path, target_id: str
+    repo_root: Path, target_id: str, *, claimed_successors: list[str] | None = None,
 ) -> None:
     """Reject a bounded target that would strand later authored workitems."""
 
@@ -202,6 +202,13 @@ def validate_bounded_target_successor(
         for item in entries
         if target_id in workitem_predecessors(item)
     ]
+    if claimed_successors is not None:
+        if (not isinstance(claimed_successors, list)
+                or any(not isinstance(value, str) or not value for value in claimed_successors)
+                or len(claimed_successors) != len(set(claimed_successors))):
+            raise WorkitemContractError("bounded successor projection is invalid")
+        if any(value not in successors for value in claimed_successors):
+            raise WorkitemContractError("bounded successor projection exceeds declared source population")
     if len(successors) > 1:
         raise WorkitemContractError(
             f"bounded workitem target {target_id} has ambiguous successors"

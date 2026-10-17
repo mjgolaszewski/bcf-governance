@@ -252,5 +252,11 @@
     "affected_passed": 251,
     "cause_controls": 10,
     "authority": false
+  },
+  "independent_bounded_successor_projection": {
+    "verification": "audits/issue-394/exact-main-successor-authority-verification.json",
+    "affected_passed": 335,
+    "cause_controls_passed": 4,
+    "full_computed_eligibility_claim": false
   }
 }

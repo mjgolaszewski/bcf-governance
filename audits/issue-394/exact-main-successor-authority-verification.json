@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_qualified_installed_and_full_lifecycle_pending",
+  "contract_commit": "dd7a8646",
+  "scope": "Bounded exact-main successor projection against authenticated admitted source; SDK fixtures only. Full computed eligibility, installed assurance and lifecycle conformance remain open.",
+  "initial_results": {
+    "failed": 5,
+    "passed": 2
+  },
+  "affected_passed": 335,
+  "cause_controls": {
+    "membership": "named control fails when source membership check is removed",
+    "duplicates": "named control fails because rejection moves after output allocation; no accepted-certificate claim",
+    "forwarding": "named control fails when claimed projection is not forwarded",
+    "binding": "named control fails when actual claim is replaced with empty projection"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_passed": 5,
+    "semantic_operations": 21,
+    "operation_rows_unchanged": true,
+    "governance": 0,
+    "pack_parity": 0,
+    "exposure": 0
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_exact_main_truth.py": "829817595aa11a0a1561d8e92d81ac13d2156bb756a956bbe3812c49b9e65dfb",
+    "bcf_governance/tooling/ci_github_exact_main.py": "1faf27f0ac1ed6885d148dc5ee4407d07a01f4b968ff3e6419599588b55ca2c7",
+    "bcf_governance/tooling/evidence_workitem_lifecycle.py": "707a86ce7e2a88780d1649d1bb87b1627b883023e3fdb98b1e63ecf8609063f6"
+  },
+  "raw_output_sha256": {
+    "exact-main-successor-architecture.stdout": "7ca154d337fccec6a37dd32b6f2a5310577577cf756128fe5da15f39bc70ab5e",
+    "exact-main-successor-authority-affected.stdout": "34a9ffb86e2b43474595376f19adbed0b8171de2af03ebb1cd1bcd059b83277f",
+    "exact-main-successor-authority-complete-red.stdout": "1dd807c31f294bbe19ca05d970bbd19aebcad1fcbf82cabcc60560204d6871a0",
+    "exact-main-successor-authority-red.stdout": "b097b63b71784fd3264dc992ff39de0ad490f483ed6fd852bf9b6a409563c47e",
+    "exact-main-successor-cause-binding.stdout": "aae5047738a21dbcdc169b930538e6c884d55156f517c491875989e1e2663154",
+    "exact-main-successor-cause-duplicates.stdout": "995a0f47d1c441618e7ed356eacaf62e8fa6b28cb55d2a497d6e38e33e60b95f",
+    "exact-main-successor-cause-forwarding.stdout": "de890c4638fd0d2b5a2648a2201f3f7ad5ae4bac3bcb77d21c7323537860a074",
+    "exact-main-successor-cause-membership.stdout": "d1a0f3e022cbe28fcedc428e995dc56e04397a82335e41bf7134b318d2e419bb",
+    "exact-main-successor-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-successor-semantic.stdout": "444ab447c9ae6af0836fe03d6d803dc4daece086b28a97187dfdf44afb141e58",
+    "exact-main-successor-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-successor-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "exact-main-successor-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-successor-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "exact-main-successor-governance-corrected.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "exact-main-successor-governance-final.stdout": "4a42d3f642e4669faa585e49718d2cd116eaaafb223b560f148c78d9eb078e80"
+  },
+  "limits": [
+    "No requirement status or slice object advances.",
+    "All82 whole requirements remain open; P32 active; P33-P35 dormant.",
+    "Declared successor membership does not independently prove every computed eligibility predicate."
+  ],
+  "retained_corrections": [
+    "Final ledger annotation exceeded existing16KiB context budget; shortened existing priority without raising budget or changing lifecycle status."
+  ]
+}

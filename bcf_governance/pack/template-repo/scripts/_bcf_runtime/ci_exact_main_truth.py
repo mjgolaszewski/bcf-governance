@@ -128,12 +128,15 @@ def authenticated_exact_main_truth(
 
 def authenticate_exact_main_readiness(
     api: Any, *, repository: str, main: MainIdentity, scope: dict[str, Any],
+    proposition: dict[str, Any],
 ) -> None:
     """Run the shared readiness owner on exact provider-owned lifecycle bytes."""
 
     from .trusted_inputs import _authenticated_phase_policy_subject
     from .prior_evidence_transport import _mapping
-    from .evidence_workitem_lifecycle import WorkitemContractError, validate_evaluation_authored_ready
+    from .evidence_workitem_lifecycle import (
+        WorkitemContractError, validate_bounded_target_successor, validate_evaluation_authored_ready,
+    )
 
     _, selected = _authenticated_phase_policy_subject(
         api, repository=repository, policy_subject=main,
@@ -205,6 +208,11 @@ def authenticate_exact_main_readiness(
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_bytes(raw)
         try:
+            if intent == "workitem":
+                claimed = proposition.get("eligible_successors")
+                if not isinstance(claimed, list):
+                    raise WorkitemContractError("bounded successor projection is missing or invalid")
+                validate_bounded_target_successor(root, target.get("id"), claimed_successors=claimed)
             validate_evaluation_authored_ready(
                 root, intent=intent, target=target.get("id"),
                 provider_api=api, repository=repository, policy_subject=selected,

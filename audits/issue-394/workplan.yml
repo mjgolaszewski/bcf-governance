@@ -242,6 +242,7 @@ workitems:
     - audits/issue-394/phase-input-semantic-effects-verification.json
     - audits/issue-394/phase-policy-subject-verification.json
     - audits/issue-394/exact-main-readiness-verification.json
+    - audits/issue-394/exact-main-successor-authority-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

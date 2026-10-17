@@ -301,7 +301,10 @@ def finalize_exact_main(
             ordinal,
             str(root),
         )
-    authenticate_exact_main_readiness(api, repository=repository, main=main, scope=raw_scope)
+    authenticate_exact_main_readiness(
+        api, repository=repository, main=main, scope=raw_scope,
+        proposition=truth_report.get("certified_proposition", {}),
+    )
     required_producers = certification_producer_ids(authority, raw_scope)
     producer_runs = collect_same_run_producers(
         api,
