@@ -53,7 +53,7 @@ def test_finalizer_rejects_impossible_authored_terminal_before_certificate(tmp_p
     assert not (tmp_path / "bundle").exists()
 
 
-@pytest.mark.parametrize("defect", ["missing_workitems", "duplicate_ledger", "wrong_blob", "unsafe_reference", "substituted_bytes"])
+@pytest.mark.parametrize("defect", ["missing_workitems", "duplicate_ledger", "wrong_blob", "unsafe_reference", "substituted_bytes", "wrong_content_path"])
 def test_finalizer_rejects_uncertain_lifecycle_inventory(tmp_path, monkeypatch, defect):
     api = FakeAPI()
     _prepare_v11_run(api)
@@ -70,12 +70,14 @@ def test_finalizer_rejects_uncertain_lifecycle_inventory(tmp_path, monkeypatch, 
     monkeypatch.setattr(api, "complete_tree", inventory)
     if defect == "unsafe_reference":
         api.lifecycle_documents["plans/phase-ledger.yml"]["active_phase"]["workitems"] = "../escape.yml"
-    if defect == "substituted_bytes":
+    if defect in {"substituted_bytes", "wrong_content_path"}:
         content = api.content
         def substituted(repository, path, *, ref):
             value = content(repository, path, ref=ref)
             if path == "plans/phase-01-workitems.yml":
-                return type(value)(value.path, value.blob_oid, value.content + b"\n# substituted\n")
+                return type(value)("plans/other.yml" if defect == "wrong_content_path" else value.path,
+                                   value.blob_oid, value.content if defect == "wrong_content_path"
+                                   else value.content + b"\n# substituted\n")
             return value
         monkeypatch.setattr(api, "content", substituted)
     with pytest.raises(GitHubControllerError):
@@ -116,3 +118,69 @@ def test_finalizer_rejects_nonregular_lifecycle_blob_even_when_bytes_and_oid_mat
     with pytest.raises(GitHubControllerError, match="regular"):
         _finalize(api, tmp_path)
     assert not (tmp_path / "bundle").exists()
+
+
+def test_finalizer_uses_historical_admitted_phase_when_current_phase_differs(tmp_path, monkeypatch):
+    import hashlib
+    import yaml
+    from bcf_governance.tooling.ci_github_api import GitHubContent
+    from tests.test_ci_github_controller import SHA_B
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.main = SHA_B
+    original_commit, original_content = api.commit, api.content
+    def commit(repository, sha):
+        if sha == SHA_B:
+            return {"sha": SHA_B, "tree": {"sha": "d" * 40}}
+        return original_commit(repository, sha)
+    future = deepcopy(api.lifecycle_documents)
+    future["plans/build-plan.yml"]["phase_sequence"] = [{"phase_id": "P99", "hard_dependencies": []}]
+    future["plans/phase-ledger.yml"]["active_phase"] = {
+        "id": "P99", "workitems": "plans/phase-99-workitems.yml", "log": "phases/phase-99-log.yml",
+    }
+    future["plans/phase-99-workitems.yml"] = {"workitems": [{"id": "P99-W01", "status": "TODO", "acceptance": []}]}
+    future["phases/phase-99-log.yml"] = {"document": {"status": "active"}, "phase": {"id": "P99"}}
+    def content(repository, path, *, ref):
+        if ref == SHA_B and path in future:
+            raw = yaml.safe_dump(future[path], sort_keys=False).encode()
+            return GitHubContent(path, hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest(), raw)
+        return original_content(repository, path, ref=ref)
+    def inventory(repository, tree):
+        assert tree == TREE
+        return tuple(sorted((path, content(repository, path, ref=SHA_A).blob_oid, "100644")
+                            for path in api.lifecycle_documents))
+    monkeypatch.setattr(api, "commit", commit)
+    monkeypatch.setattr(api, "content", content)
+    monkeypatch.setattr(api, "complete_tree_with_modes", inventory)
+    result = finalize_exact_main(
+        api, repository="owner/repo", collector_run_id=400, collector_run_attempt=1,
+        trigger_run_id=100, trigger_run_attempt=1, output_dir=tmp_path / "bundle",
+    )
+    assert result.computed_state == "certified"
+    report = json.loads((tmp_path / "bundle/ci-certification.json").read_text())
+    assert report["subject"]["checkout_sha"] == SHA_A
+    assert report["evaluation_scope"]["target"] == {"kind": "phase", "id": "P01"}
+
+
+def test_unfinished_authored_state_precedes_phase_proof_and_producer_collection(tmp_path, monkeypatch):
+    from bcf_governance.tooling import trusted_inputs, ci_github_exact_main
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    api.lifecycle_documents["plans/phase-01-workitems.yml"]["workitems"][0]["status"] = "TODO"
+    monkeypatch.setattr(trusted_inputs, "verify_required_phase_closure_inputs",
+                        lambda *a, **kw: pytest.fail("unfinished authoring allocated phase proof"))
+    monkeypatch.setattr(ci_github_exact_main, "collect_same_run_producers",
+                        lambda *a, **kw: pytest.fail("unfinished authoring collected producer evidence"))
+    with pytest.raises(GitHubControllerError, match="authored DONE"):
+        _finalize(api, tmp_path)
+    assert not (tmp_path / "bundle").exists()
+
+
+def test_finalizer_preserves_declared_safe_yaml_data_path(tmp_path):
+    api = FakeAPI()
+    _prepare_v11_run(api)
+    docs = api.lifecycle_documents
+    docs["settings/items.yaml"] = docs.pop("plans/phase-01-workitems.yml")
+    docs["plans/phase-ledger.yml"]["active_phase"]["workitems"] = "settings/items.yaml"
+    result = _finalize(api, tmp_path)
+    assert result.computed_state == "certified"

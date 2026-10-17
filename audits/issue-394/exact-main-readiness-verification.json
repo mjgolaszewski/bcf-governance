@@ -1,0 +1,165 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_sdk_finalizer_qualified_installed_and_full_lifecycle_pending",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "source_base_commit": "34b61d32",
+  "execution_scope": "Existing provider API fixtures and actual SDK normalization; actual Git mode fixture. Not live provider closure or installed-runtime assurance.",
+  "initial_results": {
+    "unsafe_finalizer_controls_failed": 13,
+    "mode_controls_failed": 7,
+    "legacy_mode_controls_passed": 6,
+    "admitted_context_and_derivation_failed": 6,
+    "admitted_context_and_derivation_passed": 87
+  },
+  "qualification_history": {
+    "focused_after_readiness": 79,
+    "focused_after_modes": 92,
+    "first_broad_passed": 243,
+    "first_broad_failed": 3,
+    "corrected_broad_passed": 249,
+    "final_affected_passed": 251
+  },
+  "retained_corrections": [
+    "Three legacy bounded P26 fixtures omitted their actual source workitems; added valid P26 source data while retaining active phase and unfinished successor. Guard and original authority oracles unchanged.",
+    "Child finalizer fixture initially reused parent referenced-workflow SHA; existing source-binding rejected it. Corrected only child references to child admitted commit; real normalized parent certificate remains unchanged.",
+    "New adapter initially imposed directory/suffix restrictions absent from the existing shared owner; genuine safe-path RED retained and unsupported restrictions removed. Containment, mode, exact source inventory, content path and Git blob digest guards remain.",
+    "Initial shared-auth extraction assertion received an indented snippet; it failed before editing source. Corrected AST comparison proves every moved authentication statement identical."
+  ],
+  "shared_authentication_extraction": {
+    "authority": false,
+    "subject_authentication_statement_ast_identical": true,
+    "sha256": "dff435fe6e5b9d82f0235c1cb256dca1fc04fad43d8939696be664c9ead23fa1"
+  },
+  "verified_behavior": [
+    "Independent SDK finalizer authenticates admitted subject separately from current default before source reads.",
+    "One complete mode-preserving provider tree population binds exact lifecycle YAML bytes to regular Git blobs. Legacy two-column query preserves its shape via the same decoder.",
+    "Shared readiness enforces phase/workitem/hotfix authored prerequisites and independently acquired parent certificates before certification producer collection or output bundle allocation.",
+    "Wrong phase, unknown workitem, missing/duplicate/wrong-blob/unsafe/nonregular/substituted source and authored-only parent claims reject without a partial certificate.",
+    "Historical admitted phase remains certifiable when current default advances to a different phase.",
+    "Actual normalized parent finalizer bundle is consumed through provider artifact/digest/role verification before child certification.",
+    "Genuinely unbound behavior remains separate; explicit admitted context cannot fall back to success without provider inputs."
+  ],
+  "cause_controls": {
+    "gate": {
+      "mutant": "gate",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "target": {
+      "mutant": "target",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "duplicate": {
+      "mutant": "duplicate",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "content_path": {
+      "mutant": "content_path",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "blob_bytes": {
+      "mutant": "blob_bytes",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "regular": {
+      "mutant": "regular",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "policy_context": {
+      "mutant": "policy_context",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "population": {
+      "mutant": "population",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "mode_decoder": {
+      "mutant": "mode_decoder",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    },
+    "unbound_fallback": {
+      "mutant": "unbound_fallback",
+      "pytest_returncode": 1,
+      "named_control_failed": true
+    }
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_passed": 5,
+    "governance": 0,
+    "pack_parity": 0,
+    "exposure": 0,
+    "authored_semantic_operations": 21,
+    "operation_rows_unchanged": true
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_exact_main_truth.py": "1637a062bbb6cf45207946e22e13cd3fdc0ed44b68ba7050b53682ba72e079f6",
+    "bcf_governance/tooling/ci_github_exact_main.py": "9f196eded7bea31ace79340055e98a0b00ae7150bb01d4cce54c132042a5ba49",
+    "bcf_governance/tooling/ci_github_api.py": "19d66ce21db6b856380398b55a0221599aa3b985668b501b7fe4009c83e09f32",
+    "bcf_governance/tooling/evidence_workitem_lifecycle.py": "2f09e9ad26e1046cb5d74d0d616dc2e0bd4929b116d054e2500f6b12ce029a81",
+    "bcf_governance/tooling/trusted_inputs.py": "f359894d101f3cf64f579c3520caae3415bb894feacfc4e302d53d510edfe4ca"
+  },
+  "source_lines": {
+    "ci_exact_main_truth.py": 213,
+    "ci_github_exact_main.py": 585,
+    "ci_github_api.py": 702,
+    "evidence_workitem_lifecycle.py": 492,
+    "trusted_inputs.py": 278
+  },
+  "raw_output_sha256": {
+    "exact-main-lifecycle-modes-focused.stdout": "67897945b95f8c763012ae63eb3e99eb72c56af0333c31177736ff1203e86bac",
+    "exact-main-lifecycle-modes-red.stdout": "90d904d43128c9d18c743ba12aa42e922332e9d56a71b1f29cefe3bf4f983c8c",
+    "exact-main-parent-proof-corrected-positive.stdout": "f0625d7574a0c311783bd586449f51c46977f9df0bfa0014c78e3ac7e9c0f8ec",
+    "exact-main-parent-proof-positive.stdout": "001d009f2479e91a2b8b5a4dd78bba9a59ad9d0ae7b90753f43a8c2b34172bfa",
+    "exact-main-phase-derivation-red.stdout": "c44e8ab801ec6ea2c437e70f19f088fc7c3a4d7c49dde3f108c82a78a49510b0",
+    "exact-main-phase-readiness-complete-red.stdout": "5de527b2384bca29d677ed5c12da1c324244828d772df602af8792a70834690f",
+    "exact-main-phase-readiness-focused.stdout": "da32a13d46f8b32e2fe45b542bf58a31f2b20074228fc91752ebcf050a62fa03",
+    "exact-main-phase-readiness-red.stdout": "32663f6b65f367e6f6310445d427804bdc00cb17b38b989f5336b58aa1c74dd5",
+    "exact-main-readiness-affected.stdout": "49b924e3b137b14d8ece80019e454fba83608a91f3893b53de3f0ec372bf9719",
+    "exact-main-readiness-architecture.stdout": "e675501493d4de9cb20190c7ea3f8b34caffb1b8e549c83280d42b22d13d68c3",
+    "exact-main-readiness-cause-blob_bytes.stdout": "59beec4ceb2dda10e943879248a95c41477976248f972d33c341bf429b5fbb32",
+    "exact-main-readiness-cause-content_path.stdout": "d5b55030789a11009251314237c6febb1518f6f9e641bac945a60272d8634bba",
+    "exact-main-readiness-cause-duplicate.stdout": "631eb6f8fcd1f9ecbe7cde1a67ceb7b4fe0e373fc5c128ef6de262364a56677b",
+    "exact-main-readiness-cause-gate.stdout": "61a3ec9c01c98e77f3c70e755a3690908b0763421bed0639275a0176140c965d",
+    "exact-main-readiness-cause-mode_decoder.stdout": "3793befc390cb47cd8bd6b460d1d563be24c80306f97c189a93591d5dbd8ad0c",
+    "exact-main-readiness-cause-policy_context.stdout": "d9450481c04f01e07836b51355c4c3e3957e61a1b234ba264b38724f8635f878",
+    "exact-main-readiness-cause-population.stdout": "dd0cb5cb027fb45010c99221413779556b17c72d6fe5766537b98da9ae7f0ffa",
+    "exact-main-readiness-cause-regular.stdout": "1b68908a2a63bd24ce8fc27da3323a5eebe8356edcc4c9f77c3cd73f1ceb3307",
+    "exact-main-readiness-cause-target.stdout": "b5d11137149cb6301579a3a39e50834eb14472e2b14ca39825abc394ab312828",
+    "exact-main-readiness-cause-unbound_fallback.stdout": "9e168818fc97e2a3fd5f0e12d60f64b89f3a1fc72e6fb2858b4f54bbe4a499a0",
+    "exact-main-readiness-corrected-affected.stdout": "73f9e0b2f28729a3247bdb2b10303201d20c08f8984d9ee51c240d74241b674d",
+    "exact-main-readiness-final-affected.stdout": "44fea0df367003db7d7d2f18615f09ccddd46d88b243c2805e94d5376e83e339",
+    "exact-main-readiness-final-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-readiness-final-semantic.stdout": "8a9b259a2059bc36a8911abdaac4a8d2949d37e01ed5609a2fa45df1e38ff3c5",
+    "exact-main-readiness-final-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-readiness-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-readiness-safe-path-red.stdout": "020a47f9ad6dfd4273a5f81c2872a7186495540ea1aae85ae9f9e88b1f7ba064",
+    "exact-main-readiness-semantic.stdout": "8a9b259a2059bc36a8911abdaac4a8d2949d37e01ed5609a2fa45df1e38ff3c5",
+    "exact-main-readiness-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "admitted-readiness-context-corrected-focused.stdout": "e9a951235033171777d614c3a91a7adb16c49f7c7c2e29ad95fdeb25f3f59e41",
+    "admitted-readiness-context-focused.stdout": "1e54e3dad85516fcf6933f69388ad61fcf1e47350f02be736f79416444de835c",
+    "admitted-readiness-context-red.stdout": "105c540e645d6900b4d06d2440f7f25a1827c7ac69135874fa3aae09a29fdfea",
+    "exact-main-readiness-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-main-readiness-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "exact-main-readiness-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "limits": [
+    "Installed SDK/private runtime and adopter qualification remain required before integration.",
+    "Complete lifecycle/effect populations and runtime conformance remain open.",
+    "All82 whole requirements and38 slice records remain unchanged; P33-P35 dormant; targets unapproved."
+  ],
+  "acceptance_objects_unchanged": {
+    "requirements": 82,
+    "implementation_slices": 38
+  }
+}

@@ -12,6 +12,7 @@ from .truth_reporting import eligible_receipts
 
 if TYPE_CHECKING:
     from .ci_github_api import GitHubAPI
+    from .ci_github_identity import MainIdentity
 
 
 DEPENDENCY_PREFIX = "requires-workitem-closure:"
@@ -81,6 +82,7 @@ def workitem_phase_predecessors(entry: dict[str, Any]) -> list[str]:
 def phase_prerequisite_observation(
     repo_root: Path, entries: Iterable[dict[str, Any]], *,
     provider_api: GitHubAPI | None = None, repository: str | None = None,
+    policy_subject: MainIdentity | None = None,
 ) -> dict[str, Any]:
     """Consume provider-authenticated phase facts, with no proof-dictionary ingress."""
 
@@ -90,7 +92,7 @@ def phase_prerequisite_observation(
         "verified_phases": [], "missing_phases": required,
         "evidence_refs": [], "issues": [], "satisfied": not required,
     }
-    if provider_api is None and repository is None and not required:
+    if provider_api is None and repository is None and policy_subject is None and not required:
         return report
     if (provider_api is None or not isinstance(repository, str) or not repository
             or not callable(getattr(provider_api, "repository", None))):
@@ -107,7 +109,8 @@ def phase_prerequisite_observation(
     from .trusted_inputs import verify_required_phase_closure_inputs
     try:
         protected, inputs = verify_required_phase_closure_inputs(
-            provider_api, repository=repository, phase_id=phase_id,
+            provider_api, repository=repository, phase_id=None if policy_subject is not None else phase_id,
+            policy_subject=policy_subject,
         )
     except (ValueError, OSError, GitHubAPIError) as exc:
         report.update(satisfied=False, issues=[f"phase_closure_not_verified:{exc}"])
@@ -244,6 +247,7 @@ def bounded_target_acceptance_evidence(repo_root: Path, target_id: str) -> list[
 def validate_bounded_target_authored_ready(
     repo_root: Path, target_id: str, *,
     provider_api: GitHubAPI | None = None, repository: str | None = None,
+    policy_subject: MainIdentity | None = None,
 ) -> None:
     """Reject a prospectively impossible bounded target before evidence allocation."""
 
@@ -264,7 +268,7 @@ def validate_bounded_target_authored_ready(
             closure[item_id] = by_id[item_id]
             pending.extend(workitem_predecessors(by_id[item_id]))
     prerequisites = phase_prerequisite_observation(
-        repo_root, closure.values(), provider_api=provider_api, repository=repository,
+        repo_root, closure.values(), provider_api=provider_api, repository=repository, policy_subject=policy_subject,
     )
     if not prerequisites["satisfied"]:
         raise WorkitemContractError(
@@ -276,6 +280,7 @@ def validate_bounded_target_authored_ready(
 def validate_phase_closure_authored_ready(
     repo_root: Path, *, provider_api: GitHubAPI | None = None,
     repository: str | None = None,
+    policy_subject: MainIdentity | None = None,
 ) -> None:
     """Reject structurally impossible phase closure before evidence allocation."""
 
@@ -312,7 +317,7 @@ def validate_phase_closure_authored_ready(
             "phase closure workitems are not authored DONE: " + ", ".join(unfinished)
         )
     prerequisites = phase_prerequisite_observation(
-        repo_root, entries, provider_api=provider_api, repository=repository,
+        repo_root, entries, provider_api=provider_api, repository=repository, policy_subject=policy_subject,
     )
     if not prerequisites["satisfied"]:
         raise WorkitemContractError(
@@ -324,17 +329,18 @@ def validate_phase_closure_authored_ready(
 def validate_evaluation_authored_ready(
     repo_root: Path, *, intent: str, target: str,
     provider_api: GitHubAPI | None = None, repository: str | None = None,
+    policy_subject: MainIdentity | None = None,
 ) -> None:
     """Validate the authored prerequisite for one exact evaluation intent."""
 
     try:
         if intent == "workitem":
             validate_bounded_target_authored_ready(
-                repo_root, target, provider_api=provider_api, repository=repository,
+                repo_root, target, provider_api=provider_api, repository=repository, policy_subject=policy_subject,
             )
         elif intent == "closure":
             validate_phase_closure_authored_ready(
-                repo_root, provider_api=provider_api, repository=repository,
+                repo_root, provider_api=provider_api, repository=repository, policy_subject=policy_subject,
             )
     except WorkitemContractError as exc:
         boundary = (

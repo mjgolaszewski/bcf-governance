@@ -5,7 +5,9 @@ from __future__ import annotations
 from io import BytesIO
 import hashlib
 import json
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
+import re
+from tempfile import TemporaryDirectory
 from typing import Any
 import zipfile
 
@@ -122,3 +124,90 @@ def authenticated_exact_main_truth(
         "report_sha256": hashlib.sha256(report_bytes).hexdigest(),
     }
     return report, descriptor, report_bytes
+
+
+def authenticate_exact_main_readiness(
+    api: Any, *, repository: str, main: MainIdentity, scope: dict[str, Any],
+) -> None:
+    """Run the shared readiness owner on exact provider-owned lifecycle bytes."""
+
+    from .trusted_inputs import _authenticated_phase_policy_subject
+    from .prior_evidence_transport import _mapping
+    from .evidence_workitem_lifecycle import WorkitemContractError, validate_evaluation_authored_ready
+
+    _, selected = _authenticated_phase_policy_subject(
+        api, repository=repository, policy_subject=main,
+    )
+    inventory = api.complete_tree_with_modes(repository, selected.tree_sha)
+    blobs: dict[str, str] = {}
+    modes: dict[str, str] = {}
+    for row in inventory:
+        if not isinstance(row, (tuple, list)) or len(row) != 3:
+            raise GitHubControllerError("exact-main lifecycle source inventory is invalid")
+        path, oid, mode = row
+        if (not isinstance(path, str) or not path or path in blobs
+                or PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts):
+            raise GitHubControllerError("exact-main lifecycle source inventory is ambiguous")
+        if not isinstance(mode, str) or mode not in {"100644", "100755", "120000"}:
+            raise GitHubControllerError("exact-main lifecycle source mode is invalid")
+        modes[path] = mode
+        blobs[path] = exact_sha(oid, field="exact-main lifecycle blob")
+    total = 0
+
+    def read(path: Any) -> bytes:
+        nonlocal total
+        if (not isinstance(path, str) or "\\" in path
+                or PurePosixPath(path).as_posix() != path
+                or PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts
+                or not PurePosixPath(path).parts or path not in blobs):
+            raise GitHubControllerError("exact-main lifecycle source path is unsafe or missing")
+        if modes[path] not in {"100644", "100755"}:
+            raise GitHubControllerError("exact-main lifecycle source is not a regular blob")
+        content = api.content(repository, path, ref=selected.checkout_sha)
+        raw = content.content
+        if not isinstance(raw, bytes):
+            raise GitHubControllerError("exact-main lifecycle source bytes are invalid")
+        total += len(raw)
+        if total > _MAX_ARCHIVE:
+            raise GitHubControllerError("exact-main lifecycle source exceeds bounded input")
+        digest = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+        if content.path != path or content.blob_oid != blobs[path] or digest != blobs[path]:
+            raise GitHubControllerError("exact-main lifecycle source blob is not exact")
+        return raw
+
+    ledger_raw = read("plans/phase-ledger.yml")
+    try:
+        ledger = _mapping(ledger_raw, label="exact-main lifecycle ledger")
+    except ValueError as exc:
+        raise GitHubControllerError(str(exc)) from exc
+    active = ledger.get("active_phase")
+    phase_id = active.get("id") if isinstance(active, dict) else None
+    if not isinstance(phase_id, str) or re.fullmatch(r"P[0-9]+", phase_id) is None:
+        raise GitHubControllerError("exact-main lifecycle active phase is invalid")
+    intent, target = scope.get("intent"), scope.get("target")
+    if intent not in {"workitem", "closure"} or not isinstance(target, dict):
+        raise GitHubControllerError("exact-main readiness scope is not certifying")
+    if intent == "closure" and target != {"kind": "phase", "id": phase_id}:
+        raise GitHubControllerError("exact-main closure target is not its admitted phase")
+    files = {"plans/phase-ledger.yml": ledger_raw}
+    workitems = active.get("workitems")
+    files[workitems] = read(workitems)
+    if intent == "closure":
+        log = active.get("log")
+        files[log] = read(log)
+        for path in sorted(blobs):
+            if PurePosixPath(path).match("phases/phase-[0-9]*-hotfix*.yml"):
+                files[path] = read(path)
+    with TemporaryDirectory(prefix="bcf-exact-main-lifecycle-") as temporary:
+        root = Path(temporary)
+        for relative, raw in files.items():
+            path = root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(raw)
+        try:
+            validate_evaluation_authored_ready(
+                root, intent=intent, target=target.get("id"),
+                provider_api=api, repository=repository, policy_subject=selected,
+            )
+        except WorkitemContractError as exc:
+            raise GitHubControllerError(f"exact-main lifecycle readiness rejected: {exc}") from exc

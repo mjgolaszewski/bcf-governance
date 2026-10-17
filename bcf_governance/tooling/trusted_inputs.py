@@ -142,14 +142,10 @@ def verify_phase_closure_input(
     return artifact, verification, raw
 
 
-def verify_required_phase_closure_inputs(
-    api: GitHubAPI, *, repository: str, phase_id: str,
-    policy_subject: MainIdentity | None = None,
-) -> tuple[MainIdentity, dict[str, tuple[ProviderArtifact, CertificationVerification, bytes]]]:
-    """Derive and verify the protected plan's complete predecessor population."""
-
-    if not isinstance(phase_id, str) or re.fullmatch(r"P[0-9]+", phase_id) is None:
-        raise GitHubControllerError("phase prerequisite target is invalid")
+def _authenticated_phase_policy_subject(
+    api: GitHubAPI, *, repository: str, policy_subject: MainIdentity | None,
+) -> tuple[MainIdentity, MainIdentity]:
+    """Authenticate policy source while retaining the separate current frontier."""
     if policy_subject is not None:
         if not isinstance(policy_subject, MainIdentity):
             raise GitHubControllerError("admitted phase policy subject is invalid")
@@ -171,6 +167,21 @@ def verify_required_phase_closure_inputs(
             api, repository, base=selected.checkout_sha, head=current.checkout_sha,
         ):
             raise GitHubControllerError("admitted phase policy is outside default-branch lineage")
+    return current, selected
+
+
+def verify_required_phase_closure_inputs(
+    api: GitHubAPI, *, repository: str, phase_id: str | None,
+    policy_subject: MainIdentity | None = None,
+) -> tuple[MainIdentity, dict[str, tuple[ProviderArtifact, CertificationVerification, bytes]]]:
+    """Derive and verify the protected plan's complete predecessor population."""
+
+    if (phase_id is None and policy_subject is None) or (phase_id is not None and (
+            not isinstance(phase_id, str) or re.fullmatch(r"P[0-9]+", phase_id) is None)):
+        raise GitHubControllerError("phase prerequisite target is invalid")
+    current, selected = _authenticated_phase_policy_subject(
+        api, repository=repository, policy_subject=policy_subject,
+    )
     documents: dict[str, dict[str, Any]] = {}
     for path in ("plans/build-plan.yml", "plans/phase-ledger.yml", "plans/phase-history.yml"):
         content = api.content(repository, path, ref=selected.checkout_sha)
@@ -180,6 +191,12 @@ def verify_required_phase_closure_inputs(
     phases = documents["plans/build-plan.yml"].get("phase_sequence")
     if not isinstance(phases, list) or not all(isinstance(value, dict) for value in phases):
         raise GitHubControllerError("protected phase sequence is invalid")
+    active = documents["plans/phase-ledger.yml"].get("active_phase")
+    if (not isinstance(active, dict) or not isinstance(active.get("id"), str)
+            or re.fullmatch(r"P[0-9]+", active["id"]) is None):
+        raise GitHubControllerError("protected active phase identity is invalid")
+    if phase_id is None:
+        phase_id = active["id"]
     matches = [value for value in phases if value.get("phase_id") == phase_id]
     if len(matches) != 1:
         raise GitHubControllerError("protected phase target is missing or ambiguous")
@@ -189,10 +206,6 @@ def verify_required_phase_closure_inputs(
                    for value in dependencies)
             or len(dependencies) != len(set(dependencies)) or phase_id in dependencies):
         raise GitHubControllerError("protected phase dependency population is invalid")
-    active = documents["plans/phase-ledger.yml"].get("active_phase")
-    if (not isinstance(active, dict) or not isinstance(active.get("id"), str)
-            or re.fullmatch(r"P[0-9]+", active["id"]) is None):
-        raise GitHubControllerError("protected active phase identity is invalid")
     history = documents["plans/phase-history.yml"].get("entries")
     if not isinstance(history, list) or not all(isinstance(value, dict) for value in history):
         raise GitHubControllerError("protected phase history inventory is invalid")

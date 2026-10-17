@@ -1,6 +1,6 @@
 {
   "authority": false,
-  "status": "implementation_in_progress_unmergeable_until_context_forwarding_and_qualification",
+  "status": "implementation_in_progress_unmergeable_until_installed_and_composed_qualification",
   "scope": "Mandatory predicate syntax plus authenticated readiness/computed truth and trusted PR consumer; full lifecycle conformance remains open",
   "initial_control_results": {
     "failed": 33,
@@ -33,7 +33,7 @@
     "lifecycle-mandatory-predicates-focused.stdout": "adf05ced3f78f0ef69a6e00398bd51daced8df1829421effe664ceb7c23b41cf",
     "lifecycle-mandatory-predicates-consumers.stdout": "997d8820061382da78010f1957af065734aaf8395ff8116be3db3f0043d4c6a9"
   },
-  "next_action": "Independently authenticate exact-main finalizer phase prerequisites, qualify installed/runtime authority parity and actual semantic operations before integration, then complete full protected lifecycle/effect populations.",
+  "next_action": "Qualify installed SDK/private runtime schema authority and actual consumer behavior, then integrate by ancestry/content only after composed qualification. Complete full protected lifecycle/effect populations and runtime conformance; all82 whole requirements remain open.",
   "limits": [
     "No whole requirement closure or P33 activation.",
     "Actual phase predicates are now consumed; structural governance can pass without granting closure. Submission and installed authority forwarding remain unqualified."
@@ -208,7 +208,8 @@
   "historical_next_actions": [
     "Deconstruct the800-line local prospective owner before forwarding authenticated provider context; qualify ordinary CLI/exact-main and installed consumers. Then complete full protected lifecycle populations and runtime conformance. Missing authority must remain unverified.",
     "Forward authenticated context through ordinary CLI/exact-main consumers; qualify installed/runtime parity and semantic operations before integration. Then complete protected lifecycle populations and runtime conformance.",
-    "Authenticate exact-main finalizer prerequisites and move hosted authored readiness before expensive discovery/allocation; qualify installed/runtime parity and semantic operations, then full protected lifecycle conformance."
+    "Authenticate exact-main finalizer prerequisites and move hosted authored readiness before expensive discovery/allocation; qualify installed/runtime parity and semantic operations, then full protected lifecycle conformance.",
+    "Independently authenticate exact-main finalizer phase prerequisites, qualify installed/runtime authority parity and actual semantic operations before integration, then complete full protected lifecycle/effect populations."
   ],
   "local_phase_forwarding": {
     "verification": "audits/issue-394/local-phase-forwarding-verification.json",
@@ -243,6 +244,13 @@
     "verification": "audits/issue-394/phase-policy-subject-verification.json",
     "affected_passed": 95,
     "cause_controls": 6,
+    "authority": false
+  },
+  "independent_exact_main_readiness": {
+    "verification": "audits/issue-394/exact-main-readiness-verification.json",
+    "source_implemented": true,
+    "affected_passed": 251,
+    "cause_controls": 10,
     "authority": false
   }
 }

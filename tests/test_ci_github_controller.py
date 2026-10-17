@@ -925,11 +925,26 @@ def test_v11_finalizer_builds_certification_only_from_common_run(
     } == {("100", "100")}
 
 
+def _authored_bounded_fixture(api):
+    api.lifecycle_documents.update({
+        "plans/build-plan.yml": {"phase_sequence": [{"phase_id": "P26", "hard_dependencies": []}]},
+        "plans/phase-ledger.yml": {"active_phase": {
+            "id": "P26", "workitems": "plans/phase-26-workitems.yml", "log": "phases/phase-26-log.yml",
+        }},
+        "plans/phase-26-workitems.yml": {"workitems": [
+            {"id": "P26-P0-01", "status": "DONE", "acceptance": [], "acceptance_evidence": ["test"]},
+            {"id": "P26-P0-02", "status": "TODO", "acceptance": ["requires-workitem-closure:P26-P0-01"], "acceptance_evidence": ["test"]},
+        ]},
+        "phases/phase-26-log.yml": {"document": {"status": "active"}, "phase": {"id": "P26"}},
+    })
+
+
 def test_v11_post_install_chain_preserves_only_bounded_workitem_authority(
     tmp_path: Path,
 ) -> None:
     api = FakeAPI()
     _prepare_v11_run(api)
+    _authored_bounded_fixture(api)
     api.main = SHA_B
     api.runs["100"]["head_sha"] = SHA_B
     api.runs["400"]["head_sha"] = SHA_B
@@ -1018,6 +1033,7 @@ def test_v11_finalizer_projects_identity_from_richer_truth_subject(
 ) -> None:
     api = FakeAPI()
     _prepare_v11_run(api)
+    _authored_bounded_fixture(api)
     api.truth_artifact_override = {
         "status": "pass",
         "subject": {"commit_sha": SHA_A, "tree_sha": TREE, **metadata},

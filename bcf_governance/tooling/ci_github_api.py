@@ -303,6 +303,19 @@ class GitHubAPI(
         return value
 
     def complete_tree(self, repository: str, tree_sha: str) -> tuple[tuple[str, str], ...]:
+        """Preserve the existing exact path/blob projection."""
+        return tuple((path, oid) for path, oid, _mode in self._complete_tree_entries(repository, tree_sha))
+
+    def complete_tree_with_modes(self, repository: str, tree_sha: str) -> tuple[tuple[str, str, str], ...]:
+        """Retain exact Git blob modes for regular-file authority consumers."""
+        result: list[tuple[str, str, str]] = []
+        for path, oid, mode in self._complete_tree_entries(repository, tree_sha):
+            if not isinstance(mode, str) or mode not in {"100644", "100755", "120000"}:
+                raise GitHubAPIError("provider Git blob mode is missing or invalid")
+            result.append((path, oid, mode))
+        return tuple(result)
+
+    def _complete_tree_entries(self, repository: str, tree_sha: str) -> tuple[tuple[str, str, object], ...]:
         """Read exact provider blob OIDs, rejecting truncated or ambiguous trees."""
         exact = _sha(tree_sha, field="tree SHA")
         value = self._request(
@@ -311,7 +324,7 @@ class GitHubAPI(
         if (not isinstance(value, dict) or value.get("sha") != exact
             or value.get("truncated") is not False or not isinstance(value.get("tree"), list)):
             raise GitHubAPIError("provider Git tree is incomplete or mismatched")
-        blobs: dict[str, str] = {}
+        blobs: dict[str, tuple[str, object]] = {}
         for entry in value["tree"]:
             if not isinstance(entry, dict) or entry.get("type") not in {"blob", "tree"}:
                 raise GitHubAPIError("provider Git tree entry is invalid")
@@ -321,10 +334,10 @@ class GitHubAPI(
             if (not isinstance(path, str) or not path or path.startswith("/")
                 or ".." in path.split("/") or path in blobs):
                 raise GitHubAPIError("provider Git tree blob path is unsafe or duplicated")
-            blobs[path] = _sha(entry.get("sha"), field="tree blob SHA")
+            blobs[path] = _sha(entry.get("sha"), field="tree blob SHA"), entry.get("mode")
         if not blobs:
             raise GitHubAPIError("provider Git tree has no blobs")
-        return tuple(sorted(blobs.items()))
+        return tuple((path, oid, mode) for path, (oid, mode) in sorted(blobs.items()))
 
     def reference(self, repository: str, ref: str) -> dict[str, Any]:
         if not ref or ".." in ref or not re.fullmatch(r"[A-Za-z0-9._/-]+", ref):

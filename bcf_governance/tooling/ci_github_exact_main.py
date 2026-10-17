@@ -31,7 +31,7 @@ from .ci_github_bundle import (
     verify_bundle,
     write_exclusive,
 )
-from .ci_exact_main_truth import authenticated_exact_main_truth
+from .ci_exact_main_truth import authenticated_exact_main_truth, authenticate_exact_main_readiness
 from .controller_custody import require_controller_execution, validate_controller_custody
 from .ci_reuse_attestation_verifier import verify_same_admission_reuse
 from .ci_github_identity import (
@@ -301,6 +301,7 @@ def finalize_exact_main(
             ordinal,
             str(root),
         )
+    authenticate_exact_main_readiness(api, repository=repository, main=main, scope=raw_scope)
     required_producers = certification_producer_ids(authority, raw_scope)
     producer_runs = collect_same_run_producers(
         api,
