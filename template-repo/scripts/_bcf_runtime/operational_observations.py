@@ -462,6 +462,11 @@ def validate_timing_capture(repo_root: Path, raw: str | bytes) -> dict[str, Any]
             if projected != observation:
                 reject("provider projection disagrees with observation")
         else:
+            for node in (source, capture.get('producer', {})):
+                for field in ('repository', 'repository_id'):
+                    if field in node and (type(node[field]) is not type(observation[field])
+                                          or node[field] != observation[field]):
+                        reject("local repository identity disagrees with observation")
             if observation['subject'] != {'commit_sha': source['commit_sha'], 'tree_sha': source['tree_sha']}:
                 reject("source subject disagrees with observation")
             if source['clock_id'] != observation['clock_id'] or source['elapsed_ms'] != observation['elapsed_ms']:

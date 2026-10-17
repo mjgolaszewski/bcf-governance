@@ -1,0 +1,179 @@
+{
+  "authority": false,
+  "contract": "audits/issue-394/capture-repository-binding-contract.json",
+  "contract_commit": "5fee8641",
+  "red_subject": "a1cd5a0574ac6a6e93983de29de3e2d86cf5bc5a",
+  "red": {
+    "authority": false,
+    "subject": "a1cd5a0574ac6a6e93983de29de3e2d86cf5bc5a",
+    "returncode": 1,
+    "elapsed_ms": 1507,
+    "stdout_sha256": "52a68bf3edf3b3115575474ef7015e7d2e0e086e16f166fa61f666ec1f125755",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "working_green": {
+    "authority": false,
+    "subject": "a1cd5a0574ac6a6e93983de29de3e2d86cf5bc5a",
+    "dirty": true,
+    "returncode": 0,
+    "elapsed_ms": 1032,
+    "stdout_sha256": "1b4bdb70596ae735341931c574fa2fce5cc73eb849342abb6e7ae957a72d1da0",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source": {
+    "path": "bcf_governance/tooling/operational_observations.py",
+    "sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311"
+  },
+  "limits": [
+    "Internal consistency only; optional absent metadata is not authenticated.",
+    "No installed upgrade, canonical integration, matched cohort or whole requirement closure."
+  ],
+  "positive_tests": [
+    "tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[source]",
+    "tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[producer]",
+    "tests.test_operational_observations::test_local_capture_accepts_consistent_optional_repository_metadata[both]"
+  ],
+  "negative_controls": [
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-source]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-producer]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[repository-both]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-source]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-producer]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[different-id-both]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-source]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-producer]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[string-id-both]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-source]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-producer]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[float-id-both]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-source]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-producer]",
+    "tests.test_operational_observations::test_local_capture_rejects_rebound_repository_labels_before_baseline[bool-id-both]"
+  ],
+  "native_checks": [
+    {
+      "stage": "pack",
+      "returncode": 0,
+      "elapsed_ms": 12284
+    },
+    {
+      "stage": "lint",
+      "returncode": 0,
+      "elapsed_ms": 5101
+    },
+    {
+      "stage": "typecheck",
+      "returncode": 0,
+      "elapsed_ms": 2535
+    },
+    {
+      "stage": "architecture-module-size",
+      "returncode": 0,
+      "elapsed_ms": 2541
+    },
+    {
+      "stage": "architecture-context-membership",
+      "returncode": 0,
+      "elapsed_ms": 2004
+    }
+  ],
+  "source_and_binding_checks": {
+    "returncode": 0,
+    "elapsed_ms": 11643
+  },
+  "bare_template_checks": [
+    {
+      "template": "template-repo",
+      "returncode": 0,
+      "elapsed_ms": 666
+    },
+    {
+      "template": "bcf_governance/pack/template-repo",
+      "returncode": 0,
+      "elapsed_ms": 220
+    }
+  ],
+  "raw_streams": [
+    {
+      "name": "capture-repository-bare-bcf_governance-pack-template-repo.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-bare-bcf_governance-pack-template-repo.stdout",
+      "sha256": "2a83eeead7dd44ec87c40a4e7135ec0235d1bbd2a427e736988debb1b6c263e2"
+    },
+    {
+      "name": "capture-repository-bare-template-repo.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-bare-template-repo.stdout",
+      "sha256": "2a83eeead7dd44ec87c40a4e7135ec0235d1bbd2a427e736988debb1b6c263e2"
+    },
+    {
+      "name": "capture-repository-expanded.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-expanded.stdout",
+      "sha256": "2309b0ed58248a3d9145bd54527f0cbe2ceeade2f99cbfcf58fc7275ed00e017"
+    },
+    {
+      "name": "capture-repository-native-architecture-context-membership.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-architecture-context-membership.stdout",
+      "sha256": "036bb9390fb408c39eb19a61d865bc4044aa29eeea8139e62a988a5a83930a4d"
+    },
+    {
+      "name": "capture-repository-native-architecture-module-size.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-architecture-module-size.stdout",
+      "sha256": "8a5d3f8c1b452931de963c4bdff9775f7404361fdf3f79b4d740fb5a4f7e6e92"
+    },
+    {
+      "name": "capture-repository-native-lint.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-lint.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-pack.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-pack.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-typecheck.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-native-typecheck.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-red.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-red.stdout",
+      "sha256": "52a68bf3edf3b3115575474ef7015e7d2e0e086e16f166fa61f666ec1f125755"
+    },
+    {
+      "name": "capture-repository-working-green.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture-repository-working-green.stdout",
+      "sha256": "1b4bdb70596ae735341931c574fa2fce5cc73eb849342abb6e7ae957a72d1da0"
+    }
+  ],
+  "canonical_mirror_bytes_equal": true
+}
