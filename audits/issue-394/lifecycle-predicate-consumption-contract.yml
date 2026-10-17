@@ -1,0 +1,29 @@
+schema_version: '1.0'
+authority: false
+phase: P32
+workitems: [P32-P0-03, P32-P0-04]
+status: authored_contract
+bounded_context: evidence lifecycle
+architectural_layer: existing workitem lifecycle tooling
+operation_side: query and authored admission
+owner: bcf_governance/tooling/evidence_workitem_lifecycle.py
+problem: Mandatory requires- predicates can be ignored as prose when whitespace, case or an unsupported predicate name prevents the existing exact-prefix match.
+required_behavior:
+  - Keep mandatory predicate interpretation in the existing shared lifecycle decoder.
+  - Accept the exact existing requires-workitem-closure grammar and retain its predecessor identity, duplicate, ordering and DONE dependency checks.
+  - Reject malformed or unknown mandatory predicates rather than interpreting them as contextual prose or satisfied conditions.
+  - Reject whitespace and case variations without silently normalizing them into authority.
+  - Preserve ordinary prose outside the reserved mandatory predicate namespace.
+  - Apply the same typed outcome at authored readiness, active-ledger loading and computed workitem truth boundaries.
+  - Keep future full lifecycle composition predicates blocked until their actual consumer is implemented and qualified.
+expected_controls:
+  - Leading whitespace cannot hide a dependency on an unfinished predecessor.
+  - Unsupported mandatory lifecycle or proof predicates cannot be ignored by computed truth.
+  - Exact supported predicates and ordinary prose remain compatible.
+  - Invalid mandatory syntax rejects before normalization, proof or push through existing readiness consumers.
+migration:
+  - The requires- prefix is reserved for executable mandatory predicates; contextual prose must use ordinary descriptive sentences.
+  - No new predicate grants eligibility in this correction and ordinary CLI grammar is unchanged.
+limits:
+  - This entry-boundary correction does not implement the complete protected context population or runtime conformance consumer.
+  - Keep all82 whole requirements open and P33-P35 dormant.
