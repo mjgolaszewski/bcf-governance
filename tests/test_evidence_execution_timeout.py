@@ -38,32 +38,37 @@ def _live(pid):
         return False
 
 
-def test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog(tmp_path):
+@pytest.mark.parametrize('mode', ['timeout', 'background-success'])
+def test_evidence_timeout_retires_inherited_pipe_descendants_within_outer_watchdog(tmp_path, mode):
     marker = tmp_path / 'owned-worker.json'
     worker = """import json, os, subprocess, sys, time
 from pathlib import Path
 path=Path(sys.argv[1]); temporary=path.with_suffix('.tmp')
 metadata={'pid':os.getpid(),'group':os.getpgrp()}
 temporary.write_text(json.dumps(metadata));temporary.replace(path)
-child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(20)'])
+background=sys.argv[2]=='background-success'
+child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(20)'],
+    stdout=subprocess.DEVNULL if background else None,
+    stderr=subprocess.DEVNULL if background else None)
 metadata['child_pid']=child.pid
 temporary.write_text(json.dumps(metadata));temporary.replace(path)
 print('ready',flush=True)
+if background:sys.exit(0)
 time.sleep(20)
 """
     probe_code = """import json, sys, time
 from pathlib import Path
 from bcf_governance.tooling import evidence_execution
-root=Path(sys.argv[1]);marker=Path(sys.argv[2]);worker=sys.argv[3]
+root=Path(sys.argv[1]);marker=Path(sys.argv[2]);worker=sys.argv[3];mode=sys.argv[4]
 assert Path(evidence_execution.__file__).resolve().is_relative_to(root)
 start=time.monotonic()
-result=evidence_execution._run([sys.executable,'-c',worker,str(marker)],
+result=evidence_execution._run([sys.executable,'-c',worker,str(marker),mode],
     cwd=marker.parent,timeout_seconds=1)
 print(json.dumps({'returncode':result.returncode,'stderr':result.stderr,
                   'elapsed':time.monotonic()-start}))
 """
     probe = subprocess.Popen(
-        [sys.executable, '-c', probe_code, str(ROOT), str(marker), worker],
+        [sys.executable, '-c', probe_code, str(ROOT), str(marker), worker, mode],
         cwd=tmp_path, env={'PATH': os.defpath, 'PYTHONPATH': str(ROOT)},
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True,
     )
