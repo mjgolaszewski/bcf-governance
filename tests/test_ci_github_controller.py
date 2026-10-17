@@ -154,6 +154,17 @@ class FakeAPI:
     def __init__(self) -> None:
         self.main = SHA_A
         self.tree = TREE
+        self.lifecycle_documents = {
+            "plans/build-plan.yml": {"phase_sequence": [{"phase_id": "P01", "hard_dependencies": []}]},
+            "plans/phase-ledger.yml": {"active_phase": {
+                "id": "P01", "workitems": "plans/phase-01-workitems.yml", "log": "phases/phase-01-log.yml",
+            }},
+            "plans/phase-history.yml": {"entries": []},
+            "plans/phase-01-workitems.yml": {"workitems": [
+                {"id": "P01-W01", "status": "DONE", "acceptance": [], "acceptance_evidence": ["test"]},
+            ]},
+            "phases/phase-01-log.yml": {"document": {"status": "completed"}, "phase": {"id": "P01"}},
+        }
         self.dispatches: list[tuple[str, dict[str, object]]] = []
         self.run_calls: list[str] = []
         self.published_statuses: list[dict[str, str]] = []
@@ -260,6 +271,10 @@ class FakeAPI:
 
     def content(self, repository: str, path: str, *, ref: str) -> GitHubContent:
         assert repository == "owner/repo" and ref in {self.main, SHA_A, SHA_B}
+        if path in self.lifecycle_documents:
+            raw = yaml.safe_dump(self.lifecycle_documents[path], sort_keys=False).encode()
+            oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+            return GitHubContent(path, oid, raw)
         if path == "governance/ci-authority.yml":
             raw = yaml.safe_dump(self.authority, sort_keys=False).encode()
             return GitHubContent(path, SHA_B, raw)
@@ -267,6 +282,17 @@ class FakeAPI:
             (ref, path), self.workflow_versions.get(ref, (SHA_A, WORKFLOW))
         )
         return GitHubContent(path, blob_oid, content)
+
+    def complete_tree(self, repository: str, tree_sha: str):
+        assert repository == "owner/repo" and tree_sha == self.tree
+        return tuple(sorted((path, self.content(repository, path, ref=self.main).blob_oid)
+                            for path in self.lifecycle_documents))
+
+    def compare_commits(self, repository: str, *, base: str, head: str):
+        assert repository == "owner/repo"
+        known = base == head or (base == SHA_A and head == SHA_B)
+        return {"status": "identical" if base == head else "ahead" if known else "diverged",
+                "base_commit": {"sha": base}, "merge_base_commit": {"sha": base if known else head}}
 
     def workflow_runs(
         self,
