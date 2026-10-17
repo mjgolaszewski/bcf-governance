@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "pure_extraction_qualified_source_pending_installed_semantic",
+  "contract": "audits/issue-394/lifecycle-predicate-consumption-contract.yml",
+  "source_base_commit": "70b1e521",
+  "tests": {
+    "before_extraction": 9,
+    "selected_truth_graph_after": 68,
+    "selected_deselected": 218,
+    "complete_truth_and_original_characterization": 113,
+    "final_characterization_and_boundary": 10,
+    "source_architecture": 5
+  },
+  "ast_verification": {
+    "authority": false,
+    "phase": "pure workflow truth extraction",
+    "workflow_query_body_ast_sha256": "6185256ecce941cd5176c45db691128d85da814700ea5c15e35b4037fe32dd4f",
+    "workflow_body_identical_after_declared_loader_injection": true,
+    "safe_contract_file_ast_identical": true,
+    "before_source_lines": 798,
+    "after_source_lines": 643,
+    "destination_lines": 224,
+    "behavior_change": false,
+    "unmoved_definition_asts_identical": [
+      "TruthfulnessError",
+      "_git",
+      "_load_yaml",
+      "derive_truth",
+      "main"
+    ]
+  },
+  "raw_output_sha256": {
+    "truth-workflow-before-extraction.stdout": "1b3779d67e2737571cf73f0cea0c044601637313a847af1a736588ccb60a4a21",
+    "truth-workflow-after-extraction.stdout": "b098d66969fdbe733895740f36889209f8ab183c90ea0b69aabbb15b569ed037",
+    "truth-workflow-full-truth.stdout": "0eb47f37b7f87da8c2c3208ef744958ae32833e0a2483a91108a572dc78b45d6",
+    "truth-workflow-final-boundary.stdout": "ab63e1965a70878aa927dd2790a1ec7a7899c169fd3d494da2aa54e71a09cf64",
+    "truth-workflow-architecture.stdout": "1e54e2d1038fdb3ccb22eeb81fc71abc0a9c4446a5ade94913291291609df827",
+    "truth-workflow-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truth-workflow-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truth-workflow-extraction-ast.json": "866f6d0f636a7de5c3e38def4841d01200cd287ec7c948979cd3dbd3761fb65a",
+    "truth-workflow-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "truth-workflow-governance.stdout": "196676abd2902c29a541d129b813c539471aace6ff2e0dfb9c51145943d7a79b"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/governance_truth.py": "6f7833a759e500d19f5886bae978e130d68b2030d416b78e5de8af4352a4d698",
+    "bcf_governance/tooling/truth_workflow_graph.py": "f43e03965d889e1121fd92fec5a34bf939427f566dfb918aacec0dc56452833b"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "pack_parity": 0,
+    "governance": {
+      "returncode": 1,
+      "reason": "Existing requires-phase-closure:P31 remains blocked; pure extraction changes no phase authority"
+    }
+  },
+  "limits": [
+    "This extraction grants no lifecycle authority or completion.",
+    "Actual authenticated phase-predicate consumption remains to implement.",
+    "Current local_pr.py is800 lines and needs separately characterized deconstruction before readiness integration.",
+    "Installed-runtime and actual-operation semantic qualification remain pending native admission.",
+    "Full source governance retains its known unsupported phase-predicate block until actual consumption exists."
+  ]
+}

@@ -1,6 +1,7 @@
 """Preserve the existing workflow truth query while moving its responsibility."""
 
-from pathlib import Path
+import ast
+import inspect
 
 import pytest
 import yaml
@@ -101,3 +102,15 @@ def test_workflow_loader_error_identity_preserved(tmp_path):
     path.write_text("- not-a-mapping\n")
     with pytest.raises(truth.TruthfulnessError, match="must deserialize to a mapping"):
         truth._workflow_gate_issues(tmp_path, _policy(), {"test"})
+
+
+def test_workflow_truth_algorithm_has_one_existing_owner_and_thin_delegate():
+    from bcf_governance.tooling import truth_workflow_graph as owner
+    wrapper = ast.parse(inspect.getsource(truth._workflow_gate_issues)).body[0]
+    assert len(wrapper.body) == 1 and isinstance(wrapper.body[0], ast.Return)
+    call = wrapper.body[0].value
+    assert isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
+    assert call.func.id == "workflow_gate_issues"
+    assert truth.workflow_gate_issues is owner.workflow_gate_issues
+    assert not hasattr(truth, "_safe_contract_file")
+    assert callable(owner._safe_contract_file)

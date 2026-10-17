@@ -85,5 +85,12 @@
       "P31"
     ],
     "actual_phase_predicate_consumer": "not_implemented"
+  },
+  "truth_owner_deconstruction": {
+    "verification": "audits/issue-394/truth-workflow-extraction-verification.json",
+    "source_lines": 643,
+    "workflow_owner_lines": 224,
+    "pure_ast_preservation": true,
+    "actual_phase_predicate_consumer": "not_implemented"
   }
 }

@@ -230,6 +230,7 @@ workitems:
     - audits/issue-394/lifecycle-predicate-consumption-progress.json
     - audits/issue-394/phase-input-acquisition-verification.json
     - audits/issue-394/phase-population-verification.json
+    - audits/issue-394/truth-workflow-extraction-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json
