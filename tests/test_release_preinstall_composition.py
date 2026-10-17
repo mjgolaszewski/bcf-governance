@@ -45,21 +45,38 @@ def verification(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
 
 
 @pytest.mark.parametrize("subject", ["wheel", "sdist"])
-def test_unsafe_release_archive_rejects_before_subprocess_or_output(verification, subject):
+@pytest.mark.parametrize("defect", ["unsafe", "malformed", "duplicate"])
+def test_unsafe_release_archive_rejects_before_subprocess_or_output(verification, subject, defect):
     inputs, events = verification
-    if subject == "wheel":
+    if defect == "malformed":
+        inputs[subject].write_bytes(b"not an archive")
+    elif subject == "wheel":
         with zipfile.ZipFile(inputs[subject], "a") as archive:
-            archive.writestr("../escaped.py", b"unsafe")
+            name = "../escaped.py" if defect == "unsafe" else "bcf_governance/__init__.py"
+            archive.writestr(name, b"unsafe")
     else:
         with tarfile.open(inputs[subject], "w:gz") as archive:
             info = tarfile.TarInfo("source/link")
-            info.type = tarfile.SYMTYPE
-            info.linkname = "../../escaped"
+            if defect == "unsafe":
+                info.type = tarfile.SYMTYPE
+                info.linkname = "../../escaped"
+            else:
+                archive.addfile(info)
             archive.addfile(info)
     with pytest.raises(ReleaseClosureError):
         runtime.run_release_runtime_verification(**inputs)
     assert events == []
     assert not inputs["output_dir"].exists()
+
+
+def test_ambiguous_sdist_roots_reject_before_environment_allocation(verification):
+    inputs, events = verification
+    with tarfile.open(inputs["sdist"], "w:gz") as archive:
+        for root in ("first", "second"):
+            archive.addfile(tarfile.TarInfo(root + "/module.py"))
+    with pytest.raises(GitHubControllerError, match="exactly one source root"):
+        runtime.run_release_runtime_verification(**inputs)
+    assert events == ["interpreter"]
 
 
 @pytest.mark.parametrize("change", ["substitution", "unowned"])
@@ -101,3 +118,23 @@ def test_valid_release_composition_precedes_both_environments_and_preserves_repo
     assert events.index("source-mapping") < events.index("sdist-environment")
     assert "wheel-installed-consumer" in events
     assert (inputs["output_dir"] / "runtime-verification.json").is_file()
+
+
+def test_invalid_release_metadata_rejects_before_candidate_installation(verification, monkeypatch):
+    inputs, events = verification
+
+    def environment(*args, **kwargs):
+        events.append(kwargs["label"] + "-environment")
+        return inputs["selected_python"], {}, []
+
+    def run(label, argv, **kwargs):
+        events.append(label)
+        if label == "twine-check":
+            raise GitHubControllerError("invalid release metadata")
+        raise AssertionError("candidate installation or execution preceded metadata admission")
+
+    monkeypatch.setattr(runtime, "_environment", environment)
+    monkeypatch.setattr(runtime, "_run", run)
+    with pytest.raises(GitHubControllerError, match="invalid release metadata"):
+        runtime.run_release_runtime_verification(**inputs)
+    assert events == ["interpreter", "wheel-environment", "twine-check"]

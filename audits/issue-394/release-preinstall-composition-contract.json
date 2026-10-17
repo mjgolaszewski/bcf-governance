@@ -6,9 +6,13 @@
     "Validate both exact archive member populations with the existing archive owner before starting any subprocess or creating output/environment state.",
     "Extract the admitted sdist and compare wheel package bytes with the existing exact-source mapping owner before either wheel or sdist environment allocation.",
     "Reject malformed archives, unsafe members, substituted code and code with no source owner without invoking the environment or installation owners.",
+    "Run strict archive metadata validation from the closed dependency environment before installing or executing candidate package bytes.",
     "Preserve the successful offline installation, installed-consumer, evidence and source-mapping report contracts.",
     "Keep scratch extraction distinct from dependency/environment/proof allocation and from certification authority."
   ],
   "verification": "Real ZIP/tar fixtures through run_release_runtime_verification with subprocess and allocation sentinels; valid whole-owner flow; affected existing runtime/composition tests and cause-specific ordering control.",
-  "limits": ["No new evaluator or receipt family.", "This ordering correction does not authenticate publication or close whole lifecycle/profile/adopter requirements."]
+  "limits": [
+    "No new evaluator or receipt family.",
+    "This ordering correction does not authenticate publication or close whole lifecycle/profile/adopter requirements."
+  ]
 }
