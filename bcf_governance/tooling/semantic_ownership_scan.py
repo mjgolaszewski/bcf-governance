@@ -36,6 +36,8 @@ from .semantic_ownership_typescript import (
 )
 from .semantic_authority_contracts import (
     SemanticAuthorityError,
+    OPERATIONS_PATH,
+    validate_application_operations,
     validate_semantic_authority,
 )
 from .semantic_authority_commands import main as authority_main
@@ -321,7 +323,7 @@ def _discover_ownership_inputs(repo_root: Path, *, python_only: bool = False):
 
 
 def validate_authored_semantic_ownership(repo_root: Path) -> dict[str, Any]:
-    """Reject Python ownership defects without claiming complete toolchain proof."""
+    """Reject Python ownership/operation defects without complete toolchain proof."""
     scope = dict(authority=False, execution_qualified=False, scope='authored_python_semantic_ownership_only')
     if not (repo_root / 'governance/canonical-representations.yml').is_file():
         return dict(scope, verdict='not_applicable')
@@ -332,7 +334,17 @@ def validate_authored_semantic_ownership(repo_root: Path) -> dict[str, Any]:
         raise SemanticOwnershipRegistryError(
             f"authored semantic ownership failed: {first.get('kind', 'unknown')}:{first.get('symbol', 'unknown')}"
         )
-    return {**scope, **evaluation}
+    operations = {}
+    if (repo_root / OPERATIONS_PATH).is_file():
+        try:
+            operations['operation_observations'] = validate_application_operations(
+                repo_root, inventory, source_language='python',
+            )
+        except SemanticAuthorityError as exc:
+            raise SemanticOwnershipRegistryError(
+                f"authored application operations failed: {exc}"
+            ) from exc
+    return {**scope, **evaluation, **operations}
 
 
 def run_scan(repo_root: Path) -> dict[str, Any]:

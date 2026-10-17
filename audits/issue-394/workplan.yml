@@ -677,6 +677,9 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/semantic_authority_contracts.py
+    - bcf_governance/tooling/semantic_authority_operations.py
+    - bcf_governance/tooling/semantic_ownership_scan.py
     - bcf_governance/tooling/preflight.py
     - bcf_governance/tooling/governance_validation/authored_phase_state.py
     - bcf_governance/tooling/governance_validation/ci_state_matrix.py
@@ -700,7 +703,9 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/authored-operation-admission-contract.json
+    - audits/issue-394/authored-operation-admission-verification.json
 requirements:
   I01:
     requirement: Assurance monotonicity. Optimization changes execution strategy, never required propositions, negative controls, evidence standards, independence, authority, failure semantics or protection. Redundant mechanisms may be consolidated only through an explicit proposition-preserving governed change.
@@ -2561,7 +2566,8 @@ implementation_slices:
   canonical-submit-normalization:
     id: canonical-submit-normalization
     workitem: P32-P0-07
-    scope: Authored phase and release-target rejection, existing local lease and canonical normalization before exact scope/subject capture only; forwards existing prospective progress without conferring proof
+    scope: Authored phase and release-target rejection, existing local lease and canonical normalization before exact scope/subject capture only;
+      forwards existing prospective progress without conferring proof
     contract: audits/issue-394/submit-normalization-slice.yml
     producer: bcf_governance/tooling/ci_authority_submit.py::_normalize_submission
     consumer: bcf_governance/tooling/ci_authority_submit.py::submit_candidate
@@ -2579,6 +2585,10 @@ implementation_slices:
     - tests.test_reconcile_governance::test_candidate_file_projection_supports_ordinary_adopter_without_authority_registry
     - tests.test_reconcile_governance::test_commit_derived_preserves_trusted_workflow_definition_authority_pair
     - tests.test_reconcile_governance::test_commit_derived_cli_preserves_existing_projection_owner_result
+    - tests.test_semantic_protected_operations::test_authored_query_accepts_exact_declared_local_effect
+    - tests.test_semantic_protected_operations::test_authored_query_checks_python_without_foreign_compiler_and_preserves_full_gate
+    - tests.test_semantic_protected_operations::test_authored_python_catalog_scope_uses_discovered_source_facts[python]
+    - tests.test_semantic_protected_operations::test_authored_python_catalog_scope_uses_discovered_source_facts[foreign]
     negative_controls:
     - cause: missing-exact-default-PR-changelog-before-normalization-allocation
       test: tests.test_candidate_submit::test_exact_pr_changelog_precedes_normalization_allocation[False-False]
@@ -2622,9 +2632,23 @@ implementation_slices:
       test: tests.test_candidate_submit::test_submit_release_contradiction_rejects_before_lease_or_reconcile[partial_owner]
     - cause: malformed-runtime-version
       test: tests.test_candidate_submit::test_submit_invalid_runtime_version_rejects_before_admission
+    - cause: authored-operation-decorated-effect
+      test: tests.test_semantic_protected_operations::test_authored_query_rejects_operation_defects_before_normalization[decorated_effect]
+    - cause: authored-operation-dynamic-population
+      test: tests.test_semantic_protected_operations::test_authored_query_rejects_operation_defects_before_normalization[dynamic_population]
+    - cause: authored-operation-foreign-duplicate-id
+      test: tests.test_semantic_protected_operations::test_authored_query_cannot_hide_malformed_foreign_registry_structure[duplicate_id]
+    - cause: authored-operation-foreign-query-mutation
+      test: tests.test_semantic_protected_operations::test_authored_query_cannot_hide_malformed_foreign_registry_structure[query_mutation]
+    - cause: authored-operation-unknown-source-scope
+      test: tests.test_semantic_protected_operations::test_operation_source_scope_is_closed_and_typed
+    - cause: authored-operation-missing-python-function
+      test: tests.test_semantic_protected_operations::test_authored_python_catalog_scope_uses_discovered_source_facts[missing_python]
     remaining:
     - Complete source/package/profile/runtime pre-dispatch admission and exact concurrent join/resume remain required.
     - Provider PR/exact-main authority and full terminal custody are not certified by these local tests.
+    - 'Authored Python operation admission: audits/issue-394/authored-operation-admission-contract.json and authored-operation-admission-verification.json;46
+      focused checks pass, whole-source/installed/native and canonical successor proof remain pending.'
   separate-pipeline-clock-observation:
     id: separate-pipeline-clock-observation
     workitem: P32-P0-06

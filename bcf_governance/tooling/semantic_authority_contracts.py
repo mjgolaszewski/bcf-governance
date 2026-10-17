@@ -685,14 +685,17 @@ def validate_semantic_authority(
 
 
 def validate_application_operations(
-    repo_root: Path, inventory: dict[str, Any]
+    repo_root: Path, inventory: dict[str, Any], *, source_language: str | None = None,
 ) -> list[dict[str, Any]]:
-    """Validate the closed public-operation inventory against shared source facts."""
+    """Validate operations, optionally limiting source checks to Python facts."""
+    if source_language is not None and source_language != "python":
+        raise SemanticAuthorityError("application operation source scope is unsupported")
     states = capability_states(repo_root)
     if states["application_operation_inventory"] not in {"advisory", "blocking"}:
         return []
     return _validate_operations(
-        repo_root, load_application_operations(repo_root).raw, inventory
+        repo_root, load_application_operations(repo_root).raw, inventory,
+        source_language=source_language,
     )
 
 

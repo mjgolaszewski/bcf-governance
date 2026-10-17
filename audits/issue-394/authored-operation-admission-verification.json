@@ -1,0 +1,53 @@
+{
+  "authority": false,
+  "status": "focused_checks_passed_whole_source_installed_native_pending",
+  "contract_commit": "a75d57ee",
+  "red_control_commits": [
+    "454e1bee",
+    "4e40d85f"
+  ],
+  "behavior": [
+    "Existing operation validator has additive Python source scope; default full path remains unchanged.",
+    "Full registry identity/structure and declaration semantics are checked even for deferred foreign populations.",
+    "Actual Python catalog source absence rejects; unavailable foreign sources remain subject to full verification.",
+    "Existing authored query reuses import-resolved Python facts before normalization lease; no authority, toolchain or runtime proof is conferred."
+  ],
+  "focused": {
+    "passed": 46,
+    "pytest_elapsed_seconds": 2.1,
+    "initial_red": "6 failed0.54s; expanded7 failed0.43s before production implementation.",
+    "catalog_followup": "Initial control had a missing test import and was not qualifying evidence; after correction42376e63, actual missing-Python-function red reproduced1fail/2pass0.37s before the scope correction.",
+    "captures": {
+      "authored-operation-admission-red": {
+        "stdout_sha256": "ea039d8e0d158f6925f6d62f6fd1224362a7105e9bcfcc3f4786ded8c9e4e56d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-admission-red-expanded": {
+        "stdout_sha256": "28cc4a94f1580e317f7850956587e2d94199c588b5ada3d3c054f4111821db03",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-catalog-red": {
+        "stdout_sha256": "cbdadbf8624bdef60e6a3f4024eddaee61a6f8f09ee101b35fcf1be57786c4af",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-catalog-qualified-red": {
+        "stdout_sha256": "62506000320d93bb6a62a9ec7d0c83a4d2713237a2aaf3837f103ddfa60d6a4d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "authored-operation-focused-green": {
+        "stdout_sha256": "4d654bf902ca80f2df933ed77bc00ab2d43e0b42434b73a421fc583e128e7a3b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_authority_contracts.py": "3254b02c0d03096bb046e530b74fa1fc416023a6359bb1da78d25a48c682b7af",
+    "bcf_governance/tooling/semantic_authority_operations.py": "b4c46d2578899ea6cd9a8aaed360dba3ebd185c091be815bdca51c786a453323",
+    "bcf_governance/tooling/semantic_ownership_scan.py": "0c745b1a12bf49a37ea299f83db975191c66864d8e99ddffd9f33a82d384b6db"
+  },
+  "generated_runtime_copies_equal": true,
+  "remaining": [
+    "Whole-source21-operation default/qualified equivalence, actual authored query, installed mixed consumers and native checks pending.",
+    "Canonical reconciliation/full successor proof and all82 whole requirements remain open."
+  ]
+}
