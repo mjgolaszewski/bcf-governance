@@ -139,3 +139,17 @@ local_phase_repository_binding:
   compatibility: Keep ordinary lane workflow-authority behavior unchanged; do not enable managed-controller checks merely to supply phase identity.
   mismatch: A contradictory asserted repository must block before phase-proof acquisition or evidence allocation.
   controls: Public and inner preallocation forwarding, ordinary bound context, contradictory repository, and both actual full-train truth boundaries
+ordinary_truth_cli_phase_context:
+  owners: [bcf_governance/tooling/ci_authority_preflight.py, bcf_governance/tooling/governance_truth_cli.py]
+  operation: Resolve the existing GitHub execution context at the CLI facade and forward it explicitly to derive_truth
+  grammar: Preserve all ordinary CLI flags and output/status behavior
+  authority: Environment repository/token are connection assertions only; existing provider verifier authenticates repository/default/policy/finalizer/digest and exact phase scope
+  admission:
+    - With neither repository nor token assertion, preserve genuinely unbound local behavior and perform no provider discovery.
+    - Partial asserted provider context blocks with a typed error before deriving truth; missing identity cannot silently disable protected discovery.
+    - Decode origin with the existing exact GitHub remote decoder; reject wrong host, wrong repository, ambiguous or absent remote before constructing an API client.
+    - Keep pure derive_truth and lifecycle parsing free of ambient credentials or network discovery.
+    - Forward the constructed API and expected repository even if candidate phase predicates were removed; protected policy independently defines the population.
+    - Never emit a pass report, write output or create a release receipt after context rejection.
+  controls: Actual CLI through real derive_truth and normalized phase bundle; absent and partial authority; mismatched remote; candidate predicate removal; genuinely unbound compatibility
+  limits: This facade correction does not independently authenticate the exact-main finalizer lifecycle or complete early preflight/installed/semantic qualification.
