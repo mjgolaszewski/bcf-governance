@@ -265,5 +265,60 @@
       "name": "main-repository-red.stdout",
       "sha256": "a54a56c0273d9acf2625137c0baceb0a8f256c6f887ba0d8544fa3e1b0151c5e"
     }
-  ]
+  ],
+  "installed_probe": {
+    "contract_commit": "3858c6d0",
+    "probe_qualification": {
+      "authority": false,
+      "scope": "Actual authored installed probe against both bare templates and exact pre-fix private-runtime archive; not fresh/upgrade installer execution",
+      "cases": [
+        {
+          "case": "template",
+          "returncode": 0,
+          "stdout_sha256": "0a12edd107f992173ad8d3f04593254a74e1eab01515d45548084486b71e3ed1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "pack",
+          "returncode": 0,
+          "stdout_sha256": "0a12edd107f992173ad8d3f04593254a74e1eab01515d45548084486b71e3ed1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "case": "exact-prefixed-private-runtime-fault-control",
+          "subject": "45a5485d3c67c65ae242933b384ef3ca4dc9ca18",
+          "returncode": 1,
+          "named_fault_detected": true,
+          "archive_sha256": "4016c6766b4f6ba23a698603378d5dc881b1f72fb32e4197330522b31c28bc8e",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "cbdfef19f6f267a7f31b5cdd6c9082cd708e984eea52477b93316de922d43b4e"
+        }
+      ]
+    },
+    "scope": "Probe authored and qualified against two bare templates plus exact pre-fix fault. Actual fresh/upgrade execution still pending.",
+    "native": [
+      {
+        "stage": "installed-collection",
+        "returncode": 0,
+        "elapsed_ms": 3635,
+        "stdout_sha256": "5dcc437682ec6f942011451ed737e00fd12e40d722fa9be1aeb0af3049c6aa41",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "elapsed_ms": 10778,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "elapsed_ms": 1240,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "fixture_sha256": "c0ecce27fbc5c34de77a4d08859a1825ef13863e0f04bbcae76d981108f69d0b"
+  }
 }
