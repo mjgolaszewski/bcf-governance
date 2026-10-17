@@ -102,6 +102,7 @@ workitems:
     - audits/issue-394/independent-admission-review.json
     - audits/issue-394/successor-e2-provider-merge-observation.json
     - audits/issue-394/main100dc-noncertifying-observation.json
+    - audits/issue-394/main100dc-attempt2-observation.json
   foundation.residuals:
     summary: Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers
     status: IN_PROGRESS

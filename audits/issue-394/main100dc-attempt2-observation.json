@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "authenticated_noncertifying_pr_progress",
+  "subject": {
+    "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+    "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+  },
+  "artifact": {
+    "run_id": "39067142495",
+    "run_attempt": 1,
+    "artifact_id": "12113982284",
+    "artifact_name": "bcf-exact-main-certification-39067142495-1",
+    "provider_digest": "sha256:29af22b7b785f3c8a1f73e3a539b7d65e554986be761242de41e957d4f61e41b",
+    "workflow": {
+      "provider": "github",
+      "repository_id": "1207503211",
+      "workflow_id": "346274484",
+      "active_path": ".github/workflows/bcf-trusted-finalizer.yml",
+      "trusted_workflow_blob_oid": "d74afc7b6491e9aeb44f3ff4a939ce2ff28b1a2c",
+      "trusted_workflow_sha256": "49a087f7149fceee41c4b299e253f0d23c73f9cc5b8d752ff01c9df57d767825",
+      "trusted_workflow_definition_commit": "929fddeda09f577fe2bcc791be175fcf1ee6582b",
+      "event": "workflow_run"
+    }
+  },
+  "admission": {
+    "admission_ordinal": "39063214914002001",
+    "run_attempt": 2,
+    "run_id": "39063214914"
+  },
+  "bundle_inventory": [
+    "authority-observation.json",
+    "bundle-manifest.json",
+    "controller-custody.json"
+  ],
+  "computed_state": "noncertifying",
+  "reason": "pr_progress",
+  "authentication_checks": [
+    "source-bound finalizer role/attempt/workflow",
+    "provider artifact identity/digest",
+    "exact bounded archive and bundle hashes",
+    "collector equals authenticated provider finalizer",
+    "manifest and observation exact subject",
+    "typed controller custody exact repository/subject",
+    "successful source-bound admission attempt2",
+    "late main/artifact reauthentication"
+  ],
+  "raw_output_sha256": {
+    "main100dc-finalizer-39067142495-cold.json": "0af7d264458992d959adc8b9891dbf51555665a3417b10fec3406a6038b14338",
+    "main100dc-finalizer-39067142495.zip": "29af22b7b785f3c8a1f73e3a539b7d65e554986be761242de41e957d4f61e41b",
+    "main100dc-attempt2-terminal-run-inventory.json": "b63141f2ef40846c85983d14d57badcec28fa262ce9d30001bb9f517c1b1ddf5"
+  },
+  "limits": [
+    "No CI certification object exists in this bundle.",
+    "The older attempt1 pending_controller_rotation observation remains historical.",
+    "Green provider runs do not grant phase, workitem or release closure.",
+    "All82 whole requirements remain open.",
+    "All observed exact-head provider runs are terminal; provider success does not change the noncertifying PR proposition."
+  ],
+  "later_publisher_observation": {
+    "run_id": "39067685449",
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "success",
+    "whole_head_run_inventory_terminal": true
+  }
+}
