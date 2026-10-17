@@ -1032,7 +1032,7 @@
     },
     "scripts/_bcf_runtime/evidence_workitem_lifecycle.py": {
       "operation": "copy",
-      "sha256": "6e2d57053d139f3afcc707b9e040ed487b6f338456ffcfada34be8e2cf787213"
+      "sha256": "20e11c72489866ff383e59cd8f518648faf4df2045c1e67695d26de42f9e0f03"
     },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",

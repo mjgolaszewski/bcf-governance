@@ -27,3 +27,9 @@ migration:
 limits:
   - This entry-boundary correction does not implement the complete protected context population or runtime conformance consumer.
   - Keep all82 whole requirements open and P33-P35 dormant.
+phase_proof_followup:
+  existing_declarations: P32-P0-01 requires P31; P33-P35 first workitems require the preceding phase
+  required_authority: Existing certified phase_closed proposition with exact phase/subject, authenticated verifier and immutable evidence custody
+  owners_to_extend: [bcf_governance/tooling/evaluation_scope.py, bcf_governance/tooling/evidence_workitem_lifecycle.py, bcf_governance/tooling/prior_evidence_receipts.py]
+  forbidden_shortcuts: [whitelisting the phase predicate without consumption, trusting authored history status, promoting caller booleans, accepting a PR or bounded workitem terminal as phase closure]
+  current_disposition: Source/template syntax parity is retained; the stricter lifecycle branch fails its own phase admission and is not ready for integration until phase-proof consumption is implemented

@@ -2541,3 +2541,5 @@ P32 provider-body deadline refinement: the seven canonical response consumers sh
 P32 source-admission refinement: the loaded runtime owns the static source inventory query, and the candidate provides declarations only. Forged candidate reports and candidate script side effects do not authorize admission. Canonical normalization still precedes fresh subject capture; built-archive custody and complete lifecycle conformance remain separate obligations.
 
 P32 admission order places runtime-owned source declaration coverage ahead of test-reference collection and semantic discovery. Missing coverage is a typed rejection before those costs; this order preserves all required valid-candidate checks and canonical mutation boundaries.
+
+P32 consuming-boundary work treats mandatory lifecycle predicates as executable obligations. The current model has 21 public CLI roots and separately typed state/fact populations; source declarations alone do not establish the full protected consuming path. Phase predecessor predicates require qualified proof and cannot fall through as prose.

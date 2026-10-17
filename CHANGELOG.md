@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Reject unsupported or malformed mandatory workitem predicates instead of silently dropping their dependency obligations.
+
 - Bind source-distribution admission to the loaded runtime checker so candidate scripts cannot approve their own coverage; preserve the release-source CLI.
 
 - Bound canonical provider response bodies and chunk framing with one elapsed budget while preserving inactivity limits, uncertain-write recovery and existing validation.

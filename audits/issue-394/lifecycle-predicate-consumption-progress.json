@@ -1,0 +1,66 @@
+{
+  "authority": false,
+  "status": "implementation_in_progress_unmergeable_until_phase_proof_consumer",
+  "scope": "Mandatory predicate entry boundary, not full lifecycle conformance",
+  "initial_control_results": {
+    "failed": 33,
+    "passed": 4
+  },
+  "focused_passed": 37,
+  "affected_selected_passed": 82,
+  "affected_deselected": 133,
+  "current_ledger_corpus": {
+    "files": 10,
+    "workitems": 42,
+    "unsupported_mandatory_phase_rows": [
+      {
+        "path": "plans/phase-33-workitems.yml",
+        "workitem": "P33-P0-01",
+        "predicates": [
+          "requires-phase-closure:P32"
+        ],
+        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P32'"
+      },
+      {
+        "path": "plans/phase-35-workitems.yml",
+        "workitem": "P35-P0-01",
+        "predicates": [
+          "requires-phase-closure:P34"
+        ],
+        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P34'"
+      },
+      {
+        "path": "plans/phase-32-workitems.yml",
+        "workitem": "P32-P0-01",
+        "predicates": [
+          "requires-phase-closure:P31"
+        ],
+        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P31'"
+      },
+      {
+        "path": "plans/phase-34-workitems.yml",
+        "workitem": "P34-P0-01",
+        "predicates": [
+          "requires-phase-closure:P33"
+        ],
+        "error": "unsupported or malformed mandatory workitem predicate 'requires-phase-closure:P33'"
+      }
+    ]
+  },
+  "raw_output_sha256": {
+    "lifecycle-mandatory-predicates-initial-red.stdout": "3e77c439a585f9fbeafcdc2a118196f3ada9fb2f09fa3fbf193ecdb2df83f5a5",
+    "lifecycle-mandatory-predicates-focused.stdout": "adf05ced3f78f0ef69a6e00398bd51daced8df1829421effe664ceb7c23b41cf",
+    "lifecycle-mandatory-predicates-consumers.stdout": "997d8820061382da78010f1957af065734aaf8395ff8116be3db3f0043d4c6a9"
+  },
+  "next_action": "Consume requires-phase-closure through existing certified-proposition and verified prior-evidence owners; require authentic phase/subject/custody proof. Do not accept authored history labels or ignore the predicate to restore green checks. Then implement full protected lifecycle populations and runtime conformance.",
+  "limits": [
+    "No whole requirement closure or P33 activation.",
+    "Current source ledger corpus intentionally blocks at the missing phase-proof consumer; this branch must not be integrated as complete."
+  ],
+  "actual_project_gate": {
+    "returncode": 1,
+    "reason": "Declared P31 phase prerequisite has no authenticated phase-proof consumer yet; typed block retained.",
+    "raw_output_sha256": "196676abd2902c29a541d129b813c539471aace6ff2e0dfb9c51145943d7a79b"
+  },
+  "source_sha256": "20e11c72489866ff383e59cd8f518648faf4df2045c1e67695d26de42f9e0f03"
+}

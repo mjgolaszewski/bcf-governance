@@ -225,6 +225,9 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/lifecycle-population-adoption-census.json
+    - audits/issue-394/lifecycle-predicate-consumption-contract.yml
+    - audits/issue-394/lifecycle-predicate-consumption-progress.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

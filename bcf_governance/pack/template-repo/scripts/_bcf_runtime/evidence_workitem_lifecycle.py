@@ -37,6 +37,12 @@ def workitem_predecessors(entry: dict[str, Any]) -> list[str]:
     for value in values:
         if not isinstance(value, str):
             raise WorkitemContractError("workitem acceptance predicates must be strings")
+        if value.strip().casefold().startswith("requires-") and (
+            value != value.strip() or not value.startswith(DEPENDENCY_PREFIX)
+        ):
+            raise WorkitemContractError(
+                f"unsupported or malformed mandatory workitem predicate {value!r}"
+            )
         if value.startswith(DEPENDENCY_PREFIX):
             predecessor = value.removeprefix(DEPENDENCY_PREFIX)
             if not predecessor or ":" in predecessor:
