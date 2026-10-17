@@ -484,6 +484,7 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
     calls: list[list[str]] = []
     profile_checks: list[tuple[Path, str]] = []
     original_profile_check = qualification.require_adopter_profile
+    environment_requests: list[Path | None] = []
     for index, item in enumerate(contract["required_adopters"], start=1):
         root = tmp_path / item["id"]
         root.mkdir()
@@ -497,7 +498,8 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         identity = str(index) * 40
         identities[root.resolve()] = (item["repository"], identity, identity)
         adopter_roots.append(root)
-        adopter_pythons[item["repository"]] = python
+        if index != 2:
+            adopter_pythons[item["repository"]] = python
         profiles[item["id"]] = item["profile"]
         source_trees[item["id"]] = identity
 
@@ -530,6 +532,18 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
                 f"profile:\n  selected: {profiles[destination.name]}\n",
                 encoding="utf-8",
             )
+            (destination / 'governance').mkdir()
+            (destination / 'governance/gate-contracts.yml').write_text(
+                "profile_contract_version: '2.0'\ngates:\n"
+                "  test:\n    invocation: {argv: [python3, gate.py]}\n",
+                encoding='utf-8',
+            )
+            (destination / 'requirements-governance.txt').write_text('pytest>=8\n', encoding='utf-8')
+        if argv[4:5] == ['install']:
+            from bcf_governance.tooling.governance_install.upgrade import _upgrade_interpreter_contract
+            from bcf_governance.tooling.interpreter_environment import derive_interpreter_environment
+            assert derive_interpreter_environment(cwd) is None
+            assert _upgrade_interpreter_contract(cwd) == [cwd / 'governance/gate-contracts.yml']
         if argv[:3] == ["git", "remote", "get-url"]:
             repository = identities[cwd.resolve()][0]
             return f"https://github.com/{repository}.git"
@@ -554,10 +568,12 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         qualification, "_isolated_project_python",
         lambda _source, source_python, _destination, _environment: source_python,
     )
-    monkeypatch.setattr(
-        qualification, "ensure_local_project_python",
-        lambda _root, _controller, requested=None: requested or Path(sys.executable),
-    )
+    def ensure_project_python(root, controller, requested=None):
+        from bcf_governance.tooling.interpreter_environment import derive_interpreter_environment
+        assert derive_interpreter_environment(root) is not None, 'canonical install must precede environment derivation'
+        environment_requests.append(requested)
+        return requested or root / '.venv/bin/python'
+    monkeypatch.setattr(qualification, "ensure_local_project_python", ensure_project_python)
     monkeypatch.setattr(qualification, "_commit", lambda *_args, **_kwargs: None)
 
     receipt = qualify_release(
@@ -573,6 +589,8 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
 
     ids = [item['id'] for item in contract['required_adopters']]
     assert [identifier for _, identifier in profile_checks] == ids + ids
+    assert len(environment_requests) == len(ids)
+    assert sum(value is None for value in environment_requests) == 1
     assert all(root == tmp_path / identifier for root, identifier in profile_checks[:len(ids)])
     assert all(root != tmp_path / identifier for root, identifier in profile_checks[len(ids):])
     assert receipt["subject"] == {
