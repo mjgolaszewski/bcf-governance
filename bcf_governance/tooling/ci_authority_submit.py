@@ -85,9 +85,9 @@ def _normalize_submission(
             if mode == "pr" and context is not None:
                 with _pr_environment(context):
                     validate_pull_request_changelog_update(root)
+        validate_source_distribution(root, python_executable=python_executable)
         validate_authored_test_reference_inventories(root, python_executable=python_executable)
         validate_authored_semantic_ownership(root)
-        validate_source_distribution(root, python_executable=python_executable)
     except (OSError, ValueError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     with local_gate_lease(execution_id):

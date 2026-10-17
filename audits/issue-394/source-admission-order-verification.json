@@ -1,0 +1,46 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Static source omissions precede collection and semantic discovery during normalization; no valid-candidate check removed",
+  "initial_control_failures": 2,
+  "affected_cases_passed": 77,
+  "prerequisite_removal_controls_failed": 3,
+  "call_population_and_arguments_unchanged": true,
+  "source_sha256": "bc0efb0d9c1e1d4949b9ed1a00c3045282adaf14190b0b36df1ddd6a741ff226",
+  "contract": "audits/issue-394/source-admission-authority-contract.yml",
+  "checks": {
+    "authority": false,
+    "stages": [
+      {
+        "stage": "lint",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "typecheck",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "pack",
+        "returncode": 0,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+      }
+    ]
+  },
+  "raw_output_sha256": {
+    "source-admission-order-initial-red.stdout": "5ab8d026a3cc6b3eb9c6861840305cae93858d710c227f68e93a351a1cb56ec4",
+    "source-admission-order-final-consumers.stdout": "4f8f517c51107d83f277486069414dd97311dd2fc2fed76c8d1faefe64ab62d3",
+    "source-admission-order-prerequisite-removal.stdout": "7591fd631a6862c886a4657cafef469bdbc8f6c859d0504463e092410c561117"
+  },
+  "limits": [
+    "No measured pipeline improvement or approved performance target claimed.",
+    "This branch still requires installed, semantic and full canonical qualification.",
+    "All82 whole requirements remain open; P32 active/P33-P35 dormant."
+  ]
+}

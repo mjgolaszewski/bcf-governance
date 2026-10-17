@@ -728,6 +728,7 @@ workitems:
     evidence:
     - audits/issue-394/source-admission-authority-contract.yml
     - audits/issue-394/source-admission-authority-verification.json
+    - audits/issue-394/source-admission-order-verification.json
     - audits/issue-394/authored-operation-admission-contract.json
     - audits/issue-394/authored-operation-admission-verification.json
 requirements:

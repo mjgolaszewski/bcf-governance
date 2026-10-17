@@ -1021,6 +1021,27 @@ def test_source_omission_precedes_expensive_collection_and_semantic_discovery(
     assert error.value.__cause__ is failure
 
 
+def test_valid_source_keeps_every_authored_check_before_mutation_admission(monkeypatch, tmp_path):
+    _normalization_state(monkeypatch)
+    checked = set()
+    required = {'validate_source_distribution', 'validate_authored_test_reference_inventories',
+                'validate_authored_semantic_ownership'}
+    for name in required:
+        monkeypatch.setattr(submit, name, lambda *_a, _name=name, **_k: checked.add(_name))
+
+    @contextmanager
+    def lease(*_args):
+        assert checked == required, 'valid candidate omitted an authored prerequisite'
+        yield
+
+    monkeypatch.setattr(submit, 'local_gate_lease', lease)
+    submit._normalize_submission(
+        tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
+        semantic_intent=None,
+        runner=lambda *_a, **_k: SimpleNamespace(returncode=0, stdout='', stderr=''),
+    )
+
+
 @pytest.mark.parametrize('stacked', [False, True])
 @pytest.mark.parametrize('changed', [False, True])
 def test_exact_pr_changelog_precedes_normalization_allocation(monkeypatch, tmp_path, stacked, changed):

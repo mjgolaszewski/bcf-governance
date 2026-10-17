@@ -552,7 +552,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "1c9e5f3161d802161578cbe7a3657354067c1e5f6d0881b1d0331c624d450259"
+      "sha256": "bc0efb0d9c1e1d4949b9ed1a00c3045282adaf14190b0b36df1ddd6a741ff226"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
