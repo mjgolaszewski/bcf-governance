@@ -506,5 +506,52 @@
       },
       "scope": "Mixed exact modules in disposable test processes only:84 source observations plus authenticated binding and contradictory capture/collection rejection before reference/commit reads. This is not an integrated single-subject, installed, provider certification or publication proof."
     }
+  },
+  "admitted_exact_subject_qualification": {
+    "authority": false,
+    "subject": "89d1d7e1d0912b1feb7a1467b8e37e21a2521e8f",
+    "tree_sha": "43a9955b0f95a2a2c298a0e183a5c136424eb067",
+    "stages": [
+      {
+        "stage": "authored-query",
+        "returncode": 0,
+        "elapsed_ms": 137857,
+        "stdout_sha256": "a6623ef82e65146fe0dea7a265ee3d2cb9710dd9cf611d5118a30e052b4cced4",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "source-bindings",
+        "returncode": 0,
+        "elapsed_ms": 10850,
+        "stdout_sha256": "98bb27f737b5ea8c4dd886447886cd41fc820b4637150ba2ae1ddfa97c39f91b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "installed-mixed",
+        "returncode": 0,
+        "elapsed_ms": 181423,
+        "stdout_sha256": "a8e70df5dd189d34b5391c8aa419728a25811fd0bb8792269b7c5b1b9b469efc",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "governance",
+        "returncode": 0,
+        "elapsed_ms": 25800,
+        "stdout_sha256": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "stage": "exposure",
+        "returncode": 0,
+        "elapsed_ms": 1123,
+        "stdout_sha256": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "started_at": "2026-10-17T07:19:34.927710+00:00",
+    "ended_at": "2026-10-17T07:25:32.172564+00:00",
+    "returncode": 0,
+    "capture_sha256": "0d3c3c9d04894b923196688c3d89ea2bfd80b7478a496fcd50215ab2dec8c1e5",
+    "scope": "86 source/binding cases and2 actual fresh/upgrade mixed installed consumer cases PASS; authored21-operation golden/governance/exposure PASS. No moving-adopter execution, provider or publication authority inferred. Integration still requires shared repository-identity guard and exact combined proof."
   }
 }
