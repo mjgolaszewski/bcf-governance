@@ -11,6 +11,7 @@ requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "BCF Governance Maintainers" }]
 dependencies = [
+  "setuptools>=69",
   "PyYAML>=6.0,<7",
   "jsonschema>=4.21,<5",
   "referencing>=0.37,<0.38",
@@ -30,7 +31,7 @@ include = ["bcf_governance*"]
 version = {attr = "bcf_governance._version.__version__"}
 
 [tool.setuptools.package-data]
-bcf_governance = ["pack/template-repo/**/*", "tooling/*.mjs"]
+bcf_governance = ["pack/template-repo/**/*", "pack/template-repo/**/.*", "pack/template-repo/.github/**/*", "tooling/*.mjs"]
 
 [tool.setuptools.exclude-package-data]
 bcf_governance = [

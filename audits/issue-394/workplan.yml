@@ -245,6 +245,7 @@ workitems:
     - audits/issue-394/exact-main-successor-authority-verification.json
     - audits/issue-394/private-phase-schema-verification.json
     - audits/issue-394/installed-parent-phase-verification.json
+    - audits/issue-394/distribution-runtime-resource-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

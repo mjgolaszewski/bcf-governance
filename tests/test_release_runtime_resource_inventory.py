@@ -47,6 +47,35 @@ def test_metadata_cannot_exclude_private_schema_resources(source_resources):
         owner.validate_package_data_contract(source)
 
 
+def test_explicit_exclusion_cannot_hide_required_runtime_resources(source_resources):
+    source, _ = source_resources
+    with (source / 'pyproject.toml').open('a') as output:
+        output.write('[tool.setuptools.exclude-package-data]\n'
+                     'bcf_governance = ["pack/template-repo/**/*.json"]\n')
+    with pytest.raises(RuntimeError, match='package data excludes runtime assets'):
+        owner.validate_package_data_contract(source)
+
+
+def test_recursive_pattern_covers_pack_root_files(source_resources):
+    source, _ = source_resources
+    root_file = source / 'bcf_governance/pack/template-repo/README.md'
+    root_file.write_text('pack root resource\n')
+    assert root_file.relative_to(source).as_posix() in owner.validate_package_data_contract(source)
+
+
+def test_hidden_pack_resources_require_explicit_pattern_coverage(source_resources):
+    source, _ = source_resources
+    hidden = source / 'bcf_governance/pack/template-repo/.pack-state'
+    hidden.write_text('owned hidden resource\n')
+    with pytest.raises(RuntimeError, match='package data excludes runtime assets'):
+        owner.validate_package_data_contract(source)
+    project = source / 'pyproject.toml'
+    project.write_text(project.read_text().replace(
+        '"pack/template-repo/**/*"', '"pack/template-repo/**/*", "pack/template-repo/**/.*"',
+    ))
+    assert hidden.relative_to(source).as_posix() in owner.validate_package_data_contract(source)
+
+
 @pytest.mark.parametrize('suffix', ['proof.json', 'owner.py'])
 def test_wheel_cannot_omit_source_discovered_pack_resource(tmp_path, source_resources, suffix):
     source, files = source_resources
@@ -92,3 +121,20 @@ def test_complete_resource_population_preserves_source_python_and_cache_rules(tm
     assert set(owner.discovered_wheel_runtime_assets(source)) == expected
     wheel = _wheel(tmp_path, files.items())
     owner.validate_wheel_runtime_assets(wheel, source)
+
+
+def test_missing_resources_reject_before_installed_environment_allocation(
+    tmp_path, source_resources, monkeypatch,
+):
+    source, files = source_resources
+    wheel = _wheel(tmp_path, [(name, data) for name, data in files.items()
+                              if not name.endswith('proof.json')])
+    allocated = []
+    def allocate(path):
+        allocated.append(path)
+        raise AssertionError('installed environment allocated before resource rejection')
+    monkeypatch.setattr(owner, 'venv_environment', allocate)
+    execution = tmp_path / 'execution'
+    with pytest.raises(RuntimeError, match='wheel missing runtime assets'):
+        owner.verify_wheel(wheel, execution, source)
+    assert allocated == [] and not execution.exists()

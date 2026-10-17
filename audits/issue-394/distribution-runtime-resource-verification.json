@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_resource_guard_qualified_prebuild_consumer_and_distribution_pending",
+  "contract_commit": "17b5a0ab",
+  "dependency_followup_contract_commit": "65fd6164",
+  "execution_scope": "Admitted source discovery and synthetic wheel archives only; complete exact-source guarded wheel/sdist build and installed distribution qualification remain required.",
+  "initial_failures": 8,
+  "qualification_history": [
+    {
+      "passed": 10,
+      "failed": 1,
+      "reason": "fnmatch did not implement recursive zero-directory semantics for pack-root resources"
+    },
+    {
+      "passed": 12,
+      "failed": 1,
+      "reason": "Nested hidden .gitkeep lacked explicit package-data coverage"
+    },
+    {
+      "passed": 33,
+      "failed": 1,
+      "reason": "Existing runtime import inventory found actual undeclared setuptools dependency; this broad cohort accidentally included unguarded sdist build and grants no native qualification"
+    },
+    {
+      "passed": 34,
+      "deselected": 1,
+      "scope": "Explicit source-only final cohort, real sdist build excluded"
+    }
+  ],
+  "architecture_passed": 5,
+  "cause_controls": {
+    "population": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "bytes": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "duplicates": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "symlink": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "exclusions": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    },
+    "boundary": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_control_failed": true
+    }
+  },
+  "resource_observation": {
+    "source_assets": 491,
+    "private_schema_assets": 66,
+    "population_sha256": "4704487f838779b16c3ec5c501d9bc8494a8bc93121361e5587866cf0cc93174",
+    "authority": false
+  },
+  "verified_behavior": [
+    "Discover complete pack resources, including private Python and66 schema files, and non-Python package dependencies without candidate-wheel authority.",
+    "Reject omitted, duplicate and byte-substituted resources before installed environment allocation.",
+    "Use packager recursive glob behavior, explicit hidden resource declarations and exclusion subtraction.",
+    "Declare actual packaged source-query setuptools dependency at existing build-system lower bound; original runtime import inventory and controller dependency derivation remain enforced."
+  ],
+  "execution_deviation": {
+    "kind": "Broad pytest selection included its real sdist build outside shared native guard",
+    "disposition": "Build exited before targeted stop; all known handles subsequently absent. Reported to active peer; external concurrency limitation retained. No exclusive-compute, guarded build, performance or distribution qualification claim.",
+    "local_disposition_sha256": "7adbf224cf4e247bf31412aff27ccf92554154da5a95314f0aa466bb4fa9b0ae"
+  },
+  "project_checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture": 5,
+    "governance": 0,
+    "pack": 0,
+    "exposure": 0,
+    "semantic": {
+      "returncode": 0,
+      "operations": 21,
+      "all_rows_unchanged": true
+    }
+  },
+  "source_sha256": {
+    ".github/scripts/test_release_artifacts.py": "21ed42c2d7a58002bd502a9097a5af1c8226c780498311ba67107c8a381502af",
+    "pyproject.toml": "e0e79a243c0521f52f89d9105dd3f1b9c65cc52cb6d90aade68e22e8053609ab",
+    "tests/test_release_runtime_resource_inventory.py": "4ef62df9e574a634f94817ed2ffbc7aa3b9173c738f6c4cbb98fd9ef79546f6b"
+  },
+  "raw_output_sha256": {
+    "release-runtime-resource-cause-symlink.stdout": "2831775deeaff52ff43c81d4b2d6fe25fe42e5b7869b367687471cddc8c3e7a2",
+    "release-runtime-resource-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-runtime-resource-final-source.stdout": "20719bbc6dff7d989ddd54016dc1a6cb81c3c96179ee3a8f751a4aa0685c09d4",
+    "release-runtime-resource-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-runtime-resource-architecture.stdout": "0efb250251f47e5153266be2ca085be2f30447687b4fe874a06077c1ae79d94e",
+    "release-runtime-resource-cause-duplicates.stdout": "298a2086b119bcf283acbf412d6346c52f8f2bcd9b38bf8f0c60380dd2061526",
+    "release-runtime-resource-cause-population.stdout": "d22736fd8585b85e93f1ed7b376c841c365eba01ed3f10c243e688718b238814",
+    "release-runtime-resource-cause-exclusions.stdout": "ae43021ca7a7aefbb0cbc3a09918913f22acd151cab74511daa9f5984e002c63",
+    "release-runtime-resource-focused.stdout": "c5f6bcda34682e4f42e90b3c590f82da73b748b610014e9f29a3d21ce0c5fb10",
+    "release-runtime-resource-cause-boundary.stdout": "3c7a2719c05e9076df1fc4a26c624041a1e1f27b02184707ec8bf23de7f07f76",
+    "release-runtime-resource-affected.stdout": "a0e500c8b18a626e5f8f98bf589c7845ad0a3d64417660aec84eab95dfa8bb9a",
+    "release-runtime-resource-population.stdout": "87f639183fcf7db0275c0ede3576bc74978da7b009fc5126dc5464487e52e14b",
+    "release-runtime-resource-red.stdout": "a994435f179f7d4776b301ada2e294bfa1f0dc26491e3f0fa37991f60212d034",
+    "release-runtime-resource-cause-bytes.stdout": "402ea736e421cd5fbb129efe4bea5fa790180bb37c1e1441e69ab9e6eacb2714",
+    "release-runtime-resource-source-only.stdout": "5b14fac3b7135574538f888129788d109d8513d3883cf57b2ed625c3264d6af7",
+    "release-runtime-resource-corrected.stdout": "2d1794e78d67fce045c93d4ba972f8d841bf6565601f09407ea4e41eaff105a1",
+    "release-runtime-resource-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "release-runtime-resource-import-control.stdout": "93c97c10af4fc8b54296201243c032c5e8295479ca6b4adc06019033d6f9e282",
+    "release-runtime-resource-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "release-runtime-resource-semantic.stdout": "5bc1ca371b73cf7d538141871003a501905ab80f58817224bc780d6f80d87321",
+    "release-runtime-resource-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "release-runtime-resource-final-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "limits": [
+    "Guarded exact committed-source wheel/sdist and installed artifact verification remain pending.",
+    "Dependency closure, SDK/private all-profile matrix and canonical reconciliation still required.",
+    "All82 requirement and38 slice objects unchanged; P32 active; P33-P35 dormant.",
+    "Metadata query is qualified and consumed before wheel installation. Forwarding it through a loaded-runtime source-admission owner before build is still required; do not import candidate .github evaluator code into trusted preflight."
+  ],
+  "runtime_import_regression_passed": 1
+}
