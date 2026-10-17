@@ -185,7 +185,8 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/lifecycle-population-contract.yml
   foundation.conformance:
     summary: Independently trace implementation effects and producer consumer populations in both directions
     status: IN_PROGRESS
