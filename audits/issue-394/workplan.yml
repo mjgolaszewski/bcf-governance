@@ -4322,7 +4322,8 @@ implementation_slices:
     - cause: object-run
       test: tests.test_ci_github_main_identity::test_source_identity_rejects_unbound_repository_before_later_reads[object-run]
     remaining:
-    - Native architecture and source/installed/runtime qualification before integration.
+    - Qualify the exact combined successor and actual current consumers; isolated f64 source/installed/native qualification passed
+      before integration.
     - No whole acceptance, matched performance, phase activation or release certification.
   provider-derived-compatibility-sources:
     id: provider-derived-compatibility-sources
@@ -4414,8 +4415,8 @@ implementation_slices:
     - cause: frozen-case-alias-before-freshness-reads
       test: tests.test_release_adopter_sources::test_frozen_source_inventory_rejects_ambiguous_members_before_reads[case-alias]
     remaining:
-    - Fresh/upgrade installed private-runtime probe is authored but unexecuted; native governance/exposure, actual provider-selected
-      isolated consumers and integration remain pending.
+    - Qualify exact integrated successor source/private/installed and actual provider-selected isolated current adopters; isolated89d1d7e1
+      source/installed/semantic/governance/exposure passed before integration.
     - Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.
     - No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain
       not_executed.

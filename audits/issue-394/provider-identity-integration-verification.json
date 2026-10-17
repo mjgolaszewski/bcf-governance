@@ -21,5 +21,37 @@
   },
   "limits": [
     "Two separate batches; not a full exact successor proof, installed combined proof or acceptance closure."
-  ]
+  ],
+  "workplan_dispositions": {
+    "authenticated-provider-repository-source": {
+      "superseded_remaining": [
+        "Native architecture and source/installed/runtime qualification before integration.",
+        "No whole acceptance, matched performance, phase activation or release certification."
+      ],
+      "disposition": [
+        "Qualify the exact combined successor and actual current consumers; isolated f64 source/installed/native qualification passed before integration.",
+        "No whole acceptance, matched performance, phase activation or release certification."
+      ]
+    },
+    "provider-derived-compatibility-sources": {
+      "superseded_remaining": [
+        "Fresh/upgrade installed private-runtime probe is authored but unexecuted; native governance/exposure, actual provider-selected isolated consumers and integration remain pending.",
+        "Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.",
+        "No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain not_executed."
+      ],
+      "disposition": [
+        "Qualify exact integrated successor source/private/installed and actual provider-selected isolated current adopters; isolated89d1d7e1 source/installed/semantic/governance/exposure passed before integration.",
+        "Read-only real-provider capture/freshness is not adopter execution, independent terminal certification or installed adoption.",
+        "No whole requirement, P33 activation, approved performance or immutable2.5 custody claim; all82 evidence statuses remain not_executed."
+      ]
+    }
+  },
+  "three_corrections_source_batch": {
+    "authority": false,
+    "subject": "8a8463c1",
+    "passed": 224,
+    "scope": "One combined source/binding batch for provider source, authenticated main identity and timing capture repository consistency. No combined installed or provider authority inferred.",
+    "stdout_sha256": "04b1ecab839a064171abd6631bcb6290687d71a5c82768d194050663086aaf6c",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
 }
