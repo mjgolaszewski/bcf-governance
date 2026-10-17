@@ -10,7 +10,7 @@ ROOT = Path(__file__).parents[1]
 
 
 def test_actual_public_operation_observations_match_pre_deconstruction_bytes():
-    expected = (ROOT / 'audits/issue-394/operation-validator-semantic-admission.json').read_bytes()
+    expected = (ROOT / 'audits/issue-394/operation-validator-local-pr-environment.json').read_bytes()
     inventory = discover_python_source(ROOT)
     observed = contracts.validate_application_operations(ROOT, inventory)
     assert len(observed) == 21

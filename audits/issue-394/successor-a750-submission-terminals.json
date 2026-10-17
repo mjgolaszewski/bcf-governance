@@ -1,0 +1,69 @@
+{
+  "authority": false,
+  "attempts": [
+    {
+      "authority": false,
+      "source_commit": "a75020c98dfe752e97d1b353a79abffbb420157c",
+      "source_tree": "42e242aaf15cac99ad7b5116011df2c0019a53c5",
+      "argv": [
+        ".venv/bin/bcf",
+        "ci",
+        "submit",
+        "--repo-root",
+        "."
+      ],
+      "started_at": "2026-10-17T02:01:17.036968+00:00",
+      "returncode": 1,
+      "elapsed_ms": 2084,
+      "ended_at": "2026-10-17T02:01:19.121663+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "13ccdbb6bf4c9ecf00d10a6a94c8571d340a433ccab509b4e84354feb823c123",
+      "final_commit": "a75020c98dfe752e97d1b353a79abffbb420157c",
+      "raw_capture_sha256": "e22323f65188ae81019aeff5301d08859a4e9855e196e1807afe1bb6ec6d0ede",
+      "cause": "Launcher omitted required GITHUB_TOKEN before normalization."
+    },
+    {
+      "authority": false,
+      "source_commit": "a75020c98dfe752e97d1b353a79abffbb420157c",
+      "source_tree": "42e242aaf15cac99ad7b5116011df2c0019a53c5",
+      "argv": [
+        ".venv/bin/bcf",
+        "ci",
+        "submit",
+        "--repo-root",
+        "."
+      ],
+      "started_at": "2026-10-17T02:01:51.227912+00:00",
+      "returncode": 1,
+      "elapsed_ms": 11898,
+      "ended_at": "2026-10-17T02:02:03.126198+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "d023cbf54d18a68a451e65128fd2d604ce3412d9e2e32c9fd6ff3994c7c64e9b",
+      "final_commit": "a75020c98dfe752e97d1b353a79abffbb420157c",
+      "raw_capture_sha256": "75bf487efb7f6050e621f8dfa8069f62b6f3183c64e0c6becfb32ff587066477",
+      "cause": "Launcher selected installed234 implementation against2.5 source after clearing retained source-development PYTHONPATH."
+    },
+    {
+      "authority": false,
+      "source_commit": "a75020c98dfe752e97d1b353a79abffbb420157c",
+      "source_tree": "42e242aaf15cac99ad7b5116011df2c0019a53c5",
+      "argv": [
+        ".venv/bin/bcf",
+        "ci",
+        "submit",
+        "--repo-root",
+        "."
+      ],
+      "started_at": "2026-10-17T02:02:53.866252+00:00",
+      "returncode": 1,
+      "elapsed_ms": 159752,
+      "ended_at": "2026-10-17T02:05:33.618315+00:00",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "1fb708b3e5b39b74800f058e265aad6f501653d2b509b4ca27239a242f743a94",
+      "final_commit": "a75020c98dfe752e97d1b353a79abffbb420157c",
+      "raw_capture_sha256": "17077bd800d505053ccf57f2c51965da6887210c88c8cc456ea94f734282f930",
+      "cause": "Canonical source normalization failed at unresolved decorated local PR environment effect; unchanged source, no generated commit."
+    }
+  ],
+  "disposition": "Each actual terminal retained independently; source unchanged. Existing in-memory gh credential and exact source-origin development environment restored; no baseline package upgrade. Canonical semantic failure requires the contracted exact local effect declaration before another invocation."
+}
