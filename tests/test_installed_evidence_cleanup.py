@@ -30,6 +30,11 @@ def live(pid):
 result=_run([sys.executable,'-c',"import sys;print('é');sys.stderr.write('failure\\r\\n');sys.exit(7)"],
             cwd=Path.cwd(),timeout_seconds=2,cleanup_timeout_seconds=1)
 assert (result.returncode,result.stdout,result.stderr)==(7,'é\n','failure\n')
+try:
+    _run([sys.executable,'-c','import sys;sys.stdout.buffer.write(bytes([255]))'],
+         cwd=Path.cwd(),timeout_seconds=2,cleanup_timeout_seconds=1)
+except UnicodeDecodeError:pass
+else:raise AssertionError('verified cleanup changed ordinary text decoding failure')
 
 child_code="""import json,os,sys,time
 from pathlib import Path
@@ -96,7 +101,8 @@ try:
 finally:signal.signal(signal.SIGCHLD,original)
 assert not effect.exists() and rejected==7
 print(json.dumps({'authority':False,'source_package_absent':True,'child_modes':5,
-                  'invalid_budgets':rejected,'normal_nonzero':True,'sigchld_guard':True}))
+                  'invalid_budgets':rejected,'normal_nonzero':True,'sigchld_guard':True,
+                  'decode_failure_preserved':True}))
 '''
 
 
@@ -114,6 +120,7 @@ def test_installed_evidence_commands_retain_kernel_child_custody(installed_consu
         assert json.loads(output) == {
             'authority': False, 'source_package_absent': True, 'child_modes': 5,
             'invalid_budgets': 7, 'normal_nonzero': True, 'sigchld_guard': True,
+            'decode_failure_preserved': True,
         }
     finally:
         # Retire only processes created and recorded by this fixture, on failure too.

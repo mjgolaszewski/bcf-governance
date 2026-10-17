@@ -117,3 +117,28 @@ def test_missing_owned_terminal_cannot_become_verified_cleanup(tmp_path, monkeyp
     with pytest.raises(execution.EvidenceProcessCleanupError, match='cleanup'):
         execution._run([sys.executable, '-c', "print('done')"], cwd=tmp_path,
                        timeout_seconds=1, cleanup_timeout_seconds=1)
+
+
+def test_decoding_failure_after_proved_cleanup_retires_exact_state(tmp_path, monkeypatch):
+    import os
+    import sys
+
+    class Lease:
+        def environment(self):
+            return {}
+
+    lease = Lease()
+    retired = []
+    monkeypatch.setattr(execution, 'load_runtime_contract', lambda *args: {})
+    monkeypatch.setattr(execution, 'allocate_execution_state', lambda *args, **kwargs: lease)
+    monkeypatch.setattr(execution, '_execution_env', lambda *args, **kwargs: (os.environ.copy(), {}))
+    monkeypatch.setattr(execution, 'retire_execution_state', lambda value: retired.append(value))
+    with pytest.raises(UnicodeDecodeError):
+        execution._run_with_execution_state(
+            tmp_path, tmp_path,
+            {'target': 'test', 'invocation': {'cwd': '.'}, 'execution_timeout_seconds': 2,
+             'execution_cleanup_timeout_seconds': 1},
+            [sys.executable, '-c', 'import sys;sys.stdout.buffer.write(bytes([255]))'],
+            Path(sys.executable), session_id='fixture', execution_id='decoder', require_state=True,
+        )
+    assert retired == [lease]

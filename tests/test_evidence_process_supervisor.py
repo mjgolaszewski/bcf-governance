@@ -47,3 +47,21 @@ def test_partial_trailing_frame_cannot_become_terminal_cleanup(tmp_path, monkeyp
         _run([sys.executable, '-c', "print('ordinary-command')"],
              cwd=tmp_path, timeout_seconds=1, cleanup_timeout_seconds=1)
     assert observed, 'fixture never observed actual terminal transport'
+
+
+def test_invalid_control_utf8_is_not_an_ordinary_output_decode_failure(tmp_path, monkeypatch):
+    original = os.read
+    observed = []
+
+    def contradictory(fd, size):
+        chunk = original(fd, size)
+        if b'"type":"complete"' in chunk:
+            observed.append(chunk)
+            return bytes([255, 10])
+        return chunk
+
+    monkeypatch.setattr(supervisor, 'os', SimpleNamespace(**{**vars(os), 'read': contradictory}))
+    with pytest.raises(EvidenceProcessCleanupError, match='cleanup'):
+        _run([sys.executable, '-c', "print('ordinary-command')"],
+             cwd=tmp_path, timeout_seconds=1, cleanup_timeout_seconds=1)
+    assert observed, 'fixture never observed actual terminal transport'
