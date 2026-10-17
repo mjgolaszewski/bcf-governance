@@ -8,7 +8,8 @@
   "targets": [
     "bcf_governance/tooling/ci_github_identity.py",
     "tests/test_ci_github_controller.py",
-    "tests/test_ci_github_main_identity.py"
+    "tests/test_ci_github_main_identity.py",
+    "tests/test_installed_main_identity.py"
   ],
   "contract": [
     "Default-main and provider-run source reconstruction require provider-reported full_name to identify the requested repository under GitHub case-insensitive repository naming.",
@@ -33,5 +34,20 @@
   "limits": [
     "No certification from source tests or bus reports; integrate only after native scoped source/installed qualification and primary terminal.",
     "Provider endpoint custody remains necessary; metadata consistency alone is not sufficient authentication."
-  ]
+  ],
+  "installed_verification": {
+    "profiles": [
+      "fresh",
+      "upgrade"
+    ],
+    "fixture": "existing tests/test_installed_evidence_storage.py::installed_consumer and isolated_python",
+    "contract": [
+      "Under -I with no bcf_governance distribution, import both subject resolvers from the actual installed private runtime.",
+      "Reuse the committed synthetic provider port as serialized fixture code, without source imports in the consumer process.",
+      "Prove all four valid exact/case-insensitive subjects and fourteen cause-specific repository rejections before downstream reads.",
+      "Retain existing installer upgrade product-owned file preservation and schema/runtime origins.",
+      "Qualify the installed probe against the committed pre-fix private runtime to prove it detects the named fault; do not call a bare template run fresh/upgrade evidence."
+    ],
+    "admission": "Run fresh/upgrade only after actual live primary terminal and native admission; bare template and pure source checks may precede it."
+  }
 }
