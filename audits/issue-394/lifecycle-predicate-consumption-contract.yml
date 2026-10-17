@@ -86,3 +86,21 @@ truth_owner_deconstruction:
   tests_first: tests/test_truth_workflow_extraction.py and affected existing truth/graph controls
   forbidden: [new graph or claim owner, workflow or authority pin edits, source admission changes, phase predicate whitelisting, public CLI changes]
   gate: Characterize before moving code, compare moved AST bodies with only declared loader injection, verify owner boundaries and mirrors.
+actual_phase_consumer_scope:
+  owners: [bcf_governance/tooling/evidence_workitem_lifecycle.py, bcf_governance/tooling/governance_truth.py]
+  operations: [phase prerequisite observation, bounded authored readiness, computed workitem closure, existing derive_truth projection]
+  source_authority: Only authenticated provider API and expected repository context through verify_required_phase_closure_inputs; no raw proof dictionary or caller verified boolean ingress
+  required_behavior:
+    - Recognize exact requires-phase-closure grammar only when the consuming lifecycle path enforces it; unsupported mandatory predicates continue to block.
+    - Keep structural parsing distinct from independent phase-proof applicability and verification.
+    - Derive protected required parents independently of candidate declaration removal; do not let local files shrink the bound population.
+    - Bind every required fact to exact repository, phase, historical subject/tree, authenticated finalizer and immutable artifact bytes.
+    - Missing authority yields a typed missing or unverified prerequisite; it cannot yield eligible, verified or closed workitem truth.
+    - Authored readiness checks exact target and its existing declared predecessor closure before allocating evidence; future unrelated workitems cannot supply or hide prerequisites.
+    - Reauthenticate at computed truth consumption after long-running evidence; an earlier readiness observation alone is insufficient.
+    - Preserve ordinary genuinely unbound behavior when no reserved phase requirement exists; do not add ambient network or token discovery to pure parsing.
+    - A PR progress or bounded workitem proposition never substitutes for full prerequisite phase closure.
+    - Keep reports within existing workitem and truth projections; no new receipt family, evaluator or lifecycle graph.
+  verification_matrix: [authenticated predecessor success, missing API, missing repository, caller boolean rejection, wrong phase, wrong repository, candidate dependency removal, moved source after readiness, missing or newer failed finalizer, unrelated future prerequisite, ordinary unbound compatibility]
+  remaining_integration: Readiness provider-context forwarding, trusted PR and exact-main consumers, ordinary CLI custody, installed runtime parity and full semantic qualification must pass before branch integration.
+  local_readiness_owner_limit: local_pr.py is800 lines; finish a separate characterized responsibility extraction before adding forwarding behavior there.
