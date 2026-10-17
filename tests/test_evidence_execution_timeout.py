@@ -165,35 +165,24 @@ assert not marker.exists()
 
 
 def test_owned_command_completion_is_independent_of_foreign_process_births(tmp_path, monkeypatch):
-    """Introduce real unrelated children between unmodified inventory reads."""
-    from bcf_governance.tooling import evidence_execution
+    """An actual foreign birth cannot invalidate owned kernel terminal evidence."""
+    from bcf_governance.tooling import evidence_process_supervisor as supervisor
 
-    original = evidence_execution._process_group_snapshot
+    original = supervisor._terminal_result
     foreign = []
-    calls = 0
 
-    def snapshot(group):
-        nonlocal calls
-        observed = original(group)
-        calls += 1
-        if calls % 2:
-            foreign.append(subprocess.Popen(
-                [sys.executable, '-c', 'import time;time.sleep(20)'],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                start_new_session=True,
-            ))
-        else:
-            child = foreign.pop()
-            child.kill()
-            child.wait(timeout=2)
-        return observed
+    def observe(value, pid):
+        foreign.append(subprocess.Popen(
+            [sys.executable, '-c', 'import time;time.sleep(20)'],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
+        ))
+        return original(value, pid)
 
-    monkeypatch.setattr(evidence_execution, '_process_group_snapshot', snapshot)
+    monkeypatch.setattr(supervisor, '_terminal_result', observe)
     try:
-        result = evidence_execution._run(
-            [sys.executable, '-c', "print('owned-command-completed')"],
-            cwd=tmp_path, timeout_seconds=1, cleanup_timeout_seconds=1,
-        )
+        result = _run([sys.executable, '-c', "print('owned-command-completed')"],
+                      cwd=tmp_path, timeout_seconds=1, cleanup_timeout_seconds=1)
+        assert foreign, 'fixture did not create a foreign process at consumption'
         assert (result.returncode, result.stdout, result.stderr) == (
             0, 'owned-command-completed\n', '',
         )
@@ -258,3 +247,12 @@ print(json.dumps({'returncode':result.returncode,'stderr':result.stderr}))
             except ProcessLookupError:
                 pass
         probe.communicate(timeout=2)
+
+
+@pytest.mark.parametrize('missing', ['command', 'directory'])
+def test_evidence_unstarted_command_keeps_existing_typed_infrastructure_failure(tmp_path, missing):
+    command = [str(tmp_path / 'absent-executable')] if missing == 'command' else [sys.executable, '-c', 'pass']
+    cwd = tmp_path if missing == 'command' else tmp_path / 'absent-directory'
+    result = _run(command, cwd=cwd, timeout_seconds=1, cleanup_timeout_seconds=1)
+    assert result.returncode == 126
+    assert 'execution infrastructure failure' in result.stderr

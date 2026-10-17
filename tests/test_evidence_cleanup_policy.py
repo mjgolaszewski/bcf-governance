@@ -107,11 +107,13 @@ def test_unqualified_group_inventory_host_blocks_before_allocation(tmp_path, mon
     assert seen == []
 
 
-@pytest.mark.parametrize('population', [None, ({}, {}), ({'unrelated': 'old'}, {})],
+@pytest.mark.parametrize('completion', [None, {}, {'type': 'complete', 'quiescent': True}],
                          ids=['missing', 'empty', 'missing-anchor'])
-def test_unstable_process_population_cannot_become_verified_cleanup(tmp_path, monkeypatch, population):
+def test_missing_owned_terminal_cannot_become_verified_cleanup(tmp_path, monkeypatch, completion):
     import sys
-    monkeypatch.setattr(execution, '_process_group_snapshot', lambda group: population)
+    from bcf_governance.tooling import evidence_process_supervisor as supervisor
+    original = supervisor._terminal_result
+    monkeypatch.setattr(supervisor, '_terminal_result', lambda value, pid: original(completion, pid))
     with pytest.raises(execution.EvidenceProcessCleanupError, match='cleanup'):
         execution._run([sys.executable, '-c', "print('done')"], cwd=tmp_path,
                        timeout_seconds=1, cleanup_timeout_seconds=1)
