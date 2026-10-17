@@ -1,0 +1,30 @@
+{
+  "authority": false,
+  "workitem": "P32-P0-05",
+  "bounded_context": "evidence",
+  "architectural_layer": "tooling",
+  "operation_side": "command",
+  "owner": "bcf_governance/tooling/evidence_execution.py::_run",
+  "targets": [
+    "bcf_governance/tooling/evidence_execution.py",
+    "tests/test_evidence_execution_timeout.py"
+  ],
+  "finding": "subprocess.run timeout kills the direct child, but communicate can continue waiting on inherited pipes held by descendants. A command timeout alone does not bound the complete operation or prove cleanup.",
+  "contract": [
+    "Characterize with a real child and grandchild holding captured pipes, under an independent outer watchdog that retires only test-owned process groups.",
+    "Preserve ordinary successful command output and typed infrastructure-failure behavior.",
+    "Enforce an explicit bounded terminal/pipe-drain path for ordinary inherited process groups without introducing a scheduler, authority flag or parallel process broker.",
+    "Any cleanup budget must be declared through existing execution policy and included by canonical deadline compilation; do not silently claim the original execution timeout is a total bound.",
+    "If terminal cleanup cannot be authenticated, retain unresolved execution-state custody and yield a typed block; never declare namespace retirement or safe replay solely from a timeout.",
+    "Escaped process groups, uninterruptible kernel tasks and full adversarial process isolation require separate explicit treatment; group termination alone is not that proof.",
+    "Do not edit the live canonical candidate, kill its processes, alter maintained adopters or change workflow pins."
+  ],
+  "expected_tests": [
+    "Ordinary command output unchanged.",
+    "Direct-child timeout returns existing typed failure.",
+    "Inherited grandchild pipe cannot hold the runner beyond its declared composed terminal envelope.",
+    "Incomplete cleanup cannot become retired-state or replay authority."
+  ],
+  "test_watchdog": "The external test watchdog is detector containment only, not a proposed product performance target or cleanup policy.",
+  "integration": "Isolated characterization first. Production and integration require the complete policy/cleanup contract, affected behavioral/controls, native checks and installed parity after actual primary terminal and fresh admission."
+}
