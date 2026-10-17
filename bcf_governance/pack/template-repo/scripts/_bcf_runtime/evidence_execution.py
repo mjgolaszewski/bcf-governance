@@ -6,16 +6,15 @@ import hashlib
 import json
 import os
 import shutil
-import selectors
 import signal
 import site
 import subprocess
 import sys
-import time
 from pathlib import Path
 from typing import Any
 
 from .ci_graph_errors import CIGraphError
+from .evidence_process_supervisor import OwnedProcessError, run_owned_command
 from .ci_graph_timeouts import INTERPRETER_PROBE_TIMEOUT_SECONDS, LEGACY_GATE_CLEANUP_SECONDS, bounded_execution_seconds
 
 from .runtime_capacity import (
@@ -59,97 +58,6 @@ def _execution_deadline(timeout_seconds: object, cleanup_seconds: object) -> tup
     except (OSError, ValueError, IndexError) as exc:
         raise EvidenceError('Linux execution namespace inventory is unavailable') from exc
     return execution, cleanup
-
-
-def _process_group_snapshot(group):
-    """Capture PID incarnations and every task in the ordinary owned group."""
-    root = Path('/proc')
-    try:
-        (root / 'self/stat').read_text()
-        pids = {path.name for path in root.iterdir() if path.name.isdigit()}
-        identities, tasks = {}, {}
-        for pid in pids:
-            path = root / pid
-            try:
-                raw = (path / 'stat').read_text()
-                fields = raw[raw.rfind(')') + 2:].split()
-                identities[pid] = fields[19]
-                if int(fields[2]) != group:
-                    continue
-                population = {task.name for task in (path / 'task').iterdir() if task.name.isdigit()}
-                if not population:
-                    return None
-                for tid in population:
-                    raw = (path / 'task' / tid / 'stat').read_text()
-                    fields = raw[raw.rfind(')') + 2:].split()
-                    if int(fields[2]) != group:
-                        return None
-                    tasks[(pid, tid)] = (fields[19], fields[0])
-                if population != {task.name for task in (path / 'task').iterdir() if task.name.isdigit()}:
-                    return None
-            except FileNotFoundError:
-                return None
-        if pids != {path.name for path in root.iterdir() if path.name.isdigit()}:
-            return None
-        return identities, tasks
-    except (OSError, ValueError, IndexError) as exc:
-        raise EvidenceProcessCleanupError('process-group inventory is unavailable') from exc
-
-
-def _live_process_group(group: int) -> bool | None:
-    """Changing populations are unknown, never evidence of group quiescence."""
-    first = _process_group_snapshot(group)
-    second = _process_group_snapshot(group)
-    if first is None or second is None:
-        return None
-    anchor = (str(group), str(group))
-    if any(str(group) not in snapshot[0] or anchor not in snapshot[1]
-           or snapshot[1][anchor][1] not in {'Z', 'X'} for snapshot in (first, second)):
-        return None
-    if (first[0] != second[0]
-            or {key: value[0] for key, value in first[1].items()}
-               != {key: value[0] for key, value in second[1].items()}):
-        return None
-    return any(value[1] not in {'Z', 'X'} for value in (*first[1].values(), *second[1].values()))
-
-
-def _capture_process(process, selector, buffers, deadline, *, wait_for_quiescence=False):
-    """Keep the leader unreaped so its group identifier cannot be recycled."""
-    while True:
-        terminal = os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
-        if terminal is not None:
-            live = _live_process_group(process.pid)
-            if live is True and not wait_for_quiescence:
-                return False
-            if live is False and not selector.get_map():
-                if time.monotonic() > deadline:
-                    raise subprocess.TimeoutExpired(process.args, 0)
-                return True
-        remaining = deadline - time.monotonic()
-        if remaining <= 0:
-            raise subprocess.TimeoutExpired(process.args, 0)
-        for key, _events in selector.select(min(0.05, remaining)):
-            chunk = os.read(key.fd, 65536)
-            if chunk:
-                buffers[key.data].append(chunk)
-            else:
-                selector.unregister(key.fileobj)
-
-
-def _terminate_process_group(process, selector, buffers, cleanup_seconds):
-    """Terminate an anchored group, then bound drain, verification and reap."""
-    deadline = time.monotonic() + cleanup_seconds
-    try:
-        # No signal is authorized after another waiter has consumed the leader.
-        os.waitid(os.P_PID, process.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
-        _capture_process(process, selector, buffers, deadline, wait_for_quiescence=True)
-        process.wait(timeout=max(0.0, deadline - time.monotonic()))
-    except BaseException as exc:
-        raise EvidenceProcessCleanupError('process-group cleanup could not be authenticated') from exc
 
 
 def _sha256(path: Path) -> str:
@@ -203,44 +111,11 @@ def _run(
     cleanup_timeout_seconds: int = LEGACY_GATE_CLEANUP_SECONDS,
 ) -> subprocess.CompletedProcess[str]:
     timeout_seconds, cleanup_timeout_seconds = _execution_deadline(timeout_seconds, cleanup_timeout_seconds)
-    selector = selectors.DefaultSelector()
     try:
-        process = subprocess.Popen(command, cwd=cwd, env=env, stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE, text=True, start_new_session=True)
-    except OSError as exc:
-        selector.close()
-        return subprocess.CompletedProcess(command, 126, '', f'bcf execution infrastructure failure: {exc}')
-    buffers = {'stdout': [], 'stderr': []}
-    try:
-        with selector:
-            try:
-                for name in buffers:
-                    selector.register(getattr(process, name), selectors.EVENT_READ, name)
-                complete = _capture_process(process, selector, buffers, time.monotonic() + timeout_seconds)
-            except subprocess.TimeoutExpired:
-                _terminate_process_group(process, selector, buffers, cleanup_timeout_seconds)
-                return subprocess.CompletedProcess(command, 126, '',
-                    'bcf execution infrastructure failure: command timed out')
-            except BaseException:
-                _terminate_process_group(process, selector, buffers, cleanup_timeout_seconds)
-                raise
-            if not complete:
-                _terminate_process_group(process, selector, buffers, cleanup_timeout_seconds)
-                return subprocess.CompletedProcess(command, 126, '',
-                    'bcf execution infrastructure failure: command left live process-group descendants')
-            try:
-                # Decode before consuming the leader's terminal identity.
-                values = [b''.join(buffers[name]).decode(getattr(process, name).encoding,
-                    getattr(process, name).errors).replace('\r\n', '\n').replace('\r', '\n')
-                    for name in ('stdout', 'stderr')]
-            except BaseException:
-                _terminate_process_group(process, selector, buffers, cleanup_timeout_seconds)
-                raise
-            return subprocess.CompletedProcess(command, process.wait(timeout=0), *values)
-    finally:
-        for stream in (process.stdout, process.stderr):
-            if stream is not None:
-                stream.close()
+        return run_owned_command(command, cwd=cwd, env=env, timeout_seconds=timeout_seconds,
+                                 cleanup_seconds=cleanup_timeout_seconds)
+    except OwnedProcessError as exc:
+        raise EvidenceProcessCleanupError('child cleanup could not be authenticated') from exc
 
 
 def _execution_cwd(worktree: Path, contract: dict[str, Any]) -> Path:

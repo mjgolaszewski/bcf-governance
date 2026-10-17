@@ -920,7 +920,7 @@
     },
     "scripts/_bcf_runtime/evidence_execution.py": {
       "operation": "copy",
-      "sha256": "32274c0874e5edbb3a462199ab70f7035dea494ec51e333346378cca9a0decda"
+      "sha256": "3dfdcb15368e0c9a4e0f5981742f42df91d2902f05524e1d280c1df613fa78e0"
     },
     "scripts/_bcf_runtime/evidence_gate_contracts.py": {
       "operation": "copy",
@@ -937,6 +937,10 @@
     "scripts/_bcf_runtime/evidence_planning.py": {
       "operation": "copy",
       "sha256": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857"
+    },
+    "scripts/_bcf_runtime/evidence_process_supervisor.py": {
+      "operation": "copy",
+      "sha256": "7e387bccfd47ffef1f7d77cf1b4cb5dd200b64d082ca30e275e53a20b9ce3e0b"
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",

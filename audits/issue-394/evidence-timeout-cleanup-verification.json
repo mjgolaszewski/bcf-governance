@@ -55,7 +55,7 @@
       "elapsed_ms": 30581
     }
   ],
-  "scope": "UNQUALIFIED isolated prototype: latest29 focused controls have27passes/2ordinary-command failures. Foreign-only PID churn causally prevents terminal acknowledgement. Historical passes below describe earlier working points only. No integration, installed parity, deadline closure or whole acceptance claim.",
+  "scope": "Isolated kernel-owned replacement prototype:37 focused controls PASS and native lint/type/module/context checks PASS. Prior global-inventory failures remain retained below. Full consumer/cause-specific governance, semantic, package and installed qualification remain pending; no integration or whole deadline/acceptance closure.",
   "limits": [
     "Complete semantic/cause-specific governance, source/private/install/package and actual consumer qualification before integration.",
     "Group observations do not prove escaped-session/cgroup isolation, global host admission, namespace-removal elapsed bounds, or full sibling deadline composition.",
@@ -289,7 +289,7 @@
     "finding": "Owned leader is terminal before snapshot hooks, yet foreign-only PID churn prevents completion. This prototype is not qualified for concurrent host activity.",
     "capture_sha256": "c30bbb7bb677f44e4a5a0b1475f7513be9bf29cc4e6b2b8ee5caf4769c2ca66d"
   },
-  "disposition": "Withdraw uncommitted focused_tests_passed workplan slice and its three bindings. Retain every executable control and contract. Replace host-global inventory with independently qualified owned-child custody before reintegration.",
+  "disposition": "Prior group-inventory implementation is superseded by the private kernel child-tree supervisor. Missing/empty/missing-anchor oracles migrate to actual completion transport; real thread/escaped/new-session controls remain. Current37 cases and native checks are bounded source observations; qualified workplan slice remains withdrawn pending complete qualification.",
   "foreign_noninterference_red": {
     "authority": false,
     "subject": "ed7cc38629e88917bbbc03b4ce4dcd4d8957aa58",
@@ -303,5 +303,27 @@
     "result": "Both committed real-process controls fail: runner returns0 while a setsid child or double-fork descendant remains live. Fixtures independently terminate their recorded process groups. Replacement kernel-child backend is contract-only.",
     "stdout_sha256": "a63f0de352f36710b31943a708c66965b37c9057a3f16c37dfe8e5731f9df01d",
     "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "kernel_child_checkpoint": {
+    "authority": false,
+    "focused_cases": 37,
+    "source_sha256": {
+      "bcf_governance/tooling/evidence_execution.py": "3dfdcb15368e0c9a4e0f5981742f42df91d2902f05524e1d280c1df613fa78e0",
+      "bcf_governance/tooling/evidence_process_supervisor.py": "7e387bccfd47ffef1f7d77cf1b4cb5dd200b64d082ca30e275e53a20b9ce3e0b"
+    },
+    "streams": {
+      "evidence-owned-backend-focused-v4.stdout": "a0e1161f35b5fb16506f0474b4a76b36aee22fb21f940185e8c43b46c1cdda68",
+      "evidence-owned-backend-focused-v4.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-unstarted-red.stdout": "31fcd14c5ca14e1219cfd3743b2e4439d1a854fa5644b265cb94ffb2c53534b0",
+      "evidence-owned-unstarted-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-native-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-native-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-native-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-native-typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-native-architecture-module-size.stdout": "715350d922d91d1576f4ff287fdba6b0fe276c6f2c553d54b8408148cde0c83e",
+      "evidence-owned-native-architecture-module-size.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-native-architecture-context-membership.stdout": "c6dfde3f9bcc0d41df6a577e59abe1633603cb8f3e01b81b8a9ad8e61bb6442c",
+      "evidence-owned-native-architecture-context-membership.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
   }
 }
