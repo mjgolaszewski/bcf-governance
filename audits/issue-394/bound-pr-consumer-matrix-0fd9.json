@@ -1,0 +1,54 @@
+{
+  "authority": false,
+  "kind": "test_invocation_capture",
+  "source_subject": {
+    "commit_sha": "0fd9dbefcbd207f2c055c966ced07d876c0d97f5",
+    "tree_sha": "ac5a85494f228f6b435ec8ae357cab8b8fe8e203"
+  },
+  "installed_build_subject": {
+    "commit_sha": "3ec171d064eda93b07d709e19c54cfb559ed97f8",
+    "tree_sha": "0f75aa49d98bf958d34610cf02b2bac8673f7b87"
+  },
+  "package_byte_mapping": {
+    "files_equal": 712,
+    "extra_missing_or_changed": false
+  },
+  "status": "terminal",
+  "stages": [
+    {
+      "stage": "source",
+      "returncode": 0,
+      "elapsed_ms": 78535,
+      "stdout_sha256": "3e4bb84c015d6dfdd222c7d2a6fddd717562116b576e4245053cc30c8c67a169",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "stage": "installed",
+      "returncode": 0,
+      "elapsed_ms": 50676,
+      "stdout_sha256": "9492f7f115b6605b9e5ed8a24c3dfd30c7af5142b0226dce92bc798204ae55d6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "started_at": "2026-10-17T01:08:07.783620+00:00",
+  "returncode": 0,
+  "ended_at": "2026-10-17T01:10:17.110004+00:00",
+  "counts": {
+    "source": 663,
+    "installed": 549
+  },
+  "collection_counts": {
+    "source": 663,
+    "installed": 549
+  },
+  "origin_assertions": "before and after each stage; source0fd9 or exact installed3ec respectively",
+  "capacity_returned_bus_cursors": [
+    9064,
+    9066,
+    9068
+  ],
+  "limits": [
+    "Scoped bound-context consumer characterization, not independent full runtime-effect completeness.",
+    "No whole Issue394 requirement, lifecycle phase or release authority is advanced."
+  ]
+}
