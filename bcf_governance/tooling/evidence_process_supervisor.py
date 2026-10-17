@@ -98,6 +98,7 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
     body_deadline = start + timeout_seconds
     connection, inherited = socket.socketpair()
     process = None
+    quiescent = False
     buffers = {'stdout': [], 'stderr': []}
     try:
         try:
@@ -124,6 +125,7 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
             try:
                 result = _observe(process, connection, selector, buffers,
                                   body_deadline + cleanup_seconds)
+                quiescent = True
             except BaseException:
                 # Cancellation uses the same owner; never kill an unknown child tree.
                 try:
@@ -154,6 +156,10 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
         return subprocess.CompletedProcess(command, result['returncode'], *output)
     except OwnedProcessError:
         raise
+    except UnicodeError as exc:
+        if quiescent:
+            raise
+        raise OwnedProcessError('child cleanup could not be authenticated') from exc
     except Exception as exc:
         raise OwnedProcessError('child cleanup could not be authenticated') from exc
     finally:

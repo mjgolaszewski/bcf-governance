@@ -55,7 +55,7 @@
       "elapsed_ms": 30581
     }
   ],
-  "scope": "Kernel-owned prototype: a9 exact qualification259 source/2 actual installed plus native/semantic/governance/exposurePASS. Later protocol review produced2genuine RED controls; corrected source has39 focused passes. Exact changed-byte consumer/package/private qualification remains pending; no integration or whole acceptance claim.",
+  "scope": "Kernel child prototype: retained exact297 qualification261 source/2 installed and native/semantic/governance/exposurePASS. Subsequent decoder compatibility correction has41 focused passes including exact state retirement and corrupt-control rejection; exact changed-byte qualification pending. No integration or whole deadline/acceptance closure.",
   "limits": [
     "Complete semantic/cause-specific governance, source/private/install/package and actual consumer qualification before integration.",
     "Group observations do not prove escaped-session/cgroup isolation, global host admission, namespace-removal elapsed bounds, or full sibling deadline composition.",
@@ -504,5 +504,19 @@
     "scope": "Actual command/supervisor, fixture-only allocation/environment/retirement ports; no actual governed namespace allocated.",
     "exception": "EvidenceProcessCleanupError",
     "retired_fixture_leases": 0
+  },
+  "decoder_boundary_correction": {
+    "authority": false,
+    "red_subject": "6035719b",
+    "red_result": "One real-command verified-state decoder control fails; one corrupt-control UTF8 rejection control passes.",
+    "focused_cases_after_correction": 41,
+    "source_owner_sha256": "71fd1f0627f2556feeaf7cd9c39f7a8c36d2089d3ac4956446abaee78d9b796f",
+    "streams": {
+      "evidence-owned-decoder-red.stdout": "66534ed52c3dcfc7bb71b06336240aac588578b30d5994742426dff312452d56",
+      "evidence-owned-decoder-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence-owned-decoder-green.stdout": "d5b71d90c7cbc3f44694cc12b5b45f2a7227e3908fdb6e11a304a96720af885a",
+      "evidence-owned-decoder-green.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "next_action": "Qualify exact changed private/source/installed bytes before integration. Earlier exact297 qualification remains261 source/2 installed on its original subject."
   }
 }
