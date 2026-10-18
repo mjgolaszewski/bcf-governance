@@ -1,6 +1,4 @@
 """Fixed serial execution must fit its existing outer job deadline."""
-from pathlib import Path
-
 import pytest
 import yaml
 
@@ -74,3 +72,16 @@ def test_singleton_and_shard_static_floor_preserve_scope(tmp_path):
     validate_gate_job_timeouts(tmp_path, _graph(6, kind='gate_shard'))
     with pytest.raises(CIGraphError, match='cannot contain'):
         validate_gate_job_timeouts(tmp_path, _graph(5, kind='gate_shard'))
+
+
+@pytest.mark.parametrize('profile', ['lite', 'standard'])
+def test_reference_builder_derives_serial_defaults_for_every_group(tmp_path, profile):
+    from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
+    graph = build_reference_ci_graph(
+        project_id='serial-fixture', profile=profile, profile_contract_version='3.0',
+        gates=['governance-validate', 'architecture-test', 'lint', 'test',
+               'security-secret-scan', 'runtime-smoke'],
+        candidate_labels=['ubuntu-24.04'], trusted_labels=['self-hosted'],
+        candidate_hosted=True, trusted_hosted=False,
+    )
+    validate_gate_job_timeouts(tmp_path, graph)
