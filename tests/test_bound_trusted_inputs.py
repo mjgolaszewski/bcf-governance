@@ -49,7 +49,7 @@ class InputAPI:
         stream = BytesIO()
         with zipfile.ZipFile(stream, 'w') as archive:
             for name, data in self.members.items():
-                archive.writestr(name, data)
+                archive.writestr(zipfile.ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0)), data)
         return stream.getvalue()
 
     def selected(self, repository):
