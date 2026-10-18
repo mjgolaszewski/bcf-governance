@@ -76,9 +76,13 @@ def test_legacy_graph_absence_retains_local_behavior_but_modern_absence_blocks(t
         owner.admit_planned_shard_deadlines(tmp_path, {'execution_dag': {'nodes': [], 'edges': []}})
 
 
-def test_native_shard_rechecks_all_assignments_before_provider_or_gate_work(tmp_path, monkeypatch):
+@pytest.mark.parametrize(('minutes', 'count', 'diagnostic'), [(9, 2, 'cannot contain'), (10, 3, 'count')])
+def test_native_shard_rechecks_all_assignments_before_provider_or_gate_work(tmp_path, monkeypatch, minutes, count, diagnostic):
     graph, dag, targets = _inputs(tmp_path)
-    graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 9
+    job = graph['workflows'][0]['jobs'][0]
+    job['timeout_minutes'] = minutes
+    job['executor']['gates'][2] = targets[2] = 'test'
+    dag['nodes'][2].update(id='test', producer='test')
     (tmp_path / 'governance/ci-graph.yml').write_text('{}\n')
     session = SimpleNamespace(payload={'schema_version': '2.0',
         'expected_gate_inventory': targets, 'execution_dag': dag},
@@ -89,8 +93,8 @@ def test_native_shard_rechecks_all_assignments_before_provider_or_gate_work(tmp_
     monkeypatch.setattr(owner, 'materialize_prior_provider_proofs', lambda *a, **kw: pytest.fail('provider read'))
     monkeypatch.setenv('GITHUB_ACTIONS', 'true')
     # Select the cheap shard; its expensive sibling must still reject admission.
-    with pytest.raises(CIGraphError, match='cannot contain'):
-        owner.main(['--repo-root', str(tmp_path), '--shard-index', '1', '--shard-count', '2',
+    with pytest.raises(CIGraphError, match=diagnostic):
+        owner.main(['--repo-root', str(tmp_path), '--shard-index', '1', '--shard-count', str(count),
                     '--session-root', str(tmp_path / 'sessions')])
 
 
@@ -125,3 +129,23 @@ def test_runtime_count_is_typed_even_when_boolean_equals_configured_integer(tmp_
     for node in dag['nodes']: node['assigned_shard'] = 0
     with pytest.raises(CIGraphError):
         owner.validate_planned_shard_deadlines(tmp_path, graph, targets, dag, shard_count=True)
+
+
+@pytest.mark.parametrize('allowed', [True, False])
+def test_legacy_direct_allowance_stays_with_existing_owner(tmp_path, allowed):
+    graph, _, _ = _inputs(tmp_path)
+    graph['workflows'][0]['jobs'] = []
+    (tmp_path / 'governance-profile.yml').write_text(yaml.safe_dump({
+        'profile_contract_version': '1.0', 'ci_profile': {
+            'required_push_jobs': ['legacy'] if allowed else []},
+        'release_gate_profile': {'gates': {'legacy': {'status': 'required', 'target': 'legacy'}}}}))
+    policy = tmp_path / 'governance/gate-contracts.yml'
+    value = yaml.safe_load(policy.read_text())
+    value.update(gate_catalog={'legacy': {'target': 'legacy'}}, gates={'legacy': {}})
+    policy.write_text(yaml.safe_dump(value))
+    dag = {'nodes': [{'id': 'legacy', 'producer': 'legacy', 'assigned_shard': 0, 'depends_on': []}], 'edges': []}
+    if allowed:
+        owner.validate_planned_shard_deadlines(tmp_path, graph, ['legacy'], dag)
+    else:
+        with pytest.raises(CIGraphError):
+            owner.validate_planned_shard_deadlines(tmp_path, graph, ['legacy'], dag)
