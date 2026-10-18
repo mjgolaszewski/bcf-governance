@@ -45,7 +45,13 @@
     "architecture_selected_passed": 5,
     "governance_exposure": 0,
     "governance_yaml": 0,
-    "authored_semantics": "pending"
+    "authored_semantics": "pending",
+    "authored_semantics_disposition": {
+      "status": "passed",
+      "operation_observations_unchanged": 21,
+      "raw_sha256": "780acb414812fb54f22ae8917ca1037c934d5e2fff5cb821e1e813e54451e2d7"
+    }
   },
-  "governance_initial_failure": "A prose artifacts/installed phrase was interpreted as an ephemeral path; corrected to artifacts and installed, preserving the failed raw capture."
+  "governance_initial_failure": "A prose artifacts/installed phrase was interpreted as an ephemeral path; corrected to artifacts and installed, preserving the failed raw capture.",
+  "subsequent_exact_distribution_verification": "audits/issue-394/development-distribution-c96ca1aa-verification.json"
 }

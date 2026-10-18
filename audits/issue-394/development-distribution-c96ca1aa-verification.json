@@ -1,0 +1,353 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "controlled_exact_distribution_and_fresh_lite_consumer_passed_full_matrix_open",
+  "source_commit": "c96ca1aa01304dbd8ee436ab1e704de565237fcb",
+  "source_tree": "0b93b8a9b156fb7f6d52c4ca0808ff22f7702534",
+  "scope": "Controlled exact-source development build, source fresh/same-candidate repair-upgrade and both actual wheel/sdist installed fresh lite consumers with SDK-absent private fact queries; no independent release/custody or full profile/adopter claim",
+  "artifacts": [
+    {
+      "name": "bcf_governance-2.5.0-py3-none-any.whl",
+      "bytes": 2088894,
+      "sha256": "cb54b0e1207d1f43111848b4d9bd82b42902918ded1deddedd9aa4125915d29b"
+    },
+    {
+      "name": "bcf_governance-2.5.0.tar.gz",
+      "bytes": 9034768,
+      "sha256": "9043b7af5bcec8fd6c04b113f25bc5e60fde694be10d15d3aa425859e0467354"
+    }
+  ],
+  "source_mapping": {
+    "mapped_files": 788,
+    "status": "exact"
+  },
+  "source_distribution_inventory_verified": true,
+  "runtime_resource_population": {
+    "files": 491,
+    "source_discovered": true,
+    "exact_wheel_bytes_verified": true
+  },
+  "closed_dependency_environment": {
+    "python": "3.12.14",
+    "platform": "linux_x86_64",
+    "wheel_count": 41,
+    "lock_sha256": "2c801a3a1cf476253e85ba7748afbdd460aa2fba2e57eb83277f4eff0da6b55b"
+  },
+  "commands": [
+    {
+      "label": "wheel-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "twine-check",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-smoke",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-installed-consumer",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-installed-consumer",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-smoke",
+      "exit_code": 0
+    }
+  ],
+  "installed_consumer": {
+    "profile": "lite",
+    "installation": "fresh",
+    "skip_validation": true,
+    "target_sdk_absent": true,
+    "status": "pass",
+    "runtime_fact_query": {
+      "authority": false,
+      "busy_cases": 3,
+      "candidate_or_subprocess_not_executed": true,
+      "exact_file_reused": true,
+      "forged_mapping_or_evidence_rejected": 11,
+      "holder_and_retained_bytes_preserved": true,
+      "runtime_owned_helpers": true,
+      "scope": "private_runtime_synthetic_fact_queries",
+      "sdk_absent": true,
+      "valid_mapping_returned_unchanged": true
+    },
+    "query_returncodes": {
+      "authored_operation_query": 0,
+      "capture_integrity_query": 0,
+      "provider_source_query": 0
+    },
+    "prepare_returncodes": [
+      0,
+      0,
+      1
+    ],
+    "resolve_cases": [
+      {
+        "case": "valid",
+        "returncode": 0
+      },
+      {
+        "case": "asset",
+        "returncode": 1
+      },
+      {
+        "case": "reference",
+        "returncode": 1
+      },
+      {
+        "case": "missing_asset",
+        "returncode": 1
+      },
+      {
+        "case": "missing_reference",
+        "returncode": 1
+      },
+      {
+        "case": "ref",
+        "returncode": 1
+      }
+    ],
+    "semantic_returncodes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "process_custody": [
+    {
+      "stage": "source-installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "build",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    }
+  ],
+  "runtime_report_sha256": "a829ebbdbcdfe1c6dbe6a03a23a1f846a6633ef8d688ca99060d1c15a550841e",
+  "raw_evidence_sha256": {
+    "sdist-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "sdist-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-install.stdout": "01ee0c0b8251453024af2607c1317f10b1b63e5a42b06770ba30b7cb62daf6cf",
+    "sdist-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-installed-consumer.stdout": "27b09041ae925dbed84993e41e74a2bce69874ee4104b17c360f53ba89bc2382",
+    "sdist-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "sdist-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stdout": "20fad68bc14c93b51adeaa24888c140f9528eb9ed3b8b4b99cfa0d4a245b012c",
+    "wheel-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "wheel-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-install.stdout": "6311780c931d1a3db79e47b78266630d255813b91ec0f9b75901b8ce54fe5d9a",
+    "wheel-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-installed-consumer.stdout": "905f51b41e3ca33ccace3c16a17d92dcea8d99e9b1d5f634fb04bea3ef13ff30",
+    "wheel-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "wheel-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_operation_sha256": {
+    "build": "f23c85742a1eeccf08021737542b4f661ca0c1775ff65acd43bb9f4f42e3ea95",
+    "supervised_qualification": "92091978f9a03bd290e2afc9bd6e6e1e69596edba0e0b1a48f144e600fe03b09"
+  },
+  "limits": [
+    "This evidence applies to the recorded exact source/artifacts; subsequent audit commits are not those built bytes.",
+    "Existing controlled provider-port fixtures are not independent live-provider or real-adopter custody.",
+    "No wheel/sdist upgrade, v2.3.4 upgrade, repeat install, opt-out, rollback, all-profile, all-minor or full lifecycle conformance claim. Source repair-upgrade is same candidate only.",
+    "All 82 whole requirements and 38 slice objects remain unchanged; P32 active and P33-P35 dormant; no pipeline performance or target-approval claim."
+  ],
+  "next_action": "Qualify declared profiles and fresh/2.3.4 upgrade/repeat/opt-out/rollback on isolated provider-selected adopters; complete protected lifecycle/effect populations and composed deadlines. Canonical integration, generated reconciliation and exact provider proof remain separately required.",
+  "source_installer": {
+    "profile": "lite",
+    "fresh_and_same_candidate_repair_upgrade_passed": 2,
+    "sdk_absent_private_query": true,
+    "v234_upgrade_qualified": false
+  },
+  "cause_specific_rehearsal": {
+    "old_9620214b_copied_private_runtime_exit": 1,
+    "diagnostic": "private runtime accepted forged fact: substitution",
+    "current_copied_private_runtime_exit": 0,
+    "installed_assurance": false
+  },
+  "installed_consumers": {
+    "wheel": {
+      "profile": "lite",
+      "installation": "fresh",
+      "skip_validation": true,
+      "target_sdk_absent": true,
+      "status": "pass",
+      "runtime_fact_query": {
+        "authority": false,
+        "busy_cases": 3,
+        "candidate_or_subprocess_not_executed": true,
+        "exact_file_reused": true,
+        "forged_mapping_or_evidence_rejected": 11,
+        "holder_and_retained_bytes_preserved": true,
+        "runtime_owned_helpers": true,
+        "scope": "private_runtime_synthetic_fact_queries",
+        "sdk_absent": true,
+        "valid_mapping_returned_unchanged": true
+      },
+      "query_returncodes": {
+        "authored_operation_query": 0,
+        "capture_integrity_query": 0,
+        "provider_source_query": 0
+      },
+      "prepare_returncodes": [
+        0,
+        0,
+        1
+      ],
+      "resolve_cases": [
+        {
+          "case": "valid",
+          "returncode": 0
+        },
+        {
+          "case": "asset",
+          "returncode": 1
+        },
+        {
+          "case": "reference",
+          "returncode": 1
+        },
+        {
+          "case": "missing_asset",
+          "returncode": 1
+        },
+        {
+          "case": "missing_reference",
+          "returncode": 1
+        },
+        {
+          "case": "ref",
+          "returncode": 1
+        }
+      ],
+      "semantic_returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "sdist": {
+      "profile": "lite",
+      "installation": "fresh",
+      "skip_validation": true,
+      "target_sdk_absent": true,
+      "status": "pass",
+      "runtime_fact_query": {
+        "authority": false,
+        "busy_cases": 3,
+        "candidate_or_subprocess_not_executed": true,
+        "exact_file_reused": true,
+        "forged_mapping_or_evidence_rejected": 11,
+        "holder_and_retained_bytes_preserved": true,
+        "runtime_owned_helpers": true,
+        "scope": "private_runtime_synthetic_fact_queries",
+        "sdk_absent": true,
+        "valid_mapping_returned_unchanged": true
+      },
+      "query_returncodes": {
+        "authored_operation_query": 0,
+        "capture_integrity_query": 0,
+        "provider_source_query": 0
+      },
+      "prepare_returncodes": [
+        0,
+        0,
+        1
+      ],
+      "resolve_cases": [
+        {
+          "case": "valid",
+          "returncode": 0
+        },
+        {
+          "case": "asset",
+          "returncode": 1
+        },
+        {
+          "case": "reference",
+          "returncode": 1
+        },
+        {
+          "case": "missing_asset",
+          "returncode": 1
+        },
+        {
+          "case": "missing_reference",
+          "returncode": 1
+        },
+        {
+          "case": "ref",
+          "returncode": 1
+        }
+      ],
+      "semantic_returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "prerequisite_checks": {
+    "affected_passed": 76,
+    "cause_specific_sdist_failures": 2,
+    "wheel_controls_passed": 2,
+    "architecture_passed": 5,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "governance": 0,
+    "authored_operation_observations_unchanged": 21,
+    "authored_semantic_output_sha256": "780acb414812fb54f22ae8917ca1037c934d5e2fff5cb821e1e813e54451e2d7"
+  }
+}
