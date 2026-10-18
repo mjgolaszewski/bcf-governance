@@ -13,6 +13,8 @@ LEGACY_GATE_TIMEOUT_SECONDS = 1800
 LEGACY_HEADROOM_SECONDS = 60
 LEGACY_GATE_CLEANUP_SECONDS = LEGACY_HEADROOM_SECONDS
 INTERPRETER_PROBE_TIMEOUT_SECONDS = 30
+# Provider ceiling, kept in parity with the canonical graph schema.
+GITHUB_JOB_TIMEOUT_LIMIT_MINUTES = 360
 
 
 def bounded_execution_seconds(value: object, *, field: str) -> int:
@@ -52,6 +54,13 @@ def gate_deadline_contract(repo_root: Path) -> tuple[int, dict[str, int], int]:
         registry = load_yaml_path(path)
     except GraphYAMLError as exc:
         raise CIGraphError(str(exc)) from exc
+    return gate_deadline_values(registry)
+
+
+def gate_deadline_values(registry: dict[str, Any]) -> tuple[int, dict[str, int], int]:
+    """Parse the same policy from repository or installation-contract facts."""
+    if not isinstance(registry, dict):
+        raise CIGraphError("gate deadline contract must be a mapping")
     policy = registry.get("execution_policy", {})
     if not isinstance(policy, dict):
         raise CIGraphError("gate execution timeout policy is invalid")
@@ -92,6 +101,51 @@ def gate_sequence_deadline_ms(bounds: list[int], *, cleanup: int, headroom: int)
         cleanup_ms=len(bounds) * 2 * cleanup * 1000,
         measured_lower_bound_ms=0, headroom_ms=headroom * 1000,
     )
+
+
+def project_reference_gate_deadlines(graph: dict[str, Any], registry: dict[str, Any] | None) -> None:
+    """Project conservative reference budgets atomically from existing owners."""
+    default, overrides, cleanup = gate_deadline_values({} if registry is None else registry)
+    producers = None
+    if registry is not None and registry.get("profile_contract_version") == "3.0":
+        from .evidence_planning import parse_claim_model
+        try:
+            model = parse_claim_model(registry)
+        except ValueError as exc:
+            raise CIGraphError(f"reference deadline claim model is invalid: {exc}") from exc
+        producers = [group["producer"] for group in model["execution_groups"].values()
+                     if group.get("captured_by_preflight") is not True]
+        if len(producers) != len(set(producers)):
+            raise CIGraphError("reference deadline producer ownership is duplicated")
+    headroom = graph["policy"].get("minimum_gate_timeout_headroom_seconds", LEGACY_HEADROOM_SECONDS)
+    if type(headroom) is not int or headroom < 1:
+        raise CIGraphError("reference deadline headroom is invalid")
+    pending = []
+    for workflow in graph["workflows"]:
+        for job in workflow["jobs"]:
+            executor = job["executor"]
+            if executor["kind"] not in {"gate_group", "gate_shard"}:
+                continue
+            gates = executor["gates"]
+            if (not isinstance(gates, list) or not gates
+                    or any(not isinstance(gate, str) or not gate for gate in gates)
+                    or len(gates) != len(set(gates))):
+                raise CIGraphError("reference deadline gate population is invalid")
+            population = gates
+            if executor["kind"] == "gate_shard" and producers is not None:
+                if not set(producers).issubset(gates):
+                    raise CIGraphError("reference deadline omits a planned producer")
+                population = producers
+            required = gate_sequence_deadline_ms([overrides.get(gate, default) for gate in population],
+                                                 cleanup=cleanup, headroom=headroom) // 60000
+            current = job["timeout_minutes"]
+            if type(current) is not int or not 1 <= current <= GITHUB_JOB_TIMEOUT_LIMIT_MINUTES:
+                raise CIGraphError("reference deadline exceeds the360-minute provider ceiling")
+            if required > GITHUB_JOB_TIMEOUT_LIMIT_MINUTES:
+                raise CIGraphError("reference gate bounds exceed the360-minute provider ceiling; partition required")
+            pending.append((job, max(current, required)))
+    for job, required in pending:
+        job["timeout_minutes"] = required
 
 
 def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:

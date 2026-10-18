@@ -609,6 +609,7 @@ def reference_ci_graph(args: Any, contract: dict[str, Any]) -> dict[str, Any]:
         trusted_labels=trusted,
         candidate_hosted=candidate_hosted,
         trusted_hosted=trusted_hosted,
+        gate_contract=contract,
     )
 
 

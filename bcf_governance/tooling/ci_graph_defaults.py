@@ -9,9 +9,7 @@ from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
 from .ci_graph_builders import component as _component, job as _job
 from .ci_graph_pr_evaluator import apply_standard_pr_evaluator
-from .ci_graph_timeouts import (
-    LEGACY_GATE_TIMEOUT_SECONDS, LEGACY_GATE_CLEANUP_SECONDS, gate_sequence_deadline_ms,
-)
+from .ci_graph_timeouts import project_reference_gate_deadlines
 from .repository_comparison_context import (
     comparison_base_input_contract,
     push_comparison_inputs,
@@ -384,6 +382,7 @@ def build_reference_ci_graph(
     candidate_hosted: bool,
     trusted_hosted: bool,
     include_release_roles: bool = False,
+    gate_contract: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the complete graph contract; rendering is owned elsewhere."""
 
@@ -392,6 +391,10 @@ def build_reference_ci_graph(
         raise ValueError(f"unsupported CI graph profile {profile}")
     if not gates or not candidate_labels or not trusted_labels:
         raise ValueError("CI graph requires gates and explicit candidate/trusted runner mappings")
+    if gate_contract is not None and (not isinstance(gate_contract, dict)
+            or gate_contract.get("profile_contract_version") != profile_contract_version
+            or gate_contract.get("target_profile") != profile):
+        raise ValueError("reference graph gate contract context differs from selected profile")
     lane_groups = _lane_groups(gates)
     lane_producers = [f"{lane}-evidence" for lane, _ in lane_groups]
     artifacts: dict[str, Any] = {
@@ -751,14 +754,5 @@ def build_reference_ci_graph(
             apply_standard_pr_evaluator(graph)
     elif profile == "lite":
         _apply_legacy_direct_post_merge_scope(graph)
-    for workflow in graph["workflows"]:
-        for job in workflow["jobs"]:
-            executor = job["executor"]
-            if executor["kind"] == "gate_group":
-                required = gate_sequence_deadline_ms(
-                    [LEGACY_GATE_TIMEOUT_SECONDS] * len(executor["gates"]),
-                    cleanup=LEGACY_GATE_CLEANUP_SECONDS,
-                    headroom=graph["policy"]["minimum_gate_timeout_headroom_seconds"],
-                ) // 60000
-                job["timeout_minutes"] = max(job["timeout_minutes"], required)
+    project_reference_gate_deadlines(graph, gate_contract)
     return graph

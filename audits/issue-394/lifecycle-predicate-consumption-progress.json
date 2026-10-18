@@ -379,5 +379,12 @@
     "canonical_current_budget_repaired": false,
     "new_exact_installed_distribution_qualified": false,
     "complete_runtime_deadline_composition_qualified": false
+  },
+  "reference_deadline_projection": {
+    "verification": "audits/issue-394/reference-deadline-projection-verification.json",
+    "model_and_install_binding_behavior_passed": true,
+    "canonical_current_budget_repaired": false,
+    "full_periodic_population_partitioned": false,
+    "new_exact_installed_distribution_qualified": false
   }
 }

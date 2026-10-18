@@ -88,6 +88,18 @@ producer allowances remain with their existing profile owner; they establish
 no outer graph deadline. Repair canonical budgets through reconciliation;
 complete environment, provider I/O and retry envelopes still require evidence.
 
+Reference graphs accept the validated installation gate contract. Planned-shard
+defaults conservatively contain every executable producer in that model;
+fixed periodic groups retain every literal gate. Overrides, interpreter probes,
+cleanup and headroom use the same deadline parser as repository validation.
+The installation transaction derives these budgets before allocating its target.
+Projection preserves larger defaults and rejects bounds above the existing
+360-minute provider/schema ceiling atomically. Full periodic populations that
+exceed that ceiling require an explicit partition preserving their controls.
+The optional Python factory argument preserves existing callers; callers without
+a contract receive conservative legacy bounds over their declared population.
+These projections establish neither performance targets nor execution authority.
+
 Scheduled causal mutants retain explicit, reviewable source mutations, but the
 harness mechanically requires every search fragment to identify exactly one
 canonical runtime location. Moving or duplicating an owner therefore fails the

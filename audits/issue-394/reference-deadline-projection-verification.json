@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_qualified_canonical_repair_periodic_partition_and_installed_pending",
+  "contract": "audits/issue-394/reference-deadline-projection-contract.json",
+  "checks": {
+    "focused_passed": 46,
+    "earlier_affected_passed": 219,
+    "expanded_affected_passed": 224,
+    "reference_consumer_passed": 20,
+    "authored_semantics": 0,
+    "governance": 0,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "final_affected_passed": 225,
+    "architecture_passed": 6,
+    "authored_operation_observations_unchanged": 21,
+    "audit_record_governance": 0
+  },
+  "cause_controls": {
+    "authority": false,
+    "controls": [
+      {
+        "cause": "factory",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[lite]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[standard]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[regulated]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_legacy_missing_contract_conservatively_contains_literal_population",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_contract_rejects_missing_or_contradictory_facts[missing-model]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_contract_rejects_missing_or_contradictory_facts[duplicate-producer]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_contract_rejects_missing_or_contradictory_facts[boolean-body]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_contract_rejects_missing_or_contradictory_facts[boolean-override]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_contract_rejects_missing_or_contradictory_facts[omitted-producer]",
+          "FAILED tests/test_reference_deadline_projection.py::test_installation_caller_binds_actual_contract_without_target_mutation",
+          "FAILED tests/test_reference_deadline_projection.py::test_full_twenty_gate_periodic_reference_requires_explicit_partition",
+          "FAILED tests/test_reference_deadline_projection.py::test_cap_failure_precedes_install_transaction_path_allocation"
+        ],
+        "raw_sha256": {
+          "reference-deadline-control-factory.stdout": "96900a31a9e54f2d6efdded07a0fd160ca4f78eab7be31eda0120810e8de9bdf",
+          "reference-deadline-control-factory.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "installation",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_reference_deadline_projection.py::test_installation_caller_binds_actual_contract_without_target_mutation"
+        ],
+        "raw_sha256": {
+          "reference-deadline-control-installation.stdout": "d70012e021943fda29011c6ac9498b8dc71dd56d89f9ad26706424287ab89e7a",
+          "reference-deadline-control-installation.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "override",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[lite]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[standard]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[regulated]",
+          "FAILED tests/test_reference_deadline_projection.py::test_installation_caller_binds_actual_contract_without_target_mutation",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[unknown]",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[uniform]",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[heavy-test]",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[heavy-security]"
+        ],
+        "raw_sha256": {
+          "reference-deadline-control-override.stdout": "581d6a00c474dd1de7732e4a46a2de1da3de9a8e52e72c7bc24c0bc06912f89e",
+          "reference-deadline-control-override.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "producer",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[lite]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[standard]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_budget_uses_producers_and_exact_policy[regulated]",
+          "FAILED tests/test_reference_deadline_projection.py::test_reference_contract_rejects_missing_or_contradictory_facts[duplicate-producer]",
+          "FAILED tests/test_reference_deadline_projection.py::test_installation_caller_binds_actual_contract_without_target_mutation",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[unknown]",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[uniform]",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[heavy-test]",
+          "FAILED tests/test_reference_deadline_projection.py::test_real_model_projection_contains_duration_aware_assignments[heavy-security]"
+        ],
+        "raw_sha256": {
+          "reference-deadline-control-producer.stdout": "8c9b41461a5f1b5d136bda7806ff1b0a07493c68c52419640464e539f3a16ae6",
+          "reference-deadline-control-producer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "ceiling",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_reference_deadline_projection.py::test_projection_preserves_larger_budget_and_rejects_late_cap_atomically",
+          "FAILED tests/test_reference_deadline_projection.py::test_full_twenty_gate_periodic_reference_requires_explicit_partition",
+          "FAILED tests/test_reference_deadline_projection.py::test_cap_failure_precedes_install_transaction_path_allocation"
+        ],
+        "raw_sha256": {
+          "reference-deadline-control-ceiling.stdout": "3b0afb2a349dd690cc004b21faec1233b64894856b0a6b1fd9a3f3b781b16d2f",
+          "reference-deadline-control-ceiling.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "atomic",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_reference_deadline_projection.py::test_projection_preserves_larger_budget_and_rejects_late_cap_atomically"
+        ],
+        "raw_sha256": {
+          "reference-deadline-control-atomic.stdout": "063161256c43441f5dfb5efa321edf37a45c7e1c18f6d58f0a438419486279b6",
+          "reference-deadline-control-atomic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "distinct_mutation_sizes_per_module": true,
+    "exact_source_restored": true
+  },
+  "working_source_projections": {
+    "authority": false,
+    "execution_qualified": false,
+    "scope": "Working-source in-memory projections from current canonical graph/contract; no source or generated workflow mutation",
+    "canonical_changes": [
+      {
+        "workflow": "governance",
+        "job": "evidence",
+        "before": 60,
+        "proposed": 243
+      }
+    ],
+    "full_reference_population": {
+      "status": "typed_block",
+      "reason": "reference gate bounds exceed the360-minute provider ceiling; partition required",
+      "next_action": "Preserve and partition full periodic literal population through existing CI ownership; do not drop controls to satisfy cap"
+    }
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+    "bcf_governance/tooling/ci_graph_defaults.py": "86b6675dda9f7e234401c4e8ffe887915d3afcdb4b19d616944ca66319a399e0",
+    "bcf_governance/tooling/governance_install/ci_graph.py": "635d1a343a8c4838105e2854f82d5b0e537517708bc2635031318481351bd3af"
+  },
+  "raw_sha256": {
+    "reference-deadline-cause-controls.stdout": "54341ac9d9f5b4e98c1bee06a847f78283c4506574210704c9bdeeeadc259dda",
+    "reference-deadline-control-atomic.stdout": "063161256c43441f5dfb5efa321edf37a45c7e1c18f6d58f0a438419486279b6",
+    "reference-deadline-control-ceiling.stdout": "3b0afb2a349dd690cc004b21faec1233b64894856b0a6b1fd9a3f3b781b16d2f",
+    "reference-deadline-control-factory.stdout": "96900a31a9e54f2d6efdded07a0fd160ca4f78eab7be31eda0120810e8de9bdf",
+    "reference-deadline-control-installation.stdout": "d70012e021943fda29011c6ac9498b8dc71dd56d89f9ad26706424287ab89e7a",
+    "reference-deadline-control-override.stdout": "581d6a00c474dd1de7732e4a46a2de1da3de9a8e52e72c7bc24c0bc06912f89e",
+    "reference-deadline-control-producer.stdout": "8c9b41461a5f1b5d136bda7806ff1b0a07493c68c52419640464e539f3a16ae6",
+    "reference-deadline-current-populations.stdout": "2f8fe71d995bc3b62489d72aa4ddaea67c36f0d9b0a6ccc4f40f8384b14b0942",
+    "reference-deadline-projection-affected.stdout": "cc49b92af7f8a104ca232411c3dcf50ae43fa84a9ed458c8d22619bbb36365fc",
+    "reference-deadline-projection-complete.stdout": "a9a56c335a1ef505c23c3d0ebaa24f416d2723342e6303e367ccfb61b56fa2c6",
+    "reference-deadline-projection-consumers.stdout": "3852e744621226795a726dfdb329df50f792f29494b5b1fb697a64210cadf15c",
+    "reference-deadline-projection-focused.stdout": "62b04929dd5495c77a0dd9e1dcd7aa6fa56fa864ca4889ff9e00bed283af8de7",
+    "reference-deadline-projection-red.stdout": "748d6d3808f8449013926a8159dad2d896d9a00ef74aab5ccda33ec658e0bfc0",
+    "reference-deadline-architecture-qualified.stdout": "7c7e2a46fe0e697af02268ed515323c832f155e41758c286d3b49d36e9ee39ca",
+    "reference-deadline-authored-semantic-qualified.stdout": "1cdd66c5a1b989a79810845029cce9aae69e312b1d39400c763d7032c6ab8975",
+    "reference-deadline-behavior-qualified.stdout": "9af14743ed211e99960a0550498ffdd2e773f888ea67afd4f6f10767e20c55bf",
+    "reference-deadline-exposure-qualified.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "reference-deadline-governance-qualified.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "reference-deadline-lint-qualified.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reference-deadline-type-qualified.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reference-deadline-cause-controls.json": "b2e42cc9fd261ed504697be17b68c3690b8750633246983a35346468f699f399",
+    "reference-deadline-current-populations.json": "8fb8edbf8cd6232f62769427bae98b6410256e376c9bfb1cfd6f914cbf1fb73d",
+    "reference-deadline-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "canonical_current_budget_repaired": false,
+  "full_periodic_population_partitioned": false,
+  "new_exact_installed_distribution_qualified": false,
+  "prior_exact_distribution": "audits/issue-394/development-distribution-fd06f44f-verification.json",
+  "limits": [
+    "Conservative model envelopes and synthetic duration placement inputs are queries, not authenticated execution or performance observations.",
+    "Current canonical budget243m is an in-memory proposal; authored/generated workflow and authority bytes are unchanged until the canonical reconciliation owner applies the correction.",
+    "Full20-gate periodic reference population exceeds the provider ceiling and remains explicitly blocked before install target allocation; no control was dropped and full-profile qualification is not complete.",
+    "The prior fd06 distribution does not include this newer source. Full setup/provider I/O/retry/lifecycle, supported profile/adopter transitions and independent custody remain open.",
+    "All82 whole requirements and38 slice objects unchanged; P32 active/P33-P35 dormant; targets unapproved."
+  ],
+  "next_action": "Complete source checks; repair current canonical budget through its reconciliation owner; partition full periodic populations with exact ownership/control preservation; add private installed probes and qualify exact distributions."
+}
