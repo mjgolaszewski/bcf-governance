@@ -498,3 +498,20 @@ def test_runtime_mapping_recomputation_preserves_report_without_candidate_execut
     monkeypatch.setattr(runtime.subprocess, "run", lambda *args, **kwargs: pytest.fail("mapping executed a subprocess"))
     monkeypatch.setattr(runtime.subprocess, "Popen", lambda *args, **kwargs: pytest.fail("mapping allocated a subprocess"))
     assert verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist) == original
+
+
+@pytest.mark.parametrize("defect", ["substituted", "empty"])
+def test_runtime_raw_evidence_rejects_before_source_reconstruction(tmp_path: Path, monkeypatch, defect):
+    from bcf_governance.tooling import release_runtime_verification as runtime
+
+    report, evidence, wheel, sdist = _fixture(tmp_path)
+    if defect == "empty":
+        payload = json.loads(report.read_text())
+        payload["evidence"] = {}
+        report.write_text(json.dumps(payload))
+        evidence = ()
+    else:
+        evidence[0].write_bytes(b"substituted output")
+    monkeypatch.setattr(runtime, "_extract_sdist", lambda *args: pytest.fail("source reconstruction preceded raw-evidence rejection"))
+    with pytest.raises(GitHubControllerError, match="evidence inventory"):
+        verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)

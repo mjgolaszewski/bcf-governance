@@ -15,6 +15,7 @@
     "Keep report status, exact environment, artifact digest and raw evidence checks; never substitute recomputed byte parity for runtime execution or provider authority.",
     "At the shared consuming boundary, validate both regular archives, extract only through the existing safe owner and recompute exact wheel/source correspondence from the supplied bytes before returning an accepted report.",
     "Reject the build-manifest asset inventory and malformed provider artifact ID/digest before archive validation or runtime/source recomputation at the verifier consumer.",
+    "Require nonempty exact raw-evidence bindings before allocating source reconstruction; preserve the existing runtime-evidence directory admission invariant at the shared verifier boundary.",
     "Compare the complete recomputed mapping with the declared mapping; booleans are not integer counts and undeclared mapping fields do not confer authority.",
     "Reject substituted code, code lacking a source owner, false counts, ambiguous or unsafe archives and malformed source roots before verifier output or collection can advance.",
     "Run no candidate interpreter, backend, import, installer or provider mutation to establish the byte-mapping fact. Retain owned temporary extraction cleanup.",
