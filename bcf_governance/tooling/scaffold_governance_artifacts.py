@@ -36,6 +36,7 @@ from .ci_graph_post_merge import reconcile_post_merge_scope
 from .ci_graph_provider_permissions import reconcile_provider_permission_edges
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_timeouts import gate_timeout_contract
+from .governance_validation.evidence_contracts import validate_authored_gate_controls
 from .ci_graph_values import declared_graph_value_source_paths
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
 from .release_version_projection import (
@@ -653,6 +654,7 @@ def reconcile_main(argv: list[str] | None = None) -> None:
             validate_authored_phase_state(root)
         validate_authored_release_target(root, __version__)
         gate_timeout_contract(root)
+        validate_authored_gate_controls(root)
         from .governance_validation.ci_state_matrix import validate_ci_state_matrix
         validate_ci_state_matrix(root, authored_only=True)
         if args.commit_derived:
@@ -686,6 +688,7 @@ def reconcile_main(argv: list[str] | None = None) -> None:
                 print(authority_transition_json(transition))
                 return
             rounds = converge(steps, lambda: _reconcile_snapshot(root))
+            validate_authored_gate_controls(root)
             ledger = record_reconcile_steps(root, steps)
     except (
         OSError,

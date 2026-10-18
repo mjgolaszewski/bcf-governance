@@ -29,6 +29,48 @@ TEST_COMMAND_POLICIES = {
 }
 
 
+def validate_authored_gate_controls(repo_root: Path) -> None:
+    """Check the complete baseline control registry before normalization effects.
+
+    An ungoverned local deadline policy is not a governance declaration. Once a
+    profile or control population is declared, its complete required inputs must
+    exist. Active negative controls still use the full validator's late check.
+    """
+    root = repo_root.resolve()
+    documents: dict[str, dict[str, Any]] = {}
+    paths = {
+        "profile": "governance-profile.yml",
+        "contracts": "governance/gate-contracts.yml",
+        "policy": "governance/evidence-policy.yml",
+    }
+    for name, relative in paths.items():
+        path = root / relative
+        if not path.exists() and not path.is_symlink():
+            continue
+        if not path.is_file() or path.is_symlink() or path.resolve() != path:
+            raise GovernanceValidationError(f"authored control input must be a regular repository file: {relative}")
+        documents[name] = _load_yaml(path)
+    if "profile" not in documents:
+        contracts = documents.get("contracts", {})
+        if ("policy" not in documents and "gates" not in contracts
+                and "profile_contract_version" not in contracts):
+            return
+        raise GovernanceValidationError("authored control registry requires governance-profile.yml")
+    if set(documents) != set(paths):
+        raise GovernanceValidationError("authored control registry inputs are incomplete")
+    profile, contracts, policy = (documents[key] for key in ("profile", "contracts", "policy"))
+    configured = _require_mapping(profile.get("release_gate_profile"), context="profile release_gate_profile")
+    gates = _require_mapping(configured.get("gates"), context="profile release_gate_profile.gates")
+    required = {
+        str(value["target"]) for value in gates.values()
+        if isinstance(value, dict) and value.get("status") == "required" and isinstance(value.get("target"), str)
+    }
+    declared = _require_mapping(contracts.get("gates"), context="gate contract gates")
+    if set(declared) != required:
+        raise GovernanceValidationError("governance/gate-contracts.yml gates must exactly match profile-required targets")
+    _validate_gate_contract_registry(root, profile, contracts, policy)
+
+
 def _validate_gate_contract_registry(
     repo_root: Path,
     profile: dict[str, Any],
@@ -167,6 +209,14 @@ def _validate_gate_contract_registry(
                 mutation.get("path"),
                 context=f"gate contract {target}.negative_controls[{index}].mutation.path",
             )
+            if mutation_path == "@active_phase_log" and check_mutation_state:
+                from .authored_phase_state import active_phase_paths
+                try:
+                    mutation_path = active_phase_paths(repo_root)[2]
+                except (OSError, ValueError) as exc:
+                    raise GovernanceValidationError(
+                        f"negative-control mutations must resolve exactly once: {control.get('id')}:active-phase-path"
+                    ) from exc
             if mutation_path != "@active_phase_log":
                 _validate_portable_relative_path(
                     mutation_path,
@@ -176,7 +226,8 @@ def _validate_gate_contract_registry(
                     mutation_file = repo_root / mutation_path
                     search = mutation.get("search")
                     yaml_path = mutation.get("yaml_path")
-                    if not mutation_file.is_file() or mutation_file.is_symlink():
+                    if (not mutation_file.is_file() or mutation_file.is_symlink()
+                            or mutation_file.resolve() != repo_root.resolve() / mutation_path):
                         mutation_issues.append(f"{control.get('id')}:missing-path")
                         continue
                     try:
