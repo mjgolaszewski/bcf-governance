@@ -3,13 +3,15 @@
 from pathlib import Path
 from types import SimpleNamespace
 import hashlib
+import subprocess
 
 import pytest
 import yaml
 
 from bcf_governance.tooling import (
     ci_authority_pins, ci_controller_policy, ci_github_authority,
-    ci_github_release_inputs, ci_self_controller, github_protection,
+    ci_github_release_inputs, ci_github_membership, ci_github_pr,
+    ci_pr_transition, ci_self_controller, github_protection,
     prior_evidence_transport, routine_controller_rotation, semantic_yaml,
 )
 from bcf_governance.tooling.ci_github_api import GitHubContent
@@ -167,3 +169,85 @@ def test_supported_yaml_aliases_and_explicit_merge_override_remain_valid(encodin
     raw = "defaults: &defaults {required: false}\npolicy: {<<: *defaults, required: true}\n".encode(encoding)
     value = semantic_yaml.load_unique_mapping_text(raw)
     assert value == {"defaults": {"required": False}, "policy": {"required": True}}
+
+
+def test_transition_contract_duplicates_reject_before_equivalence_or_artifacts():
+    raw = (ROOT / "governance/pr-transition.yml").read_bytes()
+    schema = ci_github_authority.packaged_repo_root() / ci_pr_transition.TRANSITION_SCHEMA
+    assert ci_pr_transition.load_transition_bytes(raw, schema_path=schema) == yaml.safe_load(raw)
+    with pytest.raises(GitHubControllerError) as error:
+        ci_pr_transition.load_transition_bytes(_duplicate(raw), schema_path=schema)
+    assert isinstance(error.value.__cause__, semantic_yaml.SemanticYAMLError)
+
+
+def test_admission_facades_reject_duplicate_source_before_inventory_selection():
+    authority = yaml.safe_load((ROOT / "governance/ci-authority.yml").read_bytes())
+    workflow = ci_github_authority.authority_role_workflow(authority, "admission")
+    path = workflow["active_path"]
+    raw = (ROOT / path).read_bytes()
+    api, main, _ = _api(raw, path)
+    assert ci_github_membership._pending_producer_facades(
+        api, repository="owner/repo", main=main, authority=authority,
+    )
+    api, main, _ = _api(_duplicate(raw), path)
+    with pytest.raises(GitHubControllerError) as error:
+        ci_github_membership._pending_producer_facades(api, repository="owner/repo", main=main, authority=authority)
+    assert isinstance(error.value.__cause__, semantic_yaml.SemanticYAMLError)
+
+
+@pytest.mark.parametrize("path", ["governance/ci-graph.yml", "governance/self-governance-policy.yml"])
+def test_evaluator_policy_duplicates_reject_before_runtime_or_finalizer_reads(path):
+    sources = {key: (ROOT / key).read_bytes() for key in (
+        "governance/ci-graph.yml", "governance/self-governance-policy.yml",
+    )}
+    sources[ci_github_pr.EVALUATOR_RUNTIME_PATH] = b"trusted evaluator fixture\n"
+    sources[ci_github_pr.FINALIZER_WORKFLOW] = b"trusted finalizer fixture\n"
+    observed = []
+
+    def content(repository, path, *, ref):
+        assert repository == "owner/repo" and ref == SHA
+        observed.append(path)
+        raw = sources[path]
+        oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+        return GitHubContent(path=path, blob_oid=oid, content=raw)
+
+    api = SimpleNamespace(content=content)
+    main = MainIdentity("1207503211", "main", SHA, TREE)
+    protection = {"projection": {"profile": "standard"}, "pr_certification": {
+        "context": ci_github_pr.CHECK_CONTEXT, "publisher_app_id": ci_github_pr.CHECK_APP_ID,
+    }}
+    operation = lambda: ci_github_pr._evaluator_identity(
+        api, repository="owner/repo", main=main, protection=protection, base_sha=SHA, base_branch="main",
+    )
+    assert operation()["mode"] == "managed_controller"
+    observed.clear()
+    sources[path] = _duplicate(sources[path])
+    with pytest.raises(GitHubControllerError) as error:
+        operation()
+    assert isinstance(error.value.__cause__, semantic_yaml.SemanticYAMLError)
+    assert ci_github_pr.EVALUATOR_RUNTIME_PATH not in observed
+    assert ci_github_pr.FINALIZER_WORKFLOW not in observed
+
+
+def test_real_git_claim_policy_duplicates_reject_before_closure(tmp_path, monkeypatch):
+    from tests import test_provider_reuse_closure as fixture
+    from bcf_governance.tooling import provider_reuse_closure
+
+    root = tmp_path / "protected-source"
+    subprocess.run(["git", "clone", "-q", "--shared", str(ROOT), str(root)], check=True)
+    monkeypatch.setattr(fixture, "ROOT", root)
+    provider = fixture.Provider()
+    assert provider_reuse_closure.trusted_main_claim_context(
+        provider, "owner/repo", provider.main, ["runtime-smoke"], repo_root=root,
+    )
+    contract = root / fixture.CONTRACT
+    contract.write_bytes(_duplicate(contract.read_bytes()))
+    subprocess.run(["git", "add", fixture.CONTRACT], cwd=root, check=True)
+    subprocess.run(["git", "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+                    "commit", "-qm", "duplicate protected policy"], cwd=root, check=True)
+    provider = fixture.Provider()
+    with pytest.raises(GitHubControllerError) as error:
+        provider_reuse_closure.trusted_main_claim_context(
+            provider, "owner/repo", provider.main, ["runtime-smoke"], repo_root=root,
+        )
+    assert isinstance(error.value.__cause__, semantic_yaml.SemanticYAMLError)
