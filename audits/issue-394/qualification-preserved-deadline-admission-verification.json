@@ -1,0 +1,120 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_checked_canonical_and_exact_installed_pending",
+  "contract": "audits/issue-394/qualification-preserved-deadline-admission-contract.json",
+  "source_parent": "63d5e821f1147a593fad2ca04c0ce84b37c376b3",
+  "source_sha256": "0b6bee3ba9f40cc39abb5357e7af735110c7925ed415f813baeb64d29bf7f524",
+  "production_loc": 789,
+  "observed_exact_fb0_preparation": {
+    "outcome": "typed_strict_upgrade_rejection_before_behavioral_proof",
+    "terminal": {
+      "authority": false,
+      "returncode": 1,
+      "quiescent": true,
+      "recorded_handles_absent": true,
+      "recorded_handle_count": 3,
+      "fresh_common_fence": "free_then_released"
+    },
+    "target_atomic_unchanged": true,
+    "scope": "earlier controller/clone allocation was unnecessary; preserved declarations determine failure"
+  },
+  "checks": {
+    "red_failed": 3,
+    "red_passed": 6,
+    "source_qualification_and_selection_cases_passed": 90,
+    "disabled_admission_first_and_last_cases_failed": 2,
+    "compatible_70m_and_graph_absent_inputs_reach_allocation": true,
+    "source_bytes_unchanged_and_no_receipt_on_invalid_inputs": true,
+    "architecture_cases_passed": 6,
+    "authored_semantic_operation_observations_unchanged": 21,
+    "pack_returncode": 0,
+    "lint_returncode": 0,
+    "typecheck_returncode": 0,
+    "governance_returncode": 0
+  },
+  "preserved_deadline_census": {
+    "authority": false,
+    "scope": "read-only preserved declaration census on provider-pinned preparation resources",
+    "adopters": [
+      {
+        "repository": "moranwm/tradeflow",
+        "source_commit": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+        "static_gate_deadlines": "blocked",
+        "diagnostic": "CI graph evidence job structural-evidence timeout 2700s cannot contain the 3600s serial 2-gate timeout sum plus 2 interpreter setup bounds of 30s, 4 cleanup bounds of 60s and 300s headroom"
+      },
+      {
+        "repository": "mjgolaszewski/racecar",
+        "source_commit": "38945f5aa3a90e0782cabb006c8c88a5463fcfbd",
+        "static_gate_deadlines": "blocked",
+        "diagnostic": "CI graph evidence job structural-evidence timeout 2700s cannot contain the 19800s serial 11-gate timeout sum plus 11 interpreter setup bounds of 30s, 22 cleanup bounds of 60s and 60s headroom"
+      },
+      {
+        "repository": "mjgolaszewski/AgentBus",
+        "source_commit": "8fa47290970fc828e71880a8a71b5e356e33ab46",
+        "static_gate_deadlines": "pass",
+        "scope": "individual/fixed-group floor only; actual planned composition and full upgrade unqualified"
+      }
+    ]
+  },
+  "tradeflow_proposal": {
+    "authority": false,
+    "scope": "proposed authored-budget remediation only, not applied or whole-upgrade qualification",
+    "repository": "moranwm/tradeflow",
+    "source_commit": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+    "graph_sha256": "2d00c7c790e30ab0c2262140551d907505d37e220e20b7e461ef29849aa18e24",
+    "workflow": "governance",
+    "job": "structural-evidence",
+    "gate_bounds_seconds": [
+      1800,
+      1800
+    ],
+    "cleanup_seconds": 60,
+    "headroom_seconds": 300,
+    "current_outer_minutes": 45,
+    "required_outer_minutes": 70,
+    "current_rejection": "CI graph evidence job structural-evidence timeout 2700s cannot contain the 3600s serial 2-gate timeout sum plus 2 interpreter setup bounds of 30s, 4 cleanup bounds of 60s and 300s headroom",
+    "proposed_deadline_check": "passed",
+    "proposed_patch_sha256": "e8756e725a0d0437476da22928182728621923c7f87804bf5f336dcb368139ef",
+    "failed_strict_upgrade_atomic_target_clean": true,
+    "maintained_repository_changed": false,
+    "whole_upgrade_or_compatibility_qualified": false
+  },
+  "policy_decision": "Tradeflow45-to70 proposal is not applied; user migration preference requested asynchronously. No response or authorization inferred from elapsed time.",
+  "limits": [
+    "Ordinary upgrade preserves project-owned graph/contracts; this admission check never widens budgets or bypasses required work.",
+    "Prepared fb0 strict upgrade stopped at first invalid adopter. Racecar and AgentBus strict upgrades and all real-adopter proof remain unexecuted. Static AgentBus floor PASS is not composed-plan or full compatibility evidence.",
+    "Current source proof is bounded; canonical projection, exact installed parity, complete profile/toolchain/minor matrix, all82 requirements/38 slices, performance approval and independent custody remain open."
+  ],
+  "raw_sha256": {
+    "qualification-preserved-deadline-qualified-red.stdout": "ff75cc4f053dcefc98081cc177c46fc30b8d6f98f36ea8640a29d472e1ab4848",
+    "qualification-preserved-deadline-qualified-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-consumers.stdout": "85e7dc942a034b8517f244c45d35c4ce8d1798aceb8cba35e7849f8ed214cd60",
+    "qualification-preserved-deadline-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-disabled.stdout": "71f334275cdfa7a4452ef44f671182ee2e7a90754edfb7917c391c279d0c2798",
+    "qualification-preserved-deadline-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "adopter-preserved-deadline-census.stdout": "8ca0714168d57324dc10b4abf7fbcfb817c7953db530bbb984c5e24f7e98e8ae",
+    "adopter-preserved-deadline-census.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tradeflow-preserved-deadline-proposal.stdout": "b30ce3ba7a2334b57eaa82bbaecdc19cbe247e4b2b841f64a3e57b99d03d89f0",
+    "tradeflow-preserved-deadline-proposal.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "fb0-adopter-upgrade-terminal-readback.json": "a0683bfee55826bbaa3d4705803e79022c743453cad67a2c4b390827ebcefc20",
+    "tradeflow-preserved-deadline-proposal.json": "ca842b8e9e439ef77c468b43f755bda60ae1ad93db1c9beb55f54996dbc658ef",
+    "tradeflow-45m-70m-deadline-proposal.patch": "e8756e725a0d0437476da22928182728621923c7f87804bf5f336dcb368139ef",
+    "preparation/operation.json": "04b9f076ce9f255fe6fdf85ce26a47f8b82a1c7e7c593a54791ea35878f5f930",
+    "preparation/adopter-upgrade-preparation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "preparation/adopter-upgrade-preparation.stderr": "7224fda860f424b68f4d95da43f91009523d4fa3c4b0bdcc59c1aee472b27eb7",
+    "preparation/tradeflow-lite-strict-upgrade.stderr": "f749f8b0475ead5873b70a9948c68f075f17f444b52c48af12044b1d3a1f7472",
+    "qualification-preserved-deadline-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-pack.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-type.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "qualification-preserved-deadline-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-architecture.stdout": "be720888c84d72fac4c76a041551d4c0bbe7cd7e2ae1f9d1d351ce84e2acf02a",
+    "qualification-preserved-deadline-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-preserved-deadline-semantic.stdout": "0f2c77dcca264bef2c3dea66999d307574d096da17a46afd9c0e20b8ce665d11",
+    "qualification-preserved-deadline-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

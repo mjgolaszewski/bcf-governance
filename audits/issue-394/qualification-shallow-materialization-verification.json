@@ -94,7 +94,8 @@
     "distribution-fb0a04ed-record.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reconcile/operation.json": "e8deb55cf3baddcc5b002421aea85eff98a7ce72a044ac0bcd8e65502f2e0992",
     "reconcile/canonical-reconcile.stdout": "36871cd5cfd66e28e46f3e10a804c20afb472a5871c593c180179a403770c73f",
-    "reconcile/canonical-reconcile.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "reconcile/canonical-reconcile.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-materialization-verification.json.before-portable-readback.json": "1f1ba8763a7fb4b41bfe85ee40017fb6757cb4217a7c28df39a52c313d94ee33"
   },
   "limits": [
     "Two-line local Git projection correction does not change provider policy, source selection, receipts or publication authority.",
@@ -102,26 +103,19 @@
     "New exact distribution and isolated real-adopter execution remain pending. Existing cfe1 SDK-absent deadline qualification remains bounded historical evidence.",
     "All82 whole requirements/38 slices unchanged; P32 active and P33-P35 dormant; approved performance targets and independent custody remain open.",
     "Six architecture checks and unchanged21 authored operation observations pass; module784LOC and generated mirrors exact. Canonical generated test custody, new exact SDK/private execution and real provider-selected adopter compatibility remain pending.",
-    "Canonical owner produced candidate projection fb0a04ed in3 rounds (test manifest/duration projection only), terminal0/quiescent with8 recorded/observed handles absent and fresh common fence free/released. Exact fb0 five-stage development qualification passes:source2, once-built wheel/sdist790 mappings, both SDK-absent consumers, periodic dependent controls, and86 qualification/source cases per archiveSDK (172 total/no skips), with exact module bytes/origins before/after.11 stage/guard handles absent and fence free/released; AgentBus handbacks11160/11164. Real provider-selected adopter train, complete profile/minor/toolchain matrix, independent lifecycle/performance/custody remain open; cfe1 archives unchanged."
+    "Canonical owner produced candidate projection fb0a04ed in3 rounds (test manifest/duration projection only), terminal0/quiescent with8 recorded/observed handles absent and fresh common fence free/released. Exact fb0 five-stage development qualification passes:source2, once-built wheel/sdist790 mappings, both SDK-absent consumers, periodic dependent controls, and86 qualification/source cases per archiveSDK (172 total/no skips), with exact module bytes/origins before/after.11 stage/guard handles absent and fence free/released; AgentBus handbacks11160/11164. Real provider-selected adopter train, complete profile/minor/toolchain matrix, independent lifecycle/performance/custody remain open; cfe1 archives unchanged.",
+    "Portable readback retains terminal/quiescence/count/source identities; machine-specific PID map remains in private raw readback and the retained original audit bytes. No assurance/status advance."
   ],
   "canonical_reconciliation": {
     "authority": false,
     "returncode": 0,
     "quiescent": true,
-    "processes_absent": {
-      "1048076": true,
-      "1048088": true,
-      "1048090": true,
-      "1049747": true,
-      "1055235": true,
-      "1065196": true,
-      "1067843": true,
-      "1067844": true
-    },
     "fresh_common_fence": "free_then_released",
     "projection_commit": "fb0a04edd97105374270c9f7bd597a091ea1fc00",
     "projection_tree": "89185b000d0ddbb3722e0a2f82ef01a615128a5e",
-    "source_commit": "7328927830ba7ef73c78487c9791a6255b7d789b"
+    "source_commit": "7328927830ba7ef73c78487c9791a6255b7d789b",
+    "recorded_handles_absent": true,
+    "recorded_handle_count": 8
   },
   "exact_development_qualification": "audits/issue-394/development-distribution-fb0a04ed-verification.json"
 }

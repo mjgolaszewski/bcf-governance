@@ -29,6 +29,8 @@ from .ci_github_values import GitHubValueError, remote_repository
 from .ci_github_identity import GitHubControllerError
 from .ci_github_api import GitHubAPI
 from .ci_github_errors import GitHubAPIError
+from .ci_graph_timeouts import validate_gate_job_timeouts
+from .ci_graph_yaml import load_yaml_path
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
     AdopterSourceError,
@@ -544,7 +546,10 @@ def qualify_release(
             )
         try:
             require_adopter_profile(supplied[source.repository], source)
-        except AdopterSourceError as exc:
+            graph_path = supplied[source.repository] / "governance/ci-graph.yml"
+            if graph_path.is_file():
+                validate_gate_job_timeouts(supplied[source.repository], load_yaml_path(graph_path))
+        except (ValueError, OSError, KeyError, TypeError) as exc:
             raise ReleaseQualificationError(str(exc)) from exc
         if source.repository in adopter_pythons:
             python = adopter_pythons[source.repository]

@@ -39,7 +39,8 @@
     "No whole requirement, slice, phase, release or performance claim advances. Existing exact4c development qualification is historical and does not qualify this new source.",
     "Correction to initial failure classification: two initial failures were generated/authority drift, one strict exact-main transport environment expectation lacked the four new provider fields, and two were subprocess import harness failures. Reconciled broad run passes328 with only the strict environment expectation failing. Adding four explicit literal expectations preserves strict equality and all existing inspector/controller checks; that case now passes1. No production change after source1f83d5e3.",
     "Canonical owner completed4 rounds with definition0d5dc717 and authority30cd2d7c; terminal0/quiescent, all recorded/observed processes absent, fresh common fence free then released. AgentBus handback11145 acknowledged11147; no idle lease. Prepared30cd qualification was not launched and remains retained; exact qualification will bind the next clean checkpoint including the corrected test and this evidence.",
-    "Exact cfe1afca source fresh/repair2, once-built wheel/sdist790 source mappings, both SDK-absent fresh-lite private consumers and dependent periodic gate/control fixture pass. Strict report1.1 binds11 commands/22 streams and41 dependency wheels; new physical deadline context query passes in both installed runtimes. All4 supervised stages terminal0/quiescent;9 handles absent and actual common fence fresh free/released.13 raw receipt/session/control files retained and hashed. This is controlled development evidence, not hosted provider execution, full supported-profile/adopter matrix, matched performance or independent custody. All82 requirements/38 slices unchanged."
+    "Exact cfe1afca source fresh/repair2, once-built wheel/sdist790 source mappings, both SDK-absent fresh-lite private consumers and dependent periodic gate/control fixture pass. Strict report1.1 binds11 commands/22 streams and41 dependency wheels; new physical deadline context query passes in both installed runtimes. All4 supervised stages terminal0/quiescent;9 handles absent and actual common fence fresh free/released.13 raw receipt/session/control files retained and hashed. This is controlled development evidence, not hosted provider execution, full supported-profile/adopter matrix, matched performance or independent custody. All82 requirements/38 slices unchanged.",
+    "Portable readback retains terminal/quiescence/count/source identities; machine-specific PID map remains in private raw readback and the retained original audit bytes. No assurance/status advance."
   ],
   "raw_sha256": {
     "planned-deadline-context-projection-corrected-red.stdout": "c5be3ca9f1592982c751b4f2434fe8b882f87400f5d6d9b5aab4c749d84c7f6d",
@@ -90,7 +91,8 @@
     "reconcile/canonical-reconcile.stdout": "e5ccc01154abaa83ae5c40e19232129e8a531000016b8703c479e81d63c15639",
     "reconcile/canonical-reconcile.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "planned-deadline-context-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
-    "planned-deadline-context-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "planned-deadline-context-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planned-deadline-context-verification.json.before-portable-readback.json": "fc59506bba0c3f0fd6ba46dcf63e7cf06fe5404971fafb99a8c747aa854b43a9"
   },
   "source_sha256": {
     "bcf_governance/tooling/ci_graph_execution.py": "c5a8a484e04d3e3fbb7b8ae50fb05b88050dd152a3a6d1d7de7529f002bc8552",
@@ -103,20 +105,12 @@
     "authority": false,
     "returncode": 0,
     "quiescent": true,
-    "processes_absent": {
-      "1010120": true,
-      "1010129": true,
-      "1010147": true,
-      "1011766": true,
-      "1017071": true,
-      "1024808": true,
-      "1025137": true,
-      "1025138": true
-    },
     "fresh_common_fence": "free_then_released",
     "definition_commit": "0d5dc71713aa2aac704e0b88c9b7dcdb261b5e84",
     "authority_commit": "30cd2d7c3ab4163b9cb49dab240294e0e4f79d50",
-    "final_tree": "d18cdf4bbfa3c9d367fbea7016c9364146847439"
+    "final_tree": "d18cdf4bbfa3c9d367fbea7016c9364146847439",
+    "recorded_handles_absent": true,
+    "recorded_handle_count": 8
   },
   "exact_development_qualification": "audits/issue-394/development-distribution-cfe1afca-verification.json"
 }
