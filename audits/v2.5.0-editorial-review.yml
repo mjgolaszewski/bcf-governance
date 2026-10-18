@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: b20ecce0d46a714823236e19517fdafd2ac9d722dfe9a520d5498633510d607d
-  after_sha256: ae1a317df6c536aa27e1c4bd244ed73e0d46f7e3633ce253e336297c89437423
+  after_sha256: 0d3999441ec1b50c26acb44789d52829ed49c2b578774f154dc5914bb578301c
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 60e4bceffc2dd0f595178a59311e13bf07a5a5421e6e68d3ca274840d6b4a674
-  after_sha256: d91f62e89c8c70dfb7e1711c8f4fbbc54de149f7327d6f3a52804cb995a68e5c
+  after_sha256: 18164fe67c0a92fded5e00637064e4e3b7e5044f3317923586eda94ccb86882d
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
