@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_defaults.py"
+  ],
+  "contract": [
+    "Only reference scheduled gate groups are partitioned when their complete declared serial bound exceeds the existing360-minute provider ceiling. Use the existing policy parser and gate_sequence_deadline_ms including each probe/cleanup and canonical headroom; never invent a performance threshold.",
+    "Preserve every literal gate exactly once and in declared order. Preserve cron, permissions, truth identity, final receipt artifact identity, and the original control job identity for the first part. A fitting population retains its existing one-job shape.",
+    "Derive deterministic additional job/artifact identities from ordinal parts. Chain each next part after the previous success and download its cumulative same-session receipt directory; final truth consumes the final cumulative artifact. Preflight expected-producer inventory names every actual part. No parallel mutable session, dropped dependencies, hidden skip or moved foreground obligation.",
+    "Reject malformed populations and any individually unsplittable gate before installer target allocation. Inputs remain unchanged. Generic authored graph overflow still blocks atomically; candidate changes cannot grant authority.",
+    "Use existing graph/render/installation owners and generated mirrors. No public CLI, parallel scheduler, receipt format, hand-edited workflows, maintained consumer mutation or phase activation."
+  ],
+  "verification": [
+    "Real20-gate reference builds with all gates covered exactly once under every job ceiling, same artifact/session custody and stable terminal identities.",
+    "Legacy and modern Standard/Regulated cases, exact-fit and just-over boundary, per-gate override, cleanup/headroom, deterministic replay, input immutability and fitting-shape compatibility.",
+    "Unsplittable single-gate failure before install_transaction_paths creates a target; unrelated authored overflow remains rejected atomically.",
+    "Validate and render actual partitioned reference graph using canonical owners; every part depends on/downloads the immediate predecessor and expected producer inventory agrees. Qualify actual installed runtime before claiming distribution parity.",
+    "Affected consumers, architecture, authored semantics and governance checks; disabled partition/control-transport guards must reproduce named failures."
+  ]
+}
