@@ -104,3 +104,24 @@ def test_assignment_cannot_expand_iteration_beyond_configured_shards(tmp_path, m
     monkeypatch.setattr(owner, 'range', bounded_range, raising=False)
     with pytest.raises(CIGraphError):
         owner.validate_planned_shard_deadlines(tmp_path, graph, targets, dag)
+
+
+def test_local_order_query_iterates_only_populated_shards(tmp_path, monkeypatch):
+    _, dag, targets = _inputs(tmp_path)
+    dag['nodes'][0]['assigned_shard'] = 10**9
+    builtin_range = range
+    def bounded_range(count):
+        assert count <= 4, 'local order query iterated unpopulated shards'
+        return builtin_range(count)
+    monkeypatch.setattr(owner, 'range', bounded_range, raising=False)
+    assert owner.planned_gate_targets(tmp_path, planned_targets=targets, execution_dag=dag) == [
+        'second', 'third', 'first']
+
+
+def test_runtime_count_is_typed_even_when_boolean_equals_configured_integer(tmp_path):
+    graph, dag, targets = _inputs(tmp_path)
+    job = graph['workflows'][0]['jobs'][0]
+    job['executor']['shard_count'] = 1; job['timeout_minutes'] = 15
+    for node in dag['nodes']: node['assigned_shard'] = 0
+    with pytest.raises(CIGraphError):
+        owner.validate_planned_shard_deadlines(tmp_path, graph, targets, dag, shard_count=True)
