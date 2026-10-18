@@ -24,7 +24,7 @@ def test_complete_operation_admission_precedes_every_effect_query(
         cause = "unclassified public application operations"
     elif invalid == "duplicate":
         duplicate = copy.deepcopy(operation)
-        duplicate["id"] += ".duplicate"
+        duplicate["id"] = "governance.cli.duplicate.v1"
         payload["operations"].append(duplicate)
         cause = "multiply classified"
     elif invalid == "stale":
