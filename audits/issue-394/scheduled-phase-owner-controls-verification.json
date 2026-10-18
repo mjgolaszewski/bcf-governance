@@ -1,0 +1,364 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "causal detector controls qualified; full profile, integration and installed qualification pending",
+  "implementation_commit": "683027e9e2d0936cbc85ed36f205ca77ac7c5877",
+  "contract": "audits/issue-394/scheduled-phase-owner-controls-contract.json",
+  "native_prechange_subject": "a3b185a360b728e120f14b91ddc01c45ac56ca2b",
+  "native_prechange": "Both original mutants survive with passing baselines and zero infrastructure failures.",
+  "fixture_history": [
+    "Unchanged a3b185a3 ordinary semantic operation test and copied-runtime baseline fail on unreachable trusted-input ports. Test fixture omitted existing production import resolution; 4bd10f3f aligns that composition without changing ports or resolver.",
+    "14 harness/owner cases pass at 4bd10f3f. Its first causal case exposed missing P02 fixture artifacts, not a cause-qualified kill.",
+    "683027e9 supplies the valid P02 triplet; 7 affected owner cases and all4 baseline0/mutant1 named DID NOT RAISE controls pass."
+  ],
+  "causal_controls": [
+    {
+      "mutant_id": "phase-catalog-set-match",
+      "baseline_returncode": 0,
+      "mutant_returncode": 1,
+      "killer_nodes": [
+        "tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_product_build_phase_mismatch",
+        "tests/test_scheduled_phase_owners.py::test_late_catalog_owner_rejects_distinct_phase_populations"
+      ],
+      "target_path": "scripts/governance_validation/phase_catalog.py"
+    },
+    {
+      "mutant_id": "memory-active-artifact-sync",
+      "baseline_returncode": 0,
+      "mutant_returncode": 1,
+      "killer_nodes": [
+        "tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_stale_memory_active_artifacts",
+        "tests/test_scheduled_phase_owners.py::test_late_active_owner_rejects_stale_memory_path"
+      ],
+      "target_path": "scripts/governance_validation/phase_catalog.py"
+    },
+    {
+      "mutant_id": "authored-phase-catalog-set-match",
+      "baseline_returncode": 0,
+      "mutant_returncode": 1,
+      "killer_nodes": [
+        "tests/test_scheduled_phase_owners.py::test_early_catalog_owner_rejects_distinct_phase_populations"
+      ],
+      "target_path": "scripts/governance_validation/authored_phase_state.py"
+    },
+    {
+      "mutant_id": "authored-memory-active-artifact-sync",
+      "baseline_returncode": 0,
+      "mutant_returncode": 1,
+      "killer_nodes": [
+        "tests/test_scheduled_phase_owners.py::test_early_memory_owner_rejects_stale_memory_path"
+      ],
+      "target_path": "scripts/governance_validation/authored_phase_state.py"
+    }
+  ],
+  "population_comparison": {
+    "authority": false,
+    "baseline_commit": "a3b185a360b728e120f14b91ddc01c45ac56ca2b",
+    "candidate_commit": "683027e9e2d0936cbc85ed36f205ca77ac7c5877",
+    "all_original_mutations_targets_and_profiles_unchanged": true,
+    "all_original_killer_selectors_retained": true,
+    "provider_observed_validator_populations_exactly_match_baseline": true,
+    "added_controls": [
+      "authored-memory-active-artifact-sync",
+      "authored-phase-catalog-set-match"
+    ],
+    "complete_profile_counts": {
+      "full": 27,
+      "high-value": 25,
+      "semantic-full": 12,
+      "semantic-high-value": 10
+    },
+    "baseline_harness_sha256": "cb709edbbde6e452ec6be56bda99a199b973a69b02cb69b719cc203c98cda509",
+    "candidate_harness_sha256": "a9ea2de3d7b8a0a014bcf092cbc952ce9715a1aeef6a185f396a65fce8008260"
+  },
+  "provider_observations": {
+    "authority": false,
+    "kind": "candidate_periodic_failure_observation",
+    "repository_id": 1207503211,
+    "source_commit": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+    "source_tree": "b18eddf2dc35111e9814e4c8c92c3039da9c685a",
+    "source_version": "2.5.0",
+    "release_custody": "not established by this observation",
+    "runs": [
+      {
+        "run_id": 39113895189,
+        "attempt": 1,
+        "workflow_id": 265590975,
+        "event": "schedule",
+        "conclusion": "failure",
+        "jobs": [
+          {
+            "job_id": 117635593619,
+            "job_span_seconds": 645.0,
+            "sum_step_seconds": 642.0,
+            "step_interval_union_seconds": 642.0,
+            "uncovered_job_seconds": 3.0,
+            "cpu_seconds": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 6.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 10.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Verify and materialize the locked offline TypeScript test compiler",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Validate selected interpreter and governance before mutants",
+                "seconds": 452.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Run the complete weekly scheduled control profile",
+                "seconds": 170.0,
+                "conclusion": "failure"
+              },
+              {
+                "name": "Retain exact weekly mutant results",
+                "seconds": 1.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0.0,
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0.0,
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0.0,
+                "conclusion": "success"
+              }
+            ]
+          }
+        ],
+        "survivors": [
+          "phase-catalog-set-match",
+          "memory-active-artifact-sync"
+        ]
+      },
+      {
+        "run_id": 39110358021,
+        "attempt": 1,
+        "workflow_id": 265590974,
+        "event": "schedule",
+        "conclusion": "failure",
+        "jobs": [
+          {
+            "job_id": 117624987942,
+            "job_span_seconds": 790.0,
+            "sum_step_seconds": 788.0,
+            "step_interval_union_seconds": 788.0,
+            "uncovered_job_seconds": 2.0,
+            "cpu_seconds": null,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 3.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 7.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 5.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Verify and materialize the locked offline TypeScript test compiler",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Validate selected interpreter and governance before mutants",
+                "seconds": 453.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Run the complete nightly scheduled control profile",
+                "seconds": 319.0,
+                "conclusion": "failure"
+              },
+              {
+                "name": "Retain exact nightly mutant results",
+                "seconds": 0.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0.0,
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0.0,
+                "conclusion": "skipped"
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 1.0,
+                "conclusion": "success"
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0.0,
+                "conclusion": "success"
+              }
+            ]
+          }
+        ],
+        "survivors": [
+          "phase-catalog-set-match",
+          "memory-active-artifact-sync"
+        ]
+      }
+    ],
+    "limits": [
+      "Separate failed scheduled candidate observations; not v2.3.4 predecessor timing.",
+      "No matched cohort, percentile, improvement, CPU measurement or certification claim."
+    ],
+    "raw_sha256": {
+      "source-version-response.json": "dcc9ceaca4d1eaa56fd69e30613ce9ea7bbee581283d849ea5062b6b68760596",
+      "nightly-workflow.txt": "799bbad7002d26f5f07ce8c3a42db0cdb00416107de5aab62319a4e67ab5c7a0",
+      "weekly-job.log": "9f51689f88f6e5e7ea44f007f2cf67ba6dbc378ab14605b4a773307d1b6c6a5d",
+      "job-log-capture.json": "631d27389acd4f691b9972d329033d61e24b2a0dc2f98a3697a455e70c3cb18c",
+      "source-version.txt": "d55e2ffa5f09ed45c2115778c1e060909964968c413bd7d0f54f570ce6d1c1cb",
+      "commit.json": "b65165692dfe8da16923458e3d1b3895fc72f13833fb4cdb350492bb7f25396d",
+      "weekly-run.json": "1c4e00305e8f890f93c4a665f6cbf0bd75f63f77b8c5100bfd916b78bd1a5f00",
+      "repository.json": "c8551145fd5f6c07fccdf14f26a38d7cf528b655b00b88562f23b98983125990",
+      "weekly-artifacts.json": "f2ddb6c07db82c9614d14b602f7e0940cf832163524ea7bd2cba4d1afb4fe53a",
+      "artifact-capture.json": "24a9aa82152767ef6f58063e36b9434d9990865f678ff18de4677882857c3122",
+      "nightly-artifact.zip": "f7ceca7797d985bd76c7b0cc6fd7181620132601fd8bc545bf16dd8a2b0902a1",
+      "weekly-workflow-response.json": "183b2773ced7c9af616fd202909dac80792aefe5c97ab99c09ee057e8727042a",
+      "nightly-job.log": "07914e8b22c783ea01ebd2edcf7e6a07093fd65129c3a34b9b8e48175c10fdc9",
+      "nightly-workflow-response.json": "f6e3c92c16c9405df51453f7f89f26fd55bad5084fa3bf207bb7b321b41445a5",
+      "weekly-jobs.json": "62a380aa26ee46476be8e05d66d6ded54518d46434efd84865c9836a2e7ffaf1",
+      "weekly-artifact.zip": "812ece93573cdb1f0e68c48f5c09db2c8524ef8f3be982a57326c4b9ebb1361c",
+      "nightly-jobs.json": "31f2d5f3001d58c1b95d9c71bc4bec0e2e75616c6d346193643471839a54c418",
+      "nightly-run.json": "6ab1d9780005f44d83c5743ef1714200f43e962bbb16d51a1b3ff2fe41c36017",
+      "source-capture.json": "51b32dac4bc303a4dbcef0747203d45abd99ff449e93751e241a5f3aab2d5c72",
+      "weekly-workflow.txt": "4dcf42b67d8ef4a78580ae67ae7b375d093848735b73575d4561f61e4f475f99",
+      "nightly-artifacts.json": "a54aa05494245b08d6c25bde1af3b3136f31421d41974a9724d6650eee9874a5",
+      "capture.json": "8c93d1f1a641c1699778a2b8bd59cc915bf2d42659ff9751497795e9ef6f895a"
+    }
+  },
+  "interrupted_profile": {
+    "authority": false,
+    "source_commit": "683027e9e2d0936cbc85ed36f205ca77ac7c5877",
+    "source_tree": "6ad3a09727511a438b3e76f2695f4efbc7b960c9",
+    "disposition": "interrupted_without_terminal_capture; complete profile unqualified",
+    "original_operation_sha256": "79e91f05ae51e85e494b81db6b8d801e4944dd9e63e6e372189bc62f1c3b05b7",
+    "recorded_guard_and_supervisor_absent": true,
+    "native_result_absent": true,
+    "descendant_terminal_custody": false,
+    "matching_command_process": "none at recovery probe",
+    "common_fence": "same physical inode found unowned at recovery probe; no future lease inferred"
+  },
+  "raw_sha256": {
+    "scheduled-survivors-a3b185a3-characterization": {
+      "report.json": "076d0fa2e843d39707c5e279a8df225d46f3682944d0bba57dc31a31f1a38494",
+      "memory-active-artifact-sync.stderr": "77e6460a5fd7900c4ed6aef0b14658d62896b035261efbd6f5442e05cf2123a0",
+      "phase-catalog-set-match.json": "74d9ab40ad83c8608c1157ee62db38dcc6163abc4f05babb773e91bc9d91e758",
+      "phase-catalog-set-match.stdout": "5243665fc1a90f0902f2140cee911218a675281921fe26a7c127a8ad07de610c",
+      "memory-active-artifact-sync.stdout": "d76c69fcf6a57570c3368037d5dcd0ed8bd19594056fdbe32dda60a976947aab",
+      "phase-catalog-set-match.stderr": "bac04a03497c48e3a4913e5988a9455c61b3a04b3ff4fd175cba84370f5c8f75",
+      "memory-active-artifact-sync.json": "2e28ebef2a21e052189a254459f54530d74c934c6cba8297289982e1f5fb5175"
+    },
+    "scheduled-phase-e44abc30-causal": {
+      "unit.stdout": "0c95168f143ba231380676c7e834703ca59f58d879f4245462f7f639277a012f",
+      "report.json": "343d1e04e515b045c377726d4b37667155770fcc619397d566a4c002241955fb",
+      "unit.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scheduled-phase-4bd10f3f-causal": {
+      "unit.stdout": "7894c057c5e571dec671e6b966f33d8fd9c7e115dab1fea80a229cb87d4d3731",
+      "phase-catalog-set-match-mutant.stdout": "0f7c33238975b67c266e48370c73c24b619888b7daa7bb12e7c1f6f5a736a3ac",
+      "phase-catalog-set-match-mutant.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "report.json": "ab906507ef9088b27aa1ee6ac28040f5d807cdd920bc8ce2ca9bc57f4d060117",
+      "phase-catalog-set-match-baseline.stdout": "160de331607a4ee9a4fbf7cd7da020b5de4b107bf66f7eb14ee4ce57d0840c9c",
+      "phase-catalog-set-match-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scheduled-phase-683027e9-causal": {
+      "memory-active-artifact-sync-mutant.stdout": "1d0c820da2ceb52a542cfbeb4daa7f73d990cd7357a379b8ed584dbd1b33b5f7",
+      "authored-memory-active-artifact-sync-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit.stdout": "0607871ca560f380b5b9aa6e75a425d90898916a64567b53bf1249ea8fea7b88",
+      "phase-catalog-set-match-mutant.stdout": "5efec40b6645e6b8f55ca50328ba13be5760accf0fcd66bb4ddc1a43728467bc",
+      "phase-catalog-set-match-mutant.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "authored-memory-active-artifact-sync-mutant.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "report.json": "dcbb0f7f07b23e67265efffcf28e29071f750f92a9db929fe36955662426e69d",
+      "phase-catalog-set-match-baseline.stdout": "46c6a216d21b5cc989ee0cbb68f88973d394049ad377d7491562ecf1e3e3073c",
+      "authored-phase-catalog-set-match-baseline.stdout": "75eec03e439ecb164562a06593163af633dcc166ca70667024835b5ffb14f24e",
+      "memory-active-artifact-sync-baseline.stdout": "0340cab111e75d38783456b2c129c90958acc64de47081f60fa877b6bb6a4289",
+      "authored-memory-active-artifact-sync-baseline.stdout": "5cec00d2e2e8e1ac132c366a379e5c942e2040ed5cb871e54f2395d1006732a1",
+      "authored-memory-active-artifact-sync-mutant.stdout": "ee5e8b98bec661403c0f37956d8369190b53e1f326b167a3bfe84f5732c2df67",
+      "authored-phase-catalog-set-match-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "authored-phase-catalog-set-match-mutant.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "authored-phase-catalog-set-match-mutant.stdout": "85928935e02f3aff77876d5743c88a6ee18f294f1437d8137b2a395dec47728f",
+      "memory-active-artifact-sync-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase-catalog-set-match-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unit.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "memory-active-artifact-sync-mutant.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "scheduled-phase-owners-3636ca90-baseline-owned-attempt1": {
+      "profile-gate-red.stdout": "a98f9014ab16f5d2df66700bb71102775b37c33eba450accd3a9224bd24b4976",
+      "profile-gate-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "operation.json": "0e23188630b3672b60d1d2927011a9b5934d09cc7f31bb29d7f691c6cf4fa7d5"
+    }
+  },
+  "retained_prior_ledger_summaries": {
+    "MEMORY.yml:['environment_facts', 'current_repo_state', 0]": "Profile deadline repair at 009075d8: exact-AST extraction, 12 RED/1 compatibility PASS, then 69 affected PASS; lint/type/architecture/semantics checked. Canonical and installed qualification pending; all 82 requirements/38 slices unchanged. See audits/issue-394/profile-gate-deadline-verification.json.",
+    "phases/phase-32-log.yml:['summary', 'highlights', 0]": "Profile deadline repair at 009075d8: exact-AST extraction, 12 RED/1 compatibility PASS, then 69 affected PASS; lint/type/architecture/semantics checked. Canonical and installed qualification pending; all 82 requirements/38 slices unchanged. See audits/issue-394/profile-gate-deadline-verification.json.",
+    "plans/phase-ledger.yml:['operator_requirements_choices_disambiguations', 19, 'statement']": "Current profile deadline repair source-qualified; canonical/installed pending. All 82 requirements open. See audits/issue-394/profile-gate-deadline-verification.json. Historical scoped admission evidence retained there."
+  },
+  "pending": [
+    "Complete validator full/high-value and semantic full/high-value executions.",
+    "Affected complete semantic/preflight/validator behavior, governance, architecture and canonical reconciliation.",
+    "Source/wheel/sdist/private installed qualification and integration; source-only controls cannot certify installed consumers.",
+    "All 82 whole requirements, complete lifecycle, approved targets and immutable2.5.0 custody remain open."
+  ],
+  "predecessor": "Immutable2.3.4 bytes preserved; peer-reported2.3.5 adoption requires fresh provider/installed authentication before qualification."
+}
