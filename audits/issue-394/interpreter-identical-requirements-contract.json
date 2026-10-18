@@ -1,8 +1,13 @@
 {
-  "schema_version": "1.0", "authority": false,
-  "workitem": "foundation.normalization", "bounded_context": "runtime_capacity",
-  "architectural_layer": "tooling", "operation_side": "query",
-  "targets": ["bcf_governance/tooling/interpreter_environment.py"],
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.normalization",
+  "bounded_context": "runtime_capacity",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "targets": [
+    "bcf_governance/tooling/interpreter_environment.py"
+  ],
   "problem": "Actual self-reconciliation cannot derive its environment: setuptools>=69 is required identically by both build-system and runtime metadata, and aggregation treats identical predicates as ambiguous names.",
   "contract": [
     "Collapse byte-identical requirement strings in the aggregated project/build/selected-extra/gate declaration population before installer pin and normalized-name checks. A repeated identical predicate is idempotent, with no first/last constraint precedence.",
@@ -13,6 +18,7 @@
   "verification": [
     "Actual repository derivation succeeds and retains setuptools>=69 exactly once while pyproject bytes remain unchanged.",
     "Identical cross-role build/runtime and repeated exact installer pins are accepted once; different constraints and normalized aliases remain blocked before setup.",
-    "Disable exact deduplication and reproduce the original failures; qualify affected environment/admission consumers, architecture/mirrors, semantic and governed checks."
+    "Disable exact deduplication and reproduce the original failures; qualify affected environment/admission consumers, architecture/mirrors, semantic and governed checks.",
+    "Actual SDK-absent private helpers must collapse the identical build/runtime and installer/gate predicates, keep differing strings blocked and leave the requirements projection unallocated. A copied-runtime disabled-normalization control must fail by the original unique-name diagnostic."
   ]
 }

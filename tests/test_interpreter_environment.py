@@ -755,7 +755,7 @@ def test_project_environment_requires_canonical_execution_state_contract(
     assert called is False
 
 
-@pytest.mark.parametrize('requirement', ['setuptools>=68', 'pip==26.2.1'])
+@pytest.mark.parametrize('requirement', ['setuptools>=69', 'pip==26.2.1'])
 def test_identical_cross_role_dependencies_are_idempotent(tmp_path, requirement):
     _fixture(tmp_path)
     project = tmp_path / 'pyproject.toml'
@@ -774,3 +774,13 @@ def test_actual_repository_derived_requirements_retain_build_and_runtime_floor()
     plan = derive_interpreter_environment(REPO_ROOT)
     assert plan is not None and plan.requirements.count('setuptools>=69') == 1
     assert project.read_bytes() == before
+
+
+@pytest.mark.parametrize('requirement', ['setuptools>=68', 'setuptools>=70', 'setuptools'])
+def test_differing_cross_role_requirement_strings_remain_blocked(tmp_path, requirement):
+    _fixture(tmp_path)
+    project = tmp_path / 'pyproject.toml'
+    project.write_text(project.read_text().replace("dependencies=['PyYAML>=6,<7']",
+        "dependencies=['PyYAML>=6,<7', " + repr(requirement) + "]"))
+    with pytest.raises(InterpreterEnvironmentError, match='unique names'):
+        derive_interpreter_environment(tmp_path)
