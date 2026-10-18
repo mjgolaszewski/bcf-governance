@@ -852,13 +852,14 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
-        lambda *args, **kwargs: {"workflow_id": "202"},
+        lambda *args, **kwargs: {"workflow_id": "202", "allowed_events": ["workflow_run"]},
     )
     selected: dict[str, object] = {}
 
     def authenticate(*args: object, **kwargs: object):
         selected.update(kwargs)
-        return SimpleNamespace(run_id="50", run_attempt=3), ()
+        return SimpleNamespace(run_id="50", run_attempt=3,
+                               workflow=SimpleNamespace(event="workflow_run")), ()
 
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.authenticate_role_job_inventory",
@@ -882,6 +883,7 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
     )
     api = SimpleNamespace(
         workflow_runs=lambda *args, **kwargs: runs,
+        run=lambda _repository, run_id: next(row for row in runs if str(row["id"]) == str(run_id)),
         content=lambda *args, **kwargs: _public_contract(),
     )
     path = tmp_path / "release-inputs.json"
@@ -934,7 +936,7 @@ def test_release_input_resolution_never_falls_back_from_newest_finalizer(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
-        lambda *args, **kwargs: {"workflow_id": "202"},
+        lambda *args, **kwargs: {"workflow_id": "202", "allowed_events": ["workflow_run"]},
     )
 
     def reject_newest(*args: object, **kwargs: object):
@@ -955,6 +957,7 @@ def test_release_input_resolution_never_falls_back_from_newest_finalizer(
     )
     api = SimpleNamespace(
         workflow_runs=lambda *args, **kwargs: runs,
+        run=lambda _repository, run_id: next(row for row in runs if str(row["id"]) == str(run_id)),
         content=lambda *args, **kwargs: _public_contract(),
     )
     with pytest.raises(GitHubControllerError, match="newest finalizer is failed"):
@@ -981,13 +984,14 @@ def test_release_publication_inputs_select_newest_exact_collector_mechanically(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
-        lambda *args, **kwargs: {"workflow_id": "203"},
+        lambda *args, **kwargs: {"workflow_id": "203", "allowed_events": ["workflow_run"]},
     )
     selected: dict[str, object] = {}
 
     def authenticate(*args: object, **kwargs: object):
         selected.update(kwargs)
-        return SimpleNamespace(run_id="81", run_attempt=2), ()
+        return SimpleNamespace(run_id="81", run_attempt=2,
+                               workflow=SimpleNamespace(event="workflow_run")), ()
 
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.authenticate_role_job_inventory",
@@ -1007,6 +1011,7 @@ def test_release_publication_inputs_select_newest_exact_collector_mechanically(
     )
     api = SimpleNamespace(
         workflow_runs=lambda *args, **kwargs: runs,
+        run=lambda _repository, run_id: next(row for row in runs if str(row["id"]) == str(run_id)),
         content=lambda *args, **kwargs: _public_contract(),
     )
     path = tmp_path / "publication-inputs.json"
@@ -1048,7 +1053,7 @@ def test_release_publication_resolution_never_falls_back_from_newest_collector(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.authority_role_workflow",
-        lambda *args, **kwargs: {"workflow_id": "203"},
+        lambda *args, **kwargs: {"workflow_id": "203", "allowed_events": ["workflow_run"]},
     )
 
     def reject_newest(*args: object, **kwargs: object):
@@ -1070,6 +1075,7 @@ def test_release_publication_resolution_never_falls_back_from_newest_collector(
     )
     api = SimpleNamespace(
         workflow_runs=lambda *args, **kwargs: runs,
+        run=lambda _repository, run_id: next(row for row in runs if str(row["id"]) == str(run_id)),
         content=lambda *args, **kwargs: _public_contract(),
     )
     with pytest.raises(GitHubControllerError, match="newest collector is failed"):
