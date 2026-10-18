@@ -245,3 +245,23 @@ def test_trusted_verifier_recomputes_runtime_dependency_binding(tmp_path, closur
     with pytest.raises(GitHubControllerError, match="runtime dependency closure"):
         _verify(values, output)
     assert not output.exists()
+
+
+@pytest.mark.parametrize("defect", ["empty", "missing-status", "extra-field", "unverified", "empty-wheels", "boolean-digest", "bad-lock", "wrong-platform"])
+def test_strict_runtime_binding_requires_complete_independent_closure(tmp_path, defect):
+    report, evidence, wheel, sdist = command_report(tmp_path, "1.1")
+    expected = {"status": "verified", "python": "3.12.14", "platform": "linux_x86_64",
+                "lock_sha256": "a" * 64, "wheels": {"dependency.whl": "b" * 64}}
+    if defect == "empty": expected = {}
+    elif defect == "missing-status": del expected["status"]
+    elif defect == "extra-field": expected["authority"] = True
+    elif defect == "unverified": expected["status"] = "claimed"
+    elif defect == "empty-wheels": expected["wheels"] = {}
+    elif defect == "boolean-digest": expected["wheels"]["dependency.whl"] = True
+    elif defect == "bad-lock": expected["lock_sha256"] = "not-a-digest"
+    else: expected["platform"] = "unknown"
+    value = json.loads(report.read_text()); value["dependency_closure"] = expected
+    report.write_text(json.dumps(value))
+    with pytest.raises(GitHubControllerError, match="runtime dependency closure"):
+        runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist,
+                                       required_version="1.1", expected_dependency_closure=expected)
