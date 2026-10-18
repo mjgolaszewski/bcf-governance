@@ -8,6 +8,8 @@ from typing import Any, Iterable
 
 import yaml  # type: ignore[import-untyped]
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_github_identity import GitHubControllerError, MainIdentity
 from .evidence_planning import build_dependency_manifest, parse_claim_model
 
@@ -37,8 +39,8 @@ def trusted_main_claim_context(
     if content.blob_oid != indexed[CONTRACT_PATH] or content.blob_oid != blob:
         raise GitHubControllerError("provider claim contract bytes differ from main tree")
     try:
-        payload = yaml.safe_load(raw.decode("utf-8"))
-    except (UnicodeDecodeError, yaml.YAMLError) as exc:
+        payload = load_unique_yaml_text(raw.decode("utf-8"))
+    except (UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError("provider claim contract is not valid YAML") from exc
     model = parse_claim_model(payload)
     manifest = build_dependency_manifest(

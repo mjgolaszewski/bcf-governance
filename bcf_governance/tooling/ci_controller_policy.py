@@ -9,6 +9,8 @@ from typing import Any, Callable, Mapping
 from jsonschema import Draft202012Validator
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 
@@ -129,14 +131,14 @@ def source_controller_policy(
     """Resolve provider-fetched controller custody through its graph owner."""
 
     try:
-        graph = yaml.safe_load(fetch("governance/ci-graph.yml"))
+        graph = load_unique_yaml_text(fetch("governance/ci-graph.yml"))
         policy_path = graph_controller_policy_path(graph)
         if policy_path is None:
             raise TrustedControllerPolicyError(
                 "routine controller management is not installed"
             )
-        payload = yaml.safe_load(fetch(policy_path))
-    except (AttributeError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+        payload = load_unique_yaml_text(fetch(policy_path))
+    except (AttributeError, TypeError, UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise TrustedControllerPolicyError(
             "routine controller source policy is invalid"
         ) from exc
