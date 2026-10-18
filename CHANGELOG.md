@@ -33,6 +33,13 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Preserve and validate explicit profile gate invocation timeouts without changing
+  existing limits or compatibility for omitted timeouts.
+- Keep compact generated profile YAML within rendered limits while preserving
+  literal scalar content.
+- Keep scheduled phase and MEMORY controls effective at both early and late
+  validation owners, preserving the original required control populations.
+
 - Reconstruct optional trusted external inputs from protected consumer policy and
   exact provider producer custody; reject caller authentication claims, incomplete
   input populations and ambiguous payload selectors before costly acquisition.

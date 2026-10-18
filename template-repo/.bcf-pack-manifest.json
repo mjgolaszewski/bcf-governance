@@ -1144,7 +1144,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "8cacbd4e5babd6081bf3fb5092536e0e812ae4e22cd5eb112d9a1a90a6ce6687"
+      "sha256": "4132082e3368939134188f2190ffccba2c9c80b3ca1c45fece59a7801d57986b"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -1353,6 +1353,10 @@
       "operation": "copy",
       "sha256": "3eb00c77087f1195c32340990319ed0a67b2a6d844011beb13a9afadd08b09be"
     },
+    "scripts/_bcf_runtime/profile_gate_contracts.py": {
+      "operation": "copy",
+      "sha256": "5f8e0dbb4da0accbfc421cbae5fc65e49faa455c6ba98a690a57ca4ef7a439e6"
+    },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
       "sha256": "4ba75670d53c4eae0c6676c67e757865a05ad15b46ec5efa9897c8622ed45b68"
@@ -1367,7 +1371,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "4342a15153140368872fb9fd810e4e48911f477c9fb31b98f96e94f2f2b093d2"
+      "sha256": "269c60e0e4acc9ea022563aa3e3f306a6c1df2e040d42a9da661ece4199aa88d"
     },
     "scripts/_bcf_runtime/prospective_candidate_identity.py": {
       "operation": "copy",

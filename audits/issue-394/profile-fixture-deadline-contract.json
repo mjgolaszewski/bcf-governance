@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitems": ["foundation.deadlines", "foundation.conformance"],
+  "operation_side": "controlled test fixture only",
+  "targets": ["tests/test_profile_flows.py"],
+  "characterization": {"subject": "d7bc1ac073e2be253d2d04e5cbced41b782b7aa1", "node": "tests.test_profile_flows::test_standard_v3_adopter_install_derives_each_post_merge_scope", "result": "same360-minute reference-bound rejection before renderer correction", "elapsed_seconds": 2.42},
+  "requirements": [
+    "Declare an explicit30-second body limit for the fixture-owned gate.py invocations rather than borrowing the unknown-project1800-second default for every fake producer.",
+    "Keep real built-in gate defaults, setup/probe/cleanup/headroom accounting and the360-minute provider ceiling intact. Actual fixture execution must remain within its declared limits.",
+    "Preserve every intended install, upgrade, opt-out, rollback, semantic and deletion-authority assertion; do not suppress a gate or change expected assurance.",
+    "This does not approve performance targets or authorize maintained adopter budget changes. Unknown production workloads retain conservative defaults or their typed admission block."
+  ],
+  "limits": "Fixture qualification required; all82 whole requirements remain open."
+}

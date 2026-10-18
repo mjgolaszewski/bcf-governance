@@ -81,3 +81,18 @@ def test_equal_string_sequences_share_without_changing_decoded_contract() -> Non
     assert yaml.safe_load(rendered) == payload == before
     assert len(rendered) < 500
     assert render_profile_surface(copy.deepcopy(payload), width=4096) == rendered
+
+
+@pytest.mark.parametrize('width', [36, 4096])
+@pytest.mark.parametrize('literal', ['one, two', "'quoted, value'", 'first,\n  second, value\n', 'uno, dos: [tres, cuatro]'])
+def test_flow_compaction_preserves_scalar_bytes_and_fixed_point(width, literal):
+    payload = {'negative_controls': [{'id': 'control-scalar-fidelity',
+        'mutation': {'path': 'rule.py', 'search': literal, 'replace': literal + ', changed'},
+        'oracle': {'kind': 'diagnostic', 'regex': literal},
+        'typed': [True, False, None, 7, 'true', '7']}]}
+    before = copy.deepcopy(payload)
+    rendered = render_profile_surface(payload, width=width)
+    decoded = yaml.safe_load(rendered)
+    assert decoded == payload == before
+    assert decoded['negative_controls'][0]['mutation']['search'] == literal
+    assert render_profile_surface(decoded, width=width) == rendered

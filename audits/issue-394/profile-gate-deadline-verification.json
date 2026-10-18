@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source-qualified; canonical and installed qualification pending",
+  "implementation_commit": "009075d8879367f5ca01cf35d5b83837e6009f47",
+  "contract": "audits/issue-394/profile-gate-deadline-contract.json",
+  "extraction": {
+    "commit": "3046ea9567ede84a0be78e10f1138120fd42ed5e",
+    "exact_ast_equality": true,
+    "definitions": [
+      "ProfileContractError",
+      "_safe_relative",
+      "_validate_control",
+      "_validate_gate",
+      "_validate_oracle"
+    ],
+    "original_owner_lines": 799,
+    "extracted_owner_lines": 607
+  },
+  "evidence": {
+    "profile-gate-c3799bf7-red": {
+      "source_commit": "c3799bf7691f45f7d601adbffc6eee5ac03d5dab",
+      "status": "failed",
+      "returncode": 1,
+      "quiescent": true,
+      "recorded_handles_absent": true,
+      "stream_sha256": {
+        "profile-gate-red.stdout": "06539bc92efecb8d68e89ae7dce1bcd5f05102f550b63819e34a34d0a6f72dd9",
+        "profile-gate-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "operation.json": "756f300006df9cb4ce31335d970d6b3ad1aafc01b7a08bc442d9be6b255ce33e"
+      }
+    },
+    "profile-gate-3046ea95-extraction": {
+      "source_commit": "3046ea9567ede84a0be78e10f1138120fd42ed5e",
+      "status": "failed",
+      "returncode": 1,
+      "quiescent": true,
+      "recorded_handles_absent": true,
+      "stream_sha256": {
+        "profile-gate-red.stdout": "13287d14d6d8ab8fb14b4a95262907e9e9b5495d629fcd89c7c301216a8bd213",
+        "profile-gate-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "operation.json": "d9b4208f247e980148afbb5e8957f440b8ffe138b12a5f530551d8c8e98066ce"
+      }
+    },
+    "profile-gate-009075d8-focused": {
+      "source_commit": "009075d8879367f5ca01cf35d5b83837e6009f47",
+      "status": "passed",
+      "returncode": 0,
+      "quiescent": true,
+      "recorded_handles_absent": true,
+      "stream_sha256": {
+        "profile-gate-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "operation.json": "ca55d00974ddbe6064cfde0eeda08236941f5d31de1af76f0fa3919b05b6a7a3",
+        "profile-gate-focused.stdout": "5d32db88556151fb54dd57a270063538c503c88f8342b2fe83d42c3368e762bc"
+      }
+    },
+    "profile-gate-009075d8-early": {
+      "source_commit": "009075d8879367f5ca01cf35d5b83837e6009f47",
+      "status": "passed",
+      "returncode": 0,
+      "quiescent": true,
+      "recorded_handles_absent": true,
+      "stream_sha256": {
+        "operation.json": "95a1989defb7d3cd4f81dd9437f49f98f02820a129bed10c2f6382899eec4521",
+        "profile-gate-early.stdout": "98d467f2be1d9cc4d36de1ab4c618884722b9cb28b3da61c091561fa6dd49ca3",
+        "profile-gate-early.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    }
+  },
+  "focused_cases": 69,
+  "early_raw_sha256": {
+    "source-architecture.stdout": "ce1c19cc362d39eaa78af0afe467a0a3799b820c65693322657606137a864c2d",
+    "report.json": "8596c332035c65ee7a245b69774012887ba54a1201462ad6334ca6ef5771c418",
+    "tradeflow-deadline.stdout": "8f47ab5b14edacb439d205136b92f0ee666b310c5f2219496a6843a824603a79",
+    "lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tradeflow-deadline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "early_checks": {
+    "authority": false,
+    "commands": [
+      {
+        "label": "tradeflow-deadline",
+        "returncode": 0
+      },
+      {
+        "label": "lint",
+        "returncode": 0
+      },
+      {
+        "label": "typecheck",
+        "returncode": 0
+      },
+      {
+        "label": "source-architecture",
+        "returncode": 0
+      }
+    ],
+    "semantic": {
+      "verdict": "conformant",
+      "authority": false,
+      "unchanged_operations": 21
+    }
+  },
+  "prior_distribution_disposition": {
+    "subject": "d7bc1ac073e2be253d2d04e5cbced41b782b7aa1",
+    "limited_five_stage": "passed",
+    "full_consumer_source": {
+      "passed": 2028,
+      "failed": 1,
+      "failure": "profile surface renderer exceeded existing context budget"
+    },
+    "full_consumer_wheel_sdist_and_private": "not run after source failure"
+  },
+  "tradeflow": {
+    "authority": false,
+    "provider_repository_id": 1396203132,
+    "base_commit": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+    "base_tree": "c6c6b001c765fbd30f12340620ee9eb9a8ff88aa",
+    "change": "Only structural-evidence timeout_minutes 45 to 70",
+    "parsed_graph_single_change": true,
+    "sdk_upgrade": false,
+    "provider_publication": false,
+    "full_governance_qualification": "pending",
+    "before_sha256": "2d00c7c790e30ab0c2262140551d907505d37e220e20b7e461ef29849aa18e24",
+    "after_sha256": "5f49d2c5789b4a134d6ec67024c0944757a777ff269f097189eef179d83e22a3"
+  },
+  "retained_prior_ledger_summaries": {
+    "MEMORY.yml:['environment_facts', 'current_repo_state', 0]": "Protected input custody source-qualified atb4dcd4d6:6 genuine RED controls,388 affected/4 architecture PASS,lint/type0,21 semantic operations unchanged. Canonical/installed qualification and full lifecycle/82 requirements remain open. See audits/issue-394/bound-trusted-input-verification.json.",
+    "phases/phase-32-log.yml:['summary', 'highlights', 0]": "Protected external input custody source-qualified atb4dcd4d6:3 same-signature legacy forgery failures and3 further handoff/member failures retained;388 affected cases and4 architecture PASS,lint/type0,authored semantics conformant with21 operations unchanged. Exact protected consumer policy, provider producer/job/artifact custody, explicit payload domain and fresh boundaries replace caller authentication claims. Initial release fixtures and undeclared consumer failures retained. Canonical/new controls/installed qualification pending; all82 requirements and38 slices unchanged. See audits/issue-394/bound-trusted-input-verification.json.",
+    "plans/phase-ledger.yml:['operator_requirements_choices_disambiguations', 19, 'statement']": "Scoped admission review/native baseline pass, no successor closure. Authored operation151source/2installed/native pass;1stale-lock oracle requires canonical owner. All82 open. Evidence audits/issue-394/independent-admission-review.json and authored-operation-admission-verification.json.",
+    "audits/issue-394/workplan.yml:['workitems', 'foundation.submit-normalization', 'evidence']": [
+      "audits/issue-394/bound-trusted-input-verification.json - audits/issue-394/protected-yaml-admission-verification.json - audits/issue-394/interpreter-identical-requirements-contract.json - audits/issue-394/interpreter-identical-requirements-verification.json - audits/issue-394/development-distribution-463d5d8b-verification.json - audits/issue-394/source-admission-authority-contract.yml - audits/issue-394/source-admission-authority-verification.json - audits/issue-394/source-admission-order-verification.json - audits/issue-394/authored-operation-admission-contract.json - audits/issue-394/authored-operation-admission-verification.json - audits/issue-394/local-gate-owner-observation-contract.json - audits/issue-394/local-gate-owner-observation-verification.json"
+    ],
+    "audits/issue-394/workplan.yml:['workitems', 'foundation.deadlines', 'evidence']": [
+      "audits/issue-394/development-distribution-7c6b3d65-verification.json - audits/issue-394/qualification-interpreter-path-admission-verification.json - audits/issue-394/qualification-interpreter-path-admission-contract.json - audits/issue-394/development-distribution-17628557-verification.json - audits/issue-394/qualification-preserved-deadline-admission-verification.json - audits/issue-394/qualification-preserved-deadline-admission-contract.json - audits/issue-394/development-distribution-cfe1afca-verification.json - tests/test_planned_deadline_context.py - audits/issue-394/planned-deadline-context-verification.json - audits/issue-394/planned-deadline-context-contract.json - audits/issue-394/evidence-timeout-cleanup-contract.json - audits/issue-394/serial-gate-deadline-contract.json - audits/issue-394/planned-shard-deadline-contract.json - audits/issue-394/reference-deadline-projection-contract.json - audits/issue-394/reference-deadline-projection-verification.json - audits/issue-394/periodic-reference-partition-contract.json - audits/issue-394/periodic-reference-partition-verification.json - audits/issue-394/canonical-deadline-reconciliation-verification.json - audits/issue-394/planned-shard-deadline-verification.json - audits/issue-394/serial-gate-deadline-verification.json - audits/issue-394/development-distribution-fd06f44f-verification.json - audits/issue-394/evidence-timeout-cleanup-characterization.json - audits/issue-394/provider-io-inventory-verification.json - audits/issue-394/provider-response-bounds-contract.yml - audits/issue-394/provider-response-read-census.json - audits/issue-394/provider-response-deadline-verification.json - audits/issue-394/provider-response-real-tls-verification.json - audits/issue-394/provider-response-supported-profile-verification.json - audits/issue-394/provider-byte-limit-verification.json - tests/test_installed_provider_response.py"
+    ],
+    "audits/issue-394/workplan.yml:['workitems', 'foundation.conformance', 'evidence']": [
+      "audits/issue-394/bound-trusted-input-verification.json - audits/issue-394/protected-yaml-admission-verification.json - audits/issue-394/protected-yaml-consumer-matrix-4a34ff4b.json - audits/issue-394/development-distribution-4a34ff4b-verification.json - audits/issue-394/provider-content-coherence-verification.json - audits/issue-394/provider-content-consumer-matrix-8975ee33.json - audits/issue-394/authority-input-followups-8975ee33.json - audits/issue-394/development-distribution-8975ee33-verification.json - audits/issue-394/authority-consumer-matrix-cf7e85e0.json - audits/issue-394/lifecycle-population-adoption-census.json - audits/issue-394/lifecycle-predicate-consumption-contract.yml - audits/issue-394/lifecycle-predicate-consumption-progress.json - audits/issue-394/phase-input-acquisition-verification.json - audits/issue-394/phase-population-verification.json - audits/issue-394/truth-workflow-extraction-verification.json - audits/issue-394/phase-consumer-verification.json - audits/issue-394/local-progress-extraction-verification.json - audits/issue-394/local-phase-forwarding-verification.json - audits/issue-394/truth-cli-phase-context-verification.json - audits/issue-394/preflight-phase-readiness-verification.json - audits/issue-394/phase-input-semantic-effects-verification.json - audits/issue-394/phase-policy-subject-verification.json - audits/issue-394/exact-main-readiness-verification.json - audits/issue-394/exact-main-successor-authority-verification.json - audits/issue-394/private-phase-schema-verification.json - audits/issue-394/installed-parent-phase-verification.json - audits/issue-394/distribution-runtime-resource-verification.json - audits/issue-394/prebuild-runtime-resource-verification.json - audits/issue-394/release-preinstall-composition-contract.json - audits/issue-394/release-preinstall-composition-verification.json - audits/issue-394/development-distribution-9620214b-verification.json - audits/issue-394/runtime-source-mapping-consumption-contract.json - audits/issue-394/runtime-source-mapping-consumption-verification.json - audits/issue-394/development-distribution-3f253f7b-verification.json - audits/issue-394/sdist-installed-consumer-verification.json - audits/issue-394/development-distribution-c96ca1aa-verification.json - audits/issue-394/runtime-command-consumption-verification.json - audits/issue-394/development-distribution-c050c8e6-verification.json - audits/issue-394/recovery-mutation-frontier-contract.yml - audits/issue-394/backtrace-structural-coverage-contract.yml - audits/issue-394/backtrace-structural-coverage-verification.json - audits/issue-394/recovery-mutation-frontier-verification.json"
+    ]
+  },
+  "limits": [
+    "No full lifecycle, phase closure, performance, maintained SDK upgrade or release authority.",
+    "Current source, wheel, sdist and SDK-absent private qualification remain required.",
+    "All 82 whole requirements and 38 recorded slices remain unchanged."
+  ]
+}

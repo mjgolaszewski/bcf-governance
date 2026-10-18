@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitems": ["foundation.deadlines", "foundation.submit-normalization"],
+  "bounded_context": "profiles",
+  "architectural_layer": "tooling",
+  "operation_side": "typed input normalization",
+  "single_capacity_limited_module": "bcf_governance/tooling/governance_profiles.py",
+  "before_lines": 799,
+  "targets": ["bcf_governance/tooling/governance_profiles.py", "bcf_governance/tooling/profile_gate_contracts.py", "tests/test_profile_gate_deadlines.py", "tests/test_profile_contract_v2.py", "tests/test_profile_flows.py"],
+  "requirements": [
+    "Characterize the existing gate decoder and genuine loss of supplied timeout_seconds before production changes.",
+    "Extract its existing path/control/oracle/gate validators and error type into one profile-owned module before adding behavior. Preserve old import paths through explicit re-exports, exact existing function ASTs, errors and normalization outputs during extraction.",
+    "Preserve valid explicitly declared invocation timeout_seconds, validating through the existing ci_graph_timeouts bounded_execution_seconds owner. Missing optional fields stay absent; boolean, noninteger and out-of-range values reject before projection or allocation.",
+    "Do not increase defaults, provider ceilings or budgets, discard required work or weaken profile-flow assertions. Caller inputs remain unchanged and repeated normalization remains stable.",
+    "The existing profile_ context membership owns the extracted module; no parallel deadline decoder, graph, registry or receipt family. Canonical pack generation owns mirrors."
+  ],
+  "qualification": "Before/after decoder and source-absent public/private consumer qualification; affected profile install/upgrade/rollback flows; semantic/architecture/governance checks. All82 whole requirements remain open."
+}

@@ -14,7 +14,10 @@ import yaml
 from bcf_governance.tooling import semantic_authority_migrations as migrations
 from bcf_governance.tooling import semantic_authority_commands as commands
 from bcf_governance.tooling import semantic_ownership_scan as scan
-from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+from bcf_governance.tooling.semantic_ownership_inventory import (
+    discover_python_source,
+    resolve_python_imports,
+)
 from bcf_governance.tooling.semantic_ownership_registry import load_registry
 
 
@@ -47,7 +50,10 @@ def _yaml(relative: str) -> dict:
 
 @pytest.fixture(scope="module")
 def source_inventory() -> dict:
-    return discover_python_source(REPO_ROOT)
+    inventory = discover_python_source(REPO_ROOT)
+    return resolve_python_imports(
+        REPO_ROOT, inventory, load_registry(REPO_ROOT).python_import_roots
+    )
 
 
 def test_bcf_declares_every_semantic_family_and_public_operation_once(

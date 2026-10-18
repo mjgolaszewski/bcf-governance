@@ -64,13 +64,21 @@ def _compact_control_mappings(
 def render_profile_surface(payload: dict[str, Any], *, width: int) -> str:
     """Render controls compactly without changing their decoded semantics."""
 
-    return yaml.dump(
+    rendered = yaml.dump(
         _compact_control_mappings(payload, {}, {}),
         Dumper=_ProfileSurfaceDumper,
         sort_keys=False,
         width=width,
         default_flow_style=None,
     )
+    # Scanner positions distinguish structural commas from immutable scalar text.
+    optional_spaces = {
+        token.end_mark.index for token in yaml.scan(rendered)
+        if isinstance(token, yaml.tokens.FlowEntryToken)
+        and rendered[token.end_mark.index:token.end_mark.index + 1] == " "
+    }
+    return "".join(character for index, character in enumerate(rendered) if index not in optional_spaces)
+
 
 
 def render_governance_profile(payload: dict[str, Any]) -> str:
