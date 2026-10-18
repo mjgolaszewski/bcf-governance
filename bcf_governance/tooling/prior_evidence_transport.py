@@ -74,7 +74,7 @@ def _object(raw: bytes, *, label: str) -> dict[str, Any]:
     return value
 
 
-def _archive_files(raw: bytes) -> dict[str, bytes]:
+def _archive_files(raw: bytes, *, require_canonical_paths: bool = False) -> dict[str, bytes]:
     if len(raw) > MAX_ARCHIVE_BYTES:
         raise GitHubControllerError("prior-evidence artifact exceeds its size limit")
     files: dict[str, bytes] = {}
@@ -96,6 +96,10 @@ def _archive_files(raw: bytes) -> dict[str, bytes]:
                 ):
                     raise GitHubControllerError("prior-evidence artifact has an unsafe member")
                 name = path.as_posix()
+                if require_canonical_paths and (
+                    member.orig_filename != name or "\\" in name or "\x00" in name
+                ):
+                    raise GitHubControllerError("artifact member path spelling is not canonical")
                 if not name or name in files:
                     raise GitHubControllerError("prior-evidence artifact members are ambiguous")
                 expanded += member.file_size

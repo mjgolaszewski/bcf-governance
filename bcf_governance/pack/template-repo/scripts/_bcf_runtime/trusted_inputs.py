@@ -265,8 +265,8 @@ def _admit_input(
     required = ("input_id", "source_repository", "producer_ref", "artifact_name")
     if any(contract[key] != handoff.get(key) for key in required):
         raise TrustedInputError("trusted input handoff metadata does not match protected policy")
-    if "acquisition" in handoff and handoff["acquisition"] != contract["acquisition"]:
-        raise TrustedInputError("trusted input handoff acquisition binding is contradictory")
+    if any(key in handoff and handoff[key] != value for key, value in contract.items()):
+        raise TrustedInputError("trusted input handoff policy metadata is contradictory")
     if re.fullmatch(r"[a-f0-9]{64}", str(handoff.get("sha256", ""))) is None:
         raise TrustedInputError("trusted input handoff digest must be SHA-256")
     metadata = artifact_path.lstat()
@@ -327,7 +327,7 @@ def verify_trusted_input(
         payload_rule = contract["acquisition"]["payload"]
         payload = raw
         if payload_rule["kind"] == "archive_member":
-            files = _archive_files(raw)
+            files = _archive_files(raw, require_canonical_paths=True)
             if payload_rule["path"] not in files:
                 raise TrustedInputError("trusted input declared archive member is missing")
             payload = files[payload_rule["path"]]

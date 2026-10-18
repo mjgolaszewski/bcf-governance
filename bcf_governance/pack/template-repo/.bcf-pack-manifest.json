@@ -1347,7 +1347,7 @@
     },
     "scripts/_bcf_runtime/prior_evidence_transport.py": {
       "operation": "copy",
-      "sha256": "1e5e151315c52588f6f48c9da02c53960c3178a71d7129e21c82f8d7ba343104"
+      "sha256": "98a431f81e3c518438009eb37e81d270a91cbc30b658720863145cdcee7b61ef"
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
@@ -1891,7 +1891,7 @@
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",
-      "sha256": "75315f4641ac0898763ac833ef457d479e2c812f56ddcde42843f0d7c9d8d3b6"
+      "sha256": "703b24557aab46e2b5c70a02be5f2730ab675371a805153fac0eb053869710ae"
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
