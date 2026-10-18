@@ -480,7 +480,8 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
 
 
 @pytest.mark.parametrize('defect', ['profile', 'missing-profile', 'missing-python', 'nonexecutable-python',
-                                  'deadline-first', 'deadline-last', 'deadline-valid', 'deadline-ambiguous', None])
+                                  'deadline-first', 'deadline-last', 'deadline-valid', 'deadline-ambiguous',
+                                  'python-shape-first', 'python-shape-last', None])
 def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path, monkeypatch, defect, qualification_provider):
     contract = load_contract(REPO_ROOT)
     assets = tmp_path / 'assets'
@@ -500,7 +501,8 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
         identities[root.resolve()] = (item['repository'], str(index) * 40, str(index) * 40)
         roots.append(root)
     last = roots[-1]
-    python = last / 'python'
+    python = last / '.venv/bin/python'
+    python.parent.mkdir(parents=True)
     python.write_text('#!/bin/sh\n', encoding='utf-8')
     python.chmod(0o755)
     if defect == 'profile':
@@ -511,6 +513,11 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
         python.unlink()
     elif defect == 'nonexecutable-python':
         python.chmod(0o644)
+    elif defect in {'python-shape-first', 'python-shape-last'}:
+        target = roots[0] if defect == 'python-shape-first' else last
+        python = target / 'python'
+        python.write_text('#!/bin/sh\n', encoding='utf-8')
+        python.chmod(0o755)
     elif defect and defect.startswith('deadline-'):
         target = roots[0] if defect == 'deadline-first' else last
         (target / 'governance').mkdir()
@@ -536,12 +543,13 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
     else:
         expected = ReleaseQualificationError
         message = ('duplicate YAML key' if defect == 'deadline-ambiguous' else
+                   'must be ENV/bin/python' if defect.startswith('python-shape-') else
                    'cannot contain' if defect.startswith('deadline-') else
                    'profile' if 'profile' in defect else 'interpreter is unavailable')
     with pytest.raises(expected, match=message):
         qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
                         release_build_manifest=manifest, adopter_roots=roots,
-                        adopter_pythons={contract['required_adopters'][-1]['repository']: python},
+                        adopter_pythons={contract['required_adopters'][0 if defect == 'python-shape-first' else -1]['repository']: python},
                         producer=PRODUCER, output=tmp_path / 'receipt.json')
     assert effects == (['allocation'] if valid else [])
     assert not (tmp_path / 'receipt.json').exists()

@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "evidence",
+  "architectural_layer": "tooling",
+  "operation_side": "existing_qualification_command_with_pure_resource_admission",
+  "targets": [
+    "bcf_governance/tooling/release_adopter_qualification.py",
+    "tests/test_release_adopter_qualification.py"
+  ],
+  "observed_ordering": "qualify_release currently checks only executable availability before allocating the controller and installing into a clone; _isolated_project_python then rejects a repository-owned path that is not ENV/bin/python. The lexical path violation was derivable before the first allocation.",
+  "contract": [
+    "Reuse the existing exact lexical repository-ownership and ENV/bin/python shape check as one pure query at both all-input admission and copy consumption.",
+    "Reject malformed first or last supplied adopter interpreter before TemporaryDirectory/controller/clone/install/proof allocation; no receipt and no input mutation.",
+    "Preserve nested environment roots and symlinked bin/python lexical custody. Preserve genuinely external interpreters and their existing later execution/custody probe; do not execute a supplied interpreter during pure admission.",
+    "Recheck at copy consumption; early admission does not authorize later mutable state or substitute for environment isolation.",
+    "Keep provider selection/freshness, authored budgets, CLI grammar and receipt families unchanged. Keep production below800LOC; no new owner or parallel registry."
+  ],
+  "verification": [
+    "Malformed first/last repository-owned paths reject before allocator sentinel.",
+    "Valid shallow/nested lexical environment paths and genuinely external interpreter reach existing allocation boundary.",
+    "Removing early check alone restores the first/last allocator failure; existing isolation/source/qualification consumers, architecture, semantics and installed parity remain required."
+  ],
+  "forbidden": [
+    "maintained adopter mutation",
+    "immutable234 mutation",
+    "provider mutation",
+    "authored deadline widening",
+    "external interpreter execution before admission",
+    "generated artifact hand edits"
+  ]
+}
