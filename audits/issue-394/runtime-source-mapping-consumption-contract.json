@@ -48,5 +48,28 @@
         "Fresh lite consumer only; no full profile, predecessor upgrade, opt-out, rollback, live adopter or custody claim."
       ]
     }
+  },
+  "runtime_command_consumption": {
+    "owner": "bcf_governance/tooling/release_runtime_verification.py",
+    "consumers": [
+      "ci_github_release.verify_release_build",
+      "ci_github_release.collect_release"
+    ],
+    "problem": "A passed report with self-consistent archive/evidence digests currently accepts missing, duplicated, failed or unbound command records; command population and exit facts are mechanically available.",
+    "versions": {
+      "1.0": "Historical ten-command runtime remains readable with its original payload and execution meaning. It cannot satisfy a new strict1.1 provider verification.",
+      "1.1": "New producer includes both installed distribution consumers; trusted verifier and collector require1.1 and its complete eleven-command population. No CLI bypass or candidate-selected policy."
+    },
+    "requirements": [
+      "Validate a nonempty closed command population, unique known labels, nonempty string argv, integer-zero exit status excluding booleans, and each exact distinct stdout/stderr binding.",
+      "Require report evidence to equal all command streams; dropping a command and its evidence together still fails against the versioned runtime owner population.",
+      "Enforce actual environment/install/smoke/consumer dependencies. Version1.1 additionally preserves metadata-before-install admission; version1.0 retains genuine earlier metadata ordering.",
+      "Reject unsupported/missing version, contradictory records and downgrade at trusted consuming boundaries before archive extraction, interpreter allocation, provider mutation or output certification.",
+      "Both actual provider consumers require the same trusted version, and neither obtains its required population from the report, candidate archive or authored tests.",
+      "Preserve genuine1.0 payloads for historical query inspection and immutable2.3.4 custody; do not relabel them as1.1 execution or rewrite old bytes.",
+      "Do not interpret consistent command metadata as independently authenticated runtime execution; existing provider roles, exact artifact identities and verifier/collector separation remain mandatory."
+    ],
+    "compatibility": "Versioned extension of the existing runtime report, not a new receipt family. Older controllers must gain reader compatibility before consuming new1.1 output; missing support blocks rather than downgrading. Installed CLI grammar and provider status identities remain unchanged.",
+    "tests": "Real matching archive fixtures plus dropped-command-and-stream, duplicate/unknown label, nonzero/boolean exit, malformed argv, reused/unbound/orphan stream and dependency-order mutations; strict provider downgrade, genuine retained1.0 compatibility, actual SDK-absent private probes and canonical distribution qualification."
   }
 }
