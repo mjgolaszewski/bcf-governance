@@ -295,12 +295,13 @@
     "full_distribution_installed_profile_adopter_qualified": false
   },
   "controlled_development_distribution": {
-    "verification": "audits/issue-394/development-distribution-c96ca1aa-verification.json",
-    "source_commit": "c96ca1aa01304dbd8ee436ab1e704de565237fcb",
+    "verification": "audits/issue-394/development-distribution-c050c8e6-verification.json",
+    "source_commit": "c050c8e6ef0f00598fefc8eb24b22b7b6f02d53d",
     "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
     "wheel_and_sdist_installed_consumers_passed": true,
     "source_fresh_same_candidate_repair_upgrade_passed": true,
     "private_runtime_fact_queries_passed": true,
+    "runtime_report_version": "1.1",
     "full_distribution_profile_adopter_matrix_qualified": false
   },
   "runtime_source_mapping_consumption": {
@@ -328,6 +329,15 @@
       "source_fresh_same_candidate_repair_upgrade_passed": true,
       "private_runtime_fact_queries_passed": true,
       "full_distribution_profile_adopter_matrix_qualified": false
+    },
+    {
+      "verification": "audits/issue-394/development-distribution-c96ca1aa-verification.json",
+      "source_commit": "c96ca1aa01304dbd8ee436ab1e704de565237fcb",
+      "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
+      "wheel_and_sdist_installed_consumers_passed": true,
+      "source_fresh_same_candidate_repair_upgrade_passed": true,
+      "private_runtime_fact_queries_passed": true,
+      "full_distribution_profile_adopter_matrix_qualified": false
     }
   ],
   "sdist_installed_consumer": {
@@ -339,8 +349,9 @@
   "runtime_command_consumption": {
     "verification": "audits/issue-394/runtime-command-consumption-verification.json",
     "source_and_copied_query_passed": true,
-    "exact_new_installed_distribution_qualified": false,
+    "exact_new_installed_distribution_qualified": true,
     "required_report_version": "1.1",
-    "historical_report_scope_preserved": true
+    "historical_report_scope_preserved": true,
+    "distribution_verification": "audits/issue-394/development-distribution-c050c8e6-verification.json"
   }
 }

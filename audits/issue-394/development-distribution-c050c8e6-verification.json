@@ -1,0 +1,356 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "controlled_exact_distribution_and_fresh_lite_consumers_passed_full_matrix_open",
+  "source_commit": "c050c8e6ef0f00598fefc8eb24b22b7b6f02d53d",
+  "source_tree": "8c37876a0167e939d3d171478b314aee2f7ab99b",
+  "scope": "Controlled exact-source development build, source fresh/same-candidate repair-upgrade and both wheel/sdist fresh lite installed private consumers under runtime report1.1; no independent release/custody, full profile/adopter or malicious same-user isolation claim",
+  "runtime_report_version": "1.1",
+  "artifacts": [
+    {
+      "name": "bcf_governance-2.5.0-py3-none-any.whl",
+      "bytes": 2092582,
+      "sha256": "ca74243adf2436c4801b5f5b6c3e324b6d6a5b1bb3e94bd17e69a63bbaa680b6"
+    },
+    {
+      "name": "bcf_governance-2.5.0.tar.gz",
+      "bytes": 9052515,
+      "sha256": "31c1bf00c9d99d433d387dc8c8ad42f466d74750027f5a28cf2356853945fab4"
+    }
+  ],
+  "source_mapping": {
+    "mapped_files": 788,
+    "status": "exact"
+  },
+  "source_distribution_inventory_verified": true,
+  "runtime_resource_population": {
+    "files": 491,
+    "source_discovered": true,
+    "exact_wheel_bytes_verified": true
+  },
+  "closed_dependency_environment": {
+    "lock_sha256": "2c801a3a1cf476253e85ba7748afbdd460aa2fba2e57eb83277f4eff0da6b55b",
+    "platform": "linux_x86_64",
+    "python": "3.12.14",
+    "status": "verified",
+    "wheels": {
+      "attrs-26.1.0-py3-none-any.whl": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+      "build-1.6.0-py3-none-any.whl": "f7aaf1ebbb79178a02ba248bb524f2176b256017e17e8e4bd4289c7b38cc2bad",
+      "certifi-2026.7.22-py3-none-any.whl": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+      "cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf",
+      "charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": "b9af956078716df40d985fb0dfeb2c2120c5ca92ba4ff4b388acfd01cdc14d08",
+      "cryptography-50.0.1-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl": "ff838d62ec1bfce4f9ba7fa16f4a7b554cd8d0c299e6be37502161a660c84eef",
+      "docutils-0.23-py3-none-any.whl": "25d013af9bf23bc1c7b2b093dff4208166c53a94786c9e447808335ef1185fea",
+      "id-1.6.1-py3-none-any.whl": "f5ec41ed2629a508f5d0988eda142e190c9c6da971100612c4de9ad9f9b237ca",
+      "idna-3.19-py3-none-any.whl": "815e7be7a7806d54abb586dc943addc79e8b2ee16915059658cbeff4b1b43bf4",
+      "iniconfig-2.3.0-py3-none-any.whl": "f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12",
+      "jaraco.classes-3.4.0-py3-none-any.whl": "f662826b6bed8cace05e7ff873ce0f9283b5c924470fe664fff1c2f00f581790",
+      "jaraco_context-6.1.2-py3-none-any.whl": "bf8150b79a2d5d91ae48629d8b427a8f7ba0e1097dd6202a9059f29a36379535",
+      "jaraco_functools-4.6.0-py3-none-any.whl": "99e3dc0060c5cbe8fcd1cdb36258e2a65ca40f1566b2033b12abb1bb44dd3c30",
+      "jeepney-0.9.0-py3-none-any.whl": "97e5714520c16fc0a45695e5365a2e11b81ea79bba796e26f9f1d178cb182683",
+      "jsonschema-4.26.0-py3-none-any.whl": "d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce",
+      "jsonschema_specifications-2025.9.1-py3-none-any.whl": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+      "keyring-25.7.0-py3-none-any.whl": "be4a0b195f149690c166e850609a477c532ddbfbaed96a404d4e43f8d5e2689f",
+      "markdown_it_py-4.2.0-py3-none-any.whl": "9f7ebbcd14fe59494226453aed97c1070d83f8d24b6fc3a3bcf9a38092641c4a",
+      "mdurl-0.1.2-py3-none-any.whl": "84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8",
+      "more_itertools-11.1.0-py3-none-any.whl": "4b65538ae22f6fed0ce4874efd317463a7489796a0939fa66824dd542125a192",
+      "nh3-0.3.7-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": "70f5ac8626e899a4bab0ef74ca2f5bd602f49c7b739e6e5026b4afc6d63dac42",
+      "packaging-26.3-py3-none-any.whl": "d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c",
+      "pluggy-1.6.0-py3-none-any.whl": "e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746",
+      "pycparser-3.0-py3-none-any.whl": "b727414169a36b7d524c1c3e31839a521725078d7b2ff038656844266160a992",
+      "pygments-2.21.0-py3-none-any.whl": "2363c69b61c4a97c838da3b130dcd6468f4848992b21a82f2a63ec34377137d9",
+      "pyproject_hooks-1.2.0-py3-none-any.whl": "9e5c6bfa8dcc30091c74b0cf803c81fdd29d94f01992a7707bc97babb1141913",
+      "pytest-9.0.3-py3-none-any.whl": "2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9",
+      "pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc",
+      "readme_renderer-46.0-py3-none-any.whl": "d0dae1f74bb273b534770cb4cccb6bb78735540afdb03c2146f4e19dcd412560",
+      "referencing-0.37.0-py3-none-any.whl": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+      "requests-2.34.2-py3-none-any.whl": "2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0",
+      "requests_toolbelt-1.0.0-py2.py3-none-any.whl": "cccfdd665f0a24fcf4726e690f65639d272bb0637b9b92dfd91a5568ccf6bd06",
+      "rfc3986-2.0.0-py2.py3-none-any.whl": "50b1502b60e289cb37883f3dfd34532b8873c7de9f49bb546641ce9cbd256ebd",
+      "rich-15.0.0-py3-none-any.whl": "33bd4ef74232fb73fe9279a257718407f169c09b78a87ad3d296f548e27de0bb",
+      "rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": "ecabd69db66de867690f9797f2f8fa27ba501bbc24540cbdbdc649cd15888ba6",
+      "secretstorage-3.5.0-py3-none-any.whl": "0ce65888c0725fcb2c5bc0fdb8e5438eece02c523557ea40ce0703c266248137",
+      "setuptools-84.0.0-py3-none-any.whl": "51a52592b3b99e102b609654876bd65f19f999935166d1352678931132b0c670",
+      "twine-7.0.0-py3-none-any.whl": "b854164df26db268af05f49aa5c0344b10e27a494343ff05b1e0bad3b135f5a7",
+      "typing_extensions-4.16.0-py3-none-any.whl": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "urllib3-2.7.0-py3-none-any.whl": "9fb4c81ebbb1ce9531cce37674bbc6f1360472bc18ca9a553ede278ef7276897",
+      "wheel-0.48.0-py3-none-any.whl": "3217dcc807155e45db462d7ef2431f5ddda0d7273b700d05a67b271ceb1287ab"
+    }
+  },
+  "commands": [
+    {
+      "label": "wheel-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "twine-check",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-smoke",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-install",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-smoke",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-installed-consumer",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-installed-consumer",
+      "exit_code": 0
+    }
+  ],
+  "both_smokes_precede_expensive_consumers": true,
+  "installed_consumers": {
+    "wheel": {
+      "profile": "lite",
+      "installation": "fresh",
+      "skip_validation": true,
+      "target_sdk_absent": true,
+      "status": "pass",
+      "runtime_fact_query": {
+        "authority": false,
+        "busy_cases": 3,
+        "candidate_or_subprocess_not_executed": true,
+        "command_guard_causal": true,
+        "exact_file_reused": true,
+        "forged_command_arguments_rejected": 10,
+        "forged_command_records_rejected": 16,
+        "forged_mapping_or_evidence_rejected": 11,
+        "holder_and_retained_bytes_preserved": true,
+        "runtime_owned_helpers": true,
+        "scope": "private_runtime_synthetic_fact_queries",
+        "sdk_absent": true,
+        "valid_mapping_returned_unchanged": true,
+        "version_1_1_both_consumers_accepted": true
+      },
+      "query_returncodes": {
+        "authored_operation_query": 0,
+        "capture_integrity_query": 0,
+        "provider_source_query": 0
+      },
+      "prepare_returncodes": [
+        0,
+        0,
+        1
+      ],
+      "resolve_cases": [
+        {
+          "case": "valid",
+          "returncode": 0
+        },
+        {
+          "case": "asset",
+          "returncode": 1
+        },
+        {
+          "case": "reference",
+          "returncode": 1
+        },
+        {
+          "case": "missing_asset",
+          "returncode": 1
+        },
+        {
+          "case": "missing_reference",
+          "returncode": 1
+        },
+        {
+          "case": "ref",
+          "returncode": 1
+        }
+      ],
+      "semantic_returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "sdist": {
+      "profile": "lite",
+      "installation": "fresh",
+      "skip_validation": true,
+      "target_sdk_absent": true,
+      "status": "pass",
+      "runtime_fact_query": {
+        "authority": false,
+        "busy_cases": 3,
+        "candidate_or_subprocess_not_executed": true,
+        "command_guard_causal": true,
+        "exact_file_reused": true,
+        "forged_command_arguments_rejected": 10,
+        "forged_command_records_rejected": 16,
+        "forged_mapping_or_evidence_rejected": 11,
+        "holder_and_retained_bytes_preserved": true,
+        "runtime_owned_helpers": true,
+        "scope": "private_runtime_synthetic_fact_queries",
+        "sdk_absent": true,
+        "valid_mapping_returned_unchanged": true,
+        "version_1_1_both_consumers_accepted": true
+      },
+      "query_returncodes": {
+        "authored_operation_query": 0,
+        "capture_integrity_query": 0,
+        "provider_source_query": 0
+      },
+      "prepare_returncodes": [
+        0,
+        0,
+        1
+      ],
+      "resolve_cases": [
+        {
+          "case": "valid",
+          "returncode": 0
+        },
+        {
+          "case": "asset",
+          "returncode": 1
+        },
+        {
+          "case": "reference",
+          "returncode": 1
+        },
+        {
+          "case": "missing_asset",
+          "returncode": 1
+        },
+        {
+          "case": "missing_reference",
+          "returncode": 1
+        },
+        {
+          "case": "ref",
+          "returncode": 1
+        }
+      ],
+      "semantic_returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "source_installer": {
+    "profile": "lite",
+    "fresh_and_same_candidate_repair_upgrade_passed": 2,
+    "sdk_absent_private_query": true,
+    "v234_upgrade_qualified": false
+  },
+  "runtime_report_sha256": "575ae9431066701e9e1650848fad662acfff1b259f424286f81189a0cce4e04e",
+  "raw_evidence_sha256": {
+    "sdist-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "sdist-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-install.stdout": "9892f05fe5c0216c42f55d6e9a47563be56b786470eee8c708991936357b2f85",
+    "sdist-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-installed-consumer.stdout": "e67ddd28a8184127c7bbf373ae804fd1ef1df9eb0a2e07e2b63a3c80247c85f3",
+    "sdist-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "sdist-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stdout": "8ceab393e67dcc168bb4030ca04d52cff573d4c4b700fe6979470a2a06b47e27",
+    "wheel-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "wheel-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-install.stdout": "1e57941139805aab5433530bc32c8102f519ce44939db7629715c408e0c42f63",
+    "wheel-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-installed-consumer.stdout": "9373cbe9cea44c298111dce08ed7aa4617bb0206a8464dd65b041ce047c38490",
+    "wheel-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "wheel-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_operation_sha256": {
+    "build": "3827ef6b8cf77ff73fbaf013572df5c1f51a2f45daa6c267ddf66978ca0e2120",
+    "supervised_qualification": "ff26210aa115181c9647e2f1f092ce146faba63fc0c574164753350eda293b55"
+  },
+  "process_custody": [
+    {
+      "stage": "source-installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "build",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    }
+  ],
+  "transaction": {
+    "attempt1": "busy75_unallocated_raw_retained",
+    "attempt2": "passed",
+    "raw_capture_sha256": {
+      "qualify-c050c8e6-development.stdout": "490a53c903bf7509008af49d64f3c01a5a1e598335f544febee5c1a1299441bc",
+      "qualify-c050c8e6-development.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "qualify-c050c8e6-development-attempt2.stdout": "6788c4c7509c84761f338a6bcbbb3b6f0ce550899ac7e986af6e630e1b782371",
+      "qualify-c050c8e6-development-attempt2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "all_recorded_owner_supervisor_command_handles_absent": true,
+    "fresh_same_kernel_fence_unowned_readback": true
+  },
+  "prerequisite_verification": "audits/issue-394/runtime-command-consumption-verification.json",
+  "prerequisite_checks": {
+    "architecture_passed": 5,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "governance": 0,
+    "authored_semantics": 0,
+    "authored_operation_observations_unchanged": 21
+  },
+  "limits": [
+    "Exact recorded source/artifacts only; subsequent audit commits are not those built bytes.",
+    "Installed private probes use synthetic query facts and a cause-specific disabled guard; they do not execute forged argv or create independently authenticated provider execution authority.",
+    "Dependency closure is independently recomputed from the retained local manifest, lock and wheelhouse for this query; this is local fact consistency, not authenticated independent provider-role execution.",
+    "No full-profile, all-minor, v2.3.4 upgrade, repeat, opt-out, rollback, live-adopter, independent release/custody or malicious same-user isolation claim.",
+    "All82 whole requirements and38 slice objects unchanged; P32 active/P33-P35 dormant; targets unapproved."
+  ],
+  "next_action": "Complete protected lifecycle/effect populations and composed deadlines; qualify declared installed profiles and predecessor transitions on isolated provider-selected adopters before canonical integration and exact provider proof.",
+  "audit_record_checks": {
+    "governance": 0,
+    "exposure": 0,
+    "raw_sha256": {
+      "distribution-c050c8e6-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "distribution-c050c8e6-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d"
+    }
+  }
+}

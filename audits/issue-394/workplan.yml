@@ -258,6 +258,7 @@ workitems:
     - audits/issue-394/sdist-installed-consumer-verification.json
     - audits/issue-394/development-distribution-c96ca1aa-verification.json
     - audits/issue-394/runtime-command-consumption-verification.json
+    - audits/issue-394/development-distribution-c050c8e6-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json
