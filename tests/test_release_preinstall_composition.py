@@ -159,3 +159,25 @@ def test_installed_consumer_failure_prevents_passing_runtime_report(verification
     with pytest.raises(GitHubControllerError, match="installed consumer rejected"):
         runtime.run_release_runtime_verification(**inputs)
     assert not (inputs["output_dir"] / "runtime-verification.json").exists()
+
+
+@pytest.mark.parametrize("distribution", ["wheel", "sdist"])
+def test_invalid_distribution_smoke_precedes_both_expensive_consumers(verification, monkeypatch, distribution):
+    inputs, events = verification
+
+    def environment(*args, **kwargs):
+        return inputs["selected_python"], {}, []
+
+    def run(label, argv, **kwargs):
+        events.append(label)
+        if label == distribution + "-smoke":
+            raise GitHubControllerError("invalid installed distribution CLI")
+        (kwargs["output_dir"] / (label + ".stdout")).write_bytes(b"fixture only\n")
+        return dict(label=label, exit_code=0)
+
+    monkeypatch.setattr(runtime, "_environment", environment)
+    monkeypatch.setattr(runtime, "_run", run)
+    with pytest.raises(GitHubControllerError, match="invalid installed distribution CLI"):
+        runtime.run_release_runtime_verification(**inputs)
+    assert not set(events) & {"wheel-installed-consumer", "sdist-installed-consumer"}
+    assert not (inputs["output_dir"] / "runtime-verification.json").exists()

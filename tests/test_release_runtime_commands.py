@@ -24,7 +24,8 @@ LABELS = (
 def command_fixture(root: Path, version: str = "1.0"):
     root.mkdir(parents=True, exist_ok=True)
     commands, paths = [], []
-    for label in LABELS:
+    labels = LABELS if version == "1.0" else LABELS[:-3] + ("sdist-smoke", "wheel-installed-consumer", "sdist-installed-consumer")
+    for label in labels:
         if version == "1.0" and label == "sdist-installed-consumer":
             continue
         row = dict(label=label, argv=["/fixture/python", "-c", "pass"], exit_code=0)
@@ -53,6 +54,7 @@ def command_report(tmp_path, version="1.0"):
     "missing", "empty", "duplicate", "dropped-with-streams", "unknown",
     "failed", "boolean-exit", "empty-argv", "nonstring-argv", "unbound-stream",
     "reused-stream", "orphan-stream", "install-before-closure", "consumer-before-install",
+    "twine-before-closure", "smoke-after-consumer",
 ])
 def test_reported_pass_cannot_contradict_runtime_commands(tmp_path, defect):
     report, evidence, wheel, sdist = command_report(tmp_path)
@@ -78,7 +80,9 @@ def test_reported_pass_cannot_contradict_runtime_commands(tmp_path, defect):
         evidence += (extra,)
         value["evidence"][extra.name] = hashlib.sha256(extra.read_bytes()).hexdigest()
     elif defect == "install-before-closure": rows[1], rows[3] = rows[3], rows[1]
-    else: rows[7], rows[8] = rows[8], rows[7]
+    elif defect == "consumer-before-install": rows[7], rows[8] = rows[8], rows[7]
+    elif defect == "twine-before-closure": rows.insert(0, rows.pop(2))
+    else: rows.insert(8, rows.pop(4))
     report.write_text(json.dumps(value))
     with pytest.raises(GitHubControllerError, match="runtime command"):
         runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)

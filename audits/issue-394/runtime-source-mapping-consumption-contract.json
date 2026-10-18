@@ -67,7 +67,8 @@
       "Reject unsupported/missing version, contradictory records and downgrade at trusted consuming boundaries before archive extraction, interpreter allocation, provider mutation or output certification.",
       "Both actual provider consumers require the same trusted version, and neither obtains its required population from the report, candidate archive or authored tests.",
       "Preserve genuine1.0 payloads for historical query inspection and immutable2.3.4 custody; do not relabel them as1.1 execution or rewrite old bytes.",
-      "Do not interpret consistent command metadata as independently authenticated runtime execution; existing provider roles, exact artifact identities and verifier/collector separation remain mandatory."
+      "Do not interpret consistent command metadata as independently authenticated runtime execution; existing provider roles, exact artifact identities and verifier/collector separation remain mandatory.",
+      "For1.1, run both cheap CLI smokes before either combined installed-consumer probe; a failing sdist CLI must not allocate the expensive wheel or sdist consumer. Preserve historical1.0 ordering as historical only."
     ],
     "compatibility": "Versioned extension of the existing runtime report, not a new receipt family. Older controllers must gain reader compatibility before consuming new1.1 output; missing support blocks rather than downgrading. Installed CLI grammar and provider status identities remain unchanged.",
     "tests": "Real matching archive fixtures plus dropped-command-and-stream, duplicate/unknown label, nonzero/boolean exit, malformed argv, reused/unbound/orphan stream and dependency-order mutations; strict provider downgrade, genuine retained1.0 compatibility, actual SDK-absent private probes and canonical distribution qualification."
