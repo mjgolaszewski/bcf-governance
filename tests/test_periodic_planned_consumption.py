@@ -25,6 +25,7 @@ def test_periodic_targets_are_selected_from_exact_real_git_session(tmp_path, sco
     profile = 'regulated' if scope == 'regulated' else 'standard'
     contract.update(profile_contract_version='3.0', target_profile=profile)
     contract['gates']['governance-validate'] = {}
+    contract['claim_model']['execution_groups']['other-tests']['depends_on'] = ['app-tests']
     path.write_text(yaml.safe_dump(contract, sort_keys=False))
     subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
     subprocess.run(['git', '-C', str(root), 'commit', '-qm', 'bound periodic fixture'], check=True)
@@ -44,14 +45,16 @@ def test_periodic_targets_are_selected_from_exact_real_git_session(tmp_path, sco
                          if graph['step_components'][key].get('command', '').endswith('capture-shard'))
         command = graph['commands'][component['command']]['argv']
         assert 'scripts/capture_governance_shard.py' in command
-        consumed = []
+        consumed = []; shard_by_target = {}
         for index in range(job['executor']['shard_count']):
             for target in partition_required_gates(root, shard_index=index, shard_count=4,
                     planned_targets=session.payload['expected_gate_inventory'],
                     execution_dag=session.payload['execution_dag']):
                 bind_session(root, target, session.root / target, session.manifest_path, required=True)
-                consumed.append(target)
+                consumed.append(target); shard_by_target[target] = index
         assert sorted(consumed) == sorted(targets) and len(consumed) == len(set(consumed))
+        assert shard_by_target['test'] == shard_by_target['other-test']
+        assert consumed.index('test') < consumed.index('other-test')
         assert 'governance-validate' not in consumed
         if scope == 'normal': assert 'custody' not in consumed and 'self' not in consumed
 
