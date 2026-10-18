@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source-qualified; canonical and installed qualification pending",
+  "workitems": [
+    "foundation.conformance",
+    "foundation.submit-normalization"
+  ],
+  "contract": "audits/issue-394/bound-trusted-input-contract.json",
+  "source_commit": "b4dcd4d6132975dd5029cde3abc87bfac4ebe64b",
+  "source_tree": "28fbab901f6ccfd5b4e0b3187e28b5b3f7ae3410",
+  "implementation_commits": [
+    "9285ea8e916b85de5b9e98f22823fddeb34460bb",
+    "94558248e355585de1900aedbbe78212be576e91"
+  ],
+  "behavior": [
+    "Protected consumer policy selects the exact input rule and required population. Source repository, pinned producer lineage, singular role/event, newest successful terminal attempt and full job inventory are reconstructed through existing owners.",
+    "Provider digest covers exact downloaded archive bytes; explicit payload domain selects archive or canonical member. Local bytes and handoff digest are assertions checked against that payload.",
+    "Caller provider_authenticated flags do not grant authority; false or absent flags do not defeat genuine provider facts. Missing provider context, malformed metadata, unsafe files and incomplete population reject before downloads.",
+    "Consumer/source frontiers, selected attempt and artifact identity are reauthenticated before return; six-field existing projection identifies provider-state verification.",
+    "Source query consumes the existing ProviderArtifact owner; exact causal sink declaration grants neither factory nor suppression authority."
+  ],
+  "evidence": [
+    {
+      "subject": "66d9b61742af8baad6f574081c18bd6d3ef36384",
+      "scope": "same-signature controls against unchanged production",
+      "failed": 3,
+      "passed": 4,
+      "interpretation": "genuine behavioral RED"
+    },
+    {
+      "subject": "51d11f6967e25456bb33e574de478c6f917abe39",
+      "scope": "contradictory optional metadata and canonical archive aliases",
+      "failed": 3,
+      "passed": 88,
+      "interpretation": "genuine behavioral RED; subsequent correction94558248"
+    },
+    {
+      "subject": "b4dcd4d6132975dd5029cde3abc87bfac4ebe64b",
+      "affected_cases_passed": 388,
+      "lint_exit": 0,
+      "typecheck_exit": 0,
+      "source_architecture_cases_passed": 4,
+      "authored_semantics": "conformant",
+      "operation_observations_unchanged": 21
+    }
+  ],
+  "historical_failures": [
+    {
+      "subject": "94558248e355585de1900aedbbe78212be576e91",
+      "passed": 383,
+      "failed": 4,
+      "disposition": "Narrow release query fixtures omitted newly consumed protected event and run readback; fixtures updated atbda95553 without weakening runtime checks."
+    },
+    {
+      "subject": "bda95553f3103da6a47a42b3c8ffdac9edad7541",
+      "passed": 387,
+      "semantic": "undeclared source-input artifact consumer",
+      "disposition": "Exact consumer declared atb4dcd4d6 with causal removal test; owner and constructor privileges unchanged."
+    }
+  ],
+  "runtime_source_sha256": {
+    "bcf_governance/tooling/trusted_inputs.py": "703b24557aab46e2b5c70a02be5f2730ab675371a805153fac0eb053869710ae",
+    "bcf_governance/tooling/ci_authority_contracts.py": "326765b68f2b7a709861718c18012d7cf6556eafdc9d1f90717549cfaee3ffc7",
+    "bcf_governance/tooling/ci_github_release_inputs.py": "f5524cf5fbdb15315389177ac82fb8f234a79800af77567c8cdc2a88a9b2dc09",
+    "bcf_governance/tooling/prior_evidence_transport.py": "98a431f81e3c518438009eb37e81d270a91cbc30b658720863145cdcee7b61ef"
+  },
+  "raw_sha256": {
+    "bound-input-66d9b617-red-owned-attempt1/bound-input-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-66d9b617-red-owned-attempt1/bound-input-red.stdout": "73da8d864fa06cc47cfbb933c1ebfe68bd49644dd764c0888cf69a6ae35f0df9",
+    "bound-input-66d9b617-red-owned-attempt1/operation.json": "148e84ca8b1202272f894d9bbe8591174ea4ce5785dcd7da82c00246a6b1e512",
+    "bound-input-51d11f69-controls-owned-attempt1/bound-input-controls.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-51d11f69-controls-owned-attempt1/bound-input-controls.stdout": "255ca88fba5e74062fc956e089a5a054130c5136b194c084aa855e3980f2fdca",
+    "bound-input-51d11f69-controls-owned-attempt1/operation.json": "cfc1fdd7d50ed49afa909cf2e5df682a44a305269048552902d3da69ec1bd845",
+    "bound-input-b4dcd4d6-qualification-owned-attempt1/bound-input-qualification.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-qualification-owned-attempt1/bound-input-qualification.stdout": "957c237d2020af7322f878c510180f7246acdae6c703b6340d22df0111e3e6bf",
+    "bound-input-b4dcd4d6-qualification-owned-attempt1/operation.json": "695460b87bdd245344a61de139ee4f6ca297b9f39aa8bea9a0695c9100501f40",
+    "bound-input-b4dcd4d6-qualification-worker-attempt1/consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-qualification-worker-attempt1/consumers.stdout": "7ccf7222bfa8853eb6212d06905db12b7ceee8bf7dfb639de325fc22a8785236",
+    "bound-input-b4dcd4d6-qualification-worker-attempt1/early.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-qualification-worker-attempt1/early.stdout": "0fe73d330ddbd09fcbdc00c0e4c824ea1cef2c76bd5dae463644ababe73ab3f0",
+    "bound-input-b4dcd4d6-qualification-worker-attempt1/report.json": "978cb09156002fbe97aacfd6099cd17bf4319e0145ec1016400381fbcfa1f145",
+    "bound-input-b4dcd4d6-early-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-early-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-early-attempt1/report.json": "8a1acbb50856303162f0fd3512276f7e7dcd3c13139df1696eb8868eb5e04174",
+    "bound-input-b4dcd4d6-early-attempt1/source-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-early-attempt1/source-architecture.stdout": "3c24d30d0fa94a6dc26584ecaf21f1f0eac8a3cceaec8bbd6727ba17d2b7b5d7",
+    "bound-input-b4dcd4d6-early-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bound-input-b4dcd4d6-early-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "historical_memory_disposition": {
+    "previous_first_entry": "Exact4a34 YAML/OID admission qualified:23 reads/12 modules,26 RED controls,431 affected and1969 source/wheel/sdist each PASS;269 modules/790 mappings exact. Caller-authenticated inputs and full lifecycle/82 requirements remain open. See audits/issue-394/protected-yaml-admission-verification.json.",
+    "disposition": "Retained YAML/OID qualification remains valid at its exact subject. Caller-asserted input flaw now has source-qualified correction; installed and canonical evidence still pending."
+  },
+  "limits": [
+    "No production integration caller exists for this optional input query; this does not close full lifecycle/effect/required-input adoption.",
+    "Canonical manifests, new gate controls and exact source/wheel/sdist/private consumer qualification remain pending.",
+    "All82 whole requirements and38 recorded slices remain unchanged; P32 active; P33-P35 dormant; no performance target or release/custody claim."
+  ]
+}
