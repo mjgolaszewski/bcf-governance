@@ -342,10 +342,8 @@ def local_gate_lease(execution_id: str) -> Iterator[None]:
         try:
             fcntl.flock(descriptor.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError as exc:
-            descriptor.seek(0)
-            owner = descriptor.read().strip() or "unknown"
             raise LocalExecutionAdmissionError(
-                f"local_execution_busy_deferred: active={owner}"
+                "local_execution_busy_deferred: shared local gate is locked; execution owner is unverified"
             ) from exc
         descriptor.seek(0)
         descriptor.truncate()

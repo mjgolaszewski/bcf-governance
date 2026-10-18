@@ -304,5 +304,11 @@
     "verification": "audits/issue-394/runtime-source-mapping-consumption-verification.json",
     "source_behavior_qualified": true,
     "fresh_corrected_installed_distribution_qualified": false
+  },
+  "local_gate_owner_observation": {
+    "verification": "audits/issue-394/local-gate-owner-observation-verification.json",
+    "source_behavior_qualified": true,
+    "execution_subject_from_retained_text_authoritative": false,
+    "fresh_installed_qualified": false
   }
 }

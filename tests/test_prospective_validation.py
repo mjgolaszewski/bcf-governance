@@ -1788,7 +1788,7 @@ def test_static_control_failure_stops_before_provider_and_preserves_cause(monkey
 def test_prospective_unit_namespace_retains_real_lease_exclusion():
     from bcf_governance.tooling.local_execution_admission import local_gate_lease, LocalExecutionAdmissionError
     with local_gate_lease(HEAD):
-        with pytest.raises(LocalExecutionAdmissionError, match='local_execution_busy_deferred: active=' + HEAD):
+        with pytest.raises(LocalExecutionAdmissionError, match='local_execution_busy_deferred: shared local gate is locked; execution owner is unverified'):
             with local_gate_lease(BASE):
                 pytest.fail('unit namespace admitted overlapping host gate')
 

@@ -730,6 +730,7 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/local_execution_admission.py
     - bcf_governance/tooling/semantic_authority_contracts.py
     - bcf_governance/tooling/semantic_authority_operations.py
     - bcf_governance/tooling/semantic_ownership_scan.py
@@ -762,6 +763,8 @@ workitems:
     - audits/issue-394/source-admission-order-verification.json
     - audits/issue-394/authored-operation-admission-contract.json
     - audits/issue-394/authored-operation-admission-verification.json
+    - audits/issue-394/local-gate-owner-observation-contract.json
+    - audits/issue-394/local-gate-owner-observation-verification.json
 requirements:
   I01:
     requirement: Assurance monotonicity. Optimization changes execution strategy, never required propositions, negative controls, evidence standards, independence, authority, failure semantics or protection. Redundant mechanisms may be consolidated only through an explicit proposition-preserving governed change.

@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_qualified_corrected_installed_distribution_pending",
+  "source_base_commit": "d6d3bf50",
+  "contract_commit": "0d77841f",
+  "owner": "bcf_governance/tooling/local_execution_admission.py::local_gate_lease",
+  "scope": "Existing nonblocking admission retains its typed busy code, but no longer reads or promotes unverified retained text to active ownership. No namespace, retry, coalescing, resource admission or successful mutation behavior changes.",
+  "initial_failed": 3,
+  "initial_passed": 1,
+  "affected_passed": 30,
+  "affected_deselected": 1,
+  "prospective_exclusion_passed": 1,
+  "deselection_reason": "The default host-slot contention unit was excluded during a foreign live native owner; real private-file contention, holder continuity and successful reuse were executed instead. No alternate namespace was used for governed work.",
+  "cause_control": {
+    "pytest_returncode": 1,
+    "harness_returncode": 0,
+    "named_failures": 3
+  },
+  "checks": {
+    "architecture_passed": 5,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "governance": 0,
+    "authored_semantic": 0
+  },
+  "source_sha256": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+  "raw_output_sha256": {
+    "local-gate-owner-affected.stdout": "d4dfb6e547f217a3f5fac9d9461a4064d12525501e664d073c7d49e18d1f772b",
+    "local-gate-owner-architecture.stdout": "3f4df13cb933b2e4e37d54d9fd378c9375de6dd8bbe6a41614cf94d8ab945b39",
+    "local-gate-owner-control.stdout": "6527a5e96bd2c85df974e8def6e759684519d0b7862922b4cc359398308e673f",
+    "local-gate-owner-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "local-gate-owner-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-gate-owner-initial-red.stdout": "e08e08a4671cb64797d02e494611bbd2613f8c0d44c068dcf025cf76df45c53b",
+    "local-gate-owner-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-gate-owner-prospective.stdout": "b73cbf73fcd77e1af68d422a8f7cfd1efc314d667704e6b7f21fb076a599b483",
+    "local-gate-owner-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "local-gate-owner-semantic.stdout": "4ac1a06d40990c05f31d6cb541be70d590f0f80261f03c2b0f338fc9a6332b30",
+    "local-gate-owner-final-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "limits": [
+    "Execution ownership is explicitly unverified; refusal never grants permission to remove or reset a lock.",
+    "Fresh corrected private/installed/distribution qualification and full transaction/lifecycle conformance remain open.",
+    "All 82 whole requirements and 38 slice objects remain unchanged; P32 active and P33-P35 dormant."
+  ],
+  "next_action": "Qualify corrected private/installed consumers and exact distributions; continue declared recovery/normalization and full lifecycle work.",
+  "authored_semantic_parity": {
+    "authority": false,
+    "scope": "authored_python_semantic_ownership_only",
+    "verdict": "conformant",
+    "operations": 21,
+    "all_rows_unchanged": true
+  }
+}
