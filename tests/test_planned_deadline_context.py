@@ -8,6 +8,34 @@ from bcf_governance.tooling.ci_graph_errors import CIGraphError
 from test_planned_shard_deadlines import _inputs
 
 
+@pytest.mark.parametrize('field', ['ref', 'sha', 'repository', 'file_path'])
+def test_command_projects_defining_workflow_provider_facts(field):
+    from pathlib import Path
+    from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+    from bcf_governance.tooling.ci_graph_render import _command_step
+    compiled = validate_ci_graph(Path(__file__).resolve().parents[1])
+    step = _command_step(compiled, 'governance-truth', name='context')
+    assert step['env']['BCF_JOB_WORKFLOW_' + field.upper()] == '${{ job.workflow_' + field + ' }}'
+
+
+@pytest.mark.parametrize('surface', ['workflow', 'job', 'component', 'command'])
+def test_defining_workflow_facts_cannot_be_authored(surface):
+    from pathlib import Path
+    from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+    from bcf_governance.tooling.ci_graph_render import _command_step, _workflow as render_workflow
+    compiled = validate_ci_graph(Path(__file__).resolve().parents[1])
+    workflow = next(item for item in compiled.workflows if item['id'] == 'governance')
+    target = {'workflow': workflow, 'job': workflow['jobs'][0],
+              'component': compiled.graph['step_components']['checkout-candidate'],
+              'command': compiled.commands['governance-truth']}[surface]
+    target['environment']['BCF_JOB_WORKFLOW_SHA'] = 'candidate-owned'
+    with pytest.raises(AssertionError, match='reserved context'):
+        if surface == 'command':
+            _command_step(compiled, 'governance-truth', name='forged')
+        else:
+            render_workflow(compiled, workflow)
+
+
 def _contexts(root):
     graph, dag, targets = _inputs(root)
     graph['workflows'][0]['path'] = '.github/workflows/pr.yml'

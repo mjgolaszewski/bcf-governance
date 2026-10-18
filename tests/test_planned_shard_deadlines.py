@@ -22,7 +22,8 @@ def _inputs(root):
            'executor': {'kind': 'gate_shard', 'shard_count': 2,
                         'gates': ['first', 'second', 'third']}}
     graph = {'policy': {'minimum_gate_timeout_headroom_seconds': 60},
-             'workflows': [{'id': 'pr', 'events': [{'type': 'pull_request'}], 'jobs': [job]}]}
+             'workflows': [{'id': 'pr', 'path': '.github/workflows/pr.yml',
+                            'events': [{'type': 'pull_request'}], 'jobs': [job]}]}
     return graph, dag, ['first', 'second', 'third']
 
 
@@ -92,6 +93,9 @@ def test_native_shard_rechecks_all_assignments_before_provider_or_gate_work(tmp_
     monkeypatch.setattr(owner.subprocess, 'run', lambda *a, **kw: pytest.fail('allocated gate'))
     monkeypatch.setattr(owner, 'materialize_prior_provider_proofs', lambda *a, **kw: pytest.fail('provider read'))
     monkeypatch.setenv('GITHUB_ACTIONS', 'true')
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'fixture/repo')
+    monkeypatch.setenv('GITHUB_WORKFLOW_REF', 'fixture/repo/.github/workflows/pr.yml@refs/heads/main')
+    monkeypatch.setenv('GITHUB_JOB', 'evidence')
     # Select the cheap shard; its expensive sibling must still reject admission.
     with pytest.raises(CIGraphError, match=diagnostic):
         owner.main(['--repo-root', str(tmp_path), '--shard-index', '1', '--shard-count', str(count),
