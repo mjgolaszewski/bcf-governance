@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "unmatched_provider_observation",
+  "collector_source_commit": "9fe3303b",
+  "source_owner": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+  "source_owner_sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311",
+  "provider": {
+    "repository": "mjgolaszewski/AgentBus",
+    "repository_id": 1390225113,
+    "run_id": 39109716563,
+    "attempt": 1,
+    "workflow_id": 368141282,
+    "workflow_path": ".github/workflows/governance.yml",
+    "event": "push",
+    "commit_sha": "95a07fa25ff16177c8cfd5df5eff44fd5cd0c20f",
+    "tree_sha": "1b7a35480f5ff41e189e52057f5378d4bd05395e"
+  },
+  "url": "https://github.com/mjgolaszewski/AgentBus/actions/runs/39109716563/attempts/1",
+  "installed_sdk_declaration": {
+    "version": "2.3.4",
+    "source_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "scope": "Provider-authenticated exact-subject runtime lock declaration only; not independent loaded-runtime byte verification."
+  },
+  "context_disposition": {
+    "observed_event": "push",
+    "observed_branch": "main",
+    "workflow_intent": "pr_progress",
+    "evaluator_expression": "${{ inputs.evaluation_mode || (github.event_name == 'push' && 'pr' || 'pr') }}",
+    "clock_bucket": "pr",
+    "classification_basis": "Exact provider run/workflow identity and Git-blob-verified workflow bytes select PR evaluation on push. Event alone did not assign the context.",
+    "cohort": "main_push_pr_progress_unmatched",
+    "excluded_claims": [
+      "ordinary PR-event end-to-end latency",
+      "independently certified exact-main/controller baseline",
+      "release/adopter-qualification/custody completion",
+      "p50/p95 or optimized performance improvement"
+    ]
+  },
+  "observation": {
+    "schema_version": "1.0",
+    "kind": "pipeline_timing",
+    "authority": false,
+    "subject": {
+      "commit_sha": "95a07fa25ff16177c8cfd5df5eff44fd5cd0c20f",
+      "tree_sha": "1b7a35480f5ff41e189e52057f5378d4bd05395e"
+    },
+    "repository": "mjgolaszewski/AgentBus",
+    "repository_id": 1390225113,
+    "source_snapshot_sha256": "83ee8fdea13e850a2bc439f888b46609a5cf04e80dfa38be39633b867a32fbda",
+    "pipeline": "pr",
+    "clock_id": "github:1390225113:run:39109716563:attempt:1",
+    "clock_basis": "provider_utc_ms",
+    "start_ms": 1792310372000,
+    "end_ms": 1792310662000,
+    "elapsed_ms": 290000,
+    "execution_union_ms": 284000,
+    "execution_sum_ms": 520000,
+    "external_wait_union_ms": 0,
+    "uncovered_ms": 6000,
+    "cpu_ms": "unknown",
+    "intervals": [
+      {
+        "id": "117623032540",
+        "clock_id": "github:1390225113:run:39109716563:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792310374000,
+        "end_ms": 1792310421000
+      },
+      {
+        "id": "117623190258",
+        "clock_id": "github:1390225113:run:39109716563:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792310422000,
+        "end_ms": 1792310472000
+      },
+      {
+        "id": "117623190271",
+        "clock_id": "github:1390225113:run:39109716563:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792310422000,
+        "end_ms": 1792310562000
+      },
+      {
+        "id": "117623190289",
+        "clock_id": "github:1390225113:run:39109716563:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792310423000,
+        "end_ms": 1792310625000
+      },
+      {
+        "id": "117623190336",
+        "clock_id": "github:1390225113:run:39109716563:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792310422000,
+        "end_ms": 1792310469000
+      },
+      {
+        "id": "117623885865",
+        "clock_id": "github:1390225113:run:39109716563:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792310627000,
+        "end_ms": 1792310661000
+      }
+    ]
+  },
+  "matched_cohort": false,
+  "percentile_certification": false,
+  "approved_targets": false,
+  "raw_sha256": {
+    "capture.json": "783b74778d5b86499814a541054e2ebbfdf96955cfe0f2dc0e667740f28712d7",
+    "commit.json": "4bbfd8cf1e55600890d57a86fc2262e1b4355bf8254ef8d074598d88b3ad96ea",
+    "jobs.json": "d8009c431a39c7416bab2bd00640ff00557135f0e83ab81c7c476cc7bb9c5b62",
+    "repository.json": "7dff30c5771c3e2d6f93cf63ee7a65e3de32acbeef95e282f6281766a2fb1b55",
+    "run.json": "419512bbd02c9e9120572504b009329d8444344a0521b0c880815a135d3f37e8",
+    "runtime-lock-provider.json": "32dc30f02f63a05a056d15654763fb5fbe4e8a23032af2ca587f730eac8125ac",
+    "runtime-lock.raw": "89c7d94495de65983f0b90f765cffbbbf33fffbcab8e70be8b0bc7645d0e6cd2",
+    "snapshot.json": "1bc1a3fdd60c56a6d4be231bc2fb9c2d6e2b40d4b7e29bc67965088a3910ce3d",
+    "timing-observation.json": "573c576b9d5ad1bf1815f219e2c3639bfb7a4b84c5e099ca49f307fa514ff122",
+    "workflow-provider.json": "e3a7e4dcae3e021ce6e3c38623277082f39afbc1a66ecce8e2a4db3a689be357",
+    "workflow.raw": "330ca027a018c8a513fc65e16288a50cf505339415dc57daf0e35c8e71484173"
+  },
+  "projection_captures_sha256": {
+    "agentbus-v234-run39109716563-projection.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "agentbus-v234-run39109716563-projection.stderr": "b15dc020f7df303c61f39571dfc3aa8080c84415ad76bd42efe07c2a979bb281",
+    "agentbus-v234-run39109716563-projection2.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "agentbus-v234-run39109716563-projection2.stderr": "01358e9cd4c7e9c38d5b8c62f3e5c631e7715fff7b573948c0e787062e861628",
+    "agentbus-v234-run39109716563-projection3.stdout": "3293ff4ebd9fa0d972e98439d26e2f20f95432a9972dad7c582a39e4cf5bc2ba",
+    "agentbus-v234-run39109716563-projection3.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "projection_disposition": "Initial local assertions failed: incorrectly quoted expression then assumed one preflight expression; exact workflow has two identical consuming steps. Both retained; third projection checks the complete observed expression set and passes existing observation schema. No product/schema/source change or provider mutation.",
+  "limits": [
+    "Six complete job intervals are retained; execution sum is not elapsed time or CPU. Uncovered span is not a measured external-wait attribution.",
+    "Historical95a candidate is superseded for AgentBus release readiness; timing remains an observation of those exact bytes.",
+    "Existing14 historical BCF234 timing/log captures remain unchanged; this separate adopter observation does not increase a matched cohort.",
+    "All82 whole requirements and38 slices remain unchanged; P32 active/P33-P35 dormant; full lifecycle conformance and independent custody remain open."
+  ]
+}

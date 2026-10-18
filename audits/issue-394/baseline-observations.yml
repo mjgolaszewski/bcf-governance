@@ -498,3 +498,13 @@ successor_main100dc_captures:
   - audits/issue-394/observations/main100dc-finalizer-39067142495-1.json
   rejected_run_attempts: [39063214914/2, 39067142494/1]
   interpretation: One complete finalizer workflow window; not phase certification or end-to-end custody. Admission start precedes creation and two rotation jobs end before start; strict existing projection rejects both without repair. Targets and matched cohorts remain unfrozen.
+
+additional_adopter_capture_reviews:
+- evidence: audits/issue-394/agentbus-v234-timing-observation.json
+  repository: mjgolaszewski/AgentBus
+  run_id: 39109716563
+  attempt: 1
+  context: main_push_pr_progress_unmatched
+  authority: false
+  matched_cohort: false
+  percentile_certification: false
