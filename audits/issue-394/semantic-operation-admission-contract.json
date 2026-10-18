@@ -12,7 +12,7 @@
   "intent": "Reject invalid closed public-operation inventory before traversing any operation effects through the existing semantic owner. This is an earliest-rejection slice, not complete lifecycle conformance.",
   "targets": [
     "bcf_governance/tooling/semantic_authority_operations.py",
-    "tests/test_semantic_authority.py"
+    "tests/test_semantic_operation_admission.py"
   ],
   "canonical_owner": "bcf_governance/tooling/semantic_authority_contracts.py::_validate_operations",
   "requirements": [
@@ -33,5 +33,6 @@
     "Hand-edited generated workflows or authority pins",
     "Whole P32 closure, P33 activation or performance claims from this slice"
   ],
-  "evidence_rule": "Contract commit then genuine ordering RED before production changes; preserve failures and exact subjects. Authored implementation status does not confer independent verified/closed truth."
+  "evidence_rule": "Contract commit then genuine ordering RED before production changes; preserve failures and exact subjects. Authored implementation status does not confer independent verified/closed truth.",
+  "test_placement": "Keep new ordering cases in a separate focused module, reusing the original semantic authority fixture rather than extending its already oversized test file."
 }
