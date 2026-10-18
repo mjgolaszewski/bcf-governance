@@ -18,7 +18,8 @@ from _bcf_runtime import release_runtime_verification as runtime
 from _bcf_runtime import local_execution_admission as admission
 from _bcf_runtime import ci_graph_timeouts as deadlines
 from _bcf_runtime import ci_graph_defaults as graph_defaults
-for owner in (runtime, admission, deadlines, graph_defaults):
+from _bcf_runtime import interpreter_environment as interpreter
+for owner in (runtime, admission, deadlines, graph_defaults, interpreter):
     assert Path(owner.__file__).resolve().is_relative_to(root / 'scripts/_bcf_runtime')
 
 def sha(path):
@@ -306,6 +307,25 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         except deadlines.CIGraphError as error: assert '360' in str(error)
         else: raise AssertionError('private runtime admitted provider-cap overflow')
         assert capped == before and reference_rejections == 6
+        requirement_root = fixture / 'identical-requirements'
+        (requirement_root / 'governance').mkdir(parents=True)
+        requirement_policy = {'interpreter_contract': {'project_dependencies': True,
+            'build_system_requirements': True, 'requirements_projection': 'requirements.txt',
+            'optional_dependency_groups': [], 'gate_requirements': {'test': ['pip==26.2.1']}},
+            'gates': {'test': {}}}
+        (requirement_root / 'governance/gate-contracts.yml').write_text(json.dumps(requirement_policy))
+        project = requirement_root / 'pyproject.toml'
+        declaration = ('[build-system]\nrequires=["setuptools>=69","wheel"]\n'
+            '[project]\nname="fixture"\nversion="1.0"\nrequires-python=">=3.11"\n'
+            'dependencies=["setuptools>=69","pip==26.2.1","PyYAML>=6,<7"]\n')
+        project.write_text(declaration)
+        plan = interpreter.derive_interpreter_environment(requirement_root)
+        assert plan.requirements.count('setuptools>=69') == plan.requirements.count('pip==26.2.1') == 1
+        assert project.read_text() == declaration and not (requirement_root / 'requirements.txt').exists()
+        project.write_text(declaration.replace('dependencies=["setuptools>=69",', 'dependencies=["setuptools>=68",'))
+        try: interpreter.derive_interpreter_environment(requirement_root)
+        except interpreter.InterpreterEnvironmentError as error: assert 'unique names' in str(error)
+        else: raise AssertionError('private runtime accepted differing duplicate requirements')
         assert not (fixture.parent / 'escaped.py').exists()
     finally:
         runtime.subprocess.run, runtime.subprocess.Popen = previous_run, previous_popen
@@ -352,6 +372,8 @@ print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_q
                   'reference_model_bound_budget_minutes': 80,
                   'reference_projection_invalid_facts_rejected': reference_rejections,
                   'reference_projection_cap_atomic': True,
+                  'identical_requirement_predicates_collapsed': 2,
+                  'differing_requirement_strings_blocked': True, 'interpreter_projection_unallocated': True,
                   'busy_cases': busy_cases, 'holder_and_retained_bytes_preserved': True,
                   'exact_file_reused': True, 'candidate_or_subprocess_not_executed': True}, sort_keys=True))
 '''
@@ -370,6 +392,8 @@ def exercise_runtime_fact_queries(consumer, python):
     assert observation['reference_model_bound_budget_minutes'] == 80
     assert observation['reference_projection_invalid_facts_rejected'] == 6
     assert observation['reference_projection_cap_atomic'] is True
+    assert observation['identical_requirement_predicates_collapsed'] == 2
+    assert observation['differing_requirement_strings_blocked'] and observation['interpreter_projection_unallocated']
     assert observation['busy_cases'] == 3 and observation['candidate_or_subprocess_not_executed']
     return _record(result)
 

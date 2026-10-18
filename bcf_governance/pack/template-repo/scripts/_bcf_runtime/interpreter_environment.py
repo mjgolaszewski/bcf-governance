@@ -428,6 +428,8 @@ def derive_interpreter_environment(
         requirements.extend(
             _requirements(values, "interpreter gate requirements must be lists")
         )
+    # Repeating the exact same predicate across source roles is idempotent.
+    requirements = list(dict.fromkeys(requirements))
     installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
     installer_requirements = [
         value for value in requirements if _normalized_name(value) == installer_name

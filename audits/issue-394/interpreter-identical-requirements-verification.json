@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.normalization",
+  "implementation": "Collapse only byte-identical dependency predicates before pin/name checks; preserve declarations, differing-constraint rejection and floor69.",
+  "source_tests": {
+    "passed": 70,
+    "deselected": 0
+  },
+  "disabled_source_control": {
+    "authority": false,
+    "returncode": 1,
+    "named_failures": [
+      "FAILED tests/test_interpreter_environment.py::test_identical_cross_role_dependencies_are_idempotent[setuptools>=69]",
+      "FAILED tests/test_interpreter_environment.py::test_identical_cross_role_dependencies_are_idempotent[pip==26.2.1]",
+      "FAILED tests/test_interpreter_environment.py::test_actual_repository_derived_requirements_retain_build_and_runtime_floor"
+    ],
+    "exact_source_restored": true,
+    "raw_sha256": {
+      "interpreter-identical-requirements-control.stdout": "f3f3cec9b3ac222373b129d92e29345f7f07710e72af31b6098c82bee33ee5cb",
+      "interpreter-identical-requirements-control.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "private_rehearsal": {
+    "authority": false,
+    "records": [
+      {
+        "case": "dedup-disabled",
+        "returncode": 1,
+        "scope": "copied runtime rehearsal, not installed qualification",
+        "probe_sha256": "4bfdeb39a7485a99a738c5275b259db4ed005cd6d79ec17aa33892466302738c",
+        "runtime_helper_sha256": {
+          "release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+          "local_execution_admission.py": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+          "ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+          "ci_graph_defaults.py": "86b6675dda9f7e234401c4e8ffe887915d3afcdb4b19d616944ca66319a399e0",
+          "evidence_planning.py": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857",
+          "interpreter_environment.py": "dc2551b5eadee13dc3d02efd991d13be872f58f6098f4b3b301c06c919a02778"
+        }
+      },
+      {
+        "case": "current-copied",
+        "returncode": 0,
+        "scope": "copied runtime rehearsal, not installed qualification",
+        "probe_sha256": "4bfdeb39a7485a99a738c5275b259db4ed005cd6d79ec17aa33892466302738c",
+        "runtime_helper_sha256": {
+          "release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+          "local_execution_admission.py": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+          "ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+          "ci_graph_defaults.py": "86b6675dda9f7e234401c4e8ffe887915d3afcdb4b19d616944ca66319a399e0",
+          "evidence_planning.py": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857",
+          "interpreter_environment.py": "aa8aade2e6dd803c4a06badc25c1ef5f76c1726e03f6bead6049eb09be9ebb1a"
+        }
+      }
+    ]
+  },
+  "control_disposition": "First private control expected the unique-name diagnostic but encountered the earlier exact-installer-pin guard. Original streams retained; v2 changes only the expected diagnostic, not runtime/probe bytes. Both prove disabled normalization rejects legitimate identical predicates.",
+  "checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "architecture": {
+      "passed": 6,
+      "returncode": 0
+    },
+    "authored_semantics": {
+      "returncode": 0,
+      "observations": 21,
+      "unchanged": true,
+      "authority": false
+    },
+    "governance_before_reconciliation": {
+      "returncode": 1,
+      "diagnostic": "generated CI workflow drift; canonical owner pending"
+    }
+  },
+  "installed_distribution_qualified": false,
+  "canonical_reconciliation": "not_launched",
+  "limits": [
+    "Copied private runtime is not installed qualification.",
+    "No acceptance, phase, provider or release authority advanced."
+  ],
+  "raw_sha256": {
+    "interpreter-identical-requirements-complete.stdout": "1035da2f3e1f45ba4989d9f97bcf61f1adcd94a65f90a84f0ca086e4346c139c",
+    "interpreter-identical-requirements-complete.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-identical-requirements-control.json": "3cd2d965e4d14a67540b8b78b324279bc7d9ca3681b3dc25fd0205535c5c29e9",
+    "interpreter-identical-requirements-control.stdout": "f3f3cec9b3ac222373b129d92e29345f7f07710e72af31b6098c82bee33ee5cb",
+    "interpreter-identical-requirements-control.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-private-facts-dedup-disabled.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-private-facts-v2-dedup-disabled.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-private-facts-v2-dedup-disabled.stderr": "3a17a8422900ad7ca0851efd6f672a74e306e04b2f8fe609456e45221fc2f909",
+    "interpreter-private-facts-dedup-disabled.stderr": "49671e0ba84f283b85384727733362f27142e237f7ec016107c7e48b85339f9a",
+    "interpreter-private-facts-v2-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+    "interpreter-private-facts-v2-rehearsal.json": "552b58fb8075ccf6aa0b7f2a7d4134da220a4a969447d400bdda769a9dc8ca10",
+    "interpreter-private-facts-v2-current-copied.stdout": "9a88b579245a0685070030fce1f83cfa583315b597ba6ef4166f9c3b71af3735",
+    "interpreter-normalization-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-type.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-exposure.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "interpreter-current-environment-probe-corrected.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-current-environment-probe-corrected.stdout": "165c493f75e3f9f7ef314fd411fe8de1060659e22b04d43c1c1440a147b50d5d",
+    "interpreter-normalization-governance-before-reconcile.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-governance-before-reconcile.stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f",
+    "interpreter-normalization-architecture.stdout": "baaecce19b89b58d4cb1604fa3e8e8270dedac0a0bd6aab0f840f38d7091f8a1",
+    "interpreter-normalization-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "interpreter-normalization-semantic.stdout": "606374476dadc245023de094cdf22e98a4e1c760c23d0f5225f9da1108fd3661",
+    "interpreter-normalization-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/interpreter_environment.py": "aa8aade2e6dd803c4a06badc25c1ef5f76c1726e03f6bead6049eb09be9ebb1a",
+    "tests/test_local_execution_admission.py": "6b1bec1beb29e6d2cc4c9d4c9a532277fb1154e6dc81561eacc084c3fc7fc55a",
+    "tests/test_installed_runtime_fact_queries.py": "0a6d42e5b243ebb94cb9873037597c5c8519c35bb1abb2d879d6971262b845ae"
+  }
+}

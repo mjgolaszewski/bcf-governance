@@ -1283,7 +1283,7 @@
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "dc2551b5eadee13dc3d02efd991d13be872f58f6098f4b3b301c06c919a02778"
+      "sha256": "aa8aade2e6dd803c4a06badc25c1ef5f76c1726e03f6bead6049eb09be9ebb1a"
     },
     "scripts/_bcf_runtime/local_cli_receipt.py": {
       "operation": "copy",

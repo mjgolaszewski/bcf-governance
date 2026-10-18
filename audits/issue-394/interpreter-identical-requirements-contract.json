@@ -20,6 +20,7 @@
     "Identical cross-role build/runtime and repeated exact installer pins are accepted once; different constraints and normalized aliases remain blocked before setup.",
     "Disable exact deduplication and reproduce the original failures; qualify affected environment/admission consumers, architecture/mirrors, semantic and governed checks.",
     "Actual SDK-absent private helpers must collapse the identical build/runtime and installer/gate predicates, keep differing strings blocked and leave the requirements projection unallocated. A copied-runtime disabled-normalization control must fail by the original unique-name diagnostic.",
-    "The competing-lease unit fixture uses its own real authenticated execution state, retaining actual flock contention while avoiding the unrelated live host-native fence. Governed operations continue using the existing common host fence."
+    "The competing-lease unit fixture uses its own real authenticated execution state, retaining actual flock contention while avoiding the unrelated live host-native fence. Governed operations continue using the existing common host fence.",
+    "Control diagnostic clarification: when both installer and setuptools predicates repeat, the existing exact-installer-pin guard precedes the unique-name guard; either original typed rejection is causal evidence. Preserve the initial mismatched assertion and corrected diagnostic-only rerun."
   ]
 }

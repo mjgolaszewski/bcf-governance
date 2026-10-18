@@ -49,13 +49,20 @@ def _public_python_contract(repo: Path, *minors: str) -> None:
     )
 
 
-def test_competing_local_gate_fails_busy_before_work() -> None:
+def test_competing_local_gate_fails_busy_before_work(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     first = "a" * 40
     second = "b" * 40
-    with ExitStack() as stack:
-        stack.enter_context(local_gate_lease(first))
-        with pytest.raises(LocalExecutionAdmissionError, match="busy_deferred"):
-            stack.enter_context(local_gate_lease(second))
+    state = allocate_execution_state(tmp_path, _runtime_contract(),
+        session_id="unit-competing", workload_id="test", execution_id="positive", invocation={})
+    try:
+        for name, value in state.environment().items():
+            monkeypatch.setenv(name, value)
+        with ExitStack() as stack:
+            stack.enter_context(local_gate_lease(first))
+            with pytest.raises(LocalExecutionAdmissionError, match="busy_deferred"):
+                stack.enter_context(local_gate_lease(second))
+    finally:
+        retire_execution_state(state)
 
 
 def test_local_gate_requires_exact_execution_identity() -> None:
