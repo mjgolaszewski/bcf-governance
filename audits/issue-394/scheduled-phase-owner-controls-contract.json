@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "contract; native characterization precedes harness changes",
+  "workitems": [
+    "foundation.conformance",
+    "foundation.submit-normalization"
+  ],
+  "bounded_context": "existing self-governance mutant harness and validation",
+  "architectural_layer": "test controls and existing validator queries",
+  "operation_side": "isolated detector qualification; no provider mutation",
+  "targets": [
+    ".github/scripts/run_validator_mutants.py",
+    "tests/test_validate_governance_yaml.py",
+    "tests/test_mutant_harness.py"
+  ],
+  "provider_evidence": {
+    "commit": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+    "weekly": {
+      "run_id": 39113895189,
+      "attempt": 1,
+      "artifact_id": 12132095976,
+      "sha256": "812ece93573cdb1f0e68c48f5c09db2c8524ef8f3be982a57326c4b9ebb1361c"
+    },
+    "nightly": {
+      "run_id": 39110358021,
+      "attempt": 1,
+      "artifact_id": 12130467842,
+      "sha256": "f7ceca7797d985bd76c7b0cc6fd7181620132601fd8bc545bf16dd8a2b0902a1"
+    },
+    "survivors": [
+      "phase-catalog-set-match",
+      "memory-active-artifact-sync"
+    ]
+  },
+  "native_characterization": {
+    "subject": "a3b185a360b728e120f14b91ddc01c45ac56ca2b",
+    "both_existing_controls": "survived with passing baseline; native CLI exit1; zero infrastructure failures"
+  },
+  "requirements": [
+    "Keep both existing mutant IDs, exact source mutations, original end-to-end selectors and high-value/full membership. Do not delete redundant runtime guards or disable early admission to make a late mutation observable.",
+    "Qualify each late owner directly in the same copied runtime that the existing harness actually mutates. Extend the existing declared killer selector sets with cause-specific owner tests; keep ordinary end-to-end tests intact.",
+    "Independently qualify the existing early authored phase-state guards through the same harness and namespace. Add their controls to existing profiles, not a parallel registry.",
+    "Use real valid fixture data and positive owner cases. Distinguish phase/MEMORY diagnostics and actual missing guards from import, fixture, allocation or unrelated failures; keep raw baseline and mutant streams.",
+    "Run the full existing validator and semantic mutation populations, affected validation/preflight behavior, architecture/lint/type/governance/semantic checks, then exact source/wheel/sdist/private and installed consumer qualification before integration.",
+    "Keep the current lifecycle candidate fixed during active transactions. Canonical reconciliation alone owns generated workflow/pin commits. No release authority, performance target approval or whole requirement closure from these controls."
+  ],
+  "forbidden_surfaces": [
+    "Current in-flight lifecycle candidate bytes",
+    "Maintained adopter SDKs and graphs",
+    "Immutable predecessor bytes",
+    "Hand-edited generated workflow authority pairs",
+    "Suppression of surviving or required controls"
+  ],
+  "completion_scope": "Detector qualification only. All 82 whole requirements and 38 recorded slices remain unchanged; complete lifecycle and certification remain open."
+}
