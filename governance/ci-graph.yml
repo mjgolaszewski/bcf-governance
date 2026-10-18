@@ -75,11 +75,11 @@ commands:
   governance-preflight:
     argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --format, text]
     cwd: .
-    environment: {BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   governance-preflight-with-prior:
     argv: ['{python}', scripts/preflight_governance.py, --repo-root, ., --evaluation-mode, '{env:BCF_EVALUATION_MODE}', --evaluation-target, '{env:BCF_EVALUATION_TARGET}', --python, '{python}', --artifact-root, .artifacts/bcf, --expected-producer, evidence, --prior-evidence-dir, .artifacts/bcf/prior-evidence, --format, text]
     cwd: .
-    environment: {BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
+    environment: {GITHUB_TOKEN: '${{ github.token }}', BCF_EVALUATION_MODE: '${{ inputs.evaluation_mode || ''pr'' }}', BCF_EVALUATION_TARGET: '${{ inputs.evaluation_target || '''' }}'}
   capture-governance-shard:
     argv: ['{python}', scripts/capture_governance_shard.py, --repo-root, ., --shard-index, '${{ matrix.shard }}', --shard-count, '4', --session-root, .artifacts/bcf/sessions]
     cwd: .

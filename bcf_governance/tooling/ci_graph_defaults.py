@@ -119,11 +119,11 @@ def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
         "--output", ".artifacts/bcf/truth-report.json",
     ]
     return {
-        "v3-preflight": {"argv": preflight, "cwd": ".", "environment": environment},
+        "v3-preflight": {"argv": preflight, "cwd": ".", "environment": {**environment, "GITHUB_TOKEN": "${{ github.token }}"}},
         "v3-preflight-with-prior": {
             "argv": [*preflight[:-2], "--prior-evidence-dir", ".artifacts/bcf/prior-evidence", *preflight[-2:]],
             "cwd": ".",
-            "environment": environment,
+            "environment": {**environment, "GITHUB_TOKEN": "${{ github.token }}"},
         },
         "v3-capture-shard": {
             "argv": [
@@ -132,7 +132,7 @@ def _v3_commands(*, direct_push: bool = False) -> dict[str, Any]:
                 "--session-root", ".artifacts/bcf/sessions",
             ],
             "cwd": ".",
-            "environment": {},
+            "environment": {"GITHUB_TOKEN": "${{ github.token }}"},
         },
         "v3-restore-session-modes": {
             "argv": ["{python}", "scripts/restore_evidence_modes.py", "--root", ".artifacts/bcf/sessions"],
@@ -430,6 +430,7 @@ def build_reference_ci_graph(
             "argv": _preflight_argv(lane_producers),
             "cwd": ".",
             "environment": {
+                "GITHUB_TOKEN": "${{ github.token }}",
                 "BCF_PREFLIGHT_MODE": "${{ github.event_name == 'pull_request' && 'pr' || 'release' }}",
                 "BCF_ENFORCE_PR_CHANGELOG": "${{ github.event_name == 'pull_request' }}",
                 "BCF_PR_BASE_SHA": "${{ github.event.pull_request.base.sha }}",

@@ -730,3 +730,56 @@ def validate_workflow_event_contract(workflow: dict[str, Any]) -> None:
             kind="event",
             identifier=workflow["id"],
         )
+
+
+def declared_workflow_context(graph: dict[str, Any], environment: dict[str, str]) -> str | None:
+    """Resolve declared caller/callee context; this does not attest physical source bytes."""
+    if environment.get('GITHUB_ACTIONS') != 'true':
+        return None
+    repository = environment.get('GITHUB_REPOSITORY', '')
+    reference = environment.get('GITHUB_WORKFLOW_REF', '')
+    job_id = environment.get('GITHUB_JOB', '')
+    defining = [environment.get('BCF_JOB_WORKFLOW_' + field, '')
+                for field in ('REF', 'SHA', 'REPOSITORY', 'FILE_PATH')]
+    if any(defining):
+        ref, sha, repository, path = defining
+        if (not all(defining) or not re.fullmatch(r'[0-9a-f]{40}', sha)
+                or not re.fullmatch(r'[^/@\s]+/[^/@\s]+', repository)
+                or not re.fullmatch(r'\.github/workflows/[^/@\s]+\.ya?ml', path)
+                or not ref.startswith(repository + '/' + path + '@')
+                or not ref[len(repository + '/' + path + '@'):]):
+            raise CIGraphError('hosted defining workflow coordinates are contradictory or incomplete')
+        matches = [workflow['id'] for workflow in graph['workflows']
+                   if workflow.get('path') == path and any(
+                       job['id'] == job_id and job['executor']['kind'] != 'reusable_workflow'
+                       for job in workflow['jobs'])]
+        if len(matches) != 1:
+            raise CIGraphError('hosted defining workflow executor is missing or ambiguous')
+        return matches[0]
+    if not repository or not reference or not job_id:
+        raise CIGraphError('hosted planned deadline context lacks provider coordinates')
+    if any(not isinstance(workflow.get('path'), str) for workflow in graph['workflows']):
+        raise CIGraphError('hosted planned deadline workflow path is missing')
+    roots = [workflow for workflow in graph['workflows']
+             if reference.startswith(repository + '/' + workflow['path'] + '@')
+             and reference[len(repository + '/' + workflow['path'] + '@'):]]
+    if len(roots) != 1:
+        raise CIGraphError('hosted planned deadline caller is missing or ambiguous')
+    pending = list(roots); visited: set[str] = set(); matches = []
+    while pending:
+        workflow = pending.pop()
+        if workflow['id'] in visited:
+            continue
+        visited.add(workflow['id'])
+        for job in workflow['jobs']:
+            if job['id'] == job_id and job['executor']['kind'] != 'reusable_workflow':
+                matches.append(workflow['id'])
+            if job['executor']['kind'] == 'reusable_workflow':
+                callees = [value for value in graph['workflows']
+                           if value['path'] == job['executor']['path']]
+                if len(callees) != 1:
+                    raise CIGraphError('hosted planned deadline callee is missing or ambiguous')
+                pending.extend(callees)
+    if len(matches) != 1:
+        raise CIGraphError('hosted planned deadline executor is missing or ambiguous')
+    return matches[0]

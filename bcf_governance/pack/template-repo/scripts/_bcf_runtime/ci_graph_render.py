@@ -27,6 +27,7 @@ from .repository_comparison_context import (
 from .ci_graph_reusable_artifacts import reusable_artifact_binding
 from .ci_graph_routing import render_runner
 from .ci_graph_shell_projection import (
+    JOB_WORKFLOW_ENVIRONMENT,
     hoist_run_expressions,
     require_available_environment_names,
     require_available_generated_slots,
@@ -101,10 +102,14 @@ def _command_step(
     compiled: CompiledCIGraph, command_id: str, *, name: str
 ) -> dict[str, Any]:
     command = compiled.commands[command_id]
+    require_available_environment_names(
+        command['environment'], frozenset(JOB_WORKFLOW_ENVIRONMENT)
+    )
     argv: list[str] = []
     environment = {
         "BCF_PYTHON": SELECTED_PYTHON,
         **command["environment"],
+        **JOB_WORKFLOW_ENVIRONMENT,
     }
     require_available_generated_slots(environment, "BCF_COMMAND_ARG_")
     for index, value in enumerate(command["argv"]):

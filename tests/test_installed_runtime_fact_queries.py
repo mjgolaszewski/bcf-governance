@@ -30,6 +30,53 @@ def forbidden(*args, **kwargs):
 
 with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
     fixture = Path(temporary)
+    from types import SimpleNamespace
+    from _bcf_runtime import evidence_shards as planned
+    from _bcf_runtime.ci_graph_execution import declared_workflow_context
+    from _bcf_runtime.ci_graph_errors import CIGraphError
+    assert Path(planned.__file__).resolve().is_relative_to(root / 'scripts/_bcf_runtime')
+    budget_root = fixture / 'deadline-context'
+    (budget_root / 'governance').mkdir(parents=True)
+    (budget_root / 'governance/gate-contracts.yml').write_text(json.dumps({'execution_policy': {
+        'default_timeout_seconds': 200, 'default_cleanup_timeout_seconds': 10}}))
+    graph = {'policy': {'minimum_gate_timeout_headroom_seconds': 60}, 'workflows': [{
+        'id': 'periodic', 'path': '.github/workflows/periodic.yml', 'events': [{'type': 'schedule'}],
+        'jobs': [{'id': 'evidence', 'timeout_minutes': 10, 'executor': {
+            'kind': 'gate_shard', 'gates': ['first', 'second'], 'shard_count': 1}}]}]}
+    dag = {'nodes': [{'id': name, 'producer': name, 'assigned_shard': 0, 'depends_on': []}
+                     for name in ('first', 'second')], 'edges': []}
+    context = {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': 'fixture/repo',
+        'GITHUB_WORKFLOW_REF': 'fixture/repo/.github/workflows/caller.yml@refs/heads/main',
+        'GITHUB_JOB': 'evidence', 'BCF_JOB_WORKFLOW_REPOSITORY': 'trusted/evaluator',
+        'BCF_JOB_WORKFLOW_FILE_PATH': '.github/workflows/periodic.yml',
+        'BCF_JOB_WORKFLOW_REF': 'trusted/evaluator/.github/workflows/periodic.yml@refs/heads/main',
+        'BCF_JOB_WORKFLOW_SHA': 'b' * 40}
+    assert declared_workflow_context(graph, context) == 'periodic'
+    saved_api, saved_environment = planned.GitHubAPI, dict(planned.os.environ)
+    class DeadlineAPI:
+        def __init__(self, **kwargs): pass
+        def content(self, repository, path, *, ref):
+            assert (repository, path, ref) == ('trusted/evaluator', '.github/workflows/periodic.yml', 'b' * 40)
+            return SimpleNamespace(path=path, content=physical_raw, blob_oid=hashlib.sha1(
+                b'blob ' + str(len(physical_raw)).encode() + b'\0' + physical_raw).hexdigest())
+    try:
+        planned.GitHubAPI = DeadlineAPI
+        planned.os.environ.update(context)
+        physical_raw = b'jobs:\n  evidence:\n    timeout-minutes: 10\n'
+        bounded = planned._physical_deadline_graph(graph, 'periodic')
+        planned.validate_planned_shard_deadlines(budget_root, bounded, ['first', 'second'], dag,
+            shard_count=1, workflow_id='periodic')
+        physical_raw = b'jobs:\n  evidence:\n    timeout-minutes: 9\n'
+        bounded = planned._physical_deadline_graph(graph, 'periodic')
+        try:
+            planned.validate_planned_shard_deadlines(budget_root, bounded, ['first', 'second'], dag,
+                shard_count=1, workflow_id='periodic')
+        except CIGraphError as error: assert 'cannot contain' in str(error)
+        else: raise AssertionError('private runtime borrowed declared timeout over shorter physical source')
+        assert graph['workflows'][0]['jobs'][0]['timeout_minutes'] == 10
+    finally:
+        planned.GitHubAPI = saved_api
+        planned.os.environ.clear(); planned.os.environ.update(saved_environment)
     wheel, sdist = fixture / 'fixture.whl', fixture / 'fixture.tar.gz'
     evidence_dir = fixture / 'evidence'
     evidence_dir.mkdir()
@@ -411,6 +458,7 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         admission.Path = constructor
         admission.authenticated_execution_state_namespace = namespace
 print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_queries',
+                  'physical_deadline_context_qualified': True,
                   'sdk_absent': True, 'runtime_owned_helpers': True,
                   'valid_mapping_returned_unchanged': True, 'forged_mapping_or_evidence_rejected': 11, 'forged_command_records_rejected': command_rejections,
                   'version_1_1_both_consumers_accepted': True, 'command_guard_causal': True,
@@ -439,6 +487,7 @@ def exercise_runtime_fact_queries(consumer, python):
     assert result.returncode == 0, _record(result)
     observation = json.loads(result.stdout)
     assert observation['sdk_absent'] and observation['runtime_owned_helpers']
+    assert observation['physical_deadline_context_qualified']
     assert observation['forged_mapping_or_evidence_rejected'] == 11
     assert observation['reference_model_bound_budget_minutes'] == 80
     assert observation['reference_projection_invalid_facts_rejected'] == 6

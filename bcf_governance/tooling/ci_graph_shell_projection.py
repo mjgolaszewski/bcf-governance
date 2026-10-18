@@ -13,6 +13,10 @@ _INTERPRETER_SINK = re.compile(
     r"|(?:^|\s)(?:[\"']?\$BCF_PYTHON[\"']?|(?:\S*/)?(?:ba|da|k|z)?sh|"
     r"(?:\S*/)?python(?:3(?:\.\d+)?)?)\s+(?:-\S+\s+)*-c(?:\s|$)"
 )
+JOB_WORKFLOW_ENVIRONMENT = {
+    'BCF_JOB_WORKFLOW_' + field.upper(): '${{ job.workflow_' + field + ' }}'
+    for field in ('ref', 'sha', 'repository', 'file_path')
+}
 RESERVED_GOVERNANCE_ENVIRONMENT = frozenset({
     "BCF_COMPARISON_BASE_SHA",
     "BCF_ENFORCE_PR_CHANGELOG",
@@ -20,7 +24,7 @@ RESERVED_GOVERNANCE_ENVIRONMENT = frozenset({
     "BCF_EVALUATION_TARGET",
     "BCF_PROVIDER_EVENT",
     "BCF_PR_BASE_SHA",
-})
+}) | frozenset(JOB_WORKFLOW_ENVIRONMENT)
 
 
 def require_available_environment_names(

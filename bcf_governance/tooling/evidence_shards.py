@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import copy
+import hashlib
 import json
 import os
 import subprocess
@@ -14,9 +16,11 @@ from typing import Any
 import yaml
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_timeouts import gate_deadline_contract, gate_sequence_deadline_ms, LEGACY_HEADROOM_SECONDS
+from .ci_graph_timeouts import gate_deadline_contract, gate_sequence_deadline_ms, LEGACY_HEADROOM_SECONDS, validate_gate_job_timeouts
 from .ci_github_api import GitHubAPI
+from .ci_github_errors import GitHubAPIError
 from .ci_graph_execution import (
+    declared_workflow_context,
     local_gate_job_environments,
     resolve_local_job_environment,
 )
@@ -25,6 +29,7 @@ from .evidence_session_schema import is_planned_session
 from .evidence_test_adapters import captured_receipt_succeeded
 from .governance_evidence import capture_gate
 from .test_splinter_proofs import materialize_prior_provider_proofs
+from .semantic_yaml import load_unique_mapping_text
 
 
 SHARD_DISPLAY_NAMES = tuple(f"Evidence shard {index}" for index in range(4))
@@ -229,9 +234,16 @@ def planned_gate_targets(
 def validate_planned_shard_deadlines(
     repo_root: Path, graph: dict[str, Any], planned_targets: list[str],
     execution_dag: dict[str, Any] | None, *, shard_count: int | None = None,
+    workflow_id: str | None = None,
 ) -> None:
     """Bind every actual assignment to its existing executor before work."""
     try:
+        workflows = [workflow for workflow in graph["workflows"]
+                     if workflow["id"] == workflow_id] if workflow_id is not None else [
+                         workflow for workflow in graph["workflows"]
+                         if any(event.get("type") == "pull_request" for event in workflow["events"])]
+        if workflow_id is not None and len(workflows) != 1:
+            raise ValueError("planned shard workflow context is missing or ambiguous")
         if shard_count is not None and (type(shard_count) is not int or shard_count < 1):
             raise ValueError("runtime shard count is invalid")
         if len(set(planned_targets)) != len(planned_targets) or any(
@@ -242,8 +254,7 @@ def validate_planned_shard_deadlines(
             partition_required_gates(repo_root, shard_index=0, shard_count=1,
                                      planned_targets=[], execution_dag=execution_dag)
             return
-        jobs = [job for workflow in graph["workflows"]
-                if any(event.get("type") == "pull_request" for event in workflow["events"])
+        jobs = [job for workflow in workflows
                 for job in workflow["jobs"]
                 if job["executor"]["kind"] in {"gate_group", "gate_shard"}]
         owners = {gate: [index for index, job in enumerate(jobs)
@@ -251,6 +262,8 @@ def validate_planned_shard_deadlines(
         if any(len(values) > 1 for values in owners.values()):
             raise ValueError("planned shard inventory lacks one exact executor owner")
         missing = [gate for gate, values in owners.items() if not values]
+        if missing and workflow_id is not None:
+            raise ValueError("planned shard inventory lacks its bound workflow owner")
         if missing:
             local_gate_execution_environments(repo_root, graph, tuple(missing))
         selected = {values[0] for values in owners.values() if values}
@@ -285,6 +298,41 @@ def validate_planned_shard_deadlines(
         raise CIGraphError(str(exc)) from exc
 
 
+def _physical_deadline_graph(graph: dict[str, Any], workflow_id: str) -> dict[str, Any]:
+    """Constrain declared budgets by exact provider-owned defining source bytes."""
+    environment = os.environ
+    repository = environment.get('BCF_JOB_WORKFLOW_REPOSITORY', '')
+    path = environment.get('BCF_JOB_WORKFLOW_FILE_PATH', '')
+    sha = environment.get('BCF_JOB_WORKFLOW_SHA', '')
+    if not repository or not path or not sha:
+        raise CIGraphError('physical workflow deadline requires defining source coordinates')
+    try:
+        source = GitHubAPI(token=environment.get('GITHUB_TOKEN', ''),
+            api_url=environment.get('GITHUB_API_URL', 'https://api.github.com')).content(
+                repository, path, ref=sha)
+        raw = source.content
+        blob = hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
+        if source.path != path or source.blob_oid != blob:
+            raise ValueError('physical workflow source path or blob does not match')
+        document = load_unique_mapping_text(raw.decode('utf-8'))
+        physical_jobs = document.get('jobs')
+        if not isinstance(physical_jobs, dict):
+            raise ValueError('physical workflow lacks job definitions')
+        bounded = copy.deepcopy(graph)
+        workflow = next(value for value in bounded['workflows'] if value['id'] == workflow_id)
+        for job in workflow['jobs']:
+            if job['executor']['kind'] not in {'gate_shard', 'gate_group'}:
+                continue
+            physical = physical_jobs.get(job['id'])
+            timeout = physical.get('timeout-minutes') if isinstance(physical, dict) else None
+            if type(timeout) is not int or not 1 <= timeout <= 360:
+                raise ValueError('physical workflow job deadline is missing or not a bounded literal')
+            job['timeout_minutes'] = min(job['timeout_minutes'], timeout)
+        return bounded
+    except (GitHubAPIError, ValueError, TypeError, KeyError, UnicodeError, StopIteration) as exc:
+        raise CIGraphError(f'physical workflow deadline is not authenticated: {exc}') from exc
+
+
 def admit_planned_shard_deadlines(
     repo_root: Path, plan: dict[str, Any], *, shard_count: int | None = None,
 ) -> None:
@@ -302,8 +350,16 @@ def admit_planned_shard_deadlines(
         targets = [node.get("producer") if isinstance(node, dict) else None for node in dag["nodes"]]
     if not isinstance(targets, list):
         raise CIGraphError("planned shard deadline inventory is missing")
-    validate_planned_shard_deadlines(repo_root, validate_ci_graph(repo_root).graph,
-                                    targets, dag, shard_count=shard_count)
+    graph = validate_ci_graph(repo_root).graph
+    workflow_id = declared_workflow_context(graph, os.environ)
+    validate_planned_shard_deadlines(repo_root, graph, targets, dag,
+                                    shard_count=shard_count, workflow_id=workflow_id)
+    if workflow_id is not None:
+        physical = _physical_deadline_graph(graph, workflow_id)
+        validate_gate_job_timeouts(repo_root, {**physical, 'workflows': [
+            workflow for workflow in physical['workflows'] if workflow['id'] == workflow_id]})
+        validate_planned_shard_deadlines(repo_root, physical, targets, dag,
+                                        shard_count=shard_count, workflow_id=workflow_id)
 
 
 def main(argv: list[str] | None = None) -> None:
