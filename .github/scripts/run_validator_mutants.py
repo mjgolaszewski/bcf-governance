@@ -229,6 +229,22 @@ MUTANTS = (
         target_path="scripts/governance_validation/phase_catalog.py",
     ),
     Mutant(
+        mutant_id="authored-phase-catalog-set-match",
+        description="early authored phase catalogs must stay aligned",
+        search="    if set(product_phases) != set(build_phases):\n",
+        replace="    if False and set(product_phases) != set(build_phases):\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/authored_phase_state.py",
+    ),
+    Mutant(
+        mutant_id="authored-memory-active-artifact-sync",
+        description="early authored MEMORY paths must match the active ledger",
+        search="        if artifacts.get(key) != expected:\n",
+        replace="        if False and artifacts.get(key) != expected:\n",
+        profiles=("high-value", "full"),
+        target_path="scripts/governance_validation/authored_phase_state.py",
+    ),
+    Mutant(
         mutant_id="workitems-cover-deliverables",
         description="phase workitems must keep covering declared phase deliverables",
         search="    if missing_deliverables:\n",
@@ -402,9 +418,21 @@ KILLER_NODES = {
     "failure-exit-code": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_emits_compact_json_output_for_schema_failure",),
     "document-path-equality": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_document_path_mismatch",),
     "release-gate-placeholder-marker": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_placeholder_release_gates",),
-    "phase-catalog-set-match": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_product_build_phase_mismatch",),
+    "phase-catalog-set-match": (
+        "tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_product_build_phase_mismatch",
+        "tests/test_scheduled_phase_owners.py::test_late_catalog_owner_rejects_distinct_phase_populations",
+    ),
     "planned-log-in-completed-release": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_completed_release_train_with_planned_log",),
-    "memory-active-artifact-sync": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_stale_memory_active_artifacts",),
+    "memory-active-artifact-sync": (
+        "tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_stale_memory_active_artifacts",
+        "tests/test_scheduled_phase_owners.py::test_late_active_owner_rejects_stale_memory_path",
+    ),
+    "authored-phase-catalog-set-match": (
+        "tests/test_scheduled_phase_owners.py::test_early_catalog_owner_rejects_distinct_phase_populations",
+    ),
+    "authored-memory-active-artifact-sync": (
+        "tests/test_scheduled_phase_owners.py::test_early_memory_owner_rejects_stale_memory_path",
+    ),
     "workitems-cover-deliverables": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_workitems_missing_plan_deliverable",),
     "phase-log-workitem-status-sync": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_rejects_log_workitem_status_drift",),
     "success-status": ("tests/test_validate_governance_yaml.py::test_validate_repo_root_emits_compact_json_output",),
