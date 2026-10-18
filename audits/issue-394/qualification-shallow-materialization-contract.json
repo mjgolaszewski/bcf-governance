@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.residuals",
+  "bounded_context": "evidence",
+  "architectural_layer": "tooling",
+  "operation_side": "existing_disposable_git_projection_command",
+  "targets": ["bcf_governance/tooling/release_adopter_qualification.py", "tests/test_release_adopter_qualification.py"],
+  "problem": "A provider-pinned shallow resource has the exact required commit/tree, but the existing local base projection rejects its push after controller allocation. A preparation-only real-Git probe reproduced shallow update not allowed before any controller/install/proof allocation.",
+  "contract": [
+    "Accept complete and shallow materialization resources through the existing qualification base owner without requesting unrelated provider history.",
+    "Keep authenticated provider repository/default branch/commit/tree selection and capture/collection freshness unchanged; no caller-selected source authority.",
+    "Permit the necessary shallow boundary only in the newly generated disposable bare base repository. Never change global Git policy, caller resource configuration or maintained adopter state.",
+    "The generated bare HEAD and only published branch must stay at the captured provider base even after the candidate advances. Local fetch and merge-base must preserve that exact base.",
+    "Retain missing-object, wrong-source and publication authority failures; no new CLI, resolver, registry, receipt family or release authority."
+  ],
+  "verification": ["Real-Git full and shallow sources with an advanced candidate, exact bare HEAD/ref inventory/tree, local fetch/merge-base, unchanged provider-resource config/origin.", "Cause-specific disabled local shallow-boundary control; affected qualification/source consumers, architecture, authored semantics, mirrors and installed parity."],
+  "forbidden": ["maintained adopter repositories", "provider refs or workflows", "global Git configuration", "source policy or schema weakening", "hand-authored generated mirrors"]
+}

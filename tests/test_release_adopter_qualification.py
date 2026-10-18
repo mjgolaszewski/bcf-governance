@@ -934,6 +934,47 @@ def test_qualification_base_remote_is_immutable_at_captured_adopter_subject(
     assert observed == commit
 
 
+@pytest.mark.parametrize('depth', [None, 1])
+def test_qualification_base_preserves_pinned_shallow_boundary_after_candidate_advances(tmp_path, depth):
+    source = tmp_path / 'provider-resource'
+    source.mkdir()
+    def git(root, *args):
+        return subprocess.run(['git', '-C', str(root), *args],
+            capture_output=True, text=True, check=True).stdout.strip()
+    git(source, 'init', '-q')
+    git(source, 'config', 'user.name', 'BCF Fixture')
+    git(source, 'config', 'user.email', 'fixture@example.invalid')
+    for version in ('first', 'captured'):
+        (source / 'file.txt').write_text(version + '\n')
+        git(source, 'add', '.')
+        git(source, 'commit', '-qm', version)
+    base = git(source, 'rev-parse', 'HEAD')
+    tree = git(source, 'rev-parse', 'HEAD^{tree}')
+    source_config = (source / '.git/config').read_bytes()
+    candidate = tmp_path / 'candidate'
+    subprocess.run(['git', 'clone', *(['--depth=1'] if depth else []),
+                    source.as_uri(), str(candidate)], check=True, capture_output=True)
+    assert git(candidate, 'rev-parse', '--is-shallow-repository') == ('true' if depth else 'false')
+    git(candidate, 'config', 'user.name', 'BCF Fixture')
+    git(candidate, 'config', 'user.email', 'fixture@example.invalid')
+    (candidate / 'file.txt').write_text('candidate\n')
+    git(candidate, 'add', '.')
+    git(candidate, 'commit', '-qm', 'candidate advances')
+    head = git(candidate, 'rev-parse', 'HEAD')
+    bare = tmp_path / 'qualification-base.git'
+    qualification._project_qualification_base_remote(candidate, bare, base)
+    assert git(bare, 'rev-parse', 'HEAD') == base != head
+    assert git(bare, 'rev-parse', 'HEAD^{tree}') == tree
+    assert git(bare, 'for-each-ref', '--format=%(refname) %(objectname)') == 'refs/heads/main ' + base
+    git(candidate, 'fetch', 'bcf-qualification-base',
+        'refs/heads/main:refs/remotes/bcf-qualification-base/main')
+    assert git(candidate, 'merge-base', 'HEAD', 'refs/remotes/bcf-qualification-base/main') == base
+    assert git(candidate, 'remote', 'get-url', 'origin') == source.as_uri()
+    assert (source / '.git/config').read_bytes() == source_config
+    assert git(source, 'rev-parse', 'HEAD') == base
+    assert not git(source, 'status', '--porcelain')
+
+
 @pytest.mark.parametrize('source_policy', ['1.3', '1.4'])
 def test_qualification_receipt_requires_exact_subject_assets_and_adopters(
     tmp_path: Path, source_policy,
