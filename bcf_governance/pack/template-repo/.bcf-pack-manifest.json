@@ -1367,7 +1367,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "4342a15153140368872fb9fd810e4e48911f477c9fb31b98f96e94f2f2b093d2"
+      "sha256": "269c60e0e4acc9ea022563aa3e3f306a6c1df2e040d42a9da661ece4199aa88d"
     },
     "scripts/_bcf_runtime/prospective_candidate_identity.py": {
       "operation": "copy",
