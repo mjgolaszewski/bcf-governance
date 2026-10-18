@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.conformance",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "read_only_provider_query",
+  "targets": ["bcf_governance/tooling/ci_github_api.py", "tests/test_ci_github_tree.py"],
+  "observed_gap": "The shared authenticated content adapter substitutes the requested path for provider metadata and returns decoded bytes without recomputing their declared Git blob identity. Downstream path comparisons therefore cannot reject contradictory provider paths.",
+  "contract": [
+    "Return GitHubContent only when the provider file path exactly matches the requested path and the decoded bytes recompute to the exact declared Git blob SHA.",
+    "Missing, contradictory or malformed provider facts raise the existing typed GitHubAPIError before returning content to any policy, evaluator or lifecycle consumer.",
+    "Retain base64 whitespace handling, binary and empty file support, exact repository/ref request construction and the existing read-only operation.",
+    "Content coherence does not authenticate a moving ref or establish inclusion in a selected protected tree. Existing consumers retain independent repository, commit/tree, ancestry, freshness and tree-inclusion duties.",
+    "Keep CLI grammar, GitHubContent shape, policy sources, consumer inventories and public status identities unchanged. No generic registry or new authority model."
+  ],
+  "verification": [
+    "Real git hash-object oracles for empty, text and binary content; only one GET and no mutation.",
+    "Independently remove or contradict observed path, substitute content under the original OID, and substitute the OID under original bytes; each must reject.",
+    "Preserve existing malformed file, encoding, base64 and SHA rejection. Demonstrate path and blob controls fail against the original implementation before production edits.",
+    "Run affected provider and authority consumers, architecture and semantic checks, canonical mirrors and installed-runtime parity before integration."
+  ],
+  "compatibility": "Malformed or internally contradictory file responses become typed failures. Existing valid regular-file responses retain the same return shape. Contents-API symlink dereferencing does not establish lexical tree membership; consumers requiring it must retain independent tree/mode authentication.",
+  "primary_source": "https://docs.github.com/en/rest/repos/contents#get-repository-content",
+  "forbidden": ["provider mutation", "maintained adopter changes", "SDK2.3.4 mutation", "new CLI or receipt family", "hand-authored generated artifacts", "acceptance advancement from scoped evidence"]
+}

@@ -4,10 +4,78 @@ from __future__ import annotations
 
 import pytest
 
+import base64
+import subprocess
+
 from bcf_governance.tooling.ci_github_api import GitHubAPI, GitHubAPIError
 
 
 TREE = "a" * 40
+
+
+def _content_response(raw: bytes) -> dict:
+    oid = subprocess.check_output(["git", "hash-object", "--stdin"], input=raw).decode().strip()
+    encoded = base64.b64encode(raw).decode()
+    return {
+        "type": "file", "path": "plans/build-plan.yml", "sha": oid,
+        "encoding": "base64", "content": "\n".join(encoded[i:i + 16] for i in range(0, len(encoded), 16)),
+    }
+
+
+@pytest.mark.parametrize("raw", [b"", b"active: true\n", b"\x00\xff\xfe\r\n\x80"])
+def test_content_preserves_exact_git_blob_bytes_and_read_only_request(monkeypatch, raw):
+    response = _content_response(raw)
+    api = GitHubAPI(token="fake")
+    observed = []
+
+    def request(method, path, **kwargs):
+        observed.append((method, path, kwargs))
+        return response
+
+    monkeypatch.setattr(api, "_request", request)
+    content = api.content("owner/repo", "plans/build-plan.yml", ref=TREE)
+    assert (content.path, content.blob_oid, content.content) == (
+        response["path"], response["sha"], raw,
+    )
+    assert observed == [("GET", f"/repos/owner/repo/contents/plans/build-plan.yml?ref={TREE}", {})]
+
+
+@pytest.mark.parametrize("observed_path", [None, "plans/other.yml", "../plans/build-plan.yml", 1])
+def test_content_rejects_missing_or_contradictory_observed_path(monkeypatch, observed_path):
+    response = _content_response(b"active: true\n")
+    if observed_path is None:
+        response.pop("path")
+    else:
+        response["path"] = observed_path
+    api = GitHubAPI(token="fake")
+    monkeypatch.setattr(api, "_request", lambda *args, **kwargs: response)
+    with pytest.raises(GitHubAPIError, match="path"):
+        api.content("owner/repo", "plans/build-plan.yml", ref=TREE)
+
+
+@pytest.mark.parametrize("substitution", ["bytes", "oid"])
+def test_content_rejects_bytes_and_declared_blob_identity_disagreement(monkeypatch, substitution):
+    response = _content_response(b"active: true\n")
+    replacement = _content_response(b"active: false\n")
+    field = "content" if substitution == "bytes" else "sha"
+    response[field] = replacement[field]
+    api = GitHubAPI(token="fake")
+    monkeypatch.setattr(api, "_request", lambda *args, **kwargs: response)
+    with pytest.raises(GitHubAPIError, match="blob"):
+        api.content("owner/repo", "plans/build-plan.yml", ref=TREE)
+
+
+@pytest.mark.parametrize("field,value,reason", [
+    ("type", "dir", "file"), ("encoding", "none", "base64"),
+    ("content", "%%%", "base64"), ("sha", "not-a-sha", "SHA"),
+])
+def test_content_preserves_existing_malformed_response_rejection(monkeypatch, field, value, reason):
+    response = _content_response(b"active: true\n")
+    response[field] = value
+    api = GitHubAPI(token="fake")
+    monkeypatch.setattr(api, "_request", lambda *args, **kwargs: response)
+    with pytest.raises(GitHubAPIError, match=reason):
+        api.content("owner/repo", "plans/build-plan.yml", ref=TREE)
 
 
 def _response() -> dict:
