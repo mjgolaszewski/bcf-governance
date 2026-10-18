@@ -33,6 +33,10 @@ Release target: `2.5.0`
 
 ### Fixed
 
+- Reconstruct optional trusted external inputs from protected consumer policy and
+  exact provider producer custody; reject caller authentication claims, incomplete
+  input populations and ambiguous payload selectors before costly acquisition.
+
 - Retire unconsumed generic mutation recovery projections that accepted unbound
   outcomes. Existing operation owners continue to derive exact recovery actions;
   caller-supplied keys or authentication flags cannot create retry authority.
