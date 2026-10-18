@@ -417,6 +417,20 @@ def _project_qualification_base_remote(
     )
 
 
+def _repository_environment_relative(source_root: Path, source_python: Path) -> Path | None:
+    """Admit lexical repository environment shape without executing or copying it."""
+
+    try:
+        relative = source_python.absolute().relative_to(source_root.resolve())
+    except ValueError:
+        return None
+    if len(relative.parts) < 3 or relative.parts[-2:] != ("bin", "python"):
+        raise ReleaseQualificationError(
+            "repository-owned adopter interpreter must be ENV/bin/python"
+        )
+    return relative
+
+
 def _isolated_project_python(
     source_root: Path,
     source_python: Path,
@@ -426,9 +440,7 @@ def _isolated_project_python(
     """Copy a repository-owned environment and rewrite only its own editable path."""
 
     executable = source_python.resolve()
-    try:
-        relative = source_python.absolute().relative_to(source_root.resolve())
-    except ValueError:
+    if _repository_environment_relative(source_root, source_python) is None:
         probe = subprocess.run(
             [str(source_python.absolute()), "-c", "import json,sys; print(json.dumps(sys.path))"],
             capture_output=True, text=True, check=False,
@@ -438,10 +450,6 @@ def _isolated_project_python(
                 "external adopter interpreter exposes the maintained checkout"
             )
         return source_python.absolute()
-    if len(relative.parts) < 3 or relative.parts[-2:] != ("bin", "python"):
-        raise ReleaseQualificationError(
-            "repository-owned adopter interpreter must be ENV/bin/python"
-        )
     environment_root = source_python.absolute().parent.parent
     shutil.copytree(environment_root, projected_root, symlinks=True)
     projected_python = projected_root / "bin/python"
@@ -557,6 +565,7 @@ def qualify_release(
                 raise ReleaseQualificationError(
                     f"adopter interpreter is unavailable: {source.repository}"
                 )
+            _repository_environment_relative(supplied[source.repository], python)
     environment = dict(os.environ)
     reports: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:

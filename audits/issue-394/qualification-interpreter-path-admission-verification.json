@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_checked_canonical_and_exact_installed_pending",
+  "contract": "audits/issue-394/qualification-interpreter-path-admission-contract.json",
+  "contract_test_commit": "1face87a",
+  "production_source_sha256": "a3d14a578242b13240c3844cfe6a0f54248edebd4417d21470c6f259dad35709",
+  "production_loc": 798,
+  "checks": {
+    "initial_ordering_failures": 2,
+    "initial_other_cases_passed": 9,
+    "qualification_and_source_cases_passed": 92,
+    "disabled_guard_ordering_failures": 2,
+    "architecture_cases_passed": 6,
+    "authored_semantic_operation_observations_unchanged": 21,
+    "pack_returncode": 0,
+    "lint_returncode": 0,
+    "typecheck_returncode": 0,
+    "governance_returncode": 0
+  },
+  "behavior": "One pure lexical repository-environment query is consumed before first controller allocation and again at copy consumption. No early interpreter execution; provider-selected inventory/freshness, budgets, external interpreter behavior and isolated-copy checks retained.",
+  "limits": [
+    "Canonical test manifest/projections and exact new wheel/sdist installed parity remain pending.",
+    "No maintained adopter, provider, deadline policy or immutable2.3.4 writes.",
+    "Full lifecycle/population/profile/toolchain/minor/adopter/performance/custody qualification remains open; all82 requirements/38 slices unchanged."
+  ],
+  "raw_sha256": {
+    "qualification-interpreter-path-red.stdout": "c63871f100e95bca8cc55e42fe574ff185aa4a41d9c2e3b29f86e9f0da974d01",
+    "qualification-interpreter-path-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-consumers.stdout": "21b32226dbcc75d112b4a6223b4c932b45c61a5031a127efa27af87185905cf9",
+    "qualification-interpreter-path-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-disabled.stdout": "92c428084ee268dae8b96a62f0fc56af3479d638f8c6b662c4394385afd7ea95",
+    "qualification-interpreter-path-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-pack.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-type.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-architecture.stdout": "5e821b4ca8fa4dc8ce3dbca3c0b4bc3b50fe50a82ced61d4da68dd6e902ef348",
+    "qualification-interpreter-path-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-semantic.stdout": "3a84afefa35cd9740beb9678586ad4874decae71850c340a1f68a12caf104d6c",
+    "qualification-interpreter-path-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-interpreter-path-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "qualification-interpreter-path-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
