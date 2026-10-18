@@ -128,7 +128,8 @@
   "historical_ledger_dispositions": {
     "memory_and_phase": "Native fcddcbf1 profiles pass 27/25/12/10; semantic fixture 44, lint/type, six architecture and unchanged 21-operation semantics pass. Prior 683 interruption stays unknown. Provider ancestry merged; installed/lifecycle/performance/custody pending; all 82/38 unchanged. See audits/issue-394/scheduled-phase-native-profiles-verification.json.",
     "combined_source": "Four native profiles pass at fcddcbf1 (27/25/12/10); source checks pass. Provider ancestry merged; installed proof pending; all 82 open. See audits/issue-394/scheduled-phase-native-profiles-verification.json.",
-    "pre_archive_qualification": "Authored controls at d9bd1b56 pass 221 compound/35 focused cases, six architecture, lint/type and unchanged 21 operations; four query counterfactuals fail 18 intended oracles. Canonical/installed/lifecycle/performance/custody pending; 82/38 unchanged. See audits/issue-394/authored-control-admission-verification.json."
+    "pre_archive_qualification": "Authored controls at d9bd1b56 pass 221 compound/35 focused cases, six architecture, lint/type and unchanged 21 operations; four query counterfactuals fail 18 intended oracles. Canonical/installed/lifecycle/performance/custody pending; 82/38 unchanged. See audits/issue-394/authored-control-admission-verification.json.",
+    "pre_budget_fixture_replay": "Authored control evidence:79828d1d canonical/governance and five distribution stages PASS; private77/76+1 exposes ZIP fixture clock drift. Causal RED then8fbe623b99PASS; new exact qualification pending. Lifecycle/targets/custody and82/38 open. See audits/issue-394/authored-control-admission-verification.json."
   },
   "remaining": [
     "Canonical projection/full governance on exact compound candidate.",
@@ -190,7 +191,16 @@
     "provider-fixture-ed5015d8-red-terminal-readback.json": "53256ed81cf2406216c58aa86cac1dec3b45507e8d67d265fca802ebfd654edb",
     "provider-fixture-4d35b2fd-red-terminal-readback.json": "0a8963d9cd31e29939ee8ca114bc7ccea2032ec307fc03d20f1801091e7cac03",
     "provider-fixture-8fbe623b-green-terminal-readback.json": "052cfbf18320787e80071afc687d9186b763f94aeead9d9562fa663355424398",
-    "provider-fixture-8fbe623b-green-owned-attempt1/fixture-clock-regression.stdout": "5802731939372ff4d62299879f088ee1ebe6b4dffeec806732baaf6b97612658"
+    "provider-fixture-8fbe623b-green-owned-attempt1/fixture-clock-regression.stdout": "5802731939372ff4d62299879f088ee1ebe6b4dffeec806732baaf6b97612658",
+    "control-admission-26014594-canonical-terminal-readback.json": "6aae7aca66029fdd82d8c07a2bf20831eff49ad401514d2721d441e3b46a6969",
+    "control-admission-238116f2-governance-terminal-readback.json": "e1c0de08b05520b3bd7d07495357efd305411ab73b5098f71614304e7502cf6d",
+    "development-periodic-qualified-238116f2-terminal-readback.json": "b61fbf191f11bc6e59e2e8a842d934ea0415e85b84bad5bd588aa7a35d084881",
+    "bound-input-238116f2-matrix-terminal-readback.json": "6815e5d8109e5a8a2a4536b501b1cf2c69a8a71645b9bef7424a3fa309089f05",
+    "budget-fixture-15c78adb-focused-terminal-readback.json": "e493e2a3290d50edda33ae0f84a39b7210cfdf72d51dd432dda9dd32b59bfad9",
+    "budget-fixture-15c78adb-source-terminal-readback.json": "a991db109879b82e2c995fa6497e358d7bc8d12f8c0dc0b32683184f1609ae0e",
+    "budget-fixture-15c78adb-source-attempt1/report.json": "6fb1787665b9aec1ccc5d7ec13fde52be3d5653017b85a91d22462fafa3a67e6",
+    "budget-fixture-15c78adb-source-plan.json": "3d0b5ac78b98a69afb7652d1765785ffd92285bf06b2361ab3b624388e823824",
+    "budget-fixture-15c78adb-source-attempt1/source-matrix-tests.stdout": "d3efe7512387f45332fd9766097580eec1badfd9e496caabcbea4599333ed665"
   },
   "fixture_stability_followup": {
     "authority": false,
@@ -206,5 +216,19 @@
     "fix": "8fbe623b pins only fixture ZipInfo timestamp; production frontier checks unchanged",
     "green": "99 affected cases PASS in5.45s;2 existing RefResolver warnings",
     "next_action": "Canonical reconcile new subject; exact once-built archive/private/full consumer qualification pending; old captures retained"
+  },
+  "rendered_budget_fixture_followup": {
+    "authority": false,
+    "retained_subject": "238116f20d5164d786ac02cadb13af5b989c440d",
+    "retained_results": "Canonical/governance and all six distribution stages PASS;792 mappings;92 SDK and78 private cases/archive. Full corpus source2085PASS/1FAIL, no skips; archive full stages unrun.",
+    "failure": "Old140-simple-scalar sample renders1012 bytes after qualified compact YAML, so intended1024-byte overflow precondition is false. No production budget bypass inferred.",
+    "contract_commit": "1dab7b46",
+    "source_commit": "15c78adb3b03192a777dc6a390574d41ca75d85d",
+    "correction": "Only100 comma-bearing scalar sample; actual authored-fit/rendered-overflow and decoded semantics asserted. Renderer, budget and production admission unchanged.",
+    "focused": "82 prospective/profile YAML cases PASS in3.64s;2 existing warnings.",
+    "source_continuation": "60files/2086 canonical cases PASS in333.16s plus4 separate context controls;0 failed/skipped/xfail;289 public module origin/byte observations unchanged.",
+    "corpus_delta": "Only tests/test_prospective_validation.py differs from retained sdist; production package maps exactly to all792 retained wheel members. Source-only result is not installed archive qualification.",
+    "terminal_custody": "Both native owners terminal0/quiescent/all recorded handles absent; fresh original physical fence independently acquired/released.",
+    "next_action": "Canonical projections then exact new build and full source/wheel/sdist consumer qualification; do not reuse prior source-only evidence as installed assurance."
   }
 }
