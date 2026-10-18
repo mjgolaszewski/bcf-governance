@@ -78,11 +78,15 @@ def test_defining_workflow_quartet_binds_callee_and_rejects_uncertainty(tmp_path
 
 @pytest.mark.parametrize('defect', ['none', 'short', 'expression', 'boolean', 'missing-job',
                                   'blob', 'path', 'duplicate', 'missing-facts'])
-def test_physical_workflow_budget_is_authenticated_before_admission(tmp_path, monkeypatch, defect):
+@pytest.mark.parametrize('executor', ['gate_shard', 'gate_group'])
+def test_physical_workflow_budget_is_authenticated_before_admission(tmp_path, monkeypatch, defect, executor):
     import hashlib
     from types import SimpleNamespace
     from bcf_governance.tooling import evidence_shards as owner
     graph, dag, targets = _contexts(tmp_path)
+    if executor == 'gate_group':
+        graph['workflows'][1]['jobs'][0]['executor']['kind'] = executor
+        graph['workflows'][1]['jobs'][0]['timeout_minutes'] = 15
     (tmp_path / 'governance/ci-graph.yml').write_text('{}\n')
     monkeypatch.setattr(owner, 'validate_ci_graph', lambda _: SimpleNamespace(graph=graph))
     env = {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': 'fixture/repo',
@@ -96,6 +100,7 @@ def test_physical_workflow_budget_is_authenticated_before_admission(tmp_path, mo
         for key in env:
             if key.startswith('BCF_JOB_WORKFLOW_'): monkeypatch.delenv(key)
     timeout = {'short': '9', 'expression': "'${{ inputs.timeout }}'", 'boolean': 'true'}.get(defect, '10')
+    if executor == 'gate_group' and defect == 'none': timeout = '15'
     raw = ('jobs:\n  evidence:\n    timeout-minutes: ' + timeout + '\n').encode()
     if defect == 'missing-job': raw = b'jobs: {}\n'
     if defect == 'duplicate': raw += b'    timeout-minutes: 9\n'
