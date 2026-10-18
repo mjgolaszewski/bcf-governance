@@ -976,7 +976,7 @@
     },
     "scripts/_bcf_runtime/evidence_shards.py": {
       "operation": "copy",
-      "sha256": "0698d3726544907ce63f93b36d9d17ba0e133e99b6ea84e3c99bf05797d326f1"
+      "sha256": "221c5ea50324429789c12089f71c864f4b5107bb41fd48613ee53384d8364278"
     },
     "scripts/_bcf_runtime/evidence_storage_archives.py": {
       "operation": "copy",
@@ -1295,7 +1295,7 @@
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
-      "sha256": "ffe9e7a64af49cbd12e4fa4e0b680ee20b86a7ab7f401cd6db87ae911f89c84a"
+      "sha256": "302c294e5e496a23a1f1c8ee5ecb50a4e0d957e490c6d630ce89c6d81a81448a"
     },
     "scripts/_bcf_runtime/local_pr_context.py": {
       "operation": "copy",
@@ -1335,7 +1335,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "cf9d00bff1c57c2d276fbd5e9b559b808012dfbd95f8a57a37a0aa2caa71810d"
+      "sha256": "674b9a72862712f0d1972de333cfbb46a004d4b7aadb1bc673c382e52fd7e5a6"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",

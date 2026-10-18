@@ -22,6 +22,7 @@ from .evidence_workitem_lifecycle import (
     validate_evaluation_authored_ready,
 )
 from .evidence_planning import verification_plan as build_verification_plan
+from .evidence_shards import admit_planned_shard_deadlines
 from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .ci_authority_pins import CIAuthorityPinError
 from .ci_authority_preflight import provider_context_for_checkout, verify_workflow_authority_preflight
@@ -656,6 +657,7 @@ def run_preflight(
             ),
         ),
     )
+    step("planned-shard-deadlines", lambda: admit_planned_shard_deadlines(repo_root, verification_plan))
     session: EvidenceSession | None = None
     if artifact_root is not None:
         planned_producers = [

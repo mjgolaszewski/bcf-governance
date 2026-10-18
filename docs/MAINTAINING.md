@@ -78,6 +78,16 @@ admitted groups may now require a reviewed budget or partition repair before
 rendering. Static shard checks retain an individual-gate floor; full planned
 shard and environment/API deadline containment remain separate requirements.
 
+Planned shard admission validates the exact inventory, configured shard count,
+dependencies and each assigned serial sequence before session/proof allocation.
+Native execution repeats admission before provider-proof preparation. A cheap
+selected shard cannot bypass an underbudget sibling. Sparse assignment IDs do
+not expand local ordering work. Split executor ownership blocks because the
+current shard runner consumes an unfiltered session inventory. Legacy direct
+producer allowances remain with their existing profile owner; they establish
+no outer graph deadline. Repair canonical budgets through reconciliation;
+complete environment, provider I/O and retry envelopes still require evidence.
+
 Scheduled causal mutants retain explicit, reviewable source mutations, but the
 harness mechanically requires every search fragment to identify exactly one
 canonical runtime location. Moving or duplicating an owner therefore fails the

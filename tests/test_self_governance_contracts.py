@@ -186,8 +186,17 @@ def test_packaged_code_does_not_import_public_wrapper_package() -> None:
 
 
 def test_cli_application_operations_are_closed_and_effect_safe() -> None:
+    from bcf_governance.tooling.semantic_ownership_inventory import resolve_python_imports
+    from bcf_governance.tooling.semantic_ownership_registry import load_registry
+    inventory = discover_python_source(REPO_ROOT)
+    registry = load_registry(REPO_ROOT)
+    inventory = resolve_python_imports(REPO_ROOT, inventory, registry.python_import_roots)
+    phase_reader = next(row for row in inventory["functions"] if row["symbol"] ==
+                        "bcf_governance/tooling/evidence_workitem_lifecycle.py::phase_prerequisite_observation")
+    assert any(call["called_symbol"] == "bcf_governance/tooling/trusted_inputs.py::verify_required_phase_closure_inputs"
+               for call in phase_reader["calls"])
     observations = validate_application_operations(
-        REPO_ROOT, discover_python_source(REPO_ROOT)
+        REPO_ROOT, inventory
     )
     declared = yaml.safe_load(
         (REPO_ROOT / "governance/application-operations.yml").read_text(

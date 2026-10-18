@@ -372,5 +372,12 @@
     "copied_private_probe_cases_passed": 5,
     "installed_private_probe_pending": false,
     "distribution_verification": "audits/issue-394/development-distribution-fd06f44f-verification.json"
+  },
+  "planned_shard_deadline": {
+    "verification": "audits/issue-394/planned-shard-deadline-verification.json",
+    "focused_and_cause_controls_passed": true,
+    "canonical_current_budget_repaired": false,
+    "new_exact_installed_distribution_qualified": false,
+    "complete_runtime_deadline_composition_qualified": false
   }
 }

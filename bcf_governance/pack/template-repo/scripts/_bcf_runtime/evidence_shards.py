@@ -13,7 +13,8 @@ from typing import Any
 
 import yaml
 
-from .ci_graph_contracts import validate_ci_graph
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_timeouts import gate_deadline_contract, gate_sequence_deadline_ms, LEGACY_HEADROOM_SECONDS
 from .ci_github_api import GitHubAPI
 from .ci_graph_execution import (
     local_gate_job_environments,
@@ -203,7 +204,7 @@ def planned_gate_targets(
         return planned_targets if planned_targets is not None else required_gate_targets(repo_root)
     nodes = execution_dag.get("nodes")
     if not isinstance(nodes, list) or not nodes:
-        if nodes == [] and planned_targets == []:
+        if nodes == [] and planned_targets == [] and execution_dag.get("edges") == []:
             return []
         raise ValueError("planned execution DAG must contain its gate inventory")
     assignments = [
@@ -214,7 +215,7 @@ def planned_gate_targets(
     shard_count = max(assignments) + 1
     return [
         gate
-        for shard_index in range(shard_count)
+        for shard_index in sorted(set(assignments))
         for gate in partition_required_gates(
             repo_root,
             shard_index=shard_index,
@@ -223,6 +224,86 @@ def planned_gate_targets(
             execution_dag=execution_dag,
         )
     ]
+
+
+def validate_planned_shard_deadlines(
+    repo_root: Path, graph: dict[str, Any], planned_targets: list[str],
+    execution_dag: dict[str, Any] | None, *, shard_count: int | None = None,
+) -> None:
+    """Bind every actual assignment to its existing executor before work."""
+    try:
+        if shard_count is not None and (type(shard_count) is not int or shard_count < 1):
+            raise ValueError("runtime shard count is invalid")
+        if len(set(planned_targets)) != len(planned_targets) or any(
+            not isinstance(gate, str) or not gate for gate in planned_targets
+        ):
+            raise ValueError("planned shard inventory is ambiguous")
+        if not planned_targets:
+            partition_required_gates(repo_root, shard_index=0, shard_count=1,
+                                     planned_targets=[], execution_dag=execution_dag)
+            return
+        jobs = [job for workflow in graph["workflows"]
+                if any(event.get("type") == "pull_request" for event in workflow["events"])
+                for job in workflow["jobs"]
+                if job["executor"]["kind"] in {"gate_group", "gate_shard"}]
+        owners = {gate: [index for index, job in enumerate(jobs)
+                         if gate in job["executor"]["gates"]] for gate in planned_targets}
+        if any(len(values) > 1 for values in owners.values()):
+            raise ValueError("planned shard inventory lacks one exact executor owner")
+        missing = [gate for gate, values in owners.items() if not values]
+        if missing:
+            local_gate_execution_environments(repo_root, graph, tuple(missing))
+        selected = {values[0] for values in owners.values() if values}
+        shards = [jobs[index] for index in selected if jobs[index]["executor"]["kind"] == "gate_shard"]
+        if not shards:
+            partition_required_gates(repo_root, shard_index=0, shard_count=len(SHARD_DISPLAY_NAMES),
+                                     planned_targets=planned_targets, execution_dag=execution_dag)
+            return  # Fixed groups already contain their full declared populations.
+        if missing or len(selected) != 1:
+            raise ValueError("planned shard inventory crosses unfiltered executor jobs")
+        default, overrides, cleanup = gate_deadline_contract(repo_root)
+        headroom = graph["policy"].get("minimum_gate_timeout_headroom_seconds", LEGACY_HEADROOM_SECONDS)
+        if type(headroom) is not int or headroom < 1:
+            raise ValueError("planned shard headroom is invalid")
+        for job in shards:
+            count = job["executor"].get("shard_count")
+            if type(count) is not int or count < 1 or (shard_count is not None and shard_count != count):
+                raise ValueError("planned shard count contradicts its executor")
+            for index in range(count):
+                gates = partition_required_gates(repo_root, shard_index=index, shard_count=count,
+                    planned_targets=planned_targets, execution_dag=execution_dag)
+                if not gates:
+                    continue
+                required = gate_sequence_deadline_ms(
+                    [overrides.get(gate, default) for gate in gates], cleanup=cleanup, headroom=headroom,
+                ) // 1000
+                available = job["timeout_minutes"] * 60
+                if available < required:
+                    raise ValueError(f"planned shard {job['id']}/{index} timeout {available}s cannot contain "
+                                     f"{required}s composed gate bounds")
+    except (TypeError, KeyError, ValueError, OSError) as exc:
+        raise CIGraphError(str(exc)) from exc
+
+
+def admit_planned_shard_deadlines(
+    repo_root: Path, plan: dict[str, Any], *, shard_count: int | None = None,
+) -> None:
+    """Keep graph-absent local legacy scope; require modern graph authority."""
+    path = repo_root / "governance/ci-graph.yml"
+    if not path.exists() and not path.is_symlink():
+        profile_path = repo_root / "governance-profile.yml"
+        profile = _mapping(profile_path, repo_root) if profile_path.exists() else {}
+        if str(profile.get("profile_contract_version", "1.0")) != "1.0":
+            raise CIGraphError("planned shard deadline admission requires the CI graph")
+        return
+    dag = plan.get("execution_dag")
+    targets = plan.get("expected_gate_inventory")
+    if targets is None and isinstance(dag, dict) and isinstance(dag.get("nodes"), list):
+        targets = [node.get("producer") if isinstance(node, dict) else None for node in dag["nodes"]]
+    if not isinstance(targets, list):
+        raise CIGraphError("planned shard deadline inventory is missing")
+    validate_planned_shard_deadlines(repo_root, validate_ci_graph(repo_root).graph,
+                                    targets, dag, shard_count=shard_count)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -278,6 +359,10 @@ def main(argv: list[str] | None = None) -> None:
             planned_targets=planned,
             execution_dag=execution_dag,
         )
+    admit_planned_shard_deadlines(repo_root, {
+        "expected_gate_inventory": planned if planned is not None else required_gate_targets(repo_root),
+        "execution_dag": execution_dag,
+    }, shard_count=args.shard_count)
     prior_temp: tempfile.TemporaryDirectory[str] | None = None
     try:
         if not args.all_planned and "test" in gates and os.environ.get("GITHUB_ACTIONS") == "true":

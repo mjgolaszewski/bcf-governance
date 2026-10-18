@@ -31,7 +31,7 @@ from .evaluation_scope import (
     evaluation_scope,
 )
 from .evidence_execution import EvidenceError
-from .evidence_shards import local_gate_execution_environments, planned_gate_targets
+from .evidence_shards import local_gate_execution_environments, planned_gate_targets, validate_planned_shard_deadlines
 from .evidence_sessions import allocate_session, local_producer_identity
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
@@ -475,6 +475,7 @@ def _run_prospective_train(
         except (TypeError, ValueError) as exc:
             raise ProspectiveValidationError(str(exc)) from exc
         try:
+            validate_planned_shard_deadlines(root, validate_ci_graph(root).graph, list(producers), execution_dag)
             producer_environments = local_gate_execution_environments(
                 root, validate_ci_graph(root).graph, producers
             )

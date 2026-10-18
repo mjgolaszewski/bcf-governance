@@ -1,0 +1,349 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_qualified_canonical_budget_repair_and_exact_installed_pending",
+  "contract": "audits/issue-394/planned-shard-deadline-contract.json",
+  "behavior": [
+    "Existing canonical partitioner binds inventory, dependencies and configured shard counts before preflight/prospective allocation and before native provider-proof preparation.",
+    "Every actual assigned serial population must fit its existing job deadline; ambiguous or split executor populations block.",
+    "Local ordering iterates populated shard IDs only; configured admission rejects invalid IDs before dependent work.",
+    "Explicit legacy direct allowances stay with their existing owner, with no outer graph containment claim."
+  ],
+  "checks": {
+    "focused_passed": 20,
+    "earlier_behavior_passed": 176,
+    "final_affected_passed": 178,
+    "architecture_passed": 6,
+    "authored_semantics": 0,
+    "authored_operation_observations_unchanged": 21,
+    "governance": 0,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "audit_record_governance": 0
+  },
+  "cause_controls": {
+    "authority": false,
+    "controls": [
+      {
+        "cause": "bounds",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_planned_shard_deadlines.py::test_actual_serial_assignment_rejects_maximum_only_budget",
+          "FAILED tests/test_planned_shard_deadlines.py::test_native_shard_rechecks_all_assignments_before_provider_or_gate_work[9-2-cannot contain]"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-bounds.stdout": "9a4a4e12dea26262300dba3f1c9a8efb99553900e5145ed294da57c7f7ddd4e5",
+          "planned-shard-control-bounds.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "preflight",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_preflight.py::test_preflight_allocates_session_only_after_all_deterministic_checks[True]"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-preflight.stdout": "3e86619455c45395922a7096b2822049a70c302ca8a81702f0b39b5a121b5667",
+          "planned-shard-control-preflight.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "prospective",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_prospective_validation.py::test_full_walk_preserves_provider_boundary_and_exact_scope[True-False]",
+          "FAILED tests/test_prospective_validation.py::test_full_walk_preserves_provider_boundary_and_exact_scope[True-True]"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-prospective.stdout": "e12ea22ac3a469305cba552670ff406796b01c09c309f10673fb8f0e7d5522ce",
+          "planned-shard-control-prospective.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "native",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_planned_shard_deadlines.py::test_native_shard_rechecks_all_assignments_before_provider_or_gate_work[9-2-cannot contain]",
+          "FAILED tests/test_planned_shard_deadlines.py::test_native_shard_rechecks_all_assignments_before_provider_or_gate_work[10-3-count]"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-native.stdout": "e5ae6bcd59a9a625d9b438e446df914f256b3487c6614e6119e34bc6f239e123",
+          "planned-shard-control-native.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "iteration",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_planned_shard_deadlines.py::test_local_order_query_iterates_only_populated_shards"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-iteration.stdout": "828b51f96d12a5624078e23598062b98a42dc05aa54bda177ac5dc61fc731cc1",
+          "planned-shard-control-iteration.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "runtime-count",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_planned_shard_deadlines.py::test_runtime_count_is_typed_even_when_boolean_equals_configured_integer"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-runtime-count.stdout": "441768aac419ddd6293a9e6e223c53b034f5440474c4c2004a6155253c57c906",
+          "planned-shard-control-runtime-count.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "legacy-owner",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_planned_shard_deadlines.py::test_legacy_direct_allowance_stays_with_existing_owner[True]"
+        ],
+        "raw_sha256": {
+          "planned-shard-control-legacy-owner.stdout": "fad731dd004b41d9586537e259d61679854c16a3103522d5758362740eddf3dd",
+          "planned-shard-control-legacy-owner.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "exact_source_restored": true
+  },
+  "current_canonical_budget_observation": {
+    "authority": false,
+    "execution_qualified": false,
+    "scope": "Working-source query: no-prior-receipt hypothetical full current profile, structural preflight supplied; no authenticated live session or whole runtime deadline claim",
+    "subject": {
+      "commit_sha": "2f69e80041ef6636bfb8cb1a7a8b420921d6a837",
+      "tree_sha": "3617a49569295829d590acc9f3744931a8e8b774"
+    },
+    "execution_dag": {
+      "nodes": [
+        {
+          "id": "dependency-audit",
+          "producer": "security-dependency-audit",
+          "claims": [
+            "security-dependency-audit"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 0,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        },
+        {
+          "id": "python-compile-version",
+          "producer": "typecheck",
+          "claims": [
+            "python-compile-version-contract"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 1,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        },
+        {
+          "id": "python-tests",
+          "producer": "test",
+          "claims": [
+            "architecture-context-membership",
+            "architecture-cqrs-side",
+            "architecture-duplication",
+            "architecture-import-boundaries",
+            "architecture-layer-membership",
+            "architecture-module-size",
+            "architecture-router-thinness",
+            "architecture-test",
+            "contract-test",
+            "test"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 2,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        },
+        {
+          "id": "runtime-smoke",
+          "producer": "runtime-smoke",
+          "claims": [
+            "runtime-smoke"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 3,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        },
+        {
+          "id": "sbom",
+          "producer": "security-sbom",
+          "claims": [
+            "security-sbom"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 0,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        },
+        {
+          "id": "secret-scan",
+          "producer": "security-secret-scan",
+          "claims": [
+            "security-secret-scan"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 1,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        },
+        {
+          "id": "unsafe-subprocess",
+          "producer": "security-vulnerability-scan",
+          "claims": [
+            "unsafe-subprocess-static"
+          ],
+          "depends_on": [],
+          "reason": "required claims lack applicable authenticated evidence",
+          "qualification_refs": [],
+          "assigned_shard": 2,
+          "estimated_duration_ms": 1,
+          "duration_source": "unknown_default"
+        }
+      ],
+      "edges": []
+    },
+    "rows": [
+      {
+        "workflow": "governance",
+        "job": "evidence",
+        "shard": 0,
+        "gates": [
+          "security-dependency-audit",
+          "security-sbom"
+        ],
+        "required_minutes": 70,
+        "authored_minutes": 60
+      },
+      {
+        "workflow": "governance",
+        "job": "evidence",
+        "shard": 1,
+        "gates": [
+          "typecheck",
+          "security-secret-scan"
+        ],
+        "required_minutes": 70,
+        "authored_minutes": 60
+      },
+      {
+        "workflow": "governance",
+        "job": "evidence",
+        "shard": 2,
+        "gates": [
+          "test",
+          "security-vulnerability-scan"
+        ],
+        "required_minutes": 80,
+        "authored_minutes": 60
+      },
+      {
+        "workflow": "governance",
+        "job": "evidence",
+        "shard": 3,
+        "gates": [
+          "runtime-smoke"
+        ],
+        "required_minutes": 38,
+        "authored_minutes": 60
+      }
+    ],
+    "rejection": "planned shard evidence/0 timeout 3600s cannot contain 4200s composed gate bounds",
+    "policy_sha256": {
+      "governance/ci-graph.yml": "b8aca2314a19a5696463a4d01b1d0bd27030cfdeb8e25b3295c81bb911b974e5",
+      "governance/gate-contracts.yml": "90ddf50850499de4aef274cbb47b3c9f563f8111e15e19c35d03b6af3178ac9a"
+    },
+    "next_action": "Repair canonical graph budget with exact bounds and existing reconciliation owner; no hand-edited workflows or invented performance target"
+  },
+  "canonical_repair": {
+    "status": "pending_existing_owner",
+    "current_outer_minutes": 60,
+    "observed_required_minutes_by_shard": [
+      70,
+      70,
+      80,
+      38
+    ],
+    "minimum_for_this_hypothetical_no_reuse_assignment_minutes": 80,
+    "complete_workflow_sufficiency_claim": false,
+    "performance_target_or_approval_claim": false,
+    "remaining_scope": "The observed80m fresh-plan minimum is not sufficient proof for all receipt-dependent assignments or generated adopter defaults. Derive policy/context projections through the existing graph/profile owners and retain consuming-boundary checks."
+  },
+  "architecture_baseline": {
+    "committed_baseline": "2f69e80041ef6636bfb8cb1a7a8b420921d6a837",
+    "plain_unresolved_inventory_preexisting_failure_reproduced": true,
+    "canonical_import_resolution_applied_in_test": true,
+    "declared_effect_ports_deleted": false,
+    "exact_phase_import_edge_asserted": true,
+    "baseline_attempt1": "Existing exact build-source owner correctly refused dirty HEAD before extraction; raw retained. Read-only committed Git archive used for separate diagnostic attempt2."
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/evidence_shards.py": "221c5ea50324429789c12089f71c864f4b5107bb41fd48613ee53384d8364278",
+    "bcf_governance/tooling/preflight.py": "674b9a72862712f0d1972de333cfbb46a004d4b7aadb1bc673c382e52fd7e5a6",
+    "bcf_governance/tooling/local_pr.py": "302c294e5e496a23a1f1c8ee5ecb50a4e0d957e490c6d630ce89c6d81a81448a"
+  },
+  "raw_sha256": {
+    "planned-shard-architecture-baseline-attempt2.stdout": "a8a110a71c4266066016ccbc7e46ca8d6f69da1e60dab48929423c701862c6b0",
+    "planned-shard-architecture-baseline.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planned-shard-architecture-final.stdout": "dedff51defb8f5cfafd2f119535810dca9d87cbe72e304ce89b2942023b3efe9",
+    "planned-shard-authored-semantic.stdout": "1cdd66c5a1b989a79810845029cce9aae69e312b1d39400c763d7032c6ab8975",
+    "planned-shard-cause-controls.stdout": "127ef8f66d40c23e96e95dcad8ae7a676ca42cc7fbccab71aaafb777bb5ef7f4",
+    "planned-shard-complete-focused.stdout": "880710e2fb92201f33f3e7737bd839c46c40d1a56aba58ffd6b9777d6b31b9e3",
+    "planned-shard-control-bounds.stdout": "9a4a4e12dea26262300dba3f1c9a8efb99553900e5145ed294da57c7f7ddd4e5",
+    "planned-shard-control-iteration.stdout": "828b51f96d12a5624078e23598062b98a42dc05aa54bda177ac5dc61fc731cc1",
+    "planned-shard-control-legacy-owner.stdout": "fad731dd004b41d9586537e259d61679854c16a3103522d5758362740eddf3dd",
+    "planned-shard-control-native.stdout": "e5ae6bcd59a9a625d9b438e446df914f256b3487c6614e6119e34bc6f239e123",
+    "planned-shard-control-preflight.stdout": "3e86619455c45395922a7096b2822049a70c302ca8a81702f0b39b5a121b5667",
+    "planned-shard-control-prospective.stdout": "e12ea22ac3a469305cba552670ff406796b01c09c309f10673fb8f0e7d5522ce",
+    "planned-shard-control-runtime-count.stdout": "441768aac419ddd6293a9e6e223c53b034f5440474c4c2004a6155253c57c906",
+    "planned-shard-deadline-affected.stdout": "4e3302dcb07c73b8fb97dfaf0fb2dd3355715b22193969a877493e99667a3e77",
+    "planned-shard-deadline-allocation-red.stdout": "ac05e78d193733759657f07993d20e3725a0fa8bdf0f51a43c998d6259cd2baa",
+    "planned-shard-deadline-behavior-final.stdout": "a1d9b4745e618ea23fe603f0cb7f9fce94468e76c120022cbfa9c2966fe36f8f",
+    "planned-shard-deadline-focused.stdout": "ac7e5f0921d22cc4d9b62802d700b3fb1e8d9909b7b898cbdfcdd274becadd58",
+    "planned-shard-deadline-iteration-red.stdout": "7c2ca26d06fff2095ddff25fc6fc39773333ca148cd0c03062c0b96c145c2377",
+    "planned-shard-deadline-red.stdout": "0d5455f67f0e1c199c57539efb63d2dff9e12abd25fb38c664771edddae16e06",
+    "planned-shard-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "planned-shard-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "planned-shard-legacy-allowance-red.stdout": "806388b42c29f59a0afdd920c66e4d7803489cbcc53a6ecb60d16aaa12cf6a21",
+    "planned-shard-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planned-shard-order-count-red.stdout": "54adbd21d1e5a5a88354d727e400f8b24c45fcc67d2e0c32e6c8f4c85b7b54fd",
+    "planned-shard-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planned-shard-architecture-qualified.stdout": "7a7a862005d06d1ba9b5a694d55268d30ee080d82f4c35d8442e92eec8033b56",
+    "planned-shard-authored-semantic-qualified.stdout": "1cdd66c5a1b989a79810845029cce9aae69e312b1d39400c763d7032c6ab8975",
+    "planned-shard-behavior-qualified.stdout": "4a9120e3e2f34e82974bee3c2a6059a65d595b4c364144607892bccafcfd9166",
+    "planned-shard-exposure-qualified.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "planned-shard-governance-qualified.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "planned-shard-lint-qualified.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planned-shard-type-qualified.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "planned-shard-cause-controls.json": "b00348198503b07f4ebe887a316a389af8520a5df0107986674abac00616c99b",
+    "planned-shard-before-canonical-repair.json": "7060c78a9922f028741e338811d6f97c069d9fc518c1e6567cb8c5190f2125dd",
+    "planned-shard-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "prior_exact_distribution": "audits/issue-394/development-distribution-fd06f44f-verification.json",
+  "new_exact_installed_distribution_qualified": false,
+  "limits": [
+    "The prior fd06f44f distributions do not contain this new planned-shard guard.",
+    "Budget observation is a hypothetical full no-reuse planner query with structural preflight supplied, not an authenticated live session or execution evidence.",
+    "No complete setup/DNS/connect/header/body/retry/measurement/cleanup/sibling lifecycle containment claim.",
+    "All82 whole requirements and38 slices remain unchanged; P32 active/P33-P35 dormant and targets unapproved."
+  ],
+  "next_action": "Complete source qualification, repair canonical current/reference budgets through existing owners, extend installed private probes and qualify exact distributions; preserve independent profile/adopter/lifecycle/custody gaps."
+}
