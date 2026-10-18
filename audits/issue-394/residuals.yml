@@ -204,3 +204,8 @@ items:
   evidence: Standalone reconciliation intentionally leaves file-only projections for review. Canonical submission now requests exact clean-source shadow promotion through that same owner before subject recapture; local tests preserve workflow authority pairs, ordinary adopter absence, concurrency and rollback.
   residual_owner: P32-P0-07
   consumer_adoption: Full canonical submission and independent provider/distribution qualification remain pending; local commits grant no certification authority.
+
+successor_census:
+  evidence: audits/issue-394/residual-successor-census.json
+  subject_role: candidate_source_observation_not_admitted_predecessor
+  disposition: Historical rows retained; current source execution and installed adoption are separately scoped in the linked census.
