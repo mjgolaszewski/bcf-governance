@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "evidence",
+  "architectural_layer": "tooling",
+  "operation_side": "existing_qualification_command_with_pure_admission",
+  "targets": ["bcf_governance/tooling/release_adopter_qualification.py", "tests/test_release_adopter_qualification.py"],
+  "observed_failure": "Exact fb0 SDK strict upgrade rejected provider-pinned Tradeflow structural-evidence:2700s outer versus4200s composed envelope. The controller and clone had already been allocated, although ordinary upgrade preserves both the authored graph and gate contracts.",
+  "contract": [
+    "Validate preserved gate deadline declarations for every authenticated required adopter before allocating the first temporary/controller/install/proof resource.",
+    "Reuse the unique canonical graph loader and existing gate timeout owner. Include serial sum, per-gate setup/cleanup, source headroom and policy quantization; add no new deadline policy or graph model.",
+    "Keep the declared outer budget unchanged. Invalid/ambiguous preserved inputs produce a typed remediation failure without a compatibility receipt or publication effect.",
+    "A compatible graph reaches the existing allocation boundary; genuinely graph-absent legacy inputs retain their existing downstream behavior. Managed workflow/source projections remain the install/reconcile owner's responsibility.",
+    "Provider default selection, exact source/profile inventory and collection-time freshness remain unchanged. No caller-selected adopter population or source authority."
+  ],
+  "verification": ["Invalid first and last adopter deadlines block all allocation; compatible70m/required70m reaches allocation.", "Ambiguous YAML is typed before allocation; source bytes and provider resources remain unchanged.", "Cause-specific disabled admission control, qualification/source consumers, mirrors, architecture, semantics and exact installed parity."],
+  "forbidden": ["widening authored adopter budgets", "maintained adopter writes", "SDK2.3.4 mutation", "new CLI/lane/registry/receipt families", "provider mutation", "hand-authored generated artifacts"]
+}

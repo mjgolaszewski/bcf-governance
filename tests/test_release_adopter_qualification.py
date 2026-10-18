@@ -479,7 +479,8 @@ def test_missing_adopter_matrix_fails_before_environment_or_mutation(
     assert not (tmp_path / "receipt.json").exists()
 
 
-@pytest.mark.parametrize('defect', ['profile', 'missing-profile', 'missing-python', 'nonexecutable-python', None])
+@pytest.mark.parametrize('defect', ['profile', 'missing-profile', 'missing-python', 'nonexecutable-python',
+                                  'deadline-first', 'deadline-last', 'deadline-valid', 'deadline-ambiguous', None])
 def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path, monkeypatch, defect, qualification_provider):
     contract = load_contract(REPO_ROOT)
     assets = tmp_path / 'assets'
@@ -510,24 +511,41 @@ def test_all_pinned_adopter_inputs_are_admitted_before_first_allocation(tmp_path
         python.unlink()
     elif defect == 'nonexecutable-python':
         python.chmod(0o644)
+    elif defect and defect.startswith('deadline-'):
+        target = roots[0] if defect == 'deadline-first' else last
+        (target / 'governance').mkdir()
+        (target / 'governance/gate-contracts.yml').write_text(yaml.safe_dump({
+            'execution_policy': {'default_timeout_seconds': 1800,
+                                 'default_cleanup_timeout_seconds': 60}}))
+        graph = {'policy': {'minimum_gate_timeout_headroom_seconds': 300},
+                 'workflows': [{'id': 'governance', 'jobs': [{'id': 'structural-evidence',
+                     'timeout_minutes': 70 if defect == 'deadline-valid' else 45,
+                     'executor': {'kind': 'gate_group', 'gates': ['first', 'second']}}]}]}
+        raw = yaml.safe_dump(graph) + ('\npolicy: {}\n' if defect == 'deadline-ambiguous' else '')
+        (target / 'governance/ci-graph.yml').write_text(raw)
+    before = {path: path.read_bytes() for root in roots for path in root.rglob('*') if path.is_file()}
     effects = []
     def allocation(**kwargs):
         effects.append('allocation')
         raise AssertionError('first allocation reached')
     monkeypatch.setattr(qualification, '_source_identity', lambda root: identities[root.resolve()])
     monkeypatch.setattr(qualification.tempfile, 'TemporaryDirectory', allocation)
-    if defect is None:
+    valid = defect in {None, 'deadline-valid'}
+    if valid:
         expected, message = AssertionError, 'first allocation reached'
     else:
         expected = ReleaseQualificationError
-        message = 'profile' if 'profile' in defect else 'interpreter is unavailable'
+        message = ('duplicate YAML key' if defect == 'deadline-ambiguous' else
+                   'cannot contain' if defect.startswith('deadline-') else
+                   'profile' if 'profile' in defect else 'interpreter is unavailable')
     with pytest.raises(expected, match=message):
         qualify_release(REPO_ROOT, repository=release[0], release_assets=assets,
                         release_build_manifest=manifest, adopter_roots=roots,
                         adopter_pythons={contract['required_adopters'][-1]['repository']: python},
                         producer=PRODUCER, output=tmp_path / 'receipt.json')
-    assert effects == (['allocation'] if defect is None else [])
+    assert effects == (['allocation'] if valid else [])
     assert not (tmp_path / 'receipt.json').exists()
+    assert {path: path.read_bytes() for root in roots for path in root.rglob('*') if path.is_file()} == before
 
 
 @pytest.mark.parametrize('defect', ['stale-commit', 'stale-tree', 'legacy-policy', 'missing-token',
