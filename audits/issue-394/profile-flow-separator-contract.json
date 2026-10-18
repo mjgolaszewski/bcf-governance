@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitems": ["foundation.submit-normalization", "foundation.conformance"],
+  "bounded_context": "governance",
+  "architectural_layer": "tooling",
+  "operation_side": "pure canonical rendering",
+  "targets": ["bcf_governance/tooling/profile_yaml.py", "tests/test_profile_yaml.py"],
+  "before_subject": "d7bc1ac073e2be253d2d04e5cbced41b782b7aa1",
+  "before": {"source_cases_passed": 2028, "source_cases_failed": 1, "failed_node": "tests.test_profile_yaml::test_current_gate_contract_renders_inside_existing_context_budget", "rendered_bytes": 104552, "existing_byte_budget": 103424},
+  "requirements": [
+    "Fix the existing canonical profile-surface renderer; do not raise context budgets, remove controls, weaken the failing oracle or substitute hand-compacted governed bytes.",
+    "Remove only optional spaces after scanner-identified YAML flow-entry separators. Preserve quoted search/replacement strings, regular expressions, multiline scalar content, scalar types, sharing and collection order.",
+    "Keep decoded content and caller inputs unchanged. Repeated rendering and render/decode/render must have identical bytes.",
+    "Use the existing YAML toolchain and owner; add no parser, authority flag or receipt family. Generate private/template mirrors only through the pack owner."
+  ],
+  "qualification": "Retained existing failing source oracle supplies genuine RED. Run profile/affected projection and full source-wheel-sdist/private populations on corrected exact bytes. Earlier development archives remain retained observations; their full consumer replay failed and cannot certify release or installed assurance.",
+  "limits": "All82 whole requirements remain open; no performance target or release custody claim."
+}
