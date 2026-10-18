@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 from pathlib import Path
 import subprocess
+import tarfile
+import zipfile
 
 import pytest
 
@@ -29,8 +32,13 @@ def _fixture(tmp_path: Path) -> tuple[Path, tuple[Path, ...], Path, Path]:
     sdist = tmp_path / "bcf_governance-0.7.1.tar.gz"
     stdout = tmp_path / "sdist-tests.stdout"
     junit = tmp_path / "sdist-tests.xml"
-    wheel.write_bytes(b"wheel")
-    sdist.write_bytes(b"sdist")
+    package = b"VALUE = 1\n"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("bcf_governance/__init__.py", package)
+    with tarfile.open(sdist, "w:gz") as archive:
+        info = tarfile.TarInfo("source/bcf_governance/__init__.py")
+        info.size = len(package)
+        archive.addfile(info, io.BytesIO(package))
     stdout.write_bytes(b"516 passed\n")
     junit.write_bytes(b'<testsuite tests="516" failures="0"/>\n')
     evidence = (stdout, junit)
@@ -447,3 +455,46 @@ def test_runtime_evidence_rejects_every_unbound_authority_surface(
 
     with pytest.raises(GitHubControllerError):
         verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)
+
+
+@pytest.mark.parametrize("defect", [
+    "substitution", "unowned", "false-count", "boolean-count", "extra-authority",
+    "unsafe-wheel", "invalid-sdist", "empty-package", "duplicate-wheel",
+])
+def test_runtime_mapping_claim_is_recomputed_from_supplied_archives(tmp_path: Path, defect: str) -> None:
+    report, evidence, wheel, sdist = _fixture(tmp_path)
+    payload = json.loads(report.read_text())
+    if defect in {"substitution", "unowned", "empty-package", "unsafe-wheel", "duplicate-wheel"}:
+        with zipfile.ZipFile(wheel, "w") as archive:
+            if defect == "empty-package":
+                archive.writestr("package.dist-info/METADATA", b"Name: package\n")
+            else:
+                name = ("bcf_governance/generated.py" if defect == "unowned" else
+                        "../escaped.py" if defect == "unsafe-wheel" else
+                        "bcf_governance/__init__.py")
+                archive.writestr(name, b"VALUE = 'changed'\n")
+                if defect == "duplicate-wheel":
+                    archive.writestr(name, b"VALUE = 1\n")
+    elif defect == "invalid-sdist":
+        sdist.write_bytes(b"not an archive")
+    elif defect == "false-count":
+        payload["source_mapping"]["mapped_files"] = 2
+    elif defect == "boolean-count":
+        payload["source_mapping"]["mapped_files"] = True
+    else:
+        payload["source_mapping"]["authority"] = True
+    payload["release_artifacts"] = {wheel.name: _sha(wheel), sdist.name: _sha(sdist)}
+    report.write_text(json.dumps(payload))
+    with pytest.raises(GitHubControllerError, match="source mapping"):
+        verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)
+    assert not (tmp_path / "escaped.py").exists()
+
+
+def test_runtime_mapping_recomputation_preserves_report_without_candidate_execution(tmp_path: Path, monkeypatch):
+    from bcf_governance.tooling import release_runtime_verification as runtime
+
+    report, evidence, wheel, sdist = _fixture(tmp_path)
+    original = json.loads(report.read_text())
+    monkeypatch.setattr(runtime.subprocess, "run", lambda *args, **kwargs: pytest.fail("mapping executed a subprocess"))
+    monkeypatch.setattr(runtime.subprocess, "Popen", lambda *args, **kwargs: pytest.fail("mapping allocated a subprocess"))
+    assert verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist) == original

@@ -1,0 +1,19 @@
+{
+  "authority": false,
+  "workitems": ["P32-P0-04", "P32-P0-07"],
+  "bounded_context": "ci_authority",
+  "owner": "bcf_governance/tooling/release_runtime_verification.py::verify_runtime_evidence",
+  "consumers": ["bcf_governance/tooling/ci_github_release.py::verify_release_build_provider", "bcf_governance/tooling/ci_github_release.py::collect_release_provider"],
+  "problem": "A self-consistent runtime report can assert an exact source mapping for substituted or unowned wheel code, an incorrect count or malformed archives; existing provider consumers do not independently recompute that mechanically available fact.",
+  "requirements": [
+    "Keep report status, exact environment, artifact digest and raw evidence checks; never substitute recomputed byte parity for runtime execution or provider authority.",
+    "At the shared consuming boundary, validate both regular archives, extract only through the existing safe owner and recompute exact wheel/source correspondence from the supplied bytes before returning an accepted report.",
+    "Compare the complete recomputed mapping with the declared mapping; booleans are not integer counts and undeclared mapping fields do not confer authority.",
+    "Reject substituted code, code lacking a source owner, false counts, ambiguous or unsafe archives and malformed source roots before verifier output or collection can advance.",
+    "Run no candidate interpreter, backend, import, installer or provider mutation to establish the byte-mapping fact. Retain owned temporary extraction cleanup.",
+    "Preserve unchanged genuine version-1.0 report payloads and public CLI grammar. This strengthens the existing fact check without a new schema, receipt, graph, registry or evaluator.",
+    "Keep immutable predecessor evidence unchanged; correct synthetic nonarchive fixtures instead of bypassing admission guards."
+  ],
+  "verification": "Real matching and adversarial ZIP/tar fixtures with recomputed artifact digests; forbidden-subprocess control; affected runtime/provider/collector/toolchain tests, cause-specific disabled recomputation, mirrors and structural/semantic checks.",
+  "limits": ["Wheel-to-sdist correspondence is not authentication of the source commit or execution completeness.", "Full lifecycle/profile/adopter conformance, composed deadlines, performance targets and independent release custody remain separately required."]
+}
