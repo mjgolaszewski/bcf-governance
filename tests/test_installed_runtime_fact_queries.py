@@ -100,6 +100,108 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
             else:
                 raise AssertionError('private runtime accepted forged fact: ' + defect)
         assert len(rejected) == 11
+        command_rejections = 0
+        for defect in ('missing', 'empty', 'duplicate', 'dropped-with-streams', 'unknown',
+                       'failed', 'boolean-exit', 'empty-argv', 'nonstring-argv',
+                       'unbound-stream', 'reused-stream', 'orphan-stream',
+                       'install-before-closure', 'consumer-before-install',
+                       'twine-before-closure', 'smoke-after-consumer'):
+            archives()
+            output.write_bytes(b'synthetic fact-query fixture\n')
+            value = payload()
+            rows = value['commands']
+            extra = None
+            if defect == 'missing': del value['commands']
+            elif defect == 'empty': value['commands'] = []
+            elif defect == 'duplicate': rows.append(copy.deepcopy(rows[0]))
+            elif defect == 'dropped-with-streams':
+                removed = rows.pop()
+                for stream in ('stdout', 'stderr'): del value['evidence'][removed[stream]]
+            elif defect == 'unknown': rows[0]['label'] = 'invented-success'
+            elif defect == 'failed': rows[0]['exit_code'] = 1
+            elif defect == 'boolean-exit': rows[0]['exit_code'] = False
+            elif defect == 'empty-argv': rows[0]['argv'] = []
+            elif defect == 'nonstring-argv': rows[0]['argv'][0] = True
+            elif defect == 'unbound-stream': rows[0]['stdout'] = 'unbound.stdout'
+            elif defect == 'reused-stream': rows[1]['stdout'] = rows[0]['stdout']
+            elif defect == 'orphan-stream':
+                extra = evidence_dir / 'unclaimed.stdout'; extra.write_bytes(b'unclaimed')
+                value['evidence'][extra.name] = sha(extra)
+            elif defect == 'install-before-closure': rows[1], rows[3] = rows[3], rows[1]
+            elif defect == 'consumer-before-install': rows[7], rows[8] = rows[8], rows[7]
+            elif defect == 'twine-before-closure': rows.insert(0, rows.pop(2))
+            else: rows.insert(8, rows.pop(4))
+            try:
+                consume(value, tuple(evidence_dir / name for name in value['evidence']))
+            except runtime.GitHubControllerError as error:
+                assert 'runtime command' in str(error), str(error)
+                command_rejections += 1
+            else:
+                raise AssertionError('private runtime accepted forged command: ' + defect)
+            finally:
+                if extra is not None: extra.unlink()
+        assert command_rejections == 16
+        forged = payload()
+        forged['commands'][0]['exit_code'] = 1
+        command_validator = runtime._validate_runtime_commands
+        try:
+            runtime._validate_runtime_commands = lambda report: None
+            assert consume(forged, tuple(evidence_dir / name for name in forged['evidence'])) == forged
+        finally:
+            runtime._validate_runtime_commands = command_validator
+        value = payload()
+        value['schema_version'] = '1.1'
+        value['commands'].insert(8, value['commands'].pop())
+        row = {'label': 'sdist-installed-consumer', 'argv': ['/fixture/python', '-c', 'pass'], 'exit_code': 0}
+        for stream in ('stdout', 'stderr'):
+            path = evidence_dir / ('sdist-installed-consumer.' + stream)
+            path.write_bytes(b'synthetic fact-query fixture\n')
+            row[stream] = path.name
+            value['evidence'][path.name] = sha(path)
+        value['commands'].append(row)
+        execution = fixture / 'execution'
+        selected = '/opt/python/bin/python'
+        value['environment']['python_executable'] = selected
+        wp, sp = str(execution / 'wheel-env/bin/python'), str(execution / 'sdist-env/bin/python')
+        source = execution / 'source/exact-sdist'
+        closure = ['-m', 'pip', 'install', '--no-index', '--find-links', str(execution / 'wheelhouse'),
+                   '--require-hashes', '-r', str(execution / 'closure.lock')]
+        smoke = ['-m', 'bcf_governance.cli', '--version']
+        consumer = [str(source / '.github/scripts/verify_installed_consumer.py'), '--source-root', str(source)]
+        arguments = {
+            'wheel-venv': [selected, '-m', 'venv', str(execution / 'wheel-env')],
+            'sdist-venv': [selected, '-m', 'venv', str(execution / 'sdist-env')],
+            'wheel-closure-install': [wp, *closure], 'sdist-closure-install': [sp, *closure],
+            'wheel-install': [wp, '-m', 'pip', 'install', '--no-index', '--no-deps', str(wheel)],
+            'sdist-install': [sp, '-m', 'pip', 'install', '--no-index', '--no-deps', '--no-build-isolation', str(sdist)],
+            'twine-check': [wp, '-m', 'twine', 'check', '--strict', str(wheel), str(sdist)],
+            'wheel-smoke': [wp, *smoke], 'sdist-smoke': [sp, *smoke],
+            'wheel-installed-consumer': [wp, *consumer], 'sdist-installed-consumer': [sp, *consumer],
+        }
+        for command in value['commands']: command['argv'] = arguments[command['label']]
+        assert consume(value) == value
+        argument_rejections = 0
+        for defect in ('generic-success', 'wrong-interpreter', 'wrong-asset', 'different-lock',
+                       'different-wheelhouse', 'candidate-harness', 'different-consumer-source',
+                       'no-offline-install', 'missing-strict-metadata', 'nul-argv'):
+            forged = copy.deepcopy(value)
+            rows = {command['label']: command for command in forged['commands']}
+            if defect == 'generic-success': rows['wheel-install']['argv'] = ['/bin/true']
+            elif defect == 'wrong-interpreter': rows['sdist-smoke']['argv'][0] = wp
+            elif defect == 'wrong-asset': rows['wheel-install']['argv'][-1] = '/tmp/other.whl'
+            elif defect == 'different-lock': rows['sdist-closure-install']['argv'][-1] = '/tmp/other.lock'
+            elif defect == 'different-wheelhouse': rows['sdist-closure-install']['argv'][6] = '/tmp/other-wheelhouse'
+            elif defect == 'candidate-harness': rows['wheel-installed-consumer']['argv'][1] = '/tmp/candidate/pass.py'
+            elif defect == 'different-consumer-source': rows['sdist-installed-consumer']['argv'][-1] = '/tmp/other-source'
+            elif defect == 'no-offline-install': rows['wheel-install']['argv'].remove('--no-index')
+            elif defect == 'missing-strict-metadata': rows['twine-check']['argv'].remove('--strict')
+            else: rows['wheel-install']['argv'][0] += '\0forged'
+            try: consume(forged)
+            except runtime.GitHubControllerError as error:
+                assert 'runtime command arguments' in str(error), str(error)
+                argument_rejections += 1
+            else: raise AssertionError('private runtime accepted forged command argument: ' + defect)
+        assert argument_rejections == 10
         assert not (fixture.parent / 'escaped.py').exists()
     finally:
         runtime.subprocess.run, runtime.subprocess.Popen = previous_run, previous_popen
@@ -138,7 +240,9 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         admission.authenticated_execution_state_namespace = namespace
 print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_queries',
                   'sdk_absent': True, 'runtime_owned_helpers': True,
-                  'valid_mapping_returned_unchanged': True, 'forged_mapping_or_evidence_rejected': 11,
+                  'valid_mapping_returned_unchanged': True, 'forged_mapping_or_evidence_rejected': 11, 'forged_command_records_rejected': command_rejections,
+                  'version_1_1_both_consumers_accepted': True, 'command_guard_causal': True,
+                  'forged_command_arguments_rejected': argument_rejections,
                   'busy_cases': busy_cases, 'holder_and_retained_bytes_preserved': True,
                   'exact_file_reused': True, 'candidate_or_subprocess_not_executed': True}, sort_keys=True))
 '''

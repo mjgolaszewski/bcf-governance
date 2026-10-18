@@ -66,7 +66,9 @@ def command_report(tmp_path, version="1.0"):
     from test_release_runtime_verification import _fixture
 
     report, _, wheel, sdist = _fixture(tmp_path)
-    commands, evidence = command_fixture(tmp_path / "commands", version)
+    commands, evidence = command_fixture(tmp_path / "commands", version,
+                                         wheel=wheel if version == "1.1" else None,
+                                         sdist=sdist if version == "1.1" else None)
     payload = json.loads(report.read_text())
     payload.update(schema_version=version, commands=commands,
                    evidence={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in evidence})
@@ -162,15 +164,17 @@ def test_trusted_release_verifier_rejects_legacy_profile_downgrade(tmp_path):
     assert not output.exists()
 
 
-def test_trusted_collector_rejects_legacy_profile_downgrade(tmp_path, monkeypatch):
-    from test_ci_github_release import _json, COMMIT, TREE
+@pytest.mark.parametrize("defect", ["version", "dependency"])
+def test_trusted_collector_requires_runtime_profile_and_dependency(tmp_path, monkeypatch, defect):
+    from test_ci_github_release import _release_inputs, _json, COMMIT, TREE
 
-    values = _legacy_release_inputs(tmp_path)
+    values = _legacy_release_inputs(tmp_path) if defect == "version" else _release_inputs(tmp_path)
     authorization = json.loads(values["authorization"].read_text())
     authorization["authorizer"] = dict(run_id="20", run_attempt=1)
     _json(values["authorization"], authorization)
     verification = _json(tmp_path / "verification.json", {"build": {
-        "artifact_id": "40", "provider_digest": "sha256:" + "e" * 64}})
+        "artifact_id": "40", "provider_digest": "sha256:" + "e" * 64},
+        "dependency_closure": json.loads(values["build"].read_text())["dependency_closure"] if defect == "version" else {}})
     bundle = tmp_path / "bundle"; bundle.mkdir()
     for name in ("ci-certification.json", "evidence-session.json"): _json(bundle / name, {})
     # Test only post-authentication policy forwarding, never provider authenticity.
@@ -182,7 +186,9 @@ def test_trusted_collector_rejects_legacy_profile_downgrade(tmp_path, monkeypatc
     monkeypatch.setattr(release, "authenticate_role_artifact", lambda *args, **kwargs: {})
     api = SimpleNamespace(workflow_runs=lambda *args, **kwargs: ({"id": 20, "run_attempt": 1},))
     output = tmp_path / "receipt.json"
-    with pytest.raises(GitHubControllerError, match="runtime report version"):
+    monkeypatch.setattr(runtime, "verify_archive", lambda *args: pytest.fail("collector dependency admission reached archive work"))
+    expected = "runtime report version" if defect == "version" else "runtime dependency closure"
+    with pytest.raises(GitHubControllerError, match=expected):
         release.collect_release(api, repository="owner/repo", bundle_dir=bundle,
             authorization_path=values["authorization"], build_manifest_path=values["build"],
             verification_path=verification, release_artifacts=values["artifacts"],

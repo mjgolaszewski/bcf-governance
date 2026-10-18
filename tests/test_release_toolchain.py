@@ -167,16 +167,25 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     monkeypatch.setattr(runtime, "verify_wheelhouse", lambda *_: SimpleNamespace(as_dict=lambda: {"status": "fixture-only"}))
     monkeypatch.setattr(runtime.platform, "machine", lambda: "x86_64")
     monkeypatch.setattr(runtime.subprocess, "run", lambda argv, **kwargs: subprocess.CompletedProcess(argv, 0, runtime.EXPECTED_PYTHON + "\n", ""))
-    monkeypatch.setattr(runtime, "_extract_sdist", lambda *_: source)
+    extracted = []
+    original_extract = runtime._extract_sdist
+    def extract(*args):
+        observed = original_extract(*args)
+        extracted.append(observed)
+        return observed
+    monkeypatch.setattr(runtime, "_extract_sdist", extract)
     monkeypatch.setattr(runtime, "_validate_wheel_source_mapping", lambda *_: {"status": "exact", "mapped_files": 1})
     monkeypatch.setattr(runtime, "_git_custody", lambda *_: [])
     environments = {}
     def environment(selected, root, **kwargs):
         env = runtime.runtime_environment(home=root.parent)
         environments[kwargs["label"]] = env
-        created = [run(kwargs["label"] + suffix, [str(selected), "-c", "pass"],
-                       cwd=root.parent, env=env, output_dir=kwargs["output_dir"])
-                   for suffix in ("-venv", "-closure-install")]
+        bootstrap = [str(selected), "-m", "venv", str(root)]
+        closure = [str(root / "bin/python"), "-m", "pip", "install", "--no-index",
+                   "--find-links", str(kwargs["wheelhouse"]), "--require-hashes", "-r", str(kwargs["lock_path"])]
+        created = [run(kwargs["label"] + suffix, argv, cwd=root.parent, env=env,
+                       output_dir=kwargs["output_dir"])
+                   for suffix, argv in (("-venv", bootstrap), ("-closure-install", closure))]
         return root / "bin/python", env, created
     monkeypatch.setattr(runtime, "_environment", environment)
     calls = []
@@ -198,6 +207,7 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     assert labels.index("sdist-install") < labels.index("sdist-smoke")
     consumer = next(row for row in calls if row[0] == distribution + "-installed-consumer")
     assert labels.index(distribution + "-install") < labels.index(distribution + "-installed-consumer")
+    source = extracted[0]
     assert consumer[1][1:] == [str(source / ".github/scripts/verify_installed_consumer.py"), "--source-root", str(source)]
     assert consumer[1][0].endswith(distribution + "-env/bin/python") and consumer[2]["cwd"] != source
     assert consumer[2]["env"] is environments[distribution]

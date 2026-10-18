@@ -341,12 +341,13 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
     assets = {path.name: _sha(path) for path in (wheel, sdist, sums)}
     from test_release_runtime_commands import command_fixture
 
-    commands, runtime_evidence = command_fixture(tmp_path / "command-evidence", "1.1")
+    commands, runtime_evidence = command_fixture(tmp_path / "command-evidence", "1.1", wheel=wheel, sdist=sdist)
     runtime_report = _json(
         tmp_path / "runtime-verification.json",
         {
             "schema_version": "1.1",
             "commands": commands,
+            "dependency_closure": verify_release_lock(manifest, lock).as_dict(),
             "status": "passed",
             "environment": {
                 "python_executable": "/opt/python/bin/python",
