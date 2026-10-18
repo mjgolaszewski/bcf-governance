@@ -59,3 +59,34 @@ def test_trusted_input_boundary_mutants_fail(
         verify_trusted_input(
             contract=_contract(), handoff=handoff, artifact_path=artifact, executor_role=role
         )
+
+
+@pytest.mark.parametrize("source_id", ["101", "999"])
+def test_caller_authentication_claim_cannot_verify_without_provider_state(tmp_path, monkeypatch, source_id):
+    artifact = tmp_path / "contracts.tar"
+    artifact.write_bytes(b"contract bytes")
+    contract = _contract()
+    contract["source_repository"] = {"provider": "github", "repository_id": source_id}
+    handoff = {**contract, "provider_authenticated": True,
+               "sha256": hashlib.sha256(b"contract bytes").hexdigest()}
+    reads = []
+    original = Path.read_bytes
+
+    def observed(path):
+        if path == artifact:
+            reads.append(path)
+        return original(path)
+
+    monkeypatch.setattr(Path, "read_bytes", observed)
+    with pytest.raises(TrustedInputError, match="provider state"):
+        verify_trusted_input(contract=contract, handoff=handoff, artifact_path=artifact,
+                             executor_role="trusted-collector")
+    assert reads == []
+
+
+def test_missing_provider_context_rejects_before_payload_filesystem_work(tmp_path):
+    contract = _contract()
+    handoff = {**contract, "provider_authenticated": True, "sha256": "0" * 64}
+    with pytest.raises(TrustedInputError, match="provider state"):
+        verify_trusted_input(contract=contract, handoff=handoff,
+                             artifact_path=tmp_path / "not-created", executor_role="trusted-collector")

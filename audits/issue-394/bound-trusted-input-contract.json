@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitems": [
+    "foundation.conformance",
+    "foundation.submit-normalization"
+  ],
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "read-only provider reconstruction and deterministic admission",
+  "targets": [
+    "bcf_governance/tooling/trusted_inputs.py",
+    "bcf_governance/tooling/ci_authority_contracts.py",
+    "bcf_governance/tooling/ci_github_release_inputs.py",
+    "schemas/ci-authority.schema.json",
+    "governance/canonical-representations.yml",
+    "tests/test_trusted_inputs.py",
+    "tests/test_bound_trusted_inputs.py"
+  ],
+  "contract": [
+    "Existing contract/handoff/role booleans alone cannot create TrustedInputVerification. Missing provider context rejects before local payload reads.",
+    "Select the complete required external-input population and exact single-input rule from authenticated protected consumer authority. Caller contracts and namespace hints are assertions/locators only; reject contradictions and missing required resources before source downloads.",
+    "Add optional versioned acquisition1.0 to the existing trustedExternalInput schema: explicit source role, event and provider_archive or exact archive_member payload domain. Legacy declarations remain structurally readable but cannot grant verification without an acquisition binding. No inferred producer, event or member selector.",
+    "Authenticate source repository ID, pinned commit/tree/default lineage, source authority role/workflow, latest exact-context run/attempt and complete successful job inventory through existing owners. Never borrow an older successful run after a newer failure.",
+    "Bind one exact unexpired artifact and provider digest; authenticate downloaded archive bytes before selecting a bounded safe member. Compare local bytes/digest only to that authenticated payload; bound local reads and reject unsafe files.",
+    "Reauthenticate consumer/source frontiers, newest role attempt and artifact identity before returning. A caller authentication flag or role label cannot substitute for these facts or confer a permission.",
+    "Keep the existing six-field verification projection and constructor owner; verified_by identifies provider reconstruction, not a caller-chosen actor. Serialization is not portable authorization or lifecycle/release proof.",
+    "Reuse the existing release-input role-run query for finalizer, release collector and external input contexts. Extend the existing CI schema validator for its owned definition; no parallel parser, graph, registry, broker, evaluator or receipt family."
+  ],
+  "verification": [
+    "Retain same-signature forged-context RED controls independently of new-interface failures.",
+    "Provide otherwise valid two-repository authenticated success fixtures; independently reject namespace/policy/ref/tree/lineage/role/event/run/job/artifact/digest/member/freshness failures and missing complete population.",
+    "Prove false/absent legacy authentication flags do not defeat genuine provider facts; true flags cannot authorize missing/false facts.",
+    "Affected behavior and causal controls, architecture/semantic/governance checks, canonical generation and exact installed/private parity before integration."
+  ],
+  "compatibility": "Ordinary CLI/status identities unchanged. Optional acquisition schema extension is explicit and versioned; old empty policies unchanged, historical legacy declarations readable, weak local-only verification becomes a typed block. Immutable234 and maintained adopters retained.",
+  "forbidden": [
+    "provider mutation",
+    "maintained SDK/adopter writes",
+    "hand-authored generated workflow/authority commits",
+    "an all-fail stub or metadata-only substitute for real provider verification",
+    "P33 activation or whole acceptance advancement"
+  ]
+}
