@@ -456,6 +456,7 @@ def gate_config(
         gates[target] = {
             "invocation": {
                 "argv": ["python3", "gate.py", target],
+                "timeout_seconds": 30,
                 "cwd": ".",
                 "env": (
                     {"BCF_EXECUTION_PROFILE": "production"}
