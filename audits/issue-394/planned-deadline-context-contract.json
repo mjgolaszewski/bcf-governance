@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query_then_existing_admission",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_execution.py",
+    "bcf_governance/tooling/evidence_shards.py",
+    "bcf_governance/tooling/ci_graph_render.py",
+    "bcf_governance/tooling/ci_graph_shell_projection.py"
+  ],
+  "problem": "A controlled plan requires600s for a serial shard but periodic540s admission passes because only the separate PR600s executor is considered. Static individual-gate validation also passes; the actual planned consumer must be bound.",
+  "contract": [
+    "Bind planned deadlines to consuming workflow context, validating every assigned sibling against that context rather than a PR carrier selected by event alone. Preserve genuinely local/unbound PR behavior and typed legacy direct-owner allowances.",
+    "Keep physical workflow-definition repository/ref/SHA/path, caller workflow identity, candidate commit/tree, protected evaluator source and logical graph context distinct. Source SHA is not automatically candidate SHA. Reauthenticate context at the consuming boundary.",
+    "Use current provider job.workflow_ref/workflow_sha/workflow_repository/workflow_file_path when available, through renderer-owned step environment fields; authored workflow/job/component/command overrides must fail before proof allocation. No new user-selected workflow/lane CLI switch.",
+    "GitHub Enterprise Server lacks these new properties. Missing capability must use a fully assured conservative binding through existing declared reusable-workflow edges or a typed block; never guess PR context from a display name or silently ignore a periodic consumer. Ambiguous or contradictory bindings cannot grant authority.",
+    "A compiled candidate graph is not proof of the actual protected workflow timeout. Bind authenticated workflow definition/source before claiming physical outer-budget assurance; use existing provider/source owners rather than a parallel resolver or registry. Record unsupported/missing physical-source evidence as unqualified.",
+    "Keep bounds/probes/cleanup/headroom ownership unchanged, reject actual under-budget/count/population failures before provider lookup, temporary proof directories or gate execution, and retain fixed bytes throughout any governed transaction."
+  ],
+  "verification": [
+    "Direct PR, direct periodic, exact-main calling reusable governance, old/missing policy/platform, wrong repository/ref/source/job, contradictory quartet, ambiguous invocation and unknown consumer.",
+    "The periodic540s/required600s case fails even when PR600s fits; inverse context remains independent. Every sibling is checked, including the unselected expensive shard.",
+    "Full-profile scheduled consumers and installed SDK-absent parity, architecture/semantic/governance checks and cause-specific disabled context controls.",
+    "Separate declared-graph query evidence from independently authenticated physical workflow budget; source presence or bus reports cannot close either."
+  ],
+  "primary_provider_sources": [
+    "https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations",
+    "https://github.blog/changelog/2026-09-03-github-actions-early-september-2026-updates/",
+    "https://docs.github.com/en/enterprise-cloud@latest/actions/reference/workflows-and-actions/contexts"
+  ]
+}
