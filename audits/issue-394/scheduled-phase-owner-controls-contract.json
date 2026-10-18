@@ -13,7 +13,8 @@
     ".github/scripts/run_validator_mutants.py",
     "tests/test_validate_governance_yaml.py",
     "tests/test_mutant_harness.py",
-    "tests/test_scheduled_phase_owners.py"
+    "tests/test_scheduled_phase_owners.py",
+    "tests/test_semantic_authority.py"
   ],
   "provider_evidence": {
     "commit": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
@@ -43,6 +44,7 @@
     "Qualify each late owner directly in the same copied runtime that the existing harness actually mutates. Extend the existing declared killer selector sets with cause-specific owner tests; keep ordinary end-to-end tests intact.",
     "Independently qualify the existing early authored phase-state guards through the same harness and namespace. Add their controls to existing profiles, not a parallel registry.",
     "Use real valid fixture data and positive owner cases. Distinguish phase/MEMORY diagnostics and actual missing guards from import, fixture, allocation or unrelated failures; keep raw baseline and mutant streams.",
+    "Align the semantic-control fixture with existing production discovery-then-import-resolution composition and registry-selected Python import roots. Keep discovery population, port declarations, resolver behavior and original semantic oracles unchanged. Preserve native ordinary/copied failures and qualify both positive and cause-specific mutant execution; no effect-port removal or suppression.",
     "Run the full existing validator and semantic mutation populations, affected validation/preflight behavior, architecture/lint/type/governance/semantic checks, then exact source/wheel/sdist/private and installed consumer qualification before integration.",
     "Keep the current lifecycle candidate fixed during active transactions. Canonical reconciliation alone owns generated workflow/pin commits. No release authority, performance target approval or whole requirement closure from these controls."
   ],
@@ -53,5 +55,12 @@
     "Hand-edited generated workflow authority pairs",
     "Suppression of surviving or required controls"
   ],
-  "completion_scope": "Detector qualification only. All 82 whole requirements and 38 recorded slices remain unchanged; complete lifecycle and certification remain open."
+  "completion_scope": "Detector qualification only. All 82 whole requirements and 38 recorded slices remain unchanged; complete lifecycle and certification remain open.",
+  "baseline_discovery": {
+    "subject": "a3b185a360b728e120f14b91ddc01c45ac56ca2b",
+    "ordinary_semantic_selector": "tests/test_semantic_authority.py::test_unclassified_operation_is_rejected",
+    "result": "fails before harness changes: unreachable preflight trusted-input effect ports",
+    "copied_fixture_result": "13 affected tests pass; existing operation completeness positive fails before causal execution",
+    "observed_difference": "Semantic authority test fixture uses raw discovery; production ownership composition applies existing resolve_python_imports before operation validation."
+  }
 }
