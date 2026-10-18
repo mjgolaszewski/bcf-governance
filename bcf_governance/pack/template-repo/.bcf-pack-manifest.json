@@ -1144,7 +1144,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "8cacbd4e5babd6081bf3fb5092536e0e812ae4e22cd5eb112d9a1a90a6ce6687"
+      "sha256": "4132082e3368939134188f2190ffccba2c9c80b3ca1c45fece59a7801d57986b"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -1352,6 +1352,10 @@
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
       "sha256": "3eb00c77087f1195c32340990319ed0a67b2a6d844011beb13a9afadd08b09be"
+    },
+    "scripts/_bcf_runtime/profile_gate_contracts.py": {
+      "operation": "copy",
+      "sha256": "ab3caa43ca2cefb3262dac78b1788d9d59b035f6f7522fd165edb0a183644a97"
     },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
