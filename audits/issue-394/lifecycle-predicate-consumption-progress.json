@@ -353,5 +353,11 @@
     "required_report_version": "1.1",
     "historical_report_scope_preserved": true,
     "distribution_verification": "audits/issue-394/development-distribution-c050c8e6-verification.json"
+  },
+  "serial_gate_deadline": {
+    "verification": "audits/issue-394/serial-gate-deadline-verification.json",
+    "fixed_group_compiler_and_reference_source_qualified": true,
+    "complete_runtime_deadline_composition_qualified": false,
+    "new_exact_installed_distribution_qualified": false
   }
 }

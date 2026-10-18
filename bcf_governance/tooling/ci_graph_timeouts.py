@@ -84,6 +84,16 @@ def gate_deadline_contract(repo_root: Path) -> tuple[int, dict[str, int], int]:
     return default, overrides, cleanup
 
 
+def gate_sequence_deadline_ms(bounds: list[int], *, cleanup: int, headroom: int) -> int:
+    """Contain each serial gate body, interpreter probe and owned cleanup."""
+    return quantized_deadline_ms(
+        bounded_work_ms=sum(bounds) * 1000,
+        setup_ms=len(bounds) * INTERPRETER_PROBE_TIMEOUT_SECONDS * 1000,
+        cleanup_ms=len(bounds) * 2 * cleanup * 1000,
+        measured_lower_bound_ms=0, headroom_ms=headroom * 1000,
+    )
+
+
 def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
     """Preserve the existing interface while validating complete deadline policy."""
     default, overrides, _cleanup = gate_deadline_contract(repo_root)
@@ -91,7 +101,7 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
 
 
 def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
-    """Reject any evidence lane whose outer deadline cannot contain one gate deadline."""
+    """Contain each fixed serial group and retain the individual shard floor."""
 
     default, overrides, cleanup = gate_deadline_contract(repo_root)
     headroom = graph["policy"].get(
@@ -104,15 +114,21 @@ def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
             executor = job["executor"]
             if executor["kind"] not in {"gate_group", "gate_shard"}:
                 continue
-            maximum = max(overrides.get(str(gate), default) for gate in executor["gates"])
+            bounds = [overrides.get(str(gate), default) for gate in executor["gates"]]
+            serial = executor["kind"] == "gate_group"
+            count = len(bounds) if serial else 1
+            work = sum(bounds) if serial else max(bounds)
             available = int(job["timeout_minutes"]) * 60
-            required = quantized_deadline_ms(bounded_work_ms=maximum * 1000, setup_ms=INTERPRETER_PROBE_TIMEOUT_SECONDS * 1000,
-                cleanup_ms=2 * cleanup * 1000, measured_lower_bound_ms=0, headroom_ms=headroom * 1000) // 1000
+            required = gate_sequence_deadline_ms(
+                bounds if serial else [work], cleanup=cleanup, headroom=headroom,
+            ) // 1000
             if available < required:
+                population = f"serial {count}-gate timeout sum" if serial else "gate timeout"
                 raise CIGraphError(
                     f"CI graph evidence job {job['id']} timeout {available}s cannot contain "
-                    f"the {maximum}s gate timeout plus {INTERPRETER_PROBE_TIMEOUT_SECONDS}s interpreter setup, "
-                    f"two {cleanup}s cleanup bounds and {headroom}s headroom"
+                    f"the {work}s {population} plus {count} interpreter setup bounds of "
+                    f"{INTERPRETER_PROBE_TIMEOUT_SECONDS}s, {count * 2} cleanup bounds of "
+                    f"{cleanup}s and {headroom}s headroom"
                 )
 
 

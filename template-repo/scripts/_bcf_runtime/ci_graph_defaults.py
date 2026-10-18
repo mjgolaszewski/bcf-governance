@@ -9,6 +9,9 @@ from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
 from .ci_graph_builders import component as _component, job as _job
 from .ci_graph_pr_evaluator import apply_standard_pr_evaluator
+from .ci_graph_timeouts import (
+    LEGACY_GATE_TIMEOUT_SECONDS, LEGACY_GATE_CLEANUP_SECONDS, gate_sequence_deadline_ms,
+)
 from .repository_comparison_context import (
     comparison_base_input_contract,
     push_comparison_inputs,
@@ -748,4 +751,14 @@ def build_reference_ci_graph(
             apply_standard_pr_evaluator(graph)
     elif profile == "lite":
         _apply_legacy_direct_post_merge_scope(graph)
+    for workflow in graph["workflows"]:
+        for job in workflow["jobs"]:
+            executor = job["executor"]
+            if executor["kind"] == "gate_group":
+                required = gate_sequence_deadline_ms(
+                    [LEGACY_GATE_TIMEOUT_SECONDS] * len(executor["gates"]),
+                    cleanup=LEGACY_GATE_CLEANUP_SECONDS,
+                    headroom=graph["policy"]["minimum_gate_timeout_headroom_seconds"],
+                ) // 60000
+                job["timeout_minutes"] = max(job["timeout_minutes"], required)
     return graph

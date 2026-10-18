@@ -294,6 +294,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/evidence-timeout-cleanup-contract.json
+    - audits/issue-394/serial-gate-deadline-contract.json
+    - audits/issue-394/serial-gate-deadline-verification.json
     - audits/issue-394/evidence-timeout-cleanup-characterization.json
     - audits/issue-394/provider-io-inventory-verification.json
     - audits/issue-394/provider-response-bounds-contract.yml

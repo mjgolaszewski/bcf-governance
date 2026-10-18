@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_and_private_mirror_checks_passed_full_deadline_composition_open",
+  "contract": "audits/issue-394/serial-gate-deadline-contract.json",
+  "implementation": [
+    "bcf_governance/tooling/ci_graph_timeouts.py",
+    "bcf_governance/tooling/ci_graph_defaults.py"
+  ],
+  "behavior": "Fixed serial gate_group outer bounds now sum all gate bodies and each interpreter/cleanup allowance; reference graph defaults use the same existing owner. Every sibling group validates before rendering. gate_shard retains the individual-gate floor.",
+  "checks": {
+    "affected_passed": 185,
+    "architecture_passed": 5,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "governance": 0,
+    "authored_semantics": 0,
+    "authored_operation_observations_unchanged": 21,
+    "audit_record_governance": 0
+  },
+  "cause_controls": {
+    "authority": false,
+    "controls": [
+      {
+        "cause": "sum",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_rejects_total_that_largest_gate_would_admit[6]",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_rejects_total_that_largest_gate_would_admit[8]",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_rejects_total_that_largest_gate_would_admit[9]",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_counts_each_probe_and_cleanup[200-30-10]",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_counts_each_probe_and_cleanup[220-10-9]",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_override_remains_in_sum",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_checks_every_sibling_consumer",
+          "FAILED tests/test_serial_gate_deadlines.py::test_serial_group_legacy_absence_composes_existing_defaults"
+        ],
+        "raw_sha256": {
+          "serial-gate-deadline-control-sum.stdout": "b5e880ae0f58746a06b19c9ac81683ecdb1a67969f1de738af5b79c551982e82",
+          "serial-gate-deadline-control-sum.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "cause": "reference",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_serial_gate_deadlines.py::test_reference_builder_derives_serial_defaults_for_every_group[standard]"
+        ],
+        "raw_sha256": {
+          "serial-gate-deadline-control-reference.stdout": "f612e7eb29265e709ee847052c96421ae684e3f49f5f29430d5c8623026daa25",
+          "serial-gate-deadline-control-reference.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "exact_source_restored": true
+  },
+  "qualification_history": {
+    "original_guard_regressions": "8failed/2passed",
+    "reference_default_regression": "1failed/11passed",
+    "first_full_graph_run": "23failed/160passed: underprovisioned synthetic/reference groups and two child SDK imports from relative PYTHONPATH; originals retained",
+    "final_full_graph_run": "185passed: derived reference defaults, explicit bounded growth fixture and absolute source PYTHONPATH"
+  },
+  "raw_sha256": {
+    "serial-gate-deadline-affected-final.stdout": "365694c590731bd5e6e95d12d9aa497b5ba086ae9e9869f030ca378682c9c232",
+    "serial-gate-deadline-affected.stdout": "2db8dc9555271dac6b8e67c59513d0737bba587a4fc5f4bdcdee23038dde52ba",
+    "serial-gate-deadline-architecture.stdout": "18d863e3fe364b28ee231b703aea7ff92f189303ed684efe897b7f52cacfcb28",
+    "serial-gate-deadline-authored-semantic.stdout": "1cdd66c5a1b989a79810845029cce9aae69e312b1d39400c763d7032c6ab8975",
+    "serial-gate-deadline-control-reference.stdout": "f612e7eb29265e709ee847052c96421ae684e3f49f5f29430d5c8623026daa25",
+    "serial-gate-deadline-control-sum.stdout": "b5e880ae0f58746a06b19c9ac81683ecdb1a67969f1de738af5b79c551982e82",
+    "serial-gate-deadline-exposure-final.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "serial-gate-deadline-governance-final.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "serial-gate-deadline-lint-final.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "serial-gate-deadline-red.stdout": "d95cc3bf26ca7aa9ffc03a2d548463b57beabe846addc72b5ea71816ad6687b2",
+    "serial-gate-deadline-reference-red.stdout": "bf9452e03c318ae401747c298b79f40d8826a3344a86e22c4a216c45eb8d8f56",
+    "serial-gate-deadline-type-final.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "serial-gate-deadline-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_timeouts.py": "0aea630debe90e52403b626c69764b675131e015ddc85f607b8e5ae3cc4ab596",
+    "bcf_governance/tooling/ci_graph_defaults.py": "c0be3f80698d95301e5845f8e41cddcb3c77b20c72a593befa6e323c5417f532"
+  },
+  "prior_exact_distribution": "audits/issue-394/development-distribution-c050c8e6-verification.json",
+  "limits": [
+    "The c050c8e6 build remains exact prior bytes; this new source change is not included in that installed qualification.",
+    "No complete runtime setup/API/retry/shard-assignment deadline claim. Existing component minimums retain floor semantics.",
+    "Reference defaults use existing legacy policy; larger repository overrides and groups above provider caps require reviewed budget or partition repair.",
+    "Declared executor population is used here; independent effect discovery remains foundation.conformance.",
+    "All82 requirements and38 slices unchanged; P32 active/P33-P35 dormant; performance targets unapproved."
+  ],
+  "next_action": "Bind actual planned session assignments and all runtime consumer/setup/API/retry/cleanup bounds before allocation; qualify new exact distributions and supported installed profiles."
+}

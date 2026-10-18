@@ -70,6 +70,14 @@ gate registry, and evidence code consumes them directly. The graph's outer job
 deadline must retain its declared headroom. Record provider job measurements when
 changing timeout policy; do not raise a deadline to hide an unexplained failure.
 
+Fixed `gate_group` jobs run serially. Their outer deadline must contain the sum
+of every gate body, each interpreter probe and cleanup allowances, plus graph
+headroom. Reference graphs derive conservative defaults from the existing
+legacy gate policy; repository overrides still undergo validation. Previously
+admitted groups may now require a reviewed budget or partition repair before
+rendering. Static shard checks retain an individual-gate floor; full planned
+shard and environment/API deadline containment remain separate requirements.
+
 Scheduled causal mutants retain explicit, reviewable source mutations, but the
 harness mechanically requires every search fragment to identify exactly one
 canonical runtime location. Moving or duplicating an owner therefore fails the

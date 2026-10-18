@@ -1108,7 +1108,7 @@ def _job(
         "trust": trust,
         "needs": needs or [],
         "condition": "success",
-        "timeout_minutes": 35,
+        "timeout_minutes": 70 if (executor or {}).get("kind") == "gate_group" else 35,
         "permissions": {"contents": "read"},
         "checkout": trust == "candidate",
         "components": components
@@ -1887,6 +1887,14 @@ def test_graph_growth_preserves_deterministic_gate_ownership_and_rendering(
     graph["workflows"][0]["jobs"][1]["executor"]["gates"] = [
         f"gate-{index:03d}" for index in range(128)
     ]
+    _write_graph(tmp_path, graph)
+
+    # Synthetic one-second bodies keep the 128-gate growth fixture within the
+    # provider cap while retaining every per-gate interpreter/cleanup bound.
+    (tmp_path / "governance/gate-contracts.yml").write_text(
+        "execution_policy: {default_timeout_seconds: 1, default_cleanup_timeout_seconds: 1}\n"
+    )
+    graph["workflows"][0]["jobs"][1]["timeout_minutes"] = 80
     _write_graph(tmp_path, graph)
 
     compiled = validate_ci_graph(tmp_path)
