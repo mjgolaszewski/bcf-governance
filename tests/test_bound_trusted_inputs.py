@@ -325,3 +325,13 @@ def test_complete_population_admission_precedes_first_source_download(bound_inpu
             artifact_paths=paths, source_repositories=locators,
         )
     assert api.downloads == 0
+
+
+def test_provider_fixture_archive_bytes_survive_producer_clock_change(monkeypatch):
+    from types import SimpleNamespace
+
+    api = InputAPI()
+    monkeypatch.setattr(zipfile, 'time', SimpleNamespace(localtime=lambda *_a: (2026, 10, 18, 1, 2, 4, 6, 291, 0)))
+    first = api.archive()
+    monkeypatch.setattr(zipfile, 'time', SimpleNamespace(localtime=lambda *_a: (2026, 10, 18, 1, 2, 8, 6, 291, 0)))
+    assert api.archive() == first
