@@ -26,5 +26,15 @@
   "limits": [
     "Wheel-to-sdist correspondence is not authentication of the source commit or execution completeness.",
     "Full lifecycle/profile/adopter conformance, composed deadlines, performance targets and independent release custody remain separately required."
-  ]
+  ],
+  "installed_verification": {
+    "owner": "tests/test_installed_evidence_storage.py::exercise_installed_consumer",
+    "probe": "tests/test_installed_runtime_fact_queries.py",
+    "requirements": [
+      "Load the actual installed private runtime with source SDK absent; assert helper module paths remain under installed scripts.",
+      "Execute matching and self-consistently forged archive/report cases, forbidden-subprocess checks, exact raw evidence and malformed retained gate text against existing consumers.",
+      "Add the probe to the existing combined distribution consumer; preserve schema/compiler/durable input/negative-control cases and report scope.",
+      "Qualify fresh and same-candidate repair/upgrade separately from 2.3.4 upgrade, all profiles and live adopters. Copied-runtime rehearsal is not installed assurance."
+    ]
+  }
 }
