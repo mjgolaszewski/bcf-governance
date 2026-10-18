@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "controlled_exact_distribution_and_fresh_lite_consumer_passed_full_matrix_open",
+  "source_commit": "3f253f7ba01bb90d42927178047481cf78c9b318",
+  "source_tree": "88684d48540840eb8bb75ae26575be26709010ad",
+  "scope": "Controlled exact-source development build, source fresh/same-candidate repair-upgrade and existing offline wheel/sdist consumer with SDK-absent private fact-query probes; no independent release/custody or full profile/adopter claim",
+  "artifacts": [
+    {
+      "name": "bcf_governance-2.5.0-py3-none-any.whl",
+      "bytes": 2088770,
+      "sha256": "7e18b084c3286900d37bfe686d83d27026b20f188bc8b18078643912111ce646"
+    },
+    {
+      "name": "bcf_governance-2.5.0.tar.gz",
+      "bytes": 9032270,
+      "sha256": "c527bb3c4fc149f60d2644216a5572d0a86c77bed0f55e11c31bf784cc6d933c"
+    }
+  ],
+  "source_mapping": {
+    "mapped_files": 788,
+    "status": "exact"
+  },
+  "source_distribution_inventory_verified": true,
+  "runtime_resource_population": {
+    "files": 491,
+    "source_discovered": true,
+    "exact_wheel_bytes_verified": true
+  },
+  "closed_dependency_environment": {
+    "python": "3.12.14",
+    "platform": "linux_x86_64",
+    "wheel_count": 41,
+    "lock_sha256": "2c801a3a1cf476253e85ba7748afbdd460aa2fba2e57eb83277f4eff0da6b55b"
+  },
+  "commands": [
+    {
+      "label": "wheel-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "twine-check",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-smoke",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-installed-consumer",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-smoke",
+      "exit_code": 0
+    }
+  ],
+  "installed_consumer": {
+    "profile": "lite",
+    "installation": "fresh",
+    "skip_validation": true,
+    "target_sdk_absent": true,
+    "status": "pass",
+    "query_returncodes": {
+      "authored_operation_query": 0,
+      "capture_integrity_query": 0,
+      "provider_source_query": 0
+    },
+    "prepare_returncodes": [
+      0,
+      0,
+      1
+    ],
+    "resolve_cases": [
+      {
+        "case": "valid",
+        "returncode": 0
+      },
+      {
+        "case": "asset",
+        "returncode": 1
+      },
+      {
+        "case": "reference",
+        "returncode": 1
+      },
+      {
+        "case": "missing_asset",
+        "returncode": 1
+      },
+      {
+        "case": "missing_reference",
+        "returncode": 1
+      },
+      {
+        "case": "ref",
+        "returncode": 1
+      }
+    ],
+    "semantic_returncodes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "runtime_fact_query": {
+      "authority": false,
+      "busy_cases": 3,
+      "candidate_or_subprocess_not_executed": true,
+      "exact_file_reused": true,
+      "forged_mapping_or_evidence_rejected": 11,
+      "holder_and_retained_bytes_preserved": true,
+      "runtime_owned_helpers": true,
+      "scope": "private_runtime_synthetic_fact_queries",
+      "sdk_absent": true,
+      "valid_mapping_returned_unchanged": true
+    }
+  },
+  "process_custody": [
+    {
+      "stage": "source-installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "build",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    }
+  ],
+  "runtime_report_sha256": "998de7c2c29a0e0d7efc01350b2a0d7d5c47bbc5fe0db75793952013f6dae6e5",
+  "raw_evidence_sha256": {
+    "sdist-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "sdist-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-install.stdout": "ced9d8405028892b59e6bde6eb985cd67aff440a269afdc0c18fadcfefd25898",
+    "sdist-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "sdist-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stdout": "73be57f642b6bee792ada1925b3a49047883440d459b2229c89be09a0157d2a1",
+    "wheel-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "wheel-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-install.stdout": "32c479d40f4de80f7e71d7015c3af9290ae00ce6f79f3bb98547205248e3946d",
+    "wheel-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-installed-consumer.stdout": "ff084a63ff9d3e461cebe9bf655700f81d527d842b7f5e9f1fc44c5ddcf44fdc",
+    "wheel-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "wheel-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_operation_sha256": {
+    "build": "6a97ef5385cf58156d1ea2574cf8b27da602bfd6c1a6189980da3488decd7637",
+    "supervised_qualification": "8a0238409b544255a705750c9de97bc24f9b68959eb87432eca499e4560d588e"
+  },
+  "limits": [
+    "This evidence applies to the recorded exact source/artifacts; subsequent audit commits are not those built bytes.",
+    "Existing controlled provider-port fixtures are not independent live-provider or real-adopter custody.",
+    "No wheel/sdist upgrade, v2.3.4 upgrade, repeat install, opt-out, rollback, all-profile, all-minor or full lifecycle conformance claim. Source repair-upgrade is same candidate only.",
+    "All 82 whole requirements and 38 slice objects remain unchanged; P32 active and P33-P35 dormant; no pipeline performance or target-approval claim."
+  ],
+  "next_action": "Qualify declared profiles and fresh/2.3.4 upgrade/repeat/opt-out/rollback on isolated provider-selected adopters; complete protected lifecycle/effect populations and composed deadlines. Canonical integration, generated reconciliation and exact provider proof remain separately required.",
+  "source_installer": {
+    "profile": "lite",
+    "fresh_and_same_candidate_repair_upgrade_passed": 2,
+    "sdk_absent_private_query": true,
+    "v234_upgrade_qualified": false
+  },
+  "cause_specific_rehearsal": {
+    "old_9620214b_copied_private_runtime_exit": 1,
+    "diagnostic": "private runtime accepted forged fact: substitution",
+    "current_copied_private_runtime_exit": 0,
+    "installed_assurance": false
+  }
+}

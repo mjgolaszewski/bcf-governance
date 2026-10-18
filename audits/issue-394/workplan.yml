@@ -254,6 +254,7 @@ workitems:
     - audits/issue-394/development-distribution-9620214b-verification.json
     - audits/issue-394/runtime-source-mapping-consumption-contract.json
     - audits/issue-394/runtime-source-mapping-consumption-verification.json
+    - audits/issue-394/development-distribution-3f253f7b-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

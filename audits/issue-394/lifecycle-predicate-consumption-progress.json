@@ -295,9 +295,11 @@
     "full_distribution_installed_profile_adopter_qualified": false
   },
   "controlled_development_distribution": {
-    "verification": "audits/issue-394/development-distribution-9620214b-verification.json",
-    "source_commit": "9620214b9b225a36269e0597923c7ecf8f422870",
+    "verification": "audits/issue-394/development-distribution-3f253f7b-verification.json",
+    "source_commit": "3f253f7ba01bb90d42927178047481cf78c9b318",
     "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
+    "source_fresh_same_candidate_repair_upgrade_passed": true,
+    "private_runtime_fact_queries_passed": true,
     "full_distribution_profile_adopter_matrix_qualified": false
   },
   "runtime_source_mapping_consumption": {
@@ -310,5 +312,13 @@
     "source_behavior_qualified": true,
     "execution_subject_from_retained_text_authoritative": false,
     "fresh_installed_qualified": false
-  }
+  },
+  "controlled_development_distribution_history": [
+    {
+      "verification": "audits/issue-394/development-distribution-9620214b-verification.json",
+      "source_commit": "9620214b9b225a36269e0597923c7ecf8f422870",
+      "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
+      "full_distribution_profile_adopter_matrix_qualified": false
+    }
+  ]
 }
