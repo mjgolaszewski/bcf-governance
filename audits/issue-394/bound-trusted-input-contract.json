@@ -16,7 +16,8 @@
     "governance/canonical-representations.yml",
     "tests/test_trusted_inputs.py",
     "tests/test_bound_trusted_inputs.py",
-    "bcf_governance/tooling/prior_evidence_transport.py"
+    "bcf_governance/tooling/prior_evidence_transport.py",
+    "tests/test_phase_input_semantic_consumers.py"
   ],
   "contract": [
     "Existing contract/handoff/role booleans alone cannot create TrustedInputVerification. Missing provider context rejects before local payload reads.",
@@ -33,7 +34,8 @@
     "Retain same-signature forged-context RED controls independently of new-interface failures.",
     "Provide otherwise valid two-repository authenticated success fixtures; independently reject namespace/policy/ref/tree/lineage/role/event/run/job/artifact/digest/member/freshness failures and missing complete population.",
     "Prove false/absent legacy authentication flags do not defeat genuine provider facts; true flags cannot authorize missing/false facts.",
-    "Affected behavior and causal controls, architecture/semantic/governance checks, canonical generation and exact installed/private parity before integration."
+    "Affected behavior and causal controls, architecture/semantic/governance checks, canonical generation and exact installed/private parity before integration.",
+    "Declare the actual source-input query as an artifact authorization consumer only; removing its sink declaration must fail existing semantic discovery. Do not grant factory, delegate or suppression authority."
   ],
   "compatibility": "Ordinary CLI/status identities unchanged. Optional acquisition schema extension is explicit and versioned; old empty policies unchanged, historical legacy declarations readable, weak local-only verification becomes a typed block. Immutable234 and maintained adopters retained.",
   "forbidden": [

@@ -22,10 +22,13 @@ def phase_input_inventory():
     return semantic_ownership_scan.resolve_python_imports(ROOT, discovered, registry.python_import_roots)
 
 
-@pytest.mark.parametrize("semantic_id", [
-    "governance.ci-certification-verification.v1", "governance.github-provider-artifact.v1",
+@pytest.mark.parametrize(("semantic_id", "operation"), [
+    ("governance.ci-certification-verification.v1", "verify_phase_closure_input"),
+    ("governance.ci-certification-verification.v1", "verify_required_phase_closure_inputs"),
+    ("governance.github-provider-artifact.v1", "verify_phase_closure_input"),
+    ("governance.github-provider-artifact.v1", "verify_required_phase_closure_inputs"),
+    ("governance.github-provider-artifact.v1", "_source_input"),
 ])
-@pytest.mark.parametrize("operation", ["verify_phase_closure_input", "verify_required_phase_closure_inputs"])
 def test_phase_input_authorization_consumer_is_exact_and_causal(phase_input_inventory, semantic_id, operation):
     registry = load_registry(ROOT)
     entry = next(value for value in registry.entries if value.semantic_id == semantic_id)
