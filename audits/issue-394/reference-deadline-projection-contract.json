@@ -1,8 +1,15 @@
 {
-  "schema_version": "1.0", "authority": false,
-  "workitem": "foundation.deadlines", "bounded_context": "ci_authority",
-  "architectural_layer": "tooling", "operation_side": "query_and_in_memory_projection",
-  "targets": ["bcf_governance/tooling/ci_graph_timeouts.py", "bcf_governance/tooling/ci_graph_defaults.py", "bcf_governance/tooling/governance_install/ci_graph.py"],
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query_and_in_memory_projection",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_timeouts.py",
+    "bcf_governance/tooling/ci_graph_defaults.py",
+    "bcf_governance/tooling/governance_install/ci_graph.py"
+  ],
   "contract": [
     "Preserve one execution-policy scalar parser for repository reads and validated installation-contract projection.",
     "Extend the existing reference graph factory with an optional exact gate contract, preserving ordinary CLI grammar and existing Python calls. Installation passes its actual validated contract before target allocation.",
@@ -18,5 +25,8 @@
     "Missing/contradictory contracts, omitted or duplicate producers, boolean bounds and provider-cap overflow reject before target allocation; late failure leaves input graph unchanged.",
     "Installed SDK-absent helpers, source/wheel/sdist and installation caller must consume the same projection. Source controls must expose disabled projection and dropped installation contract binding.",
     "Run affected behavior, architecture, semantic, package and governance checks; retain all82 requirements/38 slices and unresolved lifecycle/profile/adopter/custody obligations."
-  ]
+  ],
+  "canonical_config_path": "governance/ci-graph.yml",
+  "canonical_mutation_owner": "bcf_governance.tooling.scaffold_governance_artifacts.reconcile_main via existing isolated authority-transition owner",
+  "execution_scope": "Local candidate projection with exact frozen source and shared nonblocking fence; no provider submission, SDK upgrade or authority/phase certification"
 }
