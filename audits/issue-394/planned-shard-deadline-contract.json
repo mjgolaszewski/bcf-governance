@@ -1,8 +1,15 @@
 {
-  "schema_version": "1.0", "authority": false,
-  "workitem": "foundation.deadlines", "bounded_context": "ci_authority",
-  "architectural_layer": "tooling", "operation_side": "query_then_existing_commands",
-  "targets": ["bcf_governance/tooling/evidence_shards.py", "bcf_governance/tooling/preflight.py", "bcf_governance/tooling/local_pr.py"],
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query_then_existing_commands",
+  "targets": [
+    "bcf_governance/tooling/evidence_shards.py",
+    "bcf_governance/tooling/preflight.py",
+    "bcf_governance/tooling/local_pr.py"
+  ],
   "contract": [
     "Use the existing validated CI graph, exact planned inventory and canonical partition_required_gates dependency/assignment validation. Add no parallel graph or receipt family.",
     "For each applicable pull-request gate_shard owner, validate the configured shard count and every actual serial shard population using the existing gate_sequence_deadline_ms policy owner. Validate all siblings even when one shard is selected for execution.",
@@ -17,6 +24,7 @@
     "Exact derived boundary passes; parallel shard budgets are not summed together; empty and legacy behavior retain explicit scope.",
     "Wrong count, rewritten dependencies, missing/duplicate owners and split job populations block before work.",
     "Both preflight/prospective allocation and native consuming boundaries have executable cause-specific controls; removing the guard must expose the failure.",
-    "Canonical private mirrors, architecture, affected behavior, governed checks and installed runtime parity must qualify before integration."
+    "Canonical private mirrors, architecture, affected behavior, governed checks and installed runtime parity must qualify before integration.",
+    "The committed pre-change architecture test already loses lazy import edges by using unresolved discovery facts. Qualify that test through the same exact declared import-root resolver as the authored semantic consumer, retaining all effect ports and explicit exact phase-import edge assertions. Do not delete unreachable ports to make it pass."
   ]
 }
