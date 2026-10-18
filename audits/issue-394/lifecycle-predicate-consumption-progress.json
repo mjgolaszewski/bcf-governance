@@ -295,8 +295,8 @@
     "full_distribution_installed_profile_adopter_qualified": false
   },
   "controlled_development_distribution": {
-    "verification": "audits/issue-394/development-distribution-c050c8e6-verification.json",
-    "source_commit": "c050c8e6ef0f00598fefc8eb24b22b7b6f02d53d",
+    "verification": "audits/issue-394/development-distribution-fd06f44f-verification.json",
+    "source_commit": "fd06f44ff6fa7414ef4f9ff6efdee0afb710ee0e",
     "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
     "wheel_and_sdist_installed_consumers_passed": true,
     "source_fresh_same_candidate_repair_upgrade_passed": true,
@@ -338,6 +338,16 @@
       "source_fresh_same_candidate_repair_upgrade_passed": true,
       "private_runtime_fact_queries_passed": true,
       "full_distribution_profile_adopter_matrix_qualified": false
+    },
+    {
+      "verification": "audits/issue-394/development-distribution-c050c8e6-verification.json",
+      "source_commit": "c050c8e6ef0f00598fefc8eb24b22b7b6f02d53d",
+      "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
+      "wheel_and_sdist_installed_consumers_passed": true,
+      "source_fresh_same_candidate_repair_upgrade_passed": true,
+      "private_runtime_fact_queries_passed": true,
+      "runtime_report_version": "1.1",
+      "full_distribution_profile_adopter_matrix_qualified": false
     }
   ],
   "sdist_installed_consumer": {
@@ -358,8 +368,9 @@
     "verification": "audits/issue-394/serial-gate-deadline-verification.json",
     "fixed_group_compiler_and_reference_source_qualified": true,
     "complete_runtime_deadline_composition_qualified": false,
-    "new_exact_installed_distribution_qualified": false,
+    "new_exact_installed_distribution_qualified": true,
     "copied_private_probe_cases_passed": 5,
-    "installed_private_probe_pending": true
+    "installed_private_probe_pending": false,
+    "distribution_verification": "audits/issue-394/development-distribution-fd06f44f-verification.json"
   }
 }
