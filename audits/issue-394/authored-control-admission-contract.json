@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "planned; characterization precedes production changes",
+  "workitems": ["foundation.submit-normalization", "foundation.conformance"],
+  "bounded_context": "validation",
+  "architectural_layer": "tooling",
+  "operation_side": "read-only baseline admission before command allocation",
+  "targets": [
+    "bcf_governance/tooling/governance_validation/evidence_contracts.py",
+    "bcf_governance/tooling/ci_authority_submit.py",
+    "bcf_governance/tooling/scaffold_governance_artifacts.py",
+    "bcf_governance/tooling/reconcile_authority_transition.py",
+    "tests/test_authored_control_admission.py",
+    "tests/test_reconcile_governance.py",
+    "tests/test_validate_governance_yaml.py"
+  ],
+  "trigger": "Canonical projection b9b688d7 was produced despite two stale authored source mutation searches; the later governance gate rejected after 162.91 seconds of architecture execution. Source references were corrected separately at1d84f3cd.",
+  "requirements": [
+    "Reuse the existing evidence-contract mutation resolver and typed YAML mutation owner; no parallel matcher, control registry or receipt family.",
+    "At submit normalization and direct reconcile admission, validate mechanically decidable authored control defects before project runtime setup, lease acquisition, runner/proof allocation, shadow construction or provider mutation.",
+    "Reject missing or symlinked mutation targets, zero or ambiguous text searches, malformed mutation mode, stale typed YAML paths and mutations that are already applied, with existing typed diagnostic meanings.",
+    "Keep the full population of declared controls; do not silently discard failing controls or validate only a caller-selected subset.",
+    "Preserve genuinely local and ungoverned use, readable legacy profiles and valid ordinary governed candidates. Partial modern declarations and missing authority block; no new approval or CLI grammar.",
+    "Any necessary generated-target deferral must be mechanically established by its existing canonical projection owner and validated in full after projection, before a generated commit or promotion. Unknown target ownership cannot create an exemption.",
+    "Preserve the existing full governance validator's deliberate active-negative-control diagnostic ordering. Baseline admission is not an active-control execution bypass or a change to which causal defect its target must report.",
+    "Keep exact candidate bytes fixed while admitted operations run; no edits to the concurrently qualified lifecycle-consumer tree, maintained adopters, immutable234 bytes or generated workflow/pin pairs."
+  ],
+  "verification": [
+    "Same-signature submit/reconcile controls must show actual stale source references reaching forbidden allocation on unchanged production, independently of any missing new interface.",
+    "Valid governed and genuinely local baselines still reach the existing owner; an all-fail implementation cannot pass.",
+    "Qualify generated-input normalization and check/apply paths, full source control population, typed YAML modes and active cause-specific controls before integration.",
+    "Run affected behavior, existing governance/architecture/semantic checks and installed public/private parity on exact bytes."
+  ],
+  "limits": "Contract and characterization only. Runtime implementation, independent qualification and complete lifecycle/performance/custody remain open; no whole requirement or slice status advances."
+}
