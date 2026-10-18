@@ -255,6 +255,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/profile-gate-deadline-verification.json
     - audits/issue-394/bound-trusted-input-verification.json
     - audits/issue-394/protected-yaml-admission-verification.json
     - audits/issue-394/protected-yaml-consumer-matrix-4a34ff4b.json
@@ -332,6 +333,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/profile-gate-deadline-verification.json
     - audits/issue-394/development-distribution-7c6b3d65-verification.json
     - audits/issue-394/qualification-interpreter-path-admission-verification.json
     - audits/issue-394/qualification-interpreter-path-admission-contract.json
@@ -826,6 +828,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/profile-gate-deadline-verification.json
     - audits/issue-394/bound-trusted-input-verification.json
     - audits/issue-394/protected-yaml-admission-verification.json
     - audits/issue-394/interpreter-identical-requirements-contract.json
