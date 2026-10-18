@@ -35,6 +35,18 @@
       "Execute matching and self-consistently forged archive/report cases, forbidden-subprocess checks, exact raw evidence and malformed retained gate text against existing consumers.",
       "Add the probe to the existing combined distribution consumer; preserve schema/compiler/durable input/negative-control cases and report scope.",
       "Qualify fresh and same-candidate repair/upgrade separately from 2.3.4 upgrade, all profiles and live adopters. Copied-runtime rehearsal is not installed assurance."
-    ]
+    ],
+    "distribution_population": {
+      "owner": "bcf_governance/tooling/release_runtime_verification.py::run_release_runtime_verification",
+      "requirements": [
+        "Run the existing combined installed-consumer harness separately with each actual wheel and sdist installed interpreter, after that distribution installation.",
+        "Use the corresponding closed environment, an execution directory outside extracted source, and the existing SDK-absent target consumer; source harness is evidence, never the imported installer.",
+        "Bind separate wheel/sdist consumer stdout and stderr to existing report evidence; either consumer failure prevents a passing runtime report.",
+        "Preserve report 1.0 and genuine historical reports; new construction adds population coverage without retroactively claiming it for historical executions."
+      ],
+      "limits": [
+        "Fresh lite consumer only; no full profile, predecessor upgrade, opt-out, rollback, live adopter or custody claim."
+      ]
+    }
   }
 }

@@ -149,7 +149,8 @@ def test_standalone_package_qualifiers_seed_compiler_before_consumer_or_source_t
     assert Path(bootstrap_argv[-1]).is_relative_to(tmp_path)
 
 
-def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_order(tmp_path: Path, monkeypatch) -> None:
+@pytest.mark.parametrize("distribution", ["wheel", "sdist"])
+def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_order(tmp_path: Path, monkeypatch, distribution: str) -> None:
     files = {name: tmp_path / name for name in ("fixture.whl", "fixture.tar.gz", "manifest.yml", "closure.lock")}
     for path in files.values(): path.write_bytes(b"fixture bytes\n")
     source = tmp_path / "extracted-source"; source.mkdir()
@@ -192,13 +193,14 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     assert "sdist-tests" not in labels
     assert labels.index("wheel-install") < labels.index("wheel-installed-consumer")
     assert labels.index("sdist-install") < labels.index("sdist-smoke")
-    consumer = next(row for row in calls if row[0] == "wheel-installed-consumer")
+    consumer = next(row for row in calls if row[0] == distribution + "-installed-consumer")
+    assert labels.index(distribution + "-install") < labels.index(distribution + "-installed-consumer")
     assert consumer[1][1:] == [str(source / ".github/scripts/verify_installed_consumer.py"), "--source-root", str(source)]
-    assert consumer[1][0].endswith("wheel-env/bin/python") and consumer[2]["cwd"] != source
-    assert consumer[2]["env"] is environments["wheel"]
+    assert consumer[1][0].endswith(distribution + "-env/bin/python") and consumer[2]["cwd"] != source
+    assert consumer[2]["env"] is environments[distribution]
     assert all(not set(env) & {"PYTHONPATH", "GITHUB_TOKEN", "ACTIONS_RUNTIME_TOKEN", "NODE_OPTIONS"} for env in environments.values())
     assert all(env["PIP_NO_INDEX"] == "1" and shutil.which("node", path=env["PATH"]) for env in environments.values())
-    stdout = output / "wheel-installed-consumer.stdout"
+    stdout = output / (distribution + "-installed-consumer.stdout")
     assert report["schema_version"] == "1.0"
     assert report["evidence"][stdout.name] == hashlib.sha256(stdout.read_bytes()).hexdigest()
     path = output / "runtime-verification.json"
