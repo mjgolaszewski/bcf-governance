@@ -369,6 +369,7 @@ def test_installed_cold_resolver_authenticates_bytes_and_fails_without_partial_o
 def exercise_installed_consumer(consumer: Path, python: Path, fixture_root: Path) -> dict:
     """Reusable wheel/sdist acceptance against a genuinely installed consumer pack."""
     from semantic_typescript_fixture import exercise_consumer, repository
+    from test_installed_runtime_fact_queries import exercise_runtime_fact_queries
 
     consumer, python, fixture_root = consumer.resolve(), python.absolute(), fixture_root.resolve()
     probe = subprocess.run(
@@ -526,6 +527,7 @@ print(json.dumps({'authority': False, 'legacy_accepted': True, 'rejected': rejec
         capture_output=True, text=True,
     )
     assert capture_query.returncode == 0, _record(capture_query)
+    runtime_fact_query = exercise_runtime_fact_queries(consumer, python)
     prepare_records = _exercise_prepare(consumer, python, fixture_root / "prepare")
     resolve_records = [
         _exercise_resolve(consumer, python, fixture_root / f"resolve-{case or 'valid'}", case)
@@ -538,6 +540,7 @@ print(json.dumps({'authority': False, 'legacy_accepted': True, 'rejected': rejec
         "authored_operation_query": _record(authored_query),
         "provider_source_query": _record(provider_query),
         "capture_integrity_query": _record(capture_query),
+        "runtime_fact_query": runtime_fact_query,
         "prepare_commands": prepare_records, "resolve_commands": resolve_records,
         "installed_schemas_preserved": True,
     }
