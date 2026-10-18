@@ -21,14 +21,38 @@ LABELS = (
 )
 
 
-def command_fixture(root: Path, version: str = "1.0"):
+def command_arguments(root: Path, wheel: Path, sdist: Path):
+    selected = "/opt/python/bin/python"
+    wheel_python = str(root / "wheel-env/bin/python")
+    sdist_python = str(root / "sdist-env/bin/python")
+    source = root / "source/exact-sdist"
+    closure = ["-m", "pip", "install", "--no-index", "--find-links", str(root / "wheelhouse"),
+               "--require-hashes", "-r", str(root / "closure.lock")]
+    smoke = ["-m", "bcf_governance.cli", "--version"]
+    consumer = [str(source / ".github/scripts/verify_installed_consumer.py"), "--source-root", str(source)]
+    return {
+        "wheel-venv": [selected, "-m", "venv", str(root / "wheel-env")],
+        "sdist-venv": [selected, "-m", "venv", str(root / "sdist-env")],
+        "wheel-closure-install": [wheel_python, *closure],
+        "sdist-closure-install": [sdist_python, *closure],
+        "twine-check": [wheel_python, "-m", "twine", "check", "--strict", str(wheel), str(sdist)],
+        "wheel-install": [wheel_python, "-m", "pip", "install", "--no-index", "--no-deps", str(wheel)],
+        "sdist-install": [sdist_python, "-m", "pip", "install", "--no-index", "--no-deps", "--no-build-isolation", str(sdist)],
+        "wheel-smoke": [wheel_python, *smoke], "sdist-smoke": [sdist_python, *smoke],
+        "wheel-installed-consumer": [wheel_python, *consumer],
+        "sdist-installed-consumer": [sdist_python, *consumer],
+    }
+
+
+def command_fixture(root: Path, version: str = "1.0", *, wheel: Path | None = None, sdist: Path | None = None):
     root.mkdir(parents=True, exist_ok=True)
     commands, paths = [], []
+    arguments = command_arguments(root / "execution", wheel, sdist) if wheel is not None and sdist is not None else None
     labels = LABELS if version == "1.0" else LABELS[:-3] + ("sdist-smoke", "wheel-installed-consumer", "sdist-installed-consumer")
     for label in labels:
         if version == "1.0" and label == "sdist-installed-consumer":
             continue
-        row = dict(label=label, argv=["/fixture/python", "-c", "pass"], exit_code=0)
+        row = dict(label=label, argv=arguments[label] if arguments is not None else ["/fixture/python", "-c", "pass"], exit_code=0)
         for stream in ("stdout", "stderr"):
             path = root / (label + "." + stream)
             path.write_bytes(b"synthetic orchestration fixture; not execution evidence\n")
@@ -177,3 +201,41 @@ def test_historical_runtime_layouts_keep_their_actual_scope(tmp_path, layout):
     else: rows.insert(4, rows.pop(2))
     report.write_text(json.dumps(value))
     assert runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist) == value
+
+
+@pytest.mark.parametrize("defect", ["generic-success", "wrong-interpreter", "wrong-asset", "different-lock", "different-wheelhouse", "candidate-harness", "different-consumer-source", "no-offline-install", "missing-strict-metadata", "nul-argv"])
+def test_new_profile_binds_commands_to_actual_operations(tmp_path, defect):
+    report, _, wheel, sdist = command_report(tmp_path, "1.1")
+    value = json.loads(report.read_text())
+    commands, evidence = command_fixture(tmp_path / "arguments", "1.1", wheel=wheel, sdist=sdist)
+    value['environment']['python_executable'] = "/opt/python/bin/python"
+    value.update(commands=commands, evidence={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in evidence})
+    rows = {r['label']: r for r in commands}
+    if defect == "generic-success": rows['wheel-install']['argv'] = ["/bin/true"]
+    elif defect == "wrong-interpreter": rows['sdist-smoke']['argv'][0] = rows['wheel-smoke']['argv'][0]
+    elif defect == "wrong-asset": rows['wheel-install']['argv'][-1] = "/tmp/other.whl"
+    elif defect == "different-lock": rows['sdist-closure-install']['argv'][-1] = "/tmp/other.lock"
+    elif defect == "different-wheelhouse": rows['sdist-closure-install']['argv'][6] = "/tmp/other-wheelhouse"
+    elif defect == "candidate-harness": rows['wheel-installed-consumer']['argv'][1] = "/tmp/candidate/pass.py"
+    elif defect == "different-consumer-source": rows['sdist-installed-consumer']['argv'][-1] = "/tmp/other-source"
+    elif defect == "no-offline-install": rows['wheel-install']['argv'].remove("--no-index")
+    elif defect == "missing-strict-metadata": rows['twine-check']['argv'].remove("--strict")
+    else: rows['wheel-install']['argv'][0] += "\0forged"
+    report.write_text(json.dumps(value))
+    with pytest.raises(GitHubControllerError, match="runtime command"):
+        runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)
+
+
+@pytest.mark.parametrize("closure", [None, {}, {"status": "verified", "lock_sha256": "0" * 64}])
+def test_trusted_verifier_recomputes_runtime_dependency_binding(tmp_path, closure):
+    from test_ci_github_release import _release_inputs, _verify
+
+    values = _release_inputs(tmp_path)
+    report = values["runtime_report"]
+    value = json.loads(report.read_text())
+    value["dependency_closure"] = closure
+    report.write_text(json.dumps(value))
+    output = tmp_path / "verification.json"
+    with pytest.raises(GitHubControllerError, match="runtime dependency closure"):
+        _verify(values, output)
+    assert not output.exists()
