@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "contract_before_tests_and_implementation",
+  "workitems": [
+    "P32-P0-04",
+    "P32-P0-07"
+  ],
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "intent": "Reject invalid closed public-operation inventory before traversing any operation effects through the existing semantic owner. This is an earliest-rejection slice, not complete lifecycle conformance.",
+  "targets": [
+    "bcf_governance/tooling/semantic_authority_operations.py",
+    "tests/test_semantic_authority.py"
+  ],
+  "canonical_owner": "bcf_governance/tooling/semantic_authority_contracts.py::_validate_operations",
+  "requirements": [
+    "Retain schema, source-language filtering and canonical unique population discovery.",
+    "Finish duplicate/stale/entrypoint/semantic-shape/function-inventory and missing-operation admission for the complete population before any validated_operation_effect_inventory call.",
+    "Preserve effect observation order, exact port counts, existing authority/read-only constraints and full traversal for admitted inputs.",
+    "Preserve Python/TypeScript and consumer-owned-schema compatibility, public imports and CLI grammar; no second graph, evaluator, registry or receipt."
+  ],
+  "expected_tests": [
+    "Real existing operation inventories with missing, multiply classified, stale, wrong-entrypoint, contradictory semantic shape and absent function subjects must reject with original cause before any effect callback.",
+    "An admitted inventory executes existing effect query for every included operation in original order and retains exact observations.",
+    "Retain original semantic completeness negative-control search and execution; no weakening of runtime effect checks.",
+    "Affected semantic authority and TypeScript tests, architecture/lint/type/semantic/governance and applicable installed/private consumers before qualified completion."
+  ],
+  "forbidden": [
+    "Maintained adopters and immutable predecessor bytes",
+    "Pinned lifecycle-consumer supervisor and other agents source trees",
+    "Hand-edited generated workflows or authority pins",
+    "Whole P32 closure, P33 activation or performance claims from this slice"
+  ],
+  "evidence_rule": "Contract commit then genuine ordering RED before production changes; preserve failures and exact subjects. Authored implementation status does not confer independent verified/closed truth."
+}
