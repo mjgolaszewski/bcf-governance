@@ -13,6 +13,7 @@ from typing import Callable, Iterable, Protocol
 import yaml
 
 from .governance_install.transaction import copy_repository_shadow
+from .governance_validation.evidence_contracts import validate_authored_gate_controls
 
 
 class ReconcileAuthorityTransitionError(ValueError):
@@ -331,6 +332,7 @@ def apply_workflow_authority_transition(
             authority_commit = _commit_all(shadow, _AUTHORITY_MESSAGE)
         for step in step_factory(shadow):
             step.check()
+        validate_authored_gate_controls(shadow)
         if _text(shadow, "status", "--porcelain=v1", "-z"):
             raise ReconcileAuthorityTransitionError(
                 "workflow-authority transition did not produce a clean fixed point"

@@ -552,7 +552,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_submit.py": {
       "operation": "copy",
-      "sha256": "bc0efb0d9c1e1d4949b9ed1a00c3045282adaf14190b0b36df1ddd6a741ff226"
+      "sha256": "1d7ae403fb0edaabddeba1a4734981450849918aae5e7f7de06bd92d6f04d08e"
     },
     "scripts/_bcf_runtime/ci_candidate_pr.py": {
       "operation": "copy",
@@ -1192,7 +1192,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/evidence_contracts.py": {
       "operation": "copy",
-      "sha256": "69b5437cc602627525ded9322539669da24381fc267283f2571e528daa155ebf"
+      "sha256": "3d2b9535d00204e333c240767e781c2f0a33e90be8339dcf06524c9928beeeb6"
     },
     "scripts/_bcf_runtime/governance_validation/native_adoption.py": {
       "operation": "copy",
@@ -1403,7 +1403,7 @@
     },
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
-      "sha256": "162a298cc596ff72c035b84c73e5ee70794330f343ac08fd792bf25d49a955f0"
+      "sha256": "0f1545c07579afe3ef35af3541120f0fc8daf429bd320e77df962aa57c01c193"
     },
     "scripts/_bcf_runtime/reconcile_stage_ledger.py": {
       "operation": "copy",
@@ -1755,7 +1755,7 @@
     },
     "scripts/_bcf_runtime/scaffold_governance_artifacts.py": {
       "operation": "copy",
-      "sha256": "e628029654662f266196a6716ec403aa50f5947fd5b987b2fc0e2c03d7bd525b"
+      "sha256": "a03625ddee82781b5610cae0d21294facbe78582be338b89db718b40de00e0c6"
     },
     "scripts/_bcf_runtime/scheduled_control_execution.py": {
       "operation": "copy",

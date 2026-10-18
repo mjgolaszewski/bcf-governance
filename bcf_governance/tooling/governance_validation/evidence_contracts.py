@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .common import *  # noqa: F403,F405
 from .phase_artifacts import _validate_document_path
+from ..semantic_yaml import SemanticYAMLError, load_unique_mapping_text
 from ..yaml_mutations import (
     YAMLMutationPathError,
     mutation_mode,
@@ -49,7 +50,10 @@ def validate_authored_gate_controls(repo_root: Path) -> None:
             continue
         if not path.is_file() or path.is_symlink() or path.resolve() != path:
             raise GovernanceValidationError(f"authored control input must be a regular repository file: {relative}")
-        documents[name] = _load_yaml(path)
+        try:
+            documents[name] = load_unique_mapping_text(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, SemanticYAMLError) as exc:
+            raise GovernanceValidationError(f"authored control input is invalid: {relative}: {exc}") from exc
     if "profile" not in documents:
         contracts = documents.get("contracts", {})
         if ("policy" not in documents and "gates" not in contracts
