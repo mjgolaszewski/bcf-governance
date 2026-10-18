@@ -135,6 +135,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/authored-control-admission-verification.json
+    # 79828d1d canonical/governance PASS; ZIP fixture clock failure retained;8fbe623b99PASS, exact requalification pending.
     - audits/issue-394/provider-main-ancestry-reconciliation.json
     - audits/issue-394/scheduled-phase-native-profiles-verification.json
     - audits/issue-394/residual-current-source-census.json

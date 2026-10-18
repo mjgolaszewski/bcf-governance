@@ -127,7 +127,8 @@
   "terminal_custody": "Completed native sessions independently read back; authenticated child-tree quiescence, all recorded handles absent and fresh same-physical-fence release recorded outside governed distribution.",
   "historical_ledger_dispositions": {
     "memory_and_phase": "Native fcddcbf1 profiles pass 27/25/12/10; semantic fixture 44, lint/type, six architecture and unchanged 21-operation semantics pass. Prior 683 interruption stays unknown. Provider ancestry merged; installed/lifecycle/performance/custody pending; all 82/38 unchanged. See audits/issue-394/scheduled-phase-native-profiles-verification.json.",
-    "combined_source": "Four native profiles pass at fcddcbf1 (27/25/12/10); source checks pass. Provider ancestry merged; installed proof pending; all 82 open. See audits/issue-394/scheduled-phase-native-profiles-verification.json."
+    "combined_source": "Four native profiles pass at fcddcbf1 (27/25/12/10); source checks pass. Provider ancestry merged; installed proof pending; all 82 open. See audits/issue-394/scheduled-phase-native-profiles-verification.json.",
+    "pre_archive_qualification": "Authored controls at d9bd1b56 pass 221 compound/35 focused cases, six architecture, lint/type and unchanged 21 operations; four query counterfactuals fail 18 intended oracles. Canonical/installed/lifecycle/performance/custody pending; 82/38 unchanged. See audits/issue-394/authored-control-admission-verification.json."
   },
   "remaining": [
     "Canonical projection/full governance on exact compound candidate.",
@@ -181,6 +182,29 @@
     "control-admission-d9bd1b56-causal-attempt1/reconcile-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "control-admission-d9bd1b56-causal-attempt1/submit-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "control-admission-d9bd1b56-causal-attempt1/submit-counterfactual.stdout": "a387dd27d83813b9493b8f85614b18a227ea6aff4c330f472a2448f44c21a33d",
-    "control-admission-d9bd1b56-causal-attempt1/submit-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "control-admission-d9bd1b56-causal-attempt1/submit-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d6a4d7e3-canonical-terminal-readback.json": "3126cceb1a9ff30e72f71dde545f00290cf996f63b98a59e24e485278315eb48",
+    "control-admission-79828d1d-governance-terminal-readback.json": "2cd52bd738da7d70147e642d95b1c5727b5a761d760f90ea96aa2ff540cb80d3",
+    "development-periodic-qualified-79828d1d-terminal-readback.json": "4c80632eed2ae32762bc0379dc5eec491a366ebcb28c02b2edf33782489b45d8",
+    "control-admission-79828d1d-private-attempt2-terminal-readback.json": "05a9e5b1f3ce132a35eebbefd98efc48f482b3407a813efe151b492eb326b914",
+    "provider-fixture-ed5015d8-red-terminal-readback.json": "53256ed81cf2406216c58aa86cac1dec3b45507e8d67d265fca802ebfd654edb",
+    "provider-fixture-4d35b2fd-red-terminal-readback.json": "0a8963d9cd31e29939ee8ca114bc7ccea2032ec307fc03d20f1801091e7cac03",
+    "provider-fixture-8fbe623b-green-terminal-readback.json": "052cfbf18320787e80071afc687d9186b763f94aeead9d9562fa663355424398",
+    "provider-fixture-8fbe623b-green-owned-attempt1/fixture-clock-regression.stdout": "5802731939372ff4d62299879f088ee1ebe6b4dffeec806732baaf6b97612658"
+  },
+  "fixture_stability_followup": {
+    "authority": false,
+    "source_commit": "8fbe623ba49442815575e7f07cdec2996dcc4cc7",
+    "contract_commit": "c59b868b",
+    "retained_candidate": "79828d1d349a7150d1b5d5719a79a801c80b9239",
+    "canonical_and_governance": "PASS on retained candidate only",
+    "distribution": "Five stages PASS;92 SDK cases per archive;792 wheel mappings",
+    "initial_private_failure": "Operator wrapper helper import failed before any test allocation",
+    "private_replay": "wheel77PASS;sdist76PASS/1FAIL: fake-provider ZIP timestamp changed during frontier verification",
+    "first_clock_regression": "ed5015d8 incomplete test clock adapter; unexpected failure, no causal RED claim",
+    "causal_red": "4d35b2fd:1 intended assertion failure; ZIP bytes differ after controlled clock change",
+    "fix": "8fbe623b pins only fixture ZipInfo timestamp; production frontier checks unchanged",
+    "green": "99 affected cases PASS in5.45s;2 existing RefResolver warnings",
+    "next_action": "Canonical reconcile new subject; exact once-built archive/private/full consumer qualification pending; old captures retained"
   }
 }
