@@ -137,9 +137,9 @@ def test_full_twenty_gate_periodic_reference_preserves_every_control():
     graph = _build(contract, gates=gates)
     for workflow in graph['workflows']:
         if workflow['role'] != 'scheduled': continue
-        parts = [job for job in workflow['jobs'] if job['executor']['kind'] == 'gate_group']
-        assert len(parts) > 1
-        assert [gate for job in parts for gate in job['executor']['gates']] == gates
+        parts = [job for job in workflow['jobs'] if job['executor']['kind'] == 'gate_shard']
+        assert len(parts) == 1
+        assert parts[0]['executor']['gates'] == gates
         assert all(job['timeout_minutes'] <= 360 for job in parts)
     assert contract == original
 
@@ -151,7 +151,7 @@ def test_cap_failure_precedes_install_transaction_path_allocation(tmp_path):
     args = SimpleNamespace(project_id='consumer', profile='standard', upgrade=False,
         candidate_runner_label=['ubuntu-24.04'], trusted_runner_label=['self-hosted'],
         candidate_runner_kind='hosted', trusted_runner_kind='self-hosted')
-    contract['gates']['governance-validate'].setdefault('invocation', {})['timeout_seconds'] = 21600
+    contract['gates']['runtime-smoke'].setdefault('invocation', {})['timeout_seconds'] = 21600
     target = tmp_path / 'unallocated'
     with pytest.raises(ValueError, match='360.*partition'):
         install_transaction_paths(args, contract=contract, contract_version='3.0',
