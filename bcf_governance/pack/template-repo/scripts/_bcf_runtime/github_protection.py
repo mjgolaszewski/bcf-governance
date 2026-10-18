@@ -13,6 +13,8 @@ from typing import Any
 from jsonschema import Draft202012Validator
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .automation_contracts import (
     AutomationContractError,
     load_automation_registry,
@@ -95,8 +97,8 @@ def _validate_protection(value: object, *, schema_path: Path) -> dict[str, Any]:
 
 def load_protection_bytes(content: bytes, *, schema_path: Path) -> dict[str, Any]:
     try:
-        value = yaml.safe_load(content.decode("utf-8"))
-    except (UnicodeDecodeError, yaml.YAMLError) as exc:
+        value = load_unique_yaml_text(content.decode("utf-8"))
+    except (UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError(f"cannot decode GitHub protection declaration: {exc}") from exc
     return _validate_protection(value, schema_path=schema_path)
 
@@ -107,8 +109,8 @@ def load_protection(repo_root: Path) -> dict[str, Any]:
     if path.is_symlink() or not path.is_file():
         raise GitHubControllerError("GitHub protection declaration is missing or unsafe")
     try:
-        value = yaml.safe_load(path.read_text(encoding="utf-8"))
-    except (OSError, yaml.YAMLError) as exc:
+        value = load_unique_yaml_text(path.read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError(f"cannot load GitHub protection declaration: {exc}") from exc
     return _validate_protection(value, schema_path=root / SCHEMA_PATH)
 

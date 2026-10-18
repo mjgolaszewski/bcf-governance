@@ -18,6 +18,8 @@ import zipfile
 from jsonschema import Draft202012Validator
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_state import CandidateIdentity
 from .controller_custody import authority_identity, validate_controller_custody
 from .ci_github_api import GitHubAPI
@@ -54,8 +56,8 @@ def _sha256(raw: bytes) -> str:
 
 def _mapping(raw: bytes, *, label: str) -> dict[str, Any]:
     try:
-        value = yaml.safe_load(raw.decode("utf-8"))
-    except (UnicodeDecodeError, yaml.YAMLError) as exc:
+        value = load_unique_yaml_text(raw.decode("utf-8"))
+    except (UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError(f"{label} is not a valid mapping") from exc
     if not isinstance(value, dict):
         raise GitHubControllerError(f"{label} must be a mapping")

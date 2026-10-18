@@ -12,6 +12,8 @@ from typing import Any
 
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
 from .ci_github_artifacts import (
@@ -55,11 +57,11 @@ def _release_version_at_main(
     if content.path != PUBLIC_CONTRACTS_PATH:
         raise GitHubControllerError("release contract path is not exact")
     try:
-        value = yaml.safe_load(content.content.decode("utf-8"))
+        value = load_unique_yaml_text(content.content.decode("utf-8"))
         document = value["document"]
         package = value["package"]
         version = package["version"]
-    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError("current-main release contract is invalid") from exc
     if (
         not isinstance(document, dict)

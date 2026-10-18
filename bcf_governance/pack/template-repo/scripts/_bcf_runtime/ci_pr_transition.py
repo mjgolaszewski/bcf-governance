@@ -14,6 +14,8 @@ import zipfile
 from jsonschema import Draft202012Validator
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_github_api import GitHubAPI, GitHubAPIError
 from .ci_github_identity import GitHubControllerError, MainIdentity, positive_int
 from .github_protection import load_protection_bytes
@@ -40,9 +42,9 @@ def load_transition_bytes(content: bytes, *, schema_path: Path) -> dict[str, Any
     """Decode the closed transition contract using trusted packaged schema bytes."""
 
     try:
-        value = yaml.safe_load(content.decode("utf-8"))
+        value = load_unique_yaml_text(content.decode("utf-8"))
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
-    except (UnicodeDecodeError, yaml.YAMLError, OSError, json.JSONDecodeError) as exc:
+    except (UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError, OSError, json.JSONDecodeError) as exc:
         raise GitHubControllerError(f"cannot load PR transition contract: {exc}") from exc
     if not isinstance(value, dict):
         raise GitHubControllerError("PR transition contract must be a mapping")

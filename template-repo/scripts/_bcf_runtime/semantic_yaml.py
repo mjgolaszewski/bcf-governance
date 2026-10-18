@@ -1,4 +1,4 @@
-"""Duplicate-rejecting YAML decoding for semantic authority contracts."""
+"""Duplicate-rejecting YAML decoding for governed contracts."""
 
 from __future__ import annotations
 
@@ -48,12 +48,17 @@ _UniqueKeyLoader.add_constructor(
 )
 
 
-def load_unique_mapping_text(text: str) -> dict[str, Any]:
-    """Decode one captured semantic document through the existing unique loader."""
+def load_unique_yaml_text(text: str | bytes) -> Any:
+    """Decode governed YAML without discarding duplicate authored keys."""
     try:
-        payload = yaml.load(text, Loader=_UniqueKeyLoader)
+        return yaml.load(text, Loader=_UniqueKeyLoader)
     except (UnicodeError, TypeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise SemanticYAMLError(str(exc)) from exc
+
+
+def load_unique_mapping_text(text: str | bytes) -> dict[str, Any]:
+    """Decode one captured semantic mapping through the existing unique loader."""
+    payload = load_unique_yaml_text(text)
     if not isinstance(payload, dict):
         raise SemanticYAMLError("document must contain a mapping")
     return payload

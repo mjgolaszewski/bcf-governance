@@ -15,6 +15,8 @@ from typing import Any
 
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_github_api import GitHubAPI, GitHubAPIError
 
 
@@ -55,8 +57,8 @@ def _mapping(path: Path) -> tuple[bytes, dict[str, Any]]:
         raise CIAuthorityPinError("CI authority must be a regular tracked file")
     raw = path.read_bytes()
     try:
-        value = yaml.safe_load(raw)
-    except yaml.YAMLError as exc:
+        value = load_unique_yaml_text(raw)
+    except (yaml.YAMLError, SemanticYAMLError) as exc:
         raise CIAuthorityPinError("CI authority is invalid YAML") from exc
     if not isinstance(value, dict):
         raise CIAuthorityPinError("CI authority must contain a mapping")
@@ -196,8 +198,8 @@ def compiled_workflow_jobs(
     """Compile exact provider job names from one committed workflow definition."""
 
     try:
-        workflow = yaml.safe_load(raw)
-    except yaml.YAMLError as exc:
+        workflow = load_unique_yaml_text(raw)
+    except (yaml.YAMLError, SemanticYAMLError) as exc:
         raise CIAuthorityPinError("committed workflow is invalid YAML") from exc
     jobs = workflow.get("jobs") if isinstance(workflow, dict) else None
     if not isinstance(jobs, dict) or not jobs:
@@ -254,8 +256,8 @@ def compiled_workflow_events(raw: bytes) -> tuple[str, ...]:
     """Compile the exact provider event inventory from workflow bytes."""
 
     try:
-        workflow = yaml.safe_load(raw)
-    except yaml.YAMLError as exc:
+        workflow = load_unique_yaml_text(raw)
+    except (yaml.YAMLError, SemanticYAMLError) as exc:
         raise CIAuthorityPinError("committed workflow is invalid YAML") from exc
     if not isinstance(workflow, dict):
         raise CIAuthorityPinError("committed workflow must be a mapping")

@@ -13,6 +13,8 @@ from typing import Any
 
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
 from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
@@ -356,11 +358,11 @@ def _successful_role_run(
         repository, str(workflow["active_path"]), ref=main.checkout_sha
     )
     try:
-        definition = yaml.safe_load(trusted.content.decode("utf-8"))
+        definition = load_unique_yaml_text(trusted.content.decode("utf-8"))
         job = definition["jobs"][job_id]
         template = str(job["name"])
         declared = tuple(str(value) for value in job["strategy"]["matrix"]["trusted_runner"])
-    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError(f"{role} proof workflow topology is invalid") from exc
     marker = "${{ matrix.trusted_runner }}"
     if declared != instance_labels or template.count(marker) != 1:
@@ -387,11 +389,11 @@ def compile_self_controller_confirmation(
         repository, "governance/self-governance-policy.yml", ref=main.checkout_sha
     )
     try:
-        policy = yaml.safe_load(content.content.decode("utf-8"))
+        policy = load_unique_yaml_text(content.content.decode("utf-8"))
         runner = policy["runner_security"]
         pin = _pin(runner["trusted_controller_artifact"])
         labels = tuple(str(value) for value in runner["trusted_instance_labels"])
-    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError) as exc:
+    except (KeyError, TypeError, UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError("provider self-controller policy is invalid") from exc
     if len(labels) < 2 or len(labels) != len(set(labels)):
         raise GitHubControllerError("trusted controller proof requires distinct runners")
@@ -429,7 +431,7 @@ def compile_self_controller_confirmation(
 
 def _replace_env(raw: bytes, desired: dict[str, str]) -> bytes:
     text = raw.decode("utf-8")
-    parsed = yaml.safe_load(text)
+    parsed = load_unique_yaml_text(text)
     current = parsed.get("env") if isinstance(parsed, dict) else None
     if not isinstance(current, dict):
         raise GitHubControllerError("self-controller workflow lacks an environment mapping")
@@ -446,7 +448,7 @@ def _replace_env(raw: bytes, desired: dict[str, str]) -> bytes:
 
 def _replace_topology_controller(raw: bytes, commit_sha: str) -> bytes:
     text = raw.decode("utf-8")
-    parsed = yaml.safe_load(text)
+    parsed = load_unique_yaml_text(text)
     current = parsed.get("controller_commit") if isinstance(parsed, dict) else None
     if not isinstance(current, str) or not re.fullmatch(r"[a-f0-9]{40}", current):
         raise GitHubControllerError("GitHub topology controller commit is invalid")
@@ -483,7 +485,7 @@ def project_self_controller_custody(
     exact = _pin(pin)
     policy_path = root / "governance/self-governance-policy.yml"
     policy_raw = policy_path.read_bytes()
-    policy = yaml.safe_load(policy_raw)
+    policy = load_unique_yaml_text(policy_raw)
     runner_security = policy.get("runner_security") if isinstance(policy, dict) else None
     if not isinstance(runner_security, dict):
         raise GitHubControllerError("self-governance runner policy is invalid")
@@ -575,7 +577,7 @@ def verify_self_controller_projection(repo_root: Path) -> int:
     """Reject any self-controller copy that differs from its canonical pin."""
 
     root = repo_root.resolve()
-    policy = yaml.safe_load(
+    policy = load_unique_yaml_text(
         (root / "governance/self-governance-policy.yml").read_text(encoding="utf-8")
     )
     runner_security = policy.get("runner_security") if isinstance(policy, dict) else None

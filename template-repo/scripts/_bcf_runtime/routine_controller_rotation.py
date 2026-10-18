@@ -13,6 +13,8 @@ from typing import Any, Callable, Iterable, Mapping, Sequence
 from jsonschema import Draft202012Validator
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_contracts import authority_role_jobs, authority_role_workflow
 from .ci_authority_pins import compiled_workflow_jobs
 from .ci_github_identity import GitHubControllerError, MainIdentity
@@ -55,8 +57,8 @@ class RoutineCallbackTopologyError(ValueError):
 
 def _workflow_jobs(raw: bytes) -> dict[str, Mapping[str, Any]]:
     try:
-        payload = yaml.safe_load(raw)
-    except yaml.YAMLError as exc:
+        payload = load_unique_yaml_text(raw)
+    except (yaml.YAMLError, SemanticYAMLError) as exc:
         raise RoutineCallbackTopologyError(
             "rotation callback workflow is invalid YAML"
         ) from exc
@@ -212,7 +214,7 @@ def classify_provider_callback_topology(
 def prospective_no_transition_topology(repo_root: Path) -> str:
     """Exercise the real callback classifier against canonical skipped facades."""
 
-    authority = yaml.safe_load(
+    authority = load_unique_yaml_text(
         (repo_root / "governance/ci-authority.yml").read_text(encoding="utf-8")
     )
     workflow = authority_role_workflow(authority, "controller_rotation")

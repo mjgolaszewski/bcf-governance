@@ -13,6 +13,8 @@ import zipfile
 
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_decisions import (
     StatusConclusion,
     StatusContext,
@@ -152,10 +154,10 @@ def _evaluator_identity(
         repository, "governance/ci-graph.yml", ref=base_sha
     )
     try:
-        graph = yaml.safe_load(graph_content.content)
+        graph = load_unique_yaml_text(graph_content.content)
         controller = graph["trusted_controller"]
         controller_kind = controller["kind"]
-    except (KeyError, TypeError, yaml.YAMLError) as exc:
+    except (KeyError, TypeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError("protected-base evaluator graph is malformed") from exc
     if controller_kind == "executable":
         mode = "protected_base"
@@ -167,7 +169,7 @@ def _evaluator_identity(
             raise GitHubControllerError("managed evaluator policy path is missing")
         policy_content = api.content(repository, policy_path, ref=base_sha)
         try:
-            policy = yaml.safe_load(policy_content.content)
+            policy = load_unique_yaml_text(policy_content.content)
             installed = policy["runner_security"]["trusted_controller_installation"]
             controller_identity = {
                 "commit_sha": exact_sha(
@@ -178,7 +180,7 @@ def _evaluator_identity(
                 "policy_blob_oid": policy_content.blob_oid,
                 "policy_sha256": hashlib.sha256(policy_content.content).hexdigest(),
             }
-        except (KeyError, TypeError, yaml.YAMLError) as exc:
+        except (KeyError, TypeError, yaml.YAMLError, SemanticYAMLError) as exc:
             raise GitHubControllerError(
                 "managed evaluator installation identity is malformed"
             ) from exc

@@ -8,6 +8,8 @@ from typing import Any
 
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_contracts import (
     authority_role_workflow,
     producer_workflow,
@@ -90,8 +92,8 @@ def _pending_producer_facades(
         repository, str(workflow["active_path"]), ref=main.checkout_sha
     ).content
     try:
-        payload = yaml.safe_load(raw)
-    except yaml.YAMLError as exc:
+        payload = load_unique_yaml_text(raw)
+    except (yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError("admission workflow is not readable YAML") from exc
     jobs = payload.get("jobs") if isinstance(payload, dict) else None
     roles = workflow.get("job_roles")

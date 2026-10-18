@@ -7,6 +7,8 @@ from typing import Any
 
 import yaml
 
+from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+
 from .ci_authority_contracts import (
     authority_role_jobs,
     authority_role_workflow,
@@ -43,8 +45,8 @@ def load_authority(
 
     content = api.content(repository, "governance/ci-authority.yml", ref=main.checkout_sha)
     try:
-        payload = yaml.safe_load(content.content.decode("utf-8"))
-    except (UnicodeDecodeError, yaml.YAMLError) as exc:
+        payload = load_unique_yaml_text(content.content.decode("utf-8"))
+    except (UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise GitHubControllerError("trusted CI authority document is invalid YAML") from exc
     if not isinstance(payload, dict):
         raise GitHubControllerError("trusted CI authority document must contain a mapping")
