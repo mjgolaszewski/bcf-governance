@@ -67,7 +67,7 @@ def _validate_operations(
         populations.append(row)
         discovered[str(row["id"])] = entries
     classified: dict[tuple[str, str], str] = {}
-    observations: list[dict[str, Any]] = []
+    admitted: list[tuple[dict[str, Any], str, str, dict[str, Any]]] = []
     for operation in payload["operations"]:
         population_id = str(operation["population"])
         key = str(operation["population_key"])
@@ -93,6 +93,20 @@ def _validate_operations(
             raise SemanticAuthorityError(
                 f"operation {operation['id']} entrypoint is absent from the shared source inventory"
             )
+        admitted.append((operation, kind, actual_symbol, function))
+    missing = sorted(
+        f"{population_id}:{key}"
+        for population_id, entries in discovered.items()
+        for key in entries
+        if (population_id, key) not in classified
+    )
+    if missing:
+        raise SemanticAuthorityError("unclassified public application operations: " + ", ".join(missing))
+
+    # Effects can be traversed only after the entire operation population admits.
+    observations: list[dict[str, Any]] = []
+    for operation, kind, actual_symbol, function in admitted:
+        population_id = str(operation["population"])
         try:
             effect_ports = validated_operation_effect_inventory(
                 operation, str(function["symbol"]), inventory,
@@ -109,12 +123,4 @@ def _validate_operations(
                 for role, kind, symbol in effect_ports
             ],
         })
-    missing = sorted(
-        f"{population_id}:{key}"
-        for population_id, entries in discovered.items()
-        for key in entries
-        if (population_id, key) not in classified
-    )
-    if missing:
-        raise SemanticAuthorityError("unclassified public application operations: " + ", ".join(missing))
     return observations
