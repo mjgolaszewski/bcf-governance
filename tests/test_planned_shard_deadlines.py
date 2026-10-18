@@ -92,3 +92,15 @@ def test_native_shard_rechecks_all_assignments_before_provider_or_gate_work(tmp_
     with pytest.raises(CIGraphError, match='cannot contain'):
         owner.main(['--repo-root', str(tmp_path), '--shard-index', '1', '--shard-count', '2',
                     '--session-root', str(tmp_path / 'sessions')])
+
+
+def test_assignment_cannot_expand_iteration_beyond_configured_shards(tmp_path, monkeypatch):
+    graph, dag, targets = _inputs(tmp_path)
+    dag['nodes'][0]['assigned_shard'] = 10**9
+    builtin_range = range
+    def bounded_range(count):
+        assert count <= 4, 'untrusted assignment expanded query iteration'
+        return builtin_range(count)
+    monkeypatch.setattr(owner, 'range', bounded_range, raising=False)
+    with pytest.raises(CIGraphError):
+        owner.validate_planned_shard_deadlines(tmp_path, graph, targets, dag)
