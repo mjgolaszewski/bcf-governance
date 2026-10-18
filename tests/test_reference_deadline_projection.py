@@ -130,12 +130,18 @@ def test_real_model_projection_contains_duration_aware_assignments(estimate_kind
     assert _shard(graph)['timeout_minutes'] == 243
 
 
-def test_full_twenty_gate_periodic_reference_requires_explicit_partition():
+def test_full_twenty_gate_periodic_reference_preserves_every_control():
     root = Path(__file__).resolve().parents[1]
     contract = yaml.safe_load((root / 'governance/gate-contracts.yml').read_text())
-    # Known remaining scope: retain every periodic control and block before install.
-    with pytest.raises(ValueError, match='360.*partition'):
-        _build(contract, gates=list(contract['gates']))
+    gates = list(contract['gates']); original = copy.deepcopy(contract)
+    graph = _build(contract, gates=gates)
+    for workflow in graph['workflows']:
+        if workflow['role'] != 'scheduled': continue
+        parts = [job for job in workflow['jobs'] if job['executor']['kind'] == 'gate_group']
+        assert len(parts) > 1
+        assert [gate for job in parts for gate in job['executor']['gates']] == gates
+        assert all(job['timeout_minutes'] <= 360 for job in parts)
+    assert contract == original
 
 
 def test_cap_failure_precedes_install_transaction_path_allocation(tmp_path):
@@ -145,6 +151,7 @@ def test_cap_failure_precedes_install_transaction_path_allocation(tmp_path):
     args = SimpleNamespace(project_id='consumer', profile='standard', upgrade=False,
         candidate_runner_label=['ubuntu-24.04'], trusted_runner_label=['self-hosted'],
         candidate_runner_kind='hosted', trusted_runner_kind='self-hosted')
+    contract['gates']['governance-validate'].setdefault('invocation', {})['timeout_seconds'] = 21600
     target = tmp_path / 'unallocated'
     with pytest.raises(ValueError, match='360.*partition'):
         install_transaction_paths(args, contract=contract, contract_version='3.0',
