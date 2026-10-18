@@ -1,0 +1,51 @@
+{
+  "authority": false,
+  "provider_main": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+  "provider_tree": "b18eddf2dc35111e9814e4c8c92c3039da9c685a",
+  "provider_tree_equals_preserved_primary_e2": true,
+  "previous_candidate": "4f2df53bd2920c07c014666d5509c8d47e6bd7dd",
+  "merge_commit": "2ae53555d0f92671f1c1ee4ee0535c96a4fdf9b6",
+  "candidate_tree_unchanged": "31dbf07bded5d168dba60acc65bcade4658404d3",
+  "conflicts": [
+    "audits/v2.5.0-editorial-review.yml",
+    "governance/semantic-lock.yml",
+    "governance/test-duration-observations.json",
+    "governance/test-manifests/test.txt"
+  ],
+  "disposition": "Retain exact candidate-generated projections provisionally; existing canonical reconciliation alone owns replacement. No runtime implementation/workflow/pin byte changes.",
+  "raw_sha256": {
+    "main100dc-4f2-actual-merge.stdout": "3a1b2e48c172bb9e3860b22bf16402c2cbf84126b341db7fe3efd10477e6f944",
+    "main100dc-4f2-merge-tree.txt": "329d5d604cafc9e84c76903f3e18a6d66f15015e1fcd04adec99a255ac8ffaf9",
+    "main100dc-4f2-ancestry.txt": "759d4b1073e6f192fc66d7831d9fa763aaeb5d5662407454b2f700a991de95e2",
+    "main100dc-4f2-actual-merge.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "main100dc-4f2-content.txt": "6ef32c52fdd595ca9b31cc9b29422756a28cb50395e624b4200938737209bcf7"
+  },
+  "document": {
+    "kind": "source_ancestry_reconciliation",
+    "path": "audits/issue-394/provider-main-ancestry-reconciliation.json",
+    "authority": false
+  },
+  "provider_repository": {
+    "name": "mjgolaszewski/bcf-governance",
+    "id": 1207503211,
+    "default_branch": "main"
+  },
+  "next_action": "Canonical reconciliation owns all four provisional projections and any generated workflow/authority pair; full governance and exact installed qualification remain pending.",
+  "historical_ledger_dispositions": [
+    {
+      "path": "MEMORY.yml",
+      "previous": "Integration/installed/lifecycle/performance/custody pending",
+      "current": "Provider ancestry merged; installed/lifecycle/performance/custody pending"
+    },
+    {
+      "path": "phases/phase-32-log.yml",
+      "previous": "Integration/installed/lifecycle/performance/custody pending",
+      "current": "Provider ancestry merged; installed/lifecycle/performance/custody pending"
+    },
+    {
+      "path": "plans/phase-ledger.yml",
+      "previous": "Integration/installed proof pending",
+      "current": "Provider ancestry merged; installed proof pending"
+    }
+  ]
+}
