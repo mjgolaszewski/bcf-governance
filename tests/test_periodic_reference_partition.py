@@ -12,10 +12,12 @@ from bcf_governance.tooling.ci_graph_render import render_ci_graph
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(gates, *, seconds=1800, profile='standard', cleanup=60):
+def build(gates, *, seconds=1800, profile='standard', cleanup=60, overrides=None):
     contract = {'profile_contract_version': '2.0', 'target_profile': profile,
         'gates': {gate: {} for gate in gates}, 'execution_policy': {
             'default_timeout_seconds': seconds, 'default_cleanup_timeout_seconds': cleanup}}
+    for gate, timeout in (overrides or {}).items():
+        contract['gates'][gate]['invocation'] = {'timeout_seconds': timeout}
     before = copy.deepcopy(contract)
     graph = build_reference_ci_graph(project_id='bounded', profile=profile,
         profile_contract_version='2.0', gates=gates, candidate_labels=['ubuntu-24.04'],
@@ -76,7 +78,7 @@ def test_partition_validates_and_renders_exact_predecessor_downloads(tmp_path):
     assert compiled.workflows
     rendered = render_ci_graph(tmp_path)
     for workflow in scheduled(graph):
-        payload = yaml.safe_load(rendered[Path(workflow['path'])])
+        payload = yaml.safe_load(rendered[workflow['path']])
         parts = [j for j in workflow['jobs'] if j['executor']['kind'] == 'gate_group']
         assert len(parts) == 2
         for part in parts:
@@ -85,3 +87,19 @@ def test_partition_validates_and_renders_exact_predecessor_downloads(tmp_path):
             assert len(downloads) == 1
             assert downloads[0]['name'] == 'bcf-' + part['consumes'][0] + '-${{ github.run_id }}-${{ github.run_attempt }}'
             assert downloads[0]['path'] == '.artifacts/bcf/sessions'
+
+
+@pytest.mark.parametrize('cleanup, overrides', [(61, {}), (60, {'runtime-last': 10501})])
+def test_partition_uses_each_gate_override_and_cleanup(cleanup, overrides):
+    graph = build(['governance-first', 'runtime-last'], seconds=10500, cleanup=cleanup, overrides=overrides)
+    assert all(len([j for j in w['jobs'] if j['executor']['kind'] == 'gate_group']) == 2 for w in scheduled(graph))
+
+
+def test_unsplittable_gate_rejected_even_if_periodic_is_partitionable():
+    with pytest.raises(ValueError, match='360.*partition'):
+        build(['governance-first', 'runtime-last'], overrides={'runtime-last': 21600})
+
+
+@pytest.mark.parametrize('gates', [[True], ['runtime-one', 'runtime-one'], []])
+def test_malformed_population_blocks_with_typed_query_error(gates):
+    with pytest.raises(ValueError): build(gates)
