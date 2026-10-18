@@ -1,0 +1,266 @@
+{
+  "authority": false,
+  "status": "source_and_copied_query_qualified_exact_new_distributions_pending",
+  "source_base_commit": "63f59a39082998ce255d6a352bc968963c1bafb1",
+  "contract_and_test_checkpoints": [
+    "fbd78fdf",
+    "7bce4cd9",
+    "e739c440",
+    "19517f62",
+    "6cc08177",
+    "320bfdf8",
+    "2850654b",
+    "6dd80120"
+  ],
+  "scope": "Existing runtime report owner closes versioned command/evidence populations, dependency order, operation argv and independently provided closed-dependency identity before archive hashing/reconstruction. Both release verifier and collector require1.1; cheap smokes precede either installed consumer. Provider role authentication remains separate.",
+  "genuine_red_history": {
+    "initial_report_and_boundary_failed": 18,
+    "initial_valid_legacy_passed": 1,
+    "additional_order_failed": 3,
+    "hash_order_failed": 1,
+    "legacy_eleven_compatibility_failed": 1,
+    "argument_failed": 10,
+    "verifier_dependency_failed": 3,
+    "collector_dependency_failed": 1,
+    "independent_closure_shape_failed": 8
+  },
+  "affected": {
+    "earlier_source_passed": 144,
+    "earlier_complete_passed": 166,
+    "complete_passed": 190,
+    "additional_collector_build_case_passed": 1
+  },
+  "cause_controls": {
+    "authority": false,
+    "records": [
+      {
+        "cause": "population",
+        "pytest_returncode": 1,
+        "expected_failure_observation": true,
+        "named_failures": [
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[missing]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[empty]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[duplicate]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[dropped-with-streams]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[unknown]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[failed]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[boolean-exit]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[empty-argv]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[nonstring-argv]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[unbound-stream]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[reused-stream]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[orphan-stream]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[install-before-closure]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[consumer-before-install]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[twine-before-closure]",
+          "FAILED tests/test_release_runtime_commands.py::test_reported_pass_cannot_contradict_runtime_commands[smoke-after-consumer]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_runtime_profile_requires_both_consumers",
+          "FAILED tests/test_release_runtime_commands.py::test_command_rejection_precedes_archive_reconstruction[_sha256]",
+          "FAILED tests/test_release_runtime_commands.py::test_command_rejection_precedes_archive_reconstruction[verify_archive]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[generic-success]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[wrong-interpreter]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[wrong-asset]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[different-lock]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[different-wheelhouse]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[candidate-harness]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[different-consumer-source]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[no-offline-install]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[missing-strict-metadata]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[nul-argv]"
+        ]
+      },
+      {
+        "cause": "arguments",
+        "pytest_returncode": 1,
+        "expected_failure_observation": true,
+        "named_failures": [
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[generic-success]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[wrong-interpreter]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[wrong-asset]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[different-lock]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[different-wheelhouse]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[candidate-harness]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[different-consumer-source]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[no-offline-install]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[missing-strict-metadata]",
+          "FAILED tests/test_release_runtime_commands.py::test_new_profile_binds_commands_to_actual_operations[nul-argv]"
+        ]
+      },
+      {
+        "cause": "profile",
+        "pytest_returncode": 1,
+        "expected_failure_observation": true,
+        "named_failures": [
+          "FAILED tests/test_release_runtime_commands.py::test_trusted_release_verifier_rejects_legacy_profile_downgrade",
+          "FAILED tests/test_release_runtime_commands.py::test_trusted_collector_requires_runtime_profile_and_dependency[version]"
+        ]
+      },
+      {
+        "cause": "dependency",
+        "pytest_returncode": 1,
+        "expected_failure_observation": true,
+        "named_failures": [
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[empty]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[missing-status]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[extra-field]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[unverified]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[empty-wheels]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[boolean-digest]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[bad-lock]",
+          "FAILED tests/test_release_runtime_commands.py::test_strict_runtime_binding_requires_complete_independent_closure[wrong-platform]",
+          "FAILED tests/test_release_runtime_commands.py::test_trusted_verifier_recomputes_runtime_dependency_binding[None]",
+          "FAILED tests/test_release_runtime_commands.py::test_trusted_verifier_recomputes_runtime_dependency_binding[closure1]",
+          "FAILED tests/test_release_runtime_commands.py::test_trusted_verifier_recomputes_runtime_dependency_binding[closure2]"
+        ]
+      },
+      {
+        "cause": "collector",
+        "pytest_returncode": 1,
+        "expected_failure_observation": true,
+        "named_failures": [
+          "FAILED tests/test_release_runtime_commands.py::test_trusted_collector_requires_runtime_profile_and_dependency[build]"
+        ]
+      },
+      {
+        "cause": "smoke",
+        "pytest_returncode": 1,
+        "harness_returncode": 0,
+        "named_failures": [
+          "FAILED tests/test_release_preinstall_composition.py::test_invalid_distribution_smoke_precedes_both_expensive_consumers[sdist]"
+        ]
+      }
+    ],
+    "exact_source_restored": true,
+    "initial_driver_returncode": 1,
+    "initial_error": "Same-size smoke reordering rejected by cache-safety precheck before edit; prior five controls retained; only unexecuted smoke resumed",
+    "resume_driver_returncode": 0
+  },
+  "copied_private_query": {
+    "authority": false,
+    "busy_cases": 3,
+    "candidate_or_subprocess_not_executed": true,
+    "command_guard_causal": true,
+    "exact_file_reused": true,
+    "forged_command_arguments_rejected": 10,
+    "forged_command_records_rejected": 16,
+    "forged_mapping_or_evidence_rejected": 11,
+    "holder_and_retained_bytes_preserved": true,
+    "runtime_owned_helpers": true,
+    "scope": "private_runtime_synthetic_fact_queries",
+    "sdk_absent": true,
+    "valid_mapping_returned_unchanged": true,
+    "version_1_1_both_consumers_accepted": true
+  },
+  "copied_query_installed_assurance": false,
+  "compatibility": {
+    "retained_exact_reports": [
+      {
+        "commands": 10,
+        "mapped_files": 788,
+        "report_bytes_unchanged": true,
+        "report_sha256": "8b9f811b671fd713f85d984ae4e25e5efb107af107bd233e3cf09b3875a852d7",
+        "source": "9620214b",
+        "version": "1.0"
+      },
+      {
+        "commands": 10,
+        "mapped_files": 788,
+        "report_bytes_unchanged": true,
+        "report_sha256": "998de7c2c29a0e0d7efc01350b2a0d7d5c47bbc5fe0db75793952013f6dae6e5",
+        "source": "3f253f7b",
+        "version": "1.0"
+      },
+      {
+        "commands": 11,
+        "mapped_files": 788,
+        "report_bytes_unchanged": true,
+        "report_sha256": "a829ebbdbcdfe1c6dbe6a03a23a1f846a6633ef8d688ca99060d1c15a550841e",
+        "source": "c96ca1aa",
+        "version": "1.0"
+      }
+    ],
+    "released234_reader_new1_1_typed_block": true,
+    "old_reader_upgrade_or_deployment": false
+  },
+  "rehearsal_retention_incident": {
+    "prior_machine_local_copied_rehearsal_streams_and_summary_overwritten": true,
+    "new_captures_preserved_separately": true,
+    "original_rehearsal_raw_bytes_recovered": false,
+    "exact_installed_qualification_records_and_predecessor_assets_untouched": true,
+    "disposition_sha256": "2bf5e2b295feb28de5d004f9206f5812fc684be4470e72d90346cd9e59a81ecb"
+  },
+  "checks": {
+    "architecture_passed": 5,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "governance": 0,
+    "authored_semantics": 0,
+    "authored_operation_observations_unchanged": 21
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+    "bcf_governance/tooling/ci_github_release.py": "5945e609911d158be950afcf55cf0c1b021f75cf651823eea207d358403aa05b",
+    "tests/test_installed_runtime_fact_queries.py": "e6db0a942c17e6399080aea8fa2ce1ce42a60fbdb46f38a51fb910ba8536e73a"
+  },
+  "raw_sha256": {
+    "runtime-command-architecture.stdout": "86cbc524b4dc19ccbc989365e86db68646a23df3f2a9cd4e038fc78ccfd80af8",
+    "runtime-command-arguments-affected.stdout": "a389c6b05a02f3ffdb104905354f13607a283ffb9992916325fa44bc1e6d3cfb",
+    "runtime-command-arguments-red.stdout": "3d60430e3626fdbbabef6eb09596403df4749e206161b2cf392cce3e41acdf91",
+    "runtime-command-closure-shape-red.stdout": "7f5dabae87b7c6d3a0a916ebe626b60657dc72d8cc636f98b5df147a6417ebba",
+    "runtime-command-collector-dependency-red.stdout": "17160e1a69407dee777f15936761049d53207d6d1a6970364791c26c7070866d",
+    "runtime-command-complete-affected.stdout": "c6a0ec35e7828504d906849455188c96c77ea8c4089c20aa46a8009dff72f501",
+    "runtime-command-contract-affected-final.stdout": "0d21a7a31b9e83aaba4cc8ca1c65232d78f94e986c2995b322ecd990ae50f358",
+    "runtime-command-contract-affected.stdout": "aee6ac2e518e0e327edbb9adcfe3dc1f19f371c163a22eabd19fda088aff2adf",
+    "runtime-command-contract-focused.stdout": "64591367552a4ad1ea4e475b9f04611c89b46435326fb37b2e8d7f2dcef10c73",
+    "runtime-command-contract-red.stdout": "68feb210c473228010947fc0134c6d8ebda328acd41ac91c624e196dd06f21a2",
+    "runtime-command-control-arguments.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-control-arguments.stdout": "60e46c5e131f7b21cb1b0c7e96de1466a809a02edf74d23a1f8f60f5f9ad3cf1",
+    "runtime-command-control-collector.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-control-collector.stdout": "9aa59fe8a7f92cc26e57f402aeb46f953e76dfb89ac8a8b98dd615190305570b",
+    "runtime-command-control-dependency.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-control-dependency.stdout": "883449af1a5e84893ce429607103e64f9256fe6c81ae6e41ff00f71a3dcd54dd",
+    "runtime-command-control-population.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-control-population.stdout": "de8fedef65fd71ac96fe1589f87d1238c10dcc10ef4307674186209542aeb4d6",
+    "runtime-command-control-profile.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-control-profile.stdout": "901d057ddc6c89199e7488232d0d40e1c38508d735d811f3e6e62efadea529a4",
+    "runtime-command-control-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-control-smoke.stdout": "7092c339c1f39391a310dfc3e11616620c991a5ff5ac02f653a4ad17649bdb56",
+    "runtime-command-dependency-red.stdout": "74791ccdf51a38057f20d057ab6f56bbdb2ab1f9f23b62b84e7b24a96a80c3b3",
+    "runtime-command-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "runtime-command-hash-order-red.stdout": "c0e84f59626dc016b862fe11a2a2a1ad71d0f09069472337b0162ffbe17dadbc",
+    "runtime-command-legacy-extension-red.stdout": "668afd28de9d437e55b5e8ce4c4cd5bd9b40753804c019deba86241a0f31bb1b",
+    "runtime-command-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-order-red.stdout": "1e7828d4d9f28dc12871150dad1c4a85852cba5d184d21c023d9d0bd21c584e2",
+    "runtime-command-private-arguments-rehearsal.stdout": "8271e34bd1bdc671c948c9aa3d0a02e2465f5136c5b8fe83951108728e765ee4",
+    "runtime-command-private-facts-arguments-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+    "runtime-command-private-facts-arguments-current-copied.stdout": "4c18c9d11a466ba2a6b5fc394fd2eb38229712277b130a64e8350db5cef5946a",
+    "runtime-command-private-facts-arguments-retained-9620214b.stderr": "48dffae63508c259136c8ce1c6ac75aa613e1e9c145bfbb49d94b593359da54c",
+    "runtime-command-private-facts-arguments-retained-9620214b.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-private-facts-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+    "runtime-command-private-facts-current-copied.stdout": "6f05db89cf9160ecd28ee2f7404336db0014985dce53d2120e404cf510d5f750",
+    "runtime-command-private-facts-next-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+    "runtime-command-private-facts-next-current-copied.stdout": "0e74771fcd024d0965ae3e59362f655576aba086c59b8d926ac5fbeff204b569",
+    "runtime-command-private-facts-next-retained-9620214b.stderr": "48dffae63508c259136c8ce1c6ac75aa613e1e9c145bfbb49d94b593359da54c",
+    "runtime-command-private-facts-next-retained-9620214b.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-private-facts-retained-9620214b.stderr": "48dffae63508c259136c8ce1c6ac75aa613e1e9c145bfbb49d94b593359da54c",
+    "runtime-command-private-facts-retained-9620214b.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-private-rehearsal-next.stdout": "8271e34bd1bdc671c948c9aa3d0a02e2465f5136c5b8fe83951108728e765ee4",
+    "runtime-command-private-rehearsal.stdout": "8271e34bd1bdc671c948c9aa3d0a02e2465f5136c5b8fe83951108728e765ee4",
+    "runtime-command-released234-reader-block.stdout": "1f7f5e29802866d4d6a698a996bf8769add9da306ec6dc8547934f1c7bde615d",
+    "runtime-command-retained-report-compatibility.stdout": "d66f56d89cada583eefec792def604193462a22d2f0623ac3ce9ae724a7715c9",
+    "runtime-command-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-command-cause-controls.json": "9aaa0c51ed65c288acb6a0994c093bbde74e04abda626160014215e1413f7ee3",
+    "runtime-command-rehearsal-overwrite-disposition.json": "2bf5e2b295feb28de5d004f9206f5812fc684be4470e72d90346cd9e59a81ecb",
+    "runtime-command-authored-semantic.stdout": "1cdd66c5a1b989a79810845029cce9aae69e312b1d39400c763d7032c6ab8975",
+    "runtime-command-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "runtime-command-collector-build-case.stdout": "4237eb8d30ab4e25d028ca343d50bfba364b7f76a907b73390b9601a16e46fe1"
+  },
+  "limits": [
+    "Command consistency is not independently authenticated execution, process isolation or source/custody authority; existing provider roles and evidence requirements remain mandatory.",
+    "Version1.0 ten/eleven-command historical reports retain their recorded scope and cannot discharge a new strict1.1 release verification. Reader compatibility expansion and exact installed qualification are required before integration.",
+    "Copied-runtime rehearsal is not installed proof. Fresh/full-profile/predecessor-upgrade/adopter and composed lifecycle qualification remain open.",
+    "All82 whole requirements and38 slice objects remain unchanged; P32 active, P33-P35 dormant and performance targets unapproved."
+  ],
+  "next_action": "Complete governed/semantic checks, commit the exact bounded source, then use the existing nonblocking host fence and supervised owner for exact wheel/sdist build plus both actual SDK-absent installed consumers. Preserve all failure captures and source bytes until terminal."
+}

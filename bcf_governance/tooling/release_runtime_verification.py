@@ -226,6 +226,152 @@ def _evidence(output_dir: Path, excluded: Iterable[str] = ()) -> dict[str, str]:
     return dict(sorted(values.items()))
 
 
+def _validate_runtime_commands(report: dict[str, Any]) -> None:
+    """Close reported command facts; provider authentication remains separate."""
+    required = {
+        "wheel-venv", "wheel-closure-install", "twine-check", "wheel-install",
+        "wheel-smoke", "sdist-venv", "sdist-closure-install", "sdist-install",
+        "wheel-installed-consumer", "sdist-smoke",
+    }
+    rows = report.get("commands")
+    # A retained development producer added this command before the version bump.
+    # Read those bytes with their recorded scope; strict provider consumers still
+    # require1.1 rather than deriving stronger authority from optional old rows.
+    if report["schema_version"] == "1.1" or (isinstance(rows, list) and any(
+        isinstance(row, dict) and row.get("label") == "sdist-installed-consumer"
+        for row in rows
+    )):
+        required.add("sdist-installed-consumer")
+    if not isinstance(rows, list) or len(rows) != len(required):
+        raise GitHubControllerError("release runtime command population is incomplete")
+    positions: dict[str, int] = {}
+    streams: set[str] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict) or set(row) != {
+            "label", "argv", "exit_code", "stdout", "stderr",
+        }:
+            raise GitHubControllerError("release runtime command record is malformed")
+        label = row["label"]
+        argv = row["argv"]
+        if (
+            not isinstance(label, str) or label not in required or label in positions
+            or not isinstance(argv, list) or not argv
+            or any(not isinstance(value, str) or not value for value in argv)
+            or type(row["exit_code"]) is not int or row["exit_code"] != 0
+        ):
+            raise GitHubControllerError("release runtime command identity or result is invalid")
+        positions[label] = index
+        for stream in ("stdout", "stderr"):
+            name = label + "." + stream
+            if row[stream] != name or name in streams:
+                raise GitHubControllerError("release runtime command stream binding is invalid")
+            streams.add(name)
+    evidence = report.get("evidence")
+    if positions.keys() != required or not isinstance(evidence, dict) or evidence.keys() != streams:
+        raise GitHubControllerError("release runtime command evidence inventory is not exact")
+    dependencies = [
+        ("wheel-venv", "wheel-closure-install"),
+        ("wheel-closure-install", "twine-check"),
+        ("wheel-closure-install", "wheel-install"),
+        ("wheel-install", "wheel-smoke"),
+        ("sdist-venv", "sdist-closure-install"),
+        ("sdist-closure-install", "sdist-install"),
+        ("sdist-install", "sdist-smoke"),
+        ("wheel-install", "wheel-installed-consumer"),
+        ("wheel-smoke", "wheel-installed-consumer"),
+        ("sdist-install", "wheel-installed-consumer"),
+    ]
+    if "sdist-installed-consumer" in positions:
+        dependencies.append(("sdist-install", "sdist-installed-consumer"))
+    if report["schema_version"] == "1.1":
+        dependencies.extend([
+            ("twine-check", "wheel-install"), ("twine-check", "sdist-install"),
+            ("sdist-smoke", "wheel-installed-consumer"),
+            ("sdist-smoke", "sdist-installed-consumer"),
+        ])
+    if any(positions[before] >= positions[after] for before, after in dependencies):
+        raise GitHubControllerError("release runtime command dependency order is invalid")
+    if report["schema_version"] == "1.1":
+        _validate_runtime_command_arguments(report)
+
+
+def _validate_runtime_command_arguments(report: dict[str, Any]) -> None:
+    """Bind labels to their constructed operations without executing any argv."""
+    error = "release runtime command arguments are not bound to their operations"
+    commands = {row["label"]: row["argv"] for row in report["commands"]}
+
+    def absolute(value):
+        if (not isinstance(value, str) or "\0" in value or not Path(value).is_absolute()
+                or ".." in Path(value).parts or str(Path(value)) != value):
+            raise GitHubControllerError(error)
+        return Path(value)
+
+    selected = absolute(report["environment"].get("python_executable"))
+    wheel_venv = commands["wheel-venv"]
+    if len(wheel_venv) != 4:
+        raise GitHubControllerError(error)
+    wheel_root = absolute(wheel_venv[-1])
+    root = wheel_root.parent
+    if wheel_root != root / "wheel-env":
+        raise GitHubControllerError(error)
+    wheel_python = str(wheel_root / "bin/python")
+    sdist_python = str(root / "sdist-env/bin/python")
+    closure = commands["wheel-closure-install"]
+    consumer = commands["wheel-installed-consumer"]
+    metadata = commands["twine-check"]
+    if len(closure) != 10 or len(consumer) != 4 or len(metadata) != 7:
+        raise GitHubControllerError(error)
+    wheelhouse, lock = absolute(closure[6]), absolute(closure[9])
+    source = absolute(consumer[-1])
+    if source.parent != root / "source":
+        raise GitHubControllerError(error)
+    wheel, sdist = absolute(metadata[5]), absolute(metadata[6])
+    artifacts = report.get("release_artifacts")
+    if (wheel.suffix != ".whl" or not sdist.name.endswith(".tar.gz")
+            or not isinstance(artifacts, dict) or set(artifacts) != {wheel.name, sdist.name}):
+        raise GitHubControllerError(error)
+    dependency_args = ["-m", "pip", "install", "--no-index", "--find-links",
+                       str(wheelhouse), "--require-hashes", "-r", str(lock)]
+    consumer_args = [str(source / ".github/scripts/verify_installed_consumer.py"),
+                     "--source-root", str(source)]
+    smoke_args = ["-m", "bcf_governance.cli", "--version"]
+    expected = {
+        "wheel-venv": [str(selected), "-m", "venv", str(wheel_root)],
+        "sdist-venv": [str(selected), "-m", "venv", str(root / "sdist-env")],
+        "wheel-closure-install": [wheel_python, *dependency_args],
+        "sdist-closure-install": [sdist_python, *dependency_args],
+        "twine-check": [wheel_python, "-m", "twine", "check", "--strict", str(wheel), str(sdist)],
+        "wheel-install": [wheel_python, "-m", "pip", "install", "--no-index", "--no-deps", str(wheel)],
+        "sdist-install": [sdist_python, "-m", "pip", "install", "--no-index", "--no-deps",
+                          "--no-build-isolation", str(sdist)],
+        "wheel-smoke": [wheel_python, *smoke_args],
+        "sdist-smoke": [sdist_python, *smoke_args],
+        "wheel-installed-consumer": [wheel_python, *consumer_args],
+        "sdist-installed-consumer": [sdist_python, *consumer_args],
+    }
+    if commands != expected:
+        raise GitHubControllerError(error)
+
+
+def _require_runtime_dependency_binding(report, expected) -> None:
+    """Check the existing closed-dependency format and exact independent input."""
+    def digest(value):
+        return isinstance(value, str) and re.fullmatch(r"[a-f0-9]{64}", value) is not None
+
+    if (
+        not isinstance(expected, dict)
+        or set(expected) != {"status", "python", "platform", "lock_sha256", "wheels"}
+        or expected["status"] != "verified" or expected["python"] != EXPECTED_PYTHON
+        or expected["platform"] != EXPECTED_PLATFORM or not digest(expected["lock_sha256"])
+        or not isinstance(expected["wheels"], dict) or not expected["wheels"]
+        or any(not isinstance(name, str) or "\0" in name or Path(name).name != name
+               or not name.endswith(".whl") or not digest(value)
+               for name, value in expected["wheels"].items())
+        or report.get("dependency_closure") != expected
+    ):
+        raise GitHubControllerError("release runtime dependency closure differs from required inputs")
+
+
 def run_release_runtime_verification(
     *,
     selected_python: Path,
@@ -307,6 +453,13 @@ def run_release_runtime_verification(
                 cwd=root, env=sdist_env, output_dir=output_dir,
             )
         )
+        commands.append(
+            _run(
+                "sdist-smoke",
+                [str(sdist_python), "-m", "bcf_governance.cli", "--version"],
+                cwd=root, env=sdist_env, output_dir=output_dir,
+            )
+        )
         for label, python, environment in (
             ("wheel-installed-consumer", wheel_python, wheel_env),
             ("sdist-installed-consumer", sdist_python, sdist_env),
@@ -319,16 +472,9 @@ def run_release_runtime_verification(
                     cwd=root, env=environment, output_dir=output_dir,
                 )
             )
-        commands.append(
-            _run(
-                "sdist-smoke",
-                [str(sdist_python), "-m", "bcf_governance.cli", "--version"],
-                cwd=root, env=sdist_env, output_dir=output_dir,
-            )
-        )
     report_path = output_dir / "runtime-verification.json"
     payload = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "status": "passed",
         "environment": {
             "python_executable": str(selected),
@@ -354,6 +500,8 @@ def verify_runtime_evidence(
     *,
     wheel: Path,
     sdist: Path,
+    required_version: str | None = None,
+    expected_dependency_closure: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Recompute artifact/source correspondence and bind retained runtime evidence."""
 
@@ -361,16 +509,23 @@ def verify_runtime_evidence(
         report = json.loads(_regular(report_path, "runtime report").read_text())
     except (OSError, json.JSONDecodeError) as exc:
         raise GitHubControllerError("release runtime report is invalid") from exc
-    if not isinstance(report, dict) or report.get("schema_version") != "1.0" or (
+    if not isinstance(report, dict) or report.get("schema_version") not in ("1.0", "1.1") or (
         report.get("status") != "passed"
     ):
         raise GitHubControllerError("release runtime report did not pass")
+    if required_version not in (None, "1.0", "1.1") or (
+        required_version is not None and report["schema_version"] != required_version
+    ):
+        raise GitHubControllerError("release runtime report version differs from required contract")
+    if required_version == "1.1" or expected_dependency_closure is not None:
+        _require_runtime_dependency_binding(report, expected_dependency_closure)
     environment = report.get("environment")
     if not isinstance(environment, dict) or (
         environment.get("python_version") != EXPECTED_PYTHON
         or environment.get("platform") != EXPECTED_PLATFORM
     ):
         raise GitHubControllerError("release runtime report environment is not exact")
+    _validate_runtime_commands(report)
     exact_wheel = _regular(wheel, "release wheel")
     exact_sdist = _regular(sdist, "release sdist")
     expected_artifacts = {

@@ -164,7 +164,7 @@ def test_trusted_release_verifier_rejects_legacy_profile_downgrade(tmp_path):
     assert not output.exists()
 
 
-@pytest.mark.parametrize("defect", ["version", "dependency"])
+@pytest.mark.parametrize("defect", ["version", "dependency", "build"])
 def test_trusted_collector_requires_runtime_profile_and_dependency(tmp_path, monkeypatch, defect):
     from test_ci_github_release import _release_inputs, _json, COMMIT, TREE
 
@@ -174,7 +174,11 @@ def test_trusted_collector_requires_runtime_profile_and_dependency(tmp_path, mon
     _json(values["authorization"], authorization)
     verification = _json(tmp_path / "verification.json", {"build": {
         "artifact_id": "40", "provider_digest": "sha256:" + "e" * 64},
-        "dependency_closure": json.loads(values["build"].read_text())["dependency_closure"] if defect == "version" else {}})
+        "dependency_closure": json.loads(values["build"].read_text())["dependency_closure"] if defect in {"version", "build"} else {}})
+    if defect == "build":
+        build = json.loads(values["build"].read_text())
+        build["dependency_closure"] = {}
+        _json(values["build"], build)
     bundle = tmp_path / "bundle"; bundle.mkdir()
     for name in ("ci-certification.json", "evidence-session.json"): _json(bundle / name, {})
     # Test only post-authentication policy forwarding, never provider authenticity.

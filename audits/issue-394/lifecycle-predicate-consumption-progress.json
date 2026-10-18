@@ -335,5 +335,12 @@
     "source_orchestration_passed": true,
     "exact_new_installed_distribution_qualified": true,
     "distribution_verification": "audits/issue-394/development-distribution-c96ca1aa-verification.json"
+  },
+  "runtime_command_consumption": {
+    "verification": "audits/issue-394/runtime-command-consumption-verification.json",
+    "source_and_copied_query_passed": true,
+    "exact_new_installed_distribution_qualified": false,
+    "required_report_version": "1.1",
+    "historical_report_scope_preserved": true
   }
 }

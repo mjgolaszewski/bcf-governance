@@ -331,7 +331,9 @@ def verify_release_build(
     wheel = next(path for path in archives if path.suffix == ".whl")
     sdist = next(path for path in archives if path.name.endswith(".tar.gz"))
     runtime = verify_runtime_evidence(
-        runtime_report_path, runtime_evidence, wheel=wheel, sdist=sdist
+        runtime_report_path, runtime_evidence, wheel=wheel, sdist=sdist,
+        required_version="1.1",
+        expected_dependency_closure=closure.as_dict(),
     )
     payload = {
         "schema_version": "1.0",
@@ -521,8 +523,12 @@ def collect_release(
     sdists = [path for path in release_paths if path.name.endswith(".tar.gz")]
     if len(wheels) != 1 or len(sdists) != 1:
         raise GitHubControllerError("release collection requires one wheel and one sdist")
+    if verification.get("dependency_closure") != build.get("dependency_closure"):
+        raise GitHubControllerError("release runtime dependency closure differs between verifier and build")
     runtime = verify_runtime_evidence(
-        runtime_report_path, runtime_evidence, wheel=wheels[0], sdist=sdists[0]
+        runtime_report_path, runtime_evidence, wheel=wheels[0], sdist=sdists[0],
+        required_version="1.1",
+        expected_dependency_closure=verification.get("dependency_closure"),
     )
     expected_runtime = {
         "report_sha256": _sha256(runtime_report_path),
