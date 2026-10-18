@@ -290,5 +290,137 @@
     "periodic-reference-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
     "periodic-reference-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
-  "record_governance_validation_returncode": 0
+  "record_governance_validation_returncode": 0,
+  "private_probe": {
+    "authority": false,
+    "status": "copied_rehearsal_passed_actual_installed_pending",
+    "observations": {
+      "authority": false,
+      "busy_cases": 3,
+      "candidate_or_subprocess_not_executed": true,
+      "command_guard_causal": true,
+      "differing_requirement_strings_blocked": true,
+      "exact_file_reused": true,
+      "forged_command_arguments_rejected": 10,
+      "forged_command_records_rejected": 16,
+      "forged_mapping_or_evidence_rejected": 11,
+      "holder_and_retained_bytes_preserved": true,
+      "identical_requirement_predicates_collapsed": 2,
+      "interpreter_projection_unallocated": true,
+      "periodic_literal_gates": 20,
+      "periodic_ordered_coverage_and_custody_preserved": true,
+      "periodic_parts_across_two_schedules": 4,
+      "reference_model_bound_budget_minutes": 80,
+      "reference_projection_cap_atomic": true,
+      "reference_projection_invalid_facts_rejected": 6,
+      "reference_serial_defaults_accepted": true,
+      "runtime_owned_helpers": true,
+      "scope": "private_runtime_synthetic_fact_queries",
+      "sdk_absent": true,
+      "serial_deadline_guard_causal": true,
+      "serial_deadline_underbudget_rejected": 5,
+      "valid_mapping_returned_unchanged": true,
+      "version_1_1_both_consumers_accepted": true
+    },
+    "rehearsal": {
+      "authority": false,
+      "records": [
+        {
+          "case": "retained-463d5d8b",
+          "returncode": 1,
+          "scope": "copied runtime rehearsal, not installed qualification",
+          "probe_sha256": "110541a4eb83f0174588df5b05e6460296f9179cd9fead960dc2b5a69e5e5d90",
+          "runtime_helper_sha256": {
+            "release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+            "local_execution_admission.py": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+            "ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+            "ci_graph_defaults.py": "86b6675dda9f7e234401c4e8ffe887915d3afcdb4b19d616944ca66319a399e0",
+            "evidence_planning.py": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857"
+          }
+        },
+        {
+          "case": "current-copied",
+          "returncode": 0,
+          "scope": "copied runtime rehearsal, not installed qualification",
+          "probe_sha256": "110541a4eb83f0174588df5b05e6460296f9179cd9fead960dc2b5a69e5e5d90",
+          "runtime_helper_sha256": {
+            "release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+            "local_execution_admission.py": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+            "ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+            "ci_graph_defaults.py": "46274c3d4bd51c5df10ab84351833e4f4e0a71e353d9e7ccac749c91fb8d7f7a",
+            "evidence_planning.py": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857"
+          }
+        }
+      ]
+    },
+    "raw_sha256": {
+      "periodic-private-probe-rehearsal.json": "3c1ba1589a1461a21105962c965a92839a274e35ca60bf5c500ec06e57d4c884",
+      "periodic-private-probe-retained-463d5d8b.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "periodic-private-probe-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+      "periodic-private-probe-current-copied.stdout": "9dc3815708d69bb47ccb2f40b86ea78c20b1118e5fd9e402dfe4eea87360483d",
+      "periodic-private-probe-retained-463d5d8b.stderr": "768eeb0ffb2d65ed8d860c3b0494e21c3bcfc5a6deaa2eaad5364cd138baf284"
+    },
+    "checks": {
+      "lint": 0,
+      "typecheck": 0,
+      "governance": 0
+    }
+  },
+  "modern_runtime_gap": {
+    "authority": false,
+    "status": "reproduced_open",
+    "observation": {
+      "authority": false,
+      "scope": "real-Git controlled session admission observation; no gate execution or provider authority",
+      "subject": {
+        "commit_sha": "7c05027aca5c8960a288222a77f4f2d6c1ca92ac",
+        "tree_sha": "e1349b18bc09b92f0efc598569301c364a937652"
+      },
+      "profile_scope": "normal",
+      "planned_producers": [
+        "test",
+        "other-test"
+      ],
+      "reference_literal_gates": [
+        "test",
+        "other-test",
+        "custody",
+        "self",
+        "governance-validate"
+      ],
+      "observations": [
+        {
+          "gate": "test",
+          "admitted": true
+        },
+        {
+          "gate": "other-test",
+          "admitted": true
+        },
+        {
+          "gate": "custody",
+          "admitted": false,
+          "diagnostic": "gate custody is not admitted by the evidence session"
+        },
+        {
+          "gate": "self",
+          "admitted": false,
+          "diagnostic": "gate self is not admitted by the evidence session"
+        },
+        {
+          "gate": "governance-validate",
+          "admitted": false,
+          "diagnostic": "gate governance-validate is not admitted by the evidence session"
+        }
+      ],
+      "fixture_helper_sha256": "4dca149e0cd44f5ca8f75f106cef2732dd26a4f201e4ccc92353c7adb5580123"
+    },
+    "consequence": "Modern scheduled gate_group literals cannot authorize producer execution: profile-excluded aliases and preflight-owned claims are absent from the planned session inventory. Source partition topology and private copied query do not qualify operational periodic consumption.",
+    "next_action": "Use existing planned-shard consumer for modern periodic execution; retain legacy fixed-group partition and independent complete truth/fresh-session semantics.",
+    "raw_sha256": {
+      "observe-periodic-session-admission.py": "43ba4a593995c508d537f43ec188cc53e53e112a7cd213a6fa9df145d216856d",
+      "periodic-session-admission-observation.json": "950ae70b7e74e50279e4a0e0d8b2155e34ed6f246eaad90c8f7fc526bb6ee9f6",
+      "periodic-session-admission-observation.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  }
 }

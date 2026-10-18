@@ -307,6 +307,37 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         except deadlines.CIGraphError as error: assert '360' in str(error)
         else: raise AssertionError('private runtime admitted provider-cap overflow')
         assert capped == before and reference_rejections == 6
+        periodic_contract = copy.deepcopy(reference_contract)
+        for index in range(16):
+            gate, claim = 'periodic-' + str(index), 'periodic_claim_' + str(index)
+            periodic_contract['gates'][gate] = {}
+            periodic_contract['claim_model']['claims'][claim] = {
+                **copy.deepcopy(periodic_contract['claim_model']['claims']['unit']), 'legacy_gate': gate}
+            periodic_contract['claim_model']['execution_groups']['tests']['claims'].append(claim)
+        before_periodic = copy.deepcopy(periodic_contract)
+        periodic_graph = project(periodic_contract)
+        assert periodic_contract == before_periodic
+        periodic_parts = 0
+        for workflow in periodic_graph['workflows']:
+            if workflow['role'] != 'scheduled': continue
+            parts = [job for job in workflow['jobs'] if job['executor']['kind'] == 'gate_group']
+            assert len(parts) == 2
+            assert [gate for part in parts for gate in part['executor']['gates']] == list(periodic_contract['gates'])
+            previous_job = workflow['jobs'][0]['id']
+            previous_artifact = workflow['id'] + '-session'
+            for part in parts:
+                assert part['needs'] == [previous_job] and part['consumes'] == [previous_artifact]
+                assert part['condition'] == 'success' and part['timeout_minutes'] <= 360
+                assert periodic_graph['artifacts'][part['produces'][0]]['path'] == '.artifacts/bcf/sessions'
+                previous_job, previous_artifact = part['id'], part['produces'][0]
+            assert previous_artifact == workflow['id'] + '-receipts'
+            truth = workflow['jobs'][-1]
+            assert truth['condition'] == 'always' and truth['needs'] == [part['id'] for part in parts]
+            assert truth['consumes'] == [part['produces'][0] for part in parts]
+            argv = periodic_graph['commands'][workflow['id'] + '-preflight']['argv']
+            assert [argv[i+1] for i, value in enumerate(argv) if value == '--expected-producer'] == [part['id'] for part in parts]
+            periodic_parts += len(parts)
+        assert periodic_parts == 4
         requirement_root = fixture / 'identical-requirements'
         (requirement_root / 'governance').mkdir(parents=True)
         requirement_policy = {'interpreter_contract': {'project_dependencies': True,
@@ -372,6 +403,8 @@ print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_q
                   'reference_model_bound_budget_minutes': 80,
                   'reference_projection_invalid_facts_rejected': reference_rejections,
                   'reference_projection_cap_atomic': True,
+                  'periodic_literal_gates': 20, 'periodic_parts_across_two_schedules': periodic_parts,
+                  'periodic_ordered_coverage_and_custody_preserved': True,
                   'identical_requirement_predicates_collapsed': 2,
                   'differing_requirement_strings_blocked': True, 'interpreter_projection_unallocated': True,
                   'busy_cases': busy_cases, 'holder_and_retained_bytes_preserved': True,
@@ -392,6 +425,8 @@ def exercise_runtime_fact_queries(consumer, python):
     assert observation['reference_model_bound_budget_minutes'] == 80
     assert observation['reference_projection_invalid_facts_rejected'] == 6
     assert observation['reference_projection_cap_atomic'] is True
+    assert observation['periodic_literal_gates'] == 20 and observation['periodic_parts_across_two_schedules'] == 4
+    assert observation['periodic_ordered_coverage_and_custody_preserved']
     assert observation['identical_requirement_predicates_collapsed'] == 2
     assert observation['differing_requirement_strings_blocked'] and observation['interpreter_projection_unallocated']
     assert observation['busy_cases'] == 3 and observation['candidate_or_subprocess_not_executed']
