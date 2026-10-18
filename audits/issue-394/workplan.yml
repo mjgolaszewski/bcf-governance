@@ -135,7 +135,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/authored-control-admission-verification.json
-    # 15c78adb source2086/focused82 PASS;238116f2 six-stage PASS; stale budget sample corrected, new exact installed matrix pending.
+    # a5d47731 canonical/governance/six-stage PASS; source/wheel/sdist core2086 each and profiles40/39/39 PASS; actual adopters/lifecycle/targets/custody open.
     - audits/issue-394/provider-main-ancestry-reconciliation.json
     - audits/issue-394/scheduled-phase-native-profiles-verification.json
     - audits/issue-394/residual-current-source-census.json
