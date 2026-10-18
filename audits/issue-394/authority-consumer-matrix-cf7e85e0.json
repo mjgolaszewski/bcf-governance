@@ -1,0 +1,351 @@
+{
+  "schema_version": "1.0",
+  "kind": "test_invocation_capture",
+  "authority": false,
+  "status": "controlled_source_wheel_sdist_corpus_passed",
+  "scope": "New complete45-file/1638-case source and both retained exact archive SDK consumer corpus, with4 context controls per stage; not independent full lifecycle conformance.",
+  "source_subject": {
+    "commit_sha": "cf7e85e09b88654d99ac10f39b815c559635dc8d",
+    "tree_sha": "1dd3b3128ff6af38ce7e4f4947337b709d94aabc"
+  },
+  "installed_build_subject": {
+    "commit_sha": "7c6b3d653a70ec8b0918dc7ec988d1a5958eda28",
+    "tree_sha": "ef7d77bdfd9a491502eca27d0b463789d19dd095"
+  },
+  "package_byte_mapping": {
+    "status": "exact",
+    "mapped_files": 790
+  },
+  "selected_files": [
+    "tests/test_admitted_readiness_context.py",
+    "tests/test_candidate_provider_recovery.py",
+    "tests/test_candidate_submit.py",
+    "tests/test_ci_candidate_pr.py",
+    "tests/test_ci_github_pr_authority.py",
+    "tests/test_ci_github_pr_transition.py",
+    "tests/test_ci_github_reference.py",
+    "tests/test_ci_github_tree.py",
+    "tests/test_ci_graph.py",
+    "tests/test_ci_graph_composition.py",
+    "tests/test_ci_graph_controller_lifecycle.py",
+    "tests/test_ci_graph_edge_population.py",
+    "tests/test_ci_recovery_frontier.py",
+    "tests/test_ci_state_matrix.py",
+    "tests/test_exact_main_phase_proof.py",
+    "tests/test_exact_main_phase_readiness.py",
+    "tests/test_execution_state_lifecycle.py",
+    "tests/test_installed_lifecycle_composition.py",
+    "tests/test_installed_parent_phase_proof.py",
+    "tests/test_installed_phase_authority.py",
+    "tests/test_lifecycle_mandatory_predicates.py",
+    "tests/test_local_pr.py",
+    "tests/test_local_proof_bundles.py",
+    "tests/test_operational_observations.py",
+    "tests/test_ordinary_protection_projection.py",
+    "tests/test_phase_closure_input.py",
+    "tests/test_phase_closure_population.py",
+    "tests/test_phase_input_semantic_consumers.py",
+    "tests/test_phase_input_temporary_effects.py",
+    "tests/test_phase_policy_subject.py",
+    "tests/test_preflight.py",
+    "tests/test_preflight_phase_readiness.py",
+    "tests/test_private_phase_authority_resources.py",
+    "tests/test_profile_yaml.py",
+    "tests/test_prospective_phase_forwarding.py",
+    "tests/test_prospective_validation.py",
+    "tests/test_protection_inspection_client.py",
+    "tests/test_provider_reuse_closure.py",
+    "tests/test_release_adopter_qualification.py",
+    "tests/test_release_adopter_sources.py",
+    "tests/test_release_artifacts.py",
+    "tests/test_release_composition_adversarial.py",
+    "tests/test_release_preinstall_composition.py",
+    "tests/test_truth_cli_phase_context.py",
+    "tests/test_workitem_phase_consumption.py"
+  ],
+  "selected_test_sha256": {
+    "tests/test_admitted_readiness_context.py": "c4994498afc005e7d4c5d90c2bbb49000b20998978c366b9e9c48385e27ca8e2",
+    "tests/test_candidate_provider_recovery.py": "5ffb67ecb2f102d336297b5be23e805d001b3d8de356b1499a1e78de170a385d",
+    "tests/test_candidate_submit.py": "039a945f579bc8f208fdb0c37be24dcb243d484fa081b20bc50f8816bbee02d4",
+    "tests/test_ci_candidate_pr.py": "503cd255260485696a2f67a6fd1d8e8d49085c29f9defe5db7e7101430025483",
+    "tests/test_ci_github_pr_authority.py": "5d9967b4cd4b12f0aea6ac4a8badbcd7c00ae019ab79d7b6b92e9895edcbae43",
+    "tests/test_ci_github_pr_transition.py": "280dcc3813e554aedf34fd6e8ee92a95315a2aeef91ec85262edd954c589a0ea",
+    "tests/test_ci_github_reference.py": "3f624f0af7ac2f6dbafd1cf451636ac787bbff61843d77a02ebd6b2d140ca5a3",
+    "tests/test_ci_github_tree.py": "5be8ff20742767c2b6b30664738b341d08fd17998fbad7ddc8ce3f05982c904f",
+    "tests/test_ci_graph.py": "c8fedb48acd8a021445736acce3afa82e710742f812cbe9755b853155e82e311",
+    "tests/test_ci_graph_composition.py": "8dfbe5ed8c4ed287c616bb7f5ed22a1f46604cfa17a9ead45fccaa7468ab4a37",
+    "tests/test_ci_graph_controller_lifecycle.py": "73e8bbb4971ada01781f2d7edfdb04abc3139de7b3442541c6b80aa3c3b5cb42",
+    "tests/test_ci_graph_edge_population.py": "bbc4578703b16da6bfd922d4aa2645210b34a6f5f3bf0d21785232f1d34878b5",
+    "tests/test_ci_recovery_frontier.py": "9e3e0754579ddeaecfa7ca4d260dae29697185c54f3d0e057551c5269027827b",
+    "tests/test_ci_state_matrix.py": "32cd279f7a96c68e1545ae7800084d852cc3d4bf57d27702dfce99bcedda606e",
+    "tests/test_exact_main_phase_proof.py": "a403227a1869c4fe10f910b4b5d3a7b4e4cc5cf7a4c1f0b9cd6ea2607750f9a1",
+    "tests/test_exact_main_phase_readiness.py": "37705348907281056ad1521b6731e1bd19c4addf1051668b16ff09262a32ffcf",
+    "tests/test_execution_state_lifecycle.py": "47dacf3974e1e2c2290b14008b92561a3b87b9f9cc4dc8d924d47dfd2cf5e92d",
+    "tests/test_installed_lifecycle_composition.py": "68592eca8c2d29ea816e99e6571cc99d1e61db315c220928d47ee5addf4f8616",
+    "tests/test_installed_parent_phase_proof.py": "cd6e0ac4b6ab27157b0226fe2f834a49104a8d826162af15340375722477cbe7",
+    "tests/test_installed_phase_authority.py": "61f0e7cc715c3ae929d82c4d22cc8bd933fd61c0a9d9f32929284f779a8d72b5",
+    "tests/test_lifecycle_mandatory_predicates.py": "db9bb60d3e18dc956ad1e3030a0a67faa8f2b4998dd19699b41ff223930fd27b",
+    "tests/test_local_pr.py": "ca68900360b319dfc698b6f84be288836ff84cd5961e1f90a6538067414d56d3",
+    "tests/test_local_proof_bundles.py": "ff04c9eec7ea93c650dde504ddc5e523b1b8ea9f378149365fbe633b6ae65a8c",
+    "tests/test_operational_observations.py": "04dffbbb93028b8d4faa014ab34254d0c1190379a9b819a3eb673ba418da25f8",
+    "tests/test_ordinary_protection_projection.py": "38f8a1f73eb1c1d43ebcb44c52caaaf15f52676c3f935ebb1ce933b54571b3fe",
+    "tests/test_phase_closure_input.py": "5a174f407e0abaca9777cfa3637d04455dd32a91a7847b7c07213fdb34d61c7c",
+    "tests/test_phase_closure_population.py": "d1f0450280cd7e03419199ef838397963172cda14a49cd2d078ad61940016362",
+    "tests/test_phase_input_semantic_consumers.py": "828f3eb18c9f7e830d5ea37efebf94c1358dfe0650b6634008b6294a8d25262f",
+    "tests/test_phase_input_temporary_effects.py": "555f85f95a53c82b01a8d0191900fb5e931dd600f21621c9d785cead2ffa055b",
+    "tests/test_phase_policy_subject.py": "103daf1849f5200c3bc950504afa009751b7bed36d2b4dc9729ca550ccdc6587",
+    "tests/test_preflight.py": "6a8f8ef32c30932babc5d8fc3f5b4409006fa222d2575e3d42a02d00463614bc",
+    "tests/test_preflight_phase_readiness.py": "894f5eadf5f40bfc8fe0469b50a0ac14bcc2176a033dd1edaba3731ae35679de",
+    "tests/test_private_phase_authority_resources.py": "d49e2b33841dad2452764cca6c0af535ecad61dfdab8798f71893f6ed78768dd",
+    "tests/test_profile_yaml.py": "e2cbcf000a1e21431e96cd24e61dbad81d6ae56c0b6bfdea19070973e1e36ce8",
+    "tests/test_prospective_phase_forwarding.py": "60717d9a49c6742b7766d041a4dc29ba7d57f3dd5a828fb5737f143576cc2996",
+    "tests/test_prospective_validation.py": "3a03488be7ea8aff6855d4d9775d3f31f644e366694ca3b5d7a2dfd5b686917b",
+    "tests/test_protection_inspection_client.py": "c874719bf6148002af2ef4cb863d93f7faaa02b973986b9e59d42e79cc1cdfa5",
+    "tests/test_provider_reuse_closure.py": "40cc548550e8ba14b9f8507339ed1cca91e2459ae28bb9b871b627f120a521f0",
+    "tests/test_release_adopter_qualification.py": "1e76fcf06e5baf7393e315447e527dbd59319168bd87c126d1b71aa2b726a497",
+    "tests/test_release_adopter_sources.py": "f29d57511cb2d9c620fdabc20bdfd253613fcb152961f9f0e37afc8f2de611ae",
+    "tests/test_release_artifacts.py": "026f32b90a3826744718592840be815efa069061c7f261b53144c32ccbb168bf",
+    "tests/test_release_composition_adversarial.py": "625d11af9fa5c03b29fe545f24a6d8fea5db79fa3365d5bd273eb859af3259b4",
+    "tests/test_release_preinstall_composition.py": "53d10e812d744402c30c14d8b3393127640bb4fa94c061ba86a9ee0bf2a2901e",
+    "tests/test_truth_cli_phase_context.py": "c6c65509b74c9608ffd259c2bc6b1668b113ce477d47b4d401211d62354a0c12",
+    "tests/test_workitem_phase_consumption.py": "e4fa8e2508e672940b3b742438a2beb247a19e9d25b80f8035142a4732880278"
+  },
+  "canonical_manifest_sha256": {
+    "governance/test-manifests/architecture-context-membership.txt": "1312443c74ae94754fa78ef7225df5b89e1b56563b20c30465db91b1fa57a7c9",
+    "governance/test-manifests/architecture-cqrs-side.txt": "a6a14673c19ef23e507195db1b66849d25461317b97ca48632a2a15a9d89d687",
+    "governance/test-manifests/architecture-duplication.txt": "dd0b17093d3d4ff3b90dbceeb966f9a5359d8da53af1938a2a77433f0fe25fb4",
+    "governance/test-manifests/architecture-import-boundaries.txt": "099d06a14bcb4e54b688130e7ec5b2303b9c5433ea8a8ca238694c39f95441f2",
+    "governance/test-manifests/architecture-layer-membership.txt": "80ff556d97c30b06c659124a6895876b473094fd664aab9612eccb530047e0ad",
+    "governance/test-manifests/architecture-module-size.txt": "9bac568140c37af32e2ed228ae931c44a9b64fad5f6381e29302da9738b92cf4",
+    "governance/test-manifests/architecture-router-thinness.txt": "9f101664a9c51e18f9d4268a13584c644084d956539fbf1fe7c00e41a4c403dc",
+    "governance/test-manifests/architecture-test.txt": "c27f017ec875945767f1ed3048553e48b01f6b95e94c64da1f810862f27e078a",
+    "governance/test-manifests/contract-test.txt": "73bff3aa43f20a0cc6ab7d5c02d6924e2ab6096c48200e5d23bcead4467d8e60",
+    "governance/test-manifests/test.txt": "b01d1e2fdbd5de0658f4b6d88672ade54f797dc87355cc290b1531884fc8c0f5"
+  },
+  "selector_population_sha256": "f174f4eeade63e4412645907a769cfa735bdb992c72449f8c3ba5a147edce1f1",
+  "cases_per_stage": 1638,
+  "full_corpus_case_executions": 4914,
+  "context_control_executions": 12,
+  "context_controls_per_stage": 4,
+  "stages": [
+    {
+      "kind": "source",
+      "collected": 1638,
+      "passed": 1638,
+      "failed": 0,
+      "skipped": 0,
+      "expected_failures": 0,
+      "loaded_modules_before": 220,
+      "loaded_modules_after": 269,
+      "module_population_before_sha256": "e50aaee8f7df51e3e059363ac9170ac621b00af11f3dc746216ce461958ab421",
+      "module_population_after_sha256": "9ce97eaa5b8ac6f78c972c4d62af20a17bd23442d170e600f9069e26ddd818f5",
+      "all_loaded_public_module_origins_and_bytes_checked": true,
+      "commands": [
+        {
+          "label": "source-context-smoke",
+          "exit_code": 0
+        },
+        {
+          "label": "source-matrix-tests",
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "kind": "wheel",
+      "collected": 1638,
+      "passed": 1638,
+      "failed": 0,
+      "skipped": 0,
+      "expected_failures": 0,
+      "loaded_modules_before": 220,
+      "loaded_modules_after": 269,
+      "module_population_before_sha256": "e50aaee8f7df51e3e059363ac9170ac621b00af11f3dc746216ce461958ab421",
+      "module_population_after_sha256": "9ce97eaa5b8ac6f78c972c4d62af20a17bd23442d170e600f9069e26ddd818f5",
+      "all_loaded_public_module_origins_and_bytes_checked": true,
+      "commands": [
+        {
+          "label": "wheel-matrix-venv",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-matrix-closure-install",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-project-pip-prerequisite",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-matrix-install",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-context-smoke",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-matrix-tests",
+          "exit_code": 0
+        }
+      ]
+    },
+    {
+      "kind": "sdist",
+      "collected": 1638,
+      "passed": 1638,
+      "failed": 0,
+      "skipped": 0,
+      "expected_failures": 0,
+      "loaded_modules_before": 220,
+      "loaded_modules_after": 269,
+      "module_population_before_sha256": "e50aaee8f7df51e3e059363ac9170ac621b00af11f3dc746216ce461958ab421",
+      "module_population_after_sha256": "9ce97eaa5b8ac6f78c972c4d62af20a17bd23442d170e600f9069e26ddd818f5",
+      "all_loaded_public_module_origins_and_bytes_checked": true,
+      "commands": [
+        {
+          "label": "sdist-matrix-venv",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-matrix-closure-install",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-project-pip-prerequisite",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-matrix-install",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-context-smoke",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-matrix-tests",
+          "exit_code": 0
+        }
+      ]
+    }
+  ],
+  "loaded_module_population_after_equal_across_all_stages": true,
+  "loaded_module_count_after": 269,
+  "loaded_module_population_after_sha256": "9ce97eaa5b8ac6f78c972c4d62af20a17bd23442d170e600f9069e26ddd818f5",
+  "test_resources": {
+    "isolated_thin_wrappers": 20,
+    "wrapper_source_population_sha256": "69aedaef72214e7bbb1ee137e76cd8ebeaa5b692fca5a9e33dd0daa2bdb87be6",
+    "wrapper_resource_has_no_bcf_package": true,
+    "explicit_changed_test_files_from_retained_sdist": [
+      {
+        "path": "tests/test_private_phase_authority_resources.py",
+        "archive_sha256": "6af29d24f5c8e5edc84e0bf1e077a0e819dac081a7ea9e7197737417abac5b02",
+        "current_sha256": "d49e2b33841dad2452764cca6c0af535ecad61dfdab8798f71893f6ed78768dd"
+      }
+    ],
+    "installed_in_process_source_package_fallback_used": false
+  },
+  "test_tool": {
+    "authority": false,
+    "role": "test-only project-interpreter prerequisite, separate from41-wheel SDK release closure",
+    "requirement": "pip==26.2.1",
+    "publisher_metadata_url": "https://pypi.org/pypi/pip/26.2.1/json",
+    "publisher_metadata_sha256": "4f5abeb5acacd5eaaad5e6982f5721dee3592795e59fc5a4067fcca92eed70e1",
+    "filename": "pip-26.2.1-py3-none-any.whl",
+    "sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e",
+    "bytes": 1816632
+  },
+  "test_tool_role": "Extra project-interpreter test prerequisite only; unchanged41-wheel SDK release closure. Named pytest<1 rejection remains required.",
+  "artifacts": {
+    "bcf_governance-2.5.0-py3-none-any.whl": "4b86bed1799047794885182dc5c011c813e6f5da237b5ab7e8c32ca4a52ffd31",
+    "bcf_governance-2.5.0.tar.gz": "91434c449508bf571d83072025f18d9d95f105b455601416e2108d327ddd9dad"
+  },
+  "owned_execution": {
+    "returncode": 0,
+    "quiescent": true,
+    "recorded_process_handles_absent": true,
+    "recorded_process_handle_count": 5,
+    "fresh_common_fence": "busy_other_actual_owner",
+    "current_other_owner": "Independent kernel/process readback identifies the released234 AgentBus documentation submit; no BCF reservation or competing invocation."
+  },
+  "prior_attempts_retained": [
+    {
+      "attempt": 1,
+      "subject": "d310aac08bf8a47c810e55a61c2a00512a08f6d3",
+      "terminal_returncode": 1,
+      "quiescent": true,
+      "record_sha256": "52531401126cea61af675141c552efee246f2c22b5e2326022bdcc6d84d09fdc",
+      "disposition": "Isolated pytest importlib mode omitted sibling test-helper search path; collection errors before any behavior/SDK allocation. All original selectors/guards retained for corrected harness."
+    },
+    {
+      "attempt": 2,
+      "subject": "d310aac08bf8a47c810e55a61c2a00512a08f6d3",
+      "terminal_returncode": 1,
+      "quiescent": true,
+      "record_sha256": "54cbac903c30fe7345107d9dc1295bc653d0dacb003bc8a614594329f359064d",
+      "disposition": "1638 collected/1636 passed/2 source-context failures/no skips. Parent source import path was explicit but SDK-absent child fixtures inherited no absolute source PYTHONPATH. No wheel/sdist environments allocated. All public runtime bytes/origins remained exact."
+    },
+    {
+      "attempt": 3,
+      "subject": "d310aac08bf8a47c810e55a61c2a00512a08f6d3",
+      "terminal_returncode": 1,
+      "quiescent": true,
+      "record_sha256": "35399f51665c0bb87ec86890d1bf3995c9a0671b04a695c7f8e265b4db56ca4a",
+      "disposition": "Source context2 and full1638 source cases PASS/no skips. Wheel installed successfully; collection lacks source-only scripts wrapper test resources (3 imports), so0 wheel behavior cases; sdist unallocated. Preserve source success and original wheel failure without source-package fallback."
+    },
+    {
+      "attempt": 4,
+      "subject": "d310aac08bf8a47c810e55a61c2a00512a08f6d3",
+      "terminal_returncode": 1,
+      "quiescent": true,
+      "record_sha256": "129acd56046c03c3d52153dffedaa0a9def8c3a78fcb1e4a4b86f92a72372731",
+      "disposition": "Source1638 retained PASS. Wheel1638 collected/1636 passed/2 failed/no skips; exact SDK origins and bytes preserved. Failures: seed pip25.0.1 violates project26.2.1 before intended pytest mismatch; source-only checkout resource-path oracle rejects correct installed SDK-owned root. Sdist unallocated; no product change or closure."
+    }
+  ],
+  "coordination_disposition": "Bus11355 incorrectly said fresh fence FREE;11357 corrected it to busy-other-owner. Original terminal readback was correct. Own quiescence and current availability stay distinct.",
+  "raw_sha256": {
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-context-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-context-smoke.stdout": "d227fecde71f1b4783f1cfc651ac9dcedf03a10c1a42098ecb9393dbcf111808",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-install.stdout": "5c73650373c14033e7d1545d65a55e98e60490b11495cccce416ef721ec22dd2",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-tests.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-tests.stdout": "9d61fd81d1fcb82b14b610f36f24852b3162ef6ce2457b5c3707c6fe1c6a2437",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-matrix-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-project-pip-prerequisite.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/sdist-project-pip-prerequisite.stdout": "f7e01dba4beb48f38fd30e5c380962c40d39378d43d8b14027ed74427e07a572",
+    "authority-consumer-matrix-cf7e85e0-attempt1/source-context-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/source-context-smoke.stdout": "7e2d117829c17c0debe32adb3cfd5d55d8751920047434866a589fcbbe42386b",
+    "authority-consumer-matrix-cf7e85e0-attempt1/source-matrix-tests.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/source-matrix-tests.stdout": "01a8b3916f679b82c300a5525db8252963dd8ef19aeaa8ccb3d384322ce5bebf",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-context-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-context-smoke.stdout": "46210ae349f2b882fc8cca287dd1f17a8ee1a0b1327d0eee09c22b9e4dda2b25",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-install.stdout": "952c27886fefd5c09db7a69f43852a51c8b539d432b6954137c304de87c6564e",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-tests.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-tests.stdout": "04853dc0de339f51c30076466fce374a247b53aa584949ba8e1eb023b2a3186b",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-matrix-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-project-pip-prerequisite.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "authority-consumer-matrix-cf7e85e0-attempt1/wheel-project-pip-prerequisite.stdout": "f7e01dba4beb48f38fd30e5c380962c40d39378d43d8b14027ed74427e07a572"
+  },
+  "capture_sha256": {
+    "authority-consumer-matrix-cf7e85e0-attempt1/report.json": "58ef1787398d195cb3f1a50aef0022a3b720c7f14a90fa506e515b4190a87c75",
+    "authority-consumer-matrix-cf7e85e0-attempt1-plan.json": "025df0573386709e58b4471d897240b978f7944b637b77b596adc2af7aaa6db1",
+    "authority-consumer-matrix-cf7e85e0-owned-attempt1/operation.json": "3635de00fe4141032d06d6d18ee500428d1e48ae37828cb467ef985cb9e4d4fb",
+    "authority-consumer-matrix-cf7e85e0-attempt1-terminal-readback.json": "661ee6fbbf980e0ce0ab16dcf994459aaad715e8abae41ce224a321b051d10b5"
+  },
+  "fixture_contract": "audits/issue-394/installed-authority-corpus-fixture-contract.json",
+  "limits": [
+    "Controlled45-file corpus is not an independently complete protected lifecycle/context/effect population, production crosswalk or detector qualification.",
+    "Exact runtime package bytes match retained7c6 archives; source/test corpus cf7 and archive7c6 subjects remain distinct, including one corrected test-resource file. No new archive/release-byte qualification is asserted.",
+    "Current real-adopter/profile/minor/toolchain/fresh234-upgrade/repeat/rollback/custody matrix remains open; no publication authority.",
+    "No approved matched performance target, percentile or end-to-end improvement is derived from test durations.",
+    "All82 whole requirements/38 slices unchanged; P32 active/P33-P35 dormant."
+  ]
+}

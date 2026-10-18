@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "authority": false,
-  "status": "authored_fixture_correction_execution_pending",
+  "status": "controlled_source_and_both_installed_sdk_corpus_passed",
   "workitems": [
     "P32-P0-02",
     "P32-P0-04"
@@ -66,5 +66,20 @@
   "limits": [
     "Source1638 and wheel1636 historical passes remain exact observations of the prior test corpus, not proof of the changed oracle.",
     "Full protected lifecycle population/crosswalk, real adopters, profiles/minors/toolchains, approved performance and independent custody remain open; all82 requirements/38 slices unchanged."
-  ]
+  ],
+  "qualification_disposition": {
+    "authority": false,
+    "evidence": "audits/issue-394/authority-consumer-matrix-cf7e85e0.json",
+    "source_subject": {
+      "commit_sha": "cf7e85e09b88654d99ac10f39b815c559635dc8d",
+      "tree_sha": "1dd3b3128ff6af38ce7e4f4947337b709d94aabc"
+    },
+    "installed_build_subject": {
+      "commit_sha": "7c6b3d653a70ec8b0918dc7ec988d1a5958eda28",
+      "tree_sha": "ef7d77bdfd9a491502eca27d0b463789d19dd095"
+    },
+    "full_cases_per_stage": 1638,
+    "context_controls_per_stage": 4,
+    "scope": "Supersedes execution-pending only for this bounded controlled corpus. Full lifecycle/runtime population and independent adoption/custody remain open."
+  }
 }
