@@ -1,0 +1,13 @@
+{
+  "authority": false,
+  "scope": "historical retained byte integrity only; not fresh provider authentication or matched baseline",
+  "source_review": "audits/issue-394/v234-provider-timing-review.json",
+  "source_review_sha256": "f6621e2afeb77e5dc40098a4d30c0336ad7533d22321cda4ba30eab50ca7f8fe",
+  "observations": 14,
+  "verified_raw_files": 42,
+  "complete_logs": 13,
+  "partial_logs": 1,
+  "raw_readback_sha256": "9776d23037f36220da52d4afbea7a55a035160e29789cc64d7aa8ba84d59ada5",
+  "matched_cohort": false,
+  "targets_approved": false
+}

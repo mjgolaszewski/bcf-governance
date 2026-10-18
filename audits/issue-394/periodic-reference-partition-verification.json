@@ -228,7 +228,7 @@
   },
   "source_topology_partitioned": true,
   "actual_periodic_execution_qualified": false,
-  "new_exact_installed_distribution_qualified": false,
+  "new_exact_installed_distribution_qualified": true,
   "dispositions": [
     "Initial 5 RED cases expose provider overflow before allocation; 20 others passed.",
     "Canonical graph validator rejected final-only artifact fan-in. Implementation retains explicit truth dependencies/inputs for every part alongside cumulative predecessor transport; no validator weakened.",
@@ -368,7 +368,7 @@
   },
   "modern_runtime_gap": {
     "authority": false,
-    "status": "source_corrected_actual_installed_and_full_execution_pending",
+    "status": "exact_installed_private_probe_and_controlled_engine_passed_full_profiles_open",
     "observation": {
       "authority": false,
       "scope": "real-Git controlled session admission observation; no gate execution or provider authority",
@@ -422,7 +422,8 @@
       "periodic-session-admission-observation.json": "950ae70b7e74e50279e4a0e0d8b2155e34ed6f246eaad90c8f7fc526bb6ee9f6",
       "periodic-session-admission-observation.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
-    "subsequent_verification": "audits/issue-394/periodic-planned-consumption-verification.json"
+    "subsequent_verification": "audits/issue-394/periodic-planned-consumption-verification.json",
+    "distribution_verification": "audits/issue-394/development-distribution-4c0bc612-verification.json"
   },
   "modern_fixed_group_topology_superseded_by": "audits/issue-394/periodic-planned-consumption-verification.json"
 }

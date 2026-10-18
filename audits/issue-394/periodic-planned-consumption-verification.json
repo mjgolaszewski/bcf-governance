@@ -90,7 +90,7 @@
     ]
   },
   "private_probe": {
-    "status": "copied_rehearsal_passed_installed_pending",
+    "status": "exact_source_and_both_installed_distributions_passed",
     "observations": {
       "authority": false,
       "busy_cases": 3,
@@ -210,5 +210,19 @@
     "periodic-planned-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
     "periodic-planned-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
-  "record_governance_validation_returncode": 0
+  "record_governance_validation_returncode": 0,
+  "subsequent_exact_distribution_verification": "audits/issue-394/development-distribution-4c0bc612-verification.json",
+  "controlled_wheel_periodic_engine": {
+    "declared_targets": [
+      "gate",
+      "dependent"
+    ],
+    "positive_and_cause_specific_controls_passed": true,
+    "strict_receipt_results": [
+      "verified",
+      "verified"
+    ],
+    "SDK_absent": true,
+    "full_profile_or_phase_closed": false
+  }
 }
