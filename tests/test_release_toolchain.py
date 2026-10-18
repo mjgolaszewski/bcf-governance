@@ -153,6 +153,13 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     files = {name: tmp_path / name for name in ("fixture.whl", "fixture.tar.gz", "manifest.yml", "closure.lock")}
     for path in files.values(): path.write_bytes(b"fixture bytes\n")
     source = tmp_path / "extracted-source"; source.mkdir()
+    package = source / "bcf_governance"
+    package.mkdir()
+    (package / "__init__.py").write_bytes(b"VALUE = 1\n")
+    with zipfile.ZipFile(files["fixture.whl"], "w") as archive:
+        archive.write(package / "__init__.py", "bcf_governance/__init__.py")
+    with tarfile.open(files["fixture.tar.gz"], "w:gz") as archive:
+        archive.add(source, arcname="fixture")
     monkeypatch.setenv("PATH", os.environ["PATH"])
     for key in ("PYTHONPATH", "GITHUB_TOKEN", "ACTIONS_RUNTIME_TOKEN", "NODE_OPTIONS"):
         monkeypatch.setenv(key, "must-not-enter-closed-runtime")

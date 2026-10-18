@@ -59,7 +59,9 @@
     "release-preinstall-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "release-preinstall-metadata-red.stdout": "32230bac455042c7d773df3b4468bd31b9734739c472dcb8cd950bea8016b4e7",
     "release-preinstall-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "release-preinstall-final-semantic.stdout": "4ac1a06d40990c05f31d6cb541be70d590f0f80261f03c2b0f338fc9a6332b30"
+    "release-preinstall-final-semantic.stdout": "4ac1a06d40990c05f31d6cb541be70d590f0f80261f03c2b0f338fc9a6332b30",
+    "release-preinstall-toolchain-initial.stdout": "c995c76868176b223ff1a3f92e930c58a12f53874176567430bc89f7cc88ef28",
+    "release-preinstall-toolchain-corrected.stdout": "7dd8e4153122561356b74d9bb55e2e7baca8ae5ea0f36e9c8802ac9cfd26b0ec"
   },
   "historical_distribution": {
     "source_commit": "69851fa1a0e2e2fce6cefa523628733ff8c7526d",
@@ -114,5 +116,11 @@
     "operations": 21,
     "all_rows_unchanged": true
   },
-  "qualified_production_commit": "30619abb2d091d7917dedfd08f6e394c9ffd2a20"
+  "qualified_production_commit": "30619abb2d091d7917dedfd08f6e394c9ffd2a20",
+  "additional_toolchain_consumer": {
+    "initial_passed": 7,
+    "initial_failed": 1,
+    "corrected_combined_passed": 43,
+    "disposition": "Existing orchestration fixture supplied placeholder nonarchive bytes. Replaced wheel/sdist placeholders with real matching archives, preserving environment/bootstrap/credential/output oracles; production archive guard unchanged. This source-only fixture correction does not replay or expand the historical installed/distribution evidence."
+  }
 }
