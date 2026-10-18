@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "authority": false,
-  "status": "source_checked_canonical_and_exact_installed_pending",
+  "status": "source_canonical_and_bounded_exact_installed_checked",
   "contract": "audits/issue-394/qualification-preserved-deadline-admission-contract.json",
   "source_parent": "63d5e821f1147a593fad2ca04c0ce84b37c376b3",
   "source_sha256": "0b6bee3ba9f40cc39abb5357e7af735110c7925ed415f813baeb64d29bf7f524",
@@ -116,5 +116,16 @@
     "qualification-preserved-deadline-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "qualification-preserved-deadline-semantic.stdout": "0f2c77dcca264bef2c3dea66999d307574d096da17a46afd9c0e20b8ce665d11",
     "qualification-preserved-deadline-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "qualification_disposition": {
+    "authority": false,
+    "source_commit": "1762855717361290c32240ca8b8df1ceed0ccb16",
+    "source_tree": "c181aa9462ea22e323994eea8a69e554d3a6af2e",
+    "canonical_projection": "terminal0_quiescent; four new manifest rows and duration projection only",
+    "exact_installed_evidence": "audits/issue-394/development-distribution-17628557-verification.json",
+    "wheel_cases_passed": 90,
+    "sdist_cases_passed": 90,
+    "skipped": 0,
+    "scope": "Supersedes historical canonical/installed pending only for this exact bounded corpus. Full real-adopter/profile/toolchain/minor/lifecycle/performance/custody qualification remains open; no acceptance changes."
   }
 }
