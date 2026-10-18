@@ -2,6 +2,7 @@
 
 import json
 import importlib.util
+import importlib.resources
 from pathlib import Path
 import shutil
 import subprocess
@@ -107,7 +108,9 @@ else:
 
 
 def test_sdk_schema_root_preserves_existing_package_location():
-    assert packaged_repo_root() == ROOT / 'bcf_governance/pack/template-repo'
+    package = importlib.resources.files('bcf_governance')
+    expected = Path(str(package.joinpath('pack', 'template-repo'))).resolve()
+    assert packaged_repo_root() == expected
 
 
 def test_loaded_private_context_binds_resources_before_checkout(tmp_path, monkeypatch):

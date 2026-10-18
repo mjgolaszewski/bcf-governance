@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "authored_fixture_correction_execution_pending",
+  "workitems": [
+    "P32-P0-02",
+    "P32-P0-04"
+  ],
+  "bounded_context": "ci_authority",
+  "architectural_layer": "test_fixture_and_machine_local_qualification",
+  "operation_side": "existing_test_execution_only",
+  "targets": [
+    "tests/test_private_phase_authority_resources.py",
+    "machine-local authority consumer matrix harness"
+  ],
+  "observed_exact_inputs": {
+    "source_subject": "d310aac08bf8a47c810e55a61c2a00512a08f6d3",
+    "archive_build_subject": "7c6b3d653a70ec8b0918dc7ec988d1a5958eda28",
+    "files": 45,
+    "cases_per_stage": 1638,
+    "source_passed": 1638,
+    "wheel_passed": 1636,
+    "wheel_failed": 2,
+    "skipped": 0,
+    "runtime_module_origins_and_bytes_verified": true
+  },
+  "contract": [
+    "SDK resource-root expectation derives from the loaded package resource owner, independently of the checkout or working directory. Preserve the existing source result and counterfeit/missing private-resource rejection controls.",
+    "Keep the original named pytest<1 negative cause. Satisfy the existing project-interpreter pip prerequisite before executing that case; do not broaden the rejection regex or relax dependency policy.",
+    "Derive the additional test-tool requirement from existing interpreter_environment.PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT. Install only its exact publisher-hash-verified wheel into temporary test SDK environments; retain it separately from the unchanged41-wheel release-runtime closure.",
+    "Keep all45 files/1638 canonical selectors at source,wheel,sdist stages. After changing the test oracle, requalify the complete source corpus before allocating SDK environments. No missing cases/skips become a pass.",
+    "Retain isolated exact thin-wrapper test resources without any source bcf_governance package. Verify every loaded public BCF module origin and bytes before/after each execution.",
+    "Keep candidate source, test corpus and retained archive subjects distinct. All790 runtime package mappings must remain exact; changed test-resource bytes are explicit, never relabeled as original sdist test bytes."
+  ],
+  "test_tool": {
+    "authority": false,
+    "role": "test-only project-interpreter prerequisite, separate from41-wheel SDK release closure",
+    "requirement": "pip==26.2.1",
+    "publisher_metadata_url": "https://pypi.org/pypi/pip/26.2.1/json",
+    "publisher_metadata_sha256": "4f5abeb5acacd5eaaad5e6982f5721dee3592795e59fc5a4067fcca92eed70e1",
+    "filename": "pip-26.2.1-py3-none-any.whl",
+    "sha256": "71138adf1f4ca900cdb7d289c21b7494329f2332b6d85f0e1c42108c0384ed3e",
+    "bytes": 1816632
+  },
+  "expected_named_controls": [
+    "tests.test_preflight::test_wrong_interpreter_distribution_version_fails_before_evidence",
+    "tests.test_private_phase_authority_resources::test_sdk_schema_root_preserves_existing_package_location"
+  ],
+  "forbidden": [
+    "production implementation changes",
+    "loosening pip/pytest or authority schema guards",
+    "changing the release-runtime closure",
+    "SDK source-package fallback",
+    "dropping failing cases",
+    "maintained adopter or immutable234 changes",
+    "provider mutation",
+    "whole requirement/lifecycle/release authority from unit results"
+  ],
+  "retained_capture_sha256": {
+    "authority-consumer-matrix-d310aac0-attempt1-terminal-readback.json": "52531401126cea61af675141c552efee246f2c22b5e2326022bdcc6d84d09fdc",
+    "authority-consumer-matrix-d310aac0-attempt2-terminal-readback.json": "54cbac903c30fe7345107d9dc1295bc653d0dacb003bc8a614594329f359064d",
+    "authority-consumer-matrix-d310aac0-attempt3-terminal-readback.json": "35399f51665c0bb87ec86890d1bf3995c9a0671b04a695c7f8e265b4db56ca4a",
+    "authority-consumer-matrix-d310aac0-attempt4-terminal-readback.json": "129acd56046c03c3d52153dffedaa0a9def8c3a78fcb1e4a4b86f92a72372731",
+    "authority-consumer-matrix-d310aac0-attempt4/report.json": "560bdffb4eb2014e46c47f2de057d38fb17c58655f39207f76cdfb54f452856c"
+  },
+  "limits": [
+    "Source1638 and wheel1636 historical passes remain exact observations of the prior test corpus, not proof of the changed oracle.",
+    "Full protected lifecycle population/crosswalk, real adopters, profiles/minors/toolchains, approved performance and independent custody remain open; all82 requirements/38 slices unchanged."
+  ]
+}
