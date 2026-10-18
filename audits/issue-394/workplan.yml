@@ -303,6 +303,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/development-distribution-cfe1afca-verification.json
     - tests/test_planned_deadline_context.py
     - audits/issue-394/planned-deadline-context-verification.json
     - audits/issue-394/planned-deadline-context-contract.json

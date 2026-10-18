@@ -1,0 +1,303 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "scope": "Exact development source fresh/repair, once-built wheel/sdist, both SDK-absent private consumers including authenticated deadline context synthetic queries, and controlled two-gate periodic dependent execution. Not provider execution, independent release/custody, complete profiles/adopters or performance certification.",
+  "source_commit": "cfe1afca4a288f3341162250cae9b61ea9fa36ed",
+  "source_tree": "7cb9ff028b9c5b44d720a73a8223def625265836",
+  "artifacts": [
+    {
+      "name": "bcf_governance-2.5.0-py3-none-any.whl",
+      "bytes": 2105617,
+      "sha256": "0d231bb2c862839ffee25c9d7057031c3277d67611e7f538179bf9c15c8e228c"
+    },
+    {
+      "name": "bcf_governance-2.5.0.tar.gz",
+      "bytes": 9137921,
+      "sha256": "fcf9c391de402af9213e4d90b30c5b0f4c4b7e306d16647d08eb306bca0a8559"
+    }
+  ],
+  "wheel_source_mapping": {
+    "status": "exact",
+    "mapped_files": 790
+  },
+  "source_fresh_and_repair_cases_passed": 2,
+  "runtime_report_version": "1.1",
+  "runtime_commands": 11,
+  "raw_streams": 22,
+  "dependency_wheels": 41,
+  "consumers": {
+    "wheel": {
+      "profile": "lite",
+      "installation": "fresh",
+      "skip_validation": true,
+      "target_sdk_absent": true,
+      "status": "pass",
+      "runtime_fact_query": {
+        "authority": false,
+        "busy_cases": 3,
+        "candidate_or_subprocess_not_executed": true,
+        "command_guard_causal": true,
+        "differing_requirement_strings_blocked": true,
+        "exact_file_reused": true,
+        "forged_command_arguments_rejected": 10,
+        "forged_command_records_rejected": 16,
+        "forged_mapping_or_evidence_rejected": 11,
+        "holder_and_retained_bytes_preserved": true,
+        "identical_requirement_predicates_collapsed": 2,
+        "interpreter_projection_unallocated": true,
+        "modern_periodic_planned_workflows": 2,
+        "periodic_literal_gates": 20,
+        "periodic_ordered_coverage_and_custody_preserved": true,
+        "periodic_parts_across_two_schedules": 4,
+        "physical_deadline_context_qualified": true,
+        "reference_model_bound_budget_minutes": 80,
+        "reference_projection_cap_atomic": true,
+        "reference_projection_invalid_facts_rejected": 6,
+        "reference_serial_defaults_accepted": true,
+        "runtime_owned_helpers": true,
+        "scope": "private_runtime_synthetic_fact_queries",
+        "sdk_absent": true,
+        "serial_deadline_guard_causal": true,
+        "serial_deadline_underbudget_rejected": 5,
+        "valid_mapping_returned_unchanged": true,
+        "version_1_1_both_consumers_accepted": true
+      },
+      "query_returncodes": {
+        "authored_operation_query": 0,
+        "capture_integrity_query": 0,
+        "provider_source_query": 0
+      },
+      "prepare_returncodes": [
+        0,
+        0,
+        1
+      ],
+      "resolve_cases": [
+        {
+          "case": "valid",
+          "returncode": 0
+        },
+        {
+          "case": "asset",
+          "returncode": 1
+        },
+        {
+          "case": "reference",
+          "returncode": 1
+        },
+        {
+          "case": "missing_asset",
+          "returncode": 1
+        },
+        {
+          "case": "missing_reference",
+          "returncode": 1
+        },
+        {
+          "case": "ref",
+          "returncode": 1
+        }
+      ],
+      "semantic_returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    "sdist": {
+      "profile": "lite",
+      "installation": "fresh",
+      "skip_validation": true,
+      "target_sdk_absent": true,
+      "status": "pass",
+      "runtime_fact_query": {
+        "authority": false,
+        "busy_cases": 3,
+        "candidate_or_subprocess_not_executed": true,
+        "command_guard_causal": true,
+        "differing_requirement_strings_blocked": true,
+        "exact_file_reused": true,
+        "forged_command_arguments_rejected": 10,
+        "forged_command_records_rejected": 16,
+        "forged_mapping_or_evidence_rejected": 11,
+        "holder_and_retained_bytes_preserved": true,
+        "identical_requirement_predicates_collapsed": 2,
+        "interpreter_projection_unallocated": true,
+        "modern_periodic_planned_workflows": 2,
+        "periodic_literal_gates": 20,
+        "periodic_ordered_coverage_and_custody_preserved": true,
+        "periodic_parts_across_two_schedules": 4,
+        "physical_deadline_context_qualified": true,
+        "reference_model_bound_budget_minutes": 80,
+        "reference_projection_cap_atomic": true,
+        "reference_projection_invalid_facts_rejected": 6,
+        "reference_serial_defaults_accepted": true,
+        "runtime_owned_helpers": true,
+        "scope": "private_runtime_synthetic_fact_queries",
+        "sdk_absent": true,
+        "serial_deadline_guard_causal": true,
+        "serial_deadline_underbudget_rejected": 5,
+        "valid_mapping_returned_unchanged": true,
+        "version_1_1_both_consumers_accepted": true
+      },
+      "query_returncodes": {
+        "authored_operation_query": 0,
+        "capture_integrity_query": 0,
+        "provider_source_query": 0
+      },
+      "prepare_returncodes": [
+        0,
+        0,
+        1
+      ],
+      "resolve_cases": [
+        {
+          "case": "valid",
+          "returncode": 0
+        },
+        {
+          "case": "asset",
+          "returncode": 1
+        },
+        {
+          "case": "reference",
+          "returncode": 1
+        },
+        {
+          "case": "missing_asset",
+          "returncode": 1
+        },
+        {
+          "case": "missing_reference",
+          "returncode": 1
+        },
+        {
+          "case": "ref",
+          "returncode": 1
+        }
+      ],
+      "semantic_returncodes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  },
+  "four_stages_quiescent_terminal0": true,
+  "recorded_processes_absent": true,
+  "fresh_common_fence_readback": "free_then_released",
+  "controlled_wheel_periodic_fixture": {
+    "declared_targets": [
+      "gate",
+      "dependent"
+    ],
+    "receipt_results": {
+      "dependent": [
+        "verified"
+      ],
+      "gate": [
+        "verified"
+      ]
+    },
+    "canonical_declared_capture_command_used": true,
+    "SDK_absent": true,
+    "complete_profile_or_phase_closed": false,
+    "retained_source_commit": "e24973915f01311b3993c13d11e336da41976286",
+    "retained_source_tree": "fe7073e8b345bcf3c914905608535246d6e0c76c",
+    "retained_source_clean": true,
+    "raw_receipt_session_control_sha256": {
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/dependent/dependent.break-dependent.stderr.txt": "7f139c149a81ffee73f0233fba6a67e04eaf1bcbaee323a2a267656af982827b",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/dependent/dependent.break-dependent.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/dependent/dependent.evidence.json": "94d350f37b2074b30ce179365189c7b32135299c480bf7ffd0ddbd138833b8de",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/dependent/dependent.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/dependent/dependent.stdout.txt": "7d0c57b3b2e2460d3ca8183a71d32d0006d2c637d663c1148fcaf1316d7b0da4",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/dependent/evidence-session.json": "3f34d0a82c1ec1d1200373453c39b292366c737ad1bd43156b4f85b606a49faf",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/evidence-session.json": "3f34d0a82c1ec1d1200373453c39b292366c737ad1bd43156b4f85b606a49faf",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/gate/evidence-session.json": "3f34d0a82c1ec1d1200373453c39b292366c737ad1bd43156b4f85b606a49faf",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/gate/gate.break-gate.stderr.txt": "7f139c149a81ffee73f0233fba6a67e04eaf1bcbaee323a2a267656af982827b",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/gate/gate.break-gate.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/gate/gate.evidence.json": "08fb18d43a1f08b20d10079dd031dc022c99624e39dd90a9020987d14ccb4d11",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/gate/gate.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      ".artifacts/bcf/sessions/b8238eea3ca8ce03a26585ceaf9529f8/gate/gate.stdout.txt": "7d0c57b3b2e2460d3ca8183a71d32d0006d2c637d663c1148fcaf1316d7b0da4"
+    }
+  },
+  "raw_sha256": {
+    "development-periodic-qualified-cfe1afca/operation.json": "9e10ebf6300a09b86ae32fcd94ff147fd9a9e7de0a1a8fdb32d5e8bb5d140830",
+    "development-distribution-cfe1afca/operation.json": "60dd888d8751805e076a0e23ebe7185d3f601a3c5edf97a0c20a1593b91077ca",
+    "development-installed-cfe1afca/runtime/runtime-verification.json": "d141687daa7482ae7afd2ba2af64dac0771f35e4be3387a37dc23344a4a15053",
+    "periodic-runtime-cfe1afca/report.json": "f6dd9ba015eacc1b5c9cf7b4ffb813f1ef2438026c897f9d109ef92f45c10f41",
+    "development-installed-cfe1afca/runtime/sdist-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/sdist-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "development-installed-cfe1afca/runtime/sdist-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/sdist-install.stdout": "4f9d28f9d243531453af3955b6fb7c23000209a9227f2f81f790d54a0ec0787a",
+    "development-installed-cfe1afca/runtime/sdist-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/sdist-installed-consumer.stdout": "48f808d0c4734087aea746e14b94e76ecd9709d276512e13059043d538e5cced",
+    "development-installed-cfe1afca/runtime/sdist-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/sdist-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "development-installed-cfe1afca/runtime/sdist-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/sdist-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/twine-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/twine-check.stdout": "cf194ad5db5a49608408697dc2babf79c57461b6cf34a9188ae605c7598da9f3",
+    "development-installed-cfe1afca/runtime/wheel-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/wheel-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "development-installed-cfe1afca/runtime/wheel-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/wheel-install.stdout": "82156095279cc48ef2e339786703f7b7774336fe98e556a579fc558f2f0705b2",
+    "development-installed-cfe1afca/runtime/wheel-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/wheel-installed-consumer.stdout": "f8b0e61d67061866039751848c03db362fd3e83cda5978c5c9f9bb6c6fb92480",
+    "development-installed-cfe1afca/runtime/wheel-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/wheel-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "development-installed-cfe1afca/runtime/wheel-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-installed-cfe1afca/runtime/wheel-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-periodic-qualified-cfe1afca/source-installed.stdout": "404f1c31112f6d66b6569b78d1f2ac235a2e5e1a0a70785482e3be01e003d464",
+    "development-periodic-qualified-cfe1afca/source-installed.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-periodic-qualified-cfe1afca/build.stdout": "837e8c0e4a875ed22eb59124ae13a81613835a9a92be0995dff2fec3884d7f79",
+    "development-periodic-qualified-cfe1afca/build.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-periodic-qualified-cfe1afca/installed.stdout": "2700165975f68815c97d605c56eca8e90d497ade1264b6282401d13fee99ac27",
+    "development-periodic-qualified-cfe1afca/installed.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-periodic-qualified-cfe1afca/periodic-fixture.stdout": "74237e3ad6574d28a753a5e050c221ab9616b6a3ec14469e4f0f8131f96f6e30",
+    "development-periodic-qualified-cfe1afca/periodic-fixture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "development-cfe1afca-native-terminal-readback.json": "39cc244700743f2496a3e79e1c844087d11fb316e0c348769d3af473a52e9d55",
+    "periodic-runtime-cfe1afca-raw-custody.json": "88193bb516bf8df2f55f8c2844af1b416b6da50de7f1e0c3e017356e1c40924f",
+    "distribution-cfe1afca-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "distribution-cfe1afca-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Controlled local development qualification is not independent provider or release custody.",
+    "Two-gate fixture proves its declared engine path, not complete standard/regulated/self profile gates or hosted cadence.",
+    "Full profile/adopter matrix, retained2.3.4 upgrades, lifecycle and periodic policy remain open.",
+    "All82 requirements and38 slices unchanged; P33-P35 dormant; performance targets unapproved."
+  ],
+  "controlled_stage_timing_scope": {
+    "clock_basis": "local_monotonic_nanoseconds",
+    "CPU_use": "not_observed",
+    "scope": "controlled development qualification, not approved pipeline cohort",
+    "stages": [
+      {
+        "stage": "source-installed",
+        "observed_elapsed_seconds": 7.894960822
+      },
+      {
+        "stage": "build",
+        "observed_elapsed_seconds": 10.238721596
+      },
+      {
+        "stage": "installed",
+        "observed_elapsed_seconds": 184.679463149
+      },
+      {
+        "stage": "periodic-fixture",
+        "observed_elapsed_seconds": 8.130371594
+      }
+    ],
+    "matched_cohort": false
+  },
+  "deadline_context_contract": "audits/issue-394/planned-deadline-context-contract.json",
+  "provider_execution_qualified": false,
+  "record_governance_returncode": 0
+}
