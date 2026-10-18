@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "controlled_exact_distribution_and_fresh_lite_consumer_passed_full_matrix_open",
+  "source_commit": "9620214b9b225a36269e0597923c7ecf8f422870",
+  "source_tree": "93e851edc91047d770c1dd30765434e2d8430ef9",
+  "scope": "Controlled exact-source development build and existing offline wheel/sdist runtime owner with its fresh lite installed private consumer; no provider release authorization, publication or independent certification.",
+  "artifacts": [
+    {
+      "name": "bcf_governance-2.5.0-py3-none-any.whl",
+      "bytes": 2088516,
+      "sha256": "48b9a5fcf4e8eda50a8ca760770c6a598ebdfd3d333272a27b36e016c2fac773"
+    },
+    {
+      "name": "bcf_governance-2.5.0.tar.gz",
+      "bytes": 9017908,
+      "sha256": "618d85214dde26121c114cbb969b32dacb3f61a16d36f981d3656d6e9312e97d"
+    }
+  ],
+  "source_mapping": {
+    "mapped_files": 788,
+    "status": "exact"
+  },
+  "source_distribution_inventory_verified": true,
+  "runtime_resource_population": {
+    "files": 491,
+    "source_discovered": true,
+    "exact_wheel_bytes_verified": true
+  },
+  "closed_dependency_environment": {
+    "python": "3.12.14",
+    "platform": "linux_x86_64",
+    "wheel_count": 41,
+    "lock_sha256": "2c801a3a1cf476253e85ba7748afbdd460aa2fba2e57eb83277f4eff0da6b55b"
+  },
+  "commands": [
+    {
+      "label": "wheel-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "twine-check",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-smoke",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-venv",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-closure-install",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-install",
+      "exit_code": 0
+    },
+    {
+      "label": "wheel-installed-consumer",
+      "exit_code": 0
+    },
+    {
+      "label": "sdist-smoke",
+      "exit_code": 0
+    }
+  ],
+  "installed_consumer": {
+    "profile": "lite",
+    "installation": "fresh",
+    "skip_validation": true,
+    "target_sdk_absent": true,
+    "status": "pass",
+    "query_returncodes": {
+      "authored_operation_query": 0,
+      "capture_integrity_query": 0,
+      "provider_source_query": 0
+    },
+    "prepare_returncodes": [
+      0,
+      0,
+      1
+    ],
+    "resolve_cases": [
+      {
+        "case": "valid",
+        "returncode": 0
+      },
+      {
+        "case": "asset",
+        "returncode": 1
+      },
+      {
+        "case": "reference",
+        "returncode": 1
+      },
+      {
+        "case": "missing_asset",
+        "returncode": 1
+      },
+      {
+        "case": "missing_reference",
+        "returncode": 1
+      },
+      {
+        "case": "ref",
+        "returncode": 1
+      }
+    ],
+    "semantic_returncodes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "process_custody": [
+    {
+      "stage": "build",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    },
+    {
+      "stage": "installed",
+      "quiescent": true,
+      "returncode": 0,
+      "reason": "exit"
+    }
+  ],
+  "runtime_report_sha256": "8b9f811b671fd713f85d984ae4e25e5efb107af107bd233e3cf09b3875a852d7",
+  "raw_evidence_sha256": {
+    "sdist-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "sdist-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-install.stdout": "d079993c36ed9ec3a93db61228fa270290b67c9b19e624412dccd79be30025f9",
+    "sdist-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "sdist-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sdist-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "twine-check.stdout": "f94fb610bb14d0f09894752ea218fc858c7e766faad80fb8a74150374f4561e7",
+    "wheel-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-closure-install.stdout": "754ba08f4c8276c75b8a5f427e311220c9494ed3d3e903a58fc594e3d9cbd75f",
+    "wheel-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-install.stdout": "b31c36ff29272d1714a88614ea01c625ef20531dfc1e92ec775c70f74cf0ce24",
+    "wheel-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-installed-consumer.stdout": "7c3dcf7d54fe7294731bea40de0af0d606c05372db7b4f90c55a419cb520f923",
+    "wheel-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+    "wheel-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "wheel-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "raw_operation_sha256": {
+    "build": "33af43a45e4c42462623d15b44a0a44a5ee0ad3cf058a073336f6cd3789e81dc",
+    "supervised_qualification": "48f45a02ad1b3ea57cb176af55bed2c736792f1964eee98c13e1ec51df4ddfe8"
+  },
+  "limits": [
+    "This evidence applies to the recorded exact source/artifacts; subsequent audit commits are not those built bytes.",
+    "Existing controlled provider-port fixtures are not independent live-provider or real-adopter custody.",
+    "No wheel/sdist upgrade, repeat install, opt-out, rollback, all-profile, all-minor or full lifecycle conformance claim.",
+    "All 82 whole requirements and 38 slice objects remain unchanged; P32 active and P33-P35 dormant; no pipeline performance or target-approval claim."
+  ],
+  "next_action": "Qualify declared profiles and fresh/2.3.4 upgrade/repeat/opt-out/rollback on isolated provider-selected adopters; complete protected lifecycle/effect populations and composed deadlines. Canonical integration, generated reconciliation and exact provider proof remain separately required."
+}
