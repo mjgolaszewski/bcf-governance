@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "scope": "Compile fixed gate_group serial execution deadlines in the existing CI graph owner before workflow allocation",
+  "targets": ["bcf_governance/tooling/ci_graph_timeouts.py"],
+  "contract": [
+    "Every fixed gate_group executes its declared gates serially; sum every declared gate body timeout and each gate interpreter probe plus two cleanup allowances, then add existing graph headroom once and quantize upward to provider minutes.",
+    "Validate every sibling consumer independently using the existing canonical gate deadline policy; per-gate overrides and legacy absence defaults remain applicable.",
+    "A job whose available deadline is below this derived bound rejects before rendering or dependent allocation; removing one gate and its test cannot silently change the declared execution population.",
+    "The unchanged gate_shard static maximum remains a per-gate floor only; complete actual session assignment, retry, API read, environment setup and cleanup containment remain separately open.",
+    "Existing component minimum_job_timeout_minutes remain lower-bound floors and are not additive body durations. No performance targets or timeout policy values are invented.",
+    "Canonical private mirrors are generated through the existing pack generator. No hand-edited workflows, authority pins, predecessor bytes, adopter trees or other-agent execution owners."
+  ],
+  "verification": [
+    "Serial sum rejects a group whose largest individual gate fits but complete sequence does not.",
+    "Exact quantized boundary passes; one minute below rejects; every per-gate setup and cleanup allowance is included.",
+    "Overrides, singleton groups, sibling groups and legacy policy absence remain covered.",
+    "Separate shard floor and component minimum semantics retain existing behavior.",
+    "Restore the previous maximum-only guard and observe cause-specific serial-population failures.",
+    "Affected graph, architecture, governed checks and private mirror parity must pass before integration."
+  ],
+  "limits": ["This slice does not close whole runtime deadline composition, actual shard admission or independent P32 verification."]
+}
