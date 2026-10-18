@@ -284,7 +284,13 @@ def test_control_validation_precedes_real_git_shadow_promotion(tmp_path, workflo
         result = owner.apply_workflow_authority_transition(root, step_factory=steps,
             converge=fixed_point.converge, snapshot=_transition_snapshot, commit_projection=True)
         assert result is not None
-        assert _git(root, 'rev-parse', 'HEAD') == result.authority_commit
+        if workflow_transition:
+            assert isinstance(result, owner.ReconcileAuthorityTransitionResult)
+            assert _git(root, 'rev-parse', 'HEAD') == result.authority_commit
+        else:
+            assert isinstance(result, owner.ReconcileProjectionResult)
+            assert result.source_commit == before[0]
+            assert _git(root, 'rev-parse', 'HEAD') == result.projection_commit
         assert _git(root, 'status', '--porcelain=v1') == ''
         controls.validate_authored_gate_controls(root)
         assert (root / 'implementation.py').read_text() == 'RULE = True\n'
