@@ -78,6 +78,21 @@ def test_content_preserves_existing_malformed_response_rejection(monkeypatch, fi
         api.content("owner/repo", "plans/build-plan.yml", ref=TREE)
 
 
+@pytest.mark.parametrize("oid", [None, "not-a-sha", "b" * 39])
+def test_content_rejects_invalid_declared_identity_before_decode(monkeypatch, oid):
+    response = _content_response(b"active: true\n")
+    response["sha"] = oid
+    api = GitHubAPI(token="fake")
+    monkeypatch.setattr(api, "_request", lambda *args, **kwargs: response)
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("invalid identity allocated decoded content")
+
+    monkeypatch.setattr(base64, "b64decode", forbidden)
+    with pytest.raises(GitHubAPIError, match="SHA"):
+        api.content("owner/repo", "plans/build-plan.yml", ref=TREE)
+
+
 def _response() -> dict:
     return {
         "sha": TREE, "truncated": False,

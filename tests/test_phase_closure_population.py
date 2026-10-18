@@ -46,6 +46,29 @@ def _verify(api, phase_id="P02"):
     )
 
 
+@pytest.mark.parametrize("path", ["plans/build-plan.yml", "plans/phase-ledger.yml", "plans/phase-history.yml"])
+def test_duplicate_protected_policy_blocks_before_any_phase_artifact(protected_population, monkeypatch, path):
+    api, _, _ = protected_population
+    assert _verify(api)[1]["P01"][1].computed_state == "certified"
+    api.reads = 0
+    original = api.content
+
+    def content(repository, observed_path, *, ref):
+        result = original(repository, observed_path, ref=ref)
+        if observed_path != path:
+            return result
+        mapping = yaml.safe_load(result.content)
+        key = next(iter(mapping))
+        raw = result.content + b"\n" + yaml.safe_dump({key: mapping[key]}).encode()
+        oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+        return GitHubContent(path=path, blob_oid=oid, content=raw)
+
+    monkeypatch.setattr(api, "content", content)
+    with pytest.raises(GitHubControllerError):
+        _verify(api)
+    assert api.reads == 0
+
+
 def test_protected_dependencies_and_provider_certificates_define_population(protected_population):
     api, _, calls = protected_population
     subject, inputs = _verify(api)

@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitems": [
+    "foundation.conformance",
+    "foundation.normalization"
+  ],
+  "bounded_context": "ci_authority; existing shared governed YAML decoder",
+  "architectural_layer": "tooling",
+  "operation_side": "query admission before existing downstream command effects",
+  "targets": [
+    "bcf_governance/tooling/ci_github_authority.py",
+    "bcf_governance/tooling/prior_evidence_transport.py",
+    "bcf_governance/tooling/provider_reuse_closure.py",
+    "bcf_governance/tooling/ci_github_release_inputs.py",
+    "bcf_governance/tooling/ci_github_membership.py",
+    "bcf_governance/tooling/github_protection.py",
+    "bcf_governance/tooling/ci_pr_transition.py",
+    "bcf_governance/tooling/ci_github_pr.py",
+    "bcf_governance/tooling/ci_self_controller.py",
+    "bcf_governance/tooling/routine_controller_rotation.py",
+    "bcf_governance/tooling/ci_authority_pins.py",
+    "bcf_governance/tooling/ci_controller_policy.py",
+    "bcf_governance/tooling/semantic_yaml.py",
+    "bcf_governance/tooling/ci_github_api.py"
+  ],
+  "protected_and_related_mapping_population": [
+    {
+      "module": "bcf_governance/tooling/ci_github_authority.py",
+      "function": "load_authority",
+      "line": 46,
+      "source_sha256": "d1826c84179c72910f9a68f791b66bc1b6b80745b3f8cce137800d0e2f36a7ac"
+    },
+    {
+      "module": "bcf_governance/tooling/prior_evidence_transport.py",
+      "function": "_mapping",
+      "line": 57,
+      "source_sha256": "347b5e7f843120404c8698eae6f9b8a5d5922d7df47713a322099e4448cd9eb1"
+    },
+    {
+      "module": "bcf_governance/tooling/provider_reuse_closure.py",
+      "function": "trusted_main_claim_context",
+      "line": 40,
+      "source_sha256": "97bfa742d9363089e89a1a77d42d629a490e7cba24b73210a690a5f5df06bb6f"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_github_release_inputs.py",
+      "function": "_release_version_at_main",
+      "line": 58,
+      "source_sha256": "b8a25da09465b301fbb549eeb4907e4af3a7b8b84bf6a7916e03f00c420aaf9c"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_github_membership.py",
+      "function": "_pending_producer_facades",
+      "line": 93,
+      "source_sha256": "e4941e4807652ef89b7e74d28849b6dc728875e43f0dd297dc58c6b47139949d"
+    },
+    {
+      "module": "bcf_governance/tooling/github_protection.py",
+      "function": "load_protection_bytes",
+      "line": 98,
+      "source_sha256": "82677fae95f1ee6ba3c632058d0e2ec16e21056205f31585db5957de598345c9"
+    },
+    {
+      "module": "bcf_governance/tooling/github_protection.py",
+      "function": "load_protection",
+      "line": 110,
+      "source_sha256": "82677fae95f1ee6ba3c632058d0e2ec16e21056205f31585db5957de598345c9"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_pr_transition.py",
+      "function": "load_transition_bytes",
+      "line": 43,
+      "source_sha256": "317ca35eb96b79ac5d28c7f0f7a01068f4f841b70fb848cb9f3395b4804e88ce"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_github_pr.py",
+      "function": "_evaluator_identity",
+      "line": 155,
+      "source_sha256": "ca8d592e5b515faa91723b5f2c575fca88e78088890f5b888b9e490dbf7f9a48"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_github_pr.py",
+      "function": "_evaluator_identity",
+      "line": 170,
+      "source_sha256": "ca8d592e5b515faa91723b5f2c575fca88e78088890f5b888b9e490dbf7f9a48"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_self_controller.py",
+      "function": "_successful_role_run",
+      "line": 359,
+      "source_sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_self_controller.py",
+      "function": "compile_self_controller_confirmation",
+      "line": 390,
+      "source_sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_self_controller.py",
+      "function": "_replace_env",
+      "line": 432,
+      "source_sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_self_controller.py",
+      "function": "_replace_topology_controller",
+      "line": 449,
+      "source_sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_self_controller.py",
+      "function": "project_self_controller_custody",
+      "line": 486,
+      "source_sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_self_controller.py",
+      "function": "verify_self_controller_projection",
+      "line": 578,
+      "source_sha256": "f06baa3eb9d4b9eb2089d171d0def8c901b95db5302aca2abac4d632fe7be1dc"
+    },
+    {
+      "module": "bcf_governance/tooling/routine_controller_rotation.py",
+      "function": "_workflow_jobs",
+      "line": 58,
+      "source_sha256": "2b4ccfd7d27e9ed96f4a687f422fe3e280ea9b69259a56317364be3bef8bc531"
+    },
+    {
+      "module": "bcf_governance/tooling/routine_controller_rotation.py",
+      "function": "prospective_no_transition_topology",
+      "line": 215,
+      "source_sha256": "2b4ccfd7d27e9ed96f4a687f422fe3e280ea9b69259a56317364be3bef8bc531"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_authority_pins.py",
+      "function": "_mapping",
+      "line": 58,
+      "source_sha256": "cc06aed54b4e839e676c1cbebd4ec6f969a8819c1df3b5ce32e6d2a1020b55ca"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_authority_pins.py",
+      "function": "compiled_workflow_jobs",
+      "line": 199,
+      "source_sha256": "cc06aed54b4e839e676c1cbebd4ec6f969a8819c1df3b5ce32e6d2a1020b55ca"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_authority_pins.py",
+      "function": "compiled_workflow_events",
+      "line": 257,
+      "source_sha256": "cc06aed54b4e839e676c1cbebd4ec6f969a8819c1df3b5ce32e6d2a1020b55ca"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_controller_policy.py",
+      "function": "source_controller_policy",
+      "line": 132,
+      "source_sha256": "2aec0e8432627e6c24b1c922e6d3acb7577677bf6d609fd95b77cfc0e40c3f6e"
+    },
+    {
+      "module": "bcf_governance/tooling/ci_controller_policy.py",
+      "function": "source_controller_policy",
+      "line": 138,
+      "source_sha256": "2aec0e8432627e6c24b1c922e6d3acb7577677bf6d609fd95b77cfc0e40c3f6e"
+    }
+  ],
+  "contract": [
+    "Use the existing _UniqueKeyLoader as the single duplicate-key decoding owner for the23 identified authority/controller/protection/release/claim/workflow/phase mapping reads. No parallel parser, graph, registry, authority object or evaluator.",
+    "Add a pure unique-document entrypoint in semantic_yaml, used by its mapping entrypoint and the existing provider consumers; preserve domain-specific top-level mapping checks, typed exceptions and supported str/bytes encodings. This has23 real consumer calls plus the existing mapping call.",
+    "Duplicate explicit keys at any nesting depth, including equal-value duplicates and colliding scalar keys, reject before downstream schema/proof/planner/role selection/allocation/mutation. Supported YAML aliases and explicit merge override semantics remain valid.",
+    "Keep protected source, provider identity, commit/tree inclusion, policy/evaluator separation, moving-frontier authentication, lifecycle populations and final authority independently owned. Unique YAML is parsing admission only.",
+    "Validate declared Git blob OID syntax before base64 decoding or decoded-byte allocation. Preserve observed-path checks, exact blob-byte recomputation, binary/empty content and one read-only request."
+  ],
+  "verification": [
+    "Commit contract/tests before production; retain genuine RED controls against unchanged code.",
+    "Otherwise-valid authority/protection/release/controller/workflow inputs and real phase-certificate fixtures must reject duplicate keys before any artifact download.",
+    "Affected consumer/cause-specific controls, architecture/semantics, canonical reconciliation and exact installed SDK/private-runtime parity."
+  ],
+  "compatibility": "Valid documents and CLI/status identities unchanged. Ambiguous YAML becomes a typed failure; supported merges and original byte-encoding behavior remain valid. No whole-goal or lifecycle closure from this batch.",
+  "population_disposition": "Initial collector expected25 sites and stopped before writing. Independent AST census established23 sites in12 modules; no production edit occurred.",
+  "forbidden": [
+    "maintained adopter or SDK2.3.4 writes",
+    "provider mutation",
+    "hand-authored generated workflows/authority commits",
+    "assertion-based authentication replacement",
+    "P33 activation or acceptance advancement"
+  ]
+}
