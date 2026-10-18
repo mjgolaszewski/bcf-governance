@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "implementation and scoped source qualification; structural, registered detector, installed/private/adopter and full lifecycle qualification pending",
+  "contract": "audits/issue-394/semantic-operation-admission-contract.json",
+  "contract_commits": [
+    "578ea444",
+    "e63c8afe"
+  ],
+  "implementation_commits": [
+    "952a5a67",
+    "d7af52ef"
+  ],
+  "implementation_source": "d7af52efccb4c2177544b712a2e79a3272a9e452",
+  "canonical_subject": {
+    "commit_sha": "205d3c5e3e51f6ccf35e83013455c0d9c0509424",
+    "tree_sha": "ea35f343b562f752d7879698d941ca79c46667db"
+  },
+  "production_source_sha256": "47aa80a9760455528d80fb00172a8f7ec3435c2296d2edbca912549c3754a115",
+  "behavior": [
+    "Complete discovered operation population, duplicate/stale identities, exact entrypoints, semantic shape and function inventory admit before any effect traversal.",
+    "Admitted operations retain the existing effect query, order and observation construction; language filtering and genuine local behavior remain.",
+    "No public CLI/schema/registry/evaluator/broker/receipt change, suppression or phase activation."
+  ],
+  "qualification_history": [
+    {
+      "subject": "99dce3c9",
+      "result": "Five genuine ordering failures, one schema-invalid duplicate fixture failure and one valid observation/order comparison PASS. Original failure retained; no six-genuine claim at this subject."
+    },
+    {
+      "subject": "5bb5a977",
+      "result": "Duplicate fixture ID corrected before production; exact duplicate ordering control now genuinely fails before complete admission."
+    },
+    {
+      "subject": "d7af52ef",
+      "result": "All seven focused cases PASS in270.92s. Complete original63 Python/TypeScript population executes61PASS/2FAIL in1006.69s; both failures are the unchanged stale-semantic-lock guard, with zero errors/skips."
+    },
+    {
+      "subject": "205d3c5e",
+      "result": "Canonical owner converges in3 rounds, changing only semantic-lock, test-duration observations and test manifest. Production/test Python bytes unchanged. Exact two failed lock consumers replay PASS in348.88s; original61 remain attributed to d7af52ef, not relabeled as a fresh63-case run."
+    }
+  ],
+  "unallocated_attempt": {
+    "subject": "952a5a67",
+    "result": "Clean-source precondition stopped before fence/test allocation because the canonical packaged manifest projection had not been staged. Existing generated output committed as d7af52ef; no product guard weakened."
+  },
+  "terminal_custody": "Each completed source operation independently reconciled: terminal/quiescence, EOF/reaping, all recorded handles absent, exact source disposition and fresh original physical-fence acquisition/release. Machine-local details remain outside governed distribution.",
+  "evidence_sha256": {
+    "semantic-operation-99dce3c9-red-terminal-readback.json": "960151d50173442514d51f4097dbc047ef19ee7822891ad92f27529c0b914f61",
+    "semantic-operation-5bb5a977-duplicate-red-terminal-readback.json": "838bc09675e34d2b87cae0313429f31027481dd0726e588839373832826481f6",
+    "semantic-operation-d7af52ef-focused-terminal-readback.json": "c3411e9706e726d763cd83b7416a91b216edf29e0f0afeed9ff5be9e9e59fc0c",
+    "semantic-operation-d7af52ef-behavior-terminal-readback.json": "1462b05aa8b7b072bd63b0de6ea135e9aca294e12537c824a1d42f81be09df71",
+    "semantic-operation-d7af52ef-canonical-terminal-readback.json": "b49d78c7cf9ad3ed1a082a75f97214822496b23946ec035a4757dac524d31672",
+    "semantic-operation-205d3c5e-lock-consumers-terminal-readback.json": "c0aa5c8eba4378ed32c8188c65d52d843552b4d03328c1224098d01dc818c81f"
+  },
+  "remaining": [
+    "Existing registered application-operation-completeness baseline/mutant, retaining its original ID and search.",
+    "Lint/type, six architecture checks, authored semantic observation conformance and full governance on updated ledgers.",
+    "Once-built exact wheel/sdist and copied runtime qualification, including original Python/TypeScript populations, seven new cases, real CLI context routing, SDK absence and physical executable bytes.",
+    "Actual provider-selected adopters and project-owned deadline migration; complete protected lifecycle populations/conformance and sibling deadline bounds.",
+    "Matched baselines and approved separate pipeline/resource targets; P33 dormant mechanisms/shadow, P34 guarded activation, P35 distribution and independent immutable custody."
+  ],
+  "limits": [
+    "Current slice closes admission before effect traversal only; earlier semantic-shape rejection before compiler/source discovery remains a separately retained opportunity.",
+    "Source qualification is local non-authoritative evidence; ordinary submission entrypoint/coordinator and protected evaluator admission must be authenticated separately.",
+    "No approved performance target or whole lifecycle/phase/release closure follows from these observations."
+  ],
+  "acceptance": "All82 whole requirements and38 existing slices unchanged; P32 active/P33-P35 dormant.",
+  "historical_ledger_dispositions": {
+    "memory_and_phase": "Authored controls a5d47731: canonical/governance/six-stage PASS; core2086 each source/wheel/sdist, profiles40/39/39 PASS. Real adopters/lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/authored-control-admission-verification.json.",
+    "active_ledger": "a5d47731 canonical/governance/distributions PASS; core2086 each and profiles40/39/39 PASS. Adopters/lifecycle/targets/custody open;82 unchanged. See audits/issue-394/authored-control-admission-verification.json."
+  }
+}
