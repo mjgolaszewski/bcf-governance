@@ -8,6 +8,7 @@ import yaml
 
 from tests.test_validate_governance_yaml import (
     VALIDATOR_MODULE,
+    _copy_phase_triplet,
     _instantiate_fixture_repo,
 )
 
@@ -51,6 +52,7 @@ def test_phase_owner_accepts_complete_valid_fixture(tmp_path: Path, stage):
 
 def test_late_catalog_owner_rejects_distinct_phase_populations(tmp_path: Path):
     root = _instantiate_fixture_repo(tmp_path, 'valid_repo')
+    _copy_phase_triplet(root, '01', '02')
     owner, data = _owner('phase_catalog'), _inputs(root)
     extra = deepcopy(data['build']['phase_sequence'][0])
     extra['phase_id'] = 'P02'
