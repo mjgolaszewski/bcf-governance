@@ -44,3 +44,38 @@ def test_bound_deadline_context_rejects_uncertain_inventory(tmp_path, defect):
     with pytest.raises(CIGraphError):
         validate_planned_shard_deadlines(tmp_path, graph, targets, dag,
                                         workflow_id=wid, shard_count=2)
+
+
+def test_native_periodic_admission_checks_current_declared_workflow(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from bcf_governance.tooling import evidence_shards as owner
+    graph, dag, targets = _contexts(tmp_path)
+    graph['workflows'][1]['jobs'][0]['timeout_minutes'] = 9
+    (tmp_path / 'governance/ci-graph.yml').write_text('{}\n')
+    monkeypatch.setattr(owner, 'validate_ci_graph', lambda _: SimpleNamespace(graph=graph))
+    monkeypatch.setenv('GITHUB_ACTIONS', 'true')
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'fixture/repo')
+    monkeypatch.setenv('GITHUB_WORKFLOW_REF', 'fixture/repo/.github/workflows/periodic.yml@refs/heads/main')
+    monkeypatch.setenv('GITHUB_JOB', 'evidence')
+    with pytest.raises(CIGraphError, match='cannot contain'):
+        owner.admit_planned_shard_deadlines(tmp_path,
+            {'expected_gate_inventory': targets, 'execution_dag': dag}, shard_count=2)
+
+
+def test_reusable_caller_context_resolves_declared_callee_without_pr_guess(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    from bcf_governance.tooling import evidence_shards as owner
+    graph, dag, targets = _contexts(tmp_path)
+    graph['workflows'][0]['jobs'][0]['timeout_minutes'] = 9
+    graph['workflows'].append({'id': 'caller', 'path': '.github/workflows/main.yml',
+        'events': [{'type': 'push'}], 'jobs': [{'id': 'invoke',
+            'executor': {'kind': 'reusable_workflow', 'path': '.github/workflows/pr.yml'}}]})
+    (tmp_path / 'governance/ci-graph.yml').write_text('{}\n')
+    monkeypatch.setattr(owner, 'validate_ci_graph', lambda _: SimpleNamespace(graph=graph))
+    monkeypatch.setenv('GITHUB_ACTIONS', 'true')
+    monkeypatch.setenv('GITHUB_REPOSITORY', 'fixture/repo')
+    monkeypatch.setenv('GITHUB_WORKFLOW_REF', 'fixture/repo/.github/workflows/main.yml@refs/heads/main')
+    monkeypatch.setenv('GITHUB_JOB', 'evidence')
+    with pytest.raises(CIGraphError, match='cannot contain'):
+        owner.admit_planned_shard_deadlines(tmp_path,
+            {'expected_gate_inventory': targets, 'execution_dag': dag}, shard_count=2)
