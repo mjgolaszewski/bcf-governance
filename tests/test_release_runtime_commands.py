@@ -104,19 +104,34 @@ def test_new_runtime_profile_requires_both_consumers(tmp_path):
         runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)
 
 
-def test_command_rejection_precedes_archive_reconstruction(tmp_path, monkeypatch):
+@pytest.mark.parametrize("work", ["_sha256", "verify_archive"])
+def test_command_rejection_precedes_archive_reconstruction(tmp_path, monkeypatch, work):
     report, evidence, wheel, sdist = command_report(tmp_path)
     value = json.loads(report.read_text()); value["commands"][0]["exit_code"] = 1
     report.write_text(json.dumps(value))
-    monkeypatch.setattr(runtime, "verify_archive", lambda *args: pytest.fail("command rejection allocated archive validation"))
+    monkeypatch.setattr(runtime, work, lambda *args: pytest.fail("command rejection allocated " + work))
     with pytest.raises(GitHubControllerError, match="runtime command"):
         runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist)
 
 
-def test_trusted_release_verifier_rejects_legacy_profile_downgrade(tmp_path):
-    from test_ci_github_release import _release_inputs, _verify
+def _legacy_release_inputs(tmp_path):
+    from test_ci_github_release import _release_inputs
 
     values = _release_inputs(tmp_path)
+    report = values["runtime_report"]
+    payload = json.loads(report.read_text())
+    commands, evidence = command_fixture(tmp_path / "legacy-commands")
+    payload.update(schema_version="1.0", commands=commands,
+                   evidence={p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in evidence})
+    report.write_text(json.dumps(payload))
+    values["runtime_evidence"] = evidence
+    return values
+
+
+def test_trusted_release_verifier_rejects_legacy_profile_downgrade(tmp_path):
+    from test_ci_github_release import _verify
+
+    values = _legacy_release_inputs(tmp_path)
     output = tmp_path / "verification.json"
     with pytest.raises(GitHubControllerError, match="runtime report version"):
         _verify(values, output)
@@ -124,9 +139,9 @@ def test_trusted_release_verifier_rejects_legacy_profile_downgrade(tmp_path):
 
 
 def test_trusted_collector_rejects_legacy_profile_downgrade(tmp_path, monkeypatch):
-    from test_ci_github_release import _release_inputs, _json, COMMIT, TREE
+    from test_ci_github_release import _json, COMMIT, TREE
 
-    values = _release_inputs(tmp_path)
+    values = _legacy_release_inputs(tmp_path)
     authorization = json.loads(values["authorization"].read_text())
     authorization["authorizer"] = dict(run_id="20", run_attempt=1)
     _json(values["authorization"], authorization)

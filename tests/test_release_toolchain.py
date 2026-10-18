@@ -174,7 +174,10 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     def environment(selected, root, **kwargs):
         env = runtime.runtime_environment(home=root.parent)
         environments[kwargs["label"]] = env
-        return root / "bin/python", env, []
+        created = [run(kwargs["label"] + suffix, [str(selected), "-c", "pass"],
+                       cwd=root.parent, env=env, output_dir=kwargs["output_dir"])
+                   for suffix in ("-venv", "-closure-install")]
+        return root / "bin/python", env, created
     monkeypatch.setattr(runtime, "_environment", environment)
     calls = []
     def run(label, argv, **kwargs):
@@ -201,7 +204,7 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     assert all(not set(env) & {"PYTHONPATH", "GITHUB_TOKEN", "ACTIONS_RUNTIME_TOKEN", "NODE_OPTIONS"} for env in environments.values())
     assert all(env["PIP_NO_INDEX"] == "1" and shutil.which("node", path=env["PATH"]) for env in environments.values())
     stdout = output / (distribution + "-installed-consumer.stdout")
-    assert report["schema_version"] == "1.0"
+    assert report["schema_version"] == "1.1"
     assert report["evidence"][stdout.name] == hashlib.sha256(stdout.read_bytes()).hexdigest()
     path = output / "runtime-verification.json"
     evidence = runtime.runtime_evidence_paths(path, output)

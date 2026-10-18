@@ -30,8 +30,6 @@ def _sha(path: Path) -> str:
 def _fixture(tmp_path: Path) -> tuple[Path, tuple[Path, ...], Path, Path]:
     wheel = tmp_path / "bcf_governance-0.7.1-py3-none-any.whl"
     sdist = tmp_path / "bcf_governance-0.7.1.tar.gz"
-    stdout = tmp_path / "sdist-tests.stdout"
-    junit = tmp_path / "sdist-tests.xml"
     package = b"VALUE = 1\n"
     with zipfile.ZipFile(wheel, "w") as archive:
         archive.writestr("bcf_governance/__init__.py", package)
@@ -39,14 +37,15 @@ def _fixture(tmp_path: Path) -> tuple[Path, tuple[Path, ...], Path, Path]:
         info = tarfile.TarInfo("source/bcf_governance/__init__.py")
         info.size = len(package)
         archive.addfile(info, io.BytesIO(package))
-    stdout.write_bytes(b"516 passed\n")
-    junit.write_bytes(b'<testsuite tests="516" failures="0"/>\n')
-    evidence = (stdout, junit)
+    from test_release_runtime_commands import command_fixture
+
+    commands, evidence = command_fixture(tmp_path / "command-evidence")
     report = tmp_path / "runtime-verification.json"
     report.write_text(
         json.dumps(
             {
                 "schema_version": "1.0",
+                "commands": commands,
                 "status": "passed",
                 "environment": {
                     "python_executable": "/opt/python/bin/python",

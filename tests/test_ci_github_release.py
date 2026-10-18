@@ -339,15 +339,14 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
         },
     )
     assets = {path.name: _sha(path) for path in (wheel, sdist, sums)}
-    runtime_stdout = tmp_path / "runtime.stdout"
-    runtime_stdout.write_text("offline verification passed\n", encoding="utf-8")
-    runtime_junit = tmp_path / "sdist-tests.xml"
-    runtime_junit.write_text('<testsuite tests="1" failures="0"/>\n', encoding="utf-8")
-    runtime_evidence = (runtime_stdout, runtime_junit)
+    from test_release_runtime_commands import command_fixture
+
+    commands, runtime_evidence = command_fixture(tmp_path / "command-evidence", "1.1")
     runtime_report = _json(
         tmp_path / "runtime-verification.json",
         {
-            "schema_version": "1.0",
+            "schema_version": "1.1",
+            "commands": commands,
             "status": "passed",
             "environment": {
                 "python_executable": "/opt/python/bin/python",

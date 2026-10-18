@@ -30,7 +30,7 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
     wheel, sdist = fixture / 'fixture.whl', fixture / 'fixture.tar.gz'
     evidence_dir = fixture / 'evidence'
     evidence_dir.mkdir()
-    report, output = evidence_dir / 'report.json', evidence_dir / 'probe.stdout'
+    report, output = evidence_dir / 'report.json', evidence_dir / 'wheel-venv.stdout'
     # Synthetic query inputs, not a claim that this code was executed.
     package = b"raise RuntimeError('candidate code executed')\n"
     output.write_bytes(b'synthetic fact-query fixture\n')
@@ -52,11 +52,23 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         if change == 'invalid-sdist':
             sdist.write_bytes(b'not an archive')
     def payload():
+        labels = ('wheel-venv', 'wheel-closure-install', 'twine-check', 'wheel-install',
+                  'wheel-smoke', 'sdist-venv', 'sdist-closure-install', 'sdist-install',
+                  'wheel-installed-consumer', 'sdist-smoke')
+        commands, evidence = [], {}
+        for label in labels:
+            row = {'label': label, 'argv': ['/fixture/python', '-c', 'pass'], 'exit_code': 0}
+            for stream in ('stdout', 'stderr'):
+                path = evidence_dir / (label + '.' + stream)
+                if path != output: path.write_bytes(b'synthetic fact-query fixture\n')
+                row[stream] = path.name
+                evidence[path.name] = sha(path)
+            commands.append(row)
         return {'schema_version': '1.0', 'status': 'passed',
                 'environment': {'python_version': '3.12.14', 'platform': 'linux_x86_64'},
                 'source_mapping': {'status': 'exact', 'mapped_files': 1},
                 'release_artifacts': {wheel.name: sha(wheel), sdist.name: sha(sdist)},
-                'evidence': {output.name: sha(output)}}
+                'commands': commands, 'evidence': evidence}
     def consume(value, paths=None):
         report.write_text(json.dumps(value))
         if paths is None:
