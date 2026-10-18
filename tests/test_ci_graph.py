@@ -2694,6 +2694,10 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     assert "prior-evidence transport" in transport["run"]
     assert '--main-sha "$BCF_COMMAND_ARG_7"' in transport["run"]
     expected_transport_env = {
+        "BCF_JOB_WORKFLOW_REF": "${{ job.workflow_ref }}",
+        "BCF_JOB_WORKFLOW_SHA": "${{ job.workflow_sha }}",
+        "BCF_JOB_WORKFLOW_REPOSITORY": "${{ job.workflow_repository }}",
+        "BCF_JOB_WORKFLOW_FILE_PATH": "${{ job.workflow_file_path }}",
         "BCF_PYTHON": "${{ env.pythonLocation }}/bin/python",
         "BCF_CONTROLLER_EXECUTION_REQUIRED": "true",
         "GITHUB_TOKEN": "${{ github.token }}",
