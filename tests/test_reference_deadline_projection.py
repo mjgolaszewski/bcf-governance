@@ -5,6 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from bcf_governance.tooling import ci_graph_timeouts as owner
 from bcf_governance.tooling.ci_graph_defaults import build_reference_ci_graph
@@ -52,6 +53,10 @@ def test_reference_budget_uses_producers_and_exact_policy(profile):
                if job['executor']['kind'] == 'gate_group' and
                job['executor']['gates'] == ['test', 'contract-test']]
     if quality: assert quality[0]['timeout_minutes'] == 80
+    for workflow in graph['workflows']:
+        for job in workflow['jobs']:
+            if job['executor']['kind'] == 'gate_group' and job['executor']['gates'] == list(_contract()['gates']):
+                assert job['timeout_minutes'] == 145  # Full literal sentinel population retained.
 
 
 def test_reference_legacy_missing_contract_conservatively_contains_literal_population():
@@ -98,3 +103,50 @@ def test_installation_caller_binds_actual_contract_without_target_mutation(tmp_p
     graph = reference_ci_graph(args, _contract())
     assert _shard(graph)['timeout_minutes'] == 80
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize('estimate_kind', ['unknown', 'uniform', 'heavy-test', 'heavy-security'])
+def test_real_model_projection_contains_duration_aware_assignments(estimate_kind):
+    from bcf_governance.tooling.evidence_planning import parse_claim_model
+    from bcf_governance.tooling.evidence_scheduling import assign_duration_aware_shards
+    from bcf_governance.tooling.evidence_shards import validate_planned_shard_deadlines
+    root = Path(__file__).resolve().parents[1]
+    contract = yaml.safe_load((root / 'governance/gate-contracts.yml').read_text())
+    model = parse_claim_model(contract)
+    graph = yaml.safe_load((root / 'governance/ci-graph.yml').read_text())
+    owner.project_reference_gate_deadlines(graph, contract)
+    nodes = [{'id': name, 'producer': group['producer'], 'depends_on': group.get('depends_on', [])}
+             for name, group in model['execution_groups'].items() if group.get('captured_by_preflight') is not True]
+    # Synthetic duration inputs exercise placement, not evidence reuse or performance.
+    estimates = {} if estimate_kind == 'unknown' else {node['id']: 1 for node in nodes}
+    if estimate_kind.startswith('heavy'):
+        for node in nodes:
+            if ('test' if estimate_kind == 'heavy-test' else 'security') in node['producer']:
+                estimates[node['id']] = 10**9
+    placed = assign_duration_aware_shards(nodes, estimates)
+    dag = {'nodes': placed, 'edges': [{'from': dep, 'to': node['id']}
+                                   for node in placed for dep in node['depends_on']]}
+    validate_planned_shard_deadlines(root, graph, [node['producer'] for node in placed], dag)
+    assert _shard(graph)['timeout_minutes'] == 243
+
+
+def test_full_twenty_gate_periodic_reference_requires_explicit_partition():
+    root = Path(__file__).resolve().parents[1]
+    contract = yaml.safe_load((root / 'governance/gate-contracts.yml').read_text())
+    # Known remaining scope: retain every periodic control and block before install.
+    with pytest.raises(ValueError, match='360.*partition'):
+        _build(contract, gates=list(contract['gates']))
+
+
+def test_cap_failure_precedes_install_transaction_path_allocation(tmp_path):
+    from bcf_governance.tooling.governance_install.transaction_paths import install_transaction_paths
+    root = Path(__file__).resolve().parents[1]
+    contract = yaml.safe_load((root / 'governance/gate-contracts.yml').read_text())
+    args = SimpleNamespace(project_id='consumer', profile='standard', upgrade=False,
+        candidate_runner_label=['ubuntu-24.04'], trusted_runner_label=['self-hosted'],
+        candidate_runner_kind='hosted', trusted_runner_kind='self-hosted')
+    target = tmp_path / 'unallocated'
+    with pytest.raises(ValueError, match='360.*partition'):
+        install_transaction_paths(args, contract=contract, contract_version='3.0',
+            target_root=target, template_root=root / 'template-repo', baseline=())
+    assert not target.exists()
