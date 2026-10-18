@@ -39,7 +39,8 @@
     "Existing full registry query must reject stale/missing/symlinked/already-mutated active-log targets, while a valid ledger-selected log passes even when another retained log has different state.",
     "Use real Git definition/authority and file-only promotion fixtures: valid generated controls promote; a generator-invalidated control rejects with original HEAD/index/tree/status byte-exact.",
     "After ordinary direct convergence, invalid generated controls reject before recording a clean result; valid generation remains usable.",
-    "Qualify the read-only authored-control query directly for complete valid input and each missing/symlinked/zero/ambiguous source target, including the SDK-absent private runtime consumer."
+    "Qualify the read-only authored-control query directly for complete valid input and each missing/symlinked/zero/ambiguous source target, including the SDK-absent private runtime consumer.",
+    "SDK-absent wheel and sdist replay preserves the 14 direct query cases and their helper/test ASTs except public-to-private import routing. Only _admission_runtime_module routing is replaced; no public SDK shim, mocked policy owner, submit orchestration or authority claim. Authenticate private loaded bytes and absence of the SDK before and after execution."
   ],
   "limits": "Contract and characterization only. Runtime implementation, independent qualification and complete lifecycle/performance/custody remain open; no whole requirement or slice status advances."
 }
