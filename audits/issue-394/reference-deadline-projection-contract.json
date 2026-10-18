@@ -24,7 +24,8 @@
     "Per-gate overrides, cleanup, singleton/multiple groups, larger defaults and legacy missing-contract calls remain covered.",
     "Missing/contradictory contracts, omitted or duplicate producers, boolean bounds and provider-cap overflow reject before target allocation; late failure leaves input graph unchanged.",
     "Installed SDK-absent helpers, source/wheel/sdist and installation caller must consume the same projection. Source controls must expose disabled projection and dropped installation contract binding.",
-    "Run affected behavior, architecture, semantic, package and governance checks; retain all82 requirements/38 slices and unresolved lifecycle/profile/adopter/custody obligations."
+    "Run affected behavior, architecture, semantic, package and governance checks; retain all82 requirements/38 slices and unresolved lifecycle/profile/adopter/custody obligations.",
+    "SDK-absent installed private queries must construct the exact model/policy-bound reference envelope, reject six missing/contradictory facts and preserve atomic cap failure; the retained fd06 private runtime is the scoped negative control. Copied rehearsal remains distinct from installed qualification."
   ],
   "canonical_config_path": "governance/ci-graph.yml",
   "canonical_mutation_owner": "bcf_governance.tooling.scaffold_governance_artifacts.reconcile_main via existing isolated authority-transition owner",
