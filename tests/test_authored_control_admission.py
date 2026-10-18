@@ -15,7 +15,7 @@ from bcf_governance.tooling.governance_validation.evidence_contracts import _val
 
 def control_root(root, defect=None):
     governance = root / 'governance'
-    governance.mkdir()
+    governance.mkdir(exist_ok=True)
     (root / 'check.py').write_text('raise SystemExit(0)\n')
     target = root / 'implementation.py'
     target.write_text('RULE = True\n')
@@ -185,3 +185,106 @@ release_gate_profile:
       status: required
 ''')
     validate_authored_gate_controls(tmp_path)
+
+
+def _admission_runtime_module(name):
+    import importlib
+    from tests.test_scheduled_phase_owners import _owner
+
+    tooling = _owner('evidence_contracts').__package__.rsplit('.', 1)[0]
+    return importlib.import_module(f'{tooling}.{name}')
+
+
+@pytest.mark.parametrize('defect', [None, 'absent_search', 'ambiguous_search', 'missing_target', 'symlink_target'])
+def test_authored_control_query_preserves_complete_source_mutation_state(tmp_path, defect):
+    owner = _admission_runtime_module('governance_validation.evidence_contracts')
+    control_root(tmp_path, defect)
+    if defect is None:
+        owner.validate_authored_gate_controls(tmp_path)
+    else:
+        with pytest.raises(owner.GovernanceValidationError, match='negative-control mutations must resolve exactly once'):
+            owner.validate_authored_gate_controls(tmp_path)
+
+
+@pytest.mark.parametrize('poisoned', [False, True])
+def test_reconcile_rechecks_generated_control_before_recording_convergence(tmp_path, monkeypatch, poisoned):
+    from tests.test_reconcile_governance import _git
+
+    owner = _admission_runtime_module('scaffold_governance_artifacts')
+    state = _admission_runtime_module('governance_validation.ci_state_matrix')
+    control_root(tmp_path)
+    _git(tmp_path, 'init', '--quiet', '--initial-branch=main')
+    _git(tmp_path, 'config', 'user.name', 'BCF Test')
+    _git(tmp_path, 'config', 'user.email', 'bcf@example.invalid')
+    _git(tmp_path, 'add', '--all')
+    _git(tmp_path, 'commit', '--quiet', '-m', 'valid controls')
+    head = _git(tmp_path, 'rev-parse', 'HEAD')
+    monkeypatch.setattr(owner, 'validate_authored_release_target', lambda *_a: None)
+    monkeypatch.setattr(owner, 'gate_timeout_contract', lambda *_a: None)
+    monkeypatch.setattr(state, 'validate_ci_state_matrix', lambda *_a, **_k: None)
+    monkeypatch.setattr(owner, 'declared_test_gates', lambda *_a: ('test',))
+    monkeypatch.setattr(owner, 'ensure_local_project_python', lambda *_a, **_k: Path(sys.executable))
+    recorded = []
+    monkeypatch.setattr(owner, 'record_reconcile_steps', lambda *_a: recorded.append('recorded') or {})
+
+    def generate():
+        (tmp_path / 'governance/projected.yml').write_text('generated: true\n')
+        if poisoned:
+            (tmp_path / 'implementation.py').write_text('RULE = False\n')
+
+    monkeypatch.setattr(owner, 'reconcile_steps', lambda *_a: (
+        owner.ReconcileStep('control-projection', lambda: None, generate),
+    ))
+    if poisoned:
+        with pytest.raises(SystemExit, match='negative-control mutations must resolve exactly once'):
+            owner.reconcile_main(['--repo-root', str(tmp_path), '--apply'])
+        assert recorded == []
+    else:
+        owner.reconcile_main(['--repo-root', str(tmp_path), '--apply'])
+        assert recorded == ['recorded']
+    assert _git(tmp_path, 'rev-parse', 'HEAD') == head
+
+
+@pytest.mark.parametrize('workflow_transition', [False, True])
+@pytest.mark.parametrize('poisoned', [False, True])
+def test_control_validation_precedes_real_git_shadow_promotion(tmp_path, workflow_transition, poisoned):
+    from tests.test_reconcile_governance import (
+        _authority_transition_repository, _git, _transition_snapshot, _transition_steps,
+    )
+
+    owner = _admission_runtime_module('reconcile_authority_transition')
+    fixed_point = _admission_runtime_module('scaffold_governance_artifacts')
+    controls = _admission_runtime_module('governance_validation.evidence_contracts')
+    root = _authority_transition_repository(tmp_path)
+    control_root(root)
+    if workflow_transition:
+        (root / 'intent').write_text('new\n')
+    _git(root, 'add', '--all')
+    _git(root, 'commit', '--quiet', '-m', 'valid authored controls')
+    controls.validate_authored_gate_controls(root)
+    before = (_git(root, 'rev-parse', 'HEAD'), _git(root, 'write-tree'),
+              _git(root, 'status', '--porcelain=v1'), _transition_snapshot(root))
+
+    def steps(candidate):
+        def generate():
+            (candidate / 'governance/projected.yml').write_text('generated: true\n')
+            if poisoned:
+                (candidate / 'implementation.py').write_text('RULE = False\n')
+        return (fixed_point.ReconcileStep('control-projection', lambda: None, generate),
+                *_transition_steps(candidate))
+
+    if poisoned:
+        with pytest.raises(controls.GovernanceValidationError, match='negative-control mutations must resolve exactly once'):
+            owner.apply_workflow_authority_transition(root, step_factory=steps,
+                converge=fixed_point.converge, snapshot=_transition_snapshot, commit_projection=True)
+        assert (_git(root, 'rev-parse', 'HEAD'), _git(root, 'write-tree'),
+                _git(root, 'status', '--porcelain=v1'), _transition_snapshot(root)) == before
+        assert not (root / 'governance/projected.yml').exists()
+    else:
+        result = owner.apply_workflow_authority_transition(root, step_factory=steps,
+            converge=fixed_point.converge, snapshot=_transition_snapshot, commit_projection=True)
+        assert result is not None
+        assert _git(root, 'rev-parse', 'HEAD') == result.authority_commit
+        assert _git(root, 'status', '--porcelain=v1') == ''
+        controls.validate_authored_gate_controls(root)
+        assert (root / 'implementation.py').read_text() == 'RULE = True\n'
