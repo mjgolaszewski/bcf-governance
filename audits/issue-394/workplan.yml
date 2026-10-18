@@ -134,6 +134,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/scheduled-phase-native-profiles-verification.json
+    - audits/issue-394/residual-current-source-census.json
     - audits/issue-394/scheduled-phase-owner-controls-verification.json
     - audits/issue-394/authority-consumer-matrix-cf7e85e0.json
     - audits/issue-394/installed-authority-corpus-fixture-contract.json
@@ -256,6 +258,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/scheduled-phase-native-profiles-verification.json
     - audits/issue-394/scheduled-phase-owner-controls-verification.json
     - audits/issue-394/profile-gate-deadline-verification.json
     - audits/issue-394/bound-trusted-input-verification.json
@@ -394,6 +397,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/periodic-provider-timing-observations.json
     - audits/issue-394/scheduled-phase-owner-controls-verification.json
     - audits/issue-394/agentbus-v234-timing-observation-39119422149.json
     - audits/issue-394/agentbus-v234-timing-observation.json
@@ -831,6 +835,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/scheduled-phase-native-profiles-verification.json
     - audits/issue-394/scheduled-phase-owner-controls-verification.json
     - audits/issue-394/profile-gate-deadline-verification.json
     - audits/issue-394/bound-trusted-input-verification.json

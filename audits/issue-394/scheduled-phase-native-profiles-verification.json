@@ -1,0 +1,151 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "four native scheduled profiles and affected source checks qualified; governance/integration/installed qualification pending",
+  "source_commit": "fcddcbf1ab5ac7c47e5eb680ea9d7a6de74afeb8",
+  "source_tree": "1dfbbdd23322e95e5d151632b66f55f8e303ab8b",
+  "contract": "audits/issue-394/scheduled-phase-owner-controls-contract.json",
+  "causal_prequalification": "audits/issue-394/scheduled-phase-owner-controls-verification.json",
+  "profiles": [
+    {
+      "profile": "full",
+      "subject": {
+        "commit_sha": "fcddcbf1ab5ac7c47e5eb680ea9d7a6de74afeb8",
+        "status_porcelain": "",
+        "tree_sha": "1dfbbdd23322e95e5d151632b66f55f8e303ab8b"
+      },
+      "baseline_exit_code": 0,
+      "summary": {
+        "expected": 27,
+        "infrastructure_failures": 0,
+        "killed": 27,
+        "survived": 0
+      },
+      "native_result_sha256": "708fe77b46412703dfe637f71228ebda7501926f7321625c7bc6637d15fb2847",
+      "terminal_readback_sha256": "478c768fb815131fd1deccf0c4cde0feea513b9c9f02dc7d74e43fc21b444ccb",
+      "supervised_child_tree_quiescent": true,
+      "all_recorded_handles_absent": true,
+      "fresh_same_physical_fence_probe_unowned_and_released": true
+    },
+    {
+      "profile": "high-value",
+      "subject": {
+        "commit_sha": "fcddcbf1ab5ac7c47e5eb680ea9d7a6de74afeb8",
+        "status_porcelain": "",
+        "tree_sha": "1dfbbdd23322e95e5d151632b66f55f8e303ab8b"
+      },
+      "baseline_exit_code": 0,
+      "summary": {
+        "expected": 25,
+        "infrastructure_failures": 0,
+        "killed": 25,
+        "survived": 0
+      },
+      "native_result_sha256": "ad4417268de1662e27a6f0298e1b9440b3b521990cc03a400f5173ba3775f831",
+      "terminal_readback_sha256": "64e24d59fc2584777bce8992c0f5fcc736132a1e4667b7f3ec548240e3f97cc0",
+      "supervised_child_tree_quiescent": true,
+      "all_recorded_handles_absent": true,
+      "fresh_same_physical_fence_probe_unowned_and_released": true
+    },
+    {
+      "profile": "semantic-full",
+      "subject": {
+        "commit_sha": "fcddcbf1ab5ac7c47e5eb680ea9d7a6de74afeb8",
+        "status_porcelain": "",
+        "tree_sha": "1dfbbdd23322e95e5d151632b66f55f8e303ab8b"
+      },
+      "baseline_exit_code": 0,
+      "summary": {
+        "expected": 12,
+        "infrastructure_failures": 0,
+        "killed": 12,
+        "survived": 0
+      },
+      "native_result_sha256": "5336c63e3b3d8af1ac79107dce63299df177f725c8a1fd441af92b024df7e8a1",
+      "terminal_readback_sha256": "aa7f7e1302b63d90b7dd94888bc54827c1a6cb1c81de8514b4c4241247d4fd72",
+      "supervised_child_tree_quiescent": true,
+      "all_recorded_handles_absent": true,
+      "fresh_same_physical_fence_probe_unowned_and_released": true
+    },
+    {
+      "profile": "semantic-high-value",
+      "subject": {
+        "commit_sha": "fcddcbf1ab5ac7c47e5eb680ea9d7a6de74afeb8",
+        "status_porcelain": "",
+        "tree_sha": "1dfbbdd23322e95e5d151632b66f55f8e303ab8b"
+      },
+      "baseline_exit_code": 0,
+      "summary": {
+        "expected": 10,
+        "infrastructure_failures": 0,
+        "killed": 10,
+        "survived": 0
+      },
+      "native_result_sha256": "4e3ea49b325a7bf2ce5ef5ec9370ffef6c9583449663f0fa33cf5a4fddb82e95",
+      "terminal_readback_sha256": "cb0fc28db88d26e7209b23e587c5953b6853809420458dfeb48cc5ea411917b3",
+      "supervised_child_tree_quiescent": true,
+      "all_recorded_handles_absent": true,
+      "fresh_same_physical_fence_probe_unowned_and_released": true
+    }
+  ],
+  "counting": "74 native mutant executions across four overlapping profiles; not 74 distinct controls.",
+  "historical_disposition": "Original 683027e9 full-profile interruption remains unknown and unqualified; new complete runs do not rewrite its capture.",
+  "remaining": [
+    "canonical reconciliation and full governance",
+    "integration of separately preserved authored-control admission",
+    "exact source/wheel/sdist/private-runtime and applicable profile/adopter qualification",
+    "complete lifecycle/runtime conformance, matched measurements/approved budgets and independent immutable2.5 custody"
+  ],
+  "acceptance": "All 82 whole requirements and 38 slice objects unchanged; P32 active/P33\u2013P35 dormant.",
+  "source_checks": {
+    "authority": false,
+    "commands": [
+      {
+        "label": "affected-semantic-fixture",
+        "returncode": 0
+      },
+      {
+        "label": "tradeflow-deadline",
+        "returncode": 0
+      },
+      {
+        "label": "lint",
+        "returncode": 0
+      },
+      {
+        "label": "typecheck",
+        "returncode": 0
+      },
+      {
+        "label": "source-architecture",
+        "returncode": 0
+      }
+    ],
+    "semantic": {
+      "verdict": "conformant",
+      "authority": false,
+      "unchanged_operations": 21
+    },
+    "semantic_fixture_cases": 44,
+    "semantic_fixture_elapsed_seconds": 1280.15,
+    "limits": "Individual source test-suite timing only; no matched cohort or pipeline/percentile claim.",
+    "raw_sha256": {
+      "affected-semantic-fixture.stdout": "0ba2a308035c18bdc046577efdfe85b915b42abbf12eea1f298009838c4e19e1",
+      "source-architecture.stdout": "4ebd4da1166563480197bb754ce6e60f64f452a5cca958cbcc01f78afe7dbff3",
+      "report.json": "727ef07bc506d6823701c7814dc6ebfe6e8693414e6442c8c57f31411d5b2a6c",
+      "tradeflow-deadline.stdout": "8f47ab5b14edacb439d205136b92f0ee666b310c5f2219496a6843a824603a79",
+      "affected-semantic-fixture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tradeflow-deadline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "source-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "supervised_terminal_quiescent": true
+  },
+  "historical_ledger_statements": {
+    "memory_and_phase_highlight": "Phase detector repair at 683027e9: 7 owner cases and 4 causal controls pass; 14 harness/owner cases pass at 4bd10f3f. Full profile interrupted without terminal capture; integration/installed proof pending. All 82 requirements/38 slices unchanged. See audits/issue-394/scheduled-phase-owner-controls-verification.json.",
+    "combined_source_validation": "Phase detector causal proof retained; full profile interrupted/unqualified. All 82 requirements open. See audits/issue-394/scheduled-phase-owner-controls-verification.json."
+  }
+}

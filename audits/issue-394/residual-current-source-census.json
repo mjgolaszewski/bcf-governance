@@ -1,0 +1,665 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "refreshed exact-source residual census; dispositions retain unresolved full-population obligations",
+  "source_commit": "fcddcbf1ab5ac7c47e5eb680ea9d7a6de74afeb8",
+  "source_tree": "1dfbbdd23322e95e5d151632b66f55f8e303ab8b",
+  "historical_census": "audits/issue-394/residual-successor-census.json",
+  "historical_census_sha256": "0864d88ecee951eca68ba99a2c6a694ab5447349aaa7414761eedd60626b1973",
+  "fresh_issue_bodies_equal_previous_census": true,
+  "issue_sources": [
+    {
+      "number": 394,
+      "state": "open",
+      "updated_at": "2026-10-16T07:50:24Z",
+      "body_sha256": "7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e",
+      "raw_sha256": "1d19aa1326ee64f5ae39f95ae657cdca00c156d127dde2ddb7c659e6e5096a5c"
+    },
+    {
+      "number": 343,
+      "state": "closed",
+      "updated_at": "2026-10-13T06:30:22Z",
+      "body_sha256": "25ba1a4d65e691c2988d17be513b7a348d5d12d5a252566c13873ce1656c4b09",
+      "raw_sha256": "86f60c9c895ddf2a0b60cc9abd1a3ff7e70ddec0b4626145a0b271459d623066"
+    },
+    {
+      "number": 354,
+      "state": "closed",
+      "updated_at": "2026-10-13T06:30:29Z",
+      "body_sha256": "fca7233f7723460560567e1c5bb9e9fea724b56b10fd966fe886cdff4c0d71b6",
+      "raw_sha256": "dc40558668fd125cb76e6001700e31058540b52496a900f38d01c441626b39e0"
+    },
+    {
+      "number": 345,
+      "state": "closed",
+      "updated_at": "2026-10-13T06:30:25Z",
+      "body_sha256": "3efbf93046243bd713b4b475cedb8dc579c99a433f23e19ba0818d10ec514394",
+      "raw_sha256": "90ad6839fe43ccb0ac51308c22c51802d25e002f230e7ab7e60801393733cc67"
+    },
+    {
+      "number": 352,
+      "state": "closed",
+      "updated_at": "2026-10-02T16:41:02Z",
+      "body_sha256": "661c40fa18766a249b2755ddb8d6c15e2802c29f77d34e4f0374fda100a1de7d",
+      "raw_sha256": "e3d58f8ffcdc5084fae1b406d8108b74768569b848f8c63df033d11d9f7aca1e"
+    },
+    {
+      "number": 215,
+      "state": "closed",
+      "updated_at": "2026-09-25T23:53:24Z",
+      "body_sha256": "8cdf1238bbcc24d805131f99df8771a62ac57f3695ea50aa630e074abb598567",
+      "raw_sha256": "c69b794c2c7b0d78ba086fab52692e397b83d83f6bf2143b28218a30bde6ec94"
+    },
+    {
+      "number": 298,
+      "state": "closed",
+      "updated_at": "2026-10-01T10:59:33Z",
+      "body_sha256": "e23b99513804ea0857616bd54eb048a386551a44dbeccbf26752bc1f61915cb5",
+      "raw_sha256": "ea3b5ab64d9a5afbddca6bc4fa46e695e3146957a253a88f656398ac2fe7e4ec"
+    }
+  ],
+  "items": [
+    {
+      "id": "354.fail-fast",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-01",
+      "source": {
+        "path": "bcf_governance/tooling/governance_validation/authored_phase_state.py",
+        "git_blob": "9a9afda4ecb5de676f17743f6c5ec2f02c5cf23d",
+        "sha256": "944ba837d0771dd2c4740cdbce08e040b163c24edfe3c3e5cdee5eb48ecb50cc",
+        "bytes": 7095,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_reconcile_governance.py",
+        "git_blob": "b663a735e06563016bed80e9e6254a3264355b4b",
+        "sha256": "dce0b78bff9411375862dc298781e49d00134ff772c81b4c223dbcd413e72391",
+        "bytes": 51096,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "P29/P30 authored-state owner exists; all-pipeline earliest-boundary instrumentation remains to qualify",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json",
+      "available_scoped_evidence": [
+        {
+          "path": "audits/issue-394/scheduled-phase-native-profiles-verification.json",
+          "sha256": "ed0202325c353ee04076fd4e13572180ada843cc15b2a15f5dd730fb7d7d04c5",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        }
+      ]
+    },
+    {
+      "id": "354.recovery",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/ci_recovery_frontier.py",
+        "git_blob": "cf2ed9d026f4c09c6faff6f3bc1f4ad4482630c5",
+        "sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
+        "bytes": 16471,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_recovery_frontier.py",
+        "git_blob": "5c5813a2aaa5e06b2cbd368561e48798a3ea991e",
+        "sha256": "9e3e0754579ddeaecfa7ca4d260dae29697185c54f3d0e057551c5269027827b",
+        "bytes": 6676,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Bounded recovery owner exists; complete lifecycle effect composition and crash continuation remain",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "343.1",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-03",
+      "source": {
+        "path": "bcf_governance/tooling/affected_proof_closure.py",
+        "git_blob": "ab8802d13c98c68139fd97593b939e94f397ad78",
+        "sha256": "e9fc027fadb373a6e63c98e657071998941a5274791be79b73a519b4689aa656",
+        "bytes": 12382,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_affected_proof_closure.py",
+        "git_blob": "15f22e6229a34f0c3098f7fc31565e39f974967a",
+        "sha256": "609eb9ccb7755956e6e2bb7559e807a5d1d9a0a28ed5c7eba2367aaf238362df",
+        "bytes": 4718,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Three focused exact-subject and conservative-unknown regressions passed; full impact and real-adopter differential corpus remain",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "343.2",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-04",
+      "source": {
+        "path": "bcf_governance/tooling/evidence_scheduling.py",
+        "git_blob": "4ad7c54341a40a940e7f20ac71f535c5464a8f43",
+        "sha256": "43685cfb1758465056ba587eb03627731cfa6e72e6238069c76521bd7b7cd407",
+        "bytes": 15798,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_evidence_splintering.py",
+        "git_blob": "e58b9f3f5a88c3349c9bf74936713ac47dd54fbe",
+        "sha256": "e1ae8e2e08145a1f3f6849b7bccab7f0b6919ed26b77dc1114b43878d1ac6f70",
+        "bytes": 5137,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Duration-aware exact splintering exists; placement of the unresolved remainder and measured end-to-end improvement remain",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "343.3",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-06",
+      "source": {
+        "path": "bcf_governance/tooling/application_assurance_graph.py",
+        "git_blob": "b44b309f69ee613c54b1a56f31cdf3bff5995c29",
+        "sha256": "591cc00201b7571d4a7864812d20f73fafa0a16f9e363148af966f931d5ae24e",
+        "bytes": 14957,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_application_assurance_graph.py",
+        "git_blob": "782aa486c4553f43f6c00bbcbca5f24bc6a2963f",
+        "sha256": "e09bee18006e9942dbbbe7213d62f9de22f048b0722b71bfa6b7a1d740578ed0",
+        "bytes": 5621,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Consumer-owned graph projection exists; adaptive installed capability and actual application selection proof remain",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "343.4",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/ci_github_api.py",
+        "git_blob": "c8a1596e9e6b48257ceccf3988c028908dc1ba2a",
+        "sha256": "8f43e0390fdf9f457da0bac5f44ff0f50b7b634a0852f193f30df2c4717dd1f7",
+        "bytes": 30281,
+        "changed_from_previous_census": true
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_github_controller.py",
+        "git_blob": "5c4471a2b1ca7708dd236dcf0046bf191bb75338",
+        "sha256": "20ce20e204ef1f99723d565befedd3bbccf30181c3a7a2a5e02d46a5c75f1b4f",
+        "bytes": 96732,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Provider artifact enumeration exists; preserve bounded snapshot authentication and scope concurrent-churn regressions",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "343.5",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-01",
+      "source": {
+        "path": "bcf_governance/tooling/local_pr_context.py",
+        "git_blob": "b872b7b78ac32b0abc4a15d62139b0e2411c54c2",
+        "sha256": "67b513ebac45f377edfd680ba87863abe840c9d671d07e0d79fac18ae420da61",
+        "bytes": 17783,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_local_pr.py",
+        "git_blob": "b4007c86c6ed7c0612618f8bb2d9eeb3f5951015",
+        "sha256": "ca68900360b319dfc698b6f84be288836ff84cd5961e1f90a6538067414d56d3",
+        "bytes": 23900,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Bound PR comparison, protected-default source and head/descendant separation now have implementation and scoped consumer evidence; current combined installed/profile qualification and complete alternate lifecycle coverage remain required. Earlier absence claim is historical only.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json",
+      "available_scoped_evidence": [
+        {
+          "path": "audits/issue-394/bound-pr-consumer-matrix-0fd9.json",
+          "sha256": "c5ad7ac7380521b223fbcfbd2cb56a32251a770a18d2ddebe9ddc1dc72919d17",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        },
+        {
+          "path": "audits/issue-394/bound-trusted-input-verification.json",
+          "sha256": "aa72a512c7efbab2d7f59d1bb7718b51ae4f9f02ba49f8ad22549729d404fab4",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        }
+      ]
+    },
+    {
+      "id": "343.6",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/ci_github_pr_mutations.py",
+        "git_blob": "8cd915f819872e65d0be732c6148d6f795199648",
+        "sha256": "c12a706f9cb3c989d373867ff2822c9ad1d7ba6c7b66a55122a1a8db71fbeccb",
+        "bytes": 14662,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_candidate_pr.py",
+        "git_blob": "fd10e0e4334039063025af301d3ea91008894ba3",
+        "sha256": "503cd255260485696a2f67a6fd1d8e8d49085c29f9defe5db7e7101430025483",
+        "bytes": 16438,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Canonical submit owner exists; one tracked handoff and exact concurrent continuation remain to qualify",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "343.7",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-06",
+      "source": {
+        "path": "bcf_governance/tooling/evidence_storage_topology.py",
+        "git_blob": "041c218fbdee0956189489d096840b32211171a8",
+        "sha256": "9c3c793bd4e0f6907b7d8c6e1a294777ed18a3ce2a7e7615065892737034bcf5",
+        "bytes": 8965,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_evidence_storage.py",
+        "git_blob": "743e3c383ac33565201590172674254515fd4a73",
+        "sha256": "33947ec8aadd217586cfc3ad2fe37eacaa9f26d853b2087ee1c37dc184111662",
+        "bytes": 83864,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Storage classification publication and cold resolution already exist under current owners; verify actual adoption and do not rebuild storage",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "345.1",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/local_proof_bundles.py",
+        "git_blob": "5a3574b881b84b6265d6200bd45aad4226f62647",
+        "sha256": "8452f48d64f325fdc1381e2d027c2b03a2861621193e86a70d32640ae559d608",
+        "bytes": 20811,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_local_proof_bundles.py",
+        "git_blob": "e6dc3a6247ae0b900ea6515ba3dd7c434778400c",
+        "sha256": "ff04c9eec7ea93c650dde504ddc5e523b1b8ea9f378149365fbe633b6ae65a8c",
+        "bytes": 8750,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Four focused exact reuse mismatch corruption and failed-producer regressions passed; complete provider handoff and per-adopter residual reuse remain",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "345.2",
+      "disposition": "PARTIAL",
+      "residual_owner": "P35-P0-04",
+      "source": {
+        "path": "bcf_governance/tooling/release_publication_transaction.py",
+        "git_blob": "2a47715ed610f86cd282a7d6e9c186dbc7ec7d0f",
+        "sha256": "83457968ac7b2d5c41ad1deb8cc2ac4505983a114576af7aeade4338ed8f1652",
+        "bytes": 10192,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_github_release.py",
+        "git_blob": "530ea32ce52f337c8f185f32f57184df7796f3a5",
+        "sha256": "d4745ef3f74657328f05689b24146a8368c1b754f514b52538ee6d49dd3ecacd",
+        "bytes": 72955,
+        "changed_from_previous_census": true
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Immutable v2.3.4 predecessor custody is retained separately. The current 2.5 candidate still requires independent verifier/collector/publication continuation, exact terminal custody and matched terminal timings.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json",
+      "available_scoped_evidence": [
+        {
+          "path": "audits/issue-394/v234-successor-admission.json",
+          "sha256": "3a75b1770f9be008a62734457de5db165fa348bd74d6882b91ac2929147b02a9",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        }
+      ],
+      "previous_remaining_retained": "Canonical immutable inspection verified exact v2.3.2 bytes and attestation presence; release/collector continuation and all terminal timings remain"
+    },
+    {
+      "id": "345.3",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/ci_recovery_frontier.py",
+        "git_blob": "cf2ed9d026f4c09c6faff6f3bc1f4ad4482630c5",
+        "sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
+        "bytes": 16471,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_recovery_frontier.py",
+        "git_blob": "5c5813a2aaa5e06b2cbd368561e48798a3ea991e",
+        "sha256": "9e3e0754579ddeaecfa7ca4d260dae29697185c54f3d0e057551c5269027827b",
+        "bytes": 6676,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Existing typed recovery stays authoritative; full affected-scope recovery and ambiguous mutation corpus remain",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "345.4",
+      "disposition": "PARTIAL",
+      "residual_owner": "P32-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/ci_graph_post_merge.py",
+        "git_blob": "1588a4ad1f571792776a78b2896f7a3d3cad4e8f",
+        "sha256": "1b92c6d3e314d4eecb073e5c23cacef9e0c7096e7e8ca537c1cc55508273665d",
+        "bytes": 18073,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_graph.py",
+        "git_blob": "ebc831e03629cea85958dc33f58b06c0519356ae",
+        "sha256": "c8fedb48acd8a021445736acce3afa82e710742f812cbe9755b853155e82e311",
+        "bytes": 143606,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Issue 420 dependency-based non-prefix selector is admitted in exact v2.3.4. Retain local regression and independently qualify full alternate-lane and installed consumer behavior; do not wait on peer fix.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "345.5",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-06",
+      "source": {
+        "path": "bcf_governance/tooling/ordinary_protection_projection.py",
+        "git_blob": "63043ec9314410beb2f55738cfceede046669c6f",
+        "sha256": "c4460d307077f703ad1b2a341785fc8aa4b904b9c8092b559c888e27c360d0c1",
+        "bytes": 15322,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ordinary_protection_projection.py",
+        "git_blob": "a7db6c2b81fc6804f51f3ec9dde4a8e9d05cc664",
+        "sha256": "38f8a1f73eb1c1d43ebcb44c52caaaf15f52676c3f935ebb1ce933b54571b3fe",
+        "bytes": 15752,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Existing reviewed protection projection must remain unchanged by optimization; complete install/upgrade/rollback parity remains",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "345.6",
+      "disposition": "PARTIAL",
+      "residual_owner": "P32-P0-04",
+      "source": {
+        "path": "bcf_governance/tooling/ci_graph_pr_evaluator.py",
+        "git_blob": "70bdd9e7c720b97e149c8a8c8074c747b45ba531",
+        "sha256": "ed0e40d0258cf1f30999786d5967556c53dcaac7b1f242f8de931b8d30348a0d",
+        "bytes": 6875,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_graph.py",
+        "git_blob": "ebc831e03629cea85958dc33f58b06c0519356ae",
+        "sha256": "c8fedb48acd8a021445736acce3afa82e710742f812cbe9755b853155e82e311",
+        "bytes": 143606,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Protected evaluator behavior is present in P31 provider certification; new composition/selection must retain independently derived populations",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "352",
+      "disposition": "SUPERSEDED",
+      "residual_owner": "P33-P0-06",
+      "source": {
+        "path": "bcf_governance/tooling/evidence_storage_topology.py",
+        "git_blob": "041c218fbdee0956189489d096840b32211171a8",
+        "sha256": "9c3c793bd4e0f6907b7d8c6e1a294777ed18a3ce2a7e7615065892737034bcf5",
+        "bytes": 8965,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_evidence_storage.py",
+        "git_blob": "743e3c383ac33565201590172674254515fd4a73",
+        "sha256": "33947ec8aadd217586cfc3ad2fe37eacaa9f26d853b2087ee1c37dc184111662",
+        "bytes": 83864,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Historical storage work is carried into 343.7 and 354; only residual adoption and measurement are relevant",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "215",
+      "disposition": "PARTIAL",
+      "residual_owner": "P35-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/routine_controller_rotation.py",
+        "git_blob": "63b21b0529b6b6d63231bd6cac0288ab97ff4ce3",
+        "sha256": "d6435a9e5e33cc66f5ce2c7ce2c8d91dfe57420fe9302a277fb5baeafdb75793",
+        "bytes": 22107,
+        "changed_from_previous_census": true
+      },
+      "regression_surface": {
+        "path": "tests/test_routine_controller_rotation.py",
+        "git_blob": "225d78404915bbea2bad83cb8820adb2bc38af6b",
+        "sha256": "0c9973ea96b30697e4c8b7d88e893ae0387cd45e15c91fd7042d6703182595f6",
+        "bytes": 10254,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Predecessor provider rotation completed under existing protocol; retain one-implementation-PR semantics and measure current costs without inheriting historic performance claims",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "298",
+      "disposition": "PARTIAL",
+      "residual_owner": "P32-P0-03",
+      "source": {
+        "path": "bcf_governance/tooling/ci_graph_edges.py",
+        "git_blob": "ed9fb3a9b1edf4027592d67051dc4eefc3eb363a",
+        "sha256": "2e978242ead9b9b0cb3b7fc17a3a00fac745cf0b108712e103c2e61950f4dc8e",
+        "bytes": 16826,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_graph.py",
+        "git_blob": "ebc831e03629cea85958dc33f58b06c0519356ae",
+        "sha256": "c8fedb48acd8a021445736acce3afa82e710742f812cbe9755b853155e82e311",
+        "bytes": 143606,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Existing job-edge closure and workflow liveness are implemented; compose lifecycle/adopter/custody coverage and retain existing edge closure rather than duplicate it",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "394.provider-source-regression",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-05",
+      "source": {
+        "path": "bcf_governance/tooling/release_adopter_sources.py",
+        "git_blob": "7224dc696b11b1e652e82ee5c8a6ed53fc230274",
+        "sha256": "3ab9e04c93661e1277e4a401b67dd64efaf319a33a40f3d74638c7b775a2f40c",
+        "bytes": 5329,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_release_adopter_sources.py",
+        "git_blob": "43ed421189c11d0e96f2f286af6a50cb8ef2b4d1",
+        "sha256": "f29d57511cb2d9c620fdabc20bdfd253613fcb152961f9f0e37afc8f2de611ae",
+        "bytes": 9080,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Canonical provider-default resolver has been restored and executed in a prior pinned three-adopter qualification. Refresh current provider source subjects at consuming boundaries; current exact release bytes and independent installed qualification remain pending.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json",
+      "available_scoped_evidence": [
+        {
+          "path": "audits/issue-394/provider-source-recovery-verification.json",
+          "sha256": "29ec96c803a12c5f843daadd775fb11baeef3f2168a7fc57cdb6063fb041aca2",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        },
+        {
+          "path": "audits/issue-394/pinned-qualification-3ec171d0-terminal.json",
+          "sha256": "20fffbf3033d4841981f8b571638195a9ec879cdf682320ab7683b259b95c698",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        }
+      ]
+    },
+    {
+      "id": "394.tradeflow-environment",
+      "disposition": "PARTIAL",
+      "residual_owner": "P33-P0-06",
+      "source": {
+        "path": "bcf_governance/tooling/interpreter_environment.py",
+        "git_blob": "40f3e2217bf282ce30696d29561dcefd828cf914",
+        "sha256": "aa8aade2e6dd803c4a06badc25c1ef5f76c1726e03f6bead6049eb09be9ebb1a",
+        "bytes": 32068,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_interpreter_environment.py",
+        "git_blob": "cd86a06853f9ec16a10f88043c6d16e7ca5f2a3d",
+        "sha256": "3073455617b09947d5b851ae3bea1469674b7d5f478e9200513a07026a85dc59",
+        "bytes": 29039,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Optional compatibility/interpreter observation remains nonauthoritative under current policy. Earlier TradeFlow missing-contract attribution is withdrawn: pinned TradeFlow declares a contract; generic stderr does not prove causality. No maintained adopter mutation.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "394.provider-deadline",
+      "disposition": "PARTIAL",
+      "residual_owner": "P32-P0-05",
+      "source": {
+        "path": "bcf_governance/tooling/ci_graph_timeouts.py",
+        "git_blob": "96377ed6232db7c16a9fe5c9130a16579b7f3c30",
+        "sha256": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+        "bytes": 10466,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_ci_graph.py",
+        "git_blob": "ebc831e03629cea85958dc33f58b06c0519356ae",
+        "sha256": "c8fedb48acd8a021445736acce3afa82e710742f812cbe9755b853155e82e311",
+        "bytes": 143606,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Provider read, bounded response body, typed deadline composition, planned-shard and profile timeout preservation slices now exist. Complete sibling runtime/measurement population, current installed adoption and approved performance targets remain open.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json",
+      "available_scoped_evidence": [
+        {
+          "path": "audits/issue-394/typed-deadline-envelope-verification.json",
+          "sha256": "834155d1510e0cf2497b5260f5ee56820f7bb5dc887653ac7278afe137c3c6f8",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        },
+        {
+          "path": "audits/issue-394/provider-response-deadline-verification.json",
+          "sha256": "ce048ac2470b4d46c6a916cdeefce715dfcbcde26f0e7fde833dec045831641c",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        },
+        {
+          "path": "audits/issue-394/profile-gate-deadline-verification.json",
+          "sha256": "c0c6f7a502a0cd238e912e5e5ff907c6009f35649b5c21c7b1aebf77d5ea20d7",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        }
+      ]
+    },
+    {
+      "id": "394.nonfinite-provider-backoff",
+      "disposition": "PARTIAL",
+      "residual_owner": "P32-P0-02",
+      "source": {
+        "path": "bcf_governance/tooling/provider_read.py",
+        "git_blob": "e5ebceea070cd907f1e471381dee5e5cb4c10db9",
+        "sha256": "b1674ad7593d4b50c828e685b06bfc8ad7e05ae9272fb504a49a7909f00e85e4",
+        "bytes": 5756,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_provider_read.py",
+        "git_blob": "65879a438de1ee4b539604f8f4799a6fa92865f9",
+        "sha256": "99a5ae1e706dedae6c0cccac0b3f2da774ecad7e70009b8cd7d52d93a6876f78",
+        "bytes": 6369,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Finite-header rejection implementation and historical focused qualification retained; exact current consumers/complete bounded provider envelope and installed acceptance remain scoped obligations.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json"
+    },
+    {
+      "id": "394.file-projection-custody",
+      "disposition": "PARTIAL",
+      "residual_owner": "P32-P0-07",
+      "source": {
+        "path": "bcf_governance/tooling/reconcile_authority_transition.py",
+        "git_blob": "f1096e4ed9af502edffb6e8d3b1fd317a8f58c32",
+        "sha256": "162a298cc596ff72c035b84c73e5ee70794330f343ac08fd792bf25d49a955f0",
+        "bytes": 16517,
+        "changed_from_previous_census": false
+      },
+      "regression_surface": {
+        "path": "tests/test_reconcile_governance.py",
+        "git_blob": "b663a735e06563016bed80e9e6254a3264355b4b",
+        "sha256": "dce0b78bff9411375862dc298781e49d00134ff772c81b4c223dbcd413e72391",
+        "bytes": 51096,
+        "changed_from_previous_census": false
+      },
+      "execution": "This read-only census does not execute behavior or establish applicability of prior executions.",
+      "installed_adoption": "Not inferred from source presence, prior source execution, local SDK declaration or provider issue closure.",
+      "remaining": "Existing canonical normalization promotion and prior merged submission terminals retained. Isolated authored-control admission is separately checkpointed and not integrated into this subject; complete crash/interleaving and installed lifecycle qualification remain open.",
+      "historical_evidence_inventory": "audits/issue-394/residual-admitted-evidence.json",
+      "available_scoped_evidence": [
+        {
+          "path": "audits/issue-394/successor-e544-submission-recovery.json",
+          "sha256": "b07664112e799a910270c13ddc5009bfaa046a96cb88f8dddbf07ce1e657216e",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        },
+        {
+          "path": "audits/issue-394/main100dc-noncertifying-observation.json",
+          "sha256": "c59c8802cda082952cea21ba23a7f3deeeda17b6314513cc9568588423fe4e00",
+          "applicability": "Retains its own exact subject and consumer scope; this census does not authorize reuse or installed adoption."
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "All82 whole requirements remain open; no phase or slice status changes.",
+    "Issue closure is historical issue state, not current installed adoption or acceptance.",
+    "Source existence and byte identity do not substitute for behavioral execution or independent custody."
+  ]
+}

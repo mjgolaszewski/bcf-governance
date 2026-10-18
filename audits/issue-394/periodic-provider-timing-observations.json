@@ -1,0 +1,133 @@
+{
+  "authority": false,
+  "kind": "candidate_periodic_timing_observations",
+  "projection": {
+    "authority": false,
+    "source_owner": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+    "owner_sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311",
+    "subject_version": "2.5.0 candidate; not predecessor 2.3.4",
+    "context": "periodic schedule, grounded in retained protected-source workflows",
+    "matched_cohort": false,
+    "approved_targets": false,
+    "percentile_certification": false,
+    "observations": [
+      {
+        "name": "weekly",
+        "subject": {
+          "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+          "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+        },
+        "clock_id": "github:1207503211:run:39113895189:attempt:1",
+        "elapsed_ms": 648000,
+        "execution_union_ms": 645000,
+        "execution_sum_ms": 645000,
+        "uncovered_ms": 3000,
+        "cpu_ms": "unknown",
+        "failed_jobs": 1,
+        "observation_sha256": "31bcf65b66061e79379c3e6251e6930bd5219c9d3a03f8fd2202101b29d8eddd"
+      },
+      {
+        "name": "nightly",
+        "subject": {
+          "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+          "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+        },
+        "clock_id": "github:1207503211:run:39110358021:attempt:1",
+        "elapsed_ms": 792000,
+        "execution_union_ms": 790000,
+        "execution_sum_ms": 790000,
+        "uncovered_ms": 2000,
+        "cpu_ms": "unknown",
+        "failed_jobs": 1,
+        "observation_sha256": "bf7143713ef1941251ea914bcecce73d29f38266c9a21e9c753d5ad2ea3f92c7"
+      }
+    ],
+    "limits": [
+      "Failed work retained. No p50/p95 or performance improvement claim.",
+      "Workflow-attempt timing does not establish end-to-end custody or developer interruption endpoints.",
+      "Raw job-step timings remain separate; CPU is unknown."
+    ]
+  },
+  "capture_validation": [
+    {
+      "name": "weekly",
+      "strict_capture_validation": "passed",
+      "capture_sha256": "9cddf87e1a55ca273386bafa58548d0c339b5437d82e915a5e7da94611ef6e19",
+      "authority": false
+    },
+    {
+      "name": "nightly",
+      "strict_capture_validation": "passed",
+      "capture_sha256": "10027031444b5bbe4733ef1632c5aeaf67357118df040219cbe025bb7d8d690b",
+      "authority": false
+    }
+  ],
+  "observations": [
+    {
+      "schema_version": "1.0",
+      "kind": "pipeline_timing",
+      "authority": false,
+      "subject": {
+        "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+        "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+      },
+      "repository": "mjgolaszewski/bcf-governance",
+      "repository_id": 1207503211,
+      "source_snapshot_sha256": "8ebbb6a8f04289a926303f8b762ba6266541b214155eb76bf2c4dd999477943e",
+      "pipeline": "periodic",
+      "clock_id": "github:1207503211:run:39113895189:attempt:1",
+      "clock_basis": "provider_utc_ms",
+      "start_ms": 1792314259000,
+      "end_ms": 1792314907000,
+      "elapsed_ms": 648000,
+      "execution_union_ms": 645000,
+      "execution_sum_ms": 645000,
+      "external_wait_union_ms": 0,
+      "uncovered_ms": 3000,
+      "cpu_ms": "unknown",
+      "intervals": [
+        {
+          "id": "117635593619",
+          "clock_id": "github:1207503211:run:39113895189:attempt:1",
+          "kind": "execution",
+          "status": "failed",
+          "start_ms": 1792314261000,
+          "end_ms": 1792314906000
+        }
+      ]
+    },
+    {
+      "schema_version": "1.0",
+      "kind": "pipeline_timing",
+      "authority": false,
+      "subject": {
+        "commit_sha": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+        "tree_sha": "b18eddf2dc35111e9814e4c8c92c3039da9c685a"
+      },
+      "repository": "mjgolaszewski/bcf-governance",
+      "repository_id": 1207503211,
+      "source_snapshot_sha256": "761c5565459268715d30becc2ad09281fe96c47955ef8c3daefe71855b413972",
+      "pipeline": "periodic",
+      "clock_id": "github:1207503211:run:39110358021:attempt:1",
+      "clock_basis": "provider_utc_ms",
+      "start_ms": 1792310965000,
+      "end_ms": 1792311757000,
+      "elapsed_ms": 792000,
+      "execution_union_ms": 790000,
+      "execution_sum_ms": 790000,
+      "external_wait_union_ms": 0,
+      "uncovered_ms": 2000,
+      "cpu_ms": "unknown",
+      "intervals": [
+        {
+          "id": "117624987942",
+          "clock_id": "github:1207503211:run:39110358021:attempt:1",
+          "kind": "execution",
+          "status": "failed",
+          "start_ms": 1792310967000,
+          "end_ms": 1792311757000
+        }
+      ]
+    }
+  ]
+}
