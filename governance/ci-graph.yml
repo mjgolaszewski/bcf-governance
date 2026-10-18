@@ -559,7 +559,7 @@ workflows:
     trust: candidate
     needs: [preflight]
     condition: success
-    timeout_minutes: 60
+    timeout_minutes: 243
     permissions: {actions: read, contents: read}
     checkout: false
     components: []

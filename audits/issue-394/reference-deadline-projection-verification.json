@@ -178,5 +178,14 @@
     "The prior fd06 distribution does not include this newer source. Full setup/provider I/O/retry/lifecycle, supported profile/adopter transitions and independent custody remain open.",
     "All82 whole requirements and38 slice objects unchanged; P32 active/P33-P35 dormant; targets unapproved."
   ],
-  "next_action": "Complete source checks; repair current canonical budget through its reconciliation owner; partition full periodic populations with exact ownership/control preservation; add private installed probes and qualify exact distributions."
+  "next_action": "Complete source checks; repair current canonical budget through its reconciliation owner; partition full periodic populations with exact ownership/control preservation; add private installed probes and qualify exact distributions.",
+  "canonical_authored_budget": {
+    "status": "authored243_generated_transition_pending",
+    "workflow": "governance",
+    "job": "evidence",
+    "before_minutes": 60,
+    "authored_minutes": 243,
+    "source_sha256": "74578b93ab588ce8ca85f069e15e3b12b0834c73e33829d96993230f1e69555e",
+    "derived_from": "existing complete execution-group producer envelope and execution policy; no performance target approval claim"
+  }
 }
