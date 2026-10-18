@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_and_installed_checks_passed",
+  "contract": "audits/issue-394/provider-content-coherence-contract.json",
+  "contract_commit": "f7d91f89b4d1b9c7772e10839580185ad9d24186",
+  "implementation_commit": "933a82224437a61141fb7ad0653b927ca4d136d3",
+  "canonical_subject": {
+    "commit_sha": "8975ee33e320b62e50b38b137f6a3b3a01e8b03c",
+    "tree_sha": "478b96c1ac6946e9ecf751b757c009ece2a90cdc"
+  },
+  "behavior": "The shared read-only GitHub content adapter rejects missing or contradictory observed paths and recomputes decoded bytes against the declared Git blob OID before returning typed content.",
+  "red_controls": {
+    "failed": 6,
+    "passed": 19,
+    "causes": [
+      "missing/contradictory observed path (4)",
+      "substituted bytes or OID (2)"
+    ]
+  },
+  "initial_focused_cases_passed": 203,
+  "canonical_affected_cases_passed": 218,
+  "architecture_cases_passed": 6,
+  "lint_typecheck_governance_returncodes": [
+    0,
+    0,
+    0
+  ],
+  "authored_semantics": {
+    "verdict": "conformant",
+    "authority": false,
+    "unchanged_operations": 21
+  },
+  "real_provider_response_replay": {
+    "response_sha256": "20714e3d5edb45bbbf7bc0cf17d8d78c3f0d3e1da41ef4d562bf02e1db9768aa",
+    "path": "plans/build-plan.yml",
+    "blob_oid": "609135252c0635f86baf002a80ccc0a054071564",
+    "bytes": 4442,
+    "content_sha256": "a0eb27eec522644ae9b725724c0c12f37f0b3d68b9d4ef162f46652c7819b6e0",
+    "scope": "Read-only exact predecessor policy response coherence, not release or current frontier authority"
+  },
+  "installed_consumer_matrix": "audits/issue-394/provider-content-consumer-matrix-8975ee33.json",
+  "distribution_verification": "audits/issue-394/development-distribution-8975ee33-verification.json",
+  "retained_attempt_dispositions": [
+    "Canonical attempt1 correctly rejected using the project interpreter as controller, before mutation; attempt2 used separate interpreters and passed.",
+    "Copied supervisor readiness.scope text was overbroad. Original bytes retained; append-only disposition binds actual scopes to commands and terminal streams.",
+    "A duplicate observation of an already-terminal native session returned Unknown process id; retained terminal output plus independent process/custody readback established completion. No restart occurred."
+  ],
+  "raw_sha256": {
+    "provider-content-f7d91f89-red-owned-attempt1/operation.json": "b6ace4712d0451c78dee309102f549db38adf59948b922c7a303b2f64d97f1aa",
+    "provider-content-f7d91f89-red-owned-attempt1/provider-content-red.stdout": "7f8ef5bd1567efabd301773575fc50051b1815f7c99e8438ace50bbd21a8cc14",
+    "provider-content-f7d91f89-red-owned-attempt1/provider-content-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-933a8222-green-owned-attempt1/operation.json": "712193b8fbd3dbf9aee400da82ab0ee3b1eb3efb506f7de754f8fe3b9d60ba5a",
+    "provider-content-933a8222-green-owned-attempt1/provider-content-green.stdout": "e1cfa23d7a6c8cd77149a7773856f1b1295a54e1a8cc7f8d92ebf82871728c2f",
+    "provider-content-933a8222-green-owned-attempt1/provider-content-green.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-933a8222-canonical-owned-attempt1/operation.json": "1d9f8527efa4e567f3e197ddfa3e04875dd2d889cc7880e49411c083ab5650a0",
+    "provider-content-933a8222-canonical-owned-attempt1/provider-content-canonical.stderr": "d33bc1a045a6632748f709a1462bae43d22e06537e99299f0482255f6decb703",
+    "provider-content-933a8222-canonical-owned-attempt2/operation.json": "a7c9e27998cd849de04ec85674771906f46d69b4f684f0e2ecb0c61be55b735a",
+    "provider-content-933a8222-canonical-owned-attempt2/provider-content-canonical.stdout": "79fc9e52eea24440645764fb588b2e05fac49f0f6dc00154126290ef61a691a9",
+    "provider-content-933a8222-canonical-attempt2-terminal-readback.json": "ed35ccec7b55ac9a83b7d4cfcd9f141ce9a08a5cf177840f01abdda8872a206d",
+    "provider-content-8975ee33-qualification-owned-attempt1/operation.json": "3dee71f2535b2e4d2d19635028dc153dab6cdc8e4c615dc6adfd8a91119de511",
+    "provider-content-8975ee33-qualification-attempt1-terminal-readback.json": "0353e35c62c2be8084a92cb260a616fe852f51608fd175f5bafdb7c4dc9a2f57",
+    "provider-content-harness-scope-disposition-attempt1.json": "f7daeff2a96389cd87017b06fe42e704477bd457856a38cccc8bacb80dfa70ad",
+    "provider-content-d02-protected-policy-response-attempt1.json": "20714e3d5edb45bbbf7bc0cf17d8d78c3f0d3e1da41ef4d562bf02e1db9768aa",
+    "provider-content-source-qualification-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-source-qualification-attempt1/architecture.stdout": "286e8c03c9df246653169737e05fcae97c9ae3a3706c5d2ad65d0c24f9c0fced",
+    "provider-content-source-qualification-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-source-qualification-attempt1/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "provider-content-source-qualification-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-source-qualification-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-source-qualification-attempt1/provider-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-source-qualification-attempt1/provider-consumers.stdout": "1ab4f2cfb85954f0b12c9662d5fe71e2f569e904407a81e2a195711ef98778ce",
+    "provider-content-source-qualification-attempt1/report.json": "66fac276d8875ed4f849d746adcb32f71ff1f7f13682b5ce38d9a07673ba2254",
+    "provider-content-source-qualification-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-content-source-qualification-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "independent_verification": false,
+  "provider_submission": false,
+  "remaining": "Full lifecycle/protected population derivation, runtime conformance, all profiles/minors/adopters, matched measurements and target approval, independent scoped truth, integration and exact release custody remain open.",
+  "followups": "audits/issue-394/authority-input-followups-8975ee33.json"
+}

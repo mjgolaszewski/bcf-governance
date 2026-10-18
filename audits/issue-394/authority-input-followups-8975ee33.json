@@ -1,0 +1,34 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "source_commit": "8975ee33e320b62e50b38b137f6a3b3a01e8b03c",
+  "findings": [
+    {
+      "id": "protected-yaml-ambiguity",
+      "evidence": "prior_evidence_transport._mapping and ci_github_authority.load_authority use yaml.safe_load; protected phase inputs and authority policy use these decoders. Existing semantic_yaml.load_unique_mapping_text rejects duplicate authored keys.",
+      "next_action": "Commit a bounded consuming-boundary contract and demonstrate duplicate-key rejection controls against the unchanged decoder before production edits."
+    },
+    {
+      "id": "unbound-external-authentication-assertion",
+      "evidence": "trusted_inputs.verify_trusted_input accepts executor_role and handoff.provider_authenticated from its caller, then returns TrustedInputVerification. Semantic family/representation classify that value as authoritative. Production reference search found only its definition, generated mirrors and tests; no production consumer was identified.",
+      "next_action": "Audit existing external-input public contracts and authenticated provider owners; eliminate assertion-based verification through the canonical owner with explicit migration where needed. Do not invent a new authority object or treat the lack of a caller as closure."
+    }
+  ],
+  "raw_source_sha256": {
+    "bcf_governance/tooling/trusted_inputs.py": "f359894d101f3cf64f579c3520caae3415bb894feacfc4e302d53d510edfe4ca",
+    "bcf_governance/tooling/prior_evidence_transport.py": "347b5e7f843120404c8698eae6f9b8a5d5922d7df47713a322099e4448cd9eb1",
+    "bcf_governance/tooling/ci_github_authority.py": "d1826c84179c72910f9a68f791b66bc1b6b80745b3f8cce137800d0e2f36a7ac",
+    "governance/canonical-representations.yml": "7303603228fbdd38e080546e0117c80387ac578e933637f24d4706544407d733",
+    "governance/semantic-families.yml": "ed7a37867b78d23b5fef785954eabadbfd3ddc14c38bde3efe137df01f0debc0"
+  },
+  "limits": "Static source review only. New controlled behavioral reproduction and canonical integration remain pending; current matrix source remains fixed.",
+  "earlier_metadata_admission": {
+    "authority": false,
+    "execution_qualified": false,
+    "source_commit": "8975ee33e320b62e50b38b137f6a3b3a01e8b03c",
+    "observed_sequence": "GitHubAPI.content validates the syntactic declared blob OID after base64 decoding. Invalid declared identity can be rejected before decoded-content allocation.",
+    "next_action": "Contract and controlled decoder-not-called test before moving existing _sha validation ahead of decode; preserve path/blob coherence and typed errors.",
+    "source_sha256": "4c323ada4fb95997f9e229f92bf4a0284acda0a80ea14187bd03da84031ef4dc",
+    "current_matrix_disposition": "Exact byte/path guard qualification remains valid for its scope. Earliest metadata rejection remains an explicit follow-up under the full goal."
+  }
+}

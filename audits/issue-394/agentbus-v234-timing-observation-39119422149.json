@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "authenticated_unmatched_observation",
+  "collector_source_commit": "8975ee33e320b62e50b38b137f6a3b3a01e8b03c",
+  "provider": {
+    "repository": "mjgolaszewski/AgentBus",
+    "repository_id": 1390225113,
+    "run_id": 39119422149,
+    "attempt": 1,
+    "workflow_id": 368141282,
+    "commit_sha": "2468a033e309ed945b1ff35151feed942fef6762",
+    "tree_sha": "6656bb51eb24db736798c64e1a8a380713b973b1",
+    "jobs": 6
+  },
+  "url": "https://github.com/mjgolaszewski/AgentBus/actions/runs/39119422149/attempts/1",
+  "installed_sdk_declaration": {
+    "version": "2.3.4",
+    "source_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "assurance": "declared runtime lock; loaded runtime not independently established"
+  },
+  "context_disposition": {
+    "cohort": "main_push_pr_progress_unmatched",
+    "event": "push",
+    "branch": "main",
+    "evaluation_expression": "${{ inputs.evaluation_mode || (github.event_name == 'push' && 'pr' || 'pr') }}",
+    "observed_expression_occurrences": 4
+  },
+  "observation": {
+    "authority": false,
+    "clock_basis": "provider_utc_ms",
+    "clock_id": "github:1390225113:run:39119422149:attempt:1",
+    "cpu_ms": "unknown",
+    "elapsed_ms": 276000,
+    "end_ms": 1792319617000,
+    "execution_sum_ms": 523000,
+    "execution_union_ms": 271000,
+    "external_wait_union_ms": 0,
+    "intervals": [
+      {
+        "clock_id": "github:1390225113:run:39119422149:attempt:1",
+        "end_ms": 1792319380000,
+        "id": "117651783217",
+        "kind": "execution",
+        "start_ms": 1792319343000,
+        "status": "passed"
+      },
+      {
+        "clock_id": "github:1390225113:run:39119422149:attempt:1",
+        "end_ms": 1792319586000,
+        "id": "117651908985",
+        "kind": "execution",
+        "start_ms": 1792319381000,
+        "status": "passed"
+      },
+      {
+        "clock_id": "github:1390225113:run:39119422149:attempt:1",
+        "end_ms": 1792319436000,
+        "id": "117651908996",
+        "kind": "execution",
+        "start_ms": 1792319381000,
+        "status": "passed"
+      },
+      {
+        "clock_id": "github:1390225113:run:39119422149:attempt:1",
+        "end_ms": 1792319531000,
+        "id": "117651909000",
+        "kind": "execution",
+        "start_ms": 1792319382000,
+        "status": "passed"
+      },
+      {
+        "clock_id": "github:1390225113:run:39119422149:attempt:1",
+        "end_ms": 1792319430000,
+        "id": "117651909001",
+        "kind": "execution",
+        "start_ms": 1792319382000,
+        "status": "passed"
+      },
+      {
+        "clock_id": "github:1390225113:run:39119422149:attempt:1",
+        "end_ms": 1792319616000,
+        "id": "117652601691",
+        "kind": "execution",
+        "start_ms": 1792319587000,
+        "status": "passed"
+      }
+    ],
+    "kind": "pipeline_timing",
+    "pipeline": "pr",
+    "repository": "mjgolaszewski/AgentBus",
+    "repository_id": 1390225113,
+    "schema_version": "1.0",
+    "source_snapshot_sha256": "ee87260eb33e1fe0a3f8c40f5e355bf9ad92b1c511a05a9c5a59b865457522a4",
+    "start_ms": 1792319341000,
+    "subject": {
+      "commit_sha": "2468a033e309ed945b1ff35151feed942fef6762",
+      "tree_sha": "6656bb51eb24db736798c64e1a8a380713b973b1"
+    },
+    "uncovered_ms": 5000
+  },
+  "matched_cohort": false,
+  "percentile_certification": false,
+  "approved_targets": false,
+  "strict_capture_validation_passed": true,
+  "source_owner": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+  "source_owner_sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311",
+  "raw_sha256": {
+    "capture.json": "df5e82f9fe7bdabd84c2d226657d1c1f5936d61f1ac180142aef5287ead3ff5c",
+    "commit.json": "c4baedce346dfd45ee6a35bae4ff382a4ba8ec762594cf58d80b9ab6a4bf9b72",
+    "commit.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "jobs.json": "005c3e8b64c9588a2cabc4bfb3e32278b524e7c98ea651ac8ef8e744c4d39a21",
+    "jobs.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "projection-record.json": "686c9581085710101aa68ac4c48e7a423d6e9aab838b0a034e82c53d2fc760d2",
+    "repository.json": "486dade20091b90e80f6ae78a1141dd93ca0f0a55382852ce4aa6577320e53c7",
+    "repository.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "run.json": "029aa84bd171dda5249b293ceac6b27f9641553072bf27ce36afe5494f8c68ed",
+    "run.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-lock-provider.json": "35161575d5a7bcdd423f715b8314694666ccd5b1ea63b762dd5ad3dca3f4e3f5",
+    "runtime-lock-provider.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-lock.raw": "89c7d94495de65983f0b90f765cffbbbf33fffbcab8e70be8b0bc7645d0e6cd2",
+    "snapshot.json": "dd6d165286fc334a34f18c973472c556f4f7741e6b21a4462698c2cfb2fa4331",
+    "timing-capture.json": "f7fad0417cc564776e2b1b350119df44ff218cc2b7ae34690cafc4cf15c25f98",
+    "timing-observation.json": "5adac5673a769611c93bc60943e0ec4358785aba0e94be5a9ca1411a5a8f7611",
+    "workflow-provider.json": "e777274f37710e35f869c2632b749b2ce3aefcfce4768b74ca494827058239f6",
+    "workflow-provider.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "workflow.raw": "330ca027a018c8a513fc65e16288a50cf505339415dc57daf0e35c8e71484173"
+  },
+  "limits": [
+    "No ordinary PR-event or independently certified exact-main/controller latency claim.",
+    "SDK lock declaration is not independent loaded-runtime custody.",
+    "No matched cohort, percentile or performance-improvement claim."
+  ]
+}
