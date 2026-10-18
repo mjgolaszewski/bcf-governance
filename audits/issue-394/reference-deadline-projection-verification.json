@@ -169,7 +169,7 @@
   },
   "canonical_current_budget_repaired": true,
   "full_periodic_population_partitioned": false,
-  "new_exact_installed_distribution_qualified": false,
+  "new_exact_installed_distribution_qualified": true,
   "prior_exact_distribution": "audits/issue-394/development-distribution-fd06f44f-verification.json",
   "limits": [
     "Conservative model envelopes and synthetic duration placement inputs are queries, not authenticated execution or performance observations.",
@@ -192,7 +192,7 @@
   },
   "private_reference_probe": {
     "authority": false,
-    "status": "copied_rehearsal_passed_actual_installed_pending",
+    "status": "exact_source_and_both_installed_distributions_passed",
     "retained_fd06_private_runtime_exit": 1,
     "retained_diagnostic": "unexpected keyword argument gate_contract",
     "current_copied_runtime_exit": 0,
@@ -226,5 +226,6 @@
       "reference-private-probe-retained-fd06f44f.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "probe_source_sha256": "778a0f93a98ada9742e5132cc9ae709d6b9e9c59b489b808b14f3e3a20ddf995"
-  }
+  },
+  "subsequent_exact_distribution_verification": "audits/issue-394/development-distribution-463d5d8b-verification.json"
 }

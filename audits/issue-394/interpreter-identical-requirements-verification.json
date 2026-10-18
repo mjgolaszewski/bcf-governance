@@ -74,7 +74,7 @@
       "diagnostic": "generated CI workflow drift; canonical owner pending"
     }
   },
-  "installed_distribution_qualified": false,
+  "installed_distribution_qualified": true,
   "canonical_reconciliation": "terminal0: audits/issue-394/canonical-deadline-reconciliation-verification.json",
   "limits": [
     "Copied private runtime is not installed qualification.",
@@ -112,5 +112,6 @@
     "bcf_governance/tooling/interpreter_environment.py": "aa8aade2e6dd803c4a06badc25c1ef5f76c1726e03f6bead6049eb09be9ebb1a",
     "tests/test_local_execution_admission.py": "6b1bec1beb29e6d2cc4c9d4c9a532277fb1154e6dc81561eacc084c3fc7fc55a",
     "tests/test_installed_runtime_fact_queries.py": "0a6d42e5b243ebb94cb9873037597c5c8519c35bb1abb2d879d6971262b845ae"
-  }
+  },
+  "subsequent_exact_distribution_verification": "audits/issue-394/development-distribution-463d5d8b-verification.json"
 }
