@@ -1,0 +1,15 @@
+{
+  "authority": false,
+  "bounded_context": "ci_authority",
+  "owner": "bcf_governance/tooling/local_execution_admission.py::local_gate_lease",
+  "problem": "The released busy diagnostic labels retained lock-file text active even when a different workload currently owns the kernel lock. Invalid retained text can also prevent the typed busy result.",
+  "requirements": [
+    "Derive busy exclusively from the existing failed nonblocking kernel lock acquisition; retained bytes are not authenticated current execution ownership.",
+    "Do not read or echo retained lock bytes on refusal. Return the existing local_execution_busy_deferred code with explicitly unverified execution ownership.",
+    "Preserve the lock path, authenticated namespace derivation, nonblocking behavior, exact execution-ID validation, successful write/yield/release behavior and immutable retained bytes on refusal.",
+    "A refusal cannot enter work, unlock the actual holder, delete/recreate the lock, retry, allocate proof, push or select an alternative namespace.",
+    "Preserve CLI grammar and the existing typed busy code; retire only the unsupported active attribution. No new lease broker, owner registry or authority family."
+  ],
+  "verification": "Real flock contention on a private unit-fixture file containing stale, undecodable and untrusted retained bytes; holder continuity, no work entry, byte preservation and successful reuse. Existing prospective exclusion oracle remains required.",
+  "limits": ["An unverified owner is not permission to remove/reset a lock.", "This does not implement transaction coalescing or authenticate an execution subject from a PID."]
+}
