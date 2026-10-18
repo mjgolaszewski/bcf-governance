@@ -303,6 +303,8 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
         info = tarfile.TarInfo("bcf_governance-0.7.1/README.md")
         info.size = len(raw)
         archive.addfile(info, io.BytesIO(raw))
+        info = tarfile.TarInfo("bcf_governance-0.7.1/bcf_governance/__init__.py")
+        archive.addfile(info, io.BytesIO(b""))
     sums = tmp_path / "SHA256SUMS"
     sums.write_text(f"{_sha(wheel)}  {wheel.name}\n{_sha(sdist)}  {sdist.name}\n", encoding="utf-8")
     subject = {"commit_sha": COMMIT, "tree_sha": TREE}
@@ -385,7 +387,8 @@ def _release_inputs(tmp_path: Path) -> dict[str, object]:
     }
 
 
-def _verify(values: dict[str, object], output: Path) -> dict[str, object]:
+def _verify(values: dict[str, object], output: Path, *, artifact_id: object = "40",
+            artifact_digest: object = f"sha256:{'e' * 64}") -> dict[str, object]:
     return verify_release_build(
         authorization_path=values["authorization"],  # type: ignore[arg-type]
         build_manifest_path=values["build"],  # type: ignore[arg-type]
@@ -395,8 +398,8 @@ def _verify(values: dict[str, object], output: Path) -> dict[str, object]:
         release_artifacts=values["artifacts"],  # type: ignore[arg-type]
         verifier_run_id="30",
         verifier_run_attempt="2",
-        build_artifact_id="40",
-        build_provider_digest=f"sha256:{'e' * 64}",
+        build_artifact_id=artifact_id,
+        build_provider_digest=artifact_digest,
         output_path=output,
         runtime_report_path=values["runtime_report"],  # type: ignore[arg-type]
         runtime_evidence=values["runtime_evidence"],  # type: ignore[arg-type]
@@ -1855,3 +1858,24 @@ def test_publication_rejects_untyped_draft_before_tag_mutation(tmp_path, draft):
         publish_release(api, repository="owner/repo", tag="v0.7.1", expected_commit=COMMIT,
                         release_artifacts=values["artifacts"], body="notes")
     assert api.mutations == []
+
+
+@pytest.mark.parametrize("defect,diagnostic", [
+    ("assets", "asset bytes"), ("artifact-id", "artifact ID"), ("provider-digest", "provider digest"),
+])
+def test_release_identity_rejects_before_archive_or_runtime_work(tmp_path: Path, monkeypatch, defect, diagnostic):
+    from bcf_governance.tooling import ci_github_release as release
+
+    values = _release_inputs(tmp_path)
+    if defect == "assets":
+        path = values["build"]
+        payload = json.loads(path.read_text())
+        payload["assets"] = {}
+        path.write_text(json.dumps(payload))
+    monkeypatch.setattr(release, "verify_archive", lambda *args: pytest.fail("archive work preceded identity rejection"))
+    monkeypatch.setattr(release, "verify_runtime_evidence", lambda *args, **kwargs: pytest.fail("runtime work preceded identity rejection"))
+    output = tmp_path / "must-not-exist.json"
+    with pytest.raises(GitHubControllerError, match=diagnostic):
+        _verify(values, output, artifact_id="" if defect == "artifact-id" else "40",
+                artifact_digest="not-a-digest" if defect == "provider-digest" else f"sha256:{'e' * 64}")
+    assert not output.exists()
