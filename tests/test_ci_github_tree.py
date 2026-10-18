@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-import pytest
-
 import base64
 import subprocess
+
+import pytest
 
 from bcf_governance.tooling.ci_github_api import GitHubAPI, GitHubAPIError
 

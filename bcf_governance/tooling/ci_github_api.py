@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 from dataclasses import asdict, dataclass
+import hashlib
 import json
 import re
 from typing import Any
@@ -361,6 +362,8 @@ class GitHubAPI(
         )
         if not isinstance(value, dict) or value.get("type") != "file":
             raise GitHubAPIError("repository content response must be a file")
+        if value.get("path") != path:
+            raise GitHubAPIError("repository content response path differs from requested path")
         encoded = value.get("content")
         if not isinstance(encoded, str) or value.get("encoding") != "base64":
             raise GitHubAPIError("repository content must use base64 encoding")
@@ -368,7 +371,11 @@ class GitHubAPI(
             content = base64.b64decode("".join(encoded.split()), validate=True)
         except ValueError as exc:
             raise GitHubAPIError("repository content is not valid base64") from exc
-        return GitHubContent(path=path, blob_oid=_sha(value.get("sha"), field="blob OID"), content=content)
+        blob_oid = _sha(value.get("sha"), field="blob OID")
+        observed_oid = hashlib.sha1(b"blob " + str(len(content)).encode() + b"\0" + content).hexdigest()
+        if observed_oid != blob_oid:
+            raise GitHubAPIError("repository content bytes differ from declared blob OID")
+        return GitHubContent(path=value["path"], blob_oid=blob_oid, content=content)
 
     def workflow_runs(
         self,
