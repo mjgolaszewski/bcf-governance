@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "authority": false,
   "workitem": "foundation.normalization",
-  "bounded_context": "runtime_capacity",
+  "bounded_context": "validation",
   "architectural_layer": "tooling",
   "operation_side": "query",
   "targets": [
@@ -19,6 +19,7 @@
     "Actual repository derivation succeeds and retains setuptools>=69 exactly once while pyproject bytes remain unchanged.",
     "Identical cross-role build/runtime and repeated exact installer pins are accepted once; different constraints and normalized aliases remain blocked before setup.",
     "Disable exact deduplication and reproduce the original failures; qualify affected environment/admission consumers, architecture/mirrors, semantic and governed checks.",
-    "Actual SDK-absent private helpers must collapse the identical build/runtime and installer/gate predicates, keep differing strings blocked and leave the requirements projection unallocated. A copied-runtime disabled-normalization control must fail by the original unique-name diagnostic."
+    "Actual SDK-absent private helpers must collapse the identical build/runtime and installer/gate predicates, keep differing strings blocked and leave the requirements projection unallocated. A copied-runtime disabled-normalization control must fail by the original unique-name diagnostic.",
+    "The competing-lease unit fixture uses its own real authenticated execution state, retaining actual flock contention while avoiding the unrelated live host-native fence. Governed operations continue using the existing common host fence."
   ]
 }
