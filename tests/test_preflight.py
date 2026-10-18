@@ -580,8 +580,9 @@ def test_lifecycle_authoring_is_not_an_execution_front_door() -> None:
     assert '"execution_trigger": False' in source
 
 
+@pytest.mark.parametrize("deadline_failure", [False, True])
 def test_preflight_allocates_session_only_after_all_deterministic_checks(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, deadline_failure: bool,
 ) -> None:
     calls: list[str] = []
     planning: list[dict[str, object]] = []
@@ -664,7 +665,13 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         lambda *_, **__: (calls.append("allocated") or Session()),
     )
 
-    report = preflight.run_preflight(
+    def deadline_admission(*_args):
+        calls.append("deadline-checked")
+        if deadline_failure:
+            raise ValueError("underbudget planned shard")
+    monkeypatch.setattr(preflight, "admit_planned_shard_deadlines", deadline_admission, raising=False)
+    def execute():
+        return preflight.run_preflight(
         repo,
         mode="release",
         python_executable=sys.executable,
@@ -674,6 +681,13 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
         evaluation_target="P01-W01",
         trace=calls.append,
     )
+    if deadline_failure:
+        with pytest.raises(ValueError, match="underbudget planned shard"):
+            execute()
+        assert "allocated" not in calls
+        assert calls[-2:] == ["planned-shard-deadlines", "deadline-checked"]
+        return
+    report = execute()
 
     assert calls == [
         "git-state",
@@ -699,6 +713,8 @@ def test_preflight_allocates_session_only_after_all_deterministic_checks(
             "editorial-contract",
         "test-manifests",
         "verification-plan",
+        "planned-shard-deadlines",
+        "deadline-checked",
         "session",
         "allocated",
     ]

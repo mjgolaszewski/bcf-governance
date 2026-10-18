@@ -359,6 +359,8 @@ def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> Sim
 
 
 def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
+    # Synthetic graph fixtures do not claim actual deadline admission.
+    monkeypatch.setattr(prospective, "validate_planned_shard_deadlines", lambda *a: None, raising=False)
     monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
     monkeypatch.setattr(prospective, "_pack_manifest", lambda *_a, **_k: {"applicable": False}, raising=False)
@@ -1359,11 +1361,18 @@ def test_terminal_reauthentication_rejects_base_movement(
 
 
 @pytest.mark.parametrize("bound_context", [False, True])
+@pytest.mark.parametrize("deadline_failure", [False, True])
 def test_full_walk_preserves_provider_boundary_and_exact_scope(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, bound_context: bool,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, bound_context: bool, deadline_failure: bool,
 ) -> None:
     trace: list[str] = []
     _front_door(monkeypatch, trace)
+    allocations = []
+    deadline_error = prospective.CIGraphError("underbudget planned shard")
+    def reject_deadline(*args):
+        raise deadline_error
+    if deadline_failure:
+        monkeypatch.setattr(prospective, "validate_planned_shard_deadlines", reject_deadline)
     session = SimpleNamespace(
         manifest_path=tmp_path / "session.json",
         root=tmp_path / "session",
@@ -1382,6 +1391,7 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         else pytest.fail("prospective reconciliation changed its selected interpreter"),
     )
     def allocate(_root: Path, _artifacts: Path, gates: tuple[str, ...], **_kwargs: object) -> SimpleNamespace:
+        allocations.append(True)
         assert gates == tuple(required)
         return session
     monkeypatch.setattr(prospective, "allocate_session", allocate)
@@ -1478,13 +1488,21 @@ def test_full_walk_preserves_provider_boundary_and_exact_scope(
         monkeypatch.setattr(prospective, "resolve_local_pr_context", lambda *a, **kw: context)
     operation = prospective._run_prospective_train if bound_context else prospective.run_prospective_train
     kwargs = {"provider_api": api} if bound_context else {}
-    report = operation(
+    def execute():
+        return operation(
         tmp_path,
         **TRAIN,
         python_executable=selected_python,
         runner=_runner,
         **kwargs,
     )
+    if deadline_failure:
+        with pytest.raises(prospective.ProspectiveValidationError, match="underbudget planned shard") as caught:
+            execute()
+        assert caught.value.__cause__ is deadline_error
+        assert allocations == [] and "evidence" not in trace
+        return
+    report = execute()
     assert observed_modes == ["pr", "workitem"]
     assert tuple(value["id"] for value in report["boundaries"]) == prospective.BOUNDARY_CHAIN
     assert report["provider_authority_substituted"] is False
