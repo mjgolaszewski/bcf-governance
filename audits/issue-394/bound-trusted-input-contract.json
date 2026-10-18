@@ -15,7 +15,8 @@
     "schemas/ci-authority.schema.json",
     "governance/canonical-representations.yml",
     "tests/test_trusted_inputs.py",
-    "tests/test_bound_trusted_inputs.py"
+    "tests/test_bound_trusted_inputs.py",
+    "bcf_governance/tooling/prior_evidence_transport.py"
   ],
   "contract": [
     "Existing contract/handoff/role booleans alone cannot create TrustedInputVerification. Missing provider context rejects before local payload reads.",
@@ -25,7 +26,8 @@
     "Bind one exact unexpired artifact and provider digest; authenticate downloaded archive bytes before selecting a bounded safe member. Compare local bytes/digest only to that authenticated payload; bound local reads and reject unsafe files.",
     "Reauthenticate consumer/source frontiers, newest role attempt and artifact identity before returning. A caller authentication flag or role label cannot substitute for these facts or confer a permission.",
     "Keep the existing six-field verification projection and constructor owner; verified_by identifies provider reconstruction, not a caller-chosen actor. Serialization is not portable authorization or lifecycle/release proof.",
-    "Reuse the existing release-input role-run query for finalizer, release collector and external input contexts. Extend the existing CI schema validator for its owned definition; no parallel parser, graph, registry, broker, evaluator or receipt family."
+    "Reuse the existing release-input role-run query for finalizer, release collector and external input contexts. Extend the existing CI schema validator for its owned definition; no parallel parser, graph, registry, broker, evaluator or receipt family.",
+    "Extend the existing bounded archive decoder with opt-in canonical member spelling for external-input selection; default historical callers retain their existing behavior. Reject aliases, backslashes and NUL rather than normalizing them into selector authority."
   ],
   "verification": [
     "Retain same-signature forged-context RED controls independently of new-interface failures.",

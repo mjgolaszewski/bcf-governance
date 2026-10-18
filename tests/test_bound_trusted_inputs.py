@@ -274,3 +274,54 @@ def test_required_population_is_derived_before_any_download(bound_input):
                   source_repositories={'identity-contracts': 'owner/source'})
     result = trusted_inputs.verify_required_trusted_inputs(api, **kwargs)
     assert set(result) == {'identity-contracts'} and api.downloads == 1
+
+
+def test_historical_pinned_producer_with_current_default_descendant(bound_input):
+    api, path = bound_input
+    api.source.main = SHA_B
+    assert verify_bound(api, path).producer_ref == SHA_A
+
+
+@pytest.mark.parametrize('field,value', [('required', False), ('digest_algorithm', 'sha512')])
+def test_optional_handoff_policy_fields_cannot_contradict_protected_rule(bound_input, field, value):
+    api, path = bound_input
+    handoff = {**deepcopy(api.contract), 'sha256': hashlib.sha256(api.payload).hexdigest(), field: value}
+    with pytest.raises(trusted_inputs.TrustedInputError):
+        verify_bound(api, path, handoff=handoff)
+    assert api.downloads == 0
+
+
+@pytest.mark.parametrize('name', ['./contracts.tar', 'nested//contracts.tar', 'a\\b'])
+def test_external_input_archive_member_names_are_not_normalized_into_authority(bound_input, name):
+    api, path = bound_input
+    api.members = {name: api.payload}
+    with pytest.raises(trusted_inputs.TrustedInputError):
+        verify_bound(api, path)
+
+
+@pytest.mark.parametrize('resource', ['handoff', 'path', 'locator', 'extra', 'contradiction'])
+def test_complete_population_admission_precedes_first_source_download(bound_input, resource):
+    api, path = bound_input
+    second = deepcopy(api.contract)
+    second['input_id'] = 'second-input'
+    api.consumer.authority['trusted_external_inputs'].append(second)
+    handoff = {**api.contract, 'sha256': hashlib.sha256(api.payload).hexdigest()}
+    handoffs = {'identity-contracts': handoff, 'second-input': {**handoff, **second}}
+    paths = {'identity-contracts': path, 'second-input': path}
+    locators = {'identity-contracts': 'owner/source', 'second-input': 'owner/source'}
+    if resource == 'handoff':
+        del handoffs['second-input']
+    elif resource == 'path':
+        paths['second-input'] = path.with_name('absent')
+    elif resource == 'locator':
+        del locators['second-input']
+    elif resource == 'extra':
+        handoffs['unregistered'] = handoff
+    else:
+        handoffs['second-input']['source_repository'] = {'provider': 'github', 'repository_id': '999'}
+    with pytest.raises(trusted_inputs.TrustedInputError):
+        trusted_inputs.verify_required_trusted_inputs(
+            api, repository='owner/consumer', handoffs=handoffs,
+            artifact_paths=paths, source_repositories=locators,
+        )
+    assert api.downloads == 0
