@@ -1431,7 +1431,7 @@
     },
     "scripts/_bcf_runtime/release_runtime_verification.py": {
       "operation": "copy",
-      "sha256": "a6a0540c400efdc4244a571d0e83cf257dc5979060c4e5f3abd061fe518b2952"
+      "sha256": "54321a13114e036d2785d5656a54fe10485015f791e0b3ea94abc60d4d28118c"
     },
     "scripts/_bcf_runtime/release_source_bindings.py": {
       "operation": "copy",

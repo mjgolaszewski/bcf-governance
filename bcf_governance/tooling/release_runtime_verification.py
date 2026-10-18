@@ -307,14 +307,18 @@ def run_release_runtime_verification(
                 cwd=root, env=sdist_env, output_dir=output_dir,
             )
         )
-        commands.append(
-            _run(
-                "wheel-installed-consumer",
-                [str(wheel_python), str(source / ".github/scripts/verify_installed_consumer.py"),
-                 "--source-root", str(source)],
-                cwd=root, env=wheel_env, output_dir=output_dir,
+        for label, python, environment in (
+            ("wheel-installed-consumer", wheel_python, wheel_env),
+            ("sdist-installed-consumer", sdist_python, sdist_env),
+        ):
+            commands.append(
+                _run(
+                    label,
+                    [str(python), str(source / ".github/scripts/verify_installed_consumer.py"),
+                     "--source-root", str(source)],
+                    cwd=root, env=environment, output_dir=output_dir,
+                )
             )
-        )
         commands.append(
             _run(
                 "sdist-smoke",

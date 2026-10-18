@@ -1,4 +1,4 @@
-"""Qualify the installed wheel's consumer pack without exposing BCF to its CLI."""
+"""Qualify an installed distribution's consumer pack in an SDK-absent target."""
 
 from __future__ import annotations
 

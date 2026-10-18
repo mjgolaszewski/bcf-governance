@@ -320,5 +320,10 @@
       "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
       "full_distribution_profile_adopter_matrix_qualified": false
     }
-  ]
+  ],
+  "sdist_installed_consumer": {
+    "verification": "audits/issue-394/sdist-installed-consumer-verification.json",
+    "source_orchestration_passed": true,
+    "exact_new_installed_distribution_qualified": false
+  }
 }

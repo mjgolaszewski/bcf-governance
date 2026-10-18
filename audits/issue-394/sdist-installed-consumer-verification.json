@@ -1,0 +1,51 @@
+{
+  "authority": false,
+  "scope": "Existing closed runtime owner now executes the existing combined installed consumer with each distribution interpreter and its closed environment; no independent release/adopter qualification.",
+  "contract_commits": [
+    "d8849c22",
+    "91ec190c"
+  ],
+  "owner": "bcf_governance/tooling/release_runtime_verification.py::run_release_runtime_verification",
+  "source_sha256": "54321a13114e036d2785d5656a54fe10485015f791e0b3ea94abc60d4d28118c",
+  "initial_failures": {
+    "sdist_execution_missing": 1,
+    "sdist_failure_not_observed": 1,
+    "wheel_controls_passed": 2
+  },
+  "affected": {
+    "initial_passed": 75,
+    "initial_failed": 1,
+    "initial_failure": "Existing structural contract required explicit wheel-installed-consumer label; restored explicit wheel/sdist labels without weakening the oracle.",
+    "final_passed": 76
+  },
+  "cause_specific_control": {
+    "mutation": "Remove only the sdist consumer execution edge",
+    "named_sdist_failures": 2,
+    "wheel_cases_passed": 2,
+    "exact_source_restored": true
+  },
+  "raw_sha256": {
+    "sdist-private-consumer-red.stdout": "737ceb7700d9e92eb628daf32766ac38485de829beecf568baa88e03933dce66",
+    "sdist-private-consumer-failure-red.stdout": "820d2d67c05f840ae4652ab32ad150a982cba8be471692fbeb1dcf1dca55170d",
+    "sdist-private-consumer-affected.stdout": "6ec0a3d3ec9be587906dee5babd2b79a2db115a13ef325cfb0f70711e1e0773a",
+    "sdist-private-consumer-affected-final.stdout": "352becea89ed2f0ffa1dbb6bd9d774816496ce82546010fb5fabc4a5316defe2",
+    "sdist-private-consumer-disabled.stdout": "75ddb1aba360e70ccc788cb3c2e55a2ba73050b07d961f6ff32b7162b6b5f09c",
+    "sdist-private-consumer-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Controlled source orchestration fixtures are not actual installed distribution execution.",
+    "Exact new artifact build and SDK-absent wheel/sdist consumer execution remain pending.",
+    "Fresh lite coverage does not qualify full profiles, v2.3.4 upgrades, repeat/opt-out/rollback, real adopters or immutable custody.",
+    "All82 whole requirements and38 slice objects remain unchanged; P32 active, P33-P35 dormant, performance targets unapproved."
+  ],
+  "next_action": "Build exact new source and execute both installed consumers through the existing guarded offline runtime owner; authenticate raw outputs and exact archive mapping before any broader claim.",
+  "checks": {
+    "lint": 0,
+    "typecheck": 0,
+    "architecture_selected_passed": 5,
+    "governance_exposure": 0,
+    "governance_yaml": 0,
+    "authored_semantics": "pending"
+  },
+  "governance_initial_failure": "A prose artifacts/installed phrase was interpreted as an ephemeral path; corrected to artifacts and installed, preserving the failed raw capture."
+}
