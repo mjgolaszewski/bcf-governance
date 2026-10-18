@@ -299,5 +299,10 @@
     "source_commit": "9620214b9b225a36269e0597923c7ecf8f422870",
     "exact_artifacts_and_existing_fresh_lite_consumer_passed": true,
     "full_distribution_profile_adopter_matrix_qualified": false
+  },
+  "runtime_source_mapping_consumption": {
+    "verification": "audits/issue-394/runtime-source-mapping-consumption-verification.json",
+    "source_behavior_qualified": true,
+    "fresh_corrected_installed_distribution_qualified": false
   }
 }

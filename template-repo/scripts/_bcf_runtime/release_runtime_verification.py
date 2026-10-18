@@ -16,7 +16,7 @@ from typing import Any, Iterable
 
 from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError
-from .release_closure import verify_archive, verify_wheelhouse
+from .release_closure import ReleaseClosureError, verify_archive, verify_wheelhouse
 
 
 EXPECTED_PYTHON = "3.12.14"
@@ -351,7 +351,7 @@ def verify_runtime_evidence(
     wheel: Path,
     sdist: Path,
 ) -> dict[str, Any]:
-    """Recompute the runtime report's exact raw-evidence and artifact bindings."""
+    """Recompute artifact/source correspondence and bind retained runtime evidence."""
 
     try:
         report = json.loads(_regular(report_path, "runtime report").read_text())
@@ -367,9 +367,11 @@ def verify_runtime_evidence(
         or environment.get("platform") != EXPECTED_PLATFORM
     ):
         raise GitHubControllerError("release runtime report environment is not exact")
+    exact_wheel = _regular(wheel, "release wheel")
+    exact_sdist = _regular(sdist, "release sdist")
     expected_artifacts = {
-        wheel.name: _sha256(wheel),
-        sdist.name: _sha256(sdist),
+        wheel.name: _sha256(exact_wheel),
+        sdist.name: _sha256(exact_sdist),
     }
     if report.get("release_artifacts") != expected_artifacts:
         raise GitHubControllerError("release runtime report does not bind release bytes")
@@ -377,14 +379,26 @@ def verify_runtime_evidence(
     if (
         not isinstance(source_mapping, dict)
         or source_mapping.get("status") != "exact"
-        or not isinstance(source_mapping.get("mapped_files"), int)
+        or type(source_mapping.get("mapped_files")) is not int
         or source_mapping["mapped_files"] < 1
     ):
         raise GitHubControllerError("release runtime source mapping is not exact")
     paths = tuple(evidence_paths)
+    if not paths:
+        raise GitHubControllerError("release runtime evidence inventory is missing")
     actual = {path.name: _sha256(_regular(path, "runtime evidence")) for path in paths}
     if len(actual) != len(paths) or report.get("evidence") != dict(sorted(actual.items())):
         raise GitHubControllerError("release runtime evidence inventory is not exact")
+    try:
+        verify_archive(exact_wheel)
+        verify_archive(exact_sdist)
+        with tempfile.TemporaryDirectory(prefix="bcf-runtime-source-verify-") as temporary:
+            source = _extract_sdist(exact_sdist, Path(temporary) / "source")
+            observed_mapping = _validate_wheel_source_mapping(exact_wheel, source)
+    except (ReleaseClosureError, OSError, tarfile.TarError) as exc:
+        raise GitHubControllerError(f"release runtime source mapping cannot be recomputed: {exc}") from exc
+    if source_mapping != observed_mapping:
+        raise GitHubControllerError("release runtime source mapping differs from exact archives")
     return report
 
 

@@ -200,6 +200,8 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/release_runtime_verification.py
+    - bcf_governance/tooling/ci_github_release.py
     - bcf_governance/tooling/semantic_authority_contracts.py
     - bcf_governance/tooling/semantic_yaml.py
     - bcf_governance/tooling/semantic_authority_migrations.py
@@ -250,6 +252,8 @@ workitems:
     - audits/issue-394/release-preinstall-composition-contract.json
     - audits/issue-394/release-preinstall-composition-verification.json
     - audits/issue-394/development-distribution-9620214b-verification.json
+    - audits/issue-394/runtime-source-mapping-consumption-contract.json
+    - audits/issue-394/runtime-source-mapping-consumption-verification.json
     - audits/issue-394/recovery-mutation-frontier-contract.yml
     - audits/issue-394/backtrace-structural-coverage-contract.yml
     - audits/issue-394/backtrace-structural-coverage-verification.json

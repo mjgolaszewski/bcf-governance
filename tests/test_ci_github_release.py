@@ -514,6 +514,9 @@ def test_release_verifier_rejects_candidate_manifest_and_dependency_mutants(
         f"{'0' * 64}  bcf_governance-0.7.1-py3-none-any.whl\n",
         encoding="utf-8",
     )
+    build = json.loads(values["build"].read_text())
+    build["assets"]["SHA256SUMS"] = _sha(tmp_path / "third" / "SHA256SUMS")
+    _json(values["build"], build)
     with pytest.raises(ValueError, match="checksum inventory"):
         _verify(values, tmp_path / "third" / "changed.json")
 
@@ -1861,7 +1864,7 @@ def test_publication_rejects_untyped_draft_before_tag_mutation(tmp_path, draft):
 
 
 @pytest.mark.parametrize("defect,diagnostic", [
-    ("assets", "asset bytes"), ("artifact-id", "artifact ID"), ("provider-digest", "provider digest"),
+    ("assets", "asset bytes"), ("artifact-id", "artifact ID"), ("provider-digest", "provider artifact digest"),
 ])
 def test_release_identity_rejects_before_archive_or_runtime_work(tmp_path: Path, monkeypatch, defect, diagnostic):
     from bcf_governance.tooling import ci_github_release as release

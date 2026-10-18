@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_and_retained_artifact_query_qualified_corrected_distributions_pending",
+  "source_base_commit": "897a7dd4",
+  "contract_commits": [
+    "b7dfff60",
+    "89d8ab5a",
+    "ab1006d4"
+  ],
+  "scope": "Shared runtime-evidence consumer independently recomputes wheel-to-sdist byte correspondence; both release verifier and collector use this owner. Existing archive/mapping owners and owned scratch are reused, without candidate execution. Cheap identity and nonempty raw-evidence checks precede reconstruction.",
+  "initial_mapping": {
+    "failed": 9,
+    "passed": 1
+  },
+  "initial_identity_order_failed": 3,
+  "initial_evidence_order_failed": 2,
+  "affected_history": [
+    {
+      "passed": 110,
+      "failed": 3,
+      "disposition": "Three provider fixtures asserted a matching wheel/source mapping but omitted the source package file; supplied the exact empty source owner already present in the wheel."
+    },
+    {
+      "passed": 113,
+      "failed": 0
+    },
+    {
+      "passed": 116,
+      "failed": 2,
+      "disposition": "Kept checksum negative control downstream of its newly required manifest prerequisite by rebinding only mutated checksum-file bytes; aligned one new digest diagnostic to the unchanged provider primitive message."
+    },
+    {
+      "passed": 118,
+      "failed": 0
+    }
+  ],
+  "cause_controls": {
+    "recomputation": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 8
+    },
+    "count_type": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 1
+    },
+    "evidence_order": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 2
+    },
+    "identity_order": {
+      "pytest_returncode": 1,
+      "harness_returncode": 0,
+      "named_failures": 3
+    }
+  },
+  "checks": {
+    "architecture_passed": 5,
+    "lint": 0,
+    "typecheck": 0,
+    "exposure": 0,
+    "governance": 0,
+    "authored_semantic": 0
+  },
+  "compatibility": {
+    "authority": false,
+    "existing_9620214b_version_1_report_returned_unchanged": true,
+    "existing_9620214b_mapped_files": 788,
+    "predecessor_archives": {
+      "bcf_governance-2.3.4-py3-none-any.whl": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
+      "bcf_governance-2.3.4.tar.gz": "9fe8cddee2e81f451f0bece4b28cbdf71b0ef715fbf23503ff8dcfce2f454b10"
+    },
+    "predecessor_byte_mapping": {
+      "status": "exact",
+      "mapped_files": 689
+    },
+    "predecessor_original_bytes_unchanged": true,
+    "limits": "Pure artifact correspondence and retained development report compatibility only; no new predecessor runtime execution, provider custody or release authority claim."
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/release_runtime_verification.py": "a6a0540c400efdc4244a571d0e83cf257dc5979060c4e5f3abd061fe518b2952",
+    "bcf_governance/tooling/ci_github_release.py": "78ed18750be0622593e8361a02ebf6207b85f5de01947cae9ee83f9c2bf4b6d0"
+  },
+  "raw_output_sha256": {
+    "runtime-source-mapping-architecture.stdout": "964143a85916d7144fc5dd7c89b53f18fb94ebab618cb748e833c299ddcd9422",
+    "runtime-source-mapping-complete-affected.stdout": "7478e0a909ca11d896dafbc6f94c710794a2767303b029a9b739f45b979e4591",
+    "runtime-source-mapping-complete-corrected.stdout": "3bbb10e1f207731394e3edcf9f41a27e47d7a3a5e9b9c7ce209cdea5e7865c18",
+    "runtime-source-mapping-complete-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-source-mapping-control-count-type.stdout": "f4d02fe4123b7b37e9b572415ea26147919ca382481684f8778e91de55bac6f0",
+    "runtime-source-mapping-control-recomputation.stdout": "7299eafb9a2e3ebfae1e1f411858893b6ebb6e0d2d26d092e2e94559f5f064a4",
+    "runtime-source-mapping-corrected-affected.stdout": "7e5bd1d9d42252d9ea7aa05f92af85a8a66b5a4127a753c338789e2ac3e05fad",
+    "runtime-source-mapping-evidence-order-red.stdout": "d92308750ca22aefb770dda2ace67951637ee8d15b6cf218aaf1931f3787ab4a",
+    "runtime-source-mapping-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "runtime-source-mapping-final-affected.stdout": "cf64d0fb53b277350ddd08e16d82e8213a4e7800bb0556e524f6659344fdac10",
+    "runtime-source-mapping-final-control-count-type.stdout": "db29e3f45f7f13aa611ad8a75ecf08b125c933ded553d905d55f0322c85f6326",
+    "runtime-source-mapping-final-control-evidence-order.stdout": "bfbb059d3ae3ab83aec40d571798335fa19030116519c16c5a909808ff97606b",
+    "runtime-source-mapping-final-control-identity-order-corrected.stdout": "7ae79ac9e1e1f55e1e0978f62c8ea3688126bc7ebe331d0e13c062f62df30b61",
+    "runtime-source-mapping-final-control-identity-order.stdout": "974a7a80198992e5e1698dc0501ad342c6451c845865b4e1036860b2e88d5620",
+    "runtime-source-mapping-final-control-recomputation.stdout": "3f0a9cb7428db7e10992adc4d5aeb5e95873f63372cb072f1cb7501fd73fd9d1",
+    "runtime-source-mapping-final-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-source-mapping-first-affected.stdout": "037377c353f9355b069905fdd38cf85a569f16018bd713524fdbd278abaa241d",
+    "runtime-source-mapping-generation.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-source-mapping-identity-red.stdout": "9aa678f4133439d21494a74bcecd6dcdb99ab7eb968fd4d0ce5ab8fb33740cfe",
+    "runtime-source-mapping-initial-red.stdout": "dfd588f21496c94ad199a6ebc7ecd764e51fba1184cd5c93652909c0ea75ae47",
+    "runtime-source-mapping-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-source-mapping-typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-source-mapping-semantic.stdout": "4ac1a06d40990c05f31d6cb541be70d590f0f80261f03c2b0f338fc9a6332b30",
+    "runtime-source-mapping-final-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "runtime-source-mapping-final-retained-report.stdout": "d0cca0bafdb4695edb1964d952868bbfb6b2aecc186c452e29e580738bc015ef"
+  },
+  "limits": [
+    "The corrected SDK/private source is not yet freshly built or installed; prior 9620214b development artifacts remain historical at their recorded exact source.",
+    "No new predecessor execution, provider custody or phase/release certification claim.",
+    "Correspondence does not prove source commit authentication, complete source population, complete execution, all-profile/adopter assurance or outer deadline closure.",
+    "All 82 whole requirements and 38 slice objects remain unchanged; P32 active, P33-P35 dormant; performance targets unapproved."
+  ],
+  "next_action": "Qualify corrected exact source/private distributions and declared consumer matrix at fresh native admission. Continue full protected lifecycle/effect populations and deadline/baseline work before computed foundation closure.",
+  "authored_semantic_parity": {
+    "authority": false,
+    "scope": "authored_python_semantic_ownership_only",
+    "verdict": "conformant",
+    "operations": 21,
+    "all_rows_unchanged": true
+  },
+  "final_retained_report_query": {
+    "authority": false,
+    "existing_version_1_report_returned_unchanged": true,
+    "mapped_files": 788,
+    "raw_evidence_files": 20
+  }
+}

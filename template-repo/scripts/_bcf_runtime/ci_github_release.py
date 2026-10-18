@@ -311,12 +311,19 @@ def verify_release_build(
         build.get("authorization_sha256") != _sha256(authorization_path)
     ):
         raise GitHubControllerError("release build is not bound to its authorization")
+    artifact_id = str(build_artifact_id)
+    if not artifact_id.isdigit() or int(artifact_id) < 1:
+        raise GitHubControllerError("release build artifact ID must be positive")
+    digest = provider_digest(build_provider_digest)
     verify_release_source_bindings(authorization, manifest_path, lock_path)
     closure = verify_wheelhouse(manifest_path, lock_path, wheelhouse)
     if build.get("dependency_closure") != closure.as_dict():
         raise GitHubControllerError("release build dependency closure is not exact")
     paths = tuple(release_artifacts)
     assets = exact_assets(paths)
+    declared = build.get("assets")
+    if declared != assets:
+        raise GitHubControllerError("release build manifest asset bytes are not exact")
     verify_checksum_inventory(paths)
     archives = [path for path in paths if path.suffix == ".whl" or path.name.endswith(".tar.gz")]
     for archive in archives:
@@ -326,13 +333,6 @@ def verify_release_build(
     runtime = verify_runtime_evidence(
         runtime_report_path, runtime_evidence, wheel=wheel, sdist=sdist
     )
-    declared = build.get("assets")
-    if declared != assets:
-        raise GitHubControllerError("release build manifest asset bytes are not exact")
-    artifact_id = str(build_artifact_id)
-    if not artifact_id.isdigit() or int(artifact_id) < 1:
-        raise GitHubControllerError("release build artifact ID must be positive")
-    digest = provider_digest(build_provider_digest)
     payload = {
         "schema_version": "1.0",
         "authority_contract_version": "1.1",
