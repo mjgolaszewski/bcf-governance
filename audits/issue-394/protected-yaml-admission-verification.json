@@ -1,0 +1,258 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "bounded_source_and_archive_checks_passed",
+  "contract": "audits/issue-394/protected-yaml-admission-contract.json",
+  "contract_commit": "05684299942bcca07892e4d062c60bb6e9523b08",
+  "additional_controls_commit": "ead99cd63f3b9ee1d01d5f42e54ddcddb38234f1",
+  "implementation_commit": "93330346ff7305b6cb84314322f2fb6424d3ff10",
+  "canonical_subject": {
+    "commit_sha": "4a34ff4b35cd48bf13ab82c99691448caf5107db",
+    "tree_sha": "3feaffee6cac3dbe19cf925e1a9572957afee09d"
+  },
+  "behavior": [
+    "The existing unique YAML loader now serves23 declared authority/controller/protection/release/claim/workflow reads in12 modules. Domain mapping checks and typed error families remain owned by their existing consumers.",
+    "Malformed declared Git blob identities reject before base64 decoding; exact observed path and decoded-byte identity checks remain in place."
+  ],
+  "red_controls": {
+    "initial_failed": 21,
+    "expanded_failed": 26,
+    "compatibility_and_existing_cases_passed_in_each_red_run": 45,
+    "causes": "Duplicate keys reached downstream schema/selection or succeeded, including real phase proof downloads and real-Git claim closure; invalid OIDs reached decoding."
+  },
+  "focused_cases_passed": 71,
+  "affected_source_cases_passed": 431,
+  "early_source_architecture_cases_passed": 4,
+  "early_lint_typecheck_returncodes": [
+    0,
+    0
+  ],
+  "authored_semantic_operations_unchanged": 21,
+  "canonical_architecture_cases_passed": 6,
+  "canonical_governance_returncode": 0,
+  "static_conversion_population": {
+    "authority": false,
+    "execution_qualified": false,
+    "source_commit": "93330346ff7305b6cb84314322f2fb6424d3ff10",
+    "static_conversion_population": [
+      {
+        "module": "bcf_governance/tooling/ci_authority_pins.py",
+        "function": "_mapping",
+        "line": 60,
+        "source_sha256": "2f7477d3998dbe42ffc29c04659a60b7043522b1f19b4cb32a22b1684b413965"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_authority_pins.py",
+        "function": "compiled_workflow_jobs",
+        "line": 201,
+        "source_sha256": "2f7477d3998dbe42ffc29c04659a60b7043522b1f19b4cb32a22b1684b413965"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_authority_pins.py",
+        "function": "compiled_workflow_events",
+        "line": 259,
+        "source_sha256": "2f7477d3998dbe42ffc29c04659a60b7043522b1f19b4cb32a22b1684b413965"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_controller_policy.py",
+        "function": "source_controller_policy",
+        "line": 134,
+        "source_sha256": "d6a809e356fe1b4b91963e90162554ee61802f6b6522dcda4671218a52bca29a"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_controller_policy.py",
+        "function": "source_controller_policy",
+        "line": 140,
+        "source_sha256": "d6a809e356fe1b4b91963e90162554ee61802f6b6522dcda4671218a52bca29a"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_github_authority.py",
+        "function": "load_authority",
+        "line": 48,
+        "source_sha256": "12e93fcccf25c63e6145be533de6d14f624d87b985684f0a0984edf3872bd95c"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_github_membership.py",
+        "function": "_pending_producer_facades",
+        "line": 95,
+        "source_sha256": "b00eea1c38298a7e6287ba6a432947b18f4a1184c12ea915605cc4198d285190"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_github_pr.py",
+        "function": "_evaluator_identity",
+        "line": 157,
+        "source_sha256": "fdd5b10e86115282f42bc1408b9242699c94dbc137946e4bc4b43c7906ef0eb1"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_github_pr.py",
+        "function": "_evaluator_identity",
+        "line": 172,
+        "source_sha256": "fdd5b10e86115282f42bc1408b9242699c94dbc137946e4bc4b43c7906ef0eb1"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_github_release_inputs.py",
+        "function": "_release_version_at_main",
+        "line": 60,
+        "source_sha256": "967a0f1b778b3041d139a70fbb82b792edd2bedb41159e9172d705b8217f0c4b"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_pr_transition.py",
+        "function": "load_transition_bytes",
+        "line": 45,
+        "source_sha256": "9a515fcf4905c4cb2804133eafe9d472a86c991beca2467b5e668c4beb08ba21"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_self_controller.py",
+        "function": "_successful_role_run",
+        "line": 361,
+        "source_sha256": "402429d3afaa9d38f3d1ed546b3ff75cc5724eef52b0aa7d5437ce23646f0c41"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_self_controller.py",
+        "function": "compile_self_controller_confirmation",
+        "line": 392,
+        "source_sha256": "402429d3afaa9d38f3d1ed546b3ff75cc5724eef52b0aa7d5437ce23646f0c41"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_self_controller.py",
+        "function": "_replace_env",
+        "line": 434,
+        "source_sha256": "402429d3afaa9d38f3d1ed546b3ff75cc5724eef52b0aa7d5437ce23646f0c41"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_self_controller.py",
+        "function": "_replace_topology_controller",
+        "line": 451,
+        "source_sha256": "402429d3afaa9d38f3d1ed546b3ff75cc5724eef52b0aa7d5437ce23646f0c41"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_self_controller.py",
+        "function": "project_self_controller_custody",
+        "line": 488,
+        "source_sha256": "402429d3afaa9d38f3d1ed546b3ff75cc5724eef52b0aa7d5437ce23646f0c41"
+      },
+      {
+        "module": "bcf_governance/tooling/ci_self_controller.py",
+        "function": "verify_self_controller_projection",
+        "line": 580,
+        "source_sha256": "402429d3afaa9d38f3d1ed546b3ff75cc5724eef52b0aa7d5437ce23646f0c41"
+      },
+      {
+        "module": "bcf_governance/tooling/github_protection.py",
+        "function": "load_protection_bytes",
+        "line": 100,
+        "source_sha256": "2aa2639831eefe4919638f096b70c7365adddd8a208cbf0582547d107ccd31f5"
+      },
+      {
+        "module": "bcf_governance/tooling/github_protection.py",
+        "function": "load_protection",
+        "line": 112,
+        "source_sha256": "2aa2639831eefe4919638f096b70c7365adddd8a208cbf0582547d107ccd31f5"
+      },
+      {
+        "module": "bcf_governance/tooling/prior_evidence_transport.py",
+        "function": "_mapping",
+        "line": 59,
+        "source_sha256": "1e5e151315c52588f6f48c9da02c53960c3178a71d7129e21c82f8d7ba343104"
+      },
+      {
+        "module": "bcf_governance/tooling/provider_reuse_closure.py",
+        "function": "trusted_main_claim_context",
+        "line": 42,
+        "source_sha256": "861e20cf0eee37fef60cf46679ca414640d1696364872c5f582860c084c7293e"
+      },
+      {
+        "module": "bcf_governance/tooling/routine_controller_rotation.py",
+        "function": "_workflow_jobs",
+        "line": 60,
+        "source_sha256": "d6435a9e5e33cc66f5ce2c7ce2c8d91dfe57420fe9302a277fb5baeafdb75793"
+      },
+      {
+        "module": "bcf_governance/tooling/routine_controller_rotation.py",
+        "function": "prospective_no_transition_topology",
+        "line": 217,
+        "source_sha256": "d6435a9e5e33cc66f5ce2c7ce2c8d91dfe57420fe9302a277fb5baeafdb75793"
+      }
+    ],
+    "unsafe_safe_load_calls_remaining_in_declared_population": 0,
+    "scope": "Exact23-site declared authority-related population only; not complete lifecycle or all YAML consumers",
+    "contract_sha256": "2770e5329f52b9ba307b581997d170ef72a9c36bef947ee228a2573c331c0de1"
+  },
+  "installed_consumer_matrix": "audits/issue-394/protected-yaml-consumer-matrix-4a34ff4b.json",
+  "distribution_verification": "audits/issue-394/development-distribution-4a34ff4b-verification.json",
+  "private_runtime_scope": "Existing source fresh/repair, both SDK-absent private consumer queries, byte/resource parity and controlled two-gate periodic execution passed. New adversarial cases ran at source/wheel/sdist public SDK boundaries; complete private context/profile negative populations remain unqualified.",
+  "prior_findings_disposition": [
+    {
+      "source": "audits/issue-394/authority-input-followups-8975ee33.json",
+      "finding": "protected-yaml-ambiguity",
+      "disposition": "Qualified for the declared23-site population; no blanket claim over all parsers or lifecycle contexts."
+    },
+    {
+      "source": "audits/issue-394/authority-input-followups-8975ee33.json",
+      "finding": "earlier_metadata_admission",
+      "disposition": "Implemented and qualified:three malformed OID controls prove decoding is not called."
+    },
+    {
+      "source": "audits/issue-394/authority-input-followups-8975ee33.json",
+      "finding": "unbound-external-authentication-assertion",
+      "disposition": "OPEN. Existing legacy success test still constructs verification from caller metadata/role and no provider context; no production consumer was identified.",
+      "executed_existing_case": "tests.test_trusted_inputs::test_trusted_input_requires_authenticated_digest_bound_handoff",
+      "test_sha256": "712db7da94cc50052d9e69d3b0b4bf4bfaf6101042ecf03a4d66394e21c16b96",
+      "source_owner_sha256": "f359894d101f3cf64f579c3520caae3415bb894feacfc4e302d53d510edfe4ca"
+    }
+  ],
+  "superseded_memory_checkpoint": {
+    "source_commit": "b24203a7f294021596647c7451682a6da012b7f3",
+    "text": "Exact8975 content guards qualified:218 affected/6arch,source1833/wheel1833/sdist1833;269 modules/790 mappings exact. Protected YAML and caller-authenticated input follow-ups open; lifecycle/82 requirements unchanged. See audits/issue-394/provider-content-coherence-verification.json.",
+    "disposition": "Prior exact-subject qualification remains retained. New parser/metadata evidence supersedes its current-focus summary only; acceptance states unchanged."
+  },
+  "raw_sha256": {
+    "protected-yaml-93330346-static-population.json": "ca1c732a8a04ef05243b4790fa29332a12de26d3003f75380e3550a2186496d1",
+    "protected-yaml-93330346-precanonical-terminal-readback.json": "6ad27411ae45ef4321dbf9b7796720a63bdfe1bece991b2c874361189cbdb2ad",
+    "protected-yaml-93330346-canonical-attempt1-terminal-readback.json": "776a9d087b354bba33e29bc8a84c529b934db3da24d0dfda7f56eaaba4dd7d42",
+    "protected-yaml-4a34ff4b-postcanonical-terminal-readback.json": "76b68ca67713eea1fb0813845a300496ed4e60356967db83099c751e7e329576",
+    "protected-yaml-05684299-red-owned-attempt1/operation.json": "cda0b80b53fc87f39d5b94bc0b35ce4807e3fdd175c7c19ca9c53bce57198c57",
+    "protected-yaml-05684299-red-owned-attempt1/protected-yaml-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-05684299-red-owned-attempt1/protected-yaml-red.stdout": "7470dea2665572ec4ac7b5a8b490461756d5787d7cbf9c036e5d14c06d4b2112",
+    "protected-yaml-ead99cd6-red-owned-attempt1/operation.json": "e254785038dc5673809a2245ed21bc97e78eedfa45cb227880e8b510e0e3202d",
+    "protected-yaml-ead99cd6-red-owned-attempt1/protected-yaml-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-ead99cd6-red-owned-attempt1/protected-yaml-red.stdout": "f7a5dbaefe7ed93ad14133b190e007f267523def09f9994451cce4ca59dd647f",
+    "protected-yaml-93330346-green-owned-attempt1/operation.json": "0d4317e68ccda8413bf2f42591cc5e56e466c68f6d6a37bc42978074a33233cb",
+    "protected-yaml-93330346-green-owned-attempt1/protected-yaml-green.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-green-owned-attempt1/protected-yaml-green.stdout": "4504af44661d623d5548d7404d802f0a8413babb3599fcd75aa88e574323f2ab",
+    "protected-yaml-93330346-consumers-owned-attempt1/operation.json": "9a1a6e4aef5108e54909efbc085410c851f2d9925127ae2c741ad7faa37f5527",
+    "protected-yaml-93330346-consumers-owned-attempt1/protected-yaml-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-consumers-owned-attempt1/protected-yaml-consumers.stdout": "8e7b4dc93a0920f66f411c4f3ecb594b574905ba7a6f2a6efd7cfa3dad6b80b0",
+    "protected-yaml-93330346-early-owned-attempt1/operation.json": "a8d45aa0a3c1b4e77e36bff8ffcd2f522155e958ccddff8cdc9e21845be01978",
+    "protected-yaml-93330346-early-owned-attempt1/protected-yaml-early.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-early-owned-attempt1/protected-yaml-early.stdout": "0fe73d330ddbd09fcbdc00c0e4c824ea1cef2c76bd5dae463644ababe73ab3f0",
+    "protected-yaml-93330346-early-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-early-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-early-attempt1/report.json": "8a1acbb50856303162f0fd3512276f7e7dcd3c13139df1696eb8868eb5e04174",
+    "protected-yaml-93330346-early-attempt1/source-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-early-attempt1/source-architecture.stdout": "e792d248862ef747b75fa40f440dcf0de6eea731e8727b9d5c508188cb9d6dcb",
+    "protected-yaml-93330346-early-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-early-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-canonical-owned-attempt1/operation.json": "69da09f38df2d08d62516f6df45223fe522cb016f54b283c4e9c165d100734fe",
+    "protected-yaml-93330346-canonical-owned-attempt1/protected-yaml-canonical.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-93330346-canonical-owned-attempt1/protected-yaml-canonical.stdout": "b8c2197bae9922fb2de6e213fbece7841c107ab0912338a1eca8a66c950e2e5b",
+    "protected-yaml-4a34ff4b-postcanonical-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-4a34ff4b-postcanonical-attempt1/architecture.stdout": "951839624cf46b93441a240b948da209b6cd59d9daf5764e8bac920dbd2d37e4",
+    "protected-yaml-4a34ff4b-postcanonical-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-4a34ff4b-postcanonical-attempt1/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "protected-yaml-4a34ff4b-postcanonical-attempt1/report.json": "b4d2b03f7353aec99e8895bc4ffa1653c20c29042c8a876da9d03c642e123674",
+    "protected-yaml-4a34ff4b-postcanonical-owned-attempt1/operation.json": "f49baf77cf76b0dede90684ae778a886cca9b7bb8aca06ef046fe704d64f5ff6",
+    "protected-yaml-4a34ff4b-postcanonical-owned-attempt1/protected-yaml-postcanonical.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "protected-yaml-4a34ff4b-postcanonical-owned-attempt1/protected-yaml-postcanonical.stdout": "7ff7a32205f5c5e681c840fc23db8e4de95b523e401075b4d75426e75c02195f"
+  },
+  "independent_verification": false,
+  "provider_submission": false,
+  "remaining": [
+    "Eliminate caller-asserted external-input authority using protected contracts and authenticated provider state.",
+    "Complete protected lifecycle populations, alternate/recovery/terminal paths and both source/runtime trace directions.",
+    "Complete applicable private/profile/minor/adopter assurance, matched measurement protocol and target approval.",
+    "Obtain independent scoped truth, integration, terminal certification and immutable2.5 custody."
+  ],
+  "acceptance": "All 82 whole requirements remain open; the 38 recorded slices are unchanged. P32 active; P33-P35 dormant.",
+  "bookkeeping_disposition": "The initial ledger writer stopped before changing any ledger because the shorthand normalization key was absent. Corrected the existing contract pointer to foundation.submit-normalization; retained the original tested subject/contract and raw captures. No runtime bytes changed."
+}

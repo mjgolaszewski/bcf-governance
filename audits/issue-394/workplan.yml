@@ -212,6 +212,18 @@ workitems:
     architectural_layer: tooling
     operation_side: contract_then_command_and_query
     target_modules:
+    - bcf_governance/tooling/ci_github_authority.py
+    - bcf_governance/tooling/prior_evidence_transport.py
+    - bcf_governance/tooling/provider_reuse_closure.py
+    - bcf_governance/tooling/ci_github_release_inputs.py
+    - bcf_governance/tooling/ci_github_membership.py
+    - bcf_governance/tooling/github_protection.py
+    - bcf_governance/tooling/ci_pr_transition.py
+    - bcf_governance/tooling/ci_github_pr.py
+    - bcf_governance/tooling/ci_self_controller.py
+    - bcf_governance/tooling/routine_controller_rotation.py
+    - bcf_governance/tooling/ci_authority_pins.py
+    - bcf_governance/tooling/ci_controller_policy.py
     - bcf_governance/tooling/ci_github_api.py
     - bcf_governance/tooling/release_runtime_verification.py
     - bcf_governance/tooling/ci_github_release.py
@@ -243,6 +255,9 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/protected-yaml-admission-verification.json
+    - audits/issue-394/protected-yaml-consumer-matrix-4a34ff4b.json
+    - audits/issue-394/development-distribution-4a34ff4b-verification.json
     - audits/issue-394/provider-content-coherence-verification.json
     - audits/issue-394/provider-content-consumer-matrix-8975ee33.json
     - audits/issue-394/authority-input-followups-8975ee33.json
@@ -810,6 +825,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/protected-yaml-admission-verification.json
     - audits/issue-394/interpreter-identical-requirements-contract.json
     - audits/issue-394/interpreter-identical-requirements-verification.json
     - audits/issue-394/development-distribution-463d5d8b-verification.json

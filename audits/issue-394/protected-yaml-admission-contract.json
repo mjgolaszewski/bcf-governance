@@ -3,7 +3,7 @@
   "authority": false,
   "workitems": [
     "foundation.conformance",
-    "foundation.normalization"
+    "foundation.submit-normalization"
   ],
   "bounded_context": "ci_authority; existing shared governed YAML decoder",
   "architectural_layer": "tooling",
@@ -184,5 +184,6 @@
     "hand-authored generated workflows/authority commits",
     "assertion-based authentication replacement",
     "P33 activation or acceptance advancement"
-  ]
+  ],
+  "reference_disposition": "Original contract05684299 used shorthand foundation.normalization; corrected to the existing canonical workitem foundation.submit-normalization. Bounded behavior and verification scope unchanged; original committed contract and exact4a34 distribution retained."
 }
