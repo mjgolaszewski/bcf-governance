@@ -57,7 +57,7 @@
     ],
     "problem": "A passed report with self-consistent archive/evidence digests currently accepts missing, duplicated, failed or unbound command records; command population and exit facts are mechanically available.",
     "versions": {
-      "1.0": "Historical ten-command runtime remains readable with its original payload and execution meaning. It cannot satisfy a new strict1.1 provider verification.",
+      "1.0": "Historical ten-command reports and the retained eleven-command development extension remain readable with their original payload and recorded scope. Neither satisfies new strict1.1 provider verification.",
       "1.1": "New producer includes both installed distribution consumers; trusted verifier and collector require1.1 and its complete eleven-command population. No CLI bypass or candidate-selected policy."
     },
     "requirements": [

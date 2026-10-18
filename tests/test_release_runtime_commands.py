@@ -165,3 +165,15 @@ def test_trusted_collector_rejects_legacy_profile_downgrade(tmp_path, monkeypatc
             collector_run_id="50", collector_run_attempt="1", runtime_report_path=values["runtime_report"],
             runtime_evidence=values["runtime_evidence"], output_path=output)
     assert not output.exists()
+
+
+@pytest.mark.parametrize("layout", ["metadata-after-smoke", "development-eleven"])
+def test_historical_runtime_layouts_keep_their_actual_scope(tmp_path, layout):
+    report, evidence, wheel, sdist = command_report(tmp_path, "1.1" if layout == "development-eleven" else "1.0")
+    value = json.loads(report.read_text())
+    value["schema_version"] = "1.0"
+    rows = value["commands"]
+    if layout == "development-eleven": rows.append(rows.pop(8))
+    else: rows.insert(4, rows.pop(2))
+    report.write_text(json.dumps(value))
+    assert runtime.verify_runtime_evidence(report, evidence, wheel=wheel, sdist=sdist) == value
