@@ -46,6 +46,28 @@ def _contexts(root):
     return graph, dag, targets
 
 
+@pytest.mark.parametrize('defect', ['none', 'partial', 'contradictory', 'sha', 'wrong-job'])
+def test_defining_workflow_quartet_binds_callee_and_rejects_uncertainty(tmp_path, defect):
+    from bcf_governance.tooling.ci_graph_execution import declared_workflow_context
+    graph, _, _ = _contexts(tmp_path)
+    # Caller context is deliberately distinct from the defining workflow.
+    env = {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': 'fixture/repo',
+           'GITHUB_WORKFLOW_REF': 'fixture/repo/.github/workflows/pr.yml@refs/heads/main',
+           'GITHUB_JOB': 'evidence', 'BCF_JOB_WORKFLOW_REPOSITORY': 'fixture/repo',
+           'BCF_JOB_WORKFLOW_FILE_PATH': '.github/workflows/periodic.yml',
+           'BCF_JOB_WORKFLOW_REF': 'fixture/repo/.github/workflows/periodic.yml@refs/heads/main',
+           'BCF_JOB_WORKFLOW_SHA': 'a' * 40}
+    if defect == 'partial': del env['BCF_JOB_WORKFLOW_SHA']
+    elif defect == 'contradictory': env['BCF_JOB_WORKFLOW_REPOSITORY'] = 'other/repo'
+    elif defect == 'sha': env['BCF_JOB_WORKFLOW_SHA'] = 'main'
+    elif defect == 'wrong-job': env['GITHUB_JOB'] = 'unknown'
+    if defect == 'none':
+        assert declared_workflow_context(graph, env) == 'scheduled-full'
+    else:
+        with pytest.raises(CIGraphError):
+            declared_workflow_context(graph, env)
+
+
 def test_periodic_composed_budget_cannot_borrow_passing_pr_budget(tmp_path):
     graph, dag, targets = _contexts(tmp_path)
     graph['workflows'][1]['jobs'][0]['timeout_minutes'] = 9
