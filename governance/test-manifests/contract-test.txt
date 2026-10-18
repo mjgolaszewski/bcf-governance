@@ -666,6 +666,14 @@ tests.test_profile_contract_v2::test_v2_surfaces_bind_one_session_and_do_not_wai
 tests.test_profile_yaml::test_current_gate_contract_renders_inside_existing_context_budget
 tests.test_profile_yaml::test_equal_string_list_facts_share_projection_independent_of_input_aliases
 tests.test_profile_yaml::test_equal_string_sequences_share_without_changing_decoded_contract
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point['quoted, value'-36]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point['quoted, value'-4096]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point[first,\n  second, value\n-36]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point[first,\n  second, value\n-4096]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point[one, two-36]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point[one, two-4096]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point[uno, dos: [tres, cuatro]-36]
+tests.test_profile_yaml::test_flow_compaction_preserves_scalar_bytes_and_fixed_point[uno, dos: [tres, cuatro]-4096]
 tests.test_profile_yaml::test_projected_content_uses_existing_budget_owner_without_mutation[bytes]
 tests.test_profile_yaml::test_projected_content_uses_existing_budget_owner_without_mutation[lines]
 tests.test_profile_yaml::test_projected_content_uses_existing_budget_owner_without_mutation[unknown]
