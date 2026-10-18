@@ -383,11 +383,12 @@
   "reference_deadline_projection": {
     "verification": "audits/issue-394/reference-deadline-projection-verification.json",
     "model_and_install_binding_behavior_passed": true,
-    "canonical_current_budget_repaired": false,
+    "canonical_current_budget_repaired": true,
     "full_periodic_population_partitioned": false,
     "new_exact_installed_distribution_qualified": false,
     "canonical_authored_budget_minutes": 243,
     "copied_private_reference_probe_passed": true,
-    "actual_installed_reference_probe_pending": true
+    "actual_installed_reference_probe_pending": true,
+    "canonical_owner_verification": "audits/issue-394/canonical-deadline-reconciliation-verification.json"
   }
 }

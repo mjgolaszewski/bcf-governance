@@ -1,0 +1,23 @@
+{
+  "authority": false,
+  "scope": "canonical local projection; no provider or lifecycle certification",
+  "fresh_common_inode_readback": "free_then_released",
+  "definition_commit": "53b543fcf6505c36c7e4da191efdfce8a82e8380",
+  "authority_commit": "6cda479f578868fa7965bdbe239f4a1e3abeabd4",
+  "canonical_evidence_minutes": 243,
+  "installed_distribution_qualified": false,
+  "raw_sha256": {
+    "canonical-reconcile.stdout": "4b19197222f87d242983fcab3555b8213614f5a9d174dbc62451d1418bedfbc6",
+    "operation.json": "1f86622182c5dd461e691dcc3313b39c63a1a5e8b5edc36483d8327945578903",
+    "canonical-reconcile.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "canonical-deadline-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "canonical-deadline-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "source_commit": "2ae7bae802b58f178c858a58d11f4652731f3a2e",
+  "source_tree": "ff24a5698b285fa3af91e2550a49d30f9c573584",
+  "final_tree": "25c25e4bb23ac534c51cac5390e9070d694fb5a8",
+  "terminal_returncode": 0,
+  "owned_cleanup_quiescent": true,
+  "recorded_processes_absent": true,
+  "full_governance_validation_returncode": 0
+}

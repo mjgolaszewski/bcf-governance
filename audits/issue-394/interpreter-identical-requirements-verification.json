@@ -75,7 +75,7 @@
     }
   },
   "installed_distribution_qualified": false,
-  "canonical_reconciliation": "not_launched",
+  "canonical_reconciliation": "terminal0: audits/issue-394/canonical-deadline-reconciliation-verification.json",
   "limits": [
     "Copied private runtime is not installed qualification.",
     "No acceptance, phase, provider or release authority advanced."

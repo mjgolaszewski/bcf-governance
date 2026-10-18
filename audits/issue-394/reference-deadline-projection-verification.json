@@ -167,7 +167,7 @@
     "reference-deadline-current-populations.json": "8fb8edbf8cd6232f62769427bae98b6410256e376c9bfb1cfd6f914cbf1fb73d",
     "reference-deadline-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
   },
-  "canonical_current_budget_repaired": false,
+  "canonical_current_budget_repaired": true,
   "full_periodic_population_partitioned": false,
   "new_exact_installed_distribution_qualified": false,
   "prior_exact_distribution": "audits/issue-394/development-distribution-fd06f44f-verification.json",
@@ -176,17 +176,19 @@
     "Current canonical budget243m is an in-memory proposal; authored/generated workflow and authority bytes are unchanged until the canonical reconciliation owner applies the correction.",
     "Full20-gate periodic reference population exceeds the provider ceiling and remains explicitly blocked before install target allocation; no control was dropped and full-profile qualification is not complete.",
     "The prior fd06 distribution does not include this newer source. Full setup/provider I/O/retry/lifecycle, supported profile/adopter transitions and independent custody remain open.",
-    "All82 whole requirements and38 slice objects unchanged; P32 active/P33-P35 dormant; targets unapproved."
+    "All82 whole requirements and38 slice objects unchanged; P32 active/P33-P35 dormant; targets unapproved.",
+    "Disposition: the earlier in-memory/authored-only243m observation is historical. Canonical owner has now promoted exact definition then authority commits and validated the fixed point; installed/full-periodic/lifecycle limits remain open."
   ],
   "next_action": "Complete source checks; repair current canonical budget through its reconciliation owner; partition full periodic populations with exact ownership/control preservation; add private installed probes and qualify exact distributions.",
   "canonical_authored_budget": {
-    "status": "authored243_generated_transition_pending",
+    "status": "canonical_owner_transition_terminal0",
     "workflow": "governance",
     "job": "evidence",
     "before_minutes": 60,
     "authored_minutes": 243,
     "source_sha256": "74578b93ab588ce8ca85f069e15e3b12b0834c73e33829d96993230f1e69555e",
-    "derived_from": "existing complete execution-group producer envelope and execution policy; no performance target approval claim"
+    "derived_from": "existing complete execution-group producer envelope and execution policy; no performance target approval claim",
+    "verification": "audits/issue-394/canonical-deadline-reconciliation-verification.json"
   },
   "private_reference_probe": {
     "authority": false,
