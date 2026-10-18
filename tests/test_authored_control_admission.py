@@ -84,9 +84,16 @@ def test_reconcile_rejects_control_defect_before_runtime_or_shadow(tmp_path, mon
         scaffold.reconcile_main(['--repo-root', str(tmp_path), mode])
 
 
-def test_valid_source_control_uses_existing_registry_and_submission_owner(tmp_path, monkeypatch):
-    profile, contract, policy = control_root(tmp_path)
-    _validate_gate_contract_registry(tmp_path, profile, contract, policy)
+@pytest.mark.parametrize('kind', ['governed', 'local', 'local_deadline_policy'])
+def test_valid_source_control_uses_existing_registry_and_submission_owner(tmp_path, monkeypatch, kind):
+    if kind == 'governed':
+        profile, contract, policy = control_root(tmp_path)
+        _validate_gate_contract_registry(tmp_path, profile, contract, policy)
+    elif kind == 'local_deadline_policy':
+        (tmp_path / 'governance').mkdir()
+        (tmp_path / 'governance/gate-contracts.yml').write_text(yaml.safe_dump({
+            'execution_policy': {'default_timeout_seconds': 60, 'default_cleanup_timeout_seconds': 5},
+        }))
     submit_prerequisites(monkeypatch)
     observed = []
 
