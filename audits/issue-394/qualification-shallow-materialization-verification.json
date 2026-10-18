@@ -1,0 +1,92 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source_checked_canonical_and_exact_installed_pending",
+  "contract": "audits/issue-394/qualification-shallow-materialization-contract.json",
+  "source_parent": "38fce3bbb93a0bf2680b477ad8d2405a3f50e0db",
+  "source_sha256": "0665271e2872aacb954ace424b039255b571cce041c167978a7eb25bcc9fc094",
+  "production_loc": 784,
+  "controlled_reproduction": {
+    "provider_pinned_shallow_cache_failed": "shallow update not allowed",
+    "scope": "existing-owner base projection before any controller/install/proof allocation"
+  },
+  "checks": {
+    "red_failed": 1,
+    "red_passed": 1,
+    "qualification_and_source_cases_passed": 86,
+    "disabled_local_setting_case_failed_by_shallow_push_rejection": true,
+    "exact_bare_HEAD_branch_tree_and_fetch_merge_base_preserved": true,
+    "provider_resource_config_origin_and_subject_unchanged": true,
+    "architecture_cases_passed": 6,
+    "authored_semantic_operation_observations_unchanged": 21,
+    "pack_returncode": 0,
+    "lint_returncode": 0,
+    "typecheck_returncode": 0,
+    "governance_returncode": 0
+  },
+  "preparation_inventory": {
+    "scope": "authenticated facts at preparation time only; never qualification/authority",
+    "captured_at_utc": "2026-10-18T06:31:45.654556+00:00",
+    "sources": [
+      {
+        "id": "tradeflow-lite",
+        "repository": "moranwm/tradeflow",
+        "repository_id": "1396203132",
+        "profile": "lite",
+        "default_branch": "main",
+        "commit_sha": "f7e9166c40629ef0cfb62fea9529d8b878c40517",
+        "tree_sha": "c6c6b001c765fbd30f12340620ee9eb9a8ff88aa"
+      },
+      {
+        "id": "racecar-standard-v3",
+        "repository": "mjgolaszewski/racecar",
+        "repository_id": "1357342339",
+        "profile": "standard",
+        "default_branch": "main",
+        "commit_sha": "38945f5aa3a90e0782cabb006c8c88a5463fcfbd",
+        "tree_sha": "11b3a874b5c3b18c9a4b8e94a804b68b02790583"
+      },
+      {
+        "id": "agentbus-standard-v3",
+        "repository": "mjgolaszewski/AgentBus",
+        "repository_id": "1390225113",
+        "profile": "standard",
+        "default_branch": "main",
+        "commit_sha": "8fa47290970fc828e71880a8a71b5e356e33ab46",
+        "tree_sha": "01d7db069ca60982114bdf45773970660a7f2dcb"
+      }
+    ],
+    "provider_gets_retained": 9,
+    "execute_and_collection_reauthentication_required": true
+  },
+  "raw_sha256": {
+    "qualification-shallow-boundary-red.stdout": "5a74ad782dc7f448c28daab0c753e23f6e0b1e64dd47c3504bf8b8a338097722",
+    "qualification-shallow-boundary-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-boundary-consumers.stdout": "b88ac37011ed253914b1bae53603ea6ad9c5e6779cd64e936f8aae777a7a578e",
+    "qualification-shallow-boundary-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-boundary-disabled.stdout": "b4628f05c71a90bd27956991f677d2b756be0a1295501d0ec61cac8fcf8293fb",
+    "qualification-shallow-boundary-disabled.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cfe1-adopter-shallow-base-probe.stdout": "4dfdefcc98b0c8c18af468ef218dfeb2ebd3aaa84a1433b49e7047752b756109",
+    "cfe1-adopter-shallow-base-probe.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cfe1-adopter-provider-preparation.json": "3ecb6410bc7bba1434f5d7c42e3aab6b5c682ea797bf7bebb2a36efac5c5dba4",
+    "qualification-shallow-pack.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-pack.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-type.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "qualification-shallow-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-semantic.stdout": "0f2c77dcca264bef2c3dea66999d307574d096da17a46afd9c0e20b8ce665d11",
+    "qualification-shallow-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "qualification-shallow-architecture.stdout": "4d1b022892beccddb1b77ad4232963a44f10ac81e84e5c0b921c9fb57863ddf0",
+    "qualification-shallow-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Two-line local Git projection correction does not change provider policy, source selection, receipts or publication authority.",
+    "Prepared cfe1 adopter transaction was not launched. Its already-qualified development archives remain exact and retained; they do not contain this new projection correction.",
+    "New exact distribution and isolated real-adopter execution remain pending. Existing cfe1 SDK-absent deadline qualification remains bounded historical evidence.",
+    "All82 whole requirements/38 slices unchanged; P32 active and P33-P35 dormant; approved performance targets and independent custody remain open.",
+    "Six architecture checks and unchanged21 authored operation observations pass; module784LOC and generated mirrors exact. Canonical generated test custody, new exact SDK/private execution and real provider-selected adopter compatibility remain pending."
+  ]
+}

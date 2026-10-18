@@ -399,6 +399,8 @@ def _project_qualification_base_remote(
     """Materialize one immutable local remote for the captured adopter base."""
 
     _run(["git", "init", "--bare", str(base_root)], cwd=base_root.parent)
+    # Only this generated local base may receive the captured shallow boundary.
+    _run(["git", "-C", str(base_root), "config", "receive.shallowUpdate", "true"], cwd=base_root.parent)
     _run(
         ["git", "-C", str(base_root), "symbolic-ref", "HEAD", "refs/heads/main"],
         cwd=base_root.parent,
