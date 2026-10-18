@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "authority": false,
-  "status": "source_checked_canonical_and_exact_installed_pending",
+  "status": "source_canonical_and_bounded_exact_installed_checked",
   "contract": "audits/issue-394/qualification-interpreter-path-admission-contract.json",
   "contract_test_commit": "1face87a",
   "production_source_sha256": "a3d14a578242b13240c3844cfe6a0f54248edebd4417d21470c6f259dad35709",
@@ -43,5 +43,16 @@
     "qualification-interpreter-path-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "qualification-interpreter-path-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
     "qualification-interpreter-path-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "qualification_disposition": {
+    "authority": false,
+    "source_commit": "7c6b3d653a70ec8b0918dc7ec988d1a5958eda28",
+    "source_tree": "ef7d77bdfd9a491502eca27d0b463789d19dd095",
+    "canonical_projection": "terminal0_quiescent; two manifest rows and duration projection only",
+    "exact_installed_evidence": "audits/issue-394/development-distribution-7c6b3d65-verification.json",
+    "wheel_cases_passed": 92,
+    "sdist_cases_passed": 92,
+    "skipped": 0,
+    "scope": "Supersedes historical pending only for this exact bounded corpus. Full real-adopter/profile/toolchain/minor/lifecycle/performance/custody qualification remains open; no acceptance changes."
   }
 }
