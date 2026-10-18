@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0", "authority": false,
+  "workitem": "foundation.deadlines", "bounded_context": "ci_authority",
+  "architectural_layer": "tooling", "operation_side": "query_and_in_memory_projection",
+  "targets": ["bcf_governance/tooling/ci_graph_timeouts.py", "bcf_governance/tooling/ci_graph_defaults.py", "bcf_governance/tooling/governance_install/ci_graph.py"],
+  "contract": [
+    "Preserve one execution-policy scalar parser for repository reads and validated installation-contract projection.",
+    "Extend the existing reference graph factory with an optional exact gate contract, preserving ordinary CLI grammar and existing Python calls. Installation passes its actual validated contract before target allocation.",
+    "For contract3.0 planned shards derive a conservative population from existing parsed execution-group producers, excluding only groups actually captured by preflight. Reject duplicate producer ownership, missing declared producers, wrong contract version and incomplete model authority. Do not count every legacy claim as a separate producer.",
+    "Fixed gate groups retain every literal serial gate. Without an explicit contract, preserve legacy bounds conservatively over the declared population. Apply all gate overrides, interpreter probes, cleanup allowances and existing graph headroom through the existing sequence deadline owner.",
+    "Preserve larger factory defaults; enforce the existing provider/schema360-minute ceiling before target mutation. Project atomically after every affected job validates. The ceiling must match the canonical graph schema.",
+    "Keep exact planned-assignment admission at all existing boundaries; projected conservative bounds are not execution evidence, approved performance targets or whole workflow sufficiency proof.",
+    "Repair current canonical budget source from authenticated declared policy and model; generated workflow and authority bytes remain exclusively owned by canonical reconciliation. No SDK upgrade or manual pin/workflow edits."
+  ],
+  "verification": [
+    "V3 reference projection contains real planner populations for no-receipt and adversarial receipt-derived assignments across supported profiles.",
+    "Per-gate overrides, cleanup, singleton/multiple groups, larger defaults and legacy missing-contract calls remain covered.",
+    "Missing/contradictory contracts, omitted or duplicate producers, boolean bounds and provider-cap overflow reject before target allocation; late failure leaves input graph unchanged.",
+    "Installed SDK-absent helpers, source/wheel/sdist and installation caller must consume the same projection. Source controls must expose disabled projection and dropped installation contract binding.",
+    "Run affected behavior, architecture, semantic, package and governance checks; retain all82 requirements/38 slices and unresolved lifecycle/profile/adopter/custody obligations."
+  ]
+}
