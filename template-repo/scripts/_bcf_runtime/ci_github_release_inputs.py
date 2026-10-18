@@ -75,98 +75,72 @@ def _release_version_at_main(
         raise GitHubControllerError("current-main release version is not releasable") from exc
 
 
-def _exact_finalizer_run(
-    api: GitHubAPI,
-    *,
-    repository: str,
-    main: MainIdentity,
-    authority: dict[str, Any],
+def _exact_role_run(
+    api: GitHubAPI, *, repository: str, main: MainIdentity,
+    authority: dict[str, Any], role: str, event: str,
 ) -> tuple[str, int]:
-    workflow = authority_role_workflow(authority, "finalizer")
+    """Select the latest exact-context role attempt without success fallback."""
+
+    workflow = authority_role_workflow(authority, role)
+    if event not in workflow["allowed_events"]:
+        raise GitHubControllerError(f"{role} event is not admitted by authority")
     runs = api.workflow_runs(
-        repository,
-        workflow["workflow_id"],
-        head_sha=main.checkout_sha,
-        event="workflow_run",
+        repository, workflow["workflow_id"], head_sha=main.checkout_sha, event=event,
     )
     exact = [
-        run
-        for run in runs
+        run for run in runs
         if str(run.get("head_sha")) == main.checkout_sha
         and str(run.get("head_branch")) == main.default_branch
         and str(run.get("repository", {}).get("id")) == main.repository_id
         and str(run.get("head_repository", {}).get("id")) == main.repository_id
-        and str(run.get("event")) == "workflow_run"
+        and str(run.get("event")) == event
     ]
     if not exact:
-        raise GitHubControllerError("no exact-main finalizer run exists")
-    selected = max(
-        exact,
-        key=lambda value: (
-            int(str(value.get("id", 0))),
-            int(str(value.get("run_attempt", 0))),
-        ),
-    )
+        raise GitHubControllerError(f"no exact-main {role.replace('_', ' ')} run exists")
+    coordinates = [
+        (positive_int(run.get("id"), field="role run ID"),
+         positive_int(run.get("run_attempt"), field="role run attempt"))
+        for run in exact
+    ]
+    if len(coordinates) != len(set(coordinates)):
+        raise GitHubControllerError("exact role run inventory is ambiguous")
+    selected = exact[max(range(len(exact)), key=lambda index: coordinates[index])]
     identity, _ = authenticate_role_job_inventory(
-        api,
-        repository=repository,
-        main=main,
-        authority=authority,
-        role="finalizer",
-        run_id=selected.get("id"),
-        run_attempt=selected.get("run_attempt"),
-        require_success=True,
-        require_terminal=True,
+        api, repository=repository, main=main, authority=authority, role=role,
+        run_id=selected.get("id"), run_attempt=selected.get("run_attempt"),
+        require_success=True, require_terminal=True,
     )
+    if (identity.run_id, identity.run_attempt) != (
+        str(selected["id"]), int(selected["run_attempt"]),
+    ):
+        raise GitHubControllerError("selected role run changed during authentication")
+    observed = api.run(repository, identity.run_id)
+    if identity.workflow.event != event or any(
+        observed.get(key) != selected.get(key) for key in (
+            "id", "run_attempt", "workflow_id", "head_sha", "head_branch", "event",
+            "repository", "head_repository", "status", "conclusion",
+        )
+    ):
+        raise GitHubControllerError("selected role run metadata changed during authentication")
     return identity.run_id, identity.run_attempt
+
+
+def _exact_finalizer_run(
+    api: GitHubAPI, *, repository: str, main: MainIdentity, authority: dict[str, Any],
+) -> tuple[str, int]:
+    return _exact_role_run(
+        api, repository=repository, main=main, authority=authority,
+        role="finalizer", event="workflow_run",
+    )
 
 
 def _exact_collector_run(
-    api: GitHubAPI,
-    *,
-    repository: str,
-    main: MainIdentity,
-    authority: dict[str, Any],
+    api: GitHubAPI, *, repository: str, main: MainIdentity, authority: dict[str, Any],
 ) -> tuple[str, int]:
-    """Select the newest exact-subject collector without successful-run fallback."""
-
-    workflow = authority_role_workflow(authority, "release_collector")
-    runs = api.workflow_runs(
-        repository,
-        workflow["workflow_id"],
-        head_sha=main.checkout_sha,
-        event="workflow_run",
+    return _exact_role_run(
+        api, repository=repository, main=main, authority=authority,
+        role="release_collector", event="workflow_run",
     )
-    exact = [
-        run
-        for run in runs
-        if str(run.get("head_sha")) == main.checkout_sha
-        and str(run.get("head_branch")) == main.default_branch
-        and str(run.get("repository", {}).get("id")) == main.repository_id
-        and str(run.get("head_repository", {}).get("id")) == main.repository_id
-        and str(run.get("event")) == "workflow_run"
-    ]
-    if not exact:
-        raise GitHubControllerError("no exact-main release collector run exists")
-    newest = max(
-        exact,
-        key=lambda value: (
-            int(str(value.get("id", 0))),
-            int(str(value.get("run_attempt", 0))),
-        ),
-    )
-    identity, _ = authenticate_role_job_inventory(
-        api,
-        repository=repository,
-        main=main,
-        authority=authority,
-        role="release_collector",
-        run_id=newest.get("id"),
-        run_attempt=newest.get("run_attempt"),
-        require_success=True,
-        require_terminal=True,
-    )
-    return identity.run_id, identity.run_attempt
 
 
 def resolve_release_authorization_inputs(

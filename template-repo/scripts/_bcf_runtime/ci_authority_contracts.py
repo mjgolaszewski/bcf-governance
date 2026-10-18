@@ -32,9 +32,17 @@ def _schema(repo_root: Path, contract: str) -> dict[str, Any]:
     return payload
 
 
-def _validate_schema(repo_root: Path, contract: str, payload: dict[str, Any]) -> None:
+def _validate_schema(
+    repo_root: Path, contract: str, payload: dict[str, Any], *, definition: str | None = None,
+) -> None:
+    schema = _schema(repo_root, contract)
+    if definition is not None:
+        definitions = schema.get("$defs", {})
+        if definition not in definitions:
+            raise CIAuthorityContractError(f"unknown {contract} definition: {definition}")
+        schema = {"$ref": f"#/$defs/{definition}", "$defs": definitions}
     errors = sorted(
-        Draft202012Validator(_schema(repo_root, contract)).iter_errors(payload),
+        Draft202012Validator(schema).iter_errors(payload),
         key=lambda error: ([str(value) for value in error.absolute_path], error.message),
     )
     if not errors:
@@ -462,10 +470,13 @@ def validate_ci_contract(
     payload: dict[str, Any],
     *,
     evaluated_at: datetime | None = None,
+    definition: str | None = None,
 ) -> None:
     """Validate one CI authority contract without modifying repository state."""
 
-    _validate_schema(repo_root, contract, payload)
+    _validate_schema(repo_root, contract, payload, definition=definition)
+    if definition is not None:
+        return
     if contract == "capability_na":
         instant = evaluated_at or datetime.now(timezone.utc)
         if instant.tzinfo is None:

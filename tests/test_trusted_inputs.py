@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from bcf_governance.tooling.trusted_inputs import TrustedInputError, verify_trusted_input
+from tests.test_bound_trusted_inputs import bound_input  # noqa: F401
 
 
 def _contract() -> dict[str, object]:
@@ -19,19 +20,17 @@ def _contract() -> dict[str, object]:
     }
 
 
-def test_trusted_input_requires_authenticated_digest_bound_handoff(tmp_path: Path) -> None:
-    artifact = tmp_path / "contracts.tar"
-    artifact.write_bytes(b"contract bytes")
+def test_trusted_input_requires_authenticated_digest_bound_handoff(bound_input) -> None:
+    api, artifact = bound_input
     handoff = {
-        **_contract(),
+        **api.contract,
         "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest(),
         "provider_authenticated": True,
     }
     result = verify_trusted_input(
-        contract=_contract(),
-        handoff=handoff,
-        artifact_path=artifact,
-        executor_role="trusted-collector",
+        contract=api.contract, handoff=handoff, artifact_path=artifact,
+        executor_role="trusted-collector", api=api,
+        repository="owner/consumer", source_repository="owner/source",
     )
     assert result.sha256 == handoff["sha256"]
 
@@ -45,19 +44,20 @@ def test_trusted_input_requires_authenticated_digest_bound_handoff(tmp_path: Pat
     ],
 )
 def test_trusted_input_boundary_mutants_fail(
-    tmp_path: Path, role: str, authenticated: bool, digest: str, message: str
+    bound_input, role: str, authenticated: bool, digest: str, message: str
 ) -> None:
-    artifact = tmp_path / "contracts.tar"
-    artifact.write_bytes(b"contract bytes")
+    api, artifact = bound_input
     actual = hashlib.sha256(artifact.read_bytes()).hexdigest()
     handoff = {
-        **_contract(),
+        **api.contract,
         "sha256": actual if digest == "valid" else "0" * 64,
         "provider_authenticated": authenticated,
     }
     with pytest.raises(TrustedInputError, match=message):
         verify_trusted_input(
-            contract=_contract(), handoff=handoff, artifact_path=artifact, executor_role=role
+            contract=api.contract, handoff=handoff, artifact_path=artifact, executor_role=role,
+            api=api if authenticated else None,
+            repository="owner/consumer", source_repository="owner/source",
         )
 
 

@@ -973,3 +973,18 @@ The gate registry keeps schema version `2.0` and accepts the additive `execution
 Workitem acceptance values beginning with `requires-` declare mandatory executable predicates. Use the exact supported syntax: unknown names and case or whitespace variants block validation. Write contextual prose as ordinary descriptive sentences.
 
 `requires-workitem-closure:<workitem-id>` requires the declared predecessor workitem. `requires-phase-closure:<phase-id>` requires independently authenticated full phase closure for that exact phase and historical source. Authored history labels, PR progress and bounded workitem certification cannot satisfy a phase prerequisite. Missing or changed authority leaves the dependent workitem unverified. Readiness is checked again when truth consumes the evidence.
+
+Trusted external inputs declared in CI authority may include an `acquisition`
+binding with `schema_version: "1.0"`, a singular source authority `role`, an exact
+provider `event`, and `payload: {kind: provider_archive}` or
+`payload: {kind: archive_member, path: contracts.tar}`. The provider digest always
+covers the downloaded archive; the handoff digest covers the explicitly selected
+payload. Selectors must be canonical relative file paths.
+
+Legacy declarations remain readable. Acquiring an input now requires authenticated
+consumer and source repository context and a protected acquisition binding;
+local bytes, a collector label, and `provider_authenticated: true` cannot grant
+verification. Python consumers must supply `api`, `repository`, and
+`source_repository` to `verify_trusted_input`. Use `verify_required_trusted_inputs`
+to derive the required population from protected consumer authority. Its return
+values are scoped acquisition results, not phase or release authorization.

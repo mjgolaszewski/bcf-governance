@@ -5,11 +5,14 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 import hashlib
 import json
+import os
+import stat
 from pathlib import Path
 import re
 from tempfile import TemporaryDirectory
 from typing import Any
 
+from .ci_authority_contracts import validate_ci_contract
 from .ci_authority_certification import (
     CertificationVerification, verify_ci_certification,
 )
@@ -18,10 +21,10 @@ from .ci_github_artifacts import ProviderArtifact, resolve_role_artifact
 from .ci_github_authority import load_authority, packaged_repo_root
 from .ci_github_bundle import verify_bundle
 from .ci_github_identity import GitHubControllerError, MainIdentity, exact_sha, resolve_main
-from .ci_github_release_inputs import _exact_finalizer_run
+from .ci_github_release_inputs import _exact_finalizer_run, _exact_role_run
 from .controller_transition_provider_custody import github_is_ancestor
 from .evaluation_scope import is_terminal_phase_certification
-from .prior_evidence_transport import MAX_ARCHIVE_BYTES, _archive_files, _mapping
+from .prior_evidence_transport import MAX_ARCHIVE_BYTES, MAX_EXPANDED_BYTES, _archive_files, _mapping
 
 
 class TrustedInputError(ValueError):
@@ -242,37 +245,148 @@ def verify_required_phase_closure_inputs(
     return selected, inputs
 
 
+def _registered_inputs(
+    api: GitHubAPI, repository: str,
+) -> tuple[MainIdentity, dict[str, dict[str, Any]]]:
+    current = resolve_main(api, repository)
+    authority = load_authority(api, repository, current, required_version="1.1")
+    population = authority.get("trusted_external_inputs", [])
+    return current, {value["input_id"]: value for value in population}
+
+
+def _admit_input(
+    contract: dict[str, Any], handoff: dict[str, Any], artifact_path: Path,
+) -> os.stat_result:
+    validate_ci_contract(
+        packaged_repo_root(), "authority", contract, definition="trustedExternalInput",
+    )
+    if "acquisition" not in contract:
+        raise TrustedInputError("trusted input requires an explicit protected acquisition binding")
+    required = ("input_id", "source_repository", "producer_ref", "artifact_name")
+    if any(contract[key] != handoff.get(key) for key in required):
+        raise TrustedInputError("trusted input handoff metadata does not match protected policy")
+    if "acquisition" in handoff and handoff["acquisition"] != contract["acquisition"]:
+        raise TrustedInputError("trusted input handoff acquisition binding is contradictory")
+    if re.fullmatch(r"[a-f0-9]{64}", str(handoff.get("sha256", ""))) is None:
+        raise TrustedInputError("trusted input handoff digest must be SHA-256")
+    metadata = artifact_path.lstat()
+    if not stat.S_ISREG(metadata.st_mode) or metadata.st_size > MAX_EXPANDED_BYTES:
+        raise TrustedInputError("trusted input artifact must be a bounded regular file")
+    return metadata
+
+
+def _source_input(
+    api: GitHubAPI, source_repository: str, contract: dict[str, Any],
+) -> tuple[MainIdentity, MainIdentity, dict[str, Any], tuple[str, int], ProviderArtifact]:
+    current = resolve_main(api, source_repository)
+    if current.repository_id != contract["source_repository"]["repository_id"]:
+        raise TrustedInputError("trusted input source repository identity is contradictory")
+    source_commit = exact_sha(contract["producer_ref"], field="trusted input producer commit")
+    commit = api.commit(source_repository, source_commit)
+    tree = commit.get("tree")
+    if commit.get("sha") != source_commit or not isinstance(tree, dict):
+        raise TrustedInputError("trusted input producer commit/tree is not exact")
+    source_tree = exact_sha(tree.get("sha"), field="trusted input producer tree")
+    if not github_is_ancestor(api, source_repository, base=source_commit, head=current.checkout_sha):
+        raise TrustedInputError("trusted input producer is outside default-branch lineage")
+    subject = MainIdentity(current.repository_id, current.default_branch, source_commit, source_tree)
+    authority = load_authority(api, source_repository, subject, required_version="1.1")
+    binding = contract["acquisition"]
+    selected = _exact_role_run(
+        api, repository=source_repository, main=subject, authority=authority,
+        role=binding["role"], event=binding["event"],
+    )
+    artifact = resolve_role_artifact(
+        api, repository=source_repository, main=subject, authority=authority,
+        role=binding["role"], run_id=selected[0], run_attempt=selected[1],
+        artifact_name=contract["artifact_name"], require_success=True,
+    )
+    return current, subject, authority, selected, artifact
+
+
 def verify_trusted_input(
-    *,
-    contract: dict[str, Any],
-    handoff: dict[str, Any],
-    artifact_path: Path,
-    executor_role: str,
+    *, contract: dict[str, Any], handoff: dict[str, Any], artifact_path: Path,
+    executor_role: str, api: GitHubAPI | None = None,
+    repository: str | None = None, source_repository: str | None = None,
 ) -> TrustedInputVerification:
-    """Verify authenticated metadata and bytes only in a trusted collector role."""
+    """Reconstruct protected producer custody; caller metadata is assertion only."""
 
     if executor_role != "trusted-collector":
         raise TrustedInputError("trusted external inputs may only be acquired by a trusted collector")
-    if not artifact_path.is_file() or artifact_path.is_symlink():
-        raise TrustedInputError("trusted input artifact must be a regular file")
-    required = ("input_id", "source_repository", "producer_ref", "artifact_name")
-    if any(contract.get(key) != handoff.get(key) for key in required):
-        raise TrustedInputError("trusted input handoff metadata does not match its contract")
-    source = contract.get("source_repository")
-    if not isinstance(source, dict) or source.get("provider") != "github":
-        raise TrustedInputError("trusted input source repository is invalid")
-    if contract.get("digest_algorithm") != "sha256":
-        raise TrustedInputError("trusted input digest algorithm must be sha256")
-    digest = hashlib.sha256(artifact_path.read_bytes()).hexdigest()
-    if handoff.get("sha256") != digest:
-        raise TrustedInputError("trusted input artifact digest does not match authenticated handoff")
-    if handoff.get("provider_authenticated") is not True:
-        raise TrustedInputError("trusted input handoff was not reconstructed from provider state")
+    if api is None or not repository or not source_repository:
+        raise TrustedInputError("trusted input requires authenticated provider state")
+    try:
+        metadata = _admit_input(contract, handoff, artifact_path)
+        consumer, population = _registered_inputs(api, repository)
+        if population.get(contract["input_id"]) != contract:
+            raise TrustedInputError("trusted input contract is not exact protected consumer policy")
+        current, subject, authority, selected, artifact = _source_input(api, source_repository, contract)
+        raw = api.artifact_bytes(source_repository, artifact.artifact_id, maximum_bytes=MAX_ARCHIVE_BYTES)
+        if len(raw) > MAX_ARCHIVE_BYTES or "sha256:" + hashlib.sha256(raw).hexdigest() != artifact.provider_digest:
+            raise TrustedInputError("trusted input artifact provider digest mismatch")
+        payload_rule = contract["acquisition"]["payload"]
+        payload = raw
+        if payload_rule["kind"] == "archive_member":
+            files = _archive_files(raw)
+            if payload_rule["path"] not in files:
+                raise TrustedInputError("trusted input declared archive member is missing")
+            payload = files[payload_rule["path"]]
+        # The provider digest covers the archive; this digest covers the explicit payload domain.
+        digest = hashlib.sha256(payload).hexdigest()
+        if handoff["sha256"] != digest:
+            raise TrustedInputError("trusted input payload digest does not match authenticated provider bytes")
+        fd = os.open(artifact_path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as stream:
+            actual = os.fstat(stream.fileno())
+            if (actual.st_dev, actual.st_ino, actual.st_size, actual.st_mtime_ns) != (
+                metadata.st_dev, metadata.st_ino, metadata.st_size, metadata.st_mtime_ns,
+            ) or not stat.S_ISREG(actual.st_mode):
+                raise TrustedInputError("trusted input local file changed during acquisition")
+            if stream.read(MAX_EXPANDED_BYTES + 1) != payload:
+                raise TrustedInputError("trusted input local bytes differ from authenticated payload")
+        fresh = _source_input(api, source_repository, contract)
+        if fresh != (current, subject, authority, selected, artifact) or resolve_main(api, repository) != consumer:
+            raise TrustedInputError("trusted input provider frontier changed during verification")
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        if isinstance(exc, TrustedInputError):
+            raise
+        raise TrustedInputError(f"trusted input provider state is invalid: {exc}") from exc
     return TrustedInputVerification(
-        input_id=str(contract["input_id"]),
-        source_repository_id=str(source["repository_id"]),
-        producer_ref=str(contract["producer_ref"]),
-        artifact_name=str(contract["artifact_name"]),
-        sha256=digest,
-        verified_by=executor_role,
+        input_id=contract["input_id"], source_repository_id=current.repository_id,
+        producer_ref=subject.checkout_sha, artifact_name=artifact.artifact_name,
+        sha256=digest, verified_by="provider-state",
     )
+
+
+def verify_required_trusted_inputs(
+    api: GitHubAPI, *, repository: str, handoffs: dict[str, dict[str, Any]],
+    artifact_paths: dict[str, Path], source_repositories: dict[str, str],
+) -> dict[str, TrustedInputVerification]:
+    """Derive required population and admit every input before any download."""
+
+    try:
+        consumer, population = _registered_inputs(api, repository)
+        supplied = set(handoffs)
+        required = {key for key, rule in population.items() if rule["required"]}
+        if (not required <= supplied or supplied - population.keys()
+                or set(artifact_paths) != supplied or set(source_repositories) != supplied):
+            raise TrustedInputError("trusted input required population is missing or contradictory")
+        for key in sorted(supplied):
+            if not isinstance(source_repositories[key], str) or not source_repositories[key]:
+                raise TrustedInputError("trusted input source repository locator is missing")
+            _admit_input(population[key], handoffs[key], artifact_paths[key])
+            _source_input(api, source_repositories[key], population[key])
+        results = {
+            key: verify_trusted_input(
+                api=api, repository=repository, source_repository=source_repositories[key],
+                contract=population[key], handoff=handoffs[key], artifact_path=artifact_paths[key],
+                executor_role="trusted-collector",
+            ) for key in sorted(supplied)
+        }
+        if resolve_main(api, repository) != consumer:
+            raise TrustedInputError("trusted input consumer population moved during verification")
+        return results
+    except (ValueError, OSError, KeyError, TypeError) as exc:
+        if isinstance(exc, TrustedInputError):
+            raise
+        raise TrustedInputError(f"trusted input provider state is invalid: {exc}") from exc

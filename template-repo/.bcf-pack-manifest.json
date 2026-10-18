@@ -238,7 +238,7 @@
     },
     "schemas/ci-authority.schema.json": {
       "operation": "copy",
-      "sha256": "6f505d9672b607ca2eba98b3cda5aaadc4e5c2a6f6d0fe743f8b31689b182f06"
+      "sha256": "32b7bf7cfb850a717a86308ba5827247a08ece6207ed96921d41311a7c7a3f4c"
     },
     "schemas/ci-certification.schema.json": {
       "operation": "copy",
@@ -520,7 +520,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "ff2ddea2198484eab4836fc48d99344355af80369b2aa356f808ddbaae8b5487"
+      "sha256": "326765b68f2b7a709861718c18012d7cf6556eafdc9d1f90717549cfaee3ffc7"
     },
     "scripts/_bcf_runtime/ci_authority_decisions.py": {
       "operation": "copy",
@@ -696,7 +696,7 @@
     },
     "scripts/_bcf_runtime/ci_github_release_inputs.py": {
       "operation": "copy",
-      "sha256": "967a0f1b778b3041d139a70fbb82b792edd2bedb41159e9172d705b8217f0c4b"
+      "sha256": "f5524cf5fbdb15315389177ac82fb8f234a79800af77567c8cdc2a88a9b2dc09"
     },
     "scripts/_bcf_runtime/ci_github_release_staging.py": {
       "operation": "copy",
@@ -1507,7 +1507,7 @@
     },
     "scripts/_bcf_runtime/resources/schemas/ci-authority.schema.json": {
       "operation": "copy",
-      "sha256": "6f505d9672b607ca2eba98b3cda5aaadc4e5c2a6f6d0fe743f8b31689b182f06"
+      "sha256": "32b7bf7cfb850a717a86308ba5827247a08ece6207ed96921d41311a7c7a3f4c"
     },
     "scripts/_bcf_runtime/resources/schemas/ci-certification.schema.json": {
       "operation": "copy",
@@ -1891,7 +1891,7 @@
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",
-      "sha256": "f359894d101f3cf64f579c3520caae3415bb894feacfc4e302d53d510edfe4ca"
+      "sha256": "75315f4641ac0898763ac833ef457d479e2c812f56ddcde42843f0d7c9d8d3b6"
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
