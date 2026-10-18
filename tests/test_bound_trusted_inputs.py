@@ -331,7 +331,7 @@ def test_provider_fixture_archive_bytes_survive_producer_clock_change(monkeypatc
     from types import SimpleNamespace
 
     api = InputAPI()
-    monkeypatch.setattr(zipfile, 'time', SimpleNamespace(localtime=lambda *_a: (2026, 10, 18, 1, 2, 4, 6, 291, 0)))
+    monkeypatch.setattr(zipfile, 'time', SimpleNamespace(time=lambda: 0, localtime=lambda *_a: (2026, 10, 18, 1, 2, 4, 6, 291, 0)))
     first = api.archive()
-    monkeypatch.setattr(zipfile, 'time', SimpleNamespace(localtime=lambda *_a: (2026, 10, 18, 1, 2, 8, 6, 291, 0)))
+    monkeypatch.setattr(zipfile, 'time', SimpleNamespace(time=lambda: 0, localtime=lambda *_a: (2026, 10, 18, 1, 2, 8, 6, 291, 0)))
     assert api.archive() == first
