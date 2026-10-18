@@ -1,0 +1,186 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "status": "source implementation and bounded consumer qualification; canonical governance and exact installed/private/adopter qualification pending",
+  "implementation_commit": "f0aed6b9b0b004a6e741d236dea889c03d622f40",
+  "current_source_subject": "d9bd1b560e8ba7a860d29aee24708cfbd62490ae",
+  "compound_base": "02d0606bff730e5bb7676b2b22bf77614e362e78",
+  "compound_checkpoint": "caf64944999ecc5f8591e0bcb1202dcc52c32822",
+  "production_bytes_unchanged_since_broad_qualification": true,
+  "contract": "audits/issue-394/authored-control-admission-contract.json",
+  "scope": [
+    "Complete authored control policy population and unique YAML mappings before submit lease/runtime/shadow allocation.",
+    "Existing active-log path owner and complete physical/typed mutation state; genuine local/deadline-only compatibility.",
+    "Actual direct convergence and real Git file/workflow projection reject generator-invalidated controls before recording or promotion; valid counterparts pass."
+  ],
+  "native_history": [
+    {
+      "subject": "544f0ea8",
+      "result": "16 genuine ordering/active-target failures and4 compatibility passes before implementation; no absent-interface-only claim."
+    },
+    {
+      "subject": "568f2161",
+      "result": "3 duplicate-policy failures/21 passes before shared unique-reader correction."
+    },
+    {
+      "subject": "f0aed6b9",
+      "result": "24 focused passes on isolated original implementation."
+    },
+    {
+      "subject": "5360e32f",
+      "result": "34 passes/1 new test assertion error: file-only result checked as authority pair; no production regression inferred."
+    },
+    {
+      "subject": "d9bd1b56",
+      "result": "35 focused passes after typed terminal assertion correction."
+    }
+  ],
+  "broad_source_checks": {
+    "authority": false,
+    "source_commit": "caf64944999ecc5f8591e0bcb1202dcc52c32822",
+    "commands": [
+      {
+        "label": "affected-behavior",
+        "returncode": 0,
+        "elapsed_seconds": 399.68230177499936
+      },
+      {
+        "label": "lint",
+        "returncode": 0,
+        "elapsed_seconds": 3.784692859990173
+      },
+      {
+        "label": "typecheck",
+        "returncode": 0,
+        "elapsed_seconds": 1.538414440001361
+      },
+      {
+        "label": "architecture",
+        "returncode": 0,
+        "elapsed_seconds": 157.82650301199465
+      }
+    ],
+    "semantic": {
+      "verdict": "conformant",
+      "authority": false,
+      "unchanged_operations": 21
+    }
+  },
+  "broad_source_cases": 221,
+  "focused_cases": 35,
+  "counterfactuals": {
+    "authority": false,
+    "source_commit": "d9bd1b560e8ba7a860d29aee24708cfbd62490ae",
+    "scope": "Isolated consuming-query dependency counterfactuals, not archived-source mutants or BCF receipts; original source stays unchanged",
+    "controls": [
+      {
+        "name": "submit",
+        "consumer": "bcf_governance.tooling.ci_authority_submit",
+        "query_port": "validate_authored_gate_controls",
+        "baseline_cases": 7,
+        "baseline_returncode": 0,
+        "counterfactual_returncode": 1,
+        "intended_failures": 4,
+        "positive_remainder": 3,
+        "exact_same_node_population": true,
+        "no_errors_or_skips": true
+      },
+      {
+        "name": "reconcile",
+        "consumer": "bcf_governance.tooling.scaffold_governance_artifacts",
+        "query_port": "validate_authored_gate_controls",
+        "baseline_cases": 10,
+        "baseline_returncode": 0,
+        "counterfactual_returncode": 1,
+        "intended_failures": 9,
+        "positive_remainder": 1,
+        "exact_same_node_population": true,
+        "no_errors_or_skips": true
+      },
+      {
+        "name": "promotion",
+        "consumer": "bcf_governance.tooling.reconcile_authority_transition",
+        "query_port": "validate_authored_gate_controls",
+        "baseline_cases": 4,
+        "baseline_returncode": 0,
+        "counterfactual_returncode": 1,
+        "intended_failures": 2,
+        "positive_remainder": 2,
+        "exact_same_node_population": true,
+        "no_errors_or_skips": true
+      },
+      {
+        "name": "unique-policy",
+        "consumer": "bcf_governance.tooling.governance_validation.evidence_contracts",
+        "query_port": "load_unique_mapping_text",
+        "baseline_cases": 4,
+        "baseline_returncode": 0,
+        "counterfactual_returncode": 1,
+        "intended_failures": 3,
+        "positive_remainder": 1,
+        "exact_same_node_population": true,
+        "no_errors_or_skips": true
+      }
+    ]
+  },
+  "counterfactual_limits": "Isolated consuming-query dependencies disabled/substituted in separate processes, with exact baseline/adverse node populations, intended failure causes, no errors/skips and valid positive remainders; not archived-source mutants or BCF receipts.",
+  "terminal_custody": "Completed native sessions independently read back; authenticated child-tree quiescence, all recorded handles absent and fresh same-physical-fence release recorded outside governed distribution.",
+  "historical_ledger_dispositions": {
+    "memory_and_phase": "Native fcddcbf1 profiles pass 27/25/12/10; semantic fixture 44, lint/type, six architecture and unchanged 21-operation semantics pass. Prior 683 interruption stays unknown. Provider ancestry merged; installed/lifecycle/performance/custody pending; all 82/38 unchanged. See audits/issue-394/scheduled-phase-native-profiles-verification.json.",
+    "combined_source": "Four native profiles pass at fcddcbf1 (27/25/12/10); source checks pass. Provider ancestry merged; installed proof pending; all 82 open. See audits/issue-394/scheduled-phase-native-profiles-verification.json."
+  },
+  "remaining": [
+    "Canonical projection/full governance on exact compound candidate.",
+    "SDK-absent private query plus exact source/wheel/sdist/profile consumer matrix and provider-selected isolated adopters.",
+    "Complete lifecycle composition/conformance, approved matched measurement protocol/targets, dormant/shadow/activation train and independent immutable2.5 custody."
+  ],
+  "acceptance": "All82 whole requirement objects and38 existing slice objects unchanged; P32 active/P33\u2013P35 dormant.",
+  "raw_sha256": {
+    "control-admission-caf64944-broad-owned-attempt1/control-admission-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-caf64944-broad-owned-attempt1/control-admission-focused.stdout": "4caf76ffed2c1223a6aa8234bba062e3d249235d387980894e8e6be9431d15d2",
+    "control-admission-caf64944-broad-owned-attempt1/operation.json": "2b95dd9cba1385b23419e9761ff0e222487a51f26b98eccf38b960404cecef31",
+    "control-admission-caf64944-broad-attempt1/architecture.stdout": "89ab50501ad357717c24379e86d0e1f52f610a9b6e0accf790b981918096b881",
+    "control-admission-caf64944-broad-attempt1/report.json": "af4b3060aa7cba9f5ac732275f815f9da0abd7f33d00bcf3dbae06a9d560a308",
+    "control-admission-caf64944-broad-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-caf64944-broad-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-caf64944-broad-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-caf64944-broad-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-caf64944-broad-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-caf64944-broad-attempt1/affected-behavior.stdout": "5faf13ecc4cba93e8c08fb995edc3639c0777644a7a3594683cd023d56b054a7",
+    "control-admission-caf64944-broad-attempt1/affected-behavior.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-5360e32f-focused-owned-attempt1/control-admission-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-5360e32f-focused-owned-attempt1/control-admission-focused.stdout": "22eac1f2e842164757f756f35f0984fbf87088b066e73a0760be5609b3fbd6b6",
+    "control-admission-5360e32f-focused-owned-attempt1/operation.json": "496e0a1dee20ec62d47c4b8bb9823e90763559f8b492946f30b261ec4ffdde75",
+    "control-admission-d9bd1b56-focused-owned-attempt1/control-admission-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-focused-owned-attempt1/control-admission-focused.stdout": "6ce223682d56b50821f7ed3a7bd00242b5860cafca15e7be5e7ec4dd9cd12cc9",
+    "control-admission-d9bd1b56-focused-owned-attempt1/operation.json": "4359d3e20602ed2de18361f4a7eace9a2cab95f0e1aee755df036f8cfc7720c6",
+    "control-admission-d9bd1b56-causal-owned-attempt1/control-admission-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-owned-attempt1/control-admission-focused.stdout": "6138ee2ab2bc782f702668e3e3a027960458133d9ef6248e4e6937c1451a9731",
+    "control-admission-d9bd1b56-causal-owned-attempt1/operation.json": "1aa627b88ee70d1ab76ae49c00623ed4095387752dffb29ce1e7efbb89ee36d3",
+    "control-admission-d9bd1b56-causal-attempt1/unique-policy-counterfactual.stdout": "e3e88a17233c09fa3047047fd1ba2a3962422187eb453f78cc767217e76b6a3a",
+    "control-admission-d9bd1b56-causal-attempt1/promotion-counterfactual.stdout": "405c77a525100e88bc732d9fe60e4d46cde6da5270be9836341e5b21ea996b2d",
+    "control-admission-d9bd1b56-causal-attempt1/submit-baseline.stdout": "c16e476727b44651fa5f7dfdcafb51f1ac3060244911f7766ff0b1b89f467249",
+    "control-admission-d9bd1b56-causal-attempt1/reconcile-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/promotion-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/unique-policy-baseline.stdout": "518b6379c31e2b025e54ad462248a2810568cbc6e97053117ee314ca61355e0e",
+    "control-admission-d9bd1b56-causal-attempt1/unique-policy-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/promotion-baseline.xml": "03bddd533f584209d85276aa6d44c905b41980adb7bad60bd285764b03abee75",
+    "control-admission-d9bd1b56-causal-attempt1/report.json": "d9b6980813cddaef3aa6467159699180a18e6ee4ad18d0ef1615a9c3f2b584d2",
+    "control-admission-d9bd1b56-causal-attempt1/reconcile-counterfactual.xml": "d1cc20a9e3d4c41d1bc78a5c839f3c1420a1321f1596d8de032ab2cb0259be09",
+    "control-admission-d9bd1b56-causal-attempt1/submit-counterfactual.xml": "308fdf0ab0271caca3b949d5ef20992947999523c7b79c3c123ab61949b51f19",
+    "control-admission-d9bd1b56-causal-attempt1/unique-policy-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/reconcile-baseline.xml": "0b670a4d2a579c9408c9d073d4164d06e883d578a8d6a7cee4bdac4b176fdbfb",
+    "control-admission-d9bd1b56-causal-attempt1/promotion-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/reconcile-counterfactual.stdout": "44d6f6eacb6598b3fa8660bfe96e292a1fec60a5449921954c3bd0e1d395a2d7",
+    "control-admission-d9bd1b56-causal-attempt1/promotion-counterfactual.xml": "35e2cdddbdbe3d71bdab5f6b058a6acce8d0eaa36e7b3753ff46b5ebbcc94865",
+    "control-admission-d9bd1b56-causal-attempt1/unique-policy-counterfactual.xml": "c80d5eacd20e3a895948528bc2040663b96be9cf9ba0db9a1c46ad805d5a5227",
+    "control-admission-d9bd1b56-causal-attempt1/promotion-baseline.stdout": "6d683e667715fd87727f2f128b6cf00e443cd628189423ce06569f7ea6b06281",
+    "control-admission-d9bd1b56-causal-attempt1/unique-policy-baseline.xml": "051b6951d32592b23ee0748eebaacd4fbbddbf14894d468ae57d9a364fa4f010",
+    "control-admission-d9bd1b56-causal-attempt1/submit-baseline.xml": "0815f6d378aa2085bbddbd9413bab02dcc4d8277991f0e3505cc81105edc8844",
+    "control-admission-d9bd1b56-causal-attempt1/reconcile-baseline.stdout": "44f21f63746c58dd1db529872ef53fd0ea34d7282bb269f1aa8cf2c41b254d2d",
+    "control-admission-d9bd1b56-causal-attempt1/reconcile-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/submit-baseline.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "control-admission-d9bd1b56-causal-attempt1/submit-counterfactual.stdout": "a387dd27d83813b9493b8f85614b18a227ea6aff4c330f472a2448f44c21a33d",
+    "control-admission-d9bd1b56-causal-attempt1/submit-counterfactual.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}
