@@ -68,6 +68,48 @@ def test_defining_workflow_quartet_binds_callee_and_rejects_uncertainty(tmp_path
             declared_workflow_context(graph, env)
 
 
+@pytest.mark.parametrize('defect', ['none', 'short', 'expression', 'boolean', 'missing-job',
+                                  'blob', 'path', 'duplicate', 'missing-facts'])
+def test_physical_workflow_budget_is_authenticated_before_admission(tmp_path, monkeypatch, defect):
+    import hashlib
+    from types import SimpleNamespace
+    from bcf_governance.tooling import evidence_shards as owner
+    graph, dag, targets = _contexts(tmp_path)
+    (tmp_path / 'governance/ci-graph.yml').write_text('{}\n')
+    monkeypatch.setattr(owner, 'validate_ci_graph', lambda _: SimpleNamespace(graph=graph))
+    env = {'GITHUB_ACTIONS': 'true', 'GITHUB_REPOSITORY': 'fixture/repo',
+           'GITHUB_WORKFLOW_REF': 'fixture/repo/.github/workflows/periodic.yml@refs/heads/main',
+           'GITHUB_JOB': 'evidence', 'BCF_JOB_WORKFLOW_REPOSITORY': 'trusted/evaluator',
+           'BCF_JOB_WORKFLOW_FILE_PATH': '.github/workflows/periodic.yml',
+           'BCF_JOB_WORKFLOW_REF': 'trusted/evaluator/.github/workflows/periodic.yml@refs/heads/main',
+           'BCF_JOB_WORKFLOW_SHA': 'b' * 40, 'GITHUB_TOKEN': 'fixture-token'}
+    for key, value in env.items(): monkeypatch.setenv(key, value)
+    if defect == 'missing-facts':
+        for key in env:
+            if key.startswith('BCF_JOB_WORKFLOW_'): monkeypatch.delenv(key)
+    timeout = {'short': '9', 'expression': "'${{ inputs.timeout }}'", 'boolean': 'true'}.get(defect, '10')
+    raw = ('jobs:\n  evidence:\n    timeout-minutes: ' + timeout + '\n').encode()
+    if defect == 'missing-job': raw = b'jobs: {}\n'
+    if defect == 'duplicate': raw += b'    timeout-minutes: 9\n'
+    calls = []
+    class API:
+        def __init__(self, **kwargs): pass
+        def content(self, repository, path, *, ref):
+            calls.append((repository, path, ref))
+            return SimpleNamespace(content=raw, path=path if defect != 'path' else 'other.yml',
+                blob_oid='0' * 40 if defect == 'blob' else hashlib.sha1(
+                    b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest())
+    monkeypatch.setattr(owner, 'GitHubAPI', API)
+    if defect == 'none':
+        owner.admit_planned_shard_deadlines(tmp_path,
+            {'expected_gate_inventory': targets, 'execution_dag': dag}, shard_count=2)
+        assert calls == [('trusted/evaluator', '.github/workflows/periodic.yml', 'b' * 40)]
+    else:
+        with pytest.raises(CIGraphError):
+            owner.admit_planned_shard_deadlines(tmp_path,
+                {'expected_gate_inventory': targets, 'execution_dag': dag}, shard_count=2)
+
+
 def test_periodic_composed_budget_cannot_borrow_passing_pr_budget(tmp_path):
     graph, dag, targets = _contexts(tmp_path)
     graph['workflows'][1]['jobs'][0]['timeout_minutes'] = 9
