@@ -21,6 +21,7 @@
     "Legacy and modern Standard/Regulated cases, exact-fit and just-over boundary, per-gate override, cleanup/headroom, deterministic replay, input immutability and fitting-shape compatibility.",
     "Unsplittable single-gate failure before install_transaction_paths creates a target; unrelated authored overflow remains rejected atomically.",
     "Validate and render actual partitioned reference graph using canonical owners; every part depends on/downloads the immediate predecessor and expected producer inventory agrees. Qualify actual installed runtime before claiming distribution parity.",
-    "Affected consumers, architecture, authored semantics and governance checks; disabled partition/control-transport guards must reproduce named failures."
+    "Affected consumers, architecture, authored semantics and governance checks; disabled partition/control-transport guards must reproduce named failures.",
+    "The SDK-absent private query builds a20-literal-gate modern model with existing producers and extra bound claim aliases, checks exact ordered single coverage, all part budgets, immediate predecessor session/receipt transport, complete expected-producer inventory and all-part truth fan-in in both schedules, and leaves inputs unchanged. Retained463d5d8b private bytes must fail by provider-cap overflow while current copied bytes pass; copied rehearsal is not installed execution."
   ]
 }
