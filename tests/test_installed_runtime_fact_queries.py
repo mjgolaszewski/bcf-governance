@@ -256,6 +256,56 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         finally:
             deadlines.gate_sequence_deadline_ms = serial_bound
         assert deadline_rejections == 5
+        # Synthetic producer metadata exercises the actual installed owners.
+        classes = ('subject', 'detector', 'test_population', 'toolchain', 'trust')
+        reference_contract = {'profile_contract_version': '3.0', 'target_profile': 'standard',
+            'execution_policy': {'default_timeout_seconds': 1800, 'default_cleanup_timeout_seconds': 60},
+            'gates': {gate: ({'invocation': {'timeout_seconds': 2400}} if gate == 'test' else {})
+                      for gate in ('governance-validate', 'test', 'contract-test', 'runtime-smoke')},
+            'claim_model': {'version': '1.0', 'dependency_sets': {'all': ['**']},
+                'execution_groups': {
+                    'preflight': {'producer': 'preflight', 'captured_by_preflight': True, 'claims': ['structure']},
+                    'tests': {'producer': 'test', 'claims': ['unit', 'contract']},
+                    'runtime': {'producer': 'runtime-smoke', 'claims': ['runtime']}},
+                'claims': {cid: {'execution_group': group, 'legacy_gate': gate,
+                                'dependencies': {name: [] for name in classes}}
+                           for cid, group, gate in [('structure', 'preflight', 'governance-validate'),
+                               ('unit', 'tests', 'test'), ('contract', 'tests', 'contract-test'),
+                               ('runtime', 'runtime', 'runtime-smoke')]}}}
+        def project(value, gates=None):
+            return graph_defaults.build_reference_ci_graph(
+                project_id='private-contract', profile='standard', profile_contract_version='3.0',
+                gates=list(value['gates']) if gates is None else gates,
+                candidate_labels=['ubuntu-24.04'], trusted_labels=['self-hosted'],
+                candidate_hosted=True, trusted_hosted=False, gate_contract=value)
+        original_contract = copy.deepcopy(reference_contract)
+        projected = project(reference_contract)
+        assert reference_contract == original_contract
+        shard = next(job for workflow in projected['workflows'] for job in workflow['jobs']
+                     if job['executor']['kind'] == 'gate_shard')
+        assert shard['timeout_minutes'] == 80
+        reference_rejections = 0
+        for defect in ('missing-model', 'duplicate-producer', 'omitted-producer',
+                       'boolean-body', 'wrong-profile', 'wrong-version'):
+            value = copy.deepcopy(reference_contract)
+            gates = None
+            if defect == 'missing-model': del value['claim_model']
+            elif defect == 'duplicate-producer': value['claim_model']['execution_groups']['runtime']['producer'] = 'test'
+            elif defect == 'omitted-producer': gates = [g for g in value['gates'] if g != 'runtime-smoke']
+            elif defect == 'boolean-body': value['execution_policy']['default_timeout_seconds'] = True
+            elif defect == 'wrong-profile': value['target_profile'] = 'lite'
+            else: value['profile_contract_version'] = '2.0'
+            try: project(value, gates)
+            except ValueError: reference_rejections += 1
+            else: raise AssertionError('private runtime admitted contradictory reference facts: ' + defect)
+        capped = {'policy': {'minimum_gate_timeout_headroom_seconds': 60}, 'workflows': [{'jobs': [
+            {'timeout_minutes': 10, 'executor': {'kind': 'gate_group', 'gates': ['first']}},
+            {'timeout_minutes': 10, 'executor': {'kind': 'gate_group', 'gates': ['g'+str(i) for i in range(26)]}}]}]}
+        before = copy.deepcopy(capped)
+        try: deadlines.project_reference_gate_deadlines(capped, None)
+        except deadlines.CIGraphError as error: assert '360' in str(error)
+        else: raise AssertionError('private runtime admitted provider-cap overflow')
+        assert capped == before and reference_rejections == 6
         assert not (fixture.parent / 'escaped.py').exists()
     finally:
         runtime.subprocess.run, runtime.subprocess.Popen = previous_run, previous_popen
@@ -299,6 +349,9 @@ print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_q
                   'forged_command_arguments_rejected': argument_rejections,
                   'serial_deadline_underbudget_rejected': deadline_rejections,
                   'serial_deadline_guard_causal': True, 'reference_serial_defaults_accepted': True,
+                  'reference_model_bound_budget_minutes': 80,
+                  'reference_projection_invalid_facts_rejected': reference_rejections,
+                  'reference_projection_cap_atomic': True,
                   'busy_cases': busy_cases, 'holder_and_retained_bytes_preserved': True,
                   'exact_file_reused': True, 'candidate_or_subprocess_not_executed': True}, sort_keys=True))
 '''
@@ -314,6 +367,9 @@ def exercise_runtime_fact_queries(consumer, python):
     observation = json.loads(result.stdout)
     assert observation['sdk_absent'] and observation['runtime_owned_helpers']
     assert observation['forged_mapping_or_evidence_rejected'] == 11
+    assert observation['reference_model_bound_budget_minutes'] == 80
+    assert observation['reference_projection_invalid_facts_rejected'] == 6
+    assert observation['reference_projection_cap_atomic'] is True
     assert observation['busy_cases'] == 3 and observation['candidate_or_subprocess_not_executed']
     return _record(result)
 

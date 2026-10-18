@@ -187,5 +187,42 @@
     "authored_minutes": 243,
     "source_sha256": "74578b93ab588ce8ca85f069e15e3b12b0834c73e33829d96993230f1e69555e",
     "derived_from": "existing complete execution-group producer envelope and execution policy; no performance target approval claim"
+  },
+  "private_reference_probe": {
+    "authority": false,
+    "status": "copied_rehearsal_passed_actual_installed_pending",
+    "retained_fd06_private_runtime_exit": 1,
+    "retained_diagnostic": "unexpected keyword argument gate_contract",
+    "current_copied_runtime_exit": 0,
+    "observations": {
+      "authority": false,
+      "busy_cases": 3,
+      "candidate_or_subprocess_not_executed": true,
+      "command_guard_causal": true,
+      "exact_file_reused": true,
+      "forged_command_arguments_rejected": 10,
+      "forged_command_records_rejected": 16,
+      "forged_mapping_or_evidence_rejected": 11,
+      "holder_and_retained_bytes_preserved": true,
+      "reference_model_bound_budget_minutes": 80,
+      "reference_projection_cap_atomic": true,
+      "reference_projection_invalid_facts_rejected": 6,
+      "reference_serial_defaults_accepted": true,
+      "runtime_owned_helpers": true,
+      "scope": "private_runtime_synthetic_fact_queries",
+      "sdk_absent": true,
+      "serial_deadline_guard_causal": true,
+      "serial_deadline_underbudget_rejected": 5,
+      "valid_mapping_returned_unchanged": true,
+      "version_1_1_both_consumers_accepted": true
+    },
+    "raw_sha256": {
+      "reference-private-probe-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+      "reference-private-probe-current-copied.stdout": "ce79c6f1c7a21e5a6e0705eec37152467ce2eb55457e2da5bb79ae890edb94c5",
+      "reference-private-probe-rehearsal.json": "3cda784dc2cc90ae524a3235048b5fce2c6dac2d045fe5257a35265b98e7ab21",
+      "reference-private-probe-retained-fd06f44f.stderr": "f92d1d09c2c9d86d86617e647eeac97f3777ebe20ad91c73c28c742688beecb4",
+      "reference-private-probe-retained-fd06f44f.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "probe_source_sha256": "778a0f93a98ada9742e5132cc9ae709d6b9e9c59b489b808b14f3e3a20ddf995"
   }
 }

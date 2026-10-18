@@ -386,6 +386,8 @@
     "canonical_current_budget_repaired": false,
     "full_periodic_population_partitioned": false,
     "new_exact_installed_distribution_qualified": false,
-    "canonical_authored_budget_minutes": 243
+    "canonical_authored_budget_minutes": 243,
+    "copied_private_reference_probe_passed": true,
+    "actual_installed_reference_probe_pending": true
   }
 }
