@@ -87,5 +87,41 @@
     "Declared executor population is used here; independent effect discovery remains foundation.conformance.",
     "All82 requirements and38 slices unchanged; P32 active/P33-P35 dormant; performance targets unapproved."
   ],
-  "next_action": "Bind actual planned session assignments and all runtime consumer/setup/API/retry/cleanup bounds before allocation; qualify new exact distributions and supported installed profiles."
+  "next_action": "Bind actual planned session assignments and all runtime consumer/setup/API/retry/cleanup bounds before allocation; qualify new exact distributions and supported installed profiles.",
+  "installed_private_probe": {
+    "status": "copied_rehearsal_passed_actual_install_pending",
+    "authority": false,
+    "retained_exact_c050_wheel_private_runtime_exit": 1,
+    "retained_diagnostic": "private runtime admitted underbudget serial deadline",
+    "current_copied_runtime_exit": 0,
+    "current_observations": {
+      "authority": false,
+      "busy_cases": 3,
+      "candidate_or_subprocess_not_executed": true,
+      "command_guard_causal": true,
+      "exact_file_reused": true,
+      "forged_command_arguments_rejected": 10,
+      "forged_command_records_rejected": 16,
+      "forged_mapping_or_evidence_rejected": 11,
+      "holder_and_retained_bytes_preserved": true,
+      "reference_serial_defaults_accepted": true,
+      "runtime_owned_helpers": true,
+      "scope": "private_runtime_synthetic_fact_queries",
+      "sdk_absent": true,
+      "serial_deadline_guard_causal": true,
+      "serial_deadline_underbudget_rejected": 5,
+      "valid_mapping_returned_unchanged": true,
+      "version_1_1_both_consumers_accepted": true
+    },
+    "rehearsal_driver_attempt1": "capture-exclusion guard rejected its own new driver stream prefix before child allocation; originals retained, no overwrite",
+    "rehearsal_driver_attempt2": "new exclusive query capture prefix, terminal0",
+    "raw_sha256": {
+      "serial-private-deadline-query-current-copied.stdout": "fcd21f097b1d5c7d93d2acb648d98e40dddfe3a52b734f52db4fe99de1c782c3",
+      "serial-private-deadline-query-retained-c050c8e6.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "serial-private-deadline-rehearsal-driver.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "serial-private-rehearsal-attempt2.stdout": "dec06da82497aec5583f170160aa8f378b3c285761a2b73145a27465a134dcbd",
+      "serial-private-probe-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+    },
+    "governance": 0
+  }
 }

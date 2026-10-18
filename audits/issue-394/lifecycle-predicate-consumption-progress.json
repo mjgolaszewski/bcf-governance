@@ -358,6 +358,8 @@
     "verification": "audits/issue-394/serial-gate-deadline-verification.json",
     "fixed_group_compiler_and_reference_source_qualified": true,
     "complete_runtime_deadline_composition_qualified": false,
-    "new_exact_installed_distribution_qualified": false
+    "new_exact_installed_distribution_qualified": false,
+    "copied_private_probe_cases_passed": 5,
+    "installed_private_probe_pending": true
   }
 }

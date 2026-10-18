@@ -16,7 +16,9 @@ root = Path.cwd().resolve()
 sys.path.insert(0, str(root / 'scripts'))
 from _bcf_runtime import release_runtime_verification as runtime
 from _bcf_runtime import local_execution_admission as admission
-for owner in (runtime, admission):
+from _bcf_runtime import ci_graph_timeouts as deadlines
+from _bcf_runtime import ci_graph_defaults as graph_defaults
+for owner in (runtime, admission, deadlines, graph_defaults):
     assert Path(owner.__file__).resolve().is_relative_to(root / 'scripts/_bcf_runtime')
 
 def sha(path):
@@ -202,6 +204,58 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
                 argument_rejections += 1
             else: raise AssertionError('private runtime accepted forged command argument: ' + defect)
         assert argument_rejections == 10
+        policy_root = fixture / 'deadline-policy'
+        policy_path = policy_root / 'governance/gate-contracts.yml'
+        policy_path.parent.mkdir(parents=True)
+        def policy(body=200, cleanup=10, overrides=None):
+            policy_path.write_text(json.dumps({'execution_policy': {
+                'default_timeout_seconds': body, 'default_cleanup_timeout_seconds': cleanup},
+                'gates': {gate: {'invocation': {'timeout_seconds': value}}
+                          for gate, value in (overrides or {}).items()}}))
+        def graph(minutes, kind='gate_group'):
+            return {'policy': {'minimum_gate_timeout_headroom_seconds': 60},
+                    'workflows': [{'id': 'verify', 'jobs': [{'id': 'evidence',
+                        'timeout_minutes': minutes, 'executor': {
+                            'kind': kind, 'gates': ['first', 'second']}}]}]}
+        deadline_rejections = 0
+        def reject_deadline(subject, value):
+            global deadline_rejections
+            try: deadlines.validate_gate_job_timeouts(subject, value)
+            except deadlines.CIGraphError as error:
+                assert 'cannot contain' in str(error), str(error)
+                deadline_rejections += 1
+            else: raise AssertionError('private runtime admitted underbudget serial deadline')
+        policy()
+        reject_deadline(policy_root, graph(9))
+        deadlines.validate_gate_job_timeouts(policy_root, graph(10))
+        deadlines.validate_gate_job_timeouts(policy_root, graph(6, 'gate_shard'))
+        siblings = graph(10)
+        siblings['workflows'].append({'id': 'sibling', 'jobs': graph(9)['workflows'][0]['jobs']})
+        reject_deadline(policy_root, siblings)
+        policy(overrides={'second': 400})
+        reject_deadline(policy_root, graph(12))
+        deadlines.validate_gate_job_timeouts(policy_root, graph(13))
+        policy(cleanup=30)
+        reject_deadline(policy_root, graph(10))
+        deadlines.validate_gate_job_timeouts(policy_root, graph(11))
+        legacy_root = fixture / 'legacy-no-policy'
+        reject_deadline(legacy_root, graph(65))
+        deadlines.validate_gate_job_timeouts(legacy_root, graph(66))
+        reference = graph_defaults.build_reference_ci_graph(
+            project_id='private-deadline', profile='standard', profile_contract_version='3.0',
+            gates=['governance-validate', 'architecture-test', 'lint', 'test',
+                   'security-secret-scan', 'runtime-smoke'],
+            candidate_labels=['ubuntu-24.04'], trusted_labels=['self-hosted'],
+            candidate_hosted=True, trusted_hosted=False)
+        deadlines.validate_gate_job_timeouts(legacy_root, reference)
+        policy()
+        serial_bound = deadlines.gate_sequence_deadline_ms
+        try:
+            deadlines.gate_sequence_deadline_ms = lambda bounds, **kw: serial_bound([max(bounds)], **kw)
+            deadlines.validate_gate_job_timeouts(policy_root, graph(9))
+        finally:
+            deadlines.gate_sequence_deadline_ms = serial_bound
+        assert deadline_rejections == 5
         assert not (fixture.parent / 'escaped.py').exists()
     finally:
         runtime.subprocess.run, runtime.subprocess.Popen = previous_run, previous_popen
@@ -243,6 +297,8 @@ print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_q
                   'valid_mapping_returned_unchanged': True, 'forged_mapping_or_evidence_rejected': 11, 'forged_command_records_rejected': command_rejections,
                   'version_1_1_both_consumers_accepted': True, 'command_guard_causal': True,
                   'forged_command_arguments_rejected': argument_rejections,
+                  'serial_deadline_underbudget_rejected': deadline_rejections,
+                  'serial_deadline_guard_causal': True, 'reference_serial_defaults_accepted': True,
                   'busy_cases': busy_cases, 'holder_and_retained_bytes_preserved': True,
                   'exact_file_reused': True, 'candidate_or_subprocess_not_executed': True}, sort_keys=True))
 '''
