@@ -9,7 +9,9 @@
     "bcf_governance/tooling/ci_graph_execution.py",
     "bcf_governance/tooling/evidence_shards.py",
     "bcf_governance/tooling/ci_graph_render.py",
-    "bcf_governance/tooling/ci_graph_shell_projection.py"
+    "bcf_governance/tooling/ci_graph_shell_projection.py",
+    "bcf_governance/tooling/ci_graph_defaults.py",
+    "governance/ci-graph.yml"
   ],
   "problem": "A controlled plan requires600s for a serial shard but periodic540s admission passes because only the separate PR600s executor is considered. Static individual-gate validation also passes; the actual planned consumer must be bound.",
   "contract": [

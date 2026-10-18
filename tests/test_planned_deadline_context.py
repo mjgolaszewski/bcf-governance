@@ -18,6 +18,14 @@ def test_command_projects_defining_workflow_provider_facts(field):
     assert step['env']['BCF_JOB_WORKFLOW_' + field.upper()] == '${{ job.workflow_' + field + ' }}'
 
 
+def test_canonical_preflight_has_existing_provider_read_credential():
+    from pathlib import Path
+    from bcf_governance.tooling.ci_graph_contracts import validate_ci_graph
+    compiled = validate_ci_graph(Path(__file__).resolve().parents[1])
+    for name in ('governance-preflight', 'governance-preflight-with-prior'):
+        assert compiled.commands[name]['environment']['GITHUB_TOKEN'] == '${{ github.token }}'
+
+
 @pytest.mark.parametrize('surface', ['workflow', 'job', 'component', 'command'])
 def test_defining_workflow_facts_cannot_be_authored(surface):
     from pathlib import Path
