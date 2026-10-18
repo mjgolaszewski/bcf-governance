@@ -1952,9 +1952,13 @@ def test_rendered_budget_failure_precedes_costly_qualification_with_exact_existi
     _front_door(monkeypatch, trace)
     (tmp_path/'bcf_governance/pack/template-repo').mkdir(parents=True)
     (tmp_path/'governance').mkdir()
-    payload = {f'k{index}': 'x' for index in range(140)}
+    # Comma-bearing scalars need quotes in a flow mapping; this tests actual
+    # generated overhead without depending on optional separator spaces.
+    payload = {f'k{index}': 'x,y' for index in range(100)}
     raw = yaml.safe_dump(payload, sort_keys=False)
-    assert len(raw.encode()) <= 1024 < len(render_profile_surface(payload, width=4096).encode())
+    rendered = render_profile_surface(payload, width=4096)
+    assert yaml.safe_load(rendered) == payload
+    assert len(raw.encode()) <= 1024 < len(rendered.encode())
     contract = tmp_path/'governance/gate-contracts.yml'
     contract.write_text(raw)
     manifest = {'context_budgets': {'agent_required_files': {
