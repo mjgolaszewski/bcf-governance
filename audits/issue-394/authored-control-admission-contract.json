@@ -25,10 +25,11 @@
     "Reject missing or symlinked mutation targets, zero or ambiguous text searches, malformed mutation mode, stale typed YAML paths and mutations that are already applied, with existing typed diagnostic meanings.",
     "Keep the full population of declared controls; do not silently discard failing controls or validate only a caller-selected subset.",
     "Preserve genuinely local and ungoverned use, readable legacy profiles and valid ordinary governed candidates. Partial modern declarations and missing authority block; no new approval or CLI grammar.",
-    "Any necessary generated-target deferral must be mechanically established by its existing canonical projection owner and validated in full after projection, before a generated commit or promotion. Unknown target ownership cannot create an exemption.",
+    "Any necessary generated-target deferral must be mechanically established by its existing canonical projection owner and validated in full after projection, before final candidate promotion; intermediate definition commits remain private and nonauthorizing. Unknown target ownership cannot create an exemption.",
     "Preserve the existing full governance validator's deliberate active-negative-control diagnostic ordering. Baseline admission is not an active-control execution bypass or a change to which causal defect its target must report.",
     "Keep exact candidate bytes fixed while admitted operations run; no edits to the concurrently qualified lifecycle-consumer tree, maintained adopters, immutable234 bytes or generated workflow/pin pairs.",
-    "Resolve the existing @active_phase_log logical target through the canonical active-phase path owner; do not silently omit it or guess a phase file. Preserve the full validator diagnostic order."
+    "Resolve the existing @active_phase_log logical target through the canonical active-phase path owner; do not silently omit it or guess a phase file. Preserve the full validator diagnostic order.",
+    "Read the three authored control-policy inputs through the existing unique-mapping YAML primitive, preserving ordinary aliases and explicit merge overrides; duplicate keys cannot hide or replace a required control population. No new decoder family."
   ],
   "verification": [
     "Same-signature submit/reconcile controls must show actual stale source references reaching forbidden allocation on unchanged production, independently of any missing new interface.",

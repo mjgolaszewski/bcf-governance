@@ -155,3 +155,33 @@ def test_complete_registry_checks_ledger_selected_log_mutation_state(tmp_path, d
 def test_complete_registry_uses_exact_active_log_and_preserves_valid_mutation(tmp_path):
     profile, contract, policy = phase_control_root(tmp_path)
     _validate_gate_contract_registry(tmp_path, profile, contract, policy)
+
+
+@pytest.mark.parametrize('relative,duplicate', [
+    ('governance-profile.yml', 'profile_contract_version: "1.0"\n'),
+    ('governance/gate-contracts.yml', 'profile_contract_version: "1.0"\n'),
+    ('governance/evidence-policy.yml', 'gate_overrides: {}\n'),
+])
+def test_authored_control_population_rejects_duplicate_policy_keys(tmp_path, relative, duplicate):
+    from bcf_governance.tooling.governance_validation.common import GovernanceValidationError
+    from bcf_governance.tooling.governance_validation.evidence_contracts import validate_authored_gate_controls
+
+    control_root(tmp_path)
+    path = tmp_path / relative
+    path.write_text(path.read_text() + duplicate)
+    with pytest.raises(GovernanceValidationError, match='duplicate'):
+        validate_authored_gate_controls(tmp_path)
+
+
+def test_authored_control_policy_preserves_valid_yaml_alias_and_explicit_merge_override(tmp_path):
+    from bcf_governance.tooling.governance_validation.evidence_contracts import validate_authored_gate_controls
+
+    control_root(tmp_path)
+    (tmp_path / 'governance-profile.yml').write_text('''profile_contract_version: "1.0"
+release_gate_profile:
+  gates:
+    test:
+      <<: &defaults {target: test, status: optional, command_policy: automated_tests}
+      status: required
+''')
+    validate_authored_gate_controls(tmp_path)
