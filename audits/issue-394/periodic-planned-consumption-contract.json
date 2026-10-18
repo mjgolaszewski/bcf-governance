@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.composition",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query_then_existing_runtime_command",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_defaults.py",
+    "bcf_governance/tooling/ci_graph_periodic.py"
+  ],
+  "problem": "Real-Git reproduction proves that modern periodic literal gate_group execution asks for profile-excluded and preflight-owned targets absent from its planned session. Static partitioning alone cannot qualify operational consumption.",
+  "contract": [
+    "For bound profile-contract3.0 scheduled reference workflows, use the EXISTING planned-shard consumer/session/receipt/truth protocol rather than executing literal legacy aliases. Runtime selection derives only from the consuming session execution DAG, preserving applicable full-profile claims, per-claim controls and same-session prerequisites. No operator skip list or model-only static profile guess.",
+    "Retain the full declared gate population as conservative graph metadata and deadline input. Preflight remains fresh full-profile with no periodic prior-evidence reuse or proof suppression. Unknown applicability expands execution; missing facts block.",
+    "Reuse existing four-shard matrix/partitioner, component constructors, private-mode restoration, strict fan-in and terminal prerequisite failures. Scope commands, components, conditions and run/attempt artifact names per scheduled workflow; never cross nightly/weekly/foreground evidence. Truth durable references must match their exact artifact stem.",
+    "Preserve workflow paths/events, permissions, stable scheduled preflight/control/truth job IDs and semantic roles. Do not alter foreground PR/exact-main/controller/release authority or legacy1.0/2.0 fixed-group partition behavior.",
+    "Modern unbound compatibility construction remains non-authoritative; bound installation must provide actual contract. No new planner, evaluator, receipt family, CLI switches, phase activation, SDK upgrade or maintained-adopter mutation.",
+    "Keep defaults below800LOC by placing feature-specific scheduled projection in ci_graph_periodic under the existing ci_graph_ context mapping. Generate mirrors through their canonical owner."
+  ],
+  "verification": [
+    "Real-Git normal/regulated/self profile sessions: every consumed target is admitted by the exact session; excluded/preflight aliases never run. All applicable claims/controls and dependencies remain represented.",
+    "Validate/render both scheduled workflows; exact namespace isolation, complete matrix inventory, predecessor/fan-in/session ownership, stable terminals and durable-reference consistency. Preserve fitting and oversized legacy partitions.",
+    "A planner-derived consumer must fail if restored to literal execution, wrong session/profile/source, missing/overlapping shard, lost controls, wrong workflow/attempt or incomplete fan-in.",
+    "Contract/tests before production; affected runtime/graph/installer consumers and causal controls, architecture/semantic/governance parity, then exact SDK-absent installed and real periodic execution qualification before closure."
+  ]
+}
