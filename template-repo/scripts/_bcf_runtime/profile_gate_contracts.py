@@ -6,6 +6,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .ci_graph_errors import CIGraphError
+from .ci_graph_timeouts import bounded_execution_seconds
 from .yaml_mutations import YAMLMutationPathError, mutation_mode
 
 
@@ -129,6 +131,14 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
         isinstance(value, str) and value for value in required_env
     ):
         raise ProfileContractError(f"gate {target}.invocation.required_env must be a string list")
+    declared_timeout: dict[str, int] = {}
+    if "timeout_seconds" in invocation:
+        try:
+            declared_timeout["timeout_seconds"] = bounded_execution_seconds(
+                invocation["timeout_seconds"], field=f"gate {target}.invocation.timeout_seconds"
+            )
+        except CIGraphError as exc:
+            raise ProfileContractError(str(exc)) from exc
     controls = raw.get("negative_controls")
     if not isinstance(controls, list) or not controls:
         raise ProfileContractError(f"gate {target} requires at least one negative control")
@@ -198,6 +208,7 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
             "cwd": cwd,
             "env": dict(sorted(env.items())),
             "required_env": sorted(set(required_env)),
+            **declared_timeout,
         },
         "evidence": evidence,
         "negative_controls": validated_controls,

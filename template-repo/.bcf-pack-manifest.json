@@ -1355,7 +1355,7 @@
     },
     "scripts/_bcf_runtime/profile_gate_contracts.py": {
       "operation": "copy",
-      "sha256": "ab3caa43ca2cefb3262dac78b1788d9d59b035f6f7522fd165edb0a183644a97"
+      "sha256": "5f8e0dbb4da0accbfc421cbae5fc65e49faa455c6ba98a690a57ca4ef7a439e6"
     },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
