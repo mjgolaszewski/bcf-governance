@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "workitem": "foundation.deadlines",
+  "contract": "audits/issue-394/periodic-reference-partition-contract.json",
+  "source_parent_commit": "90fd9ee903ca62b66dfb8fe22a31e7b066baae71",
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_defaults.py": "46274c3d4bd51c5df10ab84351833e4f4e0a71e353d9e7ccac749c91fb8d7f7a",
+    "tests/test_periodic_reference_partition.py": "4ac60c4f02d09f1dacd87be341863db6b01d08c39f7625bd510eb390e58d395f",
+    "tests/test_reference_deadline_projection.py": "e7bc3f6870a864c5da59c58a5eecc79fdd0437b968f54450f4232be6f139b54a"
+  },
+  "checks": {
+    "behavior": 0,
+    "architecture": 0,
+    "semantic": 0,
+    "lint": 0,
+    "type": 0,
+    "exposure": 0,
+    "governance": 0
+  },
+  "behavior_passed": 249,
+  "architecture_passed": 6,
+  "authored_semantic_observations_unchanged": 21,
+  "controls": {
+    "authority": false,
+    "exact_source_restored": true,
+    "source_sha256": "46274c3d4bd51c5df10ab84351833e4f4e0a71e353d9e7ccac749c91fb8d7f7a",
+    "records": [
+      {
+        "control": "partition",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_carries_same_session_and_all_receipts_to_stable_terminal[standard]",
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_carries_same_session_and_all_receipts_to_stable_terminal[regulated]"
+        ],
+        "mutant_size": 33878,
+        "raw_sha256": {
+          "periodic-reference-final-control-partition.stdout": "bfebcdf77aaa33f0f2b0fbfab153784a7e786d3275ede2a424a34280c220563f",
+          "periodic-reference-final-control-partition.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "control": "transport",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_carries_same_session_and_all_receipts_to_stable_terminal[standard]",
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_carries_same_session_and_all_receipts_to_stable_terminal[regulated]"
+        ],
+        "mutant_size": 33967,
+        "raw_sha256": {
+          "periodic-reference-final-control-transport.stdout": "76dbeead9543f447b8b9b6b20467818d63fbb4b013eb5489493ea38a664b3e20",
+          "periodic-reference-final-control-transport.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "control": "inventory",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_carries_same_session_and_all_receipts_to_stable_terminal[standard]",
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_carries_same_session_and_all_receipts_to_stable_terminal[regulated]"
+        ],
+        "mutant_size": 34069,
+        "raw_sha256": {
+          "periodic-reference-final-control-inventory.stdout": "315ce61a903b1f6a00ba444f4e002e8653d74e8710b15ecaff9756486943a099",
+          "periodic-reference-final-control-inventory.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "control": "fanin",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_reference_partition.py::test_partition_validates_and_renders_exact_predecessor_downloads"
+        ],
+        "mutant_size": 34138,
+        "raw_sha256": {
+          "periodic-reference-final-control-fanin.stdout": "989a0989457163a4551961bf2928aabcf6819dcdfe49bf65732d6177c937ad7f",
+          "periodic-reference-final-control-fanin.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ]
+  },
+  "actual_contract_reference_projection": {
+    "authority": false,
+    "scope": "reference projection from actual contract; not execution/performance proof",
+    "literal_gate_count": 20,
+    "workflows": [
+      {
+        "workflow": "scheduled-high-value",
+        "events": [
+          {
+            "type": "schedule",
+            "cron": [
+              "17 4 * * *"
+            ]
+          },
+          {
+            "type": "workflow_dispatch"
+          }
+        ],
+        "parts": [
+          {
+            "id": "scheduled-high-value-controls",
+            "gates": [
+              "architecture-context-membership",
+              "architecture-cqrs-side",
+              "architecture-duplication",
+              "architecture-import-boundaries",
+              "architecture-layer-membership",
+              "architecture-module-size",
+              "architecture-router-thinness",
+              "architecture-test",
+              "contract-test",
+              "governance-exposure-scan"
+            ],
+            "timeout_minutes": 330,
+            "needs": [
+              "scheduled-high-value-preflight"
+            ],
+            "consumes": [
+              "scheduled-high-value-session"
+            ],
+            "produces": [
+              "scheduled-high-value-receipts-part-1"
+            ]
+          },
+          {
+            "id": "scheduled-high-value-controls-part-2",
+            "gates": [
+              "governance-validate",
+              "lint",
+              "runtime-smoke",
+              "security-dependency-audit",
+              "security-sbom",
+              "security-secret-scan",
+              "security-vulnerability-scan",
+              "semantic-ownership",
+              "test",
+              "typecheck"
+            ],
+            "timeout_minutes": 340,
+            "needs": [
+              "scheduled-high-value-controls"
+            ],
+            "consumes": [
+              "scheduled-high-value-receipts-part-1"
+            ],
+            "produces": [
+              "scheduled-high-value-receipts"
+            ]
+          }
+        ],
+        "terminal_inputs": [
+          "scheduled-high-value-receipts-part-1",
+          "scheduled-high-value-receipts"
+        ]
+      },
+      {
+        "workflow": "scheduled-full",
+        "events": [
+          {
+            "type": "schedule",
+            "cron": [
+              "31 5 * * 0"
+            ]
+          },
+          {
+            "type": "workflow_dispatch"
+          }
+        ],
+        "parts": [
+          {
+            "id": "scheduled-full-controls",
+            "gates": [
+              "architecture-context-membership",
+              "architecture-cqrs-side",
+              "architecture-duplication",
+              "architecture-import-boundaries",
+              "architecture-layer-membership",
+              "architecture-module-size",
+              "architecture-router-thinness",
+              "architecture-test",
+              "contract-test",
+              "governance-exposure-scan"
+            ],
+            "timeout_minutes": 330,
+            "needs": [
+              "scheduled-full-preflight"
+            ],
+            "consumes": [
+              "scheduled-full-session"
+            ],
+            "produces": [
+              "scheduled-full-receipts-part-1"
+            ]
+          },
+          {
+            "id": "scheduled-full-controls-part-2",
+            "gates": [
+              "governance-validate",
+              "lint",
+              "runtime-smoke",
+              "security-dependency-audit",
+              "security-sbom",
+              "security-secret-scan",
+              "security-vulnerability-scan",
+              "semantic-ownership",
+              "test",
+              "typecheck"
+            ],
+            "timeout_minutes": 340,
+            "needs": [
+              "scheduled-full-controls"
+            ],
+            "consumes": [
+              "scheduled-full-receipts-part-1"
+            ],
+            "produces": [
+              "scheduled-full-receipts"
+            ]
+          }
+        ],
+        "terminal_inputs": [
+          "scheduled-full-receipts-part-1",
+          "scheduled-full-receipts"
+        ]
+      }
+    ]
+  },
+  "source_topology_partitioned": true,
+  "actual_periodic_execution_qualified": false,
+  "new_exact_installed_distribution_qualified": false,
+  "dispositions": [
+    "Initial 5 RED cases expose provider overflow before allocation; 20 others passed.",
+    "Canonical graph validator rejected final-only artifact fan-in. Implementation retains explicit truth dependencies/inputs for every part alongside cumulative predecessor transport; no validator weakened.",
+    "Initial renderer fixtures assumed the wrong entrypoint/key type; corrected to the existing repo-root entrypoint and string-relative output map. Failed captures retained.",
+    "First expanded suite returned246 PASS but overlapped temporary source mutations; retained only as observation. Final controls ran alone, exact bytes restored, mirrors regenerated, then authoritative249 PASS completed without source mutations.",
+    "Malformed boolean gate initially raised AttributeError; contract test precedes typed population admission correction.",
+    "Prior463d5d8b installed evidence is historical and does not qualify this newer periodic partition."
+  ],
+  "limits": [
+    "Reference topology is a query, not authenticated periodic execution or performance measurement.",
+    "Sequential cumulative receipt transport and all-part fan-in require actual installed consumer/periodic execution qualification.",
+    "Full lifecycle/profile/adopter populations, runtime bounds and independent provider/custody remain open.",
+    "All82 whole requirements and38 slice objects unchanged; P32 active, P33-P35 dormant; performance targets unapproved."
+  ],
+  "next_action": "Add SDK-absent private runtime partition/custody probes, qualify exact source/wheel/sdist and real periodic consumption; continue full foundation population/runtime conformance.",
+  "raw_sha256": {
+    "periodic-reference-partition-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-partition-red.stdout": "f9fb94b63a91133883aae1a4b5bb1c368d83c406a02df21acbada4654e601757",
+    "periodic-reference-partition-focused.stdout": "12ab7ca1c518452ea8581f72714b87b9abe6a77fd9b31e22de70b7bc8a3d8da3",
+    "periodic-reference-partition-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-partition-fanin.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-partition-fanin.stdout": "a1793b088941017a5fc76c23d58eb343b6388eb5f28d9d2ae82a17b57c867939",
+    "periodic-reference-partition-render.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-partition-render.stdout": "74c3a24535ffb5c74bde74cc15726077c48faa8059d77fde552a9269c819a4ed",
+    "periodic-reference-partition-complete.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-partition-complete.stdout": "d96a1afbbc4c044efd4bd4721d5dd5d0b9fec270a10538e42a61279b83dba794",
+    "periodic-reference-malformed-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-malformed-red.stdout": "0e38f7c7e9ee1deec44506e9e36a2348c43bc10debf3c2d22fd04b1b526576bf",
+    "periodic-reference-qualified-checks.json": "c44c14744c2b7655fa484b80b1db7bbbe639efaf6819974595254a592c0f5f86",
+    "periodic-reference-qualified-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-type.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-behavior.stdout": "c528cbd37893e329bcf4df9b6d01f93601edb258843eb77c6bc123e17d3a9e05",
+    "periodic-reference-qualified-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-semantic.stdout": "606374476dadc245023de094cdf22e98a4e1c760c23d0f5225f9da1108fd3661",
+    "periodic-reference-qualified-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "periodic-reference-qualified-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-exposure.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-behavior.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-qualified-architecture.stdout": "85798eaa538911c024306954178324398338b466538d7d1b37a26666622c0789",
+    "periodic-reference-qualified-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "periodic-reference-final-control-partition.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-final-control-transport.stdout": "76dbeead9543f447b8b9b6b20467818d63fbb4b013eb5489493ea38a664b3e20",
+    "periodic-reference-final-control-transport.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-final-control-fanin.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-final-control-inventory.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-final-control-inventory.stdout": "315ce61a903b1f6a00ba444f4e002e8653d74e8710b15ecaff9756486943a099",
+    "periodic-reference-final-control-partition.stdout": "bfebcdf77aaa33f0f2b0fbfab153784a7e786d3275ede2a424a34280c220563f",
+    "periodic-reference-final-control-fanin.stdout": "989a0989457163a4551961bf2928aabcf6819dcdfe49bf65732d6177c937ad7f",
+    "periodic-reference-partition-final-controls.json": "f14f75da24afd653d86c5e0eec440f0fb61ff5962405b7247afe89fca9b02fee",
+    "periodic-reference-partition-final-controls.py": "49ea85abe067b88a66bf5c1945e9e362a46c05fac7aa9b24bbd43c8c4d82bd48",
+    "periodic-reference-current-population.json": "f2227ecd4994d4fae7e3ed12e2db873442a201b1580ecededc36e5ef1ab0a040",
+    "periodic-reference-current-population.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-control-overlap-disposition.json": "5427c19ba1e989ca59bf8c726330545f2cbafc2ec4f003bf9aefd2709260b80e",
+    "periodic-reference-partition-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-reference-partition-consumers.stdout": "980600d00a04dec157f649c563212f7c6d6c0ec2f86960e82c1666015cf8034a",
+    "periodic-reference-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "periodic-reference-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "record_governance_validation_returncode": 0
+}

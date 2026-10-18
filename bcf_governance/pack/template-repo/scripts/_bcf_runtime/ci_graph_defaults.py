@@ -9,7 +9,10 @@ from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
 from .ci_graph_builders import component as _component, job as _job
 from .ci_graph_pr_evaluator import apply_standard_pr_evaluator
-from .ci_graph_timeouts import project_reference_gate_deadlines
+from .ci_graph_timeouts import (
+    GITHUB_JOB_TIMEOUT_LIMIT_MINUTES, gate_deadline_values,
+    gate_sequence_deadline_ms, project_reference_gate_deadlines,
+)
 from .repository_comparison_context import (
     comparison_base_input_contract,
     push_comparison_inputs,
@@ -395,6 +398,10 @@ def build_reference_ci_graph(
             or gate_contract.get("profile_contract_version") != profile_contract_version
             or gate_contract.get("target_profile") != profile):
         raise ValueError("reference graph gate contract context differs from selected profile")
+    if (not isinstance(gates, list) or any(not isinstance(gate, str) or not gate for gate in gates)
+            or len(gates) != len(set(gates))):
+        raise ValueError("reference gate population must contain unique nonempty identifiers")
+    headroom_seconds = 300
     lane_groups = _lane_groups(gates)
     lane_producers = [f"{lane}-evidence" for lane, _ in lane_groups]
     artifacts: dict[str, Any] = {
@@ -553,10 +560,38 @@ def build_reference_ci_graph(
             )
             preflight_id = f"{workflow_id}-preflight"
             controls_id = f"{workflow_id}-controls"
+            default, overrides, cleanup = gate_deadline_values({} if gate_contract is None else gate_contract)
+            ceiling_ms = GITHUB_JOB_TIMEOUT_LIMIT_MINUTES * 60000
+            parts: list[list[str]] = [[]]
+            for gate in scheduled_gates:
+                bound = overrides.get(gate, default)
+                if gate_sequence_deadline_ms(
+                    [bound], cleanup=cleanup, headroom=headroom_seconds,
+                ) > ceiling_ms:
+                    raise ValueError("reference gate bounds exceed the360-minute provider ceiling; partition cannot fit one gate")
+                bounds = [overrides.get(name, default) for name in [*parts[-1], gate]]
+                if parts[-1] and gate_sequence_deadline_ms(
+                    bounds, cleanup=cleanup, headroom=headroom_seconds,
+                ) > ceiling_ms:
+                    parts.append([])
+                parts[-1].append(gate)
+            producer_ids = [controls_id if index == 0 else f"{controls_id}-part-{index+1}" for index in range(len(parts))]
+            control_jobs = []
+            previous_job, previous_artifact = preflight_id, session_artifact
+            for index, part in enumerate(parts):
+                artifact = receipt_artifact if index == len(parts)-1 else f"{receipt_artifact}-part-{index+1}"
+                artifacts[artifact] = dict(artifacts[receipt_artifact])
+                control_jobs.append(_job(
+                    producer_ids[index], producer_ids[index], needs=[previous_job],
+                    executor={"kind": "gate_group", "gates": part}, produces=[artifact],
+                    consumes=[previous_artifact], components=["checkout", "python", "governance-dependencies",
+                                                             "download-evidence", "restore-private-modes"],
+                ))
+                previous_job, previous_artifact = producer_ids[index], artifact
             preflight_command = f"{workflow_id}-preflight"
             commands[preflight_command] = {
                 **commands["preflight"],
-                "argv": _preflight_argv([controls_id]),
+                "argv": _preflight_argv(producer_ids),
             }
             return {
                 "id": workflow_id,
@@ -575,29 +610,15 @@ def build_reference_ci_graph(
                         executor={"kind": "command", "command": preflight_command},
                         produces=[session_artifact],
                     ),
-                    _job(
-                        controls_id,
-                        f"{workflow_id}-controls",
-                        needs=[preflight_id],
-                        executor={"kind": "gate_group", "gates": scheduled_gates},
-                        produces=[receipt_artifact],
-                        consumes=[session_artifact],
-                        components=[
-                            "checkout",
-                            "python",
-                            "governance-dependencies",
-                            "download-evidence",
-                            "restore-private-modes",
-                        ],
-                    ),
+                    *control_jobs,
                     _job(
                         f"{workflow_id}-truth",
                         f"{workflow_id}-truth",
-                        needs=[controls_id],
+                        needs=producer_ids,
                         condition="always",
                         executor={"kind": "truth", "command": "truth"},
                         produces=[truth_artifact],
-                        consumes=[receipt_artifact],
+                        consumes=[job["produces"][0] for job in control_jobs],
                         components=[
                             "checkout",
                             "python",
@@ -745,7 +766,7 @@ def build_reference_ci_graph(
                 "sleep", "poll", "watch", "wait", "while", "until",
                 "wait-for-runner", "lease-runner",
             ],
-            "minimum_gate_timeout_headroom_seconds": 300,
+            "minimum_gate_timeout_headroom_seconds": headroom_seconds,
         },
     }
     if profile_contract_version == "3.0":

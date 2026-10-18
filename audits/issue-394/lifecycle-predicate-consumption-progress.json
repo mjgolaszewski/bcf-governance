@@ -401,5 +401,11 @@
     "actual_installed_reference_probe_pending": false,
     "canonical_owner_verification": "audits/issue-394/canonical-deadline-reconciliation-verification.json",
     "distribution_verification": "audits/issue-394/development-distribution-463d5d8b-verification.json"
+  },
+  "periodic_reference_partition": {
+    "verification": "audits/issue-394/periodic-reference-partition-verification.json",
+    "source_topology_partitioned": true,
+    "actual_periodic_execution_qualified": false,
+    "new_exact_installed_distribution_qualified": false
   }
 }

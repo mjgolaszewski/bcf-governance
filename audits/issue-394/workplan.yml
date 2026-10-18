@@ -303,6 +303,8 @@ workitems:
     - audits/issue-394/planned-shard-deadline-contract.json
     - audits/issue-394/reference-deadline-projection-contract.json
     - audits/issue-394/reference-deadline-projection-verification.json
+    - audits/issue-394/periodic-reference-partition-contract.json
+    - audits/issue-394/periodic-reference-partition-verification.json
     - audits/issue-394/canonical-deadline-reconciliation-verification.json
     - audits/issue-394/planned-shard-deadline-verification.json
     - audits/issue-394/serial-gate-deadline-verification.json
