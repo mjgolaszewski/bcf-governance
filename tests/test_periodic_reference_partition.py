@@ -49,7 +49,8 @@ def test_partition_carries_same_session_and_all_receipts_to_stable_terminal(prof
         assert previous_artifact == wid + '-receipts'
         truth = workflow['jobs'][-1]
         assert truth['id'] == wid + '-truth' and truth['condition'] == 'always'
-        assert truth['needs'] == [previous_job] and truth['consumes'] == [previous_artifact]
+        assert truth['needs'] == [j['id'] for j in parts]
+        assert truth['consumes'] == [j['produces'][0] for j in parts]
         argv = graph['commands'][wid + '-preflight']['argv']
         assert [argv[i+1] for i,v in enumerate(argv) if v == '--expected-producer'] == [j['id'] for j in parts]
 
@@ -72,7 +73,8 @@ def test_partition_validates_and_renders_exact_predecessor_downloads(tmp_path):
         (tmp_path/'schemas'/name).write_bytes((ROOT/'schemas'/name).read_bytes())
     (tmp_path/'governance/ci-graph.yml').write_text(yaml.safe_dump(graph, sort_keys=False))
     compiled = validate_ci_graph(tmp_path)
-    rendered = render_ci_graph(compiled)
+    assert compiled.workflows
+    rendered = render_ci_graph(tmp_path)
     for workflow in scheduled(graph):
         payload = yaml.safe_load(rendered[Path(workflow['path'])])
         parts = [j for j in workflow['jobs'] if j['executor']['kind'] == 'gate_group']

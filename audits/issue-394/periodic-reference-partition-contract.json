@@ -13,7 +13,8 @@
     "Preserve every literal gate exactly once and in declared order. Preserve cron, permissions, truth identity, final receipt artifact identity, and the original control job identity for the first part. A fitting population retains its existing one-job shape.",
     "Derive deterministic additional job/artifact identities from ordinal parts. Chain each next part after the previous success and download its cumulative same-session receipt directory; final truth consumes the final cumulative artifact. Preflight expected-producer inventory names every actual part. No parallel mutable session, dropped dependencies, hidden skip or moved foreground obligation.",
     "Reject malformed populations and any individually unsplittable gate before installer target allocation. Inputs remain unchanged. Generic authored graph overflow still blocks atomically; candidate changes cannot grant authority.",
-    "Use existing graph/render/installation owners and generated mirrors. No public CLI, parallel scheduler, receipt format, hand-edited workflows, maintained consumer mutation or phase activation."
+    "Use existing graph/render/installation owners and generated mirrors. No public CLI, parallel scheduler, receipt format, hand-edited workflows, maintained consumer mutation or phase activation.",
+    "Canonical graph validation additionally requires explicit final fan-in for EVERY part artifact: retain all part IDs as truth dependencies and all part artifacts as truth inputs, including the final cumulative artifact. Do not weaken the existing graph invariant."
   ],
   "verification": [
     "Real20-gate reference builds with all gates covered exactly once under every job ceiling, same artifact/session custody and stable terminal identities.",
