@@ -753,3 +753,24 @@ def test_project_environment_requires_canonical_execution_state_contract(
     with pytest.raises(InterpreterEnvironmentError, match="cache contract is invalid"):
         materialize_interpreter_environment(tmp_path, Path(sys.executable))
     assert called is False
+
+
+@pytest.mark.parametrize('requirement', ['setuptools>=68', 'pip==26.2.1'])
+def test_identical_cross_role_dependencies_are_idempotent(tmp_path, requirement):
+    _fixture(tmp_path)
+    project = tmp_path / 'pyproject.toml'
+    source = project.read_text().replace("dependencies=['PyYAML>=6,<7']",
+        "dependencies=['PyYAML>=6,<7', " + repr(requirement) + "]")
+    project.write_text(source)
+    before = {path: path.read_bytes() for path in tmp_path.rglob('*') if path.is_file()}
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None and plan.requirements.count(requirement) == 1
+    assert {path: path.read_bytes() for path in tmp_path.rglob('*') if path.is_file()} == before
+
+
+def test_actual_repository_derived_requirements_retain_build_and_runtime_floor():
+    project = REPO_ROOT / 'pyproject.toml'
+    before = project.read_bytes()
+    plan = derive_interpreter_environment(REPO_ROOT)
+    assert plan is not None and plan.requirements.count('setuptools>=69') == 1
+    assert project.read_bytes() == before
