@@ -36,7 +36,10 @@
     "Valid governed and genuinely local baselines still reach the existing owner; an all-fail implementation cannot pass.",
     "Qualify generated-input normalization and check/apply paths, full source control population, typed YAML modes and active cause-specific controls before integration.",
     "Run affected behavior, existing governance/architecture/semantic checks and installed public/private parity on exact bytes.",
-    "Existing full registry query must reject stale/missing/symlinked/already-mutated active-log targets, while a valid ledger-selected log passes even when another retained log has different state."
+    "Existing full registry query must reject stale/missing/symlinked/already-mutated active-log targets, while a valid ledger-selected log passes even when another retained log has different state.",
+    "Use real Git definition/authority and file-only promotion fixtures: valid generated controls promote; a generator-invalidated control rejects with original HEAD/index/tree/status byte-exact.",
+    "After ordinary direct convergence, invalid generated controls reject before recording a clean result; valid generation remains usable.",
+    "Qualify the read-only authored-control query directly for complete valid input and each missing/symlinked/zero/ambiguous source target, including the SDK-absent private runtime consumer."
   ],
   "limits": "Contract and characterization only. Runtime implementation, independent qualification and complete lifecycle/performance/custody remain open; no whole requirement or slice status advances."
 }
