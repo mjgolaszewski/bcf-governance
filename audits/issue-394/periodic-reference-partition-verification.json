@@ -368,7 +368,7 @@
   },
   "modern_runtime_gap": {
     "authority": false,
-    "status": "reproduced_open",
+    "status": "source_corrected_actual_installed_and_full_execution_pending",
     "observation": {
       "authority": false,
       "scope": "real-Git controlled session admission observation; no gate execution or provider authority",
@@ -421,6 +421,8 @@
       "observe-periodic-session-admission.py": "43ba4a593995c508d537f43ec188cc53e53e112a7cd213a6fa9df145d216856d",
       "periodic-session-admission-observation.json": "950ae70b7e74e50279e4a0e0d8b2155e34ed6f246eaad90c8f7fc526bb6ee9f6",
       "periodic-session-admission-observation.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    }
-  }
+    },
+    "subsequent_verification": "audits/issue-394/periodic-planned-consumption-verification.json"
+  },
+  "modern_fixed_group_topology_superseded_by": "audits/issue-394/periodic-planned-consumption-verification.json"
 }

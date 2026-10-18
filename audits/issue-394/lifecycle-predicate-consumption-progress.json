@@ -407,5 +407,12 @@
     "source_topology_partitioned": true,
     "actual_periodic_execution_qualified": false,
     "new_exact_installed_distribution_qualified": false
+  },
+  "periodic_planned_consumption": {
+    "verification": "audits/issue-394/periodic-planned-consumption-verification.json",
+    "real_session_selection_binding_and_dependency_order_passed": true,
+    "copied_private_probe_passed": true,
+    "new_exact_installed_distribution_qualified": false,
+    "full_periodic_gate_control_execution_qualified": false
   }
 }

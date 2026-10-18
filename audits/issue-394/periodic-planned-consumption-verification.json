@@ -1,0 +1,214 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "contract": "audits/issue-394/periodic-planned-consumption-contract.json",
+  "workitem": "foundation.composition",
+  "source_parent_commit": "96d4dc6a15c196a730042a18022b997b45d0d09f",
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_defaults.py": "f533573cdb94fc3141143c10f2c54c58d391ee1ebc77b24c888030f2bc6bdc8e",
+    "bcf_governance/tooling/ci_graph_periodic.py": "761df7f19abf9c9e9f8af6ae75352f399e99f2d10d87fe3930b3e7b9332da012",
+    "tests/test_periodic_planned_consumption.py": "5a9a64aebf9c0fbb2c682a5efaa48d6207b0948bac7db9933465721d9e2ff6c9",
+    "tests/test_installed_runtime_fact_queries.py": "cb505d707cb8feb2cb176cc8cc7ff2c0bad8463b75233e3a067c59bb6132577f"
+  },
+  "checks": {
+    "behavior": 0,
+    "architecture": 0,
+    "semantic": 0,
+    "lint": 0,
+    "type": 0,
+    "exposure": 0,
+    "governance": 0
+  },
+  "behavior_passed": 328,
+  "architecture_passed": 6,
+  "authored_semantic_observations_unchanged": 21,
+  "consuming_boundary_evidence": {
+    "contexts": [
+      "normal",
+      "regulated",
+      "self"
+    ],
+    "real_git_session_selection_and_binding_passed": true,
+    "same_session_prerequisite_same_shard_and_order_passed": true,
+    "full_gate_and_control_process_execution_qualified": false
+  },
+  "controls": {
+    "authority": false,
+    "exact_source_restored": true,
+    "source_sha256": {
+      "ci_graph_defaults.py": "f533573cdb94fc3141143c10f2c54c58d391ee1ebc77b24c888030f2bc6bdc8e",
+      "ci_graph_periodic.py": "761df7f19abf9c9e9f8af6ae75352f399e99f2d10d87fe3930b3e7b9332da012"
+    },
+    "records": [
+      {
+        "control": "literal",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_planned_consumption.py::test_periodic_targets_are_selected_from_exact_real_git_session[normal]",
+          "FAILED tests/test_periodic_planned_consumption.py::test_periodic_targets_are_selected_from_exact_real_git_session[regulated]",
+          "FAILED tests/test_periodic_planned_consumption.py::test_periodic_targets_are_selected_from_exact_real_git_session[self]",
+          "FAILED tests/test_periodic_planned_consumption.py::test_modern_periodic_graph_validates_and_isolates_every_transport_namespace"
+        ],
+        "raw_sha256": {
+          "periodic-planned-control-literal.stdout": "5fd9e9a4d9e9e6506548e7db2ecf1066e2531927b9eef101e769e6507f951820",
+          "periodic-planned-control-literal.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "control": "namespace",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_planned_consumption.py::test_modern_periodic_graph_validates_and_isolates_every_transport_namespace"
+        ],
+        "raw_sha256": {
+          "periodic-planned-control-namespace.stdout": "dd583881f5e14542a2adc79c727c4a01c5841fd359a9077a27fba9c7db6f3cb8",
+          "periodic-planned-control-namespace.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "control": "scope",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_planned_consumption.py::test_modern_periodic_graph_validates_and_isolates_every_transport_namespace"
+        ],
+        "raw_sha256": {
+          "periodic-planned-control-scope.stdout": "7a1ee637cf1026f1ecd175bfaf98f31391e39d9bf62d0763da3d7afb4fa476dc",
+          "periodic-planned-control-scope.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "control": "fanin",
+        "returncode": 1,
+        "named_failures": [
+          "FAILED tests/test_periodic_planned_consumption.py::test_modern_periodic_graph_validates_and_isolates_every_transport_namespace"
+        ],
+        "raw_sha256": {
+          "periodic-planned-control-fanin.stdout": "03e079c3c33a952361866302f988c4323671fb20eeddde6e18902967822bc5bd",
+          "periodic-planned-control-fanin.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ]
+  },
+  "private_probe": {
+    "status": "copied_rehearsal_passed_installed_pending",
+    "observations": {
+      "authority": false,
+      "busy_cases": 3,
+      "candidate_or_subprocess_not_executed": true,
+      "command_guard_causal": true,
+      "differing_requirement_strings_blocked": true,
+      "exact_file_reused": true,
+      "forged_command_arguments_rejected": 10,
+      "forged_command_records_rejected": 16,
+      "forged_mapping_or_evidence_rejected": 11,
+      "holder_and_retained_bytes_preserved": true,
+      "identical_requirement_predicates_collapsed": 2,
+      "interpreter_projection_unallocated": true,
+      "modern_periodic_planned_workflows": 2,
+      "periodic_literal_gates": 20,
+      "periodic_ordered_coverage_and_custody_preserved": true,
+      "periodic_parts_across_two_schedules": 4,
+      "reference_model_bound_budget_minutes": 80,
+      "reference_projection_cap_atomic": true,
+      "reference_projection_invalid_facts_rejected": 6,
+      "reference_serial_defaults_accepted": true,
+      "runtime_owned_helpers": true,
+      "scope": "private_runtime_synthetic_fact_queries",
+      "sdk_absent": true,
+      "serial_deadline_guard_causal": true,
+      "serial_deadline_underbudget_rejected": 5,
+      "valid_mapping_returned_unchanged": true,
+      "version_1_1_both_consumers_accepted": true
+    },
+    "rehearsal": {
+      "authority": false,
+      "records": [
+        {
+          "case": "retained-463d5d8b",
+          "returncode": 1,
+          "scope": "copied runtime rehearsal, not installed qualification",
+          "probe_sha256": "a76e71cafbeb259b078de08f99fdba491cf6c41a34d4eb6042c9a6867cd2ab6e",
+          "runtime_helper_sha256": {
+            "release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+            "local_execution_admission.py": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+            "ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+            "ci_graph_defaults.py": "86b6675dda9f7e234401c4e8ffe887915d3afcdb4b19d616944ca66319a399e0",
+            "evidence_planning.py": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857",
+            "ci_graph_periodic.py": null
+          }
+        },
+        {
+          "case": "current-copied",
+          "returncode": 0,
+          "scope": "copied runtime rehearsal, not installed qualification",
+          "probe_sha256": "a76e71cafbeb259b078de08f99fdba491cf6c41a34d4eb6042c9a6867cd2ab6e",
+          "runtime_helper_sha256": {
+            "release_runtime_verification.py": "0abb01adeee48d30838c4da04969a7dc5fcfd22be7728d24dcf3793b518be041",
+            "local_execution_admission.py": "686e8c6d9a1b50eabf0dbca0dd86bb5f0905324d5ac7bed4d2da1fb9ce80bf43",
+            "ci_graph_timeouts.py": "bf5dd1a1579acd8732bdc15911b903e236001f9d120834a2834e98b09c193888",
+            "ci_graph_defaults.py": "f533573cdb94fc3141143c10f2c54c58d391ee1ebc77b24c888030f2bc6bdc8e",
+            "evidence_planning.py": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857",
+            "ci_graph_periodic.py": "761df7f19abf9c9e9f8af6ae75352f399e99f2d10d87fe3930b3e7b9332da012"
+          }
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Real-Git selection/binding and graph rendering are not complete gate/control execution or independent provider proof.",
+    "Legacy fixed partitions remain; modern bound schedules use existing four-shard protocol with fresh full-profile sessions and no periodic prior reuse.",
+    "New exact installed distribution, actual periodic gate/control execution, broader lifecycle/adopter/profile transitions and independent custody remain pending.",
+    "All82 whole requirements and38 slices unchanged; P32 active/P33-P35 dormant; performance targets unapproved."
+  ],
+  "dispositions": [
+    "The earlier modern literal partition topology was insufficient: controlled sessions rejected excluded/preflight aliases. That source state remains retained and is superseded by this session-derived modern projection.",
+    "Initial namespace copier also renamed canonical action aliases; schema validation rejected it, then action names were preserved.",
+    "Initial expanded test command referenced nonexistent test_evidence_shards.py and exited4 without running tests. Corrected existing file set independently returned328 PASS; no product failure inferred from the invocation error."
+  ],
+  "next_action": "Qualify source fresh/repair and exact wheel/sdist SDK-absent consumers; execute complete periodic gate/control flow on controlled real adopters after Identity native handback.",
+  "raw_sha256": {
+    "periodic-planned-consumption-red.stdout": "09f2b652826f4c2f8a2f0cc43908454d2341a2bd416847f93eeb473c3dc5c2e1",
+    "periodic-planned-consumption-red.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-consumption-focused.stdout": "cf7b974ca2ed0b1468b73ab1fa661b03402a2f62ca07b22f13066ff8e6d23e8f",
+    "periodic-planned-consumption-focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-consumption-actions.stdout": "cc6eb140ce5673832f013c16ec663834cb573b1d3a9fa6e75798a8387ef3ad3f",
+    "periodic-planned-consumption-actions.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-consumption-combined.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-consumption-combined.stdout": "6f7e4bd415e0397ab7e13d2a9b7bcef43ce8155c61c30d0378823e36058b7692",
+    "periodic-planned-qualified-type.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-behavior.stderr": "c8ea95547a8ce8033950e50094d641c1a2a07ce0c0034d29cc093fcd9e54086c",
+    "periodic-planned-qualified-semantic.stdout": "606374476dadc245023de094cdf22e98a4e1c760c23d0f5225f9da1108fd3661",
+    "periodic-planned-qualified-checks.json": "a87d400405a5dae1e85cb7eaac4388f99e9c2784f8c8fddbcb807f3eefe244d4",
+    "periodic-planned-qualified-consumers.stdout": "97c37bad3faeb2986b7a445127ed67c3140f72e22f8b5783b17bed892ce02f81",
+    "periodic-planned-qualified-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-type.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-architecture.stdout": "9fbdccf0f03055da2d092ac4d825cf9ba9be08e61d93bc480af0a34ea8efa406",
+    "periodic-planned-qualified-consumers.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "periodic-planned-qualified-exposure.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-qualified-exposure.stdout": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+    "periodic-planned-qualified-behavior.stdout": "a6fc53a5cef0fe8278c459c532a5e372bbe2dd65e4c365a7d7757a210299799f",
+    "periodic-planned-qualified-semantic.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-control-scope.stdout": "7a1ee637cf1026f1ecd175bfaf98f31391e39d9bf62d0763da3d7afb4fa476dc",
+    "periodic-planned-control-fanin.stdout": "03e079c3c33a952361866302f988c4323671fb20eeddde6e18902967822bc5bd",
+    "periodic-planned-control-namespace.stdout": "dd583881f5e14542a2adc79c727c4a01c5841fd359a9077a27fba9c7db6f3cb8",
+    "periodic-planned-control-namespace.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-control-fanin.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-control-literal.stdout": "5fd9e9a4d9e9e6506548e7db2ecf1066e2531927b9eef101e769e6507f951820",
+    "periodic-planned-control-scope.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-control-literal.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-consumption-controls.py": "6f5deb758250fb6c6051201e2d124204847c7ecfbf1d470d50416274dd09facc",
+    "periodic-planned-consumption-controls.json": "b9352ec7a7a606bd4f6b29cfac0269deebadb8a44da0874905824e409f41892b",
+    "periodic-planned-private-probe-current-copied.stdout": "2b660f7e50d1da3054169276852772e967d4a5b560c71b756ee791af11a1abf5",
+    "periodic-planned-private-probe-rehearsal.json": "1f31448698e28feeeda3ba9c079a9a32d4f811ecd881b072be3e02e8e81cc5fb",
+    "periodic-planned-private-probe-current-copied.stderr": "db287fea02c51591cdb7ae60f8f5c803c99b8c81f6fa94a4e11df52bbf2b7f4e",
+    "periodic-planned-private-probe-retained-463d5d8b.stderr": "68e464c188fe14e23f5364c3b30786a3e4c42d3602aebed99b08f5c1b669479e",
+    "periodic-planned-private-probe-retained-463d5d8b.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "periodic-planned-record-governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "periodic-planned-record-governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "record_governance_validation_returncode": 0
+}

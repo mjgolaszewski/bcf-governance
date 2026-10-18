@@ -317,24 +317,41 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         before_periodic = copy.deepcopy(periodic_contract)
         periodic_graph = project(periodic_contract)
         assert periodic_contract == before_periodic
-        periodic_parts = 0
+        modern_periodic_workflows = 0
         for workflow in periodic_graph['workflows']:
+            if workflow['role'] != 'scheduled': continue
+            evidence = [job for job in workflow['jobs'] if job['executor']['kind'] == 'gate_shard']
+            assert len(evidence) == 1 and evidence[0]['executor']['gates'] == list(periodic_contract['gates'])
+            assert evidence[0]['executor']['shard_count'] == 4 and evidence[0]['timeout_minutes'] <= 360
+            assert workflow['jobs'][-1]['executor']['kind'] == 'terminal_truth'
+            assert workflow['jobs'][-1]['consumes'] == [workflow['id'] + '-receipts']
+            argv = periodic_graph['commands'][workflow['id'] + '-preflight']['argv']
+            assert [argv[i+1] for i, value in enumerate(argv) if value == '--expected-producer'] == [evidence[0]['id']]
+            modern_periodic_workflows += 1
+        assert modern_periodic_workflows == 2
+        legacy_gates = [prefix + str(index) for prefix in ('governance-', 'quality-', 'security-', 'runtime-') for index in range(5)]
+        legacy_periodic = graph_defaults.build_reference_ci_graph(
+            project_id='private-legacy-periodic', profile='standard', profile_contract_version='2.0',
+            gates=legacy_gates, candidate_labels=['ubuntu-24.04'], trusted_labels=['self-hosted'],
+            candidate_hosted=True, trusted_hosted=False)
+        periodic_parts = 0
+        for workflow in legacy_periodic['workflows']:
             if workflow['role'] != 'scheduled': continue
             parts = [job for job in workflow['jobs'] if job['executor']['kind'] == 'gate_group']
             assert len(parts) == 2
-            assert [gate for part in parts for gate in part['executor']['gates']] == list(periodic_contract['gates'])
+            assert [gate for part in parts for gate in part['executor']['gates']] == legacy_gates
             previous_job = workflow['jobs'][0]['id']
             previous_artifact = workflow['id'] + '-session'
             for part in parts:
                 assert part['needs'] == [previous_job] and part['consumes'] == [previous_artifact]
                 assert part['condition'] == 'success' and part['timeout_minutes'] <= 360
-                assert periodic_graph['artifacts'][part['produces'][0]]['path'] == '.artifacts/bcf/sessions'
+                assert legacy_periodic['artifacts'][part['produces'][0]]['path'] == '.artifacts/bcf/sessions'
                 previous_job, previous_artifact = part['id'], part['produces'][0]
             assert previous_artifact == workflow['id'] + '-receipts'
             truth = workflow['jobs'][-1]
             assert truth['condition'] == 'always' and truth['needs'] == [part['id'] for part in parts]
             assert truth['consumes'] == [part['produces'][0] for part in parts]
-            argv = periodic_graph['commands'][workflow['id'] + '-preflight']['argv']
+            argv = legacy_periodic['commands'][workflow['id'] + '-preflight']['argv']
             assert [argv[i+1] for i, value in enumerate(argv) if value == '--expected-producer'] == [part['id'] for part in parts]
             periodic_parts += len(parts)
         assert periodic_parts == 4
@@ -403,6 +420,7 @@ print(json.dumps({'authority': False, 'scope': 'private_runtime_synthetic_fact_q
                   'reference_model_bound_budget_minutes': 80,
                   'reference_projection_invalid_facts_rejected': reference_rejections,
                   'reference_projection_cap_atomic': True,
+                  'modern_periodic_planned_workflows': modern_periodic_workflows,
                   'periodic_literal_gates': 20, 'periodic_parts_across_two_schedules': periodic_parts,
                   'periodic_ordered_coverage_and_custody_preserved': True,
                   'identical_requirement_predicates_collapsed': 2,
@@ -425,6 +443,7 @@ def exercise_runtime_fact_queries(consumer, python):
     assert observation['reference_model_bound_budget_minutes'] == 80
     assert observation['reference_projection_invalid_facts_rejected'] == 6
     assert observation['reference_projection_cap_atomic'] is True
+    assert observation['modern_periodic_planned_workflows'] == 2
     assert observation['periodic_literal_gates'] == 20 and observation['periodic_parts_across_two_schedules'] == 4
     assert observation['periodic_ordered_coverage_and_custody_preserved']
     assert observation['identical_requirement_predicates_collapsed'] == 2

@@ -9,6 +9,7 @@ from .evidence_shards import workflow_shard_matrix
 from .ci_graph_execution import direct_post_merge_mode
 from .ci_graph_builders import component as _component, job as _job
 from .ci_graph_pr_evaluator import apply_standard_pr_evaluator
+from .ci_graph_periodic import project_scheduled_proof
 from .ci_graph_timeouts import (
     GITHUB_JOB_TIMEOUT_LIMIT_MINUTES, gate_deadline_values,
     gate_sequence_deadline_ms, project_reference_gate_deadlines,
@@ -562,8 +563,9 @@ def build_reference_ci_graph(
             controls_id = f"{workflow_id}-controls"
             default, overrides, cleanup = gate_deadline_values({} if gate_contract is None else gate_contract)
             ceiling_ms = GITHUB_JOB_TIMEOUT_LIMIT_MINUTES * 60000
-            parts: list[list[str]] = [[]]
-            for gate in scheduled_gates:
+            planned = profile_contract_version == "3.0" and gate_contract is not None
+            parts: list[list[str]] = [list(scheduled_gates) if planned else []]
+            for gate in ([] if planned else scheduled_gates):
                 bound = overrides.get(gate, default)
                 if gate_sequence_deadline_ms(
                     [bound], cleanup=cleanup, headroom=headroom_seconds,
@@ -771,6 +773,8 @@ def build_reference_ci_graph(
     }
     if profile_contract_version == "3.0":
         _apply_v3_proof_composition(graph, gates)
+        if gate_contract is not None:
+            project_scheduled_proof(graph, gates)
         if profile != "lite":
             apply_standard_pr_evaluator(graph)
     elif profile == "lite":

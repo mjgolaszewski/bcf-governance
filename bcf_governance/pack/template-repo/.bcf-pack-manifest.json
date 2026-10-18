@@ -780,7 +780,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_defaults.py": {
       "operation": "copy",
-      "sha256": "46274c3d4bd51c5df10ab84351833e4f4e0a71e353d9e7ccac749c91fb8d7f7a"
+      "sha256": "f533573cdb94fc3141143c10f2c54c58d391ee1ebc77b24c888030f2bc6bdc8e"
     },
     "scripts/_bcf_runtime/ci_graph_diagnostics.py": {
       "operation": "copy",
@@ -805,6 +805,10 @@
     "scripts/_bcf_runtime/ci_graph_locks.py": {
       "operation": "copy",
       "sha256": "6471beeed45211a28a4f1d82dcfad4e292036627847a73850b14dec912acabab"
+    },
+    "scripts/_bcf_runtime/ci_graph_periodic.py": {
+      "operation": "copy",
+      "sha256": "761df7f19abf9c9e9f8af6ae75352f399e99f2d10d87fe3930b3e7b9332da012"
     },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
