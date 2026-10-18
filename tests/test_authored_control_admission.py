@@ -105,3 +105,46 @@ def test_valid_source_control_uses_existing_registry_and_submission_owner(tmp_pa
         semantic_intent=None, runner=runner,
     )
     assert observed == ['lease', 'canonical-check']
+
+
+def phase_control_root(root, defect=None):
+    profile, contract, policy = control_root(root)
+    plans = root / 'plans'
+    plans.mkdir()
+    phases = root / 'phases'
+    phases.mkdir()
+    ledger = {'active_phase': {'plan': 'plans/current-plan.yml',
+                              'workitems': 'plans/current-workitems.yml',
+                              'log': 'phases/current-log.yml'}}
+    (plans / 'phase-ledger.yml').write_text(yaml.safe_dump(ledger))
+    log = phases / 'current-log.yml'
+    log.write_text('document: {status: active}\n')
+    # A tempting alternative is not the ledger-selected target.
+    (phases / 'old-log.yml').write_text('document: {status: invalid}\n')
+    mutation = {'path': '@active_phase_log', 'yaml_path': 'document.status', 'value': 'invalid'}
+    if defect == 'stale_yaml_path':
+        mutation['yaml_path'] = 'document.missing'
+    elif defect == 'already_mutated':
+        log.write_text('document: {status: invalid}\n')
+    elif defect == 'missing_phase_target':
+        log.unlink()
+    elif defect == 'symlink_phase_target':
+        log.rename(phases / 'retained.yml')
+        log.symlink_to(phases / 'retained.yml')
+    contract['gates']['test']['negative_controls'][0]['mutation'] = mutation
+    (root / 'governance/gate-contracts.yml').write_text(yaml.safe_dump(contract))
+    return profile, contract, policy
+
+
+@pytest.mark.parametrize('defect', ['stale_yaml_path', 'already_mutated', 'missing_phase_target', 'symlink_phase_target'])
+def test_complete_registry_checks_ledger_selected_log_mutation_state(tmp_path, defect):
+    from bcf_governance.tooling.governance_validation.common import GovernanceValidationError
+
+    profile, contract, policy = phase_control_root(tmp_path, defect)
+    with pytest.raises(GovernanceValidationError, match='negative-control mutations must resolve exactly once'):
+        _validate_gate_contract_registry(tmp_path, profile, contract, policy)
+
+
+def test_complete_registry_uses_exact_active_log_and_preserves_valid_mutation(tmp_path):
+    profile, contract, policy = phase_control_root(tmp_path)
+    _validate_gate_contract_registry(tmp_path, profile, contract, policy)

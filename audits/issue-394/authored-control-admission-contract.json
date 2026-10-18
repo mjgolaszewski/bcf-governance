@@ -2,7 +2,10 @@
   "schema_version": "1.0",
   "authority": false,
   "status": "planned; characterization precedes production changes",
-  "workitems": ["foundation.submit-normalization", "foundation.conformance"],
+  "workitems": [
+    "foundation.submit-normalization",
+    "foundation.conformance"
+  ],
   "bounded_context": "validation",
   "architectural_layer": "tooling",
   "operation_side": "read-only baseline admission before command allocation",
@@ -24,13 +27,15 @@
     "Preserve genuinely local and ungoverned use, readable legacy profiles and valid ordinary governed candidates. Partial modern declarations and missing authority block; no new approval or CLI grammar.",
     "Any necessary generated-target deferral must be mechanically established by its existing canonical projection owner and validated in full after projection, before a generated commit or promotion. Unknown target ownership cannot create an exemption.",
     "Preserve the existing full governance validator's deliberate active-negative-control diagnostic ordering. Baseline admission is not an active-control execution bypass or a change to which causal defect its target must report.",
-    "Keep exact candidate bytes fixed while admitted operations run; no edits to the concurrently qualified lifecycle-consumer tree, maintained adopters, immutable234 bytes or generated workflow/pin pairs."
+    "Keep exact candidate bytes fixed while admitted operations run; no edits to the concurrently qualified lifecycle-consumer tree, maintained adopters, immutable234 bytes or generated workflow/pin pairs.",
+    "Resolve the existing @active_phase_log logical target through the canonical active-phase path owner; do not silently omit it or guess a phase file. Preserve the full validator diagnostic order."
   ],
   "verification": [
     "Same-signature submit/reconcile controls must show actual stale source references reaching forbidden allocation on unchanged production, independently of any missing new interface.",
     "Valid governed and genuinely local baselines still reach the existing owner; an all-fail implementation cannot pass.",
     "Qualify generated-input normalization and check/apply paths, full source control population, typed YAML modes and active cause-specific controls before integration.",
-    "Run affected behavior, existing governance/architecture/semantic checks and installed public/private parity on exact bytes."
+    "Run affected behavior, existing governance/architecture/semantic checks and installed public/private parity on exact bytes.",
+    "Existing full registry query must reject stale/missing/symlinked/already-mutated active-log targets, while a valid ledger-selected log passes even when another retained log has different state."
   ],
   "limits": "Contract and characterization only. Runtime implementation, independent qualification and complete lifecycle/performance/custody remain open; no whole requirement or slice status advances."
 }
