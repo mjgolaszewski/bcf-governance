@@ -314,15 +314,16 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     )
     from .governance_validation.authored_phase_state import (
         active_phase_paths,
+        authored_phase_inputs_present,
         validate_authored_hotfix_state,
         validate_authored_phase_state,
     )
     from .governance_validation.ci_state_matrix import validate_ci_state_matrix
-    phase_ledger_present = (repo_root / "plans/phase-ledger.yml").is_file()
-    active_paths = active_phase_paths(repo_root) if phase_ledger_present else ()
-    hotfix_paths = validate_authored_hotfix_state(repo_root) if phase_ledger_present else ()
+    phase_inputs_present = authored_phase_inputs_present(repo_root)
+    active_paths = active_phase_paths(repo_root) if phase_inputs_present else ()
+    hotfix_paths = validate_authored_hotfix_state(repo_root) if phase_inputs_present else ()
     steps: list[ReconcileStep] = []
-    if phase_ledger_present:
+    if phase_inputs_present:
         active_plan, active_workitems, active_log = active_paths
         steps.append(ReconcileStep(
             "authored-phase-state",
@@ -652,8 +653,10 @@ def reconcile_main(argv: list[str] | None = None) -> None:
     try:
         if args.force and not args.check:
             raise ReconcileError("--force is valid only with --check")
-        if (root / "plans/phase-ledger.yml").is_file():
-            from .governance_validation.authored_phase_state import validate_authored_phase_state
+        from .governance_validation.authored_phase_state import (
+            authored_phase_inputs_present, validate_authored_phase_state,
+        )
+        if authored_phase_inputs_present(root):
             validate_authored_phase_state(root)
         validate_authored_release_target(root, __version__)
         gate_timeout_contract(root)

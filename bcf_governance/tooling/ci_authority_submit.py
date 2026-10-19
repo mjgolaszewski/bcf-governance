@@ -43,7 +43,9 @@ from .semantic_ownership_scan import validate_authored_semantic_ownership
 from .governance_validation.preflight_distribution import validate_source_distribution
 from .runtime_capacity import executing_runtime_version
 from .ci_graph_timeouts import gate_timeout_contract
-from .governance_validation.authored_phase_state import validate_authored_phase_state
+from .governance_validation.authored_phase_state import (
+    authored_phase_inputs_present, validate_authored_phase_state,
+)
 from .governance_validation.evidence_contracts import validate_authored_gate_controls
 from .governance_validation.required_artifacts import validate_pull_request_changelog_update
 from .local_pr_context import _pr_environment, require_clean_candidate_root
@@ -58,8 +60,7 @@ def _validate_authored_submission_inputs(root: Path) -> None:
     """Reject available authored defects without selecting project resources."""
 
     try:
-        phase_ledger = root / "plans/phase-ledger.yml"
-        if phase_ledger.exists() or phase_ledger.is_symlink():
+        if authored_phase_inputs_present(root):
             validate_authored_phase_state(root)
         try:
             version = executing_runtime_version()

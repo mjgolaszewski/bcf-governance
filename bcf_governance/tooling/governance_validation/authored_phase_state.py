@@ -71,6 +71,17 @@ def validate_authored_hotfix_state(
     return tuple(path.relative_to(repo_root).as_posix() for path in paths)
 
 
+def authored_phase_inputs_present(repo_root: Path) -> bool:
+    """Select phase validation for any declared canonical phase input entry."""
+
+    markers = (
+        repo_root / "plans/product-spec.yml",
+        repo_root / "plans/build-plan.yml",
+        repo_root / "plans/phase-ledger.yml",
+    )
+    return any(path.exists() or path.is_symlink() for path in markers)
+
+
 def validate_authored_phase_state(repo_root: Path) -> dict[str, Any]:
     """Reject contradictory authored phase state before derived reconciliation."""
 
