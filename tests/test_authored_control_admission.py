@@ -295,3 +295,73 @@ def test_control_validation_precedes_real_git_shadow_promotion(tmp_path, workflo
         assert _git(root, 'status', '--porcelain=v1') == ''
         controls.validate_authored_gate_controls(root)
         assert (root / 'implementation.py').read_text() == 'RULE = True\n'
+
+
+def _prepare_submit_frontdoor(monkeypatch):
+    from bcf_governance.tooling import ci_commands, ci_github_controller
+    from tests.test_candidate_submit import _state
+
+    normalize = submit._normalize_submission
+    _state(monkeypatch)
+    monkeypatch.setattr(submit, '_normalize_submission', normalize)
+    submit_prerequisites(monkeypatch)
+    monkeypatch.setattr(ci_github_controller, 'environment_api', lambda: object())
+
+    def forbidden_authority(*_args, **_kwargs):
+        pytest.fail('provider authority consumed before authored control rejection')
+
+    def forbidden_proof(*_args, **_kwargs):
+        pytest.fail('proof or push attempted before authored control rejection')
+
+    monkeypatch.setattr(submit, '_canonical_inputs', forbidden_authority)
+    monkeypatch.setattr(submit, 'run_prospective_train', forbidden_proof)
+    monkeypatch.setattr(submit, '_push_exact_candidate', forbidden_proof)
+    return ci_commands
+
+
+@pytest.mark.parametrize('defect', ['absent_search', 'ambiguous_search', 'missing_target', 'symlink_target'])
+def test_submit_cli_rejects_authored_control_before_project_environment(tmp_path, monkeypatch, defect):
+    from bcf_governance.tooling import local_execution_admission
+
+    control_root(tmp_path, defect)
+    cli = _prepare_submit_frontdoor(monkeypatch)
+
+    def forbidden_environment(*_args, **_kwargs):
+        pytest.fail('project environment selection attempted before authored control rejection')
+
+    monkeypatch.setattr(cli, 'ensure_local_project_python', forbidden_environment)
+    monkeypatch.setattr(local_execution_admission, 'ensure_local_project_python', forbidden_environment)
+    monkeypatch.setattr(local_execution_admission, 'materialize_interpreter_environment', forbidden_environment)
+    with pytest.raises(SystemExit, match='negative-control mutations must resolve exactly once'):
+        cli.main(['submit', '--repo-root', str(tmp_path)])
+
+
+def test_submit_cli_valid_authored_control_reaches_project_environment(tmp_path, monkeypatch):
+    control_root(tmp_path)
+    cli = _prepare_submit_frontdoor(monkeypatch)
+
+    class EnvironmentSelected(RuntimeError):
+        pass
+
+    def selected_environment(*_args, **_kwargs):
+        raise EnvironmentSelected('valid control reached existing environment selection')
+
+    monkeypatch.setattr(cli, 'ensure_local_project_python', selected_environment)
+    with pytest.raises(EnvironmentSelected, match='valid control reached existing environment selection'):
+        cli.main(['submit', '--repo-root', str(tmp_path)])
+
+
+def test_submit_cli_rechecks_authored_control_after_environment_selection(tmp_path, monkeypatch):
+    control_root(tmp_path)
+    cli = _prepare_submit_frontdoor(monkeypatch)
+    selections = []
+
+    def changed_environment(*_args, **_kwargs):
+        selections.append(Path(sys.executable))
+        (tmp_path / 'implementation.py').write_text('RULE = False\n')
+        return Path(sys.executable)
+
+    monkeypatch.setattr(cli, 'ensure_local_project_python', changed_environment)
+    with pytest.raises(SystemExit, match='negative-control mutations must resolve exactly once'):
+        cli.main(['submit', '--repo-root', str(tmp_path)])
+    assert selections == [Path(sys.executable)]
