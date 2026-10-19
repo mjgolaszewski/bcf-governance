@@ -16,6 +16,7 @@ from typing import Any, Iterable
 
 from .semantic_adoption_dependencies import SemanticDependencyError, resolve_dependency_file
 from .semantic_source_paths import candidate_source_files
+from .evidence_process_supervisor import run_admitted_command
 
 
 class TypeScriptDiscoveryError(RuntimeError):
@@ -179,7 +180,7 @@ def discover_typescript_source(
         raise TypeScriptDiscoveryError("declared TypeScript roots select zero tracked files")
     analyzer = Path(__file__).with_name("semantic_ownership_typescript.mjs")
     try:
-        result = subprocess.run(
+        result = run_admitted_command(
             [
                 str(node_path),
                 str(analyzer),
@@ -194,6 +195,7 @@ def discover_typescript_source(
                 "--files",
                 *(str(path) for path in selected),
             ],
+            unbound_runner=subprocess.run,
             cwd=repo_root,
             capture_output=True,
             text=True,

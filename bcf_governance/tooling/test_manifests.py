@@ -15,6 +15,7 @@ from .ci_graph_yaml import GraphYAMLError, load_yaml_bytes
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .evidence_execution import _selected_python
 from .local_execution_admission import project_python_environment
+from .evidence_process_supervisor import run_admitted_command
 
 
 class TestManifestError(ValueError):
@@ -209,8 +210,9 @@ def _collect_raw_nodes(
     python = _selected_python(python_executable)
     environment = project_python_environment(repo_root, python, os.environ)
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
-    result = subprocess.run(
+    result = run_admitted_command(
         [str(python), "-m", "pytest", "--collect-only", "-q", *selectors],
+        unbound_runner=subprocess.run,
         cwd=repo_root,
         env=environment,
         capture_output=True,

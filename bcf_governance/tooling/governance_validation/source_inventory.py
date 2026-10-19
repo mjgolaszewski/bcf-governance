@@ -6,6 +6,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 import subprocess
 import tarfile
 import hashlib
+import os
 from glob import glob
 import tomllib
 import zipfile
@@ -14,12 +15,19 @@ import zipfile
 def tracked_source_inventory(repo_root: Path) -> frozenset[str]:
     """Return the exact Git-owned source inventory."""
 
-    result = subprocess.run(
-        ["git", "ls-files", "-z"],
-        cwd=repo_root,
-        capture_output=True,
-        check=False,
-    )
+    command = ["git", "--no-replace-objects", "-c", f"core.hooksPath={os.devnull}",
+               "-c", "core.fsmonitor=false", "ls-files", "-z"]
+    # The protected -I script is SDK-free and belongs to its enclosing guardian.
+    # Imported SDK/private consumers bind their own invoking thread's lease.
+    if __package__:
+        from ..evidence_process_supervisor import run_admitted_command
+
+        result = run_admitted_command(
+            command, unbound_runner=subprocess.run,
+            cwd=repo_root, capture_output=True, check=False,
+        )
+    else:
+        result = subprocess.run(command, cwd=repo_root, capture_output=True, check=False)
     if result.returncode:
         raise ValueError("source inventory requires Git custody")
     values = result.stdout.split(b"\0")

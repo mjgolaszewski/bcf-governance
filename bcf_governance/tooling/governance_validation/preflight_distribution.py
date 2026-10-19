@@ -15,6 +15,7 @@ from .common import _load_yaml
 from .context_budgets import _validate_context_budgets
 from .source_inventory import validate_package_data_contract
 from ..interpreter_environment import derive_interpreter_environment, verify_interpreter_environment_projection
+from ..evidence_process_supervisor import run_admitted_command
 
 
 def validate_source_distribution(repo_root: Path, *, python_executable: Path) -> dict[str, Any]:
@@ -29,8 +30,9 @@ def validate_source_distribution(repo_root: Path, *, python_executable: Path) ->
     source = Path(__file__).resolve().with_name("source_inventory.py")
     if not source.is_file() or source.is_symlink():
         raise ValueError("framework source distribution declaration owner is missing")
-    result = subprocess.run(
+    result = run_admitted_command(
         [str(python_executable), "-I", str(source), "--repo-root", str(repo_root)],
+        unbound_runner=subprocess.run,
         cwd=repo_root,
         env=project_python_environment(repo_root, python_executable, os.environ),
         capture_output=True, text=True, check=False,
