@@ -198,3 +198,13 @@ protected_git_namespace_extension:
     - A real post-checkout hook cannot inject another evaluator during compatibility materialization.
     - Foreign GIT_DIR/GIT_WORK_TREE cannot authorize CURRENT for another candidate.
   scope_limit: This extends existing Git/source/compatibility owners; complete dynamic effect and lifecycle populations remain independent open requirements.
+
+compatibility_consuming_subject_extension:
+  required_behavior:
+    - Capture the exact candidate commit before ancestry, source comparison and installed-code consumption; compare explicit candidate and target commits rather than moving HEAD.
+    - Reauthenticate candidate commit and clean state before consuming installed compatibility and at terminal boundaries, including exceptions that could otherwise enable a routine alternate lane.
+    - Only committed exact-subject facts can derive CURRENT or PENDING_ROTATION. Preserve genuinely local authored inventory with no target context.
+  controls_before_production:
+    - Real HEAD advances after source diff cannot produce current applicability.
+    - Real HEAD advances inside installed-consumer failure cannot produce alternate-lane applicability.
+    - Existing committed unrelated-file and alternate-lane positive behavior remains assured; uncommitted fixture policy is rejected explicitly.
