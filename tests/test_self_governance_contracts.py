@@ -904,9 +904,13 @@ def test_governance_fan_in_is_preflight_ordered_and_attempt_exact() -> None:
         "{env:BCF_EVALUATION_TARGET}",
     ]
     assert graph["commands"]["governance-preflight"]["environment"] == {
+        "GITHUB_TOKEN": "${{ github.token }}",
         "BCF_EVALUATION_MODE": "${{ inputs.evaluation_mode || 'pr' }}",
         "BCF_EVALUATION_TARGET": "${{ inputs.evaluation_target || '' }}",
     }
+    assert graph["commands"]["governance-preflight-with-prior"]["environment"] == (
+        graph["commands"]["governance-preflight"]["environment"]
+    )
     assert graph["step_components"]["run-governance-truth"]["condition"] == (
         "evidence-prerequisites-without-prior"
     )

@@ -36,7 +36,9 @@ from .ci_controller_policy import TrustedControllerPolicyError, load_graph_contr
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_job_timeouts
-from .ci_graph_storage import validate_evidence_storage
+from .ci_graph_storage import (
+    validate_evidence_storage, _private_artifacts, _validate_private_transport,
+)
 from .ci_graph_routing import validate_candidate_routing
 from .ci_graph_rotation_outputs import validate_rotation_output_directories
 from .ci_graph_edges import EdgeContract, compile_edge_contracts, validate_edge_population
@@ -301,91 +303,6 @@ def _validate_step_components(graph: dict[str, Any]) -> None:
                 )
 
 
-def _private_artifacts(graph: dict[str, Any]) -> set[str]:
-    """Derive artifacts carrying a private evidence-session custody boundary."""
-
-    session_paths = {
-        artifact["path"]
-        for artifact in graph["artifacts"].values()
-        if artifact["kind"] == "session"
-    }
-    return {
-        artifact_id
-        for artifact_id, artifact in graph["artifacts"].items()
-        if artifact["kind"] == "session" or artifact["path"] in session_paths
-    }
-
-
-def _validate_private_transport(
-    graph: dict[str, Any], job: dict[str, Any], executor: dict[str, Any]
-) -> None:
-    protected = set(job["consumes"]) & _private_artifacts(graph)
-    if not protected:
-        return
-    if executor["kind"] not in {"component_sequence", "gate_shard", "terminal_truth"}:
-        if "restore-private-modes" not in job["components"]:
-            raise CIGraphError(
-                f"CI graph job {job['id']} must restore private artifact modes before execution"
-            )
-        return
-    components = executor["components"]
-    protected_downloads = [
-        index
-        for index, component_id in enumerate(components)
-        if graph["step_components"][component_id]["kind"] == "action"
-        and graph["step_components"][component_id]["action"] == "download-artifact"
-        and set(graph["step_components"][component_id]["consumes"]) & protected
-    ]
-    downloaded = {
-        artifact
-        for index in protected_downloads
-        for artifact in graph["step_components"][components[index]]["consumes"]
-        if artifact in protected
-    }
-    restores = [
-        index
-        for index, component_id in enumerate(components)
-        if graph["step_components"][component_id].get("restores_private_artifacts")
-    ]
-    downloads_are_contiguous = bool(protected_downloads) and protected_downloads == list(
-        range(min(protected_downloads), max(protected_downloads) + 1)
-    )
-    if (
-        downloaded != protected
-        or not downloads_are_contiguous
-        or len(restores) != 1
-        or restores[0] != max(protected_downloads, default=-2) + 1
-    ):
-        raise CIGraphError(
-            f"CI graph job {job['id']} must restore private artifact modes immediately after exact transport"
-        )
-    restore = graph["step_components"][components[restores[0]]]
-    if set(restore["restores_private_artifacts"]) != protected:
-        raise CIGraphError(
-            f"CI graph job {job['id']} private mode restoration must bind every transported artifact"
-        )
-    download_conditions = {
-        graph["step_components"][components[index]]["condition"]
-        for index in protected_downloads
-    }
-    if len(download_conditions) != 1 or restore["condition"] not in download_conditions:
-        raise CIGraphError(
-            f"CI graph job {job['id']} private mode restoration condition must match its transport"
-        )
-    download_roots = {
-        str(graph["step_components"][components[index]]["with"].get("path", ""))
-        for index in protected_downloads
-    }
-    argv = graph["commands"][restore["command"]]["argv"]
-    declared_roots = {
-        argv[index + 1]
-        for index, value in enumerate(argv[:-1])
-        if value == "--root"
-    }
-    if download_roots != declared_roots:
-        raise CIGraphError(
-            f"CI graph job {job['id']} private mode restoration root must match artifact custody"
-        )
 
 
 def _condition_needs(graph: dict[str, Any], condition: str | None) -> set[str]:

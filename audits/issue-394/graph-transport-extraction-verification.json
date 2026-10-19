@@ -1,0 +1,85 @@
+{
+  "authority": false,
+  "code_subject": "7756cc81d65ae74b9577c5f7781c7b7bb77514ab",
+  "baseline_subject": "aef16827e9c88d5f2cd06b0b5b8010475b8cc521",
+  "moved_functions": [
+    "_private_artifacts",
+    "_validate_private_transport"
+  ],
+  "ast_behavior_unchanged": true,
+  "source_modules_within_800_lines": true,
+  "characterization": {
+    "before": 174,
+    "after": 174,
+    "exact_case_membership_equal": true,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "canonical_outputs": {
+    "generated_workflows": 18,
+    "all_bytes_equal": true,
+    "graph_and_edge_identities_equal": true
+  },
+  "private_runtimes": {
+    "copies": 2,
+    "source_package_unavailable": true,
+    "module_origins_and_reexports_verified": true,
+    "graph_edges_and_rendered_bytes_equal": true
+  },
+  "quality": {
+    "canonical_pack_check": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "composition_controller_edge_and_self_governance": {
+      "passed": 403,
+      "failed": 1,
+      "retained_failure": "Exact preflight environment assertion omitted existing provider token, introduced in1f83d5e32 before extraction.",
+      "corrected_fan_in_and_related_cases_passed": 3,
+      "all_four_exact_environment_controls_rejected": [
+        "missing-token",
+        "substituted-token",
+        "extra-entry",
+        "prior-token"
+      ]
+    },
+    "governance": "passed after contracted exact test repair"
+  },
+  "local_readback_sha256": {
+    "graph-transport-7756cc81-characterization-readback.json": "1940cc8f6d3c4fe28055f35f938eb98f0b2bc89be6b32604e53fe3289150a7f6",
+    "graph-transport-7756cc81-ast-readback.json": "a5956b09244a860c513ad06cb87504c5d8defbc0f5baa4c648080907ef309b6c",
+    "graph-transport-render-before.json": "fce72a1c363c2d3a168b9c4fa4ba67a6818e00f9a96a22c5219e5f6b4b32ca08",
+    "graph-transport-render-after.json": "fce72a1c363c2d3a168b9c4fa4ba67a6818e00f9a96a22c5219e5f6b4b32ca08",
+    "graph-transport-private-template.json": "fce72a1c363c2d3a168b9c4fa4ba67a6818e00f9a96a22c5219e5f6b4b32ca08",
+    "graph-transport-private-packaged-template.json": "fce72a1c363c2d3a168b9c4fa4ba67a6818e00f9a96a22c5219e5f6b4b32ca08",
+    "graph-transport-primary-canonical-checks-attempt1/1.stdout": "507850cac39712341d91286ea7bc0046469d1b423d05bbd57795066a1e2bbcca",
+    "graph-transport-primary-canonical-checks-attempt1/1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-primary-canonical-checks-attempt1/0.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-primary-canonical-checks-attempt1/0.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-primary-canonical-checks-attempt1/results.json": "b05cc3aad65ee1a74034443779cd984f3f1731c1186a0e7094d314b06fa5b611",
+    "graph-transport-primary-canonical-checks-attempt1/cases.xml": "f36edec0eae109eb5b3984132d2c661ffdf726ba4bd3dfd96b336eef457ac58a",
+    "graph-transport-preflight-environment-repair-attempt1/1.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+    "graph-transport-preflight-environment-repair-attempt1/1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-preflight-environment-repair-attempt1/0.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-preflight-environment-repair-attempt1/0.stdout": "04c809b2441c5577560294e187dddfa48341dbc1796a30eb3ca7e19b437f5566",
+    "graph-transport-preflight-environment-repair-attempt1/results.json": "0c15915265ccfaafce0ab9ae4f209464480c1dd3703563c6dfa7d1bfae4240c1",
+    "graph-transport-preflight-environment-repair-attempt1/cases.xml": "7afe30a57a6e14f44c1122682d65515646bb11900d75c990a2a841257141525f",
+    "graph-transport-primary-quality-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-primary-quality-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-primary-quality-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-primary-quality-attempt1/results.json": "33f410b9b20f43882710d78cc7f929710422229378b9828ccba95e8078f3b794",
+    "graph-transport-primary-quality-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-preflight-environment-controls.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph-transport-preflight-environment-controls.stderr": "65629e2c32ceb7c2164b5cc970fa24d21f0b021b70601dcd07c7ec37372250b3",
+    "graph-transport-preflight-environment-controls-attempt2.stdout": "51384af4723cdb68e05f673dee945b811736ba74a4802c83cea9ebd1bd61f3f9",
+    "graph-transport-preflight-environment-controls-attempt2.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "limits": [
+    "Pure responsibility extraction only; no lifecycle consumer activation.",
+    "Full protected lifecycle, runtime effects, deadlines, approved targets, adopter qualification and immutable2.5 custody remain open.",
+    "All82 whole requirements and38 slice statuses unchanged."
+  ],
+  "fixture_dispositions": [
+    "First optional control harness lacked workflows on its fake compiled result and failed before exercising the oracle; retained. Corrected adapter preserves graph plus workflows; valid graph and four rejection controls pass."
+  ]
+}
