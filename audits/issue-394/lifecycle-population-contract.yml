@@ -65,3 +65,22 @@ first_population_consumer:
   - Reject contradictory reachable/excluded dispositions and unknown exclusion classes before downstream validation or allocation.
   - Preserve valid ordinary graph outputs and existing CLI/schema contracts; keep the graph consumer within800 lines.
   - This closes compiled CI pair population only; complete lifecycle contexts, source/runtime conformance and all82 whole requirements remain open.
+
+consumer_container_transport_extraction:
+  source_baseline: fd65b52ceae6f23eb267de5da8cfc8fff4ed76bb
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  precondition: ci_graph_contracts.py is exactly800lines; create responsibility-based room before lifecycle consumer behavior.
+  source_owner: bcf_governance/tooling/ci_graph_contracts.py
+  destination_existing_owner: bcf_governance/tooling/ci_graph_storage.py
+  pure_functions: [_private_artifacts, _validate_private_transport]
+  characterization:
+  - Existing complete graph173/composition332/controller-lifecycle19/edge-population13 case populations pass in source, wheel and sdist at the unchanged baseline; retain the exact source and evidence digest.
+  - Retain and run the named private-artifact-mode restoration positive/negative behavior before moving production code.
+  preservation:
+  - Move the two pure bodies without AST behavior changes; preserve existing import attributes and CIGraphError semantics.
+  - Preserve canonical graph outputs, ordering, edge identities, restoration roots/conditions, positive behavior and cause-specific rejection.
+  - Existing storage owner remains responsible; add no graph, registry, evaluator or receipt family and no CLI/provider status change.
+  - Canonical generator alone mirrors runtime assets; keep production modules within800lines and qualify affected behavior and mandatory checks.
+  exit: Pure extraction creates room only; full protected lifecycle population adoption/runtime conformance and all82whole requirements remain open.

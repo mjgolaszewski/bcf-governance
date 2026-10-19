@@ -379,6 +379,8 @@ workitems:
     - audits/issue-394/provider-response-supported-profile-verification.json
     - audits/issue-394/provider-byte-limit-verification.json
     - tests/test_installed_provider_response.py
+    - audits/issue-394/native-lease-custody-contract.yml
+    - audits/issue-394/native-lease-custody-characterization.json
   foundation.baseline:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
     status: IN_PROGRESS
@@ -4598,8 +4600,11 @@ implementation_slices:
   evidence-command-terminal-cleanup:
     id: evidence-command-terminal-cleanup
     workitem: P32-P0-05
-    scope: Linux per-command kernel-child custody, typed unresolved retirement block and body/setup/cleanup deadline floor;
-      not full host isolation or complete pipeline bounds.
+    scope: >-
+      Linux per-command kernel-child custody, typed unresolved retirement block and body/setup/cleanup deadline floor;
+      not full host isolation or complete pipeline bounds. Native/protected-controller extension at
+      fd65b52ceae6f23eb267de5da8cfc8fff4ed76bb passes2391each SDK source/wheel/sdist and ordinary profiles40/39/39;
+      exact bounded evidence and residuals remain in audits/issue-394/native-lease-custody-characterization.json.
     contract: audits/issue-394/evidence-timeout-cleanup-contract.json
     producer: evidence_execution::_run; evidence_process_supervisor::run_owned_command
     consumer: _run_with_execution_state; interpreter metadata probe; existing evidence contract loader and CI timeout compiler/audit
