@@ -118,5 +118,60 @@
     },
     "complete_native_consumer_population": false,
     "installed_runtime_qualification": false
+  },
+  "nonfinite_timeout_characterization": {
+    "subject": "c352515ef7410e4384c73cc7e939a21a2edb0d03",
+    "cases": 6,
+    "genuine_allocation_failures": 2,
+    "already_rejected_controls": 4,
+    "fixture_errors": 0
+  },
+  "complete_focused_qualification": {
+    "subject": "242316fb7bc1cc2da30f7da1a44c184ae1d48bd5",
+    "tree": "f9ed6a5e9fd82d3a0f1f6420f140a4e3074f23f0",
+    "cases_passed": 20,
+    "original_namespace_control_unchanged": true,
+    "nonfinite_timeout_rejected_before_allocation": true,
+    "terminal_quiescence_eof_and_supervisor_reap": true
+  },
+  "early_structural_qualification": {
+    "subject": "e89eb2658e0f30596860bcce08bc724f3abaf96d",
+    "lint": "PASS",
+    "existing_typecheck": "PASS; version assignment and compilation only",
+    "normalization_fixture_signature_failures": 2,
+    "production_ownership_failures_in_run": 0,
+    "disposition": "Updated existing lease fixtures to accept and assert canonical repository-policy context; refusal and ordering oracles retained."
+  },
+  "original_consumer_qualification": {
+    "subject": "5e8824c7fdaefc1c4829d7292ba3b338f638c770",
+    "tree": "d7ae4ecd23b9d2156a3e1d0243621a3170be9ba1",
+    "modules": [
+      "interpreter_environment",
+      "local_pr",
+      "local_proof_bundles",
+      "scaffold_governance_artifacts",
+      "evidence_process_supervisor",
+      "candidate_submit",
+      "local_execution_admission"
+    ],
+    "canonical_manifest_cases_passed": 209,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "terminal_quiescence_eof_and_supervisor_reap": true,
+    "raw_sha256": {
+      "operation.json": "767c414bb6d9ab76cb5ca9ddc04678ab83ed20f631294a4fa8b27a6554251e00",
+      "cases.xml": "92a35226bcb7936189764f8035635a7f0345c68a41e4922bc3680e33cc1869d5",
+      "focused.stdout": "d785dd1ad0c9b78439d6cd9765ed857e557774e57d773b22b298e705ed5ce67d",
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "runtime_projection": {
+    "owner": ".github/scripts/build_pack_manifest.py",
+    "first_commit": "65836cdf9b0bad3389b328a8ae78a905c8f82c80",
+    "finite_deadline_commit": "e89eb2658e0f30596860bcce08bc724f3abaf96d",
+    "canonical_byte_parity": true,
+    "generator_check": "PASS",
+    "installed_qualification": false
   }
 }
