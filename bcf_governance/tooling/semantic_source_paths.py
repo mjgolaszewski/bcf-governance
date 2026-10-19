@@ -10,15 +10,17 @@ import re
 from typing import Any
 from typing import Callable
 
+from .evidence_process_supervisor import run_admitted_command
+
 
 def _source_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
     """Read source facts without executing repository-configured Git programs."""
-    return subprocess.run(
+    return run_admitted_command(
         [
             "git", "--no-replace-objects", "-c", f"core.hooksPath={os.devnull}",
             "-c", "core.fsmonitor=false", *arguments,
         ],
-        cwd=repo_root, capture_output=True, check=False,
+        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, check=False,
     )
 
 

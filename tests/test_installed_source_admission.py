@@ -102,12 +102,13 @@ def test_installed_source_query_uses_runtime_owner_and_selected_project_interpre
 def test_installed_source_discovery_never_executes_repository_fsmonitor(
     installed_consumer, isolated_python,
 ):
-    code = r'''import importlib.util, json, subprocess, sys
+    code = r'''import importlib.util, json, subprocess, sys, os, fcntl
 from pathlib import Path
 assert importlib.util.find_spec('bcf_governance') is None
 installed = Path.cwd()
 sys.path.insert(0, str(installed / 'scripts'))
 from _bcf_runtime import semantic_source_paths as paths
+from _bcf_runtime import evidence_process_supervisor as custody
 from _bcf_runtime.semantic_ownership_inventory import discover_python_source
 assert Path(paths.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
 fixture = installed / 'git-discovery-fixture'
@@ -130,11 +131,33 @@ assert paths.candidate_source_files(fixture, ('*.py',), label='Python', error=Va
 for subject in (None, identity):
     result = discover_python_source(fixture, source_subject=subject)
     assert [row['path'] for row in result['files']] == ['source.py']
+assert Path(custody.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
+guardians = []
+receive = custody._receive
+descriptor = os.open(installed / 'native-reader-lease', os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
+lease = os.fstat(descriptor)
+fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+def observe(connection, deadline):
+    value = receive(connection, deadline)
+    if value.get('type') == 'ready':
+        actual = Path('/proc', str(value['supervisor_pid']), 'fd', str(descriptor)).stat()
+        assert (actual.st_dev, actual.st_ino) == (lease.st_dev, lease.st_ino)
+        guardians.append(value['supervisor_pid'])
+    return value
+custody._receive = observe
+try:
+    with custody.native_lease_custody(descriptor, timeout_seconds=30, cleanup_seconds=10):
+        assert paths.candidate_source_files(fixture, ('*.py',), label='Python', error=ValueError) == [fixture / 'source.py']
+        assert [row[0] for row in paths.committed_python_source_population(fixture, **identity)['python_blobs']] == ['source.py']
+finally:
+    os.close(descriptor)
+assert len(guardians) == 4 and all(not Path('/proc', str(pid)).exists() for pid in guardians)
 assert not marker.exists(), 'installed source discovery executed candidate fsmonitor'
 assert git('config', '--get', 'core.fsmonitor') == str(monitor)
 assert not any(name.startswith('bcf_governance') for name in sys.modules)
 print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
                   'consumers': 3, 'fsmonitor_not_executed': True,
+                  'bound_git_guardians_verified_and_reaped': 4,
                   'repository_configuration_preserved': True}, sort_keys=True))
 '''
     compile(code, 'installed-semantic-git-discovery', 'exec')
@@ -146,5 +169,6 @@ print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
     assert json.loads(result.stdout) == {
         'source_sdk_absent': True, 'private_origin_verified': True,
         'consumers': 3, 'fsmonitor_not_executed': True,
+        'bound_git_guardians_verified_and_reaped': 4,
         'repository_configuration_preserved': True,
     }
