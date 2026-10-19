@@ -411,7 +411,7 @@ def test_submit_cli_valid_provider_configuration_keeps_environment_selection(tmp
         cli.main(['submit', '--repo-root', str(tmp_path)])
 
 
-@pytest.mark.parametrize('kind', ['directory', 'dangling_symlink'])
+@pytest.mark.parametrize('kind', ['directory', 'dangling_symlink', 'missing'])
 def test_submit_cli_existing_malformed_phase_ledger_rejects_before_environment(tmp_path, monkeypatch, kind):
     from tests.test_validate_governance_yaml import _instantiate_fixture_repo
 
@@ -423,8 +423,10 @@ def test_submit_cli_existing_malformed_phase_ledger_rejects_before_environment(t
     ledger.unlink()
     if kind == 'directory':
         ledger.mkdir()
-    else:
+    elif kind == 'dangling_symlink':
         ledger.symlink_to('missing-ledger.yml')
+    else:
+        assert kind == 'missing'
     cli = _prepare_submit_frontdoor(monkeypatch)
     monkeypatch.setattr(cli, 'ensure_local_project_python',
         lambda *_a, **_k: pytest.fail('environment selected before malformed phase-ledger rejection'))
@@ -449,3 +451,68 @@ def test_submit_cli_valid_phase_ledger_keeps_environment_selection(tmp_path, mon
     monkeypatch.setattr(cli, 'ensure_local_project_python', selected)
     with pytest.raises(EnvironmentSelected, match='valid phase ledger reached environment selection'):
         cli.main(['submit', '--repo-root', str(root)])
+
+
+def _complete_phase_root_with_ledger_defect(tmp_path, kind):
+    from tests.test_validate_governance_yaml import _instantiate_fixture_repo
+
+    root = _instantiate_fixture_repo(tmp_path, 'valid_repo')
+    control_root(root)
+    submit.validate_authored_phase_state(root)
+    ledger = root / 'plans/phase-ledger.yml'
+    ledger.unlink()
+    if kind == 'directory':
+        ledger.mkdir()
+    elif kind == 'dangling_symlink':
+        ledger.symlink_to('missing-ledger.yml')
+    else:
+        assert kind == 'missing'
+    return root
+
+
+@pytest.mark.parametrize('mode', ['--check', '--apply'])
+@pytest.mark.parametrize('kind', ['directory', 'dangling_symlink', 'missing'])
+def test_reconcile_phase_inputs_reject_before_environment(tmp_path, monkeypatch, kind, mode):
+    root = _complete_phase_root_with_ledger_defect(tmp_path, kind)
+    reconcile_prerequisites(monkeypatch)
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python',
+        lambda *_a, **_k: pytest.fail('reconcile environment selected before phase-input rejection'))
+    monkeypatch.setattr(scaffold, 'apply_workflow_authority_transition',
+        lambda *_a, **_k: pytest.fail('reconcile mutation before phase-input rejection'))
+    with pytest.raises(SystemExit, match='cannot read authored phase state'):
+        scaffold.reconcile_main(['--repo-root', str(root), mode])
+
+
+@pytest.mark.parametrize('kind', ['directory', 'dangling_symlink', 'missing'])
+def test_projection_planner_rejects_phase_inputs_before_other_stages(tmp_path, monkeypatch, kind):
+    from bcf_governance.tooling.governance_validation.authored_phase_state import AuthoredPhaseStateError
+
+    root = _complete_phase_root_with_ledger_defect(tmp_path, kind)
+    monkeypatch.setattr(scaffold, 'ReconcileStep',
+        lambda *_a, **_k: pytest.fail('projection stages planned before phase-input rejection'))
+    with pytest.raises(AuthoredPhaseStateError, match='cannot read authored phase state'):
+        scaffold.reconcile_steps(root, Path(sys.executable))
+
+
+@pytest.mark.parametrize('mode', ['--check', '--apply'])
+@pytest.mark.parametrize('phase_present', [False, True])
+def test_reconcile_valid_optional_phase_inputs_reach_environment(tmp_path, monkeypatch, phase_present, mode):
+    if phase_present:
+        from tests.test_validate_governance_yaml import _instantiate_fixture_repo
+        root = _instantiate_fixture_repo(tmp_path, 'valid_repo')
+    else:
+        root = tmp_path
+    control_root(root)
+    if phase_present:
+        submit.validate_authored_phase_state(root)
+    reconcile_prerequisites(monkeypatch)
+
+    class EnvironmentSelected(RuntimeError):
+        pass
+
+    def selected(*_a, **_k):
+        raise EnvironmentSelected('valid optional phase inputs reached environment selection')
+
+    monkeypatch.setattr(scaffold, 'ensure_local_project_python', selected)
+    with pytest.raises(EnvironmentSelected, match='valid optional phase inputs reached environment selection'):
+        scaffold.reconcile_main(['--repo-root', str(root), mode])
