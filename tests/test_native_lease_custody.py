@@ -121,6 +121,69 @@ os.execv({git!r},[{git!r},*sys.argv[1:]])
     assert not _busy(lease_path)
 
 
+@pytest.mark.parametrize("consumer", ["semantic-paths", "semantic-population"])
+def test_semantic_git_readers_have_real_native_custody(
+    lease_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, consumer: str,
+) -> None:
+    import shutil
+    from bcf_governance.tooling import semantic_source_paths, evidence_process_supervisor
+
+    git = shutil.which("git")
+    assert git is not None
+    def setup(*args):
+        return subprocess.check_output([git, *args], cwd=tmp_path, text=True).strip()
+    setup("init", "-q")
+    setup("config", "user.name", "Semantic Custody")
+    setup("config", "user.email", "semantic@example.invalid")
+    (tmp_path / "source.py").write_text("pass\n")
+    setup("add", "source.py")
+    setup("commit", "-qm", "source")
+    subject = dict(commit_sha=setup("rev-parse", "HEAD"),
+                   tree_sha=setup("rev-parse", "HEAD^{tree}"))
+    observations = tmp_path / "semantic-git-custody.jsonl"
+    binary = tmp_path / "git"
+    with local_gate_lease("9" * 40):
+        identity = lease_path.stat()
+        binary.write_text(f"""#!{sys.executable}
+import json,os,sys
+from pathlib import Path
+parent=Path('/proc',str(os.getppid()))
+expected=({identity.st_dev},{identity.st_ino})
+def has_lease(root):
+    for entry in (root/'fd').iterdir():
+        try: value=entry.stat()
+        except FileNotFoundError: continue
+        if (value.st_dev,value.st_ino)==expected: return True
+    return False
+owned={str(Path(evidence_process_supervisor.__file__).resolve())!r}.encode() in (parent/'cmdline').read_bytes().split(bytes([0]))
+record=dict(guardian=owned,parent_lease=has_lease(parent),command_lease=has_lease(Path('/proc/self')))
+with Path({str(observations)!r}).open('a') as stream: stream.write(json.dumps(record)+'\\n')
+if not record['guardian'] or not record['parent_lease'] or record['command_lease']:
+    print('semantic-git-native-owner-bypassed',file=sys.stderr)
+    sys.exit(23)
+os.execv({git!r},[{git!r},*sys.argv[1:]])
+""")
+        binary.chmod(0o700)
+        monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
+        try:
+            if consumer == "semantic-paths":
+                assert semantic_source_paths.candidate_source_files(
+                    tmp_path, ("*.py",), label="Python", error=ValueError,
+                ) == [tmp_path / "source.py"]
+                expected_count = 1
+            else:
+                result = semantic_source_paths.committed_python_source_population(tmp_path, **subject)
+                assert [row[0] for row in result["python_blobs"]] == ["source.py"]
+                expected_count = 3
+        finally:
+            assert observations.is_file(), "real Git never observed its native parent"
+            records = [json.loads(line) for line in observations.read_text().splitlines()]
+            assert all(row == dict(guardian=True, parent_lease=True, command_lease=False)
+                       for row in records), "semantic Git reader bypassed actual guardian descriptor custody"
+        assert len(records) == expected_count
+    assert not _busy(lease_path)
+
+
 @pytest.mark.parametrize("payload,text", [(b"\x00\xff\n", False), ("mañana\r\n", True), (b"", False), ("", True)])
 def test_bound_native_stdin_delivers_exact_bytes(lease_path: Path, payload, text: bool) -> None:
     import hashlib
