@@ -31,7 +31,7 @@ from .ci_authority_pins import (
     projected_workflow_paths,
     provider_workflow_ids,
 )
-from .ci_authority_submit import submit_candidate
+from .ci_authority_submit import _validate_authored_submission_inputs, submit_candidate
 from .ci_github_identity import GitHubControllerError
 from .ci_github_cli_io import github_output, github_output_path
 from .ci_self_controller import project_self_controller_pin
@@ -456,6 +456,8 @@ def main(argv: list[str] | None = None) -> None:
         if args.operation == "submit":
             from .ci_github_controller import environment_api
 
+            _validate_authored_submission_inputs(args.repo_root)
+            provider_api = environment_api()
             project_python = ensure_local_project_python(
                 args.repo_root, Path(sys.executable), requested=args.python
             )
@@ -463,7 +465,7 @@ def main(argv: list[str] | None = None) -> None:
                 args.repo_root,
                 semantic_intent=args.intent,
                 python_executable=project_python,
-                provider_api=environment_api(),
+                provider_api=provider_api,
                 remote=args.remote,
                 progress_sink=lambda event: print(
                     json.dumps(event, sort_keys=True), file=sys.stderr, flush=True

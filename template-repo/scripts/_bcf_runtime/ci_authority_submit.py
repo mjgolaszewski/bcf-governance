@@ -43,7 +43,9 @@ from .semantic_ownership_scan import validate_authored_semantic_ownership
 from .governance_validation.preflight_distribution import validate_source_distribution
 from .runtime_capacity import executing_runtime_version
 from .ci_graph_timeouts import gate_timeout_contract
-from .governance_validation.authored_phase_state import validate_authored_phase_state
+from .governance_validation.authored_phase_state import (
+    authored_phase_inputs_present, validate_authored_phase_state,
+)
 from .governance_validation.evidence_contracts import validate_authored_gate_controls
 from .governance_validation.required_artifacts import validate_pull_request_changelog_update
 from .local_pr_context import _pr_environment, require_clean_candidate_root
@@ -52,6 +54,24 @@ from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 
 Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
+
+
+def _validate_authored_submission_inputs(root: Path) -> None:
+    """Reject available authored defects without selecting project resources."""
+
+    try:
+        if authored_phase_inputs_present(root):
+            validate_authored_phase_state(root)
+        try:
+            version = executing_runtime_version()
+        except RuntimeError as exc:
+            raise ProspectiveValidationError(str(exc)) from exc
+        validate_authored_release_target(root, version)
+        gate_timeout_contract(root)
+        validate_authored_gate_controls(root)
+        validate_ci_state_matrix(root, authored_only=True)
+    except (OSError, ValueError) as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
 
 
 def _normalize_submission(
@@ -65,17 +85,8 @@ def _normalize_submission(
 ) -> None:
     """Settle derived state before consuming its submission authority projection."""
 
+    _validate_authored_submission_inputs(root)
     try:
-        if (root / "plans/phase-ledger.yml").is_file():
-            validate_authored_phase_state(root)
-        try:
-            version = executing_runtime_version()
-        except RuntimeError as exc:
-            raise ProspectiveValidationError(str(exc)) from exc
-        validate_authored_release_target(root, version)
-        gate_timeout_contract(root)
-        validate_authored_gate_controls(root)
-        validate_ci_state_matrix(root, authored_only=True)
         if semantic_intent is not None or context is not None:
             mode, target = authored_post_merge_scope(root)
             if context is not None:

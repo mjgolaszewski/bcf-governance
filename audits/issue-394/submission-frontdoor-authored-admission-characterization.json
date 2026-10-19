@@ -547,5 +547,72 @@
         "No phase or release authority"
       ]
     }
+  },
+  "canonical_projection_qualification": {
+    "authority": false,
+    "source": "d77fbdc9a907d2a2732bd9c11e973f56c131446e",
+    "steps": [
+      {
+        "step": "pack-generate",
+        "returncode": 0
+      },
+      {
+        "step": "manifest-update",
+        "returncode": 0
+      },
+      {
+        "step": "pack-check",
+        "returncode": 0
+      },
+      {
+        "step": "manifest-check",
+        "returncode": 0
+      },
+      {
+        "step": "private-parity",
+        "returncode": 0
+      }
+    ],
+    "private_parity_passed": 1,
+    "generated_changed_paths": [
+      "bcf_governance/pack/template-repo/.bcf-pack-manifest.json",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_submit.py",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_commands.py",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/governance_validation/authored_phase_state.py",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/local_pr_context.py",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/scaffold_governance_artifacts.py",
+      "governance/test-manifests/test.txt",
+      "template-repo/.bcf-pack-manifest.json",
+      "template-repo/scripts/_bcf_runtime/ci_authority_submit.py",
+      "template-repo/scripts/_bcf_runtime/ci_commands.py",
+      "template-repo/scripts/_bcf_runtime/governance_validation/authored_phase_state.py",
+      "template-repo/scripts/_bcf_runtime/local_pr_context.py",
+      "template-repo/scripts/_bcf_runtime/scaffold_governance_artifacts.py"
+    ],
+    "independent_readback_sha256": "4de7aac3a02cc7d924dd1ba40f4a5c90f6ace704cec234c4b7fc7b77b8df3843",
+    "raw_sha256": {
+      "private-parity.stdout": "d0deb4e52e1bd4074ae74959d4a2ebfad828b825df07c466351f28c4ce29b9f8",
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "execution.json": "7dc35b63f8352c044a8d456252d10cff3dfa497e941ce22b9cbce58edaedb098",
+      "guardian-kernel-resource-readback.json": "20697353bd7366e695ba08c4ba662ab89c8a089b56c2fd3b260dc03741645dbb",
+      "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "manifest-update.stdout": "13d4d1b65545a491f7974675d823c4110969cc0ac35be31cf93e3e68a0d3ce0c",
+      "steps.json": "f65b6597f026cea46a4d58063299a928332f702474b9bee6968a102ffa27c2c3",
+      "manifest-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "private-parity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pack-check.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pack-generate.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "manifest-update.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "immediate-live-readback.json": "c2db9cf2bbde9ceaa50006663f5250df975f054f28f78971938dab58eddb9300",
+      "private-parity.xml": "f42bc493ccb12f979126aea143a054b82ed6fd90c90a04ae6f27145aff032fad",
+      "projection-result.json": "ade9b2b74a3348b8eff906011242bbc9e2d6339dc4231a1b626c246ae200862a",
+      "pack-generate.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command.stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "pack-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "admission.json": "62e6ac68863802d34edb36c2f2e4a3d69ea96a1448338acc840e7cc3d9e0911d",
+      "manifest-check.stdout": "3449683b90dc528e4a2aa3257a04081f8fa8ee99f0e8fe057aefc4917e505dd0"
+    },
+    "limits": "Canonical projection and one private-copy architecture test only; full required/semantic/package/installed checks and integration pending"
   }
 }
