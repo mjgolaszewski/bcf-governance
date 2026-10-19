@@ -365,3 +365,47 @@ def test_submit_cli_rechecks_authored_control_after_environment_selection(tmp_pa
     with pytest.raises(SystemExit, match='negative-control mutations must resolve exactly once'):
         cli.main(['submit', '--repo-root', str(tmp_path)])
     assert selections == [Path(sys.executable)]
+
+
+@pytest.mark.parametrize('defect,message', [
+    ('missing_token', 'trusted GitHub token is required'),
+    ('insecure_api', 'GitHub API URL must use HTTPS'),
+])
+def test_submit_cli_provider_configuration_rejects_before_environment(tmp_path, monkeypatch, defect, message):
+    from bcf_governance.tooling import ci_github_controller
+
+    factory = ci_github_controller.environment_api
+    control_root(tmp_path)
+    cli = _prepare_submit_frontdoor(monkeypatch)
+    monkeypatch.setattr(ci_github_controller, 'environment_api', factory)
+    monkeypatch.setenv('GITHUB_API_URL', 'https://api.github.com')
+    if defect == 'missing_token':
+        monkeypatch.delenv('GITHUB_TOKEN', raising=False)
+    else:
+        monkeypatch.setenv('GITHUB_TOKEN', 'fixture-token-no-provider-request')
+        monkeypatch.setenv('GITHUB_API_URL', 'http://api.example.invalid')
+    monkeypatch.setattr(cli, 'ensure_local_project_python',
+        lambda *_a, **_k: pytest.fail('project environment selected before provider configuration rejection'))
+    with pytest.raises(SystemExit, match=message):
+        cli.main(['submit', '--repo-root', str(tmp_path)])
+
+
+def test_submit_cli_valid_provider_configuration_keeps_environment_selection(tmp_path, monkeypatch):
+    from bcf_governance.tooling import ci_github_controller
+
+    factory = ci_github_controller.environment_api
+    control_root(tmp_path)
+    cli = _prepare_submit_frontdoor(monkeypatch)
+    monkeypatch.setattr(ci_github_controller, 'environment_api', factory)
+    monkeypatch.setenv('GITHUB_TOKEN', 'fixture-token-no-provider-request')
+    monkeypatch.setenv('GITHUB_API_URL', 'https://api.github.com')
+
+    class EnvironmentSelected(RuntimeError):
+        pass
+
+    def selected(*_args, **_kwargs):
+        raise EnvironmentSelected('valid provider configuration reached environment selection')
+
+    monkeypatch.setattr(cli, 'ensure_local_project_python', selected)
+    with pytest.raises(EnvironmentSelected, match='valid provider configuration reached environment selection'):
+        cli.main(['submit', '--repo-root', str(tmp_path)])
