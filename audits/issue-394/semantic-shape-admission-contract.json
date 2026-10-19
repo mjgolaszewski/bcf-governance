@@ -1,0 +1,43 @@
+{
+  "authority": false,
+  "status": "contract_before_tests_and_production",
+  "workitems": ["P32-P0-04", "P32-P0-07"],
+  "bounded_context": "semantic_ownership",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "problem": "Pure authored operation semantics are checked after population discovery. Structural admission currently accepts contradictory read/mutation/authority declarations, allowing avoidable source discovery and real compiler allocation before deterministic rejection.",
+  "existing_predicate_owner": "bcf_governance/tooling/semantic_authority_operations.py::_validate_operation_semantics",
+  "targets": [
+    "bcf_governance/tooling/semantic_authority_operations.py",
+    "bcf_governance/tooling/semantic_authority_contracts.py",
+    "tests/test_semantic_shape_admission.py"
+  ],
+  "required_behavior": [
+    "After schema and structural validation, validate every authored operation semantic shape before any population discovery or effect traversal, including contradictions in the final row.",
+    "Use the existing predicate without duplicating its semantic rules or introducing another evaluator.",
+    "Consume the same predicate during enabled structural contract admission before callers allocate source inventory or a TypeScript compiler.",
+    "Preserve disabled and nonenabled capability behavior: no new ambient contract reads, source discovery or network access.",
+    "Preserve language-filter behavior: authored semantic contradictions remain invalid even for operations whose source language is not selected, as the existing operation validator already requires.",
+    "Valid operations retain their original discovery, exact population, entrypoint, effect ordering and observation semantics. Structural acceptance confers no runtime, lifecycle or release authority.",
+    "Schema and existing cross-file structural failures retain precedence over semantic-shape evaluation. Subject and protected schema/policy ownership remain unchanged."
+  ],
+  "controls_before_production": [
+    "Late-row read-only mutation/authority contradiction must produce its existing typed semantic error before a discovery sentinel can run.",
+    "Projection without a read model, nonmutating declared ports, mutation without a port, authority without a port, and model-callable authority each reject through the existing predicate.",
+    "Enabled structural admission rejects the same contradictions with source discovery forbidden; disabled and nonenabled capability counterparts preserve existing no-read behavior.",
+    "Valid structural admission and complete ordinary operation evaluation remain accepted; Python-only and mixed/TypeScript compatibility are qualified separately."
+  ],
+  "verification": [
+    "Retain genuine failing-before-production controls and their exact causes; fixture/schema failures are not ordering proof.",
+    "Run focused controls and the affected original semantic consumer population under existing resource custody after the frozen primary run terminates.",
+    "Regenerate private and packaged mirrors only through build_pack_manifest.py; run architecture, semantic and governance checks.",
+    "Qualify exact installed wheel, sdist and SDK-absent private consumers before integrating this isolated branch."
+  ],
+  "forbidden": [
+    "Editing the primary f49 candidate or its running qualification.",
+    "Hand editing mirrored runtimes, generated workflows or authority pins.",
+    "New CLI grammar, schema, registry, broker, evaluator or receipt family.",
+    "Weakening discovery, complete population, effect, authority or disabled-capability guards.",
+    "Claiming full lifecycle composition, whole requirement closure, P33 activation or measured improvement from this bounded correction."
+  ]
+}
