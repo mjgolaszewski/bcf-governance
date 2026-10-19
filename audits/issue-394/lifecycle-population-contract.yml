@@ -193,7 +193,7 @@ submission_frontdoor_authored_admission:
   - bcf_governance/tooling/ci_commands.py
   expected_tests:
   - tests/test_authored_control_admission.py
-  - tests/test_ci_commands.py
+  - tests/test_local_pr.py
   - tests/test_candidate_submit.py
   - tests/test_local_execution_admission.py
   contract:
