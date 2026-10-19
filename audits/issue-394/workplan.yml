@@ -317,6 +317,7 @@ workitems:
     - audits/issue-394/recovery-mutation-frontier-verification.json
   foundation.deadlines:
     summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
+    next_action: Retain semantic_source_reader_custody evidence in native-lease-custody-characterization.json; complete remaining native consumer/deadline populations and qualify combined archives/adopters before closure.
     status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority

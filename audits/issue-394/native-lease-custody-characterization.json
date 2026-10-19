@@ -825,5 +825,102 @@
       "structural": "be63dd653bfd8cd3acacf3385d712461e8ed3f526b903ea9c82da713daa8add7"
     },
     "limits": "Controlled exact-subject source/SDK/private/profile qualification, not provider-selected live adopter adoption, complete native effect/lifecycle/deadline conformance, approved performance or independent immutable release custody. Older09b and2b partials remain retained at original subjects."
+  },
+  "semantic_source_reader_custody": {
+    "authority": false,
+    "contract": "audits/issue-394/lifecycle-population-contract.yml#semantic_source_native_custody",
+    "red_tests_commit": "c53bed8a",
+    "production_commit": "692cb9e4",
+    "projection_and_qualification_subject": "8065f53ab36f699928cb8cb59fd9128a416edc70",
+    "source_owner": "bcf_governance/tooling/semantic_source_paths.py::_source_git",
+    "consumers": [
+      "candidate_source_files",
+      "committed_python_source_population"
+    ],
+    "behavior": "Existing admitted-command port owns bound readers; ordinary unbound runner and fsmonitor refusal preserved.",
+    "source_and_private_execution": {
+      "source_red": {
+        "cases": 2,
+        "failures": 2,
+        "errors": 0,
+        "skipped": 0
+      },
+      "source_python31211": {
+        "cases": 109,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "source_python31214": {
+        "cases": 109,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "stale_private_red": {
+        "cases": 2,
+        "failures": 2,
+        "errors": 0,
+        "skipped": 0
+      },
+      "fresh_upgrade_private": {
+        "cases": 4,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      }
+    },
+    "real_guardian_and_actual_lease_descriptor_verified": true,
+    "command_descriptor_leak_rejected": true,
+    "private_source_sdk_absent_and_origin_verified": true,
+    "private_guardians_verified_and_reaped_per_install": 4,
+    "independent_terminal_eof_reap_known_handles_and_fresh_fence_readback": true,
+    "required_checks": {
+      "lint": "passed",
+      "typecheck": "passed",
+      "architecture_cases": 6,
+      "governance": "passed",
+      "semantic": "conformant",
+      "unchanged_operation_observations": 21
+    },
+    "raw_sha256": {
+      "semantic-native-custody-red-attempt1/result.json": "ab11fae3a3573f9e4ee600894b5051bacdeee038e1a726990da1da09ea18bab1",
+      "semantic-native-custody-red-attempt1/stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-custody-red-attempt1/cases.xml": "2df8c1ada0c344265cd41649e5aeb983b90d465afad4611f765d61910e213c18",
+      "semantic-native-custody-red-attempt1/stdout": "58c60bdf15372100aea646f0aaa0e66c3e0029d8f985c9f7b7356b9e628f2ee9",
+      "semantic-native-custody-source-green-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-custody-source-green-attempt1/execution.json": "6b8198bd9f9afdc4ef17eed7b242ef0a198993dda1c4659ee9530e5ad14f8983",
+      "semantic-native-custody-source-green-attempt1/stdout.log": "061356415012857d0e8c8fabf33214b5a8adca3c00c2b5b6b1235ff5faaeee0e",
+      "semantic-native-custody-source-green-attempt1/cases.xml": "7d4a6911a5023d54156e492e87d19ba2b8269202b247851326d897dc9e280597",
+      "semantic-native-custody-managed-green-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-custody-managed-green-attempt1/execution.json": "076d1c0648a64d9c279799b9dcb3afcb8ec744f5cadce3a1e6146c1326d1af64",
+      "semantic-native-custody-managed-green-attempt1/stdout.log": "291e9f1fb55e66ad5b2cf4cdcf6907e72baf986a340bb3ced3c78bad1d7fdd6c",
+      "semantic-native-custody-managed-green-attempt1/cases.xml": "91f8cc2c09218eac681b9b948cea193b3d59310fa7d339146a7448557dcdebae",
+      "semantic-native-private-stale-mirror-red-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-private-stale-mirror-red-attempt1/execution.json": "5e7aa7956aa8ef13b354f7717d7f3fc8d92dd6433336b0506f724f47409067da",
+      "semantic-native-private-stale-mirror-red-attempt1/stdout.log": "5ca4dbc591ab8a04c1abee0d42904c75bb31bac9e4f56c016bd34e553446f530",
+      "semantic-native-private-stale-mirror-red-attempt1/cases.xml": "b4489e524548b42a4d81af8054ab663b820b196c3a5b275e7fad5faea95fb6e7",
+      "semantic-native-private-green-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-private-green-attempt1/execution.json": "539fdfec727fa0e7b8d6ecd60fdd0a7d19911a208c18b73a7c5cb858ea1b1a7f",
+      "semantic-native-private-green-attempt1/stdout.log": "d1c6e3713487bf18d5e91ca230256c7ba3fc2bd9ee09c3071b8e99dd466220d7",
+      "semantic-native-private-green-attempt1/cases.xml": "604da5e8d06ee27946d7d69407bfb15b96b315be217d0cbc882895b288e56660",
+      "semantic-native-8065f53a-structural-attempt1/architecture.stdout": "2c20a17452661a14f606c9a8ad61de4a749964e168e74849e7604f781873ba3d",
+      "semantic-native-8065f53a-structural-attempt1/architecture.xml": "2aa30960998e227cfb7e6cde06e425c49c7e1bcc4b27eeefceb6785bf4b4ac6a",
+      "semantic-native-8065f53a-structural-attempt1/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "semantic-native-8065f53a-structural-attempt1/report.json": "caa1ac6ac5af1fe911f952352f51d7d1abbca4a55cb4e4ba7cbb9fa042889dd8",
+      "semantic-native-8065f53a-structural-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-8065f53a-structural-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-8065f53a-structural-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-8065f53a-structural-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-8065f53a-structural-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-8065f53a-structural-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "semantic-native-8065f53a-structural-attempt1/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f"
+    },
+    "limits": [
+      "Two concrete semantic consumers qualified, not complete native/lifecycle/deadline population closure.",
+      "Latest combined wheel/sdist/full consumer matrix and real provider-selected adopters remain to qualify.",
+      "Qualification durations are unmatched observations, not approved performance targets or pipeline comparisons.",
+      "All82 whole requirement objects and38 bounded slice statuses remain unchanged."
+    ]
   }
 }
