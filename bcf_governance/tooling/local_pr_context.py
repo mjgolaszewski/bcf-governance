@@ -120,6 +120,8 @@ def derive_local_validation_lane(
 
 
 def _run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+    if command and command[0] == "git":
+        command = ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *command[1:]]
     return run_admitted_command(command, check=False, capture_output=True, text=True, **kwargs)
 
 
