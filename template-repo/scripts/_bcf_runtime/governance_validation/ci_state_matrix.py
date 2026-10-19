@@ -8,6 +8,8 @@ from pathlib import Path
 import subprocess
 from typing import Any
 
+from ..evidence_process_supervisor import run_admitted_command
+
 from jsonschema import Draft202012Validator, SchemaError
 
 from ..ci_graph_composition import validate_backtrace_transition_references
@@ -36,8 +38,9 @@ REQUIRED_MARKERS = (
 
 
 def _git(repo_root: Path, *args: str) -> str | None:
-    result = subprocess.run(
-        ["git", *args], cwd=repo_root, capture_output=True, text=True, check=False
+    result = run_admitted_command(
+        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *args],
+        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, text=True, check=False
     )
     return result.stdout.strip() if result.returncode == 0 else None
 
