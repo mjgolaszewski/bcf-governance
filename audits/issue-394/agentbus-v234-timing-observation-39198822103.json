@@ -1,0 +1,128 @@
+{
+  "authority": false,
+  "status": "authenticated_unmatched_observation",
+  "collector_source": "b8e7daf9c087c0f7e8f18d23fefcb7be499ba1d9",
+  "provider": {
+    "repository": "mjgolaszewski/AgentBus",
+    "repository_id": 1390225113,
+    "run_id": 39198822103,
+    "attempt": 1,
+    "commit_sha": "6a1c6720c7cd41b2b9f4864aa0f8367b45e226e8",
+    "tree_sha": "5baada4caea9216786b06d13bd7e2eabdf62bcb4",
+    "jobs": 6
+  },
+  "context": "main_push_pr_progress_unmatched; exact workflow push expression selects pr",
+  "observation": {
+    "schema_version": "1.0",
+    "kind": "pipeline_timing",
+    "authority": false,
+    "subject": {
+      "commit_sha": "6a1c6720c7cd41b2b9f4864aa0f8367b45e226e8",
+      "tree_sha": "5baada4caea9216786b06d13bd7e2eabdf62bcb4"
+    },
+    "repository": "mjgolaszewski/AgentBus",
+    "repository_id": 1390225113,
+    "source_snapshot_sha256": "383efc2212c123d1ba46df2c2fb99ef692a964177593416119aa843b469b3d16",
+    "pipeline": "pr",
+    "clock_id": "github:1390225113:run:39198822103:attempt:1",
+    "clock_basis": "provider_utc_ms",
+    "start_ms": 1792383517000,
+    "end_ms": 1792383806000,
+    "elapsed_ms": 289000,
+    "execution_union_ms": 283000,
+    "execution_sum_ms": 519000,
+    "external_wait_union_ms": 0,
+    "uncovered_ms": 6000,
+    "cpu_ms": "unknown",
+    "intervals": [
+      {
+        "id": "117887302894",
+        "clock_id": "github:1390225113:run:39198822103:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792383520000,
+        "end_ms": 1792383577000
+      },
+      {
+        "id": "117887548283",
+        "clock_id": "github:1390225113:run:39198822103:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792383579000,
+        "end_ms": 1792383717000
+      },
+      {
+        "id": "117887548439",
+        "clock_id": "github:1390225113:run:39198822103:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792383579000,
+        "end_ms": 1792383779000
+      },
+      {
+        "id": "117887548448",
+        "clock_id": "github:1390225113:run:39198822103:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792383579000,
+        "end_ms": 1792383627000
+      },
+      {
+        "id": "117887548508",
+        "clock_id": "github:1390225113:run:39198822103:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792383579000,
+        "end_ms": 1792383629000
+      },
+      {
+        "id": "117888394390",
+        "clock_id": "github:1390225113:run:39198822103:attempt:1",
+        "kind": "execution",
+        "status": "passed",
+        "start_ms": 1792383780000,
+        "end_ms": 1792383806000
+      }
+    ]
+  },
+  "strict_capture_validation_passed": true,
+  "matched_cohort": false,
+  "percentile_certification": false,
+  "approved_targets": false,
+  "raw_sha256": {
+    "commit.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "provider-log-retention.json": "957f457f5656d2c821507fe837cb3e0db2a794f0991c7b6db54a47aca1075d09",
+    "commit.json": "5a39f39502813c3c3207e0940d35a607364dd14b9939480e5260bb718d3c8cb3",
+    "run.json": "fba6913c75de9195ea47c8fa31bc500cad5e9e711154de98c782852469e6eb41",
+    "jobs.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "snapshot.json": "fa4ea00bc7c8e32e29bab08fad0bf1c7763e5f9de718f14c0232cf46f28da294",
+    "run.json.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "runtime-lock.raw": "89c7d94495de65983f0b90f765cffbbbf33fffbcab8e70be8b0bc7645d0e6cd2",
+    "workflow.raw": "330ca027a018c8a513fc65e16288a50cf505339415dc57daf0e35c8e71484173",
+    "provider-logs.zip": "505c607500213e8eadb68d18cfbb503e7ee01f88fe9eed8335c4055ccc0362ce",
+    "timing-observation.json": "3d6fee800a5cbec3f266dd225cc8679dc7fb4ba7a9b808ba09cf9b8bfa4d6a2c",
+    "jobs.json": "f8e369e9461712fac38274def3505983ebec4e9f0e92fb8937624da5939657c7",
+    "provider-logs.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "job-step-timing-observations.json": "25f9c832735c10fbebb9af460332e6de5132ce890ac6ec4b5f64cf46d99e4267",
+    "timing-capture.json": "e1047f12c19ac9aad2b004669090b91e787f21b288537d05ba1e4f45b7ccb6c9"
+  },
+  "limitations": [
+    "Provider workflow attempt only, no end-to-end custody/interruption clock",
+    "SDK lock declaration is not independent loaded-runtime custody",
+    "No matched cohort, p50/p95 certification or improvement claim"
+  ],
+  "installed_sdk_declaration": {
+    "version": "2.3.4",
+    "source_commit": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "wheel_sha256": "ff34f27ed8e57ef1ac5d0b115a3705fe7a4fe3bb0405183b4c9f76935208cfba",
+    "assurance": "Declared runtime lock; loaded runtime not independently established."
+  },
+  "url": "https://github.com/mjgolaszewski/AgentBus/actions/runs/39198822103/attempts/1",
+  "source_owner": "bcf_governance/tooling/operational_observations.py::provider_attempt_timing_observation",
+  "source_owner_sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311",
+  "provider_logs": {
+    "entries": 12,
+    "compressed_bytes": 99138,
+    "all_member_sha256_retained": true
+  }
+}
