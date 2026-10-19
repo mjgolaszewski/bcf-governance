@@ -110,11 +110,12 @@ os.execv({git!r},[{git!r},*sys.argv[1:]])
         monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
         owner = ci_authority_pins if consumer == "workflow-authority" else reconcile_authority_transition
         try:
-            actual = owner._git(tmp_path, "hash-object", "--stdin", input_bytes=payload)
+            result = owner._git(tmp_path, "hash-object", "--stdin", input_bytes=payload)
         finally:
             observation = tmp_path / "git-custody-observation.json"
             assert observation.is_file(), "real Git fixture never observed its native parent"
             print("real Git custody observation:", observation.read_text())
+        actual = result if consumer == "workflow-authority" else result.stdout
         assert actual.strip() == expected.encode()
     assert not _busy(lease_path)
 
