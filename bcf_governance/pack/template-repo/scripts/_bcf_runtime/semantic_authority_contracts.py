@@ -38,7 +38,7 @@ from .semantic_operation_effects import (
     validated_operation_effect_inventory,
 )
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping, load_unique_mapping_text
-from .semantic_authority_operations import _validate_operations
+from .semantic_authority_operations import _validate_operations, _validate_operation_semantics
 
 
 FAMILIES_PATH = Path("governance/semantic-families.yml")
@@ -509,6 +509,8 @@ def _validate_operation_structure(
             raise SemanticAuthorityError(
                 f"operation {operation['id']} references an unknown semantic family"
             )
+    for operation in payload["operations"]:
+        _validate_operation_semantics(operation)
     return population_ids
 
 
