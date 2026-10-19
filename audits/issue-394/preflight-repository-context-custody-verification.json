@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Existing preflight repository-context and CI state-matrix query owners only",
+  "contract_subject": "1a9510522caf825e78e9fd23ea5960027ce9a55b",
+  "source_test_subject": "8a041e252d40f15122b847c069fe966e6e0e8dfe",
+  "implementation_subject": "cd119c6ae8e8ad1c4b67f295e9b55921ddeb62aa",
+  "production_owners": [
+    "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+    "bcf_governance/tooling/governance_validation/ci_state_matrix.py"
+  ],
+  "preservation": [
+    "Existing public signatures, returncode interpretation, text/binary modes and ordinary unbound comparison streams",
+    "Existing admitted-command shared kernel and inherited lease bounds; no scheduler/timeout/receipt family",
+    "Comparison identity remains distinct from protected policy/evaluator source; no authority conferral"
+  ],
+  "red": {
+    "cases": 13,
+    "passed": 2,
+    "failed": 11,
+    "errors": 0,
+    "skips": 0,
+    "elapsed_seconds": 38.799,
+    "causes": [
+      "Five real repository-query consumers bypass bound guardian descriptor custody",
+      "Four real Git queries execute repository-configured fsmonitor",
+      "Fresh/upgrade private-runtime consumers observe incomplete guardian population"
+    ]
+  },
+  "source_green": {
+    "cases": 9,
+    "passed": 9,
+    "errors": 0,
+    "skips": 0,
+    "elapsed_seconds": 4.015,
+    "same_source_case_population_as_red": true
+  },
+  "projection": {
+    "status": "canonical_projection_independently_terminal",
+    "source_subject": "f098082f188f5ef47fc90ba78c1df62a57a4e52e",
+    "tree_sha": "8d4c3b81a86f8f735c1f33a06cea55adcd838880",
+    "elapsed_seconds": 809.044,
+    "rounds": 3,
+    "derived_files": 8,
+    "canonical_private_copies": "Four private copies byte-match the two source owners",
+    "manifest_additions": 9,
+    "new_controls_in_canonical_manifest": true,
+    "workflow_or_authority_mutation": false,
+    "interrupted_prior_attempt": "UNKNOWN with originals preserved; independent cleanup only, no fabricated exit status"
+  },
+  "installed_expected": {
+    "fresh_upgrade_named_cases": 4,
+    "actual_guardians_per_bound_install": 17,
+    "status": "Actual 478-case affected consumer qualification passed; independent custodian handback 12930"
+  },
+  "evidence_sha256": {
+    "preflight-context-8a041e25-red-independent-terminal-readback.json": "b5c781f6370f6d2dbfdbe1c9450310fcbc34cddc36df16308f1beba8b53b15a7",
+    "preflight-context-cd119c6a-source-independent-terminal-readback.json": "8de41a156a746d1e8bb52bb09d51e8f97c7677ff1ef8187b1fe3c2ad8526a3e2",
+    "repository-context-canonical-interruption-readback.json": "a6735cc5ff823f41b8d14da398fa633cc502d698797b6bc95cbbe5680204cbe4",
+    "repository-context-canonical-interruption-reconciliation.json": "e74f1aa10423e0d1d4131d8422210c98e80237a4b05d456bac8b50f23b20de12",
+    "repository-context-canonical-projection-incomplete-readback.json": "0d8c5b25c51c56560bc62267c7d1daed4905a668d248acb723846989305c2573",
+    "repository-context-canonical-attempt2-independent-terminal-readback.json": "eef491a98f7ca4489904b443f39a48ad870dc455efadafae6ad87242c8fa82b6",
+    "repository-context-affected-f098082f-independent-terminal-readback.json": "8672632871a9db2142786ca9a4b74b309910e2f26529ae5bb075b6056dd8f34b",
+    "repository-context-required-f098082f-independent-terminal-readback.json": "30c11feca26e116e92f08406ce9ffe012e5e8faf129d86eeef11301195a2fde4",
+    "bcf-required-independent-handback.json": "9e540373876862f50cc2c9be59dd3c83415c19ec0408f6341331bd9c7d632c01"
+  },
+  "residuals": [
+    "Integration, new exact distribution and installed250 SDK qualification remain pending; existing direct CLI authored admission-before-allocation counterexamples remain an open normalization obligation.",
+    "All82 whole requirements and complete lifecycle/native/deadline populations remain open; no new bounded-slice or phase closure",
+    "Current primary local SDK234 and immutable predecessor/adopter tools remain unchanged; no submission or release custody established"
+  ],
+  "affected_consumer_qualification": {
+    "source_subject": "f098082f188f5ef47fc90ba78c1df62a57a4e52e",
+    "cases": 478,
+    "passed": 478,
+    "errors": 0,
+    "skips": 0,
+    "xfails": 0,
+    "elapsed_seconds": 194.352,
+    "complete_modules": 11,
+    "bound_installations": 2,
+    "actual_guardians_per_bound_installation": 17,
+    "source_inputs_verified": 218,
+    "ordinary_source_role_and_sdk_absent_project_role": "passed",
+    "independent_handback": "12930"
+  },
+  "required_checks": {
+    "source_subject": "f098082f188f5ef47fc90ba78c1df62a57a4e52e",
+    "commands_passed": 7,
+    "canonical_architecture_cases": 9,
+    "canonical_architecture_gates": 8,
+    "unchanged_semantic_operations": 21,
+    "elapsed_seconds": 429.906,
+    "source_inputs_rehashed": 224,
+    "source_clean": true,
+    "terminal_cleanup_independently_verified": true,
+    "gate_receipts_issued": false,
+    "independent_resource_handback": "AgentBus12948"
+  },
+  "previous_governed_summary": "40ed custody53source/69managed/4installed PASS. ad5 cohort2450PASS/3workplan-schemaFAIL retained; data repaired,5controlsPASS. Full lifecycle/native/deadlines/adopters/targets/custody open;82/38 unchanged. See audits/issue-394/native-lease-custody-characterization.json."
+}

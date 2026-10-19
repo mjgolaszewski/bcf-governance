@@ -1169,5 +1169,20 @@
         "runtime/runtime-verification.json": "a6ef790e49e16bf1055aaf92748845a10c43fe76bf6080a2bdec8f5e226ab1e0"
       }
     }
+  },
+  "repository_context_consumers": {
+    "authority": false,
+    "source_subject": "f098082f188f5ef47fc90ba78c1df62a57a4e52e",
+    "verification": "audits/issue-394/preflight-repository-context-custody-verification.json",
+    "focused_cases": 9,
+    "affected_cases": 478,
+    "bound_private_guardians_per_installation": 17,
+    "architecture_cases": 9,
+    "unchanged_semantic_operations": 21,
+    "limits": [
+      "Integration, new exact distribution and installed250 SDK qualification remain pending; existing direct CLI authored admission-before-allocation counterexamples remain an open normalization obligation.",
+      "All82 whole requirements and complete lifecycle/native/deadline populations remain open; no new bounded-slice or phase closure",
+      "Current primary local SDK234 and immutable predecessor/adopter tools remain unchanged; no submission or release custody established"
+    ]
   }
 }
