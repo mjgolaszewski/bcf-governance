@@ -151,3 +151,22 @@ precommand_timeout_extension:
     - Tampered unstarted identity, missing kernel-empty proof, duplicate/partial messages and exhausted cleanup still fail closed.
     - Existing ordinary command timeout, failed exec, stdin, fatal parent and foreign sibling controls remain required.
   compatibility: Internal parent and guardian ship as the same existing helper bytes; no new CLI, provider status, broker, graph or receipt family. Immutable operator helper71fd and predecessor installations remain unchanged.
+
+protected_installed_inventory_extension:
+  observed_source: c9daec36b8b91fd06b745646aa002c3e1d007af2
+  owner: bcf_governance/tooling/trusted_controller_compatibility.py::_verify_installed_pending_topology
+  observed_defects:
+    - Failed Git existence queries return as if installed classifier absence were confirmed.
+    - Candidate filesystem presence selects the classifier layout, allowing a candidate deletion to hide classifier code present in the protected target.
+  required_behavior:
+    - Resolve existing canonical and private installed-classifier paths only from successful exact target Git-tree inventory through the existing Git command owner.
+    - Git failure or missing target authority must block; it cannot become absence, routine rotation availability or successful compatibility.
+    - Preserve genuine confirmed legacy absence behavior. Reject ambiguous, malformed or nonregular classifier entries before worktree mutation or evaluation.
+    - Candidate filesystem layout cannot select or suppress protected evaluator code. Actual evaluator execution stays bound to the authenticated target checkout.
+    - Existing public interfaces, provider statuses and immutable predecessor installations and certification gates remain unchanged.
+  controls_before_production:
+    - Real committed Git fixture with absent classifier preserves the existing no-op and creates no additional worktree.
+    - Real Git metadata access denial after obtaining the target commit blocks instead of returning absence.
+    - A committed candidate deletion of target classifier still executes protected target classifier bytes.
+    - Ambiguous or symlink classifier inventory fails before evaluation or worktree allocation; original target source and native custody consumers remain required.
+  forbidden: [candidate-supplied evaluator authority, generic nonzero-is-absence fallback, new registry or graph or receipt family, predecessor patching]

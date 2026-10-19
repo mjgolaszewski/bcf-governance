@@ -952,7 +952,7 @@
     },
     "scripts/_bcf_runtime/evidence_process_supervisor.py": {
       "operation": "copy",
-      "sha256": "69a7d7f5bdc57b114cd32334ee98f28fb9524de0b9561292b0ed4976904547f4"
+      "sha256": "1236af54331a8889de27b034a18831ebdd1b1f4a7b577983c352613493bc834a"
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",

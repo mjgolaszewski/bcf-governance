@@ -126,8 +126,10 @@ def _terminal_result(value, supervisor_pid):
         raise OwnedProcessError('child cleanup completion is missing or unauthenticated')
     if value.get('type') == 'not-started':
         if (value.get('command_pid') is not None or 'command_pid' not in value
-                or value.get('reason') != 'launch-error' or value['returncode'] != 126
-                or not isinstance(value.get('detail'), str)):
+                or value.get('reason') not in {'launch-error', 'timeout', 'cancelled'}
+                or value['returncode'] != 126 or not isinstance(value.get('detail'), str)
+                or (value['reason'] != 'launch-error'
+                    and any(field in value for field in ('errno', 'strerror', 'filename')))):
             raise OwnedProcessError('unstarted child cleanup completion is unauthenticated')
     elif (value.get('type') != 'complete' or type(value.get('command_pid')) is not int
             or value['command_pid'] <= 0
@@ -236,16 +238,22 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
             return subprocess.CompletedProcess(command, 126, '',
                 f'bcf execution infrastructure failure: {exc}')
         inherited.close()
-        ready = _receive(connection, body_deadline)
+        ready = _receive(connection, body_deadline + cleanup_seconds)
         expected_ready = {'type': 'ready', 'supervisor_pid': process.pid}
         if leases:
             expected_ready['native_leases'] = leases
         if (not isinstance(ready, dict) or type(ready.get('supervisor_pid')) is not int
                 or ready != expected_ready):
             raise OwnedProcessError('child supervisor could not establish exclusive custody')
-        request = {'command': command}
-        if input_binding is not None:
+        if time.monotonic() >= body_deadline + cleanup_seconds:
+            raise OwnedProcessError('no declared readiness cleanup budget remains')
+        request = {'cancel': True} if time.monotonic() >= body_deadline else {'command': command}
+        if input_binding is not None and 'command' in request:
             request['input'] = input_binding
+        remaining = body_deadline + cleanup_seconds - time.monotonic()
+        if remaining <= 0:
+            raise OwnedProcessError('no declared request cleanup budget remains')
+        connection.settimeout(remaining)
         _send(connection, request)
         connection.setblocking(False)
         with selectors.DefaultSelector() as selector:
@@ -361,6 +369,18 @@ def _kill_owned_children():
             pass
 
 
+def _not_started(connection, reason, *, detail, **facts):
+    """Only the guardian's actual empty kernel child set permits this terminal."""
+    try:
+        os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG)
+    except ChildProcessError:
+        _send(connection, {'type': 'not-started', 'supervisor_pid': os.getpid(),
+            'command_pid': None, 'quiescent': True, 'returncode': 126,
+            'reason': reason, 'detail': detail, **facts})
+        return
+    raise OwnedProcessError('unstarted command still has unresolved kernel child custody')
+
+
 def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
     _subreaper()
     ready = {'type': 'ready', 'supervisor_pid': os.getpid()}
@@ -371,12 +391,17 @@ def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
     if native_leases:
         ready['native_leases'] = [list(binding) for binding in native_leases]
     _send(connection, ready)
-    request = _receive(connection, body_deadline)
+    request = _receive(connection, body_deadline + cleanup_seconds)
+    if isinstance(request, dict) and set(request) == {'cancel'} and request['cancel'] is True:
+        reason = 'timeout' if time.monotonic() >= body_deadline else 'cancelled'
+        _not_started(connection, reason, detail='command cancelled before allocation')
+        return
     command = request['command']
     if not isinstance(command, list) or not command or not all(isinstance(x, str) for x in command):
         raise OwnedProcessError('invalid owned command')
     if time.monotonic() >= body_deadline:
-        raise OwnedProcessError('command deadline expired before allocation')
+        _not_started(connection, 'timeout', detail='command deadline expired before allocation')
+        return
     input_binding = request.get('input')
     stdin = None
     if input_binding is not None:
@@ -392,19 +417,16 @@ def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
                 or not stat.S_ISREG(identity.st_mode)
                 or fcntl.fcntl(stdin, _INPUT_GET_SEALS) & seals != seals):
             raise OwnedProcessError('command input identity or immutable bytes are unbound')
+    if time.monotonic() >= body_deadline:
+        _not_started(connection, 'timeout', detail='command deadline expired before allocation')
+        return
     try:
         command_options = {'stdin': stdin} if stdin is not None else {}
         process = subprocess.Popen(command, start_new_session=True, close_fds=True, **command_options)
     except OSError as exc:
-        try:
-            os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG)
-        except ChildProcessError:
-            _send(connection, {'type': 'not-started', 'supervisor_pid': os.getpid(),
-                'command_pid': None, 'quiescent': True, 'returncode': 126,
-                'reason': 'launch-error', 'detail': str(exc),
-                'errno': exc.errno, 'strerror': exc.strerror, 'filename': exc.filename})
-            return
-        raise OwnedProcessError('failed exec left unresolved child custody') from exc
+        _not_started(connection, 'launch-error', detail=str(exc),
+            errno=exc.errno, strerror=exc.strerror, filename=exc.filename)
+        return
     connection.setblocking(False)
     reason = 'exit'
     cleanup_deadline = None

@@ -545,5 +545,87 @@
     "not_release_certification": true,
     "full_native_population_and_deadlines_open": true,
     "scope_limit": "Six-stage limited SDK/private consumers passed, but subsequent expanded native wheel corpus found the retained sealing ABI failures; not general installed-runtime assurance."
-  }
+  },
+  "original_controller_consumer_attempts": [
+    {
+      "authority": false,
+      "source": "75befe3d145eed3b36e25912487faecf15ac3334",
+      "passed": 261,
+      "failed": 1,
+      "errors": 0,
+      "scope": "actual managed interpreter source consumers",
+      "cause": "owned managed test environment lacks separately pinned pip26.2.1; valid dependency guard rejects earlier than intended pytest-version oracle",
+      "test_oracle_unchanged": true,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "7ddb5d68a6b0ba3e4cfdebe49da27df1f173443e1163541a4ffd363af83975e5",
+        "operation.json": "ba17ae32439ee7ade45da8be42143f8c6b56ac58892412dc7f2db308cd7b64a7",
+        "cases.xml": "54589ccaede6f05debf559230b91bd21ac68b7762a0a0d7095b1bc9effb29d39"
+      }
+    },
+    {
+      "authority": false,
+      "source": "75befe3d145eed3b36e25912487faecf15ac3334",
+      "passed": 261,
+      "failed": 1,
+      "fixture_prerequisite_corrected": true,
+      "actual_pip": "26.2.1",
+      "cause": "actual guardian readiness socket timeout before command request, despite declared remaining cleanup; typed timeout proof missing",
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test-tool.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "f3ee424bea89a58540523bbc2f4da7d9eca49829ecdc1e864b7a887cfb39bbdf",
+        "operation.json": "a52a10f495e58ea030fc2277ea96677e12e91d89464b8a7b688287fa0cb11a33",
+        "test-tool.stdout": "f7e01dba4beb48f38fd30e5c380962c40d39378d43d8b14027ed74427e07a572",
+        "test-tool-readback.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "test-tool-readback.stdout": "279de283b5fbbadc669b2ebb7109baa03d317e160165c265781a622526b9f9af",
+        "cases.xml": "3f359d592c75f4a6aaedfd5098c41de700abdc3fcb30e3ac4e7969d5ebc3337b"
+      }
+    }
+  ],
+  "precommand_timeout_characterization": {
+    "authority": false,
+    "source": "8be689f2e5d1a857d6fee4055df3780e88c2f3fb",
+    "genuine_late_readiness_typed_timeout_failure": 1,
+    "exhausted_cleanup_no_send_control_passed": true,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "focused.stdout": "6778e4717bc15269d47d646ecfd5fe65d298a6c7385ef06a6934f36a9812f33a",
+      "operation.json": "b5bfa3cb1f8983a265c16d9b197cda7f5f5548504a49dae3c51f9bf2252958a3",
+      "cases.xml": "322c6c299c75151309523c044f2c334c42c99a9faa08a00246a965a2573f1cc9"
+    }
+  },
+  "precommand_timeout_qualification": {
+    "authority": false,
+    "source": "c9daec36b8b91fd06b745646aa002c3e1d007af2",
+    "cases_each": 50,
+    "interpreters": 2,
+    "total_passed": 100,
+    "new_precommand_timeout_and_kernel_proof_cases_included": true,
+    "all_previous39_cases_preserved": true,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "canonical_mirrors_and_full_consumer_archives_still_pending": true,
+    "raw_sha256": {
+      "0.xml": "c1f2662b9336c3ca7c5201cb2721a8aadb9a14ef24378d23683c2d56e54405da",
+      "0.stdout": "5507b4e3c033e57e71496f43d850e6e43ae3d17cc5b0225dad0357ef2a7cd507",
+      "0.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "1.xml": "318e35f0e19a8e2ef3c2207644b2e676875db7e58ac7bc15df4b2cc40ed403c3",
+      "1.stdout": "ba3588e61ae905b3297efb26ae8afaa3748b08665e740798c70427dc282faa51",
+      "1.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "contract": "e57952e4",
+    "implementation": "c9daec36b8b91fd06b745646aa002c3e1d007af2"
+  },
+  "next_authority_residual": "Installed pending-topology code still treats failed Git inventory as absence and chooses classifier layout from candidate filesystem; contract and real-Git characterization required before repair. Preserve genuine confirmed-absence fallback and protected target evaluator source."
 }
