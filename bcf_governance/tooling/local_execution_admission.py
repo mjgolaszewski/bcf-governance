@@ -15,6 +15,7 @@ from typing import Any, Iterator, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from .evidence_process_supervisor import native_lease_custody
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     InterpreterEnvironmentPlan,
@@ -349,9 +350,9 @@ def local_gate_lease(execution_id: str) -> Iterator[None]:
         descriptor.truncate()
         descriptor.write(execution_id + "\n")
         descriptor.flush()
-        yield
+        with native_lease_custody(descriptor.fileno()):
+            yield
     finally:
-        try:
-            fcntl.flock(descriptor.fileno(), fcntl.LOCK_UN)
-        finally:
-            descriptor.close()
+        # Closing this reference preserves a guardian's inherited OFD lock.
+        # LOCK_UN would also unlock that guardian's live reference.
+        descriptor.close()
