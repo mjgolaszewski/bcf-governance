@@ -1,18 +1,20 @@
 {
   "authority": false,
-  "status": "focused_source_qualified_broader_installed_pending",
+  "status": "focused_compatibility_corrected_broader_installed_pending",
   "contract": "audits/issue-394/semantic-shape-admission-contract.json",
   "contract_commits": [
     "bf010dce",
-    "a3c84091"
+    "a3c84091",
+    "dd869a57"
   ],
   "test_commits": [
     "f0947908",
-    "665c4d37"
+    "665c4d37",
+    "974f7dd6"
   ],
   "red_subject": "665c4d37f1d06e86160c3346200988d4c5c31095",
   "implementation_subject": "3e7ac73b80df340c98d81c617f9816d6fc7232ab",
-  "change": "Existing semantic predicate consumed by shared structural admission, and actual scanner consumes structural admission before source discovery. Canonical generator owns mirror/manifest changes.",
+  "change": "Existing semantic predicate consumed by shared structural admission; scanner consumes only enabled operation schema/identity/shape admission before independent source discovery and loads canonical Registry afterward. Canonical generator owns mirrors.",
   "red": {
     "cases": 31,
     "genuine_ordering_failures": 28,
@@ -33,7 +35,11 @@
     "semantic-shape-665c4d37-red-terminal-readback.json": "cf390575f7d676fb3c25bd1c7d4b7b41ca133ee4012eb94b0089c152a0da8880",
     "semantic-shape-3e7ac73b-focused-terminal-readback.json": "da7414f426bc022e2b1c82d9b58a5395cadcda02cc1ec8812fdfc974924f50fa",
     "semantic-operation-f49fd489-wheel-existing-sdk-terminal-readback.json": "52be237c06feab73c48fa660d309fa7cd87c6229686145530ec96c6e8937df9f",
-    "semantic-operation-f49fd489-sdist-admission-sdk-terminal-readback.json": "17ce825acc6fe9683aaf06a85e1a2129105c4391162489741658ea8a4b81757a"
+    "semantic-operation-f49fd489-sdist-admission-sdk-terminal-readback.json": "17ce825acc6fe9683aaf06a85e1a2129105c4391162489741658ea8a4b81757a",
+    "semantic-shape-974f7dd6-registry-red-terminal-readback.json": "f6fe7840a72770b35904763bc9494e337a45c0b4bf3289adb87e390f45d35f74",
+    "semantic-shape-6488ab3a-registry-green-terminal-readback.json": "1f7548528650770c9294d94a96d80e11bbbdb2cc826d0ab718110036dc7093e2",
+    "semantic-shape-abd513d0-canonical-terminal-readback.json": "395df3b8175f44b2d9c801b718aa9d58d1bf9a937e0fce9eb2ab26a70d2b416b",
+    "semantic-shape-3b2105ce-structural-terminal-readback.json": "bcd66b37d22bc94ddd5989c01a25155ed6716c8091673317cf6682826e874875"
   },
   "previous_primary_subject_qualification": {
     "subject": "f49fd48924be44074ff036dd454bde8a2df89a1b",
@@ -47,7 +53,10 @@
   "historical_summary_dispositions": {
     "MEMORY.yml": "Operation admission d7af52ef: six genuine RED;7 focused PASS. Canonical205d3c5e fixes lock;61 prior/2 replay PASS. Structural/installed and lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/semantic-operation-admission-verification.json.",
     "plans/phase-ledger.yml": "Operation admission:7PASS;205d3c5e canonical/2 lock consumers PASS;61 earlier cases retained. Structural/installed and lifecycle/targets/custody open;82 unchanged. See audits/issue-394/semantic-operation-admission-verification.json.",
-    "phases/phase-32-log.yml": "Operation admission d7af52ef: six genuine RED;7 focused PASS. Canonical205d3c5e fixes lock;61 prior/2 replay PASS. Structural/installed and lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/semantic-operation-admission-verification.json."
+    "phases/phase-32-log.yml": "Operation admission d7af52ef: six genuine RED;7 focused PASS. Canonical205d3c5e fixes lock;61 prior/2 replay PASS. Structural/installed and lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/semantic-operation-admission-verification.json.",
+    "MEMORY.yml@abd513d0": "Semantic admission: f49 wheel63+4 PASS; isolated shape3e7ac73b31PASS after28RED. Broader/installed and lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/semantic-shape-admission-verification.json.",
+    "plans/phase-ledger.yml@abd513d0": "Semantic admission: f49 wheel63+4 PASS; isolated shape3e7ac73b31PASS after28RED. Broader/installed and lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/semantic-shape-admission-verification.json.",
+    "phases/phase-32-log.yml@abd513d0": "Semantic admission: f49 wheel63+4 PASS; isolated shape3e7ac73b31PASS after28RED. Broader/installed and lifecycle/targets/custody pending;82/38 unchanged. See audits/issue-394/semantic-shape-admission-verification.json."
   },
   "remaining": [
     "Canonical reconciliation and affected complete source semantic populations, valid mixed/TypeScript profiles and cause-specific controls.",
@@ -58,5 +67,31 @@
   "whole_open": 82,
   "slice_count_unchanged": 38,
   "p33_p35": "dormant",
-  "release_custody": "not_certified"
+  "release_custody": "not_certified",
+  "compatibility_correction": {
+    "regressed_subject": "3b2105cef09dfb93fdd9305c561b8423978a1928",
+    "characterization_subject": "974f7dd636b0dc593ffb2c281c41d6030a32614d",
+    "corrected_subject": "6488ab3a398c87ccb72a8a4d603779d63c4d7cf0",
+    "red": {
+      "cases": 40,
+      "genuine_registry_order_failures": 9,
+      "passed": 31,
+      "fixture_errors": 0
+    },
+    "green": {
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0,
+      "errors": 0
+    },
+    "original_test_unchanged": "tests.test_semantic_ownership::test_source_discovery_precedes_registry_access",
+    "scope": "31 prior shape controls plus8 enabled/nonenabled Python/full scanner ordering controls plus unchanged original regression. Actual source discovery again precedes canonical Registry; public flag unchanged. Prior six architecture checks did not cover this regression.",
+    "remaining": "Fresh canonical lock/manifests and broad source, installed, private qualification required for corrected exact bytes before integration."
+  },
+  "prior_shape_canonical_and_structural": {
+    "subject": "3b2105cef09dfb93fdd9305c561b8423978a1928",
+    "canonical": "3 rounds PASS",
+    "structural": "lint/type/6 architecture/full governance/21 golden PASS",
+    "disposition": "Retained historical evidence; does not cover newly corrected scan bytes or prove original discovery-order compatibility."
+  }
 }

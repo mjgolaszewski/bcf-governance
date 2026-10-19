@@ -1,0 +1,28 @@
+{
+  "authority": false,
+  "regressed_subject": "3b2105cef09dfb93fdd9305c561b8423978a1928",
+  "characterization_subject": "974f7dd636b0dc593ffb2c281c41d6030a32614d",
+  "corrected_subject": "6488ab3a398c87ccb72a8a4d603779d63c4d7cf0",
+  "red": {
+    "cases": 40,
+    "genuine_registry_order_failures": 9,
+    "passed": 31,
+    "fixture_errors": 0
+  },
+  "green": {
+    "passed": 40,
+    "failed": 0,
+    "skipped": 0,
+    "errors": 0
+  },
+  "original_test_unchanged": "tests.test_semantic_ownership::test_source_discovery_precedes_registry_access",
+  "scope": "31 prior shape controls plus8 enabled/nonenabled Python/full scanner ordering controls plus unchanged original regression. Actual source discovery again precedes canonical Registry; public flag unchanged. Prior six architecture checks did not cover this regression.",
+  "remaining": "Fresh canonical lock/manifests and broad source, installed, private qualification required for corrected exact bytes before integration.",
+  "evidence_sha256": {
+    "semantic-shape-974f7dd6-registry-red-terminal-readback.json": "f6fe7840a72770b35904763bc9494e337a45c0b4bf3289adb87e390f45d35f74",
+    "semantic-shape-6488ab3a-registry-green-terminal-readback.json": "1f7548528650770c9294d94a96d80e11bbbdb2cc826d0ab718110036dc7093e2"
+  },
+  "whole_requirement_status_advanced": false,
+  "whole_open": 82,
+  "slice_count_unchanged": 38
+}
