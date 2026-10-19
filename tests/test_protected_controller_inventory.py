@@ -12,7 +12,7 @@ from tests.test_trusted_controller_compatibility import _git, _repository
 
 def _commit(root: Path, message: str) -> str:
     _git(root, 'add', '-A')
-    _git(root, 'commit', '-q', '-m', message)
+    _git(root, 'commit', '--allow-empty', '-q', '-m', message)
     return _git(root, 'rev-parse', 'HEAD')
 
 
