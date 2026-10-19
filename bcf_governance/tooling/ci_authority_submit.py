@@ -58,7 +58,8 @@ def _validate_authored_submission_inputs(root: Path) -> None:
     """Reject available authored defects without selecting project resources."""
 
     try:
-        if (root / "plans/phase-ledger.yml").is_file():
+        phase_ledger = root / "plans/phase-ledger.yml"
+        if phase_ledger.exists() or phase_ledger.is_symlink():
             validate_authored_phase_state(root)
         try:
             version = executing_runtime_version()
