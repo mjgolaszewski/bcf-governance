@@ -166,3 +166,34 @@ def test_foreign_git_namespace_cannot_authorize_candidate(tmp_path: Path, monkey
     monkeypatch.setenv('GIT_WORK_TREE', str(foreign))
     with pytest.raises(owner.TrustedControllerCompatibilityError, match='repository|environment|namespace|redirect'):
         owner.classify_trusted_controller_applicability(root, target_commit=target)
+
+
+@pytest.mark.parametrize('boundary', ['source-diff', 'installed-consumer'])
+def test_moving_candidate_cannot_authorize_compatibility(tmp_path: Path, monkeypatch, boundary: str) -> None:
+    root, target = _repository(tmp_path)
+    if boundary == 'installed-consumer':
+        (root / 'bcf_governance/tooling/ci_github_api.py').write_text('class GitHubAPI:\n    changed = True\n')
+        _commit(root, 'candidate requires installed compatibility')
+    before = _git(root, 'rev-parse', 'HEAD')
+    def advance():
+        (root / 'README.md').write_text('concurrent committed subject\n')
+        _commit(root, 'advance candidate during compatibility')
+    if boundary == 'source-diff':
+        original = owner._git
+        moved = []
+        def captured(root, *arguments):
+            value = original(root, *arguments)
+            if arguments[0] == 'diff' and not moved:
+                advance()
+                moved.append(True)
+            return value
+        monkeypatch.setattr(owner, '_git', captured)
+    else:
+        def consumer(*args, **kwargs):
+            advance()
+            raise owner.TrustedControllerRoutineRotationIncompatibleError('installed failure after concurrent move')
+        monkeypatch.setattr(owner, '_verify_installed_authority_consumability', consumer)
+        monkeypatch.setattr(owner, 'ordinary_alternate_lane_available', lambda *_: True)
+    with pytest.raises(owner.TrustedControllerCompatibilityError, match='changed|moving|subject'):
+        owner.classify_trusted_controller_applicability(root, target_commit=target)
+    assert _git(root, 'rev-parse', 'HEAD') != before
