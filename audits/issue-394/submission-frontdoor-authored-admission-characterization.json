@@ -45,6 +45,15 @@
       "errors": 0,
       "skips": 0,
       "forbidden_audit_events": 0
+    },
+    "pure_source_regression": {
+      "cases": 35,
+      "passed": 35,
+      "failed": 0,
+      "errors": 0,
+      "skips": 0,
+      "forbidden_audit_events": 0,
+      "scope": "Eleven existing admission/registry/CLI test functions, with two real-Git functions (six cases) retained pending native qualification; no materialization or native custody claim"
     }
   },
   "raw_sha256": {
@@ -55,14 +64,19 @@
     "submission-frontdoor-cf06da2b-disabled-cli-edge-attempt1/report.json": "ab6e28638c87388508df53e2911dc88ea128e26b52b72c7e8225735e636fc6a8",
     "submission-frontdoor-cf06da2b-disabled-cli-edge-attempt1/cases.xml": "1a9ab5271ee32b36f60be90f552016fd119fea606c9e24c7f5dce5344e5d417a",
     "submission-frontdoor-cf06da2b-consumer-unit-attempt1/report.json": "3d481dbeadad6df10591acc434e46b4c97ad350eaf378dadba54759ad8acb27d",
-    "submission-frontdoor-cf06da2b-consumer-unit-attempt1/cases.xml": "3472a1ba3689c73dcae97fbd7789788a6a56eb67625235fb843715e7e59d9e97"
+    "submission-frontdoor-cf06da2b-consumer-unit-attempt1/cases.xml": "3472a1ba3689c73dcae97fbd7789788a6a56eb67625235fb843715e7e59d9e97",
+    "submission-frontdoor-59a5e8db-pure-regression-attempt1/report.json": "8d6afe48d8e2e9ecaf267e048180bbb8a7d84f88068f0a8b870cd3f9ff342b80",
+    "submission-frontdoor-59a5e8db-pure-regression-attempt1/cases.xml": "f583a8776167f9ed7eab852fe4c894b937c0210e2ff43b160bf81ce36d17b179",
+    "submission-frontdoor-59a5e8db-pure-regression.stdout": "5283ea9f67f859f3cb3fdb6de79ee64b931ef181083c8d1f0d3bc56c90baace1",
+    "submission-frontdoor-59a5e8db-pure-regression.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "limits": [
     "Guarded pure source unit observations only; forbidden selection witnesses did not materialize environments.",
     "No cold-cache, actual busy-lease, distribution/reference collection admission or complete normalization claim.",
     "Canonical private projection, complete affected consumers, architecture/semantic/governance/package/installed qualification remain pending.",
     "Isolated branch is unintegrated; exact edcf successor source and its active SDK matrix remain unchanged.",
-    "All82 whole requirements/38 bounded slice statuses unchanged; P32 active/P33-P35 dormant."
+    "All82 whole requirements/38 bounded slice statuses unchanged; P32 active/P33-P35 dormant.",
+    "Subsequent35-case pure regression passes without forbidden audit events. Six original real-Git cases and broader native/architecture/semantic/canonical projection/installed qualification remain pending; primary54b09168 unchanged."
   ],
   "next_action": "After the current successor landing, independently qualify existing CLI/admission/normalization consumers, canonical projection and installed parity before integrating this bounded correction."
 }
