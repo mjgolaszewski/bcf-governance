@@ -700,16 +700,23 @@ def classify_trusted_controller_applicability(
     noncertifying and may build N+1, but must not allocate semantic evidence.
     """
 
+    root = repo_root.resolve()
+    target_commit, _ = _committed_tree(root, target_commit)
+    current_commit, _ = _committed_tree(root, "HEAD")
+    _require_candidate_subject(root, current_commit)
     try:
-        verify_trusted_controller_compatibility(
-            repo_root, target_commit=target_commit
-        )
-    except TrustedControllerRoutineRotationIncompatibleError:
-        if not ordinary_alternate_lane_available(repo_root):
-            raise
-        state = TrustedControllerApplicabilityState.PENDING_ROTATION
-    except TrustedControllerRuntimeStaleError:
-        state = TrustedControllerApplicabilityState.PENDING_ROTATION
-    else:
-        state = TrustedControllerApplicabilityState.CURRENT
-    return TrustedControllerApplicability(state, target_commit)
+        try:
+            verify_trusted_controller_compatibility(
+                root, target_commit=target_commit
+            )
+        except TrustedControllerRoutineRotationIncompatibleError:
+            if not ordinary_alternate_lane_available(root):
+                raise
+            state = TrustedControllerApplicabilityState.PENDING_ROTATION
+        except TrustedControllerRuntimeStaleError:
+            state = TrustedControllerApplicabilityState.PENDING_ROTATION
+        else:
+            state = TrustedControllerApplicabilityState.CURRENT
+        return TrustedControllerApplicability(state, target_commit)
+    finally:
+        _require_candidate_subject(root, current_commit)

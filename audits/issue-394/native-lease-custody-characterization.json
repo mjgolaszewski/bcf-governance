@@ -627,7 +627,7 @@
     "contract": "e57952e4",
     "implementation": "c9daec36b8b91fd06b745646aa002c3e1d007af2"
   },
-  "next_authority_residual": "Exact protected/candidate Git source and movement controls pass; canonical mirroring, whole structural/governance and installed archive consumer qualification pending. Complete dynamic lifecycle/runtime population and whole deadlines remain open. No release or acceptance closure.",
+  "next_authority_residual": "Outer classifier d085 now passes20 protected controls and291 selected managed consumer cases after3 genuine RED. Final canonical, structural, wheel/sdist, copied semantic and profile contexts require fresh qualification. Full dynamic lifecycle/effect populations, whole deadlines and approved performance targets remain open.",
   "protected_controller_inventory_qualification": {
     "protected-controller-871c4b0a-red-terminal-readback.json": {
       "authority": false,
@@ -720,5 +720,68 @@
         "cases.xml": "eca1911506b047edff77e9243a1a66a4fd7c8d7b881ced0123dca2d714c43dd1"
       }
     }
+  },
+  "outer_applicability_subject_qualification": {
+    "protected-controller-f76e5335-outer-red-terminal-readback.json": {
+      "authority": false,
+      "source": "f76e533521077c51d233cd62cd2df61dde7a4b31",
+      "genuine_failures": 3,
+      "passed": 17,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "900b1f07abe6a55e6f0263cf5f38cc80dbac86fddfb90a3532b508a27b449b58",
+        "operation.json": "bcb1e3b94f69772fa661c67aebea51cea7a987feb22ae264fca192427bef63c3",
+        "cases.xml": "34353cb8013d6417b021c00b02d6e2b39dac1b1afbd03e0a2dc01f698a1843bd"
+      }
+    },
+    "protected-controller-d085ae22-outer-green-terminal-readback.json": {
+      "authority": false,
+      "source": "d085ae2255d1c3f37263f866ad4d54a5508743a4",
+      "passed": 20,
+      "prior_genuine_failures": 3,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "3c8218083efc6dc0025b02ea5c8c1d2612262a6a2dc9d1cfc2365c7a1cc00a84",
+        "operation.json": "591e293b5888ac4568cb9d90b145398c3de3c54abf18e0d517c1560dca3d75f6",
+        "cases.xml": "3fc7b6e384129be1d2bd03bedb63a556b155ca97732cb0372d3bdf6215923e5b"
+      }
+    },
+    "protected-controller-d085ae22-original-terminal-readback.json": {
+      "authority": false,
+      "source": "d085ae2255d1c3f37263f866ad4d54a5508743a4",
+      "cases_passed": 291,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "a9f2642e40b2c6e67fb56d1e7b7ccead1fc64158b992f9c2445c194a69f3ab3a",
+        "operation.json": "78f6ad503cffdc4e6ae2c12a8be4c29ab1a1f51c495e971df21268bf7a4c9125",
+        "cases.xml": "9d4f97fa413e2b8d5b8228eb274275cadcef348fc9f41f5abeeb4d5e2b5e242f"
+      }
+    }
+  },
+  "prior_exact_distribution_qualification": {
+    "authority": false,
+    "source": "09b355c3170ac951ac8205bc1a7c593932d09401",
+    "stages_passed": 6,
+    "sdk_cases_each_archive": 92,
+    "private_cases_each_archive": 78,
+    "tracked_package_files_exact": 792,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "artifacts": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "4ff06f98f43d6c262acbdec1418924230f1ae14299a605e4d29cf5dbeae58770",
+      "bcf_governance-2.5.0.tar.gz": "0e02200752f8f5c836cdb61e015180af9ffcbf6213d48d06814bcf5a0f54849d"
+    },
+    "retained_readback_sha256": "bfbea94587f4ec34cc5c0a41c5533cc3347e88e7e009c096577e68545655e377",
+    "limits": "Qualified exact older09b development bytes; not installed assurance for later outer-classifier correction. Both originals retained without rebuilding or retagging."
   }
 }
