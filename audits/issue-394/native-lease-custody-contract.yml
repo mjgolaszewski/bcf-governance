@@ -25,6 +25,8 @@ scope:
     - bcf_governance/tooling/preflight.py
     - bcf_governance/tooling/ci_authority_pins.py
     - bcf_governance/tooling/reconcile_authority_transition.py
+    - bcf_governance/tooling/trusted_controller_compatibility.py
+    - bcf_governance/tooling/controller_custody_prospective.py
     - bcf_governance/tooling/ci_authority_submit.py
     - bcf_governance/tooling/scaffold_governance_artifacts.py
     - tests/test_evidence_process_supervisor.py
@@ -100,3 +102,21 @@ input_extension:
   qualification:
     - Run original authority and reconciliation consumers plus required source/canonical/archive/installed checks.
     - Keep all other independent native candidate populations and outer-deadline completeness open; this slice grants no whole acceptance or predecessor gate change.
+
+prospective_consumer_extension:
+  source_subject: 2b9677c50e09e6116540396d074dbc23e5dd144c
+  independent_candidates: Ten direct subprocess calls in trusted_controller_compatibility.py and one route call in controller_custody_prospective.py; discovered without graph or test membership filters.
+  observed_entrypoints: local_pr.run_prospective_train holds its native lease while invoking classify_trusted_controller_applicability and validate_controller_custody_graph.
+  bounded_scope:
+    - Route these existing command effects through the qualified admitted-command owner, preserving genuinely unbound subprocess ports, original result and error interfaces, cwd, environment, capture and finite topology stdin.
+    - Preserve the protected installed-controller evaluator source and existing topology/authority compatibility assertions. Candidate or stacked sources cannot supply authority.
+    - Real process characterization must establish the missing acquired-descriptor guardian before production. Qualify Git, route, installed-authority and finite pending-topology input paths plus original consumer behavior separately.
+    - Retain exact worktree mutation ownership and cleanup semantics. Unknown accepted mutations, missing cleanup or expired observation cannot authorize another mutation; characterize these residuals explicitly.
+  exclusions:
+    - Eleven syntactic candidates are not proof of whole-runtime reachability or complete native-consumer coverage.
+    - This extension does not establish composed outer deadlines, independently complete lifecycle populations, release certification or installed adoption.
+    - Existing immutable predecessor gates, source-policy authority, public CLI and provider statuses remain unchanged.
+  qualification:
+    - Execute actual descriptor/guardian controls before and after production; original unbound consumer matrices and installed source origins remain mandatory.
+    - Preserve failed and partial worktree mutation captures; do not infer cleanup from a dead PID or free lock alone.
+    - Removing a direct edge and its test cannot retire the independent source obligation; full protected runtime population conformance remains open.
