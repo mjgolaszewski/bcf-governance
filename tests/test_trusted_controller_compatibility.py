@@ -239,6 +239,10 @@ def test_installed_n_topology_rejection_requires_exact_alternate_lane(
         encoding="utf-8",
     )
 
+    with pytest.raises(TrustedControllerCompatibilityError, match="clean|uncommitted"):
+        classify_trusted_controller_applicability(root, target_commit=target)
+    _git(root, "add", ".")
+    _git(root, "commit", "-q", "-m", "commit exact alternate lane authority")
     pending = classify_trusted_controller_applicability(root, target_commit=target)
     assert pending.state is TrustedControllerApplicabilityState.PENDING_ROTATION
 
