@@ -106,5 +106,86 @@
     "Subsequent61 candidate submission pure cases pass with zero forbidden audit events; combined distinct source-unit population96. Four real-Git functions/nineteen cases across these two modules remain pending, as do other consuming modules and all native/canonical/installed qualification. No primary candidate changes.",
     "Four pure architecture cases pass4.66s with zero forbidden audit events. Source behavioral96 and architecture4 are distinct observations; this does not cover all eight architecture gates or installed/native consumers."
   ],
-  "next_action": "After the current successor landing, independently qualify existing CLI/admission/normalization consumers, canonical projection and installed parity before integrating this bounded correction."
+  "next_action": "After the current successor landing, independently qualify existing CLI/admission/normalization consumers, canonical projection and installed parity before integrating this bounded correction.",
+  "provider_configuration_followup": {
+    "authority": false,
+    "contract_subject": "9f2c01d6",
+    "test_subject": "ad4760c4",
+    "implementation_subject": "462a692a",
+    "source_sha256": {
+      "bcf_governance/tooling/ci_commands.py": "2d7bdf400477af9e985a3806da6f57bd833b8e46c348cb855e92f9ea205af49e",
+      "tests/test_authored_control_admission.py": "01c191e5cd8d69ce9b0c61beaf01fa584b2381ad89cf3f7d1ca980020f31015e"
+    },
+    "observations": {
+      "red": {
+        "cases": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "skips": 0,
+        "forbidden_audit_events": 0
+      },
+      "green": {
+        "cases": 3,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skips": 0,
+        "forbidden_audit_events": 0
+      },
+      "disabled_order": {
+        "cases": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "skips": 0,
+        "forbidden_audit_events": 0
+      },
+      "admission_regression": {
+        "cases": 38,
+        "passed": 38,
+        "failed": 0,
+        "errors": 0,
+        "skips": 0,
+        "forbidden_audit_events": 0
+      },
+      "candidate_regression": {
+        "cases": 61,
+        "passed": 61,
+        "failed": 0,
+        "errors": 0,
+        "skips": 0,
+        "forbidden_audit_events": 0
+      },
+      "pure_architecture": {
+        "cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skips": 0,
+        "forbidden_audit_events": 0
+      }
+    },
+    "raw_sha256": {
+      "provider-config-frontdoor-red-attempt1/report.json": "dd1f3a90c7b8863dc63ec937b2cdf472129de1d945c1373e490a0e4a07062e77",
+      "provider-config-frontdoor-red-attempt1/cases.xml": "48411812608044df2b8155385b22a9d0fe7f4d3592efe7f561c813eeedaa694e",
+      "provider-config-frontdoor-green-attempt1/report.json": "ab6eebea3f75d819ea3da5ac6b0378e80653e0778aaae313f285bd1b622006ef",
+      "provider-config-frontdoor-green-attempt1/cases.xml": "e53a87fb5c183a9c51464f80572d3cd4dbd0483fed7e555caccddd581b83b00d",
+      "provider-config-frontdoor-disabled-order-attempt1/report.json": "dd1f3a90c7b8863dc63ec937b2cdf472129de1d945c1373e490a0e4a07062e77",
+      "provider-config-frontdoor-disabled-order-attempt1/cases.xml": "e3a7ee22abbf7ad20f751452693a5af8212a88c6a186da8830bd21bd21b2b944",
+      "submission-frontdoor-462a692a-pure-regression-attempt1/report.json": "3c45f2c86f81106ac7ebd302482ba34d46a4e728af168612716e8b12a6c9a0cf",
+      "submission-frontdoor-462a692a-pure-regression-attempt1/cases.xml": "ec4b04c2f81aabb73ad199a17994a983a709ab8a5e6a2f6bb6055ad8de243327",
+      "submission-frontdoor-462a692a-candidate-pure-attempt1/report.json": "93303b7ab826748af9c8a55fd3738ffd6975ca003de954b35262bf1fc73563aa",
+      "submission-frontdoor-462a692a-candidate-pure-attempt1/cases.xml": "6456b403c6940b1000ffa858d293edebea6c31c9173bcbca3dd5c4d7706fb2fc",
+      "submission-frontdoor-462a692a-pure-architecture-attempt1/report.json": "c63895995aceec2ac1e31434142d125a4a73792fdc37a8f6d0afec7fb6da970d",
+      "submission-frontdoor-462a692a-pure-architecture-attempt1/cases.xml": "5bc7b79c45afe05c7e2556af5eaa14bd640a3272fbccd17f79fce95fd8241498"
+    },
+    "qualification": "Pure source-only admission99 and architecture4; current source changes are unintegrated and not installed",
+    "limits": [
+      "Constructor configuration refusal is not token validity, provider authentication, proof or lifecycle authority.",
+      "Removing only earlier constructor call restores the two genuine allocation-order failures without source-file changes.",
+      "Real-Git19 cases in these two behavioral modules, other consumers, canonical private projection, full required governance/semantic and installed qualification remain pending.",
+      "Primary54b09168 and actual installedSDK250 package bytes are unchanged;82whole requirements/38slices unchanged."
+    ]
+  }
 }
