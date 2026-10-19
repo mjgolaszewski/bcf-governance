@@ -69,7 +69,7 @@ def run_admitted_command(command, *, unbound_runner=None, **kwargs):
         body = min(body, timeout)
     result = run_owned_command(command, cwd=cwd, env=env, timeout_seconds=body,
                                cleanup_seconds=cleanup, text=text,
-                               timeout_raises=True)
+                               timeout_raises=True, raise_launch_errors=True)
     if check:
         result.check_returncode()
     return result
@@ -150,7 +150,7 @@ def _observe(process, connection, selector, buffers, deadline):
 
 
 def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
-                      text=True, timeout_raises=False):
+                      text=True, timeout_raises=False, raise_launch_errors=False):
     """Hold the supervisor unreaped until its child proof and both output EOFs."""
     lease = _native_lease
     if lease is not None and lease[1] != threading.get_ident():
@@ -176,6 +176,8 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True,
             )
         except OSError as exc:
+            if raise_launch_errors:
+                raise
             return subprocess.CompletedProcess(command, 126, '',
                 f'bcf execution infrastructure failure: {exc}')
         inherited.close()
@@ -212,6 +214,12 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
                     raise OwnedProcessError('interrupted child cleanup remains unresolved') from exc
                 raise
         if result['reason'] == 'launch-error':
+            if raise_launch_errors:
+                number, detail, filename = result.get('errno'), result.get('strerror'), result.get('filename')
+                if (type(number) is not int or number <= 0 or not isinstance(detail, str)
+                        or (filename is not None and not isinstance(filename, str))):
+                    raise OwnedProcessError('typed failed-exec facts are missing or contradictory')
+                raise OSError(number, detail, filename)
             return subprocess.CompletedProcess(command, 126, '',
                 'bcf execution infrastructure failure: ' + result['detail'])
         if result['reason'] == 'timeout' and timeout_raises:
@@ -232,6 +240,10 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
         return subprocess.CompletedProcess(command, result['returncode'], *output)
     except (OwnedProcessError, subprocess.TimeoutExpired):
         raise
+    except OSError as exc:
+        if raise_launch_errors and (quiescent or process is None):
+            raise
+        raise OwnedProcessError('child cleanup could not be authenticated') from exc
     except UnicodeError as exc:
         if quiescent:
             raise
@@ -313,7 +325,8 @@ def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
         except ChildProcessError:
             _send(connection, {'type': 'not-started', 'supervisor_pid': os.getpid(),
                 'command_pid': None, 'quiescent': True, 'returncode': 126,
-                'reason': 'launch-error', 'detail': str(exc)})
+                'reason': 'launch-error', 'detail': str(exc),
+                'errno': exc.errno, 'strerror': exc.strerror, 'filename': exc.filename})
             return
         raise OwnedProcessError('failed exec left unresolved child custody') from exc
     connection.setblocking(False)
