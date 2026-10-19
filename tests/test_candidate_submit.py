@@ -1139,3 +1139,51 @@ def test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocati
                 subject_commit=head, subject_tree=tree, python_executable=Path('/python'))
         else:
             prospective_candidate_identity.canonical_prospective_inputs(tmp_path)
+
+
+@pytest.mark.parametrize('entry', ['submit', 'prospective', 'canonical'])
+def test_early_candidate_read_does_not_execute_repository_fsmonitor(monkeypatch, tmp_path, entry):
+    import shlex
+    import subprocess
+    from bcf_governance.tooling import local_pr, prospective_candidate_identity
+
+    root = tmp_path / 'candidate repository'
+    root.mkdir()
+
+    def git(*args):
+        return subprocess.run(['git', '-C', str(root), *args], capture_output=True,
+                              text=True, check=True).stdout.strip()
+
+    git('init', '-b', 'main')
+    git('config', 'user.email', 'fixture@example.invalid')
+    git('config', 'user.name', 'Fixture')
+    (root / 'source.py').write_text('VALUE = 1\n')
+    git('add', '.')
+    git('commit', '-m', 'committed candidate')
+    head, tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
+    marker = tmp_path / 'candidate program executed'
+    monitor = tmp_path / 'candidate fsmonitor'
+    monitor.write_text('#!/bin/sh\ntouch ' + shlex.quote(str(marker)) + '\nprintf "token\\0"\n')
+    monitor.chmod(0o700)
+    git('config', 'core.fsmonitor', str(monitor))
+    trace = []
+
+    def next_boundary(*_args, **_kwargs):
+        trace.append('provider-discovery')
+        raise RuntimeError('clean candidate reached original next boundary')
+
+    for owner in (submit, local_pr, prospective_candidate_identity):
+        monkeypatch.setattr(owner, 'resolve_local_pr_context', next_boundary)
+    monkeypatch.setattr(submit, '_normalize_submission', next_boundary)
+    monkeypatch.setattr(local_pr, 'local_gate_lease', next_boundary)
+    with pytest.raises(RuntimeError, match='clean candidate reached original next boundary'):
+        if entry == 'submit':
+            submit.submit_candidate(root, python_executable=Path('/python'), provider_api=object())
+        elif entry == 'prospective':
+            local_pr.run_prospective_train(root, semantic_intent='pr', evaluation_target=None,
+                subject_commit=head, subject_tree=tree, python_executable=Path('/python'))
+        else:
+            prospective_candidate_identity.canonical_prospective_inputs(root)
+    assert trace == ['provider-discovery']
+    assert not marker.exists(), 'early candidate read executed repository Git configuration'
+    assert git('config', '--get', 'core.fsmonitor') == str(monitor)
