@@ -355,11 +355,12 @@ def trusted_runtime_source_files(repo_root: Path, *, target_commit: str | None =
 
 
 def _version_metadata_only(
-    repo_root: Path, *, target_commit: str, path: PurePosixPath
+    repo_root: Path, *, target_commit: str, path: PurePosixPath, current_commit: str | None = None
 ) -> bool:
     """Admit only a canonical inert release-version literal as metadata drift."""
 
-    current = (repo_root / path).read_text(encoding="utf-8")
+    current = ((repo_root / path).read_text(encoding="utf-8") if current_commit is None
+               else _git(repo_root, "show", f"{current_commit}:{path.as_posix()}") + "\n")
     target = _git(repo_root, "show", f"{target_commit}:{path.as_posix()}") + "\n"
     return (
         VERSION_METADATA_PATTERN.fullmatch(current) is not None
@@ -633,48 +634,61 @@ def verify_pr_bootstrap_compatibility(
         )
 
 
+def _require_candidate_subject(root: Path, expected: str) -> None:
+    if _git(root, "rev-parse", "HEAD") != expected or _git(root, "status", "--porcelain"):
+        raise TrustedControllerCompatibilityError("candidate subject changed during trusted applicability")
+
+
 def verify_trusted_controller_compatibility(
     repo_root: Path, *, target_commit: str
 ) -> TrustedControllerCompatibility:
-    """Reject a target whose trusted runtime closure differs from committed HEAD."""
-
+    """Evaluate exact committed subjects and reject movement through consumption."""
     root = repo_root.resolve()
-    target_commit, _ = _committed_tree(root, target_commit)
-    if _git(root, "status", "--porcelain"):
-        raise TrustedControllerCompatibilityError("trusted applicability requires a clean committed candidate")
-    ancestor = run_admitted_command(
-        _git_command("merge-base", "--is-ancestor", target_commit, "HEAD"),
-        unbound_runner=subprocess.run, cwd=root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    if ancestor.returncode != 0:
-        raise TrustedControllerCompatibilityError(
-            "trusted controller target is not an ancestor of committed HEAD"
+    target_commit, target_inventory = _committed_tree(root, target_commit)
+    current_commit, current_inventory = _committed_tree(root, "HEAD")
+    _require_candidate_subject(root, current_commit)
+    try:
+        ancestor = run_admitted_command(
+            _git_command("merge-base", "--is-ancestor", target_commit, current_commit),
+            unbound_runner=subprocess.run, cwd=root,
+            capture_output=True,
+            text=True,
+            check=False,
         )
-    paths = trusted_runtime_source_files(root, target_commit=target_commit)
-    changed = _git(root, "diff", "--name-only", target_commit, "HEAD", "--", *paths)
-    incompatible = changed.splitlines()
-    if changed:
-        incompatible = [
-            path
-            for path in changed.splitlines()
-            if path != VERSION_METADATA_FILE.as_posix()
-            or not _version_metadata_only(
-                root, target_commit=target_commit, path=VERSION_METADATA_FILE
+        if ancestor.returncode != 0:
+            raise TrustedControllerCompatibilityError(
+                "trusted controller target is not an ancestor of committed HEAD"
             )
-        ]
-    if incompatible:
-        _verify_installed_authority_consumability(
-            root, target_commit=target_commit
-        )
-        _verify_installed_pending_topology(root, target_commit=target_commit)
-        raise TrustedControllerRuntimeStaleError(
-            "trusted controller target is stale for runtime files: "
-            + ", ".join(incompatible)
-        )
-    return TrustedControllerCompatibility(target_commit, paths)
+        paths = tuple(sorted(
+            _runtime_source_files(root, ref=current_commit, inventory=current_inventory)
+            | _runtime_source_files(root, ref=target_commit, inventory=target_inventory)))
+        changed = _git(root, "diff", "--name-only", target_commit, current_commit, "--", *paths)
+        incompatible = changed.splitlines()
+        if changed:
+            incompatible = [
+                path
+                for path in changed.splitlines()
+                if path != VERSION_METADATA_FILE.as_posix()
+                or not _version_metadata_only(
+                    root, target_commit=target_commit, path=VERSION_METADATA_FILE,
+                    current_commit=current_commit
+                )
+            ]
+        _require_candidate_subject(root, current_commit)
+        if incompatible:
+            _verify_installed_authority_consumability(
+                root, target_commit=target_commit
+            )
+            _require_candidate_subject(root, current_commit)
+            _verify_installed_pending_topology(root, target_commit=target_commit)
+            raise TrustedControllerRuntimeStaleError(
+                "trusted controller target is stale for runtime files: "
+                + ", ".join(incompatible)
+            )
+        return TrustedControllerCompatibility(target_commit, paths)
+
+    finally:
+        _require_candidate_subject(root, current_commit)
 
 
 def classify_trusted_controller_applicability(
