@@ -258,3 +258,27 @@ submission_frontdoor_phase_ledger_presence:
   - Preserve every other admission query, revalidation boundary and CLI grammar; no alternate phase validator or schema exception.
   controls: [directory ledger rejects before environment, dangling-symlink ledger rejects before environment, absent-ledger valid control still reaches existing environment selection, valid complete phase ledger reaches existing environment selection]
   forbidden: [primary54b09168 mutation, new evaluator or receipt, native qualification claim from a pure refusal witness, phase closure]
+
+shared_authored_phase_applicability:
+  workitem: P32-P0-07
+  authority: false
+  bounded_context: validation
+  consuming_contexts: [ci_authority, operations]
+  architectural_layer: tooling
+  operation_side: query
+  targets:
+  - bcf_governance/tooling/governance_validation/authored_phase_state.py
+  - bcf_governance/tooling/ci_authority_submit.py
+  - bcf_governance/tooling/scaffold_governance_artifacts.py
+  - tests/test_authored_control_admission.py
+  observed: Submit admission, standalone reconciliation admission and projection planning each infer phase applicability from ledger file type; standalone paths skip directory/dangling ledgers, and all three skip a missing ledger despite existing canonical phase catalogs.
+  shared_kernel_decision: The existing validation-owned authored-phase module owns the pure presence query as well as phase validation. CI-authority and operations delegate to that same owner at their three existing boundaries, without a new evaluator or registry.
+  contract:
+  - Presence of any canonical product-spec, build-plan or phase-ledger entry, including malformed types or dangling links, selects existing authored-phase validation.
+  - Existing phase catalogs with a missing ledger fail through the existing validator before environment selection or projection planning.
+  - Complete absence of all phase input markers preserves existing local/unbound behavior; a valid complete phase set still reaches ordinary environment selection.
+  - Predicate success supplies no authenticated phase or lifecycle authority; the existing validator retains every typed refusal and consuming recheck.
+  - All three existing consumers must delegate; introducing another file-type applicability shortcut is outside this contract.
+  controls: [submit missing-ledger refusal, reconcile check/apply malformed-or-missing ledger refusal, projection planner refusal before later stage planning, valid present/absent inputs]
+  qualification: Pure source controls first; native/private projection/full required and installed qualification remains mandatory before primary integration.
+  forbidden: [primary54b09168 or immutable tools mutation, retrospective adopter gates, new phase registry/evaluator/receipt family, phase or full normalization closure from source controls]
