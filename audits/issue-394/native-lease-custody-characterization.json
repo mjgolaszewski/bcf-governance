@@ -627,5 +627,98 @@
     "contract": "e57952e4",
     "implementation": "c9daec36b8b91fd06b745646aa002c3e1d007af2"
   },
-  "next_authority_residual": "Installed pending-topology code still treats failed Git inventory as absence and chooses classifier layout from candidate filesystem; contract and real-Git characterization required before repair. Preserve genuine confirmed-absence fallback and protected target evaluator source."
+  "next_authority_residual": "Exact protected/candidate Git source and movement controls pass; canonical mirroring, whole structural/governance and installed archive consumer qualification pending. Complete dynamic lifecycle/runtime population and whole deadlines remain open. No release or acceptance closure.",
+  "protected_controller_inventory_qualification": {
+    "protected-controller-871c4b0a-red-terminal-readback.json": {
+      "authority": false,
+      "source": "871c4b0a80fd54c6198c1c93624db37e879d9931",
+      "genuine_failures": 14,
+      "confirmed_legacy_absence_passed": 1,
+      "fixture_errors": 0,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "2c6187acfb670842a26bf918ae28ce67bb18f11bf49909a1003d06e611936794",
+        "operation.json": "708c0372d49d894503eace2cdc7846ff6aa2ce86477d4b9f69bd1b658508848a",
+        "cases.xml": "d889bb3a75bb7fd3f7db0e4ab446566fb1354c4f02b7d58929fe8d648556d344"
+      }
+    },
+    "protected-controller-0dc2ea81-green-terminal-readback.json": {
+      "authority": false,
+      "source": "0dc2ea812f804b27b2c898b38fb18b4d16e60b20",
+      "cases_passed": 15,
+      "prior_genuine_failures": 14,
+      "legacy_absence_preserved": true,
+      "scope": "exact protected Git/source/evaluator/namespace controls, not complete dynamic lifecycle population",
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "81b19df3cd4c8cddce98d6003bf57c6e360d9d953fde075ec4fc8d8bdee48ac1",
+        "operation.json": "26f2aa76d0e81dbadaa0237151fac1a0182f5accfed55381c0db5c9dc979c07c",
+        "cases.xml": "9c82e63db4b98d68c96dbaf37193aed1204fbcb73fb6507215e7bd6f8dfa7671"
+      }
+    },
+    "protected-controller-6bdeca4b-moving-red-terminal-readback.json": {
+      "authority": false,
+      "source": "6bdeca4be17ae016a957b0d2809d717bb5f2368e",
+      "genuine_failures": 2,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "40c4fc705013a69b2a28eec19b08feaf65bc04b4dadce23171a47d9a908e074f",
+        "operation.json": "7c7c2638998be64bb0d04eb5c555479326f6294512052e4194ae2d9ab858bdf4",
+        "cases.xml": "d9fcfd157a36c33e5b88ece9b64ecf50ddf43a0252c29a9850c2e9201abbdcc4"
+      }
+    },
+    "protected-controller-b75c9479-green-terminal-readback.json": {
+      "authority": false,
+      "source": "b75c9479badf764b08a603e3fa24e5ebd115a8e1",
+      "cases_passed": 16,
+      "cases_failed": 1,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "f8aa8f0b1ec1af062b23ae9e759dfdb0de2c0c24d90e425e8fde8308d94ab14d",
+        "operation.json": "dbd459a08ff5bc81c861482378f910914bbea353d8f2d173b1ad51c83adb0e76",
+        "cases.xml": "043066f83a0ad09f83c4f868a3bf0b66cdf877cbd411980f12d7b35178289d0b"
+      }
+    },
+    "protected-controller-subject-green-v2-terminal-readback.json": {
+      "authority": false,
+      "source": "155a08f7d2a78f8ea29311a9bc8d73740bf4350f",
+      "cases_passed": 17,
+      "cases_failed": 0,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "4b231e3e3b01c3bee133f5136922dd4bcc7deb2c1c48305d8f8037a58c34b16d",
+        "operation.json": "9f32820e142b4754abc672ad3a03fcc603673aa7819ff9936c3126ca6019642a",
+        "cases.xml": "12a8b8f3f7872f93f02dc4a7d5ba4b08b4c248ec53461fcc41cc8b81ee994fe9"
+      }
+    },
+    "protected-controller-155a08f7-original-terminal-readback.json": {
+      "authority": false,
+      "source": "155a08f7d2a78f8ea29311a9bc8d73740bf4350f",
+      "cases_passed": 288,
+      "q_eof_reap": true,
+      "known_handles_absent": true,
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "e31d0535875471f161ad1bbe17c7814a7ea76e50bb4c311cfef2946b938e8116",
+        "operation.json": "afe53530261c6ea63c9479ca4658bbfff3e4ad53d961d569a31b6f7913d7b47c",
+        "cases.xml": "eca1911506b047edff77e9243a1a66a4fd7c8d7b881ced0123dca2d714c43dd1"
+      }
+    }
+  }
 }
