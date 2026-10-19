@@ -6,6 +6,7 @@ import ast
 from dataclasses import dataclass
 from enum import StrEnum
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
@@ -121,9 +122,18 @@ class TrustedControllerApplicability:
         }
 
 
+def _git_command(*arguments: str) -> list[str]:
+    if any(name in os.environ for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR",
+            "GIT_INDEX_FILE", "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+            "GIT_NAMESPACE", "GIT_SHALLOW_FILE", "GIT_CONFIG", "GIT_CONFIG_PARAMETERS", "GIT_CONFIG_COUNT")):
+        raise TrustedControllerCompatibilityError("Git environment namespace redirection is unauthenticated")
+    return ["git", "--no-replace-objects", "-c", f"core.hooksPath={os.devnull}",
+            "-c", "core.fsmonitor=false", *arguments]
+
+
 def _git(repo_root: Path, *arguments: str) -> str:
     result = run_admitted_command(
-        ["git", *arguments],
+        _git_command(*arguments),
         unbound_runner=subprocess.run, cwd=repo_root,
         capture_output=True,
         text=True,
@@ -136,17 +146,54 @@ def _git(repo_root: Path, *arguments: str) -> str:
     return result.stdout.strip()
 
 
-def _module_file(repo_root: Path, module: str) -> PurePosixPath | None:
+def _committed_tree(repo_root: Path, ref: str) -> tuple[str, dict[str, tuple[str, str, str]]]:
+    """Capture exact regular/source facts without candidate layout or Git redirection."""
+    if Path(_git(repo_root, "rev-parse", "--show-toplevel")).resolve() != repo_root.resolve():
+        raise TrustedControllerCompatibilityError("trusted controller repository root differs")
+    commit = _git(repo_root, "rev-parse", "--verify", f"{ref}^{{commit}}")
+    if not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", commit):
+        raise TrustedControllerCompatibilityError("trusted controller commit identity is malformed")
+    raw = _git(repo_root, "ls-tree", "-rz", "--full-tree", commit)
+    inventory = {}
+    if raw and not raw.endswith("\0"):
+        raise TrustedControllerCompatibilityError("trusted controller Git inventory is truncated")
+    for row in raw.split("\0"):
+        if not row:
+            continue
+        try:
+            header, path = row.split("\t", 1)
+            mode, kind, oid = header.split()
+        except ValueError as exc:
+            raise TrustedControllerCompatibilityError("trusted controller Git inventory is malformed") from exc
+        relative = PurePosixPath(path)
+        if (relative.is_absolute() or ".." in relative.parts or relative.as_posix() != path
+                or path in inventory or not re.fullmatch(r"[0-7]{6}", mode)
+                or not re.fullmatch(r"[0-9a-f]{" + str(len(commit)) + r"}", oid)):
+            raise TrustedControllerCompatibilityError("trusted controller Git inventory is ambiguous")
+        inventory[path] = (mode, kind, oid)
+    return commit, inventory
+
+
+def _regular_entry(inventory, path: PurePosixPath) -> None:
+    entry = inventory.get(path.as_posix())
+    if entry is None or entry[0] not in {"100644", "100755"} or entry[1] != "blob":
+        raise TrustedControllerCompatibilityError(f"trusted controller source is absent or unsafe: {path}")
+
+
+def _module_file(repo_root: Path, module: str, *, inventory=None) -> PurePosixPath | None:
     if module != "bcf_governance" and not module.startswith("bcf_governance."):
         return None
     relative = PurePosixPath(*module.split("."))
-    file_candidate = PurePosixPath(str(relative) + ".py")
-    package_candidate = relative / "__init__.py"
-    if (repo_root / file_candidate).is_file():
-        return file_candidate
-    if (repo_root / package_candidate).is_file():
-        return package_candidate
-    return None
+    candidates = (PurePosixPath(str(relative) + ".py"), relative / "__init__.py")
+    if inventory is not None:
+        found = [path for path in candidates if path.as_posix() in inventory]
+        if len(found) > 1:
+            raise TrustedControllerCompatibilityError("protected Python module inventory is ambiguous")
+        if found:
+            _regular_entry(inventory, found[0])
+            return found[0]
+        return None
+    return next((path for path in candidates if (repo_root / path).is_file()), None)
 
 
 def _imported_modules(path: PurePosixPath, tree: ast.Module) -> Iterable[str]:
@@ -165,11 +212,15 @@ def _imported_modules(path: PurePosixPath, tree: ast.Module) -> Iterable[str]:
             if node.module:
                 base.extend(node.module.split("."))
                 yield ".".join(base)
+                for alias in node.names:
+                    yield ".".join([*base, alias.name])
             else:
                 for alias in node.names:
                     yield ".".join([*base, alias.name])
         elif node.module:
             yield node.module
+            for alias in node.names:
+                yield node.module + "." + alias.name
 
 
 def _required_packaged_schemas(
@@ -219,91 +270,88 @@ def _required_packaged_schemas(
 
 
 def _require_packaged_schemas(
-    repo_root: Path, paths: set[PurePosixPath], *, ref: str | None
+    repo_root: Path, paths: set[PurePosixPath], *, ref: str | None, inventory=None
 ) -> None:
     for path in paths:
         if ref is not None:
-            _git(repo_root, "cat-file", "-e", f"{ref}:{path.as_posix()}")
+            if inventory is not None:
+                try:
+                    _regular_entry(inventory, path)
+                except TrustedControllerCompatibilityError as exc:
+                    raise TrustedControllerCompatibilityError(f"required trusted controller schema is absent or unsafe: {path}") from exc
+            else:
+                _git(repo_root, "cat-file", "-e", f"{ref}:{path.as_posix()}")
             continue
         source = repo_root / path
         if not source.is_file() or source.is_symlink():
-            raise TrustedControllerCompatibilityError(
-                f"required trusted controller schema is absent or unsafe: {path}"
-            )
+            raise TrustedControllerCompatibilityError(f"required trusted controller schema is absent or unsafe: {path}")
 
 
-def trusted_runtime_source_files(
-    repo_root: Path, *, target_commit: str | None = None
-) -> tuple[str, ...]:
-    """Derive the trusted CLI closure and active packaged schema requirements."""
-
-    root = repo_root.resolve()
+def _runtime_source_files(root: Path, *, ref: str | None, inventory=None) -> set[str]:
+    """One existing import/schema population walker, qualified by source context."""
     installed_entrypoint = INSTALLED_RUNTIME_ROOT / "ci_github_commands.py"
-    if not (root / TRUSTED_ENTRYPOINT).is_file() and (root / installed_entrypoint).is_file():
-        runtime_files = {
-            path.relative_to(root).as_posix()
-            for path in (root / INSTALLED_RUNTIME_ROOT).rglob("*")
-            if path.is_file() and not path.is_symlink() and path.suffix in {".py", ".mjs"}
-        }
-        schema_files = _required_packaged_schemas(
-            root, ref=None, schema_root=INSTALLED_SCHEMA_ROOT
-        )
-        _require_packaged_schemas(root, schema_files, ref=None)
-        if target_commit is not None:
-            target_schemas = _required_packaged_schemas(
-                root, ref=target_commit, schema_root=INSTALLED_SCHEMA_ROOT
-            )
-            _require_packaged_schemas(root, target_schemas, ref=target_commit)
-            schema_files.update(target_schemas)
-        wrappers = {
-            path
-            for path in (
-                "scripts/build_trusted_controller.py",
-                "requirements-governance.txt",
-            )
-            if (root / path).is_file() and not (root / path).is_symlink()
-        }
-        observed_installed = runtime_files | {
-            value.as_posix() for value in schema_files
-        } | wrappers
-        if not runtime_files or not schema_files:
-            raise TrustedControllerCompatibilityError(
-                "installed trusted controller runtime is incomplete"
-            )
-        if target_commit is not None:
-            for relative in observed_installed:
-                _git(root, "cat-file", "-e", f"{target_commit}:{relative}")
-        return tuple(sorted(observed_installed))
-    pending = [TRUSTED_ENTRYPOINT]
-    observed = set(DIRECT_RUNTIME_FILES)
+    present = (lambda path: path.as_posix() in inventory) if inventory is not None else (lambda path: (root / path).is_file())
+    source_layout, private_layout = present(TRUSTED_ENTRYPOINT), present(installed_entrypoint)
+    if inventory is not None:
+        _regular_entry(inventory, SCHEMA_REQUIREMENTS_FILE)
+        if source_layout and private_layout:
+            raise TrustedControllerCompatibilityError("protected runtime layout is ambiguous")
+    if not source_layout and private_layout:
+        if inventory is None:
+            runtime_files = {path.relative_to(root).as_posix() for path in (root / INSTALLED_RUNTIME_ROOT).rglob("*")
+                             if path.is_file() and not path.is_symlink() and path.suffix in {".py", ".mjs"}}
+        else:
+            runtime_files = {path for path in inventory if PurePosixPath(path).is_relative_to(INSTALLED_RUNTIME_ROOT)
+                             and PurePosixPath(path).suffix in {".py", ".mjs"}}
+            for path in runtime_files:
+                _regular_entry(inventory, PurePosixPath(path))
+        schemas = _required_packaged_schemas(root, ref=ref, schema_root=INSTALLED_SCHEMA_ROOT)
+        _require_packaged_schemas(root, schemas, ref=ref, inventory=inventory)
+        wrappers = {path for path in ("scripts/build_trusted_controller.py", "requirements-governance.txt")
+                    if present(PurePosixPath(path))}
+        if inventory is not None:
+            for path in wrappers:
+                _regular_entry(inventory, PurePosixPath(path))
+        if not runtime_files or not schemas:
+            raise TrustedControllerCompatibilityError("installed trusted controller runtime is incomplete")
+        return runtime_files | {path.as_posix() for path in schemas} | wrappers
+    pending, observed = [TRUSTED_ENTRYPOINT], set(DIRECT_RUNTIME_FILES)
+    if inventory is not None:
+        for path in observed:
+            _regular_entry(inventory, path)
     while pending:
         relative = pending.pop()
         if relative in observed:
             continue
         source = root / relative
-        if not source.is_file() or source.is_symlink():
-            raise TrustedControllerCompatibilityError(
-                f"trusted controller source is absent or unsafe: {relative}"
-            )
+        if inventory is not None:
+            _regular_entry(inventory, relative)
+        elif not source.is_file() or source.is_symlink():
+            raise TrustedControllerCompatibilityError(f"trusted controller source is absent or unsafe: {relative}")
         observed.add(relative)
         try:
-            tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(relative))
+            raw = _git(root, "show", f"{ref}:{relative}") if ref is not None else source.read_text(encoding="utf-8")
+            tree = ast.parse(raw, filename=str(relative))
         except (OSError, UnicodeDecodeError, SyntaxError) as exc:
-            raise TrustedControllerCompatibilityError(
-                f"trusted controller source is invalid: {relative}"
-            ) from exc
+            raise TrustedControllerCompatibilityError(f"trusted controller source is invalid: {relative}") from exc
         for module in _imported_modules(relative, tree):
-            imported = _module_file(root, module)
+            imported = _module_file(root, module, inventory=inventory)
             if imported is not None and imported not in observed:
                 pending.append(imported)
-    current_schemas = _required_packaged_schemas(root, ref=None)
-    _require_packaged_schemas(root, current_schemas, ref=None)
-    observed.update(current_schemas)
-    if target_commit is not None:
-        target_schemas = _required_packaged_schemas(root, ref=target_commit)
-        _require_packaged_schemas(root, target_schemas, ref=target_commit)
-        observed.update(target_schemas)
-    return tuple(sorted(path.as_posix() for path in observed))
+    schemas = _required_packaged_schemas(root, ref=ref)
+    _require_packaged_schemas(root, schemas, ref=ref, inventory=inventory)
+    return {path.as_posix() for path in observed | schemas}
+
+
+def trusted_runtime_source_files(repo_root: Path, *, target_commit: str | None = None) -> tuple[str, ...]:
+    """Compare candidate and protected populations without candidate-defined exclusions."""
+    root = repo_root.resolve()
+    if target_commit is None:
+        return tuple(sorted(_runtime_source_files(root, ref=None)))
+    current, current_inventory = _committed_tree(root, "HEAD")
+    target, target_inventory = _committed_tree(root, target_commit)
+    return tuple(sorted(_runtime_source_files(root, ref=current, inventory=current_inventory)
+                        | _runtime_source_files(root, ref=target, inventory=target_inventory)))
 
 
 def _version_metadata_only(
@@ -345,7 +393,7 @@ def _verify_installed_authority_consumability(
         with tempfile.TemporaryDirectory(prefix="bcf-installed-authority-") as raw:
             checkout = Path(raw) / "controller"
             materialized = run_admitted_command(
-                ["git", "worktree", "add", "--detach", str(checkout), target_commit],
+                _git_command("worktree", "add", "--detach", str(checkout), target_commit),
                 unbound_runner=subprocess.run, cwd=repo_root,
                 capture_output=True,
                 text=True,
@@ -388,7 +436,7 @@ def _verify_installed_authority_consumability(
                     )
             finally:
                 run_admitted_command(
-                    ["git", "worktree", "remove", "--force", str(checkout)],
+                    _git_command("worktree", "remove", "--force", str(checkout)),
                     unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
                     text=True,
@@ -464,26 +512,23 @@ def _verify_installed_pending_topology(
 ) -> None:
     """Run installed N's exact topology classifier on the candidate provider shape."""
 
-    topology_path = (
-        INSTALLED_TOPOLOGY_CLASSIFIER
-        if (repo_root / INSTALLED_TOPOLOGY_CLASSIFIER).is_file()
-        else INSTALLED_RUNTIME_ROOT / "ci_github_membership.py"
-    )
-    exists = run_admitted_command(
-        ["git", "cat-file", "-e", f"{target_commit}:{topology_path}"],
-        unbound_runner=subprocess.run, cwd=repo_root,
-        capture_output=True,
-        check=False,
-    )
-    if exists.returncode != 0:
+    target_commit, inventory = _committed_tree(repo_root, target_commit)
+    candidates = (INSTALLED_TOPOLOGY_CLASSIFIER, INSTALLED_RUNTIME_ROOT / "ci_github_membership.py")
+    found = [path for path in candidates if path.as_posix() in inventory]
+    if not found:
         return
+    if len(found) != 1:
+        raise TrustedControllerCompatibilityError("protected topology classifier inventory is ambiguous")
+    topology_path = found[0]
+    _regular_entry(inventory, topology_path)
+    source_layout = topology_path == INSTALLED_TOPOLOGY_CLASSIFIER
     try:
         authority, jobs, facades = _candidate_pending_topology(repo_root)
         with tempfile.TemporaryDirectory(prefix="bcf-installed-topology-") as raw:
             root = Path(raw)
             checkout = root / "controller"
             materialized = run_admitted_command(
-                ["git", "worktree", "add", "--detach", str(checkout), target_commit],
+                _git_command("worktree", "add", "--detach", str(checkout), target_commit),
                 unbound_runner=subprocess.run, cwd=repo_root,
                 capture_output=True,
                 text=True,
@@ -496,9 +541,12 @@ def _verify_installed_pending_topology(
             try:
                 program = (
                     "import importlib,json,pathlib,sys,types;"
-                    "sys.path.insert(0,sys.argv[1]);"
-                    "name='bcf_governance.tooling.ci_github_membership' if (pathlib.Path(sys.argv[1])/'bcf_governance').is_dir() else '_bcf_runtime.ci_github_membership';"
+                    "base=pathlib.Path(sys.argv[1]);source=sys.argv[2]=='source';"
+                    "sys.path.insert(0,str(base if source else base/'scripts'));"
+                    "name='bcf_governance.tooling.ci_github_membership' if source else '_bcf_runtime.ci_github_membership';"
                     "m=importlib.import_module(name);"
+                    "expected=base/pathlib.Path(sys.argv[3]);"
+                    "assert pathlib.Path(m.__file__).resolve()==expected.resolve(),'protected classifier origin differs';"
                     "m.authenticate_trusted_run=lambda *a,**k:None;"
                     "m._reference_map=lambda *a,**k:{};"
                     "m._validate_reference_inventory=lambda *a,**k:None;"
@@ -513,9 +561,9 @@ def _verify_installed_pending_topology(
                 result = run_admitted_command(
                     [
                         sys.executable,
-                        "-c",
+                        "-I", "-c",
                         program,
-                        str(checkout),
+                        str(checkout), "source" if source_layout else "private", str(topology_path),
                     ],
                     unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
@@ -534,7 +582,7 @@ def _verify_installed_pending_topology(
                     raise ValueError(detail or "installed topology classification failed")
             finally:
                 run_admitted_command(
-                    ["git", "worktree", "remove", "--force", str(checkout)],
+                    _git_command("worktree", "remove", "--force", str(checkout)),
                     unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
                     text=True,
@@ -560,7 +608,7 @@ def verify_pr_bootstrap_compatibility(
     unavailable: list[str] = []
     for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES:
         target = run_admitted_command(
-            ["git", "cat-file", "-e", f"{target_commit}:{path.as_posix()}"],
+            _git_command("cat-file", "-e", f"{target_commit}:{path.as_posix()}"),
             unbound_runner=subprocess.run, cwd=root,
             capture_output=True,
             check=False,
@@ -591,9 +639,11 @@ def verify_trusted_controller_compatibility(
     """Reject a target whose trusted runtime closure differs from committed HEAD."""
 
     root = repo_root.resolve()
-    _git(root, "cat-file", "-e", f"{target_commit}^{{commit}}")
+    target_commit, _ = _committed_tree(root, target_commit)
+    if _git(root, "status", "--porcelain"):
+        raise TrustedControllerCompatibilityError("trusted applicability requires a clean committed candidate")
     ancestor = run_admitted_command(
-        ["git", "merge-base", "--is-ancestor", target_commit, "HEAD"],
+        _git_command("merge-base", "--is-ancestor", target_commit, "HEAD"),
         unbound_runner=subprocess.run, cwd=root,
         capture_output=True,
         text=True,
