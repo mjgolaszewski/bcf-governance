@@ -99,3 +99,37 @@ def test_native_lease_remains_owned_by_inherited_descriptor(lease_path: Path) ->
                 child.communicate(timeout=5)
     assert child is not None and child.returncode == 0
     assert not _busy(lease_path)
+
+
+def test_native_command_supervisor_holds_actual_lease(lease_path: Path) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_owned_command
+
+    # Inspect the real kernel guardian from its command, before any cancellation.
+    # A command inheriting the descriptor accidentally is insufficient custody.
+    program = """
+import os
+from pathlib import Path
+import sys
+expected = (int(sys.argv[1]), int(sys.argv[2]))
+found = False
+for entry in Path('/proc', str(os.getppid()), 'fd').iterdir():
+    try:
+        value = entry.stat()
+    except FileNotFoundError:
+        continue
+    found |= (value.st_dev, value.st_ino) == expected
+print('guardian-owns-lease' if found else 'guardian-missing-lease', flush=True)
+sys.exit(0 if found else 23)
+"""
+    with local_gate_lease("c" * 40):
+        identity = lease_path.stat()
+        result = run_owned_command(
+            [sys.executable, "-I", "-c", program,
+             str(identity.st_dev), str(identity.st_ino)],
+            cwd=lease_path.parent, env=os.environ.copy(),
+            timeout_seconds=5, cleanup_seconds=2,
+        )
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert result.stdout == "guardian-owns-lease\n"
+        assert _busy(lease_path)
+    assert not _busy(lease_path)
