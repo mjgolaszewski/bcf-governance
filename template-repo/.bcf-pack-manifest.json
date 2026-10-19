@@ -1212,7 +1212,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/preflight_distribution.py": {
       "operation": "copy",
-      "sha256": "f1091f250ebc4245aa5ac7e4a2acc02718ab154917ad30443fbdd27439517821"
+      "sha256": "451a344d5820741c82b605cf47a70c00a51af31046e14e6349a21a77f7c2adab"
     },
     "scripts/_bcf_runtime/governance_validation/preflight_negative_controls.py": {
       "operation": "copy",
@@ -1259,7 +1259,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/source_inventory.py": {
       "operation": "copy",
-      "sha256": "79488991ceb08c36465580e726fb270d9cc9c5a625379b36fd6579a6c6226202"
+      "sha256": "ca75f5d5209b4e7ff94c6b78199d491976086622aed70149764dc1de5073930e"
     },
     "scripts/_bcf_runtime/governance_validation/structural_limits.py": {
       "operation": "copy",
@@ -1847,7 +1847,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_typescript.py": {
       "operation": "copy",
-      "sha256": "9eca8741155a447a4bbf4d78188c2a4716ec81a5ee5a149ab7b38db5807bc1ee"
+      "sha256": "27f28142bda44e919bb113310a6c63c31ad2dd008d3a6d15bbcf7c4f588e0e9f"
     },
     "scripts/_bcf_runtime/semantic_python_annotation_identity.py": {
       "operation": "copy",
@@ -1883,7 +1883,7 @@
     },
     "scripts/_bcf_runtime/test_manifests.py": {
       "operation": "copy",
-      "sha256": "686d53eb892a27ae4db59c4bd152d06debe1df7ac0422b6b9e51531bc104592b"
+      "sha256": "cf5be95c2dffb9fafe84d0d9ea8ac9be23fb18914bf1e00b896d7d35e21a6d68"
     },
     "scripts/_bcf_runtime/test_splinter_proofs.py": {
       "operation": "copy",
