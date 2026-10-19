@@ -54,16 +54,8 @@ Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
 
 
-def _normalize_submission(
-    root: Path,
-    *,
-    python_executable: Path,
-    execution_id: str,
-    semantic_intent: str | None,
-    runner: Runner,
-    context: LocalPRContext | None = None,
-) -> None:
-    """Settle derived state before consuming its submission authority projection."""
+def _validate_authored_submission_inputs(root: Path) -> None:
+    """Reject available authored defects without selecting project resources."""
 
     try:
         if (root / "plans/phase-ledger.yml").is_file():
@@ -76,6 +68,23 @@ def _normalize_submission(
         gate_timeout_contract(root)
         validate_authored_gate_controls(root)
         validate_ci_state_matrix(root, authored_only=True)
+    except (OSError, ValueError) as exc:
+        raise ProspectiveValidationError(str(exc)) from exc
+
+
+def _normalize_submission(
+    root: Path,
+    *,
+    python_executable: Path,
+    execution_id: str,
+    semantic_intent: str | None,
+    runner: Runner,
+    context: LocalPRContext | None = None,
+) -> None:
+    """Settle derived state before consuming its submission authority projection."""
+
+    _validate_authored_submission_inputs(root)
+    try:
         if semantic_intent is not None or context is not None:
             mode, target = authored_post_merge_scope(root)
             if context is not None:
