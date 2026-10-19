@@ -44,19 +44,21 @@ os.execv({str(executable)!r},[{str(executable)!r},*sys.argv[1:]])
     binary.chmod(0o700)
 
 
-@pytest.mark.parametrize('consumer', ['distribution', 'collection', 'typescript'])
+@pytest.mark.parametrize('consumer', ['distribution', 'collection', 'typescript', 'inventory-git'])
 def test_preflight_runtime_has_actual_guardian_and_descriptor(
     lease_path, tmp_path, monkeypatch, consumer,
 ):
     repo = tmp_path / 'project'
     repo.mkdir()
     executable = Path(sys.executable)
-    if consumer == 'distribution':
+    if consumer in {'distribution', 'inventory-git'}:
         _fixture(repo, coverage=True, program="raise AssertionError('candidate evaluator ran')\n")
         # Establish the actual protected evaluator succeeds before the custody control.
         assert preflight_distribution.validate_source_distribution(
             repo, python_executable=executable,
         )['file_count'] == 5
+        if consumer == 'inventory-git':
+            executable = Path(shutil.which('git'))
     elif consumer == 'collection':
         (repo / 'test_value.py').write_text("def test_value():\n    raise AssertionError('collection executed a test body')\n")
         assert test_manifests._collect_raw_nodes(
@@ -73,7 +75,7 @@ def test_preflight_runtime_has_actual_guardian_and_descriptor(
         assert inventory['compiler_version'] == '6.0.3'
         assert any(row['symbol'] == 'src/value.ts::value' for row in inventory['functions'])
     observations = tmp_path / 'runtime-custody.jsonl'
-    binary = tmp_path / 'observed-runtime'
+    binary = tmp_path / ('git' if consumer == 'inventory-git' else 'observed-runtime')
     with local_gate_lease('b' * 40):
         _observed_executable(binary, executable, lease_path.stat(), observations)
         monkeypatch.setenv('PATH', str(tmp_path) + os.pathsep + os.environ['PATH'])
@@ -85,6 +87,8 @@ def test_preflight_runtime_has_actual_guardian_and_descriptor(
                 assert test_manifests._collect_raw_nodes(
                     repo, ['test_value.py'], python_executable=binary,
                 ) == ['test_value.py::test_value']
+            elif consumer == 'inventory-git':
+                assert len(source_inventory.tracked_source_inventory(repo)) == 5
             else:
                 result = discover_typescript_source(
                     repo, contract_from_mapping({**engine, 'node_executable': binary.name}), [source],
