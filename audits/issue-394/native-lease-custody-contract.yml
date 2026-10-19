@@ -23,6 +23,8 @@ scope:
     - bcf_governance/tooling/local_pr_context.py
     - bcf_governance/tooling/local_pr.py
     - bcf_governance/tooling/preflight.py
+    - bcf_governance/tooling/ci_authority_pins.py
+    - bcf_governance/tooling/reconcile_authority_transition.py
     - bcf_governance/tooling/ci_authority_submit.py
     - bcf_governance/tooling/scaffold_governance_artifacts.py
     - tests/test_evidence_process_supervisor.py
@@ -79,3 +81,22 @@ preflight_extension:
   scope: Route both existing preflight native calls through the same admitted adapter; preserve unbound ports, refusal results and selected interpreter identity validation.
   required_controls: Real shell syntax and interpreter identity children must observe the actual lease descriptor in the existing kernel guardian, not the command. Qualify original preflight compatibility separately.
   forbidden: Do not infer whole import-closure reachability or complete consumer coverage from these two paths.
+
+input_extension:
+  observed_source_subject: fa3ed4bf
+  independently_discovered_candidates: Three direct input consumers in whole-tooling AST census; this bounded implementation covers the two existing Git authority helpers and the shared adapter only. Installed pending-topology routing remains separately qualified work.
+  behavior:
+    - Preserve unbound subprocess.run and existing injectable ports.
+    - Bound binary and text stdin, including empty and None input, reaches the actual command unchanged without exposing native lease or control descriptors.
+    - Validate input mode/type and descriptor identity before command allocation; use existing kernel guardian and protocol, no shell or parallel broker/receipt family.
+    - Input larger than pipe capacity or a nonreading child must not block guardian cancellation/body timeout/cleanup or release capacity prematurely.
+    - Close staged input on ordinary completion, failed exec, timeout, cancellation and setup failure; no persistent input file.
+    - Preserve existing output/check/exception ABI and genuinely local behavior. Unsupported options still reject before allocation.
+  controls_before_production:
+    - Real Git hash-object --stdin through each existing authority helper computes the exact blob while command observes actual guardian/native descriptor custody.
+    - Real text/binary/empty/None inputs and invalid-type no-allocation controls.
+    - Nonreading child with large input times out under existing bound, then actual quiescence/EOF/reap and capacity release prove cleanup.
+    - Child has intended stdin only and cannot observe native lease descriptors; input references close on failed exec/interruption.
+  qualification:
+    - Run original authority and reconciliation consumers plus required source/canonical/archive/installed checks.
+    - Keep all other independent native candidate populations and outer-deadline completeness open; this slice grants no whole acceptance or predecessor gate change.
