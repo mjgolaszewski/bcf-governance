@@ -105,11 +105,13 @@ semantic_source_git_execution_boundary:
   targets:
   - bcf_governance/tooling/semantic_source_paths.py
   - tests/test_semantic_source_paths.py
+  - tests/test_installed_source_admission.py
   observed: A real Git fixture at a6eb0538 executes repository-configured core.fsmonitor during candidate_source_files; static preflight can therefore execute candidate-controlled code before parsing.
   contract:
   - Route both existing candidate file discovery and committed source queries through their existing semantic source owner with Git hooks and fsmonitor explicitly disabled for each invocation.
   - Preserve exact committed replacement-object refusal, ordinary tracked/untracked discovery, unusual UTF-8 names, source modes, exception semantics and all existing public signatures.
   - A repository-configured fsmonitor must not execute during direct discovery, ordinary source parsing or exact-subject source parsing.
   - Use real Git fixtures and retain the genuine failing controls before production edits; qualify canonical private copies and affected consumers afterwards.
+  - Exercise the three discovery consumers through fresh and upgrade installation with the source SDK unavailable, verifying private module origin and preservation of repository fsmonitor configuration.
   - This prevents configured Git program execution only; ambient repository redirection, dynamic runtime effects and complete lifecycle population authentication remain separate obligations.
   forbidden: Repository configuration mutations, patching immutable234/235 tools, global Git settings, new evaluator or receipt family, and lifecycle or performance closure from static checks.
