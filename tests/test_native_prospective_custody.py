@@ -128,3 +128,27 @@ def test_expired_readiness_cleanup_does_not_extend_or_authorize_command(lease_pa
                 process.wait(timeout=2)
         assert not parent_messages, 'expired-cleanup-sent-new-command-or-cancellation'
         assert not marker.exists()
+
+
+def test_unstarted_terminal_requires_actual_kernel_empty_children(monkeypatch) -> None:
+    frames = []
+    child = subprocess.Popen([sys.executable, '-I', '-c', 'import time;time.sleep(0.3)'])
+    monkeypatch.setattr(evidence_process_supervisor, '_send', lambda connection, value: frames.append(value))
+    try:
+        with pytest.raises(evidence_process_supervisor.OwnedProcessError, match='unresolved kernel child custody'):
+            evidence_process_supervisor._not_started(None, 'timeout', detail='no fabricated absence')
+        assert not frames, 'live-child-was-falsely-reported-unstarted-quiescent'
+    finally:
+        child.wait(timeout=2)
+
+
+@pytest.mark.parametrize('change', [
+    {'command_pid': 123}, {'supervisor_pid': True}, {'quiescent': False},
+    {'returncode': 0}, {'reason': 'invented'}, {'errno': 2},
+])
+def test_unstarted_timeout_rejects_contradictory_terminal(change) -> None:
+    frame = dict(type='not-started', supervisor_pid=123, command_pid=None,
+                 quiescent=True, returncode=126, reason='timeout', detail='expired')
+    frame.update(change)
+    with pytest.raises(evidence_process_supervisor.OwnedProcessError):
+        evidence_process_supervisor._terminal_result(frame, 123)
