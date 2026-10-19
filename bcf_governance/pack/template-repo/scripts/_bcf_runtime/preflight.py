@@ -10,11 +10,13 @@ import os
 import re
 import runpy
 import subprocess
+
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from .evidence_process_supervisor import run_admitted_command
 from .evidence_execution import _selected_python
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
@@ -166,8 +168,9 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
                 json.loads(path.read_text(encoding="utf-8"))
                 counts["json"] += 1
             elif path.suffix == ".sh":
-                result = subprocess.run(
-                    ["bash", "-n", str(path)], capture_output=True, text=True, check=False
+                result = run_admitted_command(
+                    ["bash", "-n", str(path)], unbound_runner=subprocess.run,
+                    capture_output=True, text=True, check=False
                 )
                 if result.returncode != 0:
                     raise PreflightError(
@@ -287,8 +290,9 @@ def _interpreter_identity(python: Path) -> dict[str, str]:
         "sort_keys=True))\n"
     )
     try:
-        result = subprocess.run(
+        result = run_admitted_command(
             [str(python), "-I", "-c", probe],
+            unbound_runner=subprocess.run,
             capture_output=True,
             text=True,
             timeout=30,

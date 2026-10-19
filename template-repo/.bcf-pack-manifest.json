@@ -1339,7 +1339,7 @@
     },
     "scripts/_bcf_runtime/preflight.py": {
       "operation": "copy",
-      "sha256": "674b9a72862712f0d1972de333cfbb46a004d4b7aadb1bc673c382e52fd7e5a6"
+      "sha256": "18d99810b65a17cae6721f3f568c3f87fe0768da2e26a36e541438ea8f71e3a2"
     },
     "scripts/_bcf_runtime/prior_evidence_receipts.py": {
       "operation": "copy",
