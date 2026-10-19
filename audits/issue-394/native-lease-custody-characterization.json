@@ -43,5 +43,42 @@
   ],
   "whole_requirements_advanced": 0,
   "implementation_slices_advanced": 0,
-  "next_action": "Characterize direct normalization and admission runner bypasses, extend existing deadline/runner ownership, and qualify the complete consumer population before integration."
+  "next_action": "Characterize direct normalization and admission runner bypasses, extend existing deadline/runner ownership, and qualify the complete consumer population before integration.",
+  "original_compatibility_regression": {
+    "subject": "5cf16b7f8048ef9addf3af610944ac1585512500",
+    "unchanged_test": "tests/test_local_execution_admission.py::test_local_gate_uses_authenticated_execution_state_namespace",
+    "failure": "First binding rejected nested distinct authenticated execution namespaces; retained as regression, not accepted behavior."
+  },
+  "nested_scope_correction": {
+    "subject": "0fd3ec94e6d33975652cc5e66db12832939008b5",
+    "cases_passed": 8,
+    "original_test_unchanged": true,
+    "all_enclosing_descriptors_retained": true,
+    "terminal_quiescence_output_eof_supervisor_reap_observed": true
+  },
+  "direct_runner_characterization": {
+    "subject": "3b80a4ca182a5f0b2f0ff2bdfd9760a3547fa8ae",
+    "genuine_bypass_failures": 2,
+    "fixture_errors": 0
+  },
+  "adapter_implementation": {
+    "subject": "36fc28bf",
+    "status": "authored_unrun",
+    "scope": [
+      "submission runner",
+      "reconciliation capture and binary snapshot",
+      "toolchain admission",
+      "interpreter setup and probe",
+      "proof bundle native queries"
+    ],
+    "complete_native_consumer_coverage": false
+  },
+  "conservative_source_census": {
+    "subject": "36fc28bf",
+    "module_import_closure": 166,
+    "direct_effect_candidates": 63,
+    "adapter_calls": 13,
+    "runtime_reachability": false,
+    "dynamic_completeness": false
+  }
 }
