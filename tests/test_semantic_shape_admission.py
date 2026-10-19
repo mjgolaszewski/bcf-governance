@@ -6,6 +6,7 @@ import pytest
 
 from tests.test_semantic_authority import REPO_ROOT, _yaml, contracts
 from bcf_governance.tooling.semantic_ownership_registry import load_registry
+from bcf_governance.tooling import semantic_ownership_scan as scan
 
 
 SHAPES = [
@@ -59,6 +60,22 @@ def test_structural_admission_consumes_the_existing_semantic_shape_predicate(
     monkeypatch.setattr(contracts, "validate_exact_base_migrations", forbidden)
     with pytest.raises(contracts.SemanticAuthorityError, match=cause):
         contracts.validate_semantic_contract_structure(REPO_ROOT, load_registry(REPO_ROOT))
+
+
+@pytest.mark.parametrize("changes,cause", SHAPES)
+def test_actual_authored_scanner_rejects_shape_before_source_allocation(
+    changes: dict, cause: str, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = late_invalid_payload(changes)
+    monkeypatch.setattr(contracts, "load_application_operations",
+                        lambda root: SimpleNamespace(raw=payload))
+
+    def forbidden(*args, **kwargs):
+        pytest.fail("scanner source inventory allocated before authored semantic rejection")
+
+    monkeypatch.setattr(scan, "discover_python_source", forbidden)
+    with pytest.raises(contracts.SemanticAuthorityError, match=cause):
+        scan.validate_authored_semantic_ownership(REPO_ROOT)
 
 
 @pytest.mark.parametrize("state", ["disabled", "not_applicable"])
