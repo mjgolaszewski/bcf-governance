@@ -1165,7 +1165,11 @@ def test_early_candidate_read_does_not_execute_repository_fsmonitor(monkeypatch,
     monitor = tmp_path / 'candidate fsmonitor'
     monitor.write_text('#!/bin/sh\ntouch ' + shlex.quote(str(marker)) + '\nprintf "token\\0"\n')
     monitor.chmod(0o700)
-    git('config', 'core.fsmonitor', str(monitor))
+    monitor_command = shlex.quote(str(monitor))
+    git('config', 'core.fsmonitor', monitor_command)
+    git('status', '--porcelain=v1', '--untracked-files=all')
+    assert marker.exists(), 'configured monitor must execute in direct Git positive control'
+    marker.unlink()
     trace = []
 
     def next_boundary(*_args, **_kwargs):
@@ -1186,4 +1190,4 @@ def test_early_candidate_read_does_not_execute_repository_fsmonitor(monkeypatch,
             prospective_candidate_identity.canonical_prospective_inputs(root)
     assert trace == ['provider-discovery']
     assert not marker.exists(), 'early candidate read executed repository Git configuration'
-    assert git('config', '--get', 'core.fsmonitor') == str(monitor)
+    assert git('config', '--get', 'core.fsmonitor') == monitor_command
