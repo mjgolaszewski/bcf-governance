@@ -922,5 +922,222 @@
       "Qualification durations are unmatched observations, not approved performance targets or pipeline comparisons.",
       "All82 whole requirement objects and38 bounded slice statuses remain unchanged."
     ]
+  },
+  "preflight_runtime_consumers": {
+    "authority": false,
+    "status": "bounded_source_and_installed_qualification",
+    "contract_subject": "e90c98ea472b08c4eba7d7d983180911e7024e06",
+    "production_subject": "40ed37500020bc0b587bdd35bc3521f3961d229c",
+    "canonical_projection_subject": "bf900d7846595fe8135ba5f26f0e35cf85501335",
+    "installed_probe_subject": "09e3ef8b980fd50998b5dc233863fe7ac6bd688f",
+    "source_sha256": {
+      "governance_validation/preflight_distribution.py": "451a344d5820741c82b605cf47a70c00a51af31046e14e6349a21a77f7c2adab",
+      "governance_validation/source_inventory.py": "ca75f5d5209b4e7ff94c6b78199d491976086622aed70149764dc1de5073930e",
+      "semantic_ownership_typescript.py": "27f28142bda44e919bb113310a6c63c31ad2dd008d3a6d15bbcf7c4f588e0e9f",
+      "test_manifests.py": "cf5be95c2dffb9fafe84d0d9ea8ac9be23fb18914bf1e00b896d7d35e21a6d68"
+    },
+    "canonical_generation": {
+      "owner": "registered local reconciliation owner",
+      "returncode": 0,
+      "elapsed_seconds": 792.16,
+      "workflows_and_authority_definitions_changed": false
+    },
+    "source_controls": {
+      "genuine_initial_guardian_and_fsmonitor_failures": 5,
+      "additional_direct_sdk_git_guardian_failure": 1,
+      "initial_fixture_error_retained": 1,
+      "affected_source_cases_passed": 53,
+      "managed_preflight_and_packaging_consumers_passed": 69,
+      "incorrect_sdk_interpreter_attempt": {
+        "passed": 47,
+        "failed_missing_setuptools": 6,
+        "retained": true
+      }
+    },
+    "installed_controls": {
+      "fresh_and_upgrade_cases_passed": 4,
+      "actual_guardian_descriptors_per_install": 8,
+      "source_sdk_absent": true,
+      "private_module_origins_verified": true,
+      "repository_fsmonitor_not_executed": true,
+      "repository_configuration_preserved": true
+    },
+    "structural": {
+      "authority": false,
+      "source_commit": "09e3ef8b980fd50998b5dc233863fe7ac6bd688f",
+      "commands": [
+        {
+          "label": "lint",
+          "returncode": 0,
+          "elapsed_seconds": 4.754235382999468
+        },
+        {
+          "label": "typecheck",
+          "returncode": 0,
+          "elapsed_seconds": 1.0114564309988054
+        },
+        {
+          "label": "architecture",
+          "returncode": 0,
+          "elapsed_seconds": 176.73922765200405
+        },
+        {
+          "label": "governance",
+          "returncode": 0,
+          "elapsed_seconds": 25.06894518899935
+        }
+      ],
+      "semantic": {
+        "verdict": "conformant",
+        "authority": false,
+        "unchanged_operations": 21
+      }
+    },
+    "structural_capture_label_correction": "The copied wrapper retained its earlier private-runtime qualification label; actual worker, command logs and six architecture/governance/semantic populations establish structural scope. Original capture remains unchanged.",
+    "case_populations": {
+      "preflight-runtime-source-red-attempt1/cases.xml": {
+        "cases": 5,
+        "failure": 5,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-source-red-attempt2/cases.xml": {
+        "cases": 5,
+        "failure": 5,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-inventory-custody-red-attempt1/cases.xml": {
+        "cases": 1,
+        "failure": 1,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-source-green-attempt1/cases.xml": {
+        "cases": 52,
+        "failure": 1,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-source-green-attempt2/cases.xml": {
+        "cases": 53,
+        "failure": 1,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-six-controls-green-attempt1/cases.xml": {
+        "cases": 6,
+        "failure": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-canonical-source-green-attempt1/cases.xml": {
+        "cases": 53,
+        "failure": 6,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-canonical-source-green-attempt2/cases.xml": {
+        "cases": 53,
+        "failure": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-native-private-fresh-upgrade-attempt1/cases.xml": {
+        "cases": 4,
+        "failure": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-09e3ef8b-structural-attempt1/architecture.xml": {
+        "cases": 6,
+        "failure": 0,
+        "error": 0,
+        "skipped": 0
+      },
+      "preflight-runtime-managed-consumers-attempt1/cases.xml": {
+        "cases": 69,
+        "failure": 0,
+        "error": 0,
+        "skipped": 0
+      }
+    },
+    "raw_sha256": {
+      "preflight-runtime-source-red-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-source-red-attempt1/execution.json": "c321cc8c5b23fdad06a11d8e273b5d9d89c738765bc550941e460f86a5a14bd1",
+      "preflight-runtime-source-red-attempt1/stdout.log": "83b5388a3522a3ddf2ccece3e31bdfe8e7aec972eadae4731c38fca914312b2e",
+      "preflight-runtime-source-red-attempt1/cases.xml": "79692c61770e1a0165124a11a00b469b6ec376f69150aa587f764264154f565c",
+      "preflight-runtime-source-red-attempt2/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-source-red-attempt2/execution.json": "024cece7e6a8496bd5f43eaa0859e2e4d48cac50f3ae5a5de076a02119f8ec26",
+      "preflight-runtime-source-red-attempt2/stdout.log": "cf68f508fc076e6a5438c77c092e871bd48606a42c7319dd82b965dd39616098",
+      "preflight-runtime-source-red-attempt2/cases.xml": "e00c1ce663c34c439b2d2e687a51861f6b7c2d7ffd56c972c4f3b9aafd5074a2",
+      "preflight-runtime-inventory-custody-red-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-inventory-custody-red-attempt1/execution.json": "9639576a02e6f90e7df57eb0dab4a9225725be999bde174b6340fd4059fe4113",
+      "preflight-runtime-inventory-custody-red-attempt1/stdout.log": "06264ff2262e5b1486f66d7fd1a451a121859e09f127c2ffd9acccb417f1f25c",
+      "preflight-runtime-inventory-custody-red-attempt1/cases.xml": "a68302a4bbfb9f3ebc5dcbf4feb8a7a9633ea616261cd88ecc8c2e297fba3916",
+      "preflight-runtime-source-green-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-source-green-attempt1/execution.json": "3c29b3568a2e1707ca377c8aec853eb29d3a333d7e7f7a479d31e24d94520ec4",
+      "preflight-runtime-source-green-attempt1/stdout.log": "d25f98c978c5e32a34774492015ae5857158267f8fb52b84859290e5e48002c1",
+      "preflight-runtime-source-green-attempt1/cases.xml": "4f804d4631f86188d652c28cc8f817c0b94acd65e69a329c6fc51b1bdbb8fdbd",
+      "preflight-runtime-source-green-attempt2/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-source-green-attempt2/execution.json": "a86c1cdc34578b5c3287b1e1382ced81e07188e2d600b22a9468e10b420cc1c7",
+      "preflight-runtime-source-green-attempt2/stdout.log": "c233b2803b95246a0381240b45055e050b35ff93b2cba0b69e7b1dea2ec77155",
+      "preflight-runtime-source-green-attempt2/cases.xml": "7aa220c74e0d0b432db3bd9d2f57ee299d96a8a4e2aa5d2d48c21221e64b80ad",
+      "preflight-runtime-six-controls-green-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-six-controls-green-attempt1/execution.json": "c7836104e5235e57550cdbc7b5b7dd80fb9298a6e0739e8c9da122d772214481",
+      "preflight-runtime-six-controls-green-attempt1/stdout.log": "c3c6d249fa6f5416f702aa62a72cafd1b8f3e189dda81758389df8f9ef7af982",
+      "preflight-runtime-six-controls-green-attempt1/cases.xml": "130a28d3f3710bed5017b3ab214b7526c5030fd1cf94551deb2182b9b937804c",
+      "preflight-canonical-check-attempt1/stderr.log": "d33bc1a045a6632748f709a1462bae43d22e06537e99299f0482255f6decb703",
+      "preflight-canonical-check-attempt1/execution.json": "530fec82896ec52fce7eed2a13f983f0c9999e5f3f4eea123bcb51a313e9956c",
+      "preflight-canonical-check-attempt1/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-canonical-check-attempt1/admission.json": "35612b3f986f696b3e2889d171fb412a793e68e1c23aebd04e9dfd471db2e04f",
+      "preflight-canonical-check-attempt2/stderr.log": "555daac4b90c26bab6b93e9e153e62a201db5659802dd3ed7ad21a2cc8a4e3ee",
+      "preflight-canonical-check-attempt2/execution.json": "e0b92e19ab31ea9b4aad70af15c048a6c7c82e484bef5d2db17127425a2c63f7",
+      "preflight-canonical-check-attempt2/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-canonical-check-attempt2/admission.json": "35612b3f986f696b3e2889d171fb412a793e68e1c23aebd04e9dfd471db2e04f",
+      "preflight-canonical-apply-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-canonical-apply-attempt1/execution.json": "c453d9e600ae774f408bc4830b953c28801a0f1505e983c22c8e42112a088090",
+      "preflight-canonical-apply-attempt1/stdout.log": "1e925f8bd880073ae54155220aa4a60d2abe30471b5225835b4403d084ccf674",
+      "preflight-canonical-apply-attempt1/live-process-readback.json": "a690fe3aa21120e46d94c1c06be3149665e63eee2bf8262292c8fa0df6580c43",
+      "preflight-canonical-apply-attempt1/admission.json": "f43a7c0f07ad3ae0dbfb28fdc15300ba300cbd1283c35be9ab252988abc09dc3",
+      "preflight-runtime-canonical-source-green-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-canonical-source-green-attempt1/execution.json": "02cf27164f52cdfb8d00fe1e59b3b20b0c1c19804a83120bb6b14c5917ec052d",
+      "preflight-runtime-canonical-source-green-attempt1/stdout.log": "99a67fd4e845fd33c352e3cb941f61b62776fc67c55f8d53e1e2ac2a53ac6d79",
+      "preflight-runtime-canonical-source-green-attempt1/cases.xml": "37955f569e22229913ef1a4fe76f72a425c1d961674cd647c486e27cfa11b01c",
+      "preflight-runtime-canonical-source-green-attempt2/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-canonical-source-green-attempt2/execution.json": "7b9e5b75d1ce7c9b982f4d966c7d3eb4d954e638f9d7d02e195946f0fa52263f",
+      "preflight-runtime-canonical-source-green-attempt2/stdout.log": "2ae9e117f6177d9237a528b933e61a0a85d10398a10ee4eaac5a95061688802f",
+      "preflight-runtime-canonical-source-green-attempt2/cases.xml": "d156749eb743233f8938dbfde2202511520e69593e475221ddea998c9e06c698",
+      "preflight-native-private-fresh-upgrade-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-native-private-fresh-upgrade-attempt1/execution.json": "226bd70eb2c2b323b1ddcaa99e0fbf99f1541f19fa2850d7cae82ae793b55c22",
+      "preflight-native-private-fresh-upgrade-attempt1/stdout.log": "8834566899e44fa76ed9d4484ffb4f82fb4d127bcc01734f239a838225947c31",
+      "preflight-native-private-fresh-upgrade-attempt1/cases.xml": "34ee45d9db21863979277b6e19636f047eea11b4cd8389c1ffef2526a6c38b37",
+      "preflight-runtime-09e3ef8b-structural-attempt1/architecture.stdout": "b1c3b818350bc8e9142aac2223ceba005853a8a44c627da9b979ddbecc1bb300",
+      "preflight-runtime-09e3ef8b-structural-attempt1/architecture.xml": "99a4b9d0122d12f0c655fffba13f716e7be9c6a64bdaf6cd29449d4e49726486",
+      "preflight-runtime-09e3ef8b-structural-attempt1/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "preflight-runtime-09e3ef8b-structural-attempt1/report.json": "17e6448526ba925a1f610e308acc4056c79ddf63d9f4884546a8cd3a876f25de",
+      "preflight-runtime-09e3ef8b-structural-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-09e3ef8b-structural-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-09e3ef8b-structural-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-09e3ef8b-structural-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-09e3ef8b-structural-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-09e3ef8b-structural-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-09e3ef8b-structural-attempt1/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f",
+      "preflight-runtime-structural-owned-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-structural-owned-attempt1/execution.json": "d475becc8eb99869eaf808abbf5d4f0b668a472bdcb55fa1a24266a0459c40d9",
+      "preflight-runtime-structural-owned-attempt1/stdout.log": "ae7cc03dd285a3a4bfc92fd555ea39ca8af5807d2934a4affc724835fb3fcae7",
+      "preflight-runtime-managed-consumers-attempt1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "preflight-runtime-managed-consumers-attempt1/execution.json": "72ea83b0f259ef131d01f82673b8497cbea592e25abb6186addda033b5f57e7f",
+      "preflight-runtime-managed-consumers-attempt1/stdout.log": "412096fd92cb11ca598a11501bdf3e057cb528ce2d00589ab89b6b87272b2cf9",
+      "preflight-runtime-managed-consumers-attempt1/cases.xml": "cbde6ffb3300f114d45ab693bcbdc178ea7a73b9768a0cc7793d60bbd32c77ea"
+    },
+    "limits": [
+      "Four concrete preflight/native consumers only; full lifecycle/native/effect/deadline populations remain open.",
+      "Combined latest source/wheel/sdist/full consumer cohorts and provider-selected real adopters remain pending.",
+      "Local durations are unmatched observations, not approved performance targets or improvements.",
+      "All82 whole requirement objects and38 existing slice statuses remain unchanged; P32 active, P33-P35 dormant.",
+      "Preserved immutable2.3.4 and2.3.5 SDKs were not modified."
+    ],
+    "previous_governed_summary": "692cb9e4: semantic Git guardian custody109x2/4fresh-upgradePASS;2source+2stale-copyRED retained. Full lifecycle/native/deadlines/adopters/targets/custody open;82/38 unchanged. See audits/issue-394/native-lease-custody-characterization.json."
   }
 }

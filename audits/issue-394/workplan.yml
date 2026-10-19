@@ -4698,3 +4698,8 @@ implementation_slices:
     - Actual current provider-selected adopter profiles, malicious same-user isolation and host-wide admission remain unqualified.
     - Canonical exact combined proof and independently computed closure remain required; no whole I03/I21/I23, P33 activation,
       approved performance or immutable2.5 custody claim.
+    preflight_runtime_qualification:
+      subject: 09e3ef8b980fd50998b5dc233863fe7ac6bd688f
+      evidence: audits/issue-394/native-lease-custody-characterization.json#preflight_runtime_consumers
+      scope: Four preflight consumers;53 source,69 managed consumer and4 installed cases;8 actual guardian descriptors per installation.
+      limits: Complete native/lifecycle/deadline populations, latest combined archives and real adopters remain open; no acceptance status advances.
