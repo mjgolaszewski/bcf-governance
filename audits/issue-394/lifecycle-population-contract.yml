@@ -242,3 +242,19 @@ submission_frontdoor_provider_configuration:
   - Preserve ordinary CLI grammar, error causes, credential confidentiality and direct submission APIs; do not add token fallback or credential storage to product code.
   controls: [real missing-token constructor refusal, real non-HTTPS constructor refusal, valid configuration reaches existing environment selection]
   forbidden: [primary54b09168 mutation, immutable tool changes, new provider evaluator, credential logging, network calls in pure configuration tests, phase or normalization closure]
+
+submission_frontdoor_phase_ledger_presence:
+  workitem: P32-P0-07
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets: [bcf_governance/tooling/ci_authority_submit.py, tests/test_authored_control_admission.py]
+  observed: The existing is_file presence predicate skips directory and dangling-symlink phase ledgers before project environment selection.
+  contract:
+  - Existing malformed phase-ledger entries must enter the existing authored phase-state validator and preserve its typed refusal before environment selection.
+  - A genuinely absent phase ledger retains existing local/adopter behavior; this query confers no phase or provider authority.
+  - Use current complete valid phase fixtures before exactly one filesystem-type mutation; forbid native/network/lease allocation in pure controls.
+  - Preserve every other admission query, revalidation boundary and CLI grammar; no alternate phase validator or schema exception.
+  controls: [directory ledger rejects before environment, dangling-symlink ledger rejects before environment, absent-ledger valid control still reaches existing environment selection]
+  forbidden: [primary54b09168 mutation, new evaluator or receipt, native qualification claim from a pure refusal witness, phase closure]
