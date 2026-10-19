@@ -382,5 +382,76 @@
       "Disabling shared owner to old is_file restores twelve targeted failures, including two historical submit type defects plus ten newly characterized missing-ledger/reconciliation/planner defects.",
       "No primary54b09168, installedSDK250, immutable adopter tool, workflow, authority or phase-state changes; all82 whole requirements/38 bounded slices unchanged."
     ]
+  },
+  "native_affected_consumer_qualification": {
+    "authority": false,
+    "checked_source": "a2f4dd0e888e7950f22ed2c35ee578e69572e1cb",
+    "test_modules": [
+      "tests/test_authored_control_admission.py",
+      "tests/test_candidate_submit.py"
+    ],
+    "passed": 135,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "real_git_cases": 19,
+    "native_case_population": [
+      "test_reconcile_rechecks_generated_control_before_recording_convergence[False]",
+      "test_reconcile_rechecks_generated_control_before_recording_convergence[True]",
+      "test_control_validation_precedes_real_git_shadow_promotion[False-False]",
+      "test_control_validation_precedes_real_git_shadow_promotion[False-True]",
+      "test_control_validation_precedes_real_git_shadow_promotion[True-False]",
+      "test_control_validation_precedes_real_git_shadow_promotion[True-True]",
+      "test_exact_pr_changelog_precedes_normalization_allocation[False-False]",
+      "test_exact_pr_changelog_precedes_normalization_allocation[False-True]",
+      "test_exact_pr_changelog_precedes_normalization_allocation[True-False]",
+      "test_exact_pr_changelog_precedes_normalization_allocation[True-True]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[tracked-submit]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[tracked-prospective]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[tracked-canonical]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[untracked-submit]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[untracked-prospective]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[untracked-canonical]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[clean-submit]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[clean-prospective]",
+      "test_candidate_cleanliness_is_checked_before_provider_discovery_and_allocation[clean-canonical]"
+    ],
+    "source_clean_unchanged": true,
+    "guardian_and_terminal_readback": "Actual original lease descriptor observed in guardian before command allocation; terminal quiescence, both EOFs, supervisor reap and resource handback independently read back. Machine-local identities remain outside governed artifacts.",
+    "elapsed_seconds_unmatched": 8.55,
+    "raw_sha256": {
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "execution.json": "0fe5378c9ac3a1df630bc9ea7b4e440c809ef872073546913cea2e1fd3925ef5",
+      "guardian-kernel-resource-readback.json": "5089764772fbbb30bba57541caf8816d150d967b97b3381e7e992ac976d18527",
+      "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "report.json": "50c0e8f33918d93e249f9489e29c8424e05bd2eb69342749389d514179c9db85",
+      "command.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "cases.xml": "419a4c75fa1cfea387ead4de7f49d561ffa589a1f370013a64eb7f5be7c140aa",
+      "command.stdout.log": "c7edb80011a4ee020e967559c3535de233cc0815607c91f858adc57425a4c479",
+      "immediate-readonly-observation.json": "19c12789362f9d8044de0fb5a195f1c4e9b339f387ae97be31345ea90bab0956",
+      "admission.json": "b160eef49eb3669c3c5375f8b4e35cb548c33b6c3ff316ec35de89574bd469fb"
+    },
+    "independent_readback_sha256": "6d840dd37c8194fe65170ffef6af218b0f8fb987e89016a1da48c9e0482ebdb8",
+    "remaining": [
+      "Canonical private runtime and test-manifest reconciliation",
+      "Remaining consumer matrix, semantic and required governance/package gates",
+      "Installed-runtime/distribution parity before integration"
+    ],
+    "limits": "Source behavioral qualification only; no full P32, matched-performance, release or custody authority"
+  },
+  "additional_pure_architecture_qualification": {
+    "authority": false,
+    "checked_source": "a2f4dd0e888e7950f22ed2c35ee578e69572e1cb",
+    "passed": 2,
+    "cases": [
+      "test_source_roots_match_packaged_implementation",
+      "test_cli_and_source_wrappers_remain_thin"
+    ],
+    "forbidden_audit_events": [],
+    "raw_sha256": {
+      "report.json": "38b6d73c0a96b7778a4a19d5d2c710f556181f96214adbae0f34944ab50004c9",
+      "cases.xml": "c095ede88eba78d5a81542341a3116ff7506991ae13d620e16b5daacf79ae3c1"
+    },
+    "limits": "Adds source-root and thin-wrapper selectors to four retained pure architecture cases; full eight-gate qualification remains pending"
   }
 }
