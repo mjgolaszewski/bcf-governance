@@ -1,0 +1,41 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/local-pr-context-git-program-contract.yml
+  status: planned
+  authority: false
+workitems: [P32-P0-04, P32-P0-07]
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+canonical_owner: bcf_governance/tooling/local_pr_context.py
+source_basis: 3cf0ab18
+observed_source:
+- All three existing candidate entrypoints call require_clean_candidate_root before provider discovery or allocation.
+- Its default _run delegates the original Git command through the existing admitted-command port without per-invocation hooks or fsmonitor refusal.
+- A real-Git program witness is required before classifying the runtime outcome; the retained source census alone is not execution evidence.
+targets:
+- bcf_governance/tooling/local_pr_context.py
+- tests/test_candidate_submit.py
+- tests/test_local_pr.py
+- tests/test_installed_source_admission.py
+contract:
+- Characterize repository-configured fsmonitor through the actual default runner for submit, prospective validation and canonical prospective input derivation before any production edit.
+- Keep candidate cleanliness before provider discovery, normalization, proof and mutation allocation; observing a clean tree must not execute that repository program.
+- Route the existing default Git runner through the same admitted-command port with hooks and fsmonitor disabled per invocation, without modifying repository or global Git configuration.
+- Preserve caller-owned runner inputs, non-Git invocations, public signatures, clean/dirty diagnostics, authenticated context resolution, remote read retry semantics and bound native custody.
+- Retain the genuine failed program-witness controls, successful existing clean/dirty behavior and a cause-specific repair-disabled run.
+- Qualify canonical private copies, fresh and upgrade source-absent runtime consumers and the affected consumer matrix before integration.
+expected_tests:
+- Real configured fsmonitor does not execute through any of the three early candidate entrypoints; each reaches its original next-boundary sentinel on clean input.
+- Original repository fsmonitor configuration is unchanged after the query.
+- Existing nineteen real-Git candidate/control cases continue to pass.
+- A custom runner still receives the original logical command; ordinary non-Git execution remains unchanged.
+- Actual admitted native execution retains the existing guardian and terminal custody behavior.
+forbidden:
+- Changes to primary submitted bytes, predecessor tools or maintained adopter repositories.
+- Repository or global configuration mutation as the production remedy.
+- New authority, evaluator, scheduler, broker or receipt family.
+- Hand-edited private runtime copies or generated workflow/authority artifacts.
+limits:
+- This closes only the characterized local PR Git program path; it does not prove every Git configuration, transport, lifecycle effect or native deadline is closed.
+- Passing local source tests cannot authorize a release, close a phase or establish an approved performance baseline.
