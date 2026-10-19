@@ -97,3 +97,54 @@ def test_installed_source_query_uses_runtime_owner_and_selected_project_interpre
         'forged_report_rejected': True, 'candidate_and_shadow_not_executed': True,
         'valid_file_count': 7,
     }
+
+
+def test_installed_source_discovery_never_executes_repository_fsmonitor(
+    installed_consumer, isolated_python,
+):
+    code = r'''import importlib.util, json, subprocess, sys
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+installed = Path.cwd()
+sys.path.insert(0, str(installed / 'scripts'))
+from _bcf_runtime import semantic_source_paths as paths
+from _bcf_runtime.semantic_ownership_inventory import discover_python_source
+assert Path(paths.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
+fixture = installed / 'git-discovery-fixture'
+fixture.mkdir()
+def git(*args):
+    return subprocess.check_output(['git', *args], cwd=fixture, text=True).strip()
+git('init', '-q')
+git('config', 'user.name', 'Installed Fixture')
+git('config', 'user.email', 'installed@example.invalid')
+(fixture / 'source.py').write_text("raise RuntimeError('candidate source executed')\n")
+git('add', '.')
+git('commit', '-qm', 'fixture')
+identity = {'commit_sha': git('rev-parse', 'HEAD'), 'tree_sha': git('rev-parse', 'HEAD^{tree}')}
+marker = installed / 'candidate-fsmonitor-executed'
+monitor = installed / 'candidate-fsmonitor'
+monitor.write_text('#!/bin/sh\ntouch "' + str(marker) + '"\nprintf "token\\0"\n')
+monitor.chmod(0o700)
+git('config', 'core.fsmonitor', str(monitor))
+assert paths.candidate_source_files(fixture, ('*.py',), label='Python', error=ValueError) == [fixture / 'source.py']
+for subject in (None, identity):
+    result = discover_python_source(fixture, source_subject=subject)
+    assert [row['path'] for row in result['files']] == ['source.py']
+assert not marker.exists(), 'installed source discovery executed candidate fsmonitor'
+assert git('config', '--get', 'core.fsmonitor') == str(monitor)
+assert not any(name.startswith('bcf_governance') for name in sys.modules)
+print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
+                  'consumers': 3, 'fsmonitor_not_executed': True,
+                  'repository_configuration_preserved': True}, sort_keys=True))
+'''
+    compile(code, 'installed-semantic-git-discovery', 'exec')
+    result = subprocess.run(
+        [str(isolated_python), '-I', '-c', code],
+        cwd=installed_consumer, env=_environment(), capture_output=True, text=True,
+    )
+    assert result.returncode == 0, _record(result)
+    assert json.loads(result.stdout) == {
+        'source_sdk_absent': True, 'private_origin_verified': True,
+        'consumers': 3, 'fsmonitor_not_executed': True,
+        'repository_configuration_preserved': True,
+    }

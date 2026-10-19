@@ -1867,7 +1867,7 @@
     },
     "scripts/_bcf_runtime/semantic_source_paths.py": {
       "operation": "copy",
-      "sha256": "7f35ea6035f8db71f13f4ba637b03d326b616439cbf89a8c204732244b98518c"
+      "sha256": "834e47e20bbb8d9147b7a59504653ceaa8eda8cde9adf043d1507e2828427bfc"
     },
     "scripts/_bcf_runtime/semantic_typescript_effects.mjs": {
       "operation": "copy",

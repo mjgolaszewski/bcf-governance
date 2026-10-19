@@ -4,10 +4,22 @@ from __future__ import annotations
 
 import subprocess
 import hashlib
+import os
 from pathlib import Path, PurePosixPath
 import re
 from typing import Any
 from typing import Callable
+
+
+def _source_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
+    """Read source facts without executing repository-configured Git programs."""
+    return subprocess.run(
+        [
+            "git", "--no-replace-objects", "-c", f"core.hooksPath={os.devnull}",
+            "-c", "core.fsmonitor=false", *arguments,
+        ],
+        cwd=repo_root, capture_output=True, check=False,
+    )
 
 
 def candidate_source_files(
@@ -19,14 +31,9 @@ def candidate_source_files(
     allow_empty: bool = False,
 ) -> list[Path]:
     """Return the Git-known files present in the proposed working tree."""
-    result = subprocess.run(
-        [
-            "git", "ls-files", "-z", "--cached", "--others",
-            "--exclude-standard", "--", *patterns,
-        ],
-        cwd=repo_root,
-        capture_output=True,
-        check=False,
+    result = _source_git(
+        repo_root, "ls-files", "-z", "--cached", "--others",
+        "--exclude-standard", "--", *patterns,
     )
     if result.returncode != 0:
         raise error(f"{label} discovery requires a Git worktree")
@@ -63,10 +70,7 @@ def _exact_subject(subject: dict[str, str]) -> None:
 
 
 def _committed_git(repo_root: Path, *args: str) -> bytes:
-    result = subprocess.run(
-        ["git", "--no-replace-objects", *args], cwd=repo_root,
-        capture_output=True, check=False,
-    )
+    result = _source_git(repo_root, *args)
     if result.returncode:
         raise ValueError("cannot resolve exact committed source population")
     return result.stdout
