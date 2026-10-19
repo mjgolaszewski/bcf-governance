@@ -29,6 +29,27 @@ def subject(repo):
     return dict(commit_sha=git(repo, 'rev-parse', 'HEAD'), tree_sha=git(repo, 'rev-parse', 'HEAD^{tree}'))
 
 
+@pytest.mark.parametrize('consumer', ['paths', 'ordinary-parser', 'exact-parser'])
+def test_source_discovery_does_not_execute_repository_fsmonitor(repo, tmp_path, consumer):
+    identity = subject(repo)
+    marker = tmp_path / 'candidate-program-executed'
+    monitor = tmp_path / 'candidate-fsmonitor'
+    monitor.write_text('#!/bin/sh\ntouch "' + str(marker) + '"\nprintf "token\\0"\n')
+    monitor.chmod(0o700)
+    git(repo, 'config', 'core.fsmonitor', str(monitor))
+    if consumer == 'paths':
+        files = source.candidate_source_files(repo, ('*.py',), label='Python', error=ValueError)
+        assert files == [repo / 'nested/root.py']
+    else:
+        from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
+        result = discover_python_source(
+            repo, source_subject=identity if consumer == 'exact-parser' else None,
+        )
+        assert [row['path'] for row in result['files']] == ['nested/root.py']
+    assert not marker.exists(), 'static source discovery executed candidate Git configuration'
+    assert git(repo, 'config', '--get', 'core.fsmonitor') == str(monitor)
+
+
 def test_exact_population_uses_committed_blobs_without_executing_source(repo):
     identity = subject(repo)
     expected_oid = git(repo, 'rev-parse', 'HEAD:nested/root.py')
