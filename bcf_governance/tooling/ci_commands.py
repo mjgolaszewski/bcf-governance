@@ -457,6 +457,7 @@ def main(argv: list[str] | None = None) -> None:
             from .ci_github_controller import environment_api
 
             _validate_authored_submission_inputs(args.repo_root)
+            provider_api = environment_api()
             project_python = ensure_local_project_python(
                 args.repo_root, Path(sys.executable), requested=args.python
             )
@@ -464,7 +465,7 @@ def main(argv: list[str] | None = None) -> None:
                 args.repo_root,
                 semantic_intent=args.intent,
                 python_executable=project_python,
-                provider_api=environment_api(),
+                provider_api=provider_api,
                 remote=args.remote,
                 progress_sink=lambda event: print(
                     json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
