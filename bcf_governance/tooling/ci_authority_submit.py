@@ -92,7 +92,7 @@ def _normalize_submission(
         validate_authored_semantic_ownership(root)
     except (OSError, ValueError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
-    with local_gate_lease(execution_id):
+    with local_gate_lease(execution_id, repo_root=root):
         command = exact_nested_cli_command(
             "reconcile", "--repo-root", str(root), "--python", str(python_executable),
         )

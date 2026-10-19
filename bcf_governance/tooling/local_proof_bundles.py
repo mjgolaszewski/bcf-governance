@@ -9,6 +9,7 @@ from pathlib import Path
 import shutil
 import stat
 import subprocess
+from .evidence_process_supervisor import run_admitted_command
 import tempfile
 from typing import Any, Mapping
 
@@ -251,8 +252,9 @@ def proof_identity(
     executable = python_executable.resolve()
     if executable.is_symlink() or not executable.is_file():
         raise LocalProofBundleError("proof toolchain executable is missing or symlinked")
-    version = subprocess.run(
-        [str(executable), "--version"], capture_output=True, text=True, check=False
+    version = run_admitted_command(
+        [str(executable), "--version"], capture_output=True, text=True, check=False,
+        unbound_runner=subprocess.run,
     )
     if version.returncode:
         raise LocalProofBundleError("proof toolchain version is unreadable")
@@ -282,12 +284,13 @@ def identity_digest(identity: Mapping[str, Any]) -> str:
 
 
 def _cache_root(repo_root: Path) -> Path:
-    result = subprocess.run(
+    result = run_admitted_command(
         ["git", "rev-parse", "--path-format=absolute", "--git-common-dir"],
         cwd=repo_root,
         capture_output=True,
         text=True,
         check=False,
+        unbound_runner=subprocess.run,
     )
     if result.returncode or not result.stdout.strip():
         raise LocalProofBundleError("proof cache requires an authenticated Git repository")

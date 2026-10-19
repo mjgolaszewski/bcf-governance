@@ -752,7 +752,7 @@ def run_prospective_train(
     except (EvaluationScopeError, WorkitemContractError) as exc:
         raise ProspectiveValidationError(str(exc)) from exc
     try:
-        with local_gate_lease(subject_commit):
+        with local_gate_lease(subject_commit, repo_root=repo_root):
             try:
                 compiled_graph = validate_ci_graph(repo_root.resolve())
                 graph = compiled_graph.graph

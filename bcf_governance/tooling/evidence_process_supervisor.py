@@ -25,7 +25,7 @@ _native_lease_binding = threading.RLock()
 
 
 @contextmanager
-def native_lease_custody(descriptor):
+def native_lease_custody(descriptor, *, timeout_seconds, cleanup_seconds):
     """Bind the acquired lease to native commands in this invoking thread."""
     global _native_lease
     if not _native_lease_binding.acquire(blocking=False):
@@ -33,11 +33,46 @@ def native_lease_custody(descriptor):
     previous = _native_lease
     try:
         identity = os.fstat(descriptor)
-        _native_lease = (descriptor, threading.get_ident(), identity.st_dev, identity.st_ino, previous)
+        _native_lease = (descriptor, threading.get_ident(), identity.st_dev, identity.st_ino, previous, timeout_seconds, cleanup_seconds)
         yield
     finally:
         _native_lease = previous
         _native_lease_binding.release()
+
+
+def run_admitted_command(command, *, unbound_runner=None, **kwargs):
+    """Use existing native custody when bound; preserve ordinary unbound runners."""
+    lease = _native_lease
+    if lease is None:
+        runner = subprocess.run if unbound_runner is None else unbound_runner
+        return runner(command, **kwargs)
+    if lease[1] != threading.get_ident():
+        raise OwnedProcessError('native command cannot consume another thread native lease')
+    options = dict(kwargs)
+    check = options.pop('check', False)
+    capture = options.pop('capture_output', False)
+    text = options.pop('text', False)
+    cwd = options.pop('cwd', None)
+    env = options.pop('env', None)
+    timeout = options.pop('timeout', None)
+    if options or capture is not True or type(text) is not bool or type(check) is not bool:
+        raise OwnedProcessError('bound native invocation options require explicit custody support')
+    body = lease[5]
+    cleanup = lease[6]
+    while lease[4] is not None:
+        lease = lease[4]
+        body = min(body, lease[5])
+        cleanup = min(cleanup, lease[6])
+    if timeout is not None:
+        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
+            raise OwnedProcessError('bound native timeout must be positive seconds')
+        body = min(body, timeout)
+    result = run_owned_command(command, cwd=cwd, env=env, timeout_seconds=body,
+                               cleanup_seconds=cleanup, text=text,
+                               timeout_raises=True)
+    if check:
+        result.check_returncode()
+    return result
 
 
 def _send(connection, value):
@@ -114,7 +149,8 @@ def _observe(process, connection, selector, buffers, deadline):
                 terminal = _terminal_result(json.loads(line), process.pid)
 
 
-def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
+def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
+                      text=True, timeout_raises=False):
     """Hold the supervisor unreaped until its child proof and both output EOFs."""
     lease = _native_lease
     if lease is not None and lease[1] != threading.get_ident():
@@ -178,17 +214,23 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
         if result['reason'] == 'launch-error':
             return subprocess.CompletedProcess(command, 126, '',
                 'bcf execution infrastructure failure: ' + result['detail'])
+        if result['reason'] == 'timeout' and timeout_raises:
+            raise subprocess.TimeoutExpired(command, timeout_seconds,
+                output=b''.join(buffers['stdout']), stderr=b''.join(buffers['stderr']))
         if result['reason'] != 'exit':
             reason = {'timeout': 'command timed out', 'descendants': 'command left live descendants',
                       'cancelled': 'command was interrupted'}[result['reason']]
             return subprocess.CompletedProcess(command, 126, '',
                 'bcf execution infrastructure failure: ' + reason)
         # Match subprocess text-mode decoding and universal newline semantics.
+        if not text:
+            return subprocess.CompletedProcess(command, result['returncode'],
+                *[b''.join(buffers[name]) for name in ('stdout', 'stderr')])
         encoding = 'utf-8' if sys.flags.utf8_mode else locale.getencoding()
         output = [b''.join(buffers[name]).decode(encoding).replace('\r\n', '\n').replace('\r', '\n')
                   for name in ('stdout', 'stderr')]
         return subprocess.CompletedProcess(command, result['returncode'], *output)
-    except OwnedProcessError:
+    except (OwnedProcessError, subprocess.TimeoutExpired):
         raise
     except UnicodeError as exc:
         if quiescent:

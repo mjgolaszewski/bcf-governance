@@ -12,6 +12,7 @@ import os
 import re
 import shutil
 import subprocess
+from .evidence_process_supervisor import run_admitted_command
 import sys
 import tomllib
 from dataclasses import dataclass
@@ -167,7 +168,7 @@ def probe_interpreter_environment(
         "print(json.dumps(versions,sort_keys=True))\n"
     )
     try:
-        result = subprocess.run(
+        result = run_admitted_command(
             [str(python), "-I", "-c", probe, json.dumps(list(plan.requirements)), plan.requires_python or ""],
             capture_output=True,
             text=True,
@@ -619,7 +620,7 @@ def materialize_interpreter_environment(
                 "derived project interpreter has unexplained pre-existing build state"
             )
         try:
-            created = subprocess.run(
+            created = run_admitted_command(
                 [
                     str(base_python.resolve(strict=True)),
                     "-m",
@@ -646,7 +647,7 @@ def materialize_interpreter_environment(
                 "--disable-pip-version-check",
                 *plan.pip_arguments(),
             ]
-            installed = subprocess.run(
+            installed = run_admitted_command(
                 install_command,
                 cwd=root,
                 capture_output=True,
@@ -746,7 +747,7 @@ def _matching_cached_environment(
 
 
 def _installed_inventory(python: Path, repo_root: Path) -> str:
-    result = subprocess.run(
+    result = run_admitted_command(
         [str(python), "-m", "pip", "freeze", "--all"],
         cwd=repo_root,
         capture_output=True,
