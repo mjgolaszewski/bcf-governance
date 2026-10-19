@@ -208,3 +208,18 @@ compatibility_consuming_subject_extension:
     - Real HEAD advances after source diff cannot produce current applicability.
     - Real HEAD advances inside installed-consumer failure cannot produce alternate-lane applicability.
     - Existing committed unrelated-file and alternate-lane positive behavior remains assured; uncommitted fixture policy is rejected explicitly.
+
+applicability_terminal_subject_extension:
+  owner: bcf_governance/tooling/trusted_controller_compatibility.py::classify_trusted_controller_applicability
+  bounded_context: ci_authority
+  operation_side: query
+  observed_source: 09b355c3170ac951ac8205bc1a7c593932d09401
+  required_behavior:
+    - Reauthenticate the same committed candidate after alternate-lane selection and before the outer applicability result, including alternate-lane exceptions. Inner verifier completion does not authenticate later consuming work.
+    - Bind the outer returned target_commit to the canonical resolved target SHA consumed by verification; preserve accepted revision grammar and unchanged current/pending states.
+    - Preserve clean unrelated-file and clean alternate-lane positive behavior; subject movement or dirty state cannot authorize a terminal applicability state.
+  controls_before_production:
+    - Real candidate HEAD advance inside alternate-lane selection cannot return PENDING_ROTATION.
+    - Real uncommitted candidate change inside alternate-lane selection cannot return PENDING_ROTATION.
+    - An accepted short target revision returns the full canonical target SHA, with existing exact-SHA behavior preserved.
+  forbidden: [new evaluator or graph or receipt family, immutable predecessor changes, public CLI or provider-status changes]
