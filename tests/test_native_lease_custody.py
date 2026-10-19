@@ -294,3 +294,38 @@ sys.exit(0 if owned and found else 23)
                 command, repo_root=lease_path.parent, step_id="native-custody-control",
             )
     assert not _busy(lease_path)
+
+
+def test_bound_native_runner_preserves_failed_exec_exception(lease_path: Path) -> None:
+    from bcf_governance.tooling.local_pr_context import _run
+
+    with local_gate_lease("1" * 40):
+        with pytest.raises(FileNotFoundError):
+            _run([str(lease_path.parent / "absent-native-custody-executable")],
+                 cwd=lease_path.parent)
+    assert not _busy(lease_path)
+
+
+def test_bound_native_runner_preserves_binary_output(lease_path: Path) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+
+    with local_gate_lease("2" * 40):
+        result = run_admitted_command(
+            [sys.executable, "-I", "-c", "import os; os.write(1, bytes([255,0,13,10]))"],
+            capture_output=True, check=False,
+        )
+        assert result.returncode == 0
+        assert result.stdout == bytes([255, 0, 13, 10])
+        assert result.stderr == b""
+    assert not _busy(lease_path)
+
+
+def test_bound_native_runner_preserves_timeout_exception(lease_path: Path) -> None:
+    from bcf_governance.tooling.local_pr_context import _run
+
+    with local_gate_lease("3" * 40):
+        with pytest.raises(subprocess.TimeoutExpired):
+            _run([sys.executable, "-I", "-c", "import time; time.sleep(5)"],
+                 cwd=lease_path.parent, timeout=0.1)
+        assert _busy(lease_path)
+    assert not _busy(lease_path)
