@@ -18,6 +18,8 @@ scope:
     - bcf_governance/tooling/local_execution_admission.py
     - bcf_governance/tooling/evidence_process_supervisor.py
     - bcf_governance/tooling/evidence_execution.py
+    - bcf_governance/tooling/local_proof_bundles.py
+    - bcf_governance/tooling/interpreter_environment.py
     - bcf_governance/tooling/local_pr_context.py
     - bcf_governance/tooling/local_pr.py
     - bcf_governance/tooling/ci_authority_submit.py
@@ -61,3 +63,12 @@ forbidden:
   - Editing maintained adopters, generated workflows or authority pins by hand.
   - Advancing any of the 82 whole requirements or activating P33 from this bounded contract.
 next_action: Characterize the actual lease and supervisor failure with real-process controls, then implement the smallest complete ownership handoff through the existing native consumer boundaries.
+
+runner_extension:
+  owner: bcf_governance/tooling/evidence_process_supervisor.py
+  behavior:
+    - Existing native consumers use one admitted-command adapter. Unbound calls preserve subprocess.run behavior; bound calls use the acquired descriptor and existing kernel guardian.
+    - Preserve actual capture, text or binary, cwd, environment, return code and timeout arguments; unsupported bound invocation options fail before allocation rather than being silently dropped.
+    - Bind body and cleanup safety ceilings from the existing gate execution-policy owner before lease allocation; retain existing legacy defaults for callers without a repository policy.
+    - This bounded adapter is not a complete outer-deadline proof. Full sibling consumer and outer-envelope conformance remains required before integration.
+  observed_controls: Real submission-runner and reconciliation-runner probes fail with native-owner-bypassed at source 3b80a4ca after the seven core handoff controls pass at 89f5a30b.
