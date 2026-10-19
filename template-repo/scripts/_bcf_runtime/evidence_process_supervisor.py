@@ -5,6 +5,7 @@ from contextlib import contextmanager
 import ctypes
 import json
 import locale
+import math
 import os
 from pathlib import Path
 import selectors
@@ -64,8 +65,9 @@ def run_admitted_command(command, *, unbound_runner=None, **kwargs):
         body = min(body, lease[5])
         cleanup = min(cleanup, lease[6])
     if timeout is not None:
-        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
-            raise OwnedProcessError('bound native timeout must be positive seconds')
+        if (isinstance(timeout, bool) or not isinstance(timeout, (int, float))
+                or (isinstance(timeout, float) and not math.isfinite(timeout)) or timeout <= 0):
+            raise OwnedProcessError('bound native timeout must be finite positive seconds')
         body = min(body, timeout)
     result = run_owned_command(command, cwd=cwd, env=env, timeout_seconds=body,
                                cleanup_seconds=cleanup, text=text,
