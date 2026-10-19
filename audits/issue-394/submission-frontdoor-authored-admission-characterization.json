@@ -479,7 +479,7 @@
     "disposition": "Unexpected GREEN; no production defect established. Program path contains spaces but fixture configuration is not shell-quoted and has no direct positive execution control. Strengthen fixture before any implementation or claim.",
     "fixture_followup": "5b296599 quotes the configured command and requires direct Git positive execution before the candidate assertion. Corrected runtime characterization remains pending.",
     "implementation_changed": false,
-    "remaining": "No production fix or safety/defect claim until the strengthened actual configured-program control executes.",
+    "remaining": "Historical unexpected GREEN remains retained above; genuine RED and repair-qualified source followups supersede its pending disposition. No installed, phase or release authority.",
     "genuine_failed_characterization": {
       "authority": false,
       "source": "56a695ae4280dfac455cff1d2f0295d06775dd51",
@@ -510,7 +510,42 @@
       "source_commit": "09bae091",
       "owner": "bcf_governance/tooling/local_pr_context.py::_run",
       "change": "Default logical Git calls disable hooks and fsmonitor per invocation through the existing admitted-command port; configuration and custom runners unchanged.",
-      "qualification": "Pending successful source matrix, actual bound guardian control, repair-disabled controls, canonical private and installed consumer qualification."
+      "qualification": "Affected source matrix178PASS; in-memory repair-disabled3 cause-specific failures; actual bound guardian and configured-program consumers passed. Canonical private, full required checks, package and installed qualification pending."
+    },
+    "qualification_followup": {
+      "authority": false,
+      "source": "706efebb8266cf742b33dc0b11812663d4704b8d",
+      "passed": 178,
+      "repair_disabled_expected_failures": 3,
+      "errors": 0,
+      "skipped": 0,
+      "elapsed_seconds_unmatched": 21.661,
+      "source_clean_unchanged": true,
+      "actual_bound_guardian_consumers": 2,
+      "network_audit_events": [],
+      "independent_readback_sha256": "12d7a71af357768779e409ac03fb92d3cd58e7f0b0cc05fde33ca42d867c2954",
+      "raw_sha256": {
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "execution.json": "8903a309c0bc6c45b708c9b2877ca728e9e164874fd7dac433b64e4b6cc6ab76",
+        "guardian-kernel-resource-readback.json": "e7ab06cf90f7d2144ef39bc8a9dbd6947e7500a4b466da4d0cab04bb4f00d159",
+        "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "report.json": "fe1a456ba92e7cbecb1e133c783a986201e145c62094841269a36ca1d4e6edbd",
+        "command.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "command.stdout.log": "21a37100b2164591b3e011b05616f34291a713e9d3f2c138df8fd8293872cab0",
+        "admission.json": "0636a7dc15a4ffe5596bba9c31c7272609a81afbe57ec163f4bd9becb773a411",
+        "green/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "green/stdout.log": "80b96666a88d60b30a21cdb466cbe014f2b61eb1b7740a059774cd42ff6cd3a0",
+        "green/report.json": "c4ac8158be4ec72550af8d37c2aa613287bfca7b2d6923ae405d18fbfadd72ea",
+        "green/cases.xml": "ea989c61c9a0148d0ccc1ef2396be40a547f44f22639452d9220c39f84d1ec98",
+        "disabled/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "disabled/stdout.log": "1f861528bc8941aedf76ee498ba3fc88faa26c482fc9831b8ef9f2db802be13f",
+        "disabled/report.json": "d731098a70f68c7d3f8324211503301883a6829b898a146275bff8e4f4c091d1",
+        "disabled/cases.xml": "fc398c8c968c372545c9fe599dbb6c2b507aa2e7f818648d078a415cccb7d881"
+      },
+      "limits": [
+        "Affected source consumers only; private/runtime/package/installed qualification pending",
+        "No phase or release authority"
+      ]
     }
   }
 }
