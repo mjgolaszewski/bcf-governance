@@ -179,3 +179,43 @@ preflight_repository_context_custody:
   - Qualify architecture, semantic and governance gates using existing owners; canonical reconciliation alone owns derived mirrors, test manifests and workflow/authority changes.
   forbidden: [editing the active primary qualification, predecessor SDK mutation, maintained adopter changes, global Git configuration, new scheduler or receipt family, caller-supplied authority, claiming full native or lifecycle closure from these paths]
   limits: These concrete repository-context consumers only; complete lifecycle/native/deadline populations, approved performance targets and immutable release custody remain open.
+
+submission_frontdoor_authored_admission:
+  workitem: P32-P0-07
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query_then_command
+  source_basis: edcf98c6425cc72b8edcbd99d689fb0a98930828
+  scope: Existing deterministic authored phase, executing-version target, deadline, gate-control and authored state-matrix checks before the submit CLI selects or materializes a project environment.
+  target_modules:
+  - bcf_governance/tooling/ci_authority_submit.py
+  - bcf_governance/tooling/ci_commands.py
+  expected_tests:
+  - tests/test_authored_control_admission.py
+  - tests/test_ci_commands.py
+  - tests/test_candidate_submit.py
+  - tests/test_local_execution_admission.py
+  contract:
+  - Factor the existing cheap authored query into its current submission owner; the CLI dispatch and direct normalization consumer must both use that single owner.
+  - The actual submit CLI must reject an available malformed gate-control mutation before project-environment selection or materialization, provider authority, prospective proof, reconciliation or push ports.
+  - A valid authored control must still reach ordinary project-environment selection; malformed-input checks cannot disable the route or manufacture success.
+  - Retain the existing typed failure text and causal exception conversion at the existing query boundary; preserve ordinary CLI grammar and interpreter selection for valid inputs.
+  - Repeat the same cheap query at normalization consumption so a direct Python caller cannot bypass admission and intervening authored changes cannot inherit an earlier observation.
+  - Candidate authored data is denial-only local admission input; passing it confers no protected-policy, evaluator, provider-subject, lifecycle or release authority.
+  - Keep source-distribution, reference collection and semantic runtime checks with their existing prerequisites; no runtime query, environment, lease or alternate receipt may be added to the cheap query.
+  controls_before_production:
+  - Actual CLI dispatch with absent, ambiguous, missing-target and symlink-target control mutations must reach the real existing control validator before a forbidden environment-selection witness.
+  - Preserve helper-level malformed-control controls, add an actual valid CLI counterpart, and retain a second consuming-boundary refusal for changed authored input.
+  - Tests forbid actual subprocess, socket and flock effects when characterizing this pure frontdoor; a refusal witness proves attempted ordering, not actual environment allocation.
+  verification:
+  - Commit this contract and genuine characterization controls before production edits.
+  - Run affected source CLI/admission/normalization consumers and cause-specific controls, then required architecture, semantic, governance, canonical projection and installed-runtime qualification before integration.
+  forbidden:
+  - Mutating the frozen edcf98c6 successor or its active SDK matrix, immutable predecessor tools, maintained adopters, generated workflows or authority pins.
+  - Adding a parallel evaluator, claim registry, resource scheduler, broker, receipt family, reentrant lease shortcut or submission boundary.
+  - Treating these cheap-query controls as cold-cache, actual busy-lease, collection-admission or complete normalization qualification.
+  residuals:
+  - Real owned busy-lease refusal before interpreter, distribution and collection work remains a separate unqualified normalization obligation.
+  - Complete lifecycle populations, deadline composition, source and reference admission, matched baseline targets and whole requirement closure remain open.
+  - This isolated slice must not delay the already qualified successor landing; integration follows independent qualification and the current transaction terminal.
