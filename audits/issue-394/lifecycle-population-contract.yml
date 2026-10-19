@@ -97,3 +97,19 @@ preflight_environment_characterization_repair:
   - Preserve graph, generated workflows, provider permissions, runtime authority and all production bytes.
   qualification: Retain the original failing capture; rerun the corrected fan-in case and existing related preflight cases, then required governance checks.
   forbidden: Weakening exact equality, accepting arbitrary credentials, changing immutable predecessor tools or treating this test correction as lifecycle closure.
+
+semantic_source_git_execution_boundary:
+  bounded_context: semantic_ownership
+  architectural_layer: tooling
+  operation_side: query
+  targets:
+  - bcf_governance/tooling/semantic_source_paths.py
+  - tests/test_semantic_source_paths.py
+  observed: A real Git fixture at a6eb0538 executes repository-configured core.fsmonitor during candidate_source_files; static preflight can therefore execute candidate-controlled code before parsing.
+  contract:
+  - Route both existing candidate file discovery and committed source queries through their existing semantic source owner with Git hooks and fsmonitor explicitly disabled for each invocation.
+  - Preserve exact committed replacement-object refusal, ordinary tracked/untracked discovery, unusual UTF-8 names, source modes, exception semantics and all existing public signatures.
+  - A repository-configured fsmonitor must not execute during direct discovery, ordinary source parsing or exact-subject source parsing.
+  - Use real Git fixtures and retain the genuine failing controls before production edits; qualify canonical private copies and affected consumers afterwards.
+  - This prevents configured Git program execution only; ambient repository redirection, dynamic runtime effects and complete lifecycle population authentication remain separate obligations.
+  forbidden: Repository configuration mutations, patching immutable234/235 tools, global Git settings, new evaluator or receipt family, and lifecycle or performance closure from static checks.
