@@ -43,7 +43,7 @@
   ],
   "whole_requirements_advanced": 0,
   "implementation_slices_advanced": 0,
-  "next_action": "Characterize direct normalization and admission runner bypasses, extend existing deadline/runner ownership, and qualify the complete consumer population before integration.",
+  "next_action": "Close the independently derived native-consumer/deadline population, run original recovery/runner consumers and required canonical/architecture/governance/package checks, then qualify wheel/sdist/SDK-absent installations before integration. Retain prior-certified project gates.",
   "original_compatibility_regression": {
     "subject": "5cf16b7f8048ef9addf3af610944ac1585512500",
     "unchanged_test": "tests/test_local_execution_admission.py::test_local_gate_uses_authenticated_execution_state_namespace",
@@ -55,7 +55,7 @@
     "original_test_unchanged": true,
     "terminal_quiescence_output_eof_supervisor_reap_observed": true,
     "source_implements_all_enclosing_descriptor_handoff": true,
-    "nested_command_descriptor_control": "authored_unrun"
+    "nested_command_descriptor_control": "passed at exact12bb3ffb as part of14 cases"
   },
   "direct_runner_characterization": {
     "subject": "3b80a4ca182a5f0b2f0ff2bdfd9760a3547fa8ae",
@@ -64,7 +64,7 @@
   },
   "adapter_implementation": {
     "subject": "36fc28bf650bb9ae0c8d9a17f49ded912aacc691",
-    "status": "authored_unrun",
+    "status": "bounded source behavior passes14 at12bb3ffb; full original consumers and installed qualification pending",
     "scope": [
       "submission runner",
       "reconciliation capture and binary snapshot",
@@ -92,5 +92,31 @@
     "new_retrospective_host_envelope_gate_for_prior_projects": false,
     "successor_qualification_scope": "Remaining repair and new capability qualification applies to the proposed2.5 implementation, not retroactive invalidation of predecessor custody.",
     "operator_instruction_date": "2026-10-19"
+  },
+  "adapter_abi_characterization": {
+    "subject": "7d675de7f02eef297a811e67638c4fb2f2520ccd",
+    "cases": 14,
+    "passed": 13,
+    "genuine_failed_exec_exception_failure": 1,
+    "fixture_errors": 0
+  },
+  "adapter_runtime_qualification": {
+    "subject": "12bb3ffb86ec76f48ea682e80f186f45dd6667f9",
+    "tree": "18374cdb3c6797010b2b00d2c34ded07ff1b23db",
+    "cases_passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "original_namespace_control_unchanged": true,
+    "all_enclosing_descriptors_observed_in_guardian_and_absent_from_command": true,
+    "binary_output_timeout_and_failed_exec_exception_abi": true,
+    "terminal_quiescence_output_eof_supervisor_reap_observed": true,
+    "raw_sha256": {
+      "operation.json": "bc4a6c33359656c8131be5e75793a14afa3d7311c0d75c24bc472f94cbc1e9f6",
+      "cases.xml": "dfd9cb67904c7ac026794cd1ac7c777b466691c72312757b16808ed7dceafdb7",
+      "focused.stdout": "a68d3f998602ab5a7d4d2c718902dc483388b14aaf81febb5b9707014b699c66",
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "complete_native_consumer_population": false,
+    "installed_runtime_qualification": false
   }
 }
