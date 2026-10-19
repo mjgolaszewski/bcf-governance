@@ -170,3 +170,19 @@ protected_installed_inventory_extension:
     - A committed candidate deletion of target classifier still executes protected target classifier bytes.
     - Ambiguous or symlink classifier inventory fails before evaluation or worktree allocation; original target source and native custody consumers remain required.
   forbidden: [candidate-supplied evaluator authority, generic nonzero-is-absence fallback, new registry or graph or receipt family, predecessor patching]
+
+protected_runtime_closure_extension:
+  owner: bcf_governance/tooling/trusted_controller_compatibility.py::trusted_runtime_source_files
+  observed_source: 951a7e397d407a8a53a02ecdb245640ccdb7884d
+  observed_defect: Candidate files and imports define the runtime population even when checking a protected target; deleting a target-imported module can remove it from the comparison and yield CURRENT.
+  required_behavior:
+    - Reuse one existing source/import population owner for candidate and exact committed target contexts; compare their union, including target-only modules, private helpers, wrappers and active schemas.
+    - Resolve protected source/module/layout presence and regular-file types from authenticated target Git-tree inventory, never candidate filesystem. Resolve moving target input to a canonical commit before consuming its facts.
+    - Preserve the genuinely local target-free inventory interface. Authoritative applicability requires a clean committed candidate; uncertainty cannot become CURRENT or an available alternate lane.
+    - Preserve known source import resolution and extend alias-submodule bindings through the existing owner, without a parallel graph or evaluator. Dynamic runtime/lifecycle population completeness remains an independent open requirement.
+    - Preserve confirmed legacy absence, metadata-only version drift and existing public CLI/provider status identities. Unsupported, ambiguous or unsafe protected code inventory blocks.
+  controls_before_production:
+    - Real candidate commit deletes a protected target-imported module; union inventory retains it and applicability cannot report CURRENT.
+    - Candidate changes and committed target facts remain separate for source and installed-private layouts; target-only files and symlinks cannot evade source custody.
+    - Dirty candidate or failed target inventory cannot authorize applicability; existing unrelated-file, schema/version, bootstrap and alternate-lane consumers remain mandatory.
+  forbidden: [candidate-authored protected population, nonzero-is-absence, new graph or registry or receipt family, changing immutable predecessor gates]
