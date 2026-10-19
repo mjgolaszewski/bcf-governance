@@ -102,6 +102,11 @@ def test_installed_source_query_uses_runtime_owner_and_selected_project_interpre
 def test_installed_source_discovery_never_executes_repository_fsmonitor(
     installed_consumer, isolated_python,
 ):
+    from semantic_typescript_fixture import compiler
+    node_fixture = installed_consumer / 'native-typescript-fixture'
+    engine = compiler(node_fixture)
+    (node_fixture / 'src').mkdir()
+    (node_fixture / 'src/value.ts').write_text('export function value(): number { return 1; }\n')
     code = r'''import importlib.util, json, subprocess, sys, os, fcntl
 from pathlib import Path
 assert importlib.util.find_spec('bcf_governance') is None
@@ -110,6 +115,8 @@ sys.path.insert(0, str(installed / 'scripts'))
 from _bcf_runtime import semantic_source_paths as paths
 from _bcf_runtime import evidence_process_supervisor as custody
 from _bcf_runtime.semantic_ownership_inventory import discover_python_source
+from _bcf_runtime import test_manifests, semantic_ownership_typescript as typescript
+from _bcf_runtime.governance_validation import preflight_distribution, source_inventory
 assert Path(paths.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
 fixture = installed / 'git-discovery-fixture'
 fixture.mkdir()
@@ -132,6 +139,30 @@ for subject in (None, identity):
     result = discover_python_source(fixture, source_subject=subject)
     assert [row['path'] for row in result['files']] == ['source.py']
 assert Path(custody.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
+for module in (test_manifests, typescript, preflight_distribution, source_inventory):
+    assert Path(module.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
+project_python = Path(sys.argv[1])
+engine = json.loads(sys.argv[2])
+node_fixture = Path(sys.argv[3])
+distribution = installed / 'native-distribution-fixture'
+distribution.mkdir()
+project_lines = ['[build-system]', 'requires=["setuptools"]', 'build-backend="setuptools.build_meta"',
+                 '[project]', 'name="fixture"', 'version="1.0"', '[tool.setuptools]', 'packages=[]',
+                 '[tool.setuptools.package-data]', 'bcf_governance=["pack/template-repo/**/*"]']
+files = {'pyproject.toml': chr(10).join(project_lines)+chr(10),
+         'MANIFEST.in': 'global-include *'+chr(10), 'owned.txt': 'owned'+chr(10),
+         'bcf_governance/pack/template-repo/owned.txt': 'template'+chr(10),
+         '.github/scripts/release_source_inventory.py': "raise SystemExit('candidate evaluator must not run')"+chr(10)}
+for name, value in files.items():
+    destination = distribution / name
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(value)
+subprocess.run(['git', 'init', '-q', str(distribution)], check=True)
+subprocess.run(['git', '-C', str(distribution), 'add', '.'], check=True)
+subprocess.run(['git', '-C', str(distribution), 'config', 'core.fsmonitor', str(monitor)], check=True)
+collection = installed / 'native-collection-fixture'
+collection.mkdir()
+(collection / 'test_value.py').write_text("def test_value():"+chr(10)+"    raise AssertionError('collection ran test body')"+chr(10))
 guardians = []
 receive = custody._receive
 descriptor = os.open(installed / 'native-reader-lease', os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
@@ -149,26 +180,33 @@ try:
     with custody.native_lease_custody(descriptor, timeout_seconds=30, cleanup_seconds=10):
         assert paths.candidate_source_files(fixture, ('*.py',), label='Python', error=ValueError) == [fixture / 'source.py']
         assert [row[0] for row in paths.committed_python_source_population(fixture, **identity)['python_blobs']] == ['source.py']
+        observed = preflight_distribution.validate_source_distribution(distribution, python_executable=project_python)
+        assert observed['file_count'] == 5 and observed['authority'] is False
+        assert test_manifests._collect_raw_nodes(collection, ['test_value.py'], python_executable=project_python) == ['test_value.py::test_value']
+        typed = typescript.discover_typescript_source(node_fixture, typescript.contract_from_mapping(engine), [node_fixture / 'src/value.ts'])
+        assert typed['compiler_version'] == '6.0.3'
+        assert any(row['symbol'] == 'src/value.ts::value' for row in typed['functions'])
+        assert len(source_inventory.tracked_source_inventory(distribution)) == 5
 finally:
     os.close(descriptor)
-assert len(guardians) == 4 and all(not Path('/proc', str(pid)).exists() for pid in guardians)
+assert len(guardians) == 8 and all(not Path('/proc', str(pid)).exists() for pid in guardians)
 assert not marker.exists(), 'installed source discovery executed candidate fsmonitor'
 assert git('config', '--get', 'core.fsmonitor') == str(monitor)
 assert not any(name.startswith('bcf_governance') for name in sys.modules)
 print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
                   'consumers': 3, 'fsmonitor_not_executed': True,
-                  'bound_git_guardians_verified_and_reaped': 4,
+                  'bound_preflight_guardians_verified_and_reaped': 8,
                   'repository_configuration_preserved': True}, sort_keys=True))
 '''
     compile(code, 'installed-semantic-git-discovery', 'exec')
     result = subprocess.run(
-        [str(isolated_python), '-I', '-c', code],
+        [str(isolated_python), '-I', '-c', code, sys.executable, json.dumps(engine), str(node_fixture)],
         cwd=installed_consumer, env=_environment(), capture_output=True, text=True,
     )
     assert result.returncode == 0, _record(result)
     assert json.loads(result.stdout) == {
         'source_sdk_absent': True, 'private_origin_verified': True,
         'consumers': 3, 'fsmonitor_not_executed': True,
-        'bound_git_guardians_verified_and_reaped': 4,
+        'bound_preflight_guardians_verified_and_reaped': 8,
         'repository_configuration_preserved': True,
     }
