@@ -84,3 +84,16 @@ consumer_container_transport_extraction:
   - Existing storage owner remains responsible; add no graph, registry, evaluator or receipt family and no CLI/provider status change.
   - Canonical generator alone mirrors runtime assets; keep production modules within800lines and qualify affected behavior and mandatory checks.
   exit: Pure extraction creates room only; full protected lifecycle population adoption/runtime conformance and all82whole requirements remain open.
+
+preflight_environment_characterization_repair:
+  bounded_context: ci_authority
+  architectural_layer: tests
+  operation_side: query
+  target: tests/test_self_governance_contracts.py::test_governance_fan_in_is_preflight_ordered_and_attempt_exact
+  observed: Broader qualification retains403PASS/1FAIL because the exact environment assertion predates authenticated preflight token projection in1f83d5e32.
+  contract:
+  - Require the exact existing three-field environment including the provider github.token expression; preserve exact evaluation mode and target expressions.
+  - Require ordinary and prior-evidence preflight commands to share that environment; missing, substituted or extra entries must still fail.
+  - Preserve graph, generated workflows, provider permissions, runtime authority and all production bytes.
+  qualification: Retain the original failing capture; rerun the corrected fan-in case and existing related preflight cases, then required governance checks.
+  forbidden: Weakening exact equality, accepting arbitrary credentials, changing immutable predecessor tools or treating this test correction as lifecycle closure.
