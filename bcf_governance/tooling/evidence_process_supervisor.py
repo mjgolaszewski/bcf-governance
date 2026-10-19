@@ -21,7 +21,7 @@ class OwnedProcessError(RuntimeError):
 
 
 _native_lease = None
-_native_lease_binding = threading.Lock()
+_native_lease_binding = threading.RLock()
 
 
 @contextmanager
@@ -30,12 +30,13 @@ def native_lease_custody(descriptor):
     global _native_lease
     if not _native_lease_binding.acquire(blocking=False):
         raise OwnedProcessError('native lease binding is already active in this process')
+    previous = _native_lease
     try:
         identity = os.fstat(descriptor)
-        _native_lease = (descriptor, threading.get_ident(), identity.st_dev, identity.st_ino)
+        _native_lease = (descriptor, threading.get_ident(), identity.st_dev, identity.st_ino, previous)
         yield
     finally:
-        _native_lease = None
+        _native_lease = previous
         _native_lease_binding.release()
 
 
@@ -118,8 +119,12 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
     lease = _native_lease
     if lease is not None and lease[1] != threading.get_ident():
         raise OwnedProcessError('native command cannot consume another thread native lease')
-    lease_arguments = [] if lease is None else [str(lease[0]), str(lease[2]), str(lease[3])]
-    inherited_descriptors = () if lease is None else (lease[0],)
+    leases = []
+    while lease is not None:
+        leases.append([lease[0], lease[2], lease[3]])
+        lease = lease[4]
+    lease_arguments = [str(value) for binding in leases for value in binding]
+    inherited_descriptors = tuple(binding[0] for binding in leases)
     start = time.monotonic()
     body_deadline = start + timeout_seconds
     connection, inherited = socket.socketpair()
@@ -140,8 +145,8 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
         inherited.close()
         ready = _receive(connection, body_deadline)
         expected_ready = {'type': 'ready', 'supervisor_pid': process.pid}
-        if lease is not None:
-            expected_ready['native_lease'] = [lease[0], lease[2], lease[3]]
+        if leases:
+            expected_ready['native_leases'] = leases
         if (not isinstance(ready, dict) or type(ready.get('supervisor_pid')) is not int
                 or ready != expected_ready):
             raise OwnedProcessError('child supervisor could not establish exclusive custody')
@@ -242,15 +247,15 @@ def _kill_owned_children():
             pass
 
 
-def _supervise(connection, body_deadline, cleanup_seconds, native_lease=None):
+def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
     _subreaper()
     ready = {'type': 'ready', 'supervisor_pid': os.getpid()}
-    if native_lease is not None:
-        descriptor, device, inode = native_lease
+    for descriptor, device, inode in native_leases:
         identity = os.fstat(descriptor)
         if (identity.st_dev, identity.st_ino) != (device, inode):
             raise OwnedProcessError('inherited native lease identity is contradictory')
-        ready['native_lease'] = list(native_lease)
+    if native_leases:
+        ready['native_leases'] = [list(binding) for binding in native_leases]
     _send(connection, ready)
     request = _receive(connection, body_deadline)
     command = request['command']
@@ -320,8 +325,11 @@ def _retain_native_custody():
 if __name__ == '__main__':
     with socket.socket(fileno=int(sys.argv[1])) as _connection:
         try:
-            _lease = tuple(int(value) for value in sys.argv[4:]) or None
-            _supervise(_connection, float(sys.argv[2]), int(sys.argv[3]), _lease)
+            if (len(sys.argv) - 4) % 3:
+                raise OwnedProcessError('inherited native lease binding is incomplete')
+            _leases = tuple(tuple(int(value) for value in sys.argv[offset:offset + 3])
+                            for offset in range(4, len(sys.argv), 3))
+            _supervise(_connection, float(sys.argv[2]), int(sys.argv[3]), _leases)
         except BaseException:
             # Keep the inherited open-file-description lock until kernel proof
             # of no owned children. A failed report remains failure at the caller.
