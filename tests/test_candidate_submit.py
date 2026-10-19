@@ -550,7 +550,10 @@ def test_submit_rejects_incomplete_proof_before_push(
 def _normalization_state(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(submit, 'validate_pull_request_changelog_update', lambda *_a: None)
     monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories', lambda *_a, **_k: None)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext(), raising=False)
+    def admitted_lease(_execution_id, *, repo_root: Path):
+        assert repo_root.is_absolute(), 'normalization must bind canonical repository policy'
+        return nullcontext()
+    monkeypatch.setattr(submit, 'local_gate_lease', admitted_lease, raising=False)
 
 
 def test_submit_normalizes_before_capturing_the_proved_subject(monkeypatch, tmp_path):
@@ -626,7 +629,8 @@ def test_busy_submit_cannot_normalize_another_active_train(monkeypatch, tmp_path
     from bcf_governance.tooling.local_execution_admission import LocalExecutionAdmissionError
     _normalization_state(monkeypatch)
     @contextmanager
-    def busy(*_args):
+    def busy(*_args, repo_root: Path):
+        assert repo_root == tmp_path.resolve()
         raise LocalExecutionAdmissionError('local_execution_busy_deferred')
         yield
     monkeypatch.setattr(submit, 'local_gate_lease', busy)
@@ -707,7 +711,7 @@ def test_submit_release_contradiction_rejects_before_lease_or_reconcile(monkeypa
         (tmp_path / 'governance').mkdir()
         (tmp_path / 'governance/public-contracts.yml').write_text('package:\n  version: 2.5.0\n')
         (tmp_path / 'CHANGELOG.md').write_text('# Changelog\n\n## [Unreleased]\n')
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('authored contradiction acquired lease'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('authored contradiction acquired lease'))
     with pytest.raises(ProspectiveValidationError, match='release'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
                                      runner=lambda *_a, **_k: pytest.fail('authored contradiction reached reconciliation'))
@@ -717,7 +721,7 @@ def test_submit_invalid_runtime_version_rejects_before_admission(monkeypatch, tm
     def malformed():
         raise RuntimeError('BCF runtime version owner is malformed')
     monkeypatch.setattr(submit, 'executing_runtime_version', malformed, raising=False)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('invalid runtime acquired lease'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('invalid runtime acquired lease'))
     with pytest.raises(ProspectiveValidationError, match='runtime version'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
                                      runner=lambda *_a, **_k: pytest.fail('invalid runtime reached reconciliation'))
@@ -745,7 +749,7 @@ def test_submit_authored_machine_rejects_before_lease_or_reconcile(monkeypatch, 
         raise CIStateMatrixError("machine-readable authored contradiction")
 
     monkeypatch.setattr(submit, "validate_ci_state_matrix", reject, raising=False)
-    monkeypatch.setattr(submit, "local_gate_lease", lambda *_a: pytest.fail("authored machine contradiction acquired lease"))
+    monkeypatch.setattr(submit, "local_gate_lease", lambda *_a, **_k: pytest.fail("authored machine contradiction acquired lease"))
     with pytest.raises(ProspectiveValidationError, match="machine-readable authored contradiction"):
         submit._normalize_submission(tmp_path, python_executable=Path("/python"), execution_id="2" * 40, semantic_intent=None,
                                      runner=lambda *_a, **_k: pytest.fail("authored machine contradiction reached reconciliation"))
@@ -763,7 +767,7 @@ def test_submit_timeout_policy_rejects_before_lease_or_reconcile(monkeypatch, tm
         path.write_text('execution_policy: null\n')
     else:
         path.write_text('gates: {example: {invocation: {timeout_seconds: null}}}\n')
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('invalid timeout acquired lease'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('invalid timeout acquired lease'))
     with pytest.raises(ProspectiveValidationError, match='timeout|regular nonsymlink'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40, semantic_intent=None,
                                      runner=lambda *_a, **_k: pytest.fail('invalid timeout reached reconciliation'))
@@ -887,7 +891,7 @@ def test_authored_coverage_rejects_before_lease_reconciliation_and_provider(monk
         assert root == tmp_path and python_executable == Path('/python')
         raise TestManifestError('reference inventory contains bare parameterized selector')
     monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories', reject, raising=False)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('leased before coverage check'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('leased before coverage check'))
     with pytest.raises(ProspectiveValidationError, match='reference inventory contains bare'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid inventory'))
@@ -900,7 +904,7 @@ def test_authored_semantic_ownership_rejects_before_lease_and_reconciliation(mon
     def reject(*_a, **_k):
         raise failure
     monkeypatch.setattr(submit, 'validate_authored_semantic_ownership', reject, raising=False)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('leased before source ownership rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('leased before source ownership rejection'))
     with pytest.raises(ProspectiveValidationError, match='downstream_normalization') as caught:
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source ownership'))
@@ -939,7 +943,8 @@ def test_bound_pr_normalization_assertion_uses_candidate_scope(monkeypatch, tmp_
         pull_request_node_id='PR_node', provider_head_sha='2' * 40)
     calls = []
     @contextmanager
-    def lease(*_args):
+    def lease(*_args, repo_root: Path):
+        assert repo_root == tmp_path.resolve()
         calls.append('lease')
         yield
     monkeypatch.setattr(submit, 'local_gate_lease', lease)
@@ -975,7 +980,7 @@ def test_bound_pr_normalization_rejects_incomplete_binding_before_lease(monkeypa
     context = LocalPRContext('origin', 'main', '1' * 40, '2' * 40, 'leaf', base_ref='stack',
         repository='owner/repo', repository_id=17, pull_request_number=7,
         pull_request_node_id='PR_node', provider_head_sha='2' * 40)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('lease before valid binding'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('lease before valid binding'))
     with pytest.raises(ProspectiveValidationError, match='authenticated PR binding'):
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
             semantic_intent='pr', runner=lambda *_a, **_k: pytest.fail('reconcile before binding'),
@@ -988,7 +993,7 @@ def test_authored_source_distribution_rejects_before_lease_and_reconciliation(mo
         assert root == tmp_path and python_executable == Path('/python')
         raise failure
     monkeypatch.setattr(submit, 'validate_source_distribution', reject)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('leased before source declaration rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: pytest.fail('leased before source declaration rejection'))
     with pytest.raises(ProspectiveValidationError, match='source manifest omits') as caught:
         submit._normalize_submission(tmp_path, python_executable=Path('/python'), execution_id='2'*40,
             semantic_intent=None, runner=lambda *_a, **_k: pytest.fail('reconciled invalid source declaration'))
@@ -1011,7 +1016,7 @@ def test_source_omission_precedes_expensive_collection_and_semantic_discovery(
     monkeypatch.setattr(submit, later_check,
                         lambda *_a, **_k: pytest.fail('expensive discovery before source rejection'))
     monkeypatch.setattr(submit, 'local_gate_lease',
-                        lambda *_a: pytest.fail('lease before source rejection'))
+                        lambda *_a, **_k: pytest.fail('lease before source rejection'))
     with pytest.raises(ProspectiveValidationError, match='source manifest omits') as error:
         submit._normalize_submission(
             tmp_path, python_executable=Path('/python'), execution_id='2' * 40,
@@ -1030,7 +1035,8 @@ def test_valid_source_keeps_every_authored_check_before_mutation_admission(monke
         monkeypatch.setattr(submit, name, lambda *_a, _name=name, **_k: checked.add(_name))
 
     @contextmanager
-    def lease(*_args):
+    def lease(*_args, repo_root: Path):
+        assert repo_root == tmp_path.resolve()
         assert checked == required, 'valid candidate omitted an authored prerequisite'
         yield
 
@@ -1074,7 +1080,7 @@ def test_exact_pr_changelog_precedes_normalization_allocation(monkeypatch, tmp_p
     trace = []
     monkeypatch.setattr(submit, 'validate_authored_test_reference_inventories',
         lambda *_a, **_k: trace.append('collection') if changed else pytest.fail('collected tests before deterministic changelog rejection'))
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: nullcontext() if changed else pytest.fail('lease before changelog rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_k: nullcontext() if changed else pytest.fail('lease before changelog rejection'))
     monkeypatch.setenv('BCF_ENFORCE_PR_CHANGELOG', 'false')
     monkeypatch.setenv('BCF_VALIDATION_LANE', 'isolated_candidate_qualification')
     def normalize():
