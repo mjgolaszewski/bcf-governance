@@ -9,6 +9,8 @@ import re
 import subprocess
 from typing import Any
 
+from ..evidence_process_supervisor import run_admitted_command
+
 
 class RepositoryContextError(ValueError):
     """Raised when the local Git subject is unsafe or ambiguous."""
@@ -17,8 +19,9 @@ class RepositoryContextError(ValueError):
 def git_value(repo_root: Path, *args: str) -> str:
     """Read one exact Git value for a preflight-owned consumer."""
 
-    result = subprocess.run(
-        ["git", *args], cwd=repo_root, capture_output=True, text=True, check=False
+    result = run_admitted_command(
+        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *args],
+        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, text=True, check=False
     )
     if result.returncode != 0:
         raise RepositoryContextError(
@@ -30,8 +33,9 @@ def git_value(repo_root: Path, *args: str) -> str:
 def tracked_files(repo_root: Path) -> list[Path]:
     """Return exact tracked regular files for deterministic source checks."""
 
-    output = subprocess.run(
-        ["git", "ls-files", "-z"],
+    output = run_admitted_command(
+        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "ls-files", "-z"],
+        unbound_runner=subprocess.run,
         cwd=repo_root,
         capture_output=True,
         check=True,
@@ -71,6 +75,12 @@ def git_state(repo_root: Path) -> dict[str, Any]:
         "tree_sha": tree,
         "status_porcelain_sha256": hashlib.sha256(status_value.encode()).hexdigest(),
     }
+
+
+def _comparison_git_unbound(command, **options):
+    """Preserve ordinary comparison checks' inherited stdout and stderr."""
+    options.pop("capture_output")
+    return subprocess.run(command, **options)
 
 
 def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
@@ -129,15 +139,19 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         pr_base = os.environ.get("BCF_PR_BASE_SHA", "")
         if pr_base != base:
             raise ValueError("pull-request comparison base does not match BCF_PR_BASE_SHA")
-    available = subprocess.run(
-        ["git", "cat-file", "-e", f"{base}^{{commit}}"],
+    available = run_admitted_command(
+        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "cat-file", "-e", f"{base}^{{commit}}"],
+        unbound_runner=_comparison_git_unbound,
+        capture_output=True,
         cwd=repo_root,
         check=False,
     )
     if available.returncode != 0:
         raise ValueError("repository comparison base commit is unavailable")
-    result = subprocess.run(
-        ["git", "merge-base", "--is-ancestor", base, "HEAD"],
+    result = run_admitted_command(
+        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "merge-base", "--is-ancestor", base, "HEAD"],
+        unbound_runner=_comparison_git_unbound,
+        capture_output=True,
         cwd=repo_root,
         check=False,
     )
