@@ -67,6 +67,7 @@ def test_native_lease_releases_after_ordinary_unbound_scope(lease_path: Path) ->
         identity = lease_path.stat()
         assert _busy(lease_path)
     assert not _busy(lease_path)
+    assert lease_path.stat().st_ino == identity.st_ino
 
 
 @pytest.mark.parametrize("consumer", ["workflow-authority", "authority-transition"])
@@ -198,7 +199,6 @@ def test_bound_native_failed_exec_closes_input_descriptors(lease_path: Path) -> 
                 capture_output=True, input=b"owned input", timeout=5,
             )
         assert descriptors() == before
-    assert lease_path.stat().st_ino == identity.st_ino
 
 
 def test_native_lease_remains_owned_by_inherited_descriptor(lease_path: Path) -> None:
