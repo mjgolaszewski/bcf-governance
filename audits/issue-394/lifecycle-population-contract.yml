@@ -131,3 +131,28 @@ semantic_source_native_custody:
   - Retain real-Git failing path/population controls before implementation; require actual guardian descriptor identity, successful exact Git results and terminal quiescence after the repair.
   - Qualify source, copied private runtimes and fresh/upgrade consumers along with affected native ABI and architecture/semantic/governance checks.
   limits: This closes two concrete semantic reader consumers only; unresolved dispatch and the complete native/lifecycle/deadline populations remain open.
+
+preflight_runtime_consumer_custody:
+  architectural_layer: tooling
+  operation_side: query
+  bounded_contexts:
+    validation: [governance_validation/preflight_distribution.py, governance_validation/source_inventory.py]
+    semantic_ownership: [semantic_ownership_typescript.py]
+    evidence: [test_manifests.py]
+  targets:
+  - bcf_governance/tooling/governance_validation/preflight_distribution.py
+  - bcf_governance/tooling/governance_validation/source_inventory.py
+  - bcf_governance/tooling/semantic_ownership_typescript.py
+  - bcf_governance/tooling/test_manifests.py
+  tests: [tests/test_native_preflight_consumers.py, tests/test_installed_source_admission.py]
+  basis: The retained exact source-operation population reaches all three raw launchers from normalization and prospective roots; a separate real-Git fixture confirms tracked_source_inventory still executes repository fsmonitor.
+  shared_kernel_decision: Reuse evidence_process_supervisor.run_admitted_command as the existing cross-context kernel custody port; keep distribution, compiler and collection policy with their current owners.
+  contract:
+  - Route source-distribution interpreter, pytest collection and TypeScript analyzer launches through actual owned guardian custody whenever a native lease is bound.
+  - Preserve ordinary unbound runners, selected executables, arguments, environment isolation, exact outputs, existing 300-second collection/compiler ceilings and diagnostic/error classes.
+  - Inherit existing lease body/cleanup bounds; keep all authored rejection checks before child allocation and add no timeout family or scheduler.
+  - The standalone source inventory reader must disable Git hooks and fsmonitor per invocation without importing the framework SDK into its isolated project interpreter or mutating repository configuration.
+  - Use actual protected source-inventory execution, pytest collection and the existing offline locked Node/TypeScript compiler in failing and passing guardian-descriptor controls; doubles cannot qualify these runtime paths.
+  - Retain source and installed fresh/upgrade cause-specific failures, then qualify canonical mirrors, original affected consumers and required architecture/semantic/governance checks.
+  forbidden: [new dependency or network bootstrap, immutable predecessor tool mutation, generated workflow or authority edits, candidate-supplied evaluator, new broker or receipt, whole population or performance closure from this bounded repair]
+  limits: Bound launchers and the proven standalone Git program defect only; complete lifecycle/native/deadline populations and combined distributions/adopters remain open.
