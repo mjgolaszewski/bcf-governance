@@ -279,5 +279,108 @@
       "Restoring only old is_file predicate in memory reproduces both genuine refusal-order failures without changing source files.",
       "Primary54b09168 and actualSDK250 bytes unchanged; no independent workitem/phase/provider/release authority."
     ]
+  },
+  "shared_phase_applicability_followup": {
+    "authority": false,
+    "contract_subject": "1bcab79d",
+    "test_subject": "7f917a26",
+    "implementation_subject": "a1643955",
+    "owner": "bcf_governance/tooling/governance_validation/authored_phase_state.py::authored_phase_inputs_present",
+    "consumers": [
+      "ci_authority_submit._validate_authored_submission_inputs",
+      "scaffold_governance_artifacts.reconcile_main",
+      "scaffold_governance_artifacts.reconcile_steps"
+    ],
+    "source_sha256": {
+      "bcf_governance/tooling/governance_validation/authored_phase_state.py": "b80fe8cf0c544389252d7ec0b4fd5c1288f450c5f68d77942e514d0983faf2c2",
+      "bcf_governance/tooling/ci_authority_submit.py": "a1adf3bb8dd7485d9dfb2a12d5184b84dc8379eb743c8e1abc0055a4d0a79a3c",
+      "bcf_governance/tooling/scaffold_governance_artifacts.py": "f3d67986f0ecc044ac9927d561bf92d6cc64ee4c6dbed1fa90f81f121819272b",
+      "tests/test_authored_control_admission.py": "d42753b3324b717c2e539f5d5a309c0660a4adc7e75d27c0c421d9221d671f63"
+    },
+    "observations": {
+      "red": {
+        "cases": 18,
+        "passed": 8,
+        "failed": 10,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "green": {
+        "cases": 18,
+        "passed": 18,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "disabled_owner": {
+        "cases": 18,
+        "passed": 6,
+        "failed": 12,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "admission_regression": {
+        "cases": 55,
+        "passed": 55,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "candidate_regression": {
+        "cases": 61,
+        "passed": 61,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "existing_reconcile_admission": {
+        "cases": 13,
+        "passed": 13,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "pure_architecture": {
+        "cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      }
+    },
+    "raw_sha256": {
+      "shared-phase-applicability-red-attempt1/report.json": "40b507a8ab26bccf0e83992e9b20c1527a7d6397dc1d229b74d753673dea1114",
+      "shared-phase-applicability-red-attempt1/cases.xml": "84d09e08c5553eb07988a7df03875cb79e0a656eadc2982c8ae71373456ed259",
+      "shared-phase-applicability-green-attempt1/report.json": "03cb713000ee5fc01d8b4f7d7196670d2d6bd36a9162c696e386712d8590af7f",
+      "shared-phase-applicability-green-attempt1/cases.xml": "f13c10cc9b00f8e93075d7e0cbf97216a8b67b4e3a81b07698a800ac169d6f0a",
+      "shared-phase-applicability-disabled-owner-attempt1/report.json": "1b9376c34bbf460363fcd78e37f0e4e9dc5cb5f5b6e82b48a536dcbe9ef09662",
+      "shared-phase-applicability-disabled-owner-attempt1/cases.xml": "7225f7b2006d23389131875d9f46a2f1eec4a5c89751ec8957d3aea6a78c5f39",
+      "shared-phase-current-admission-regression-attempt1/report.json": "efde2aa45e98c6732b17df72885fe6896026897abfec7b449cfa5dbddf15a37e",
+      "shared-phase-current-admission-regression-attempt1/cases.xml": "cd2ff8ebbc2660c458122a121183ec5e4dd46fdf6f9bd99a384f365231395126",
+      "shared-phase-current-candidate-regression-attempt1/report.json": "93303b7ab826748af9c8a55fd3738ffd6975ca003de954b35262bf1fc73563aa",
+      "shared-phase-current-candidate-regression-attempt1/cases.xml": "a6fa6b0f2e1cfeeda24476072376e0a8a4b20a5e8ee2ab6a37e97bc5b89fecda",
+      "shared-phase-existing-reconcile-admission-attempt1/report.json": "878a3fff493c1f765cf5e68fe65ea51f959fc3aa17af78ad1584e922168fb38d",
+      "shared-phase-existing-reconcile-admission-attempt1/cases.xml": "c0d557b9d1b78e8fc73139ec1b2451dc67300f2aebda01b5b360a5c6eb31fcd5",
+      "shared-phase-current-architecture-attempt1/report.json": "c63895995aceec2ac1e31434142d125a4a73792fdc37a8f6d0afec7fb6da970d",
+      "shared-phase-current-architecture-attempt1/cases.xml": "f126179549558ed8fbdb3a9992e54d9f1633a9558dd229c025c58d29d22ade4e"
+    },
+    "current_source_counts": {
+      "behavioral": 129,
+      "pure_architecture": 4,
+      "scaffold_lines": 792
+    },
+    "scope": "One validation-owned presence query admits existing phase markers to the existing validator across three physical call sites. Complete absence and complete valid phase contexts retain existing selection behavior; no new phase authority.",
+    "limits": [
+      "Pure source only; nineteen real-Git cases in the first two behavioral modules, remaining reconciliation consumers, full required semantic/governance/private generation and installed qualification remain pending.",
+      "Disabling shared owner to old is_file restores twelve targeted failures, including two historical submit type defects plus ten newly characterized missing-ledger/reconciliation/planner defects.",
+      "No primary54b09168, installedSDK250, immutable adopter tool, workflow, authority or phase-state changes; all82 whole requirements/38 bounded slices unchanged."
+    ]
   }
 }
