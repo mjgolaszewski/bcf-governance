@@ -453,5 +453,32 @@
       "cases.xml": "c095ede88eba78d5a81542341a3116ff7506991ae13d620e16b5daacf79ae3c1"
     },
     "limits": "Adds source-root and thin-wrapper selectors to four retained pure architecture cases; full eight-gate qualification remains pending"
+  },
+  "local_pr_git_program_characterization": {
+    "authority": false,
+    "contract": "audits/issue-394/local-pr-context-git-program-contract.yml",
+    "checked_source": "a031af1155ba1b6c7f9ab7dcbbcd63592acaab0d",
+    "passed": 3,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 0,
+    "elapsed_seconds_unmatched": 2.06,
+    "raw_sha256": {
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "execution.json": "cbd1aef131010a7a6d49db067922a74af716bf6af4b946e5acf0ca8df7805c4d",
+      "guardian-kernel-resource-readback.json": "ff802f7f4c53492723fd20c3c98a0b937e82d0bbb5a845036baa5458674b967d",
+      "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "report.json": "b52ca2299ccff4df85729e56a3ada718694aa339e9da6a66c63e0650a8aee289",
+      "command.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "cases.xml": "b3d3db667705a010b4561b5c31bde646b5a97faf24da719ed9d15ad5b7f7245d",
+      "command.stdout.log": "4129d98f6473dbe74e0209a89570127a6241ea1d529bf091e5bb48960d9184df",
+      "immediate-readonly-observation.json": "82d7e6cabe8e0518c4042be9646b4c793e1d9c31340038097a538971bf441080",
+      "admission.json": "e2b53a9f7007bef284c2322e3e62420f00620a7c240fc2a789cbe041ad519373"
+    },
+    "independent_readback_sha256": "817bd382c4877fdb813643309b7ea635930c4d3aa8d266a262b83379e63501f1",
+    "disposition": "Unexpected GREEN; no production defect established. Program path contains spaces but fixture configuration is not shell-quoted and has no direct positive execution control. Strengthen fixture before any implementation or claim.",
+    "fixture_followup": "5b296599 quotes the configured command and requires direct Git positive execution before the candidate assertion. Corrected runtime characterization remains pending.",
+    "implementation_changed": false,
+    "remaining": "No production fix or safety/defect claim until the strengthened actual configured-program control executes."
   }
 }
