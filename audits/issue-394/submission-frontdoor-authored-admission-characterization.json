@@ -479,6 +479,38 @@
     "disposition": "Unexpected GREEN; no production defect established. Program path contains spaces but fixture configuration is not shell-quoted and has no direct positive execution control. Strengthen fixture before any implementation or claim.",
     "fixture_followup": "5b296599 quotes the configured command and requires direct Git positive execution before the candidate assertion. Corrected runtime characterization remains pending.",
     "implementation_changed": false,
-    "remaining": "No production fix or safety/defect claim until the strengthened actual configured-program control executes."
+    "remaining": "No production fix or safety/defect claim until the strengthened actual configured-program control executes.",
+    "genuine_failed_characterization": {
+      "authority": false,
+      "source": "56a695ae4280dfac455cff1d2f0295d06775dd51",
+      "expected_failures": 3,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "test_early_candidate_read_does_not_execute_repository_fsmonitor[submit]",
+        "test_early_candidate_read_does_not_execute_repository_fsmonitor[prospective]",
+        "test_early_candidate_read_does_not_execute_repository_fsmonitor[canonical]"
+      ],
+      "cause": "Each direct configured-program positive control succeeded; marker was removed; the actual candidate entrypoint recreated it before its original next-boundary sentinel. All failures are the final candidate-program assertion.",
+      "raw_sha256": {
+        "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "execution.json": "f7dc224b5aaf3a935a601b5b3fa1ccb204fe86edba74b2e8c553addb0f4b32a6",
+        "guardian-kernel-resource-readback.json": "7181ba240d44daba0145418483f24087dbb17e4067f915ae42ab177987a5318b",
+        "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "report.json": "94ba95ba2623688ddb96bb78aeee7824f85b08548fcf38b5487db7ffb662deff",
+        "command.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "cases.xml": "1d4b6f5715ce354fda73aa419a42317e4ee35e7b9794d4c4dbc71db0746018f1",
+        "command.stdout.log": "0e7d9188e3cd28ab46d3605bc70a1fd0bd90d588507d020c7547042bf41ab640",
+        "immediate-readonly-observation.json": "c598d2ea3f50a1d127720a354985434efcb5cd13aee7b8c1fdf3f77c855fc118",
+        "admission.json": "60492729224c85df281ee26fa26559f1adba80cb7a97eed0a2c77590a37db1a9"
+      },
+      "independent_readback_sha256": "20d35097f9f6f781286c014612752c44ac5e6f1f0964838db8bc74c786b92126"
+    },
+    "implementation": {
+      "source_commit": "09bae091",
+      "owner": "bcf_governance/tooling/local_pr_context.py::_run",
+      "change": "Default logical Git calls disable hooks and fsmonitor per invocation through the existing admitted-command port; configuration and custom runners unchanged.",
+      "qualification": "Pending successful source matrix, actual bound guardian control, repair-disabled controls, canonical private and installed consumer qualification."
+    }
   }
 }
