@@ -408,5 +408,142 @@
       "native-lease-2f07cef8-structural-attempt1/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f"
     },
     "known_handles_verified_absent": true
+  },
+  "expanded_archive_characterization": {
+    "authority": false,
+    "status": "partial_failed_retained",
+    "source": "2b9677c50e09e6116540396d074dbc23e5dd144c",
+    "source_cases_passed": 2312,
+    "wheel_cases_passed": 2302,
+    "wheel_failed": 10,
+    "wheel_skipped": 0,
+    "root_cause": "managed Python fcntl module lacks Linux seal constants",
+    "following_sdist_and_private_semantic_not_run": true,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "raw_report_sha256": "109a712f82fa639478e122a2ed227812c11677f63bbcf71651d4170011047de8",
+    "wheel_output_sha256": "8a2c22ef55cb985f29d50ed535f450b8aedd63190ce1f74acd3cc75b63f2b7f0",
+    "direct_missing_python_seal_name_failures": 9,
+    "consequent_fatal_stdin_fixture_readiness_failure": 1,
+    "retained_original_streams": true,
+    "disposition": "Repair Linux ABI in existing input owner; retain exact earlier archive bytes and failures without retagging as fixed."
+  },
+  "linux_input_abi_characterization": {
+    "authority": false,
+    "source": "1072236f19a1ed46c2158c819051507bbd72ee9c",
+    "genuine_missing_name_failure": 1,
+    "kernel_and_guardian_refusal_cases_passed": 2,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "focused.stdout": "2a27cd0cc8b7ecea187524631f0ceb3ae659761e6fda1fe5bfba5cdc58fda83b",
+      "operation.json": "0873a00118cbe3b945809ee414ee0aef5db6cedb30540b8f4b4421522c52961d",
+      "cases.xml": "51cd69844704399ef165f76441e73013f3c9c23dc65aec8cc4d660fa8dcca7e3"
+    },
+    "contract_subject": "7880349f",
+    "implementation_subject": "22be48aae474617c3ab9b078e48e8794c9659cc0",
+    "source_header_observation_sha256": "c7dc20fa03c26b3c0acb13ef94003e2511ee2d18851e074fa149d16719b9c1c2"
+  },
+  "linux_input_abi_qualification": {
+    "authority": false,
+    "source": "22be48aae474617c3ab9b078e48e8794c9659cc0",
+    "cases_per_interpreter": 39,
+    "interpreters": [
+      "CPython3.12.11 GCC",
+      "CPython3.12.14 Clang optional_seal_names_absent"
+    ],
+    "separate_exact_source_executions": true,
+    "captures": [
+      {
+        "index": 0,
+        "cases": 39,
+        "stdout_sha256": "bf2e63999d1b11842f79f117f8648f0d6b87d62980ef9589a603a436cebb12e4",
+        "xml_sha256": "e00e3ce5f8bc5d3139f09dbbdaee194a85394e91c939aef29de4d0fe9a3d34ae"
+      },
+      {
+        "index": 1,
+        "cases": 39,
+        "stdout_sha256": "1465eb87bc25c114cae9a274b62c4fb7152155c8408a861b7900b9d2266e8d42",
+        "xml_sha256": "4f4f754baeb9f3e10c30eead6f4f8aef91ac2c4302ae5c5768fa0e597cb93491"
+      }
+    ],
+    "managed_test_dependency_closure": 41,
+    "predecessor_tool_unmodified": true,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "installed_archives_not_yet_qualified": true,
+    "managed_harness_first_attempt_preserved": "Source39 passed; immutable baseline interpreter had no pytest, so managed0 executed. Separate fresh managed41-wheel test environment then passed39, exact source fixed; predecessor installation unmodified."
+  },
+  "prospective_controller_characterization": {
+    "authority": false,
+    "source": "e51edc34250a0358a8ecacf84a607822087b01f5",
+    "genuine_named_failures": [
+      "trusted-controller-git-native-custody-bypassed",
+      "controller-route-native-custody-bypassed"
+    ],
+    "ordinary_release_passed": true,
+    "fixture_errors": 0,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "focused.stdout": "b6c78c31c7c64c4614dccc88dde0431df087323c00d11ca2241afc59dbdc9682",
+      "operation.json": "d4b4ea9b7ec78621d7de4f3e0e74beeabf272bcb94b0f02a7bb7657da1deb783",
+      "cases.xml": "16a542d281d69aaddb7ed1ed8d7fd61cf4fe89534ea1e5ebef2a8bf6bce20cdc"
+    }
+  },
+  "prospective_controller_qualification": {
+    "authority": false,
+    "source": "149286e87a3aae703b2f2668ae8cd3b2796bd3b8",
+    "cases_passed": 3,
+    "actual_git_and_route_guardian_verified": true,
+    "ordinary_release_passed": true,
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "full_eleven_consumer_and_archive_matrix_open": true,
+    "raw_sha256": {
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "focused.stdout": "1262cc17518507fb5a1e0758514051a1ec5ba155ca583c616aff215f32ee3379",
+      "operation.json": "fbd435b6258a59cac8e3f3837357011ae83816f8628442571b8682ba6a07401b",
+      "cases.xml": "c8317b8f9fcbf04e482cc6cc0cd39dbb00cedf93dd9714a93c306687162f3b53"
+    },
+    "direct_calls_routed": 11,
+    "function_and_class_ast_preservation": "Exact after reversing only11 admitted-call names/explicit unbound ports; policy/evaluator logic unchanged."
+  },
+  "development_distribution_2b9677": {
+    "authority": false,
+    "source": "2b9677c50e09e6116540396d074dbc23e5dd144c",
+    "tree": "6a9e9406169faecded08e5206a2b62ae86bbcff6",
+    "six_stages_passed": true,
+    "sdk_cases_each": 92,
+    "private_cases_each": 78,
+    "archives": [
+      {
+        "name": "bcf_governance-2.5.0-py3-none-any.whl",
+        "bytes": 2120670,
+        "sha256": "366a74dcf33ea943960f57cf274d81c6158282005c39027ef82219bc5ff356be"
+      },
+      {
+        "name": "bcf_governance-2.5.0.tar.gz",
+        "bytes": 9342494,
+        "sha256": "b6c7f5f538562424fe9e6cefbec5f71cac272a60be9bd6de970841529b17897f"
+      }
+    ],
+    "q_eof_reap": true,
+    "known_handles_absent": true,
+    "fresh_original_fence": true,
+    "raw_reports": {
+      "qualification-sdk-matrix-2b9677c5/report.json": "1faf4f7400ad0261f020336321a499b2900e4b4faf8400210dba0b660fcc47a8",
+      "bound-input-2b9677c5-private-attempt1/report.json": "04cabea49cd3552bff16789753328601d9f099c0d7f0a05b59776f7260dfb535"
+    },
+    "not_release_certification": true,
+    "full_native_population_and_deadlines_open": true,
+    "scope_limit": "Six-stage limited SDK/private consumers passed, but subsequent expanded native wheel corpus found the retained sealing ABI failures; not general installed-runtime assurance."
   }
 }

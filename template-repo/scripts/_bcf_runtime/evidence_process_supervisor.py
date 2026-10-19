@@ -25,6 +25,11 @@ class OwnedProcessError(RuntimeError):
 
 _native_lease = None
 _native_lease_binding = threading.RLock()
+# Linux UAPI (linux/fcntl.h), independent of CPython build-header exports.
+# Applying and reading these seals on the actual memfd is the kernel proof.
+_INPUT_ADD_SEALS = 1033
+_INPUT_GET_SEALS = 1034
+_INPUT_REQUIRED_SEALS = 0x000F  # SEAL | SHRINK | GROW | WRITE
 
 
 @contextmanager
@@ -180,8 +185,10 @@ def _stage_command_input(data, deadline):
                 raise OwnedProcessError('command input could not make progress')
             offset += written
         os.lseek(descriptor, 0, os.SEEK_SET)
-        seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
-        fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS, seals)
+        seals = _INPUT_REQUIRED_SEALS
+        fcntl.fcntl(descriptor, _INPUT_ADD_SEALS, seals)
+        if fcntl.fcntl(descriptor, _INPUT_GET_SEALS) & seals != seals:
+            raise OwnedProcessError('command input kernel seals are incomplete')
         identity = os.fstat(descriptor)
         return (descriptor, identity.st_dev, identity.st_ino)
     except BaseException:
@@ -380,10 +387,10 @@ def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
         if stdin <= 2 or stdin == connection.fileno() or stdin in {row[0] for row in native_leases}:
             raise OwnedProcessError('command input cannot expose custody descriptors')
         identity = os.fstat(stdin)
-        seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+        seals = _INPUT_REQUIRED_SEALS
         if ((identity.st_dev, identity.st_ino) != (device, inode)
                 or not stat.S_ISREG(identity.st_mode)
-                or fcntl.fcntl(stdin, fcntl.F_GET_SEALS) & seals != seals):
+                or fcntl.fcntl(stdin, _INPUT_GET_SEALS) & seals != seals):
             raise OwnedProcessError('command input identity or immutable bytes are unbound')
     try:
         command_options = {'stdin': stdin} if stdin is not None else {}

@@ -9,6 +9,7 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
+from .evidence_process_supervisor import run_admitted_command
 import sys
 import tempfile
 from typing import Any, Iterable
@@ -121,9 +122,9 @@ class TrustedControllerApplicability:
 
 
 def _git(repo_root: Path, *arguments: str) -> str:
-    result = subprocess.run(
+    result = run_admitted_command(
         ["git", *arguments],
-        cwd=repo_root,
+        unbound_runner=subprocess.run, cwd=repo_root,
         capture_output=True,
         text=True,
         check=False,
@@ -343,9 +344,9 @@ def _verify_installed_authority_consumability(
     try:
         with tempfile.TemporaryDirectory(prefix="bcf-installed-authority-") as raw:
             checkout = Path(raw) / "controller"
-            materialized = subprocess.run(
+            materialized = run_admitted_command(
                 ["git", "worktree", "add", "--detach", str(checkout), target_commit],
-                cwd=repo_root,
+                unbound_runner=subprocess.run, cwd=repo_root,
                 capture_output=True,
                 text=True,
                 check=False,
@@ -366,7 +367,7 @@ def _verify_installed_authority_consumability(
                     if source_layout
                     else checkout
                 )
-                result = subprocess.run(
+                result = run_admitted_command(
                     [
                         sys.executable,
                         "-c",
@@ -375,7 +376,7 @@ def _verify_installed_authority_consumability(
                         str(schema_root),
                         str(authority_path),
                     ],
-                    cwd=repo_root,
+                    unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
                     text=True,
                     check=False,
@@ -386,9 +387,9 @@ def _verify_installed_authority_consumability(
                         detail[-1] if detail else "installed validation failed"
                     )
             finally:
-                subprocess.run(
+                run_admitted_command(
                     ["git", "worktree", "remove", "--force", str(checkout)],
-                    cwd=repo_root,
+                    unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
                     text=True,
                     check=False,
@@ -468,9 +469,9 @@ def _verify_installed_pending_topology(
         if (repo_root / INSTALLED_TOPOLOGY_CLASSIFIER).is_file()
         else INSTALLED_RUNTIME_ROOT / "ci_github_membership.py"
     )
-    exists = subprocess.run(
+    exists = run_admitted_command(
         ["git", "cat-file", "-e", f"{target_commit}:{topology_path}"],
-        cwd=repo_root,
+        unbound_runner=subprocess.run, cwd=repo_root,
         capture_output=True,
         check=False,
     )
@@ -481,9 +482,9 @@ def _verify_installed_pending_topology(
         with tempfile.TemporaryDirectory(prefix="bcf-installed-topology-") as raw:
             root = Path(raw)
             checkout = root / "controller"
-            materialized = subprocess.run(
+            materialized = run_admitted_command(
                 ["git", "worktree", "add", "--detach", str(checkout), target_commit],
-                cwd=repo_root,
+                unbound_runner=subprocess.run, cwd=repo_root,
                 capture_output=True,
                 text=True,
                 check=False,
@@ -509,14 +510,14 @@ def _verify_installed_pending_topology(
                     "result=m.classify_admission_topology(api,repository='owner/repo',main=main,authority=authority,admission_run_id=1,admission_run_attempt=1);"
                     "print(str(result.state.value)+':'+result.reason)"
                 )
-                result = subprocess.run(
+                result = run_admitted_command(
                     [
                         sys.executable,
                         "-c",
                         program,
                         str(checkout),
                     ],
-                    cwd=repo_root,
+                    unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
                     text=True,
                     input=json.dumps(
@@ -532,9 +533,9 @@ def _verify_installed_pending_topology(
                     detail = observed or (errors[-1] if errors else "")
                     raise ValueError(detail or "installed topology classification failed")
             finally:
-                subprocess.run(
+                run_admitted_command(
                     ["git", "worktree", "remove", "--force", str(checkout)],
-                    cwd=repo_root,
+                    unbound_runner=subprocess.run, cwd=repo_root,
                     capture_output=True,
                     text=True,
                     check=False,
@@ -558,9 +559,9 @@ def verify_pr_bootstrap_compatibility(
         return
     unavailable: list[str] = []
     for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES:
-        target = subprocess.run(
+        target = run_admitted_command(
             ["git", "cat-file", "-e", f"{target_commit}:{path.as_posix()}"],
-            cwd=root,
+            unbound_runner=subprocess.run, cwd=root,
             capture_output=True,
             check=False,
         )
@@ -591,9 +592,9 @@ def verify_trusted_controller_compatibility(
 
     root = repo_root.resolve()
     _git(root, "cat-file", "-e", f"{target_commit}^{{commit}}")
-    ancestor = subprocess.run(
+    ancestor = run_admitted_command(
         ["git", "merge-base", "--is-ancestor", target_commit, "HEAD"],
-        cwd=root,
+        unbound_runner=subprocess.run, cwd=root,
         capture_output=True,
         text=True,
         check=False,

@@ -124,5 +124,54 @@
     "entries": 12,
     "compressed_bytes": 99138,
     "all_member_sha256_retained": true
-  }
+  },
+  "additional_authenticated_observations": [
+    {
+      "authority": false,
+      "status": "authenticated_unmatched_observation",
+      "run_id": 39208948518,
+      "commit": "0b3bafc0f3db8a24cc0caa8dc72af1ff9801092a",
+      "tree": "ed0e81ac2a48a6e06d9a79b7f9286cca1dffca39",
+      "pipeline": "pr",
+      "protected_workflow_context": "ordinary PR progress, including main push expression; not exact-main certification",
+      "elapsed_ms": 291000,
+      "execution_union_ms": 284000,
+      "execution_sum_ms": 491000,
+      "uncovered_ms": 7000,
+      "cpu_ms": "unknown",
+      "strict_validation": true,
+      "matched_cohort": false,
+      "percentile_claim": false,
+      "approved_targets": false,
+      "capture_sha256": "03a2b78ad435ab1be5a500ab855d91c1a8aa797434433f52c258106c746683c5",
+      "provider_log_zip_sha256": "26f6238f28b73b0c31798c323489b8da42e8c8864ab6df9e0c80ae40c61c0a61",
+      "retained_original_log_members": 76,
+      "provider_log_member_digests_sha256": "7041e0ed63d3db929edd4d155bcbf830cdde8c12ac9880bc781e0b282dc0efb0",
+      "url": "https://github.com/mjgolaszewski/AgentBus/actions/runs/39208948518"
+    },
+    {
+      "authority": false,
+      "status": "authenticated_unmatched_observation",
+      "run_id": 39209447366,
+      "commit": "7d17594330aca231c9f74723d773594087dbd651",
+      "tree": "ed0e81ac2a48a6e06d9a79b7f9286cca1dffca39",
+      "pipeline": "pr",
+      "protected_workflow_context": "ordinary PR progress, including main push expression; not exact-main certification",
+      "elapsed_ms": 295000,
+      "execution_union_ms": 289000,
+      "execution_sum_ms": 541000,
+      "uncovered_ms": 6000,
+      "cpu_ms": "unknown",
+      "strict_validation": true,
+      "matched_cohort": false,
+      "percentile_claim": false,
+      "approved_targets": false,
+      "capture_sha256": "557711681eb37a38ae898f0e18e529764857e35cf4fedef928b52aa460861027",
+      "provider_log_zip_sha256": "680c40e3b0b35a2b4eff10619e76ea630002aa6a38b013d6945203b8944fa1c5",
+      "retained_original_log_members": 76,
+      "provider_log_member_digests_sha256": "935a9fbb73747a8a7698fdbfff07518586cea5137588476120f67f961ff12fb3",
+      "url": "https://github.com/mjgolaszewski/AgentBus/actions/runs/39209447366"
+    }
+  ],
+  "additional_observation_limits": "Identical source tree ed0e81ac, distinct commits/events and provider contexts; no frozen matched cohorts or approved target/percentile claims. Protected workflow selects PR progress for each. Exact attempt endpoint and original ZIP/member hashes retained."
 }
