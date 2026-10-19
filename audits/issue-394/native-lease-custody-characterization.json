@@ -211,7 +211,21 @@
     "implementation_tree": "c266d9ce405e1718de867110514a47310c23d63d",
     "focused_custody_cases_passed": 21,
     "original_namespace_case_rerun": false,
-    "original_preflight_compatibility": "pending",
+    "original_preflight_compatibility": {
+      "subject": "b8e7daf9c087c0f7e8f18d23fefcb7be499ba1d9",
+      "tree": "f1ec00c0608ff7aeb018903c19588947341246dc",
+      "canonical_manifest_cases_passed": 100,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "terminal_quiescence_eof_and_supervisor_reap": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "9242bb3485db50f4130c2656ce1df7351b55dca20123a84df4c9f75a61e455f8",
+        "operation.json": "fc5bbe2f81044a3a92cb681eec20a321d2389cba78b31f4176f47fe6a9a4855a",
+        "cases.xml": "90bec07cce56397988f72d249bc862e69d598ebc9ee91403d9c91f3a010bda9b"
+      }
+    },
     "canonical_projections": {
       "owner": ".github/scripts/build_pack_manifest.py",
       "generator_check": "passed",
@@ -227,5 +241,43 @@
       "cases.xml": "ffea3e94b56d35b0061e450d3768b5ed2a93ebde32589023bc5c98088670f891"
     },
     "original_preflight_manifest_population": 100
+  },
+  "updated_structural_qualification": {
+    "authority": false,
+    "source": "b8e7daf9c087c0f7e8f18d23fefcb7be499ba1d9",
+    "tree": "f1ec00c0608ff7aeb018903c19588947341246dc",
+    "architecture_cases": 6,
+    "semantic_observations": 21,
+    "gates": [
+      "lint",
+      "existing_compile_gate",
+      "governance"
+    ],
+    "not_type_soundness": true,
+    "q_eof_reap": true,
+    "handles_absent": [
+      378256,
+      378265,
+      378266,
+      382355,
+      382356
+    ],
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "native-lease-b8e7daf9-structural-owned-attempt1/focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-owned-attempt1/focused.stdout": "59e21f9625c1750b4c90894c787e7da1502826db073611714c7f40625234def0",
+      "native-lease-b8e7daf9-structural-owned-attempt1/operation.json": "01a13dbc997450f317412f575cd850f91b30c11c527a3371761c8686d45b317b",
+      "native-lease-b8e7daf9-structural-attempt1/architecture.stdout": "96382e5d54c504b5dd019f828802c98d82e74ea87de9ce40b3c11704fa3262bd",
+      "native-lease-b8e7daf9-structural-attempt1/architecture.xml": "73a527c9b0f612d014433afd144ab7ce52a34bb12ba1ddcd72a7b1bb01c0876f",
+      "native-lease-b8e7daf9-structural-attempt1/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "native-lease-b8e7daf9-structural-attempt1/report.json": "b36aac6c9cd66046f0df3c77cdc90f15d50e9a7e5b7a1060319369c5b4cf7b2d",
+      "native-lease-b8e7daf9-structural-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-b8e7daf9-structural-attempt1/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f"
+    }
   }
 }
