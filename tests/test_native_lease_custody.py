@@ -573,3 +573,80 @@ if {consumer!r}=='interpreter-identity':
         else:
             assert preflight._interpreter_identity(binary)["executable"] == str(binary)
     assert not _busy(lease_path)
+
+
+
+def test_bound_native_input_cannot_be_modified_by_command(lease_path: Path) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+
+    program = """
+import errno,os,sys
+try:
+    os.write(0,b'changed')
+except OSError as error:
+    assert error.errno in (errno.EPERM,errno.EBADF)
+else:
+    raise AssertionError('command mutated its supplied input')
+assert sys.stdin.buffer.read()==b'original input'
+print('input unchanged')
+"""
+    with local_gate_lease("2" * 40):
+        result = run_admitted_command(
+            [sys.executable, "-I", "-c", program], capture_output=True,
+            input=b"original input", timeout=5, check=True,
+        )
+        assert result.stdout == b"input unchanged\n"
+    assert not _busy(lease_path)
+
+
+def test_native_stdin_custody_survives_fatal_parent_interruption(
+    lease_path: Path, tmp_path: Path,
+) -> None:
+    from bcf_governance.tooling import local_execution_admission
+
+    runtime_root = Path(local_execution_admission.__file__).resolve().parents[2]
+    marker = tmp_path / "stdin-owner-ready.json"
+    command = (
+        "import json,os,sys,time; from pathlib import Path; "
+        "assert sys.stdin.buffer.read()==b'stdin custody'; "
+        "s=os.fstat(0); target=Path(sys.argv[1]); staged=target.with_suffix('.new'); "
+        "staged.write_text(json.dumps([os.getppid(),os.getpid(),s.st_dev,s.st_ino])); "
+        "staged.replace(target); time.sleep(15)"
+    )
+    worker = """
+import os,sys
+sys.path.insert(0,sys.argv[1])
+from bcf_governance.tooling.local_execution_admission import local_gate_lease
+from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+with local_gate_lease('1'*40):
+    run_admitted_command([sys.executable,'-I','-c',sys.argv[3],sys.argv[2]],
+        capture_output=True,input=b'stdin custody',timeout=10)
+"""
+    owner = subprocess.Popen(
+        [sys.executable, "-I", "-c", worker, str(runtime_root), str(marker), command],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    guardian = None
+    try:
+        _wait_for(marker.exists)
+        guardian, child, device, inode = json.loads(marker.read_text())
+        inherited = []
+        for entry in Path('/proc', str(guardian), 'fd').iterdir():
+            try: identity = entry.stat()
+            except FileNotFoundError: continue
+            if (identity.st_dev, identity.st_ino) == (device, inode):
+                inherited.append(entry.name)
+        assert inherited, "guardian must retain the actual supplied input"
+        os.kill(guardian, signal.SIGSTOP)
+        _wait_for(lambda: Path('/proc', str(guardian), 'stat').read_text().split()[2] == 'T')
+        owner.kill()
+        _wait_for(lambda: owner.poll() is not None)
+        assert Path('/proc', str(child)).exists()
+        assert _busy(lease_path), "fatal parent death released live stdin command capacity"
+    finally:
+        if guardian is not None:
+            os.kill(guardian, signal.SIGCONT)
+        if owner.poll() is None:
+            owner.kill()
+        owner.communicate(timeout=5)
+        _wait_for(lambda: not _busy(lease_path))
