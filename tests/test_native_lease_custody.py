@@ -87,7 +87,7 @@ def test_git_authority_stdin_has_real_native_custody(
     with local_gate_lease("8" * 40):
         identity = lease_path.stat()
         binary.write_text(f"""#!{sys.executable}
-import os,sys
+import json,os,sys
 from pathlib import Path
 parent=Path('/proc',str(os.getppid()))
 expected=({identity.st_dev},{identity.st_ino})
@@ -98,7 +98,10 @@ def has_lease(root):
         if (value.st_dev,value.st_ino)==expected: return True
     return False
 owned={str(Path(evidence_process_supervisor.__file__).resolve())!r}.encode() in (parent/'cmdline').read_bytes().split(bytes([0]))
-if not owned or not has_lease(parent) or has_lease(Path('/proc/self')):
+parent_lease=has_lease(parent)
+command_lease=has_lease(Path('/proc/self'))
+Path({str(tmp_path / 'git-custody-observation.json')!r}).write_text(json.dumps(dict(guardian=owned,parent_lease=parent_lease,command_lease=command_lease)))
+if not owned or not parent_lease or command_lease:
     print('git-stdin-native-owner-bypassed',file=sys.stderr)
     sys.exit(23)
 os.execv({git!r},[{git!r},*sys.argv[1:]])
@@ -106,7 +109,12 @@ os.execv({git!r},[{git!r},*sys.argv[1:]])
         binary.chmod(0o700)
         monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
         owner = ci_authority_pins if consumer == "workflow-authority" else reconcile_authority_transition
-        actual = owner._git(tmp_path, "hash-object", "--stdin", input_bytes=payload)
+        try:
+            actual = owner._git(tmp_path, "hash-object", "--stdin", input_bytes=payload)
+        finally:
+            observation = tmp_path / "git-custody-observation.json"
+            assert observation.is_file(), "real Git fixture never observed its native parent"
+            print("real Git custody observation:", observation.read_text())
         assert actual.strip() == expected.encode()
     assert not _busy(lease_path)
 
