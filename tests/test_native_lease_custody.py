@@ -2,11 +2,14 @@
 from __future__ import annotations
 
 import fcntl
+import json
 import os
 from pathlib import Path
 import select
+import signal
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -133,3 +136,64 @@ sys.exit(0 if found else 23)
         assert result.stdout == "guardian-owns-lease\n"
         assert _busy(lease_path)
     assert not _busy(lease_path)
+
+
+def _wait_for(predicate, seconds: float = 5) -> None:
+    deadline = time.monotonic() + seconds
+    while not predicate():
+        assert time.monotonic() < deadline, "real-process fixture readiness timed out"
+        time.sleep(0.01)
+
+
+@pytest.mark.parametrize("interruption", [signal.SIGINT, signal.SIGTERM, signal.SIGKILL])
+def test_native_guardian_retains_lease_after_parent_interruption(
+    lease_path: Path, tmp_path: Path, interruption: int,
+) -> None:
+    from bcf_governance.tooling import local_execution_admission
+
+    marker = tmp_path / "command-ready.json"
+    runtime_root = Path(local_execution_admission.__file__).resolve().parents[2]
+    command = (
+        "import json,os,sys,time; "
+        "from pathlib import Path; "
+        "Path(sys.argv[1]).write_text(json.dumps([os.getppid(),os.getpid()])); "
+        "time.sleep(15)"
+    )
+    worker = """
+import sys
+sys.path.insert(0, sys.argv[1])
+from bcf_governance.tooling.local_execution_admission import local_gate_lease
+from bcf_governance.tooling.evidence_process_supervisor import run_owned_command
+import os
+with local_gate_lease('d' * 40):
+    run_owned_command([sys.executable, '-I', '-c', sys.argv[3], sys.argv[2]],
+                      cwd=os.getcwd(), env=os.environ.copy(),
+                      timeout_seconds=10, cleanup_seconds=2)
+"""
+    owner = subprocess.Popen(
+        [sys.executable, "-I", "-c", worker, str(runtime_root), str(marker), command],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    guardian = None
+    try:
+        _wait_for(marker.exists)
+        guardian, child = json.loads(marker.read_text())
+        assert Path('/proc', str(child)).exists(), "command must be live before interruption"
+        assert _busy(lease_path), "worker must actually hold its acquired lease"
+        # Freeze the known guardian to make parent death precede child cleanup.
+        # This does not alter the lease or grant another native allocation.
+        os.kill(guardian, signal.SIGSTOP)
+        _wait_for(lambda: Path('/proc', str(guardian), 'stat').read_text().split()[2] == 'T')
+        owner.send_signal(interruption)
+        _wait_for(lambda: owner.poll() is not None)
+        assert Path('/proc', str(child)).exists(), "live child is the custody subject"
+        assert _busy(lease_path), "parent interruption released capacity before child cleanup"
+    finally:
+        if guardian is not None:
+            os.kill(guardian, signal.SIGCONT)
+        if owner.poll() is None:
+            owner.kill()
+        owner.communicate(timeout=5)
+        # Resumed guardian observes the dead parent's channel and owns cleanup.
+        # Do not kill or unlock it to make this assertion pass.
+        _wait_for(lambda: not _busy(lease_path))
