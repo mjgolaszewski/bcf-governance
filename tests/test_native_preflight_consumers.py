@@ -124,3 +124,81 @@ def test_distribution_inventory_never_executes_repository_fsmonitor(tmp_path, co
     assert subprocess.check_output(
         ['git', '-C', str(repo), 'config', '--get', 'core.fsmonitor'], text=True,
     ).strip() == str(monitor)
+
+
+def _committed_repository(root):
+    root.mkdir()
+    _fixture(root, coverage=True, program="raise AssertionError('candidate evaluator ran')\n")
+    subprocess.run(
+        ['git', '-C', str(root), '-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false',
+         '-c', 'user.name=Custody fixture', '-c', 'user.email=custody@example.invalid',
+         'commit', '-qm', 'exact fixture'], check=True,
+    )
+    return subprocess.check_output(['git', '-C', str(root), 'rev-parse', 'HEAD'], text=True).strip()
+
+
+def _repository_query(root, consumer, commit, monkeypatch):
+    from bcf_governance.tooling.governance_validation import (
+        ci_state_matrix, preflight_repository_context as context,
+    )
+    if consumer == 'value':
+        assert context.git_value(root, 'status', '--porcelain=v1', '--untracked-files=all') == ''
+    elif consumer == 'files':
+        assert len(context.tracked_files(root)) == 5
+    elif consumer == 'state':
+        observed = context.git_state(root)
+        assert observed['commit_sha'] == commit and len(observed['tree_sha']) == 40
+    elif consumer == 'comparison':
+        for key, value in {
+            'BCF_PROVIDER_EVENT': 'pull_request', 'GITHUB_EVENT_NAME': 'pull_request',
+            'BCF_INVOCATION_KIND': 'direct_event', 'BCF_COMPARISON_BASE_SHA': commit,
+            'BCF_ORIGIN_COMPARISON_BASE_SHA': commit, 'BCF_PR_BASE_SHA': commit,
+            'BCF_CALLER_COMPARISON_BASE_SHA': '',
+        }.items():
+            monkeypatch.setenv(key, value)
+        observed = context.pr_context(root, 'pr')
+        assert observed['applicable'] and observed['base_sha'] == commit
+    else:
+        assert consumer == 'matrix'
+        assert ci_state_matrix._git(root, 'diff', '--name-only', commit, '--') == ''
+
+
+@pytest.mark.parametrize('consumer,count', [('value', 1), ('files', 1), ('state', 4),
+                                           ('comparison', 2), ('matrix', 1)])
+def test_repository_context_queries_have_actual_guardian_and_descriptor(
+    lease_path, tmp_path, monkeypatch, consumer, count,
+):
+    repo = tmp_path / 'project'
+    commit = _committed_repository(repo)
+    # First prove the same real query works in its ordinary unbound context.
+    _repository_query(repo, consumer, commit, monkeypatch)
+    executable = Path(shutil.which('git'))
+    observations = tmp_path / 'repository-custody.jsonl'
+    with local_gate_lease('c' * 40):
+        _observed_executable(tmp_path / 'git', executable, lease_path.stat(), observations)
+        monkeypatch.setenv('PATH', str(tmp_path) + os.pathsep + os.environ['PATH'])
+        try:
+            _repository_query(repo, consumer, commit, monkeypatch)
+        finally:
+            assert observations.is_file(), 'repository query allocated no observed Git process'
+            records = [json.loads(line) for line in observations.read_text().splitlines()]
+            assert records == [dict(guardian=True, parent_lease=True, command_lease=False)] * count, (
+                'repository context bypassed actual guardian descriptor custody', records,
+            )
+    assert not _busy(lease_path)
+
+
+@pytest.mark.parametrize('consumer', ['value', 'files', 'state', 'matrix'])
+def test_repository_context_queries_never_execute_configured_fsmonitor(tmp_path, monkeypatch, consumer):
+    repo = tmp_path / 'project'
+    commit = _committed_repository(repo)
+    marker = tmp_path / 'candidate-program-executed'
+    monitor = tmp_path / 'candidate-fsmonitor'
+    monitor.write_text('#!/bin/sh\ntouch "' + str(marker) + '"\nprintf "token\\0"\n')
+    monitor.chmod(0o700)
+    subprocess.run(['git', '-C', str(repo), 'config', 'core.fsmonitor', str(monitor)], check=True)
+    _repository_query(repo, consumer, commit, monkeypatch)
+    assert not marker.exists(), 'repository preflight executed candidate Git configuration'
+    assert subprocess.check_output(
+        ['git', '-C', str(repo), 'config', '--get', 'core.fsmonitor'], text=True,
+    ).strip() == str(monitor)
