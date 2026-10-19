@@ -378,3 +378,23 @@ for entry in Path('/proc/self/fd').iterdir():
         assert not _busy(lease_path)
     finally:
         retire_execution_state(second)
+
+
+@pytest.mark.parametrize("timeout", [float("nan"), float("inf"), float("-inf"), True, 0, -1])
+def test_invalid_native_timeout_rejects_before_command_allocation(
+    lease_path: Path, tmp_path: Path, timeout,
+) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import (
+        OwnedProcessError, run_admitted_command,
+    )
+
+    marker = tmp_path / "invalid-timeout-allocated-command"
+    program = "from pathlib import Path; import sys; Path(sys.argv[1]).touch()"
+    with local_gate_lease("6" * 40):
+        with pytest.raises(OwnedProcessError, match="timeout"):
+            run_admitted_command(
+                [sys.executable, "-I", "-c", program, str(marker)],
+                cwd=tmp_path, capture_output=True, text=True, timeout=timeout,
+            )
+        assert not marker.exists(), "invalid native deadline allocated its command"
+    assert not _busy(lease_path)
