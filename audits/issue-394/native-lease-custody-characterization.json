@@ -255,13 +255,7 @@
     ],
     "not_type_soundness": true,
     "q_eof_reap": true,
-    "handles_absent": [
-      378256,
-      378265,
-      378266,
-      382355,
-      382356
-    ],
+    "recorded_handles_confirmed_absent": true,
     "fresh_original_fence": true,
     "raw_sha256": {
       "native-lease-b8e7daf9-structural-owned-attempt1/focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -290,11 +284,7 @@
       "already_rejected_invalid_controls": 3,
       "fixture_errors": 0,
       "q_eof_reap": true,
-      "handles_absent": [
-        388810,
-        388818,
-        388819
-      ],
+      "recorded_handles_confirmed_absent": true,
       "fresh_original_fence": true,
       "raw_sha256": {
         "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -317,11 +307,7 @@
       "stdin_cases_included": 12,
       "original_namespace_case_unchanged": true,
       "q_eof_reap": true,
-      "handles_absent": [
-        394929,
-        394937,
-        394938
-      ],
+      "recorded_handles_confirmed_absent": true,
       "fresh_original_fence": true,
       "raw_sha256": {
         "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -335,8 +321,9 @@
     "additional_controls": {
       "subject": "5a2007e0",
       "count": 2,
-      "scope": "Input mutation refusal and actual stdin lifetime across fatal parent death",
-      "status": "authored_unrun"
+      "scope": "Actual command mutation refusal and sealed stdin lifetime during fatal parent death; both passed within exact539 suite.",
+      "status": "passed",
+      "qualified_subject": "c63dcdd441289b20bdff13f26d230def18d4b434"
     },
     "canonical_projection": {
       "owner": ".github/scripts/build_pack_manifest.py",
@@ -344,8 +331,50 @@
       "exact_template_copies": 6,
       "scope": "Three canonical modules in both template copies; manifest generation only; installed qualification remains pending"
     },
-    "original_authority_reconciliation_consumers": "pending",
+    "original_authority_reconciliation_consumers": "Selected17module539-case matrix passed at c63dcdd4; full independently complete consumer/runtime population remains open.",
     "installed_qualification": false,
     "complete_native_population": false
+  },
+  "expanded_consumer_qualification": {
+    "authority": false,
+    "source": "c63dcdd441289b20bdff13f26d230def18d4b434",
+    "tree": "d585f082deb8efd7062b5caf30c423fdc271b668",
+    "exact_cases_passed": 539,
+    "original_manifest_cases": 504,
+    "native_cases": 35,
+    "modules": 17,
+    "immutable_input_and_fatal_stdin_parent_controls_passed": true,
+    "original_namespace_control_passed": true,
+    "q_eof_reap": true,
+    "recorded_handles_confirmed_absent": true,
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "focused.stdout": "4ca7622a219b5d5ae8b4b6c566b8d62737d8a0ff8009f0e7edc457545df5f9d0",
+      "operation.json": "af0564e721d8e923c9bad8d2280a5a8722d7fc051f6626ef3101b428926ec7a5",
+      "cases.xml": "37738e2a66aa5428ad8df0745f270f2b8815ba8cd54b2c52035eb40f31c39de7"
+    },
+    "full_runtime_population_or_installed_claim": false
+  },
+  "expanded_consumer_previous_partial": {
+    "authority": false,
+    "subject": "b31f54e11dfc856948cdaa0634c9bbed00c6be65",
+    "tree": "19e16b7ea12a0ccf840111e6c59d85ca114d8b90",
+    "exact_population": 463,
+    "passed": 460,
+    "fixture_typeerror_failures": 3,
+    "production_ownership_failures_observed": 0,
+    "native_cases_passed": 35,
+    "original_namespace_control_passed": true,
+    "new_immutable_input_and_fatal_stdin_parent_controls_passed": true,
+    "q_eof_reap": true,
+    "recorded_handles_confirmed_absent": true,
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "focused.stdout": "7d732078a894a3dfd7601fe9c4eca154744ebba032a390673acae0d62bbfa81d",
+      "operation.json": "7047218e36944f6e3c2209009fafb19f969b2a61f550e70030a713dd56a31b47",
+      "cases.xml": "0fe8426a9dfe02c6154360847efd28bace1c34883c13f9c9e7d4d929cd721485"
+    }
   }
 }
