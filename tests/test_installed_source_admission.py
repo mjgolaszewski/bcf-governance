@@ -117,6 +117,7 @@ from _bcf_runtime import evidence_process_supervisor as custody
 from _bcf_runtime.semantic_ownership_inventory import discover_python_source
 from _bcf_runtime import test_manifests, semantic_ownership_typescript as typescript
 from _bcf_runtime.governance_validation import preflight_distribution, source_inventory
+from _bcf_runtime.governance_validation import preflight_repository_context as repository_context, ci_state_matrix
 assert Path(paths.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
 fixture = installed / 'git-discovery-fixture'
 fixture.mkdir()
@@ -139,7 +140,7 @@ for subject in (None, identity):
     result = discover_python_source(fixture, source_subject=subject)
     assert [row['path'] for row in result['files']] == ['source.py']
 assert Path(custody.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
-for module in (test_manifests, typescript, preflight_distribution, source_inventory):
+for module in (test_manifests, typescript, preflight_distribution, source_inventory, repository_context, ci_state_matrix):
     assert Path(module.__file__).resolve().is_relative_to(installed / 'scripts/_bcf_runtime')
 project_python = Path(sys.argv[1])
 engine = json.loads(sys.argv[2])
@@ -163,6 +164,18 @@ subprocess.run(['git', '-C', str(distribution), 'config', 'core.fsmonitor', str(
 collection = installed / 'native-collection-fixture'
 collection.mkdir()
 (collection / 'test_value.py').write_text("def test_value():"+chr(10)+"    raise AssertionError('collection ran test body')"+chr(10))
+def repository_queries():
+    assert repository_context.git_value(fixture, 'status', '--porcelain=v1', '--untracked-files=all') == ''
+    assert repository_context.tracked_files(fixture) == [fixture / 'source.py']
+    observed = repository_context.git_state(fixture)
+    assert observed['commit_sha'] == identity['commit_sha'] and observed['tree_sha'] == identity['tree_sha']
+    os.environ.update(BCF_PROVIDER_EVENT='pull_request', GITHUB_EVENT_NAME='pull_request',
+        BCF_INVOCATION_KIND='direct_event', BCF_COMPARISON_BASE_SHA=identity['commit_sha'],
+        BCF_ORIGIN_COMPARISON_BASE_SHA=identity['commit_sha'], BCF_PR_BASE_SHA=identity['commit_sha'],
+        BCF_CALLER_COMPARISON_BASE_SHA='')
+    assert repository_context.pr_context(fixture, 'pr')['base_sha'] == identity['commit_sha']
+    assert ci_state_matrix._git(fixture, 'diff', '--name-only', identity['commit_sha'], '--') == ''
+repository_queries()
 guardians = []
 receive = custody._receive
 descriptor = os.open(installed / 'native-reader-lease', os.O_RDWR | os.O_CREAT | os.O_EXCL, 0o600)
@@ -187,15 +200,16 @@ try:
         assert typed['compiler_version'] == '6.0.3'
         assert any(row['symbol'] == 'src/value.ts::value' for row in typed['functions'])
         assert len(source_inventory.tracked_source_inventory(distribution)) == 5
+        repository_queries()
 finally:
     os.close(descriptor)
-assert len(guardians) == 8 and all(not Path('/proc', str(pid)).exists() for pid in guardians)
+assert len(guardians) == 17 and all(not Path('/proc', str(pid)).exists() for pid in guardians)
 assert not marker.exists(), 'installed source discovery executed candidate fsmonitor'
 assert git('config', '--get', 'core.fsmonitor') == str(monitor)
 assert not any(name.startswith('bcf_governance') for name in sys.modules)
 print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
                   'consumers': 3, 'fsmonitor_not_executed': True,
-                  'bound_preflight_guardians_verified_and_reaped': 8,
+                  'bound_preflight_guardians_verified_and_reaped': 17,
                   'repository_configuration_preserved': True}, sort_keys=True))
 '''
     compile(code, 'installed-semantic-git-discovery', 'exec')
@@ -207,6 +221,6 @@ print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
     assert json.loads(result.stdout) == {
         'source_sdk_absent': True, 'private_origin_verified': True,
         'consumers': 3, 'fsmonitor_not_executed': True,
-        'bound_preflight_guardians_verified_and_reaped': 8,
+        'bound_preflight_guardians_verified_and_reaped': 17,
         'repository_configuration_preserved': True,
     }

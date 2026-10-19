@@ -159,7 +159,7 @@ preflight_runtime_consumer_custody:
   limits: Bound launchers and the proven standalone Git program defect only; complete lifecycle/native/deadline populations and combined distributions/adopters remain open.
 
 preflight_repository_context_custody:
-  bounded_context: governance_validation
+  bounded_context: validation
   architectural_layer: tooling
   operation_side: query
   source_baseline: 7fcc66150f74b5323247abf3ac7ca2bab33af508
