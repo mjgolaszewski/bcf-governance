@@ -329,3 +329,50 @@ def test_bound_native_runner_preserves_timeout_exception(lease_path: Path) -> No
                  cwd=lease_path.parent, timeout=0.1)
         assert _busy(lease_path)
     assert not _busy(lease_path)
+
+
+def test_native_supervisor_retains_every_enclosing_lease(
+    lease_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_owned_command
+
+    second = allocate_execution_state(
+        tmp_path, _runtime_contract(), session_id=tmp_path.name + "-nested",
+        workload_id="native-custody-control", execution_id="nested", invocation={},
+    )
+    inner = Path(f"/tmp/bcf-local-gate-{os.getuid()}-{second.namespace}.lock")
+    program = """
+import json,os,sys
+from pathlib import Path
+expected = {tuple(row) for row in json.loads(sys.argv[1])}
+observed = set()
+for entry in Path('/proc', str(os.getppid()), 'fd').iterdir():
+    try:
+        value = entry.stat()
+    except FileNotFoundError:
+        continue
+    observed.add((value.st_dev, value.st_ino))
+assert expected.issubset(observed), 'guardian omitted an enclosing acquired lease'
+for entry in Path('/proc/self/fd').iterdir():
+    try:
+        value = entry.stat()
+    except FileNotFoundError:
+        continue
+    assert (value.st_dev, value.st_ino) not in expected, 'command leaked the guardian lease'
+"""
+    try:
+        with local_gate_lease("4" * 40):
+            for name, value in second.environment().items():
+                monkeypatch.setenv(name, value)
+            with local_gate_lease("5" * 40):
+                identities = [[p.stat().st_dev, p.stat().st_ino] for p in [lease_path, inner]]
+                result = run_owned_command(
+                    [sys.executable, "-I", "-c", program, json.dumps(identities)],
+                    cwd=tmp_path, env=os.environ.copy(), timeout_seconds=5, cleanup_seconds=2,
+                )
+                assert result.returncode == 0, result.stdout + result.stderr
+            assert not _busy(inner)
+            assert _busy(lease_path)
+        assert not _busy(lease_path)
+    finally:
+        retire_execution_state(second)
