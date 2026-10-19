@@ -152,6 +152,7 @@ preflight_runtime_consumer_custody:
   - Preserve ordinary unbound runners, selected executables, arguments, environment isolation, exact outputs, existing 300-second collection/compiler ceilings and diagnostic/error classes.
   - Inherit existing lease body/cleanup bounds; keep all authored rejection checks before child allocation and add no timeout family or scheduler.
   - The standalone source inventory reader must disable Git hooks and fsmonitor per invocation without importing the framework SDK into its isolated project interpreter or mutating repository configuration.
+  - When the source inventory owner is imported as an SDK/private-runtime module, its direct Git query must also consume an active lease through the existing admitted port. Standalone execution retains its SDK-free interpreter and is owned by the enclosing distribution guardian when bound.
   - Use actual protected source-inventory execution, pytest collection and the existing offline locked Node/TypeScript compiler in failing and passing guardian-descriptor controls; doubles cannot qualify these runtime paths.
   - Retain source and installed fresh/upgrade cause-specific failures, then qualify canonical mirrors, original affected consumers and required architecture/semantic/governance checks.
   forbidden: [new dependency or network bootstrap, immutable predecessor tool mutation, generated workflow or authority edits, candidate-supplied evaluator, new broker or receipt, whole population or performance closure from this bounded repair]
