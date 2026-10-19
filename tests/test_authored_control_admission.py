@@ -409,3 +409,24 @@ def test_submit_cli_valid_provider_configuration_keeps_environment_selection(tmp
     monkeypatch.setattr(cli, 'ensure_local_project_python', selected)
     with pytest.raises(EnvironmentSelected, match='valid provider configuration reached environment selection'):
         cli.main(['submit', '--repo-root', str(tmp_path)])
+
+
+@pytest.mark.parametrize('kind', ['directory', 'dangling_symlink'])
+def test_submit_cli_existing_malformed_phase_ledger_rejects_before_environment(tmp_path, monkeypatch, kind):
+    from tests.test_validate_governance_yaml import _instantiate_fixture_repo
+
+    root = _instantiate_fixture_repo(tmp_path, 'valid_repo')
+    control_root(root)
+    # Establish the complete current phase contract before one type mutation.
+    submit.validate_authored_phase_state(root)
+    ledger = root / 'plans/phase-ledger.yml'
+    ledger.unlink()
+    if kind == 'directory':
+        ledger.mkdir()
+    else:
+        ledger.symlink_to('missing-ledger.yml')
+    cli = _prepare_submit_frontdoor(monkeypatch)
+    monkeypatch.setattr(cli, 'ensure_local_project_python',
+        lambda *_a, **_k: pytest.fail('environment selected before malformed phase-ledger rejection'))
+    with pytest.raises(SystemExit, match='cannot read authored phase state'):
+        cli.main(['submit', '--repo-root', str(root)])
