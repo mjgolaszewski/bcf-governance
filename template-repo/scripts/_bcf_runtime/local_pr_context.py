@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+from .evidence_process_supervisor import run_admitted_command
 import tempfile
 import time
 from typing import Any, Callable, Iterator, Mapping
@@ -119,7 +120,7 @@ def derive_local_validation_lane(
 
 
 def _run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, check=False, capture_output=True, text=True, **kwargs)
+    return run_admitted_command(command, check=False, capture_output=True, text=True, **kwargs)
 
 
 def _checked(runner: Runner, command: list[str], *, cwd: Path) -> str:

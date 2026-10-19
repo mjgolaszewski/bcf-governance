@@ -1,6 +1,7 @@
 """Ephemeral Linux child-tree custody for one evidence command, not a scheduler."""
 from __future__ import annotations
 
+from contextlib import contextmanager
 import ctypes
 import json
 import locale
@@ -12,10 +13,66 @@ import socket
 import subprocess
 import sys
 import time
+import threading
 
 
 class OwnedProcessError(RuntimeError):
     """Kernel child custody or its terminal observation is unresolved."""
+
+
+_native_lease = None
+_native_lease_binding = threading.RLock()
+
+
+@contextmanager
+def native_lease_custody(descriptor, *, timeout_seconds, cleanup_seconds):
+    """Bind the acquired lease to native commands in this invoking thread."""
+    global _native_lease
+    if not _native_lease_binding.acquire(blocking=False):
+        raise OwnedProcessError('native lease binding is already active in this process')
+    previous = _native_lease
+    try:
+        identity = os.fstat(descriptor)
+        _native_lease = (descriptor, threading.get_ident(), identity.st_dev, identity.st_ino, previous, timeout_seconds, cleanup_seconds)
+        yield
+    finally:
+        _native_lease = previous
+        _native_lease_binding.release()
+
+
+def run_admitted_command(command, *, unbound_runner=None, **kwargs):
+    """Use existing native custody when bound; preserve ordinary unbound runners."""
+    lease = _native_lease
+    if lease is None:
+        runner = subprocess.run if unbound_runner is None else unbound_runner
+        return runner(command, **kwargs)
+    if lease[1] != threading.get_ident():
+        raise OwnedProcessError('native command cannot consume another thread native lease')
+    options = dict(kwargs)
+    check = options.pop('check', False)
+    capture = options.pop('capture_output', False)
+    text = options.pop('text', False)
+    cwd = options.pop('cwd', None)
+    env = options.pop('env', None)
+    timeout = options.pop('timeout', None)
+    if options or capture is not True or type(text) is not bool or type(check) is not bool:
+        raise OwnedProcessError('bound native invocation options require explicit custody support')
+    body = lease[5]
+    cleanup = lease[6]
+    while lease[4] is not None:
+        lease = lease[4]
+        body = min(body, lease[5])
+        cleanup = min(cleanup, lease[6])
+    if timeout is not None:
+        if isinstance(timeout, bool) or not isinstance(timeout, (int, float)) or timeout <= 0:
+            raise OwnedProcessError('bound native timeout must be positive seconds')
+        body = min(body, timeout)
+    result = run_owned_command(command, cwd=cwd, env=env, timeout_seconds=body,
+                               cleanup_seconds=cleanup, text=text,
+                               timeout_raises=True, raise_launch_errors=True)
+    if check:
+        result.check_returncode()
+    return result
 
 
 def _send(connection, value):
@@ -92,8 +149,18 @@ def _observe(process, connection, selector, buffers, deadline):
                 terminal = _terminal_result(json.loads(line), process.pid)
 
 
-def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
+def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
+                      text=True, timeout_raises=False, raise_launch_errors=False):
     """Hold the supervisor unreaped until its child proof and both output EOFs."""
+    lease = _native_lease
+    if lease is not None and lease[1] != threading.get_ident():
+        raise OwnedProcessError('native command cannot consume another thread native lease')
+    leases = []
+    while lease is not None:
+        leases.append([lease[0], lease[2], lease[3]])
+        lease = lease[4]
+    lease_arguments = [str(value) for binding in leases for value in binding]
+    inherited_descriptors = tuple(binding[0] for binding in leases)
     start = time.monotonic()
     body_deadline = start + timeout_seconds
     connection, inherited = socket.socketpair()
@@ -104,17 +171,22 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
         try:
             process = subprocess.Popen(
                 [sys.executable, '-I', str(Path(__file__).resolve()), str(inherited.fileno()),
-                 str(body_deadline), str(cleanup_seconds)],
-                cwd=cwd, env=env, pass_fds=(inherited.fileno(),),
+                 str(body_deadline), str(cleanup_seconds), *lease_arguments],
+                cwd=cwd, env=env, pass_fds=(inherited.fileno(), *inherited_descriptors),
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, start_new_session=True,
             )
         except OSError as exc:
+            if raise_launch_errors:
+                raise
             return subprocess.CompletedProcess(command, 126, '',
                 f'bcf execution infrastructure failure: {exc}')
         inherited.close()
         ready = _receive(connection, body_deadline)
+        expected_ready = {'type': 'ready', 'supervisor_pid': process.pid}
+        if leases:
+            expected_ready['native_leases'] = leases
         if (not isinstance(ready, dict) or type(ready.get('supervisor_pid')) is not int
-                or ready != {'type': 'ready', 'supervisor_pid': process.pid}):
+                or ready != expected_ready):
             raise OwnedProcessError('child supervisor could not establish exclusive custody')
         _send(connection, {'command': command})
         connection.setblocking(False)
@@ -142,20 +214,36 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds):
                     raise OwnedProcessError('interrupted child cleanup remains unresolved') from exc
                 raise
         if result['reason'] == 'launch-error':
+            if raise_launch_errors:
+                number, detail, filename = result.get('errno'), result.get('strerror'), result.get('filename')
+                if (type(number) is not int or number <= 0 or not isinstance(detail, str)
+                        or (filename is not None and not isinstance(filename, str))):
+                    raise OwnedProcessError('typed failed-exec facts are missing or contradictory')
+                raise OSError(number, detail, filename)
             return subprocess.CompletedProcess(command, 126, '',
                 'bcf execution infrastructure failure: ' + result['detail'])
+        if result['reason'] == 'timeout' and timeout_raises:
+            raise subprocess.TimeoutExpired(command, timeout_seconds,
+                output=b''.join(buffers['stdout']), stderr=b''.join(buffers['stderr']))
         if result['reason'] != 'exit':
             reason = {'timeout': 'command timed out', 'descendants': 'command left live descendants',
                       'cancelled': 'command was interrupted'}[result['reason']]
             return subprocess.CompletedProcess(command, 126, '',
                 'bcf execution infrastructure failure: ' + reason)
         # Match subprocess text-mode decoding and universal newline semantics.
+        if not text:
+            return subprocess.CompletedProcess(command, result['returncode'],
+                *[b''.join(buffers[name]) for name in ('stdout', 'stderr')])
         encoding = 'utf-8' if sys.flags.utf8_mode else locale.getencoding()
         output = [b''.join(buffers[name]).decode(encoding).replace('\r\n', '\n').replace('\r', '\n')
                   for name in ('stdout', 'stderr')]
         return subprocess.CompletedProcess(command, result['returncode'], *output)
-    except OwnedProcessError:
+    except (OwnedProcessError, subprocess.TimeoutExpired):
         raise
+    except OSError as exc:
+        if raise_launch_errors and (quiescent or process is None):
+            raise
+        raise OwnedProcessError('child cleanup could not be authenticated') from exc
     except UnicodeError as exc:
         if quiescent:
             raise
@@ -213,9 +301,16 @@ def _kill_owned_children():
             pass
 
 
-def _supervise(connection, body_deadline, cleanup_seconds):
+def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
     _subreaper()
-    _send(connection, {'type': 'ready', 'supervisor_pid': os.getpid()})
+    ready = {'type': 'ready', 'supervisor_pid': os.getpid()}
+    for descriptor, device, inode in native_leases:
+        identity = os.fstat(descriptor)
+        if (identity.st_dev, identity.st_ino) != (device, inode):
+            raise OwnedProcessError('inherited native lease identity is contradictory')
+    if native_leases:
+        ready['native_leases'] = [list(binding) for binding in native_leases]
+    _send(connection, ready)
     request = _receive(connection, body_deadline)
     command = request['command']
     if not isinstance(command, list) or not command or not all(isinstance(x, str) for x in command):
@@ -230,7 +325,8 @@ def _supervise(connection, body_deadline, cleanup_seconds):
         except ChildProcessError:
             _send(connection, {'type': 'not-started', 'supervisor_pid': os.getpid(),
                 'command_pid': None, 'quiescent': True, 'returncode': 126,
-                'reason': 'launch-error', 'detail': str(exc)})
+                'reason': 'launch-error', 'detail': str(exc),
+                'errno': exc.errno, 'strerror': exc.strerror, 'filename': exc.filename})
             return
         raise OwnedProcessError('failed exec left unresolved child custody') from exc
     connection.setblocking(False)
@@ -268,10 +364,30 @@ def _supervise(connection, body_deadline, cleanup_seconds):
         time.sleep(0.005)
 
 
+def _retain_native_custody():
+    """Observe only: exhausted cleanup grants no further signalling authority."""
+    while True:
+        try:
+            os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG)
+        except ChildProcessError:
+            return
+        except OSError:
+            # An uncertain observation cannot establish an empty child tree.
+            pass
+        time.sleep(0.05)
+
+
 if __name__ == '__main__':
     with socket.socket(fileno=int(sys.argv[1])) as _connection:
         try:
-            _supervise(_connection, float(sys.argv[2]), int(sys.argv[3]))
+            if (len(sys.argv) - 4) % 3:
+                raise OwnedProcessError('inherited native lease binding is incomplete')
+            _leases = tuple(tuple(int(value) for value in sys.argv[offset:offset + 3])
+                            for offset in range(4, len(sys.argv), 3))
+            _supervise(_connection, float(sys.argv[2]), int(sys.argv[3]), _leases)
         except BaseException:
-            # Missing authenticated completion remains unresolved at the caller.
+            # Keep the inherited open-file-description lock until kernel proof
+            # of no owned children. A failed report remains failure at the caller.
+            if len(sys.argv) > 4:
+                _retain_native_custody()
             sys.exit(126)

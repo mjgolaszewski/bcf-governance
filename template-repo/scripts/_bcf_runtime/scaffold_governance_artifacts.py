@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+from .evidence_process_supervisor import run_admitted_command
 import sys
 from typing import Any, Callable, Iterable
 
@@ -266,13 +267,14 @@ class ReconcileStep:
 def _run_reconcile_command(command: list[str], *, repo_root: Path, step_id: str) -> None:
     environment = dict(os.environ)
     environment.pop("PYTHONPATH", None)
-    result = subprocess.run(
+    result = run_admitted_command(
         command,
         cwd=repo_root,
         env=environment,
         capture_output=True,
         text=True,
         check=False,
+        unbound_runner=subprocess.run,
     )
     if result.returncode:
         detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
@@ -586,11 +588,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
 
 
 def _reconcile_snapshot(repo_root: Path) -> str:
-    result = subprocess.run(
+    result = run_admitted_command(
         ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
         cwd=repo_root,
         capture_output=True,
         check=False,
+        unbound_runner=subprocess.run,
     )
     if result.returncode:
         raise ReconcileError("cannot inventory governed repository files")

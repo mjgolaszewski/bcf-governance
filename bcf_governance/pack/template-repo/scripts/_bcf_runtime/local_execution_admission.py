@@ -15,6 +15,8 @@ from typing import Any, Iterator, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+from .evidence_process_supervisor import native_lease_custody, run_admitted_command
+from .ci_graph_timeouts import gate_deadline_contract, LEGACY_GATE_TIMEOUT_SECONDS, LEGACY_GATE_CLEANUP_SECONDS
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     InterpreterEnvironmentPlan,
@@ -238,8 +240,9 @@ def validate_local_toolchain(
     executable = python_executable.resolve()
     if not executable.is_file():
         raise LocalExecutionAdmissionError("selected project Python is unavailable")
-    version = subprocess.run(
-        [str(executable), "--version"], capture_output=True, text=True, check=False
+    version = run_admitted_command(
+        [str(executable), "--version"], capture_output=True, text=True, check=False,
+        unbound_runner=subprocess.run,
     )
     observed_python = (version.stdout or version.stderr).strip()
     match = re.fullmatch(r"Python ((3\.[0-9]+)\.[0-9]+)", observed_python)
@@ -276,12 +279,13 @@ def validate_local_toolchain(
             "declared local toolchain command is malformed"
         )
     command = [sys.executable if value == "{python}" else value for value in argv]
-    checked = subprocess.run(
+    checked = run_admitted_command(
         command,
         cwd=repo_root,
         capture_output=True,
         text=True,
         check=False,
+        unbound_runner=subprocess.run,
     )
     if checked.returncode:
         detail = checked.stderr.strip() or checked.stdout.strip() or "toolchain check failed"
@@ -326,7 +330,7 @@ def selected_toolchain_environment(
 
 
 @contextmanager
-def local_gate_lease(execution_id: str) -> Iterator[None]:
+def local_gate_lease(execution_id: str, *, repo_root: Path | None = None) -> Iterator[None]:
     """Own one host-local expensive gate slot or return typed busy/deferred."""
 
     if re.fullmatch(r"[a-f0-9]{40}", execution_id) is None:
@@ -335,6 +339,9 @@ def local_gate_lease(execution_id: str) -> Iterator[None]:
         namespace = authenticated_execution_state_namespace(os.environ)
     except RuntimeCapacityError as exc:
         raise LocalExecutionAdmissionError(str(exc)) from exc
+    body, cleanup = LEGACY_GATE_TIMEOUT_SECONDS, LEGACY_GATE_CLEANUP_SECONDS
+    if repo_root is not None:
+        body, _overrides, cleanup = gate_deadline_contract(repo_root)
     suffix = f"-{namespace}" if namespace is not None else ""
     path = Path(f"/tmp/bcf-local-gate-{os.getuid()}{suffix}.lock")
     descriptor = path.open("a+", encoding="utf-8")
@@ -349,9 +356,9 @@ def local_gate_lease(execution_id: str) -> Iterator[None]:
         descriptor.truncate()
         descriptor.write(execution_id + "\n")
         descriptor.flush()
-        yield
+        with native_lease_custody(descriptor.fileno(), timeout_seconds=body, cleanup_seconds=cleanup):
+            yield
     finally:
-        try:
-            fcntl.flock(descriptor.fileno(), fcntl.LOCK_UN)
-        finally:
-            descriptor.close()
+        # Closing this reference preserves a guardian's inherited OFD lock.
+        # LOCK_UN would also unlock that guardian's live reference.
+        descriptor.close()
