@@ -158,13 +158,18 @@ def _repository_query(root, consumer, commit, monkeypatch):
             monkeypatch.setenv(key, value)
         observed = context.pr_context(root, 'pr')
         assert observed['applicable'] and observed['base_sha'] == commit
+    elif consumer == 'candidate':
+        from bcf_governance.tooling import local_pr_context
+        assert local_pr_context.require_clean_candidate_root(
+            root, runner=local_pr_context._run,
+        ) == root.resolve()
     else:
         assert consumer == 'matrix'
         assert ci_state_matrix._git(root, 'diff', '--name-only', commit, '--') == ''
 
 
 @pytest.mark.parametrize('consumer,count', [('value', 1), ('files', 1), ('state', 4),
-                                           ('comparison', 2), ('matrix', 1)])
+                                           ('comparison', 2), ('matrix', 1), ('candidate', 1)])
 def test_repository_context_queries_have_actual_guardian_and_descriptor(
     lease_path, tmp_path, monkeypatch, consumer, count,
 ):
@@ -188,7 +193,7 @@ def test_repository_context_queries_have_actual_guardian_and_descriptor(
     assert not _busy(lease_path)
 
 
-@pytest.mark.parametrize('consumer', ['value', 'files', 'state', 'matrix'])
+@pytest.mark.parametrize('consumer', ['value', 'files', 'state', 'matrix', 'candidate'])
 def test_repository_context_queries_never_execute_configured_fsmonitor(tmp_path, monkeypatch, consumer):
     repo = tmp_path / 'project'
     commit = _committed_repository(repo)
