@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 import ctypes
+import fcntl
 import json
 import locale
 import math
@@ -11,6 +12,7 @@ from pathlib import Path
 import selectors
 import signal
 import socket
+import stat
 import subprocess
 import sys
 import time
@@ -56,8 +58,19 @@ def run_admitted_command(command, *, unbound_runner=None, **kwargs):
     cwd = options.pop('cwd', None)
     env = options.pop('env', None)
     timeout = options.pop('timeout', None)
+    supplied_input = options.pop('input', None)
     if options or capture is not True or type(text) is not bool or type(check) is not bool:
         raise OwnedProcessError('bound native invocation options require explicit custody support')
+    input_options = {}
+    if supplied_input is not None:
+        if text:
+            if not isinstance(supplied_input, str):
+                raise TypeError('bound text input must be a string')
+            encoding = 'utf-8' if sys.flags.utf8_mode else locale.getencoding()
+            supplied_input = supplied_input.encode(encoding)
+        elif not isinstance(supplied_input, (bytes, bytearray, memoryview)):
+            raise TypeError('bound binary input must be bytes-like')
+        input_options['input_bytes'] = bytes(supplied_input)
     body = lease[5]
     cleanup = lease[6]
     while lease[4] is not None:
@@ -71,7 +84,7 @@ def run_admitted_command(command, *, unbound_runner=None, **kwargs):
         body = min(body, timeout)
     result = run_owned_command(command, cwd=cwd, env=env, timeout_seconds=body,
                                cleanup_seconds=cleanup, text=text,
-                               timeout_raises=True, raise_launch_errors=True)
+                               timeout_raises=True, raise_launch_errors=True, **input_options)
     if check:
         result.check_returncode()
     return result
@@ -151,8 +164,33 @@ def _observe(process, connection, selector, buffers, deadline):
                 terminal = _terminal_result(json.loads(line), process.pid)
 
 
+def _stage_command_input(data, deadline):
+    """Seal finite command stdin before allocation without a writable pipe wait."""
+    if not isinstance(data, bytes):
+        raise TypeError('owned command input requires bytes')
+    descriptor = os.memfd_create('bcf-owned-command-input', os.MFD_CLOEXEC | os.MFD_ALLOW_SEALING)
+    try:
+        offset = 0
+        view = memoryview(data)
+        while offset < len(view):
+            if time.monotonic() >= deadline:
+                raise OwnedProcessError('command input deadline expired before allocation')
+            written = os.write(descriptor, view[offset:])
+            if not written:
+                raise OwnedProcessError('command input could not make progress')
+            offset += written
+        os.lseek(descriptor, 0, os.SEEK_SET)
+        seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+        fcntl.fcntl(descriptor, fcntl.F_ADD_SEALS, seals)
+        identity = os.fstat(descriptor)
+        return (descriptor, identity.st_dev, identity.st_ino)
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
 def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
-                      text=True, timeout_raises=False, raise_launch_errors=False):
+                      text=True, timeout_raises=False, raise_launch_errors=False, input_bytes=None):
     """Hold the supervisor unreaped until its child proof and both output EOFs."""
     lease = _native_lease
     if lease is not None and lease[1] != threading.get_ident():
@@ -169,7 +207,15 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
     process = None
     quiescent = False
     buffers = {'stdout': [], 'stderr': []}
+    input_binding = None
     try:
+        if input_bytes is not None:
+            input_binding = _stage_command_input(input_bytes, body_deadline)
+            inherited_descriptors = (*inherited_descriptors, input_binding[0])
+            if time.monotonic() >= body_deadline:
+                if timeout_raises:
+                    raise subprocess.TimeoutExpired(command, timeout_seconds)
+                raise OwnedProcessError('command input deadline expired before allocation')
         try:
             process = subprocess.Popen(
                 [sys.executable, '-I', str(Path(__file__).resolve()), str(inherited.fileno()),
@@ -190,7 +236,10 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
         if (not isinstance(ready, dict) or type(ready.get('supervisor_pid')) is not int
                 or ready != expected_ready):
             raise OwnedProcessError('child supervisor could not establish exclusive custody')
-        _send(connection, {'command': command})
+        request = {'command': command}
+        if input_binding is not None:
+            request['input'] = input_binding
+        _send(connection, request)
         connection.setblocking(False)
         with selectors.DefaultSelector() as selector:
             selector.register(connection, selectors.EVENT_READ, 'control')
@@ -255,6 +304,8 @@ def run_owned_command(command, *, cwd, env, timeout_seconds, cleanup_seconds,
     finally:
         inherited.close()
         connection.close()
+        if input_binding is not None:
+            os.close(input_binding[0])
         if process is not None:
             for stream in (process.stdout, process.stderr):
                 stream.close()
@@ -319,8 +370,24 @@ def _supervise(connection, body_deadline, cleanup_seconds, native_leases=()):
         raise OwnedProcessError('invalid owned command')
     if time.monotonic() >= body_deadline:
         raise OwnedProcessError('command deadline expired before allocation')
+    input_binding = request.get('input')
+    stdin = None
+    if input_binding is not None:
+        if (not isinstance(input_binding, list) or len(input_binding) != 3
+                or any(type(value) is not int for value in input_binding)):
+            raise OwnedProcessError('invalid command input descriptor binding')
+        stdin, device, inode = input_binding
+        if stdin <= 2 or stdin == connection.fileno() or stdin in {row[0] for row in native_leases}:
+            raise OwnedProcessError('command input cannot expose custody descriptors')
+        identity = os.fstat(stdin)
+        seals = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_SEAL
+        if ((identity.st_dev, identity.st_ino) != (device, inode)
+                or not stat.S_ISREG(identity.st_mode)
+                or fcntl.fcntl(stdin, fcntl.F_GET_SEALS) & seals != seals):
+            raise OwnedProcessError('command input identity or immutable bytes are unbound')
     try:
-        process = subprocess.Popen(command, start_new_session=True, close_fds=True)
+        command_options = {'stdin': stdin} if stdin is not None else {}
+        process = subprocess.Popen(command, start_new_session=True, close_fds=True, **command_options)
     except OSError as exc:
         try:
             os.waitid(os.P_ALL, 0, os.WEXITED | os.WNOHANG)

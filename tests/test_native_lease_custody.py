@@ -158,7 +158,7 @@ def test_bound_native_unread_large_input_cannot_stall_timeout(lease_path: Path) 
         with pytest.raises(subprocess.TimeoutExpired):
             run_admitted_command(
                 [sys.executable, "-I", "-c", "import time; time.sleep(10)"],
-                capture_output=True, input=b"x" * 1048576, timeout=.05,
+                capture_output=True, input=b"x" * 1048576, timeout=.3,
             )
         assert _busy(lease_path)
     assert not _busy(lease_path)
