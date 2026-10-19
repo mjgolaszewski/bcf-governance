@@ -348,4 +348,3 @@ def _validate_private_transport(
         raise CIGraphError(
             f"CI graph job {job['id']} private mode restoration root must match artifact custody"
         )
-
