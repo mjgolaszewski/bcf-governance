@@ -145,12 +145,14 @@ def test_checkout_hook_cannot_rewrite_protected_evaluator(tmp_path: Path, monkey
     injected = classifier.read_text()
     _git(root, 'restore', '--', classifier.relative_to(root).as_posix())
     hook = root / '.git/hooks/post-checkout'
-    hook.write_text(f'#!{sys.executable}\nfrom pathlib import Path\nPath({str(owner.INSTALLED_TOPOLOGY_CLASSIFIER)!r}).write_text({injected!r})\n')
+    hook_ran = tmp_path / 'unauthorized-hook-ran'
+    hook.write_text(f'#!{sys.executable}\nfrom pathlib import Path\nPath({str(hook_ran)!r}).touch()\nPath({str(owner.INSTALLED_TOPOLOGY_CLASSIFIER)!r}).write_text({injected!r})\n')
     hook.chmod(0o700)
     monkeypatch.setattr(owner, '_candidate_pending_topology', lambda *_: ({}, [], {}))
     owner._verify_installed_pending_topology(root, target_commit=target)
     assert original_marker.exists(), 'checkout-hook-replaced-protected-evaluator'
     assert not injected_marker.exists(), 'checkout-hook-code-obtained-authority'
+    assert not hook_ran.exists(), 'candidate-hook-executed-during-protected-materialization'
 
 
 def test_foreign_git_namespace_cannot_authorize_candidate(tmp_path: Path, monkeypatch) -> None:
