@@ -219,3 +219,9 @@ submission_frontdoor_authored_admission:
   - Real owned busy-lease refusal before interpreter, distribution and collection work remains a separate unqualified normalization obligation.
   - Complete lifecycle populations, deadline composition, source and reference admission, matched baseline targets and whole requirement closure remain open.
   - This isolated slice must not delay the already qualified successor landing; integration follows independent qualification and the current transaction terminal.
+  characterization_checkpoint:
+    implementation_subject: cf06da2bfe21997b963c160f11ad9a9e4555e6b4
+    evidence: audits/issue-394/submission-frontdoor-authored-admission-characterization.json
+    observations: Four genuine ordering failures corrected; six unchanged CLI controls and ten CLI/direct consumers pass; disabling only the CLI edge restores the same four failures.
+    status: isolated_pure_source_only
+    next_action: Qualify canonical projection, complete affected consumers and installed parity after the current frozen successor transaction; do not infer normalization closure.

@@ -1,0 +1,68 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "Cheap authored submit admission before project-environment selection, two existing source owners only",
+  "contract_subjects": [
+    "c21b7020",
+    "32e7a6b9"
+  ],
+  "test_subject": "265ac86e",
+  "implementation_subject": "cf06da2bfe21997b963c160f11ad9a9e4555e6b4",
+  "source_sha256": {
+    "bcf_governance/tooling/ci_authority_submit.py": "c48ea27b6211db1478657215b017ae29c226b0cba25c1a3f93246248d4466269",
+    "bcf_governance/tooling/ci_commands.py": "52f0b53cf7e24f3df1cdd622e17a2326f707c722639facb82d2aa6b87dd6c137",
+    "tests/test_authored_control_admission.py": "1ff28dcfd716ea3f8a594fa7b3dc6715f0964f93cd8284d4a30c4014df52079f"
+  },
+  "observations": {
+    "red": {
+      "cases": 6,
+      "passed": 2,
+      "failed": 4,
+      "errors": 0,
+      "skips": 0,
+      "forbidden_audit_events": 0
+    },
+    "green": {
+      "cases": 6,
+      "passed": 6,
+      "failed": 0,
+      "errors": 0,
+      "skips": 0,
+      "forbidden_audit_events": 0
+    },
+    "disabled_cli_edge": {
+      "cases": 6,
+      "passed": 2,
+      "failed": 4,
+      "errors": 0,
+      "skips": 0,
+      "forbidden_audit_events": 0
+    },
+    "both_consumers": {
+      "cases": 10,
+      "passed": 10,
+      "failed": 0,
+      "errors": 0,
+      "skips": 0,
+      "forbidden_audit_events": 0
+    }
+  },
+  "raw_sha256": {
+    "submission-frontdoor-265ac86e-red-unit-attempt1/report.json": "ab6e28638c87388508df53e2911dc88ea128e26b52b72c7e8225735e636fc6a8",
+    "submission-frontdoor-265ac86e-red-unit-attempt1/cases.xml": "f2db40fa92db4b9017d015c1871e65ec8a0f894202cd3607f877a75a623d1f78",
+    "submission-frontdoor-cheap-query-green-unit-attempt1/report.json": "37a0d1e0d672e68e1046fd9637cbe69859d0dd9b8ee48b2723ed530109ebb40c",
+    "submission-frontdoor-cheap-query-green-unit-attempt1/cases.xml": "6fa6cf36089ea833fea9932451cf99c9a25996a69f59f836ca8b2767b76b22e7",
+    "submission-frontdoor-cf06da2b-disabled-cli-edge-attempt1/report.json": "ab6e28638c87388508df53e2911dc88ea128e26b52b72c7e8225735e636fc6a8",
+    "submission-frontdoor-cf06da2b-disabled-cli-edge-attempt1/cases.xml": "1a9ab5271ee32b36f60be90f552016fd119fea606c9e24c7f5dce5344e5d417a",
+    "submission-frontdoor-cf06da2b-consumer-unit-attempt1/report.json": "3d481dbeadad6df10591acc434e46b4c97ad350eaf378dadba54759ad8acb27d",
+    "submission-frontdoor-cf06da2b-consumer-unit-attempt1/cases.xml": "3472a1ba3689c73dcae97fbd7789788a6a56eb67625235fb843715e7e59d9e97"
+  },
+  "limits": [
+    "Guarded pure source unit observations only; forbidden selection witnesses did not materialize environments.",
+    "No cold-cache, actual busy-lease, distribution/reference collection admission or complete normalization claim.",
+    "Canonical private projection, complete affected consumers, architecture/semantic/governance/package/installed qualification remain pending.",
+    "Isolated branch is unintegrated; exact edcf successor source and its active SDK matrix remain unchanged.",
+    "All82 whole requirements/38 bounded slice statuses unchanged; P32 active/P33-P35 dormant."
+  ],
+  "next_action": "After the current successor landing, independently qualify existing CLI/admission/normalization consumers, canonical projection and installed parity before integrating this bounded correction."
+}
