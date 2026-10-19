@@ -23,7 +23,7 @@ def test_local_phase_authority_rejection_precedes_allocation(tmp_path, monkeypat
         assert kwargs.get("repository") == "owner/repo"
         raise error
     monkeypatch.setattr(prospective, "validate_evaluation_authored_ready", reject)
-    monkeypatch.setattr(prospective, "local_gate_lease", lambda *a: pytest.fail("readiness allocated gate"))
+    monkeypatch.setattr(prospective, "local_gate_lease", lambda *a, **kw: pytest.fail("readiness allocated gate"))
     monkeypatch.setattr(prospective, "validate_local_toolchain", lambda *a, **kw: pytest.fail("readiness allocated toolchain"))
     operation = prospective.run_prospective_train if boundary == "public" else prospective._run_prospective_train
     with pytest.raises(prospective.ProspectiveValidationError) as caught:
@@ -68,7 +68,8 @@ def test_public_readiness_consumes_real_authenticated_phase_before_gate(tmp_path
     _repo(tmp_path)
     monkeypatch.setattr(prospective, "validate_evaluation_authored_ready", validate_evaluation_authored_ready)
     stopped = RuntimeError("gate intentionally intercepted after authenticated readiness")
-    def gate(subject):
+    def gate(subject, *, repo_root: Path):
+        assert repo_root == tmp_path.resolve(), "prospective lease must bind the actual repository policy"
         assert api.reads == 1
         raise stopped
     monkeypatch.setattr(prospective, "local_gate_lease", gate)
@@ -83,7 +84,7 @@ def test_public_readiness_without_real_phase_authority_cannot_allocate(tmp_path,
     _front_door(monkeypatch, [])
     _repo(tmp_path)
     monkeypatch.setattr(prospective, "validate_evaluation_authored_ready", validate_evaluation_authored_ready)
-    monkeypatch.setattr(prospective, "local_gate_lease", lambda *a: pytest.fail("missing phase proof allocated a gate"))
+    monkeypatch.setattr(prospective, "local_gate_lease", lambda *a, **kw: pytest.fail("missing phase proof allocated a gate"))
     request = {**TRAIN, "evaluation_target": "P02-W01"}
     with pytest.raises(prospective.ProspectiveValidationError, match="phase closure prerequisites"):
         prospective.run_prospective_train(tmp_path, **request, python_executable=Path("/python"),

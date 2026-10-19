@@ -65,7 +65,7 @@ def reconcile_prerequisites(monkeypatch):
 def test_submit_rejects_control_defect_before_lease_or_runner(tmp_path, monkeypatch, defect):
     control_root(tmp_path, defect)
     submit_prerequisites(monkeypatch)
-    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a: pytest.fail('allocated lease before control rejection'))
+    monkeypatch.setattr(submit, 'local_gate_lease', lambda *_a, **_kw: pytest.fail('allocated lease before control rejection'))
     with pytest.raises(submit.ProspectiveValidationError, match='negative-control mutations must resolve exactly once'):
         submit._normalize_submission(
             tmp_path, python_executable=Path(sys.executable), execution_id='control-admission',
@@ -98,7 +98,8 @@ def test_valid_source_control_uses_existing_registry_and_submission_owner(tmp_pa
     observed = []
 
     @contextmanager
-    def lease(_execution):
+    def lease(_execution, *, repo_root: Path):
+        assert repo_root == tmp_path.resolve(), 'normalization must bind the actual repository deadline policy'
         observed.append('lease')
         yield
 
