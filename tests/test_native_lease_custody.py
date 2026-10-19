@@ -255,3 +255,42 @@ with local_gate_lease('e' * 40):
             assert current[19] == child_start, "fixture cannot signal a recycled identity"
             os.kill(child, signal.SIGKILL)  # Explicit reconciliation of this fixture's child.
         _wait_for(lambda: not _busy(lease_path))
+
+
+@pytest.mark.parametrize("consumer", ["submission-runner", "reconciliation-runner"])
+def test_native_runner_allocates_through_kernel_guardian(
+    lease_path: Path, consumer: str,
+) -> None:
+    from bcf_governance.tooling import evidence_process_supervisor, local_pr_context
+    from bcf_governance.tooling import scaffold_governance_artifacts
+
+    helper = Path(evidence_process_supervisor.__file__).resolve()
+    program = """
+import os,sys
+from pathlib import Path
+parent = Path('/proc', str(os.getppid()))
+arguments = (parent / 'cmdline').read_bytes().split(bytes([0]))
+owned = os.fsencode(sys.argv[1]) in arguments
+expected = (int(sys.argv[2]), int(sys.argv[3]))
+found = False
+for entry in (parent / 'fd').iterdir():
+    try:
+        value = entry.stat()
+    except FileNotFoundError:
+        continue
+    found |= (value.st_dev, value.st_ino) == expected
+print('qualified-native-owner' if owned and found else 'native-owner-bypassed', flush=True)
+sys.exit(0 if owned and found else 23)
+"""
+    with local_gate_lease("f" * 40):
+        identity = lease_path.stat()
+        command = [sys.executable, "-I", "-c", program, str(helper),
+                   str(identity.st_dev), str(identity.st_ino)]
+        if consumer == "submission-runner":
+            result = local_pr_context._run(command, cwd=lease_path.parent)
+            assert result.returncode == 0, result.stdout + result.stderr
+        else:
+            scaffold_governance_artifacts._run_reconcile_command(
+                command, repo_root=lease_path.parent, step_id="native-custody-control",
+            )
+    assert not _busy(lease_path)

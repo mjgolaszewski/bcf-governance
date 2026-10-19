@@ -1,0 +1,47 @@
+{
+  "authority": false,
+  "status": "partial_source_implementation",
+  "contract": "audits/issue-394/native-lease-custody-contract.yml",
+  "workitems": [
+    "P32-P0-05",
+    "P32-P0-07"
+  ],
+  "baseline": {
+    "subject": "c115e50c21aad28867b408d8f5db818c82a1e049",
+    "tests": 7,
+    "genuine_ownership_failures": 6,
+    "ordinary_release_pass": 1,
+    "fixture_errors": 0
+  },
+  "core_handoff": {
+    "subject": "89f5a30b8e7f845f2f94632c92c0ecf4d1dcf2bf",
+    "tree": "6e0bdea4857152d1f1e521aed6cedc4fac71d7d5",
+    "tests_passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "controls": [
+      "ordinary release",
+      "inherited open-file-description retention",
+      "actual guardian descriptor identity",
+      "SIGINT parent interruption",
+      "SIGTERM parent interruption",
+      "fatal parent death",
+      "expired cleanup retains custody without late signalling"
+    ],
+    "independent_operator_supervisor_unchanged": true,
+    "terminal_quiescence_output_eof_supervisor_reap_observed": true
+  },
+  "remaining": [
+    "Independent full native consumer population and runtime edge coverage",
+    "Normalization and toolchain runners retain custody and preserve existing ABI",
+    "Declared body cleanup and outer deadline bounds for each consuming boundary",
+    "Original consumer recovery and authority matrices",
+    "Canonical generated mirrors and semantic architecture governance package checks",
+    "Wheel sdist installed and private-runtime qualification",
+    "Published immutable repair custody and authorized adopter installation",
+    "Authenticated host aggregate execution envelope"
+  ],
+  "whole_requirements_advanced": 0,
+  "implementation_slices_advanced": 0,
+  "next_action": "Characterize direct normalization and admission runner bypasses, extend existing deadline/runner ownership, and qualify the complete consumer population before integration."
+}
