@@ -66,7 +66,8 @@ def test_target_classifier_executes_despite_committed_candidate_deletion(tmp_pat
     _commit(root, 'candidate removes classifier')
     monkeypatch.setattr(owner, '_candidate_pending_topology', lambda *_: ({}, [], {}))
     owner._verify_installed_pending_topology(root, target_commit=target)
-    assert marker.read_text() == 'protected-target-executed', 'candidate-layout-suppressed-protected-evaluator'
+    assert marker.is_file(), 'candidate-layout-suppressed-protected-evaluator'
+    assert marker.read_text() == 'protected-target-executed'
     assert not _git(root, 'status', '--porcelain')
     assert len([x for x in _git(root, 'worktree', 'list', '--porcelain').splitlines() if x.startswith('worktree ')]) == 1
 
