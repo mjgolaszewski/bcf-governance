@@ -197,3 +197,28 @@ def test_moving_candidate_cannot_authorize_compatibility(tmp_path: Path, monkeyp
     with pytest.raises(owner.TrustedControllerCompatibilityError, match='changed|moving|subject'):
         owner.classify_trusted_controller_applicability(root, target_commit=target)
     assert _git(root, 'rev-parse', 'HEAD') != before
+
+
+@pytest.mark.parametrize('mutation', ['commit', 'dirty'])
+def test_outer_alternate_lane_reauthenticates_candidate(tmp_path: Path, monkeypatch, mutation: str) -> None:
+    root, target = _repository(tmp_path)
+    (root / 'bcf_governance/tooling/ci_github_api.py').write_text('class GitHubAPI:\n    changed = True\n')
+    _commit(root, 'candidate requires alternate lane')
+    def rejected(*args, **kwargs):
+        raise owner.TrustedControllerRoutineRotationIncompatibleError('installed evaluator refuses candidate')
+    def alternate(*args, **kwargs):
+        (root / 'README.md').write_text('subject changed during alternate selection\n')
+        if mutation == 'commit':
+            _commit(root, 'advance candidate during alternate selection')
+        return True
+    monkeypatch.setattr(owner, '_verify_installed_authority_consumability', rejected)
+    monkeypatch.setattr(owner, 'ordinary_alternate_lane_available', alternate)
+    with pytest.raises(owner.TrustedControllerCompatibilityError, match='changed|uncommitted|subject'):
+        owner.classify_trusted_controller_applicability(root, target_commit=target)
+
+
+def test_outer_applicability_returns_consumed_canonical_target(tmp_path: Path) -> None:
+    root, target = _repository(tmp_path)
+    result = owner.classify_trusted_controller_applicability(root, target_commit=target[:8])
+    assert result.state is owner.TrustedControllerApplicabilityState.CURRENT
+    assert result.target_commit == target, 'applicability returned unresolved target spelling'
