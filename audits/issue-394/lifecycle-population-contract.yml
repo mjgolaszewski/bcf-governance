@@ -256,5 +256,5 @@ submission_frontdoor_phase_ledger_presence:
   - A genuinely absent phase ledger retains existing local/adopter behavior; this query confers no phase or provider authority.
   - Use current complete valid phase fixtures before exactly one filesystem-type mutation; forbid native/network/lease allocation in pure controls.
   - Preserve every other admission query, revalidation boundary and CLI grammar; no alternate phase validator or schema exception.
-  controls: [directory ledger rejects before environment, dangling-symlink ledger rejects before environment, absent-ledger valid control still reaches existing environment selection]
+  controls: [directory ledger rejects before environment, dangling-symlink ledger rejects before environment, absent-ledger valid control still reaches existing environment selection, valid complete phase ledger reaches existing environment selection]
   forbidden: [primary54b09168 mutation, new evaluator or receipt, native qualification claim from a pure refusal witness, phase closure]

@@ -430,3 +430,22 @@ def test_submit_cli_existing_malformed_phase_ledger_rejects_before_environment(t
         lambda *_a, **_k: pytest.fail('environment selected before malformed phase-ledger rejection'))
     with pytest.raises(SystemExit, match='cannot read authored phase state'):
         cli.main(['submit', '--repo-root', str(root)])
+
+
+def test_submit_cli_valid_phase_ledger_keeps_environment_selection(tmp_path, monkeypatch):
+    from tests.test_validate_governance_yaml import _instantiate_fixture_repo
+
+    root = _instantiate_fixture_repo(tmp_path, 'valid_repo')
+    control_root(root)
+    submit.validate_authored_phase_state(root)
+    cli = _prepare_submit_frontdoor(monkeypatch)
+
+    class EnvironmentSelected(RuntimeError):
+        pass
+
+    def selected(*_args, **_kwargs):
+        raise EnvironmentSelected('valid phase ledger reached environment selection')
+
+    monkeypatch.setattr(cli, 'ensure_local_project_python', selected)
+    with pytest.raises(EnvironmentSelected, match='valid phase ledger reached environment selection'):
+        cli.main(['submit', '--repo-root', str(root)])
