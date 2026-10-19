@@ -228,5 +228,408 @@
   },
   "production_compiler_consumers": [],
   "finding": "No production compiler consumer discovers and binds the full protected context/operation/runtime population. Existing edge closure and backtrace are distinct retained owners; do not infer full lifecycle conformance from either or from passing static fixtures.",
-  "next_action": "Extend existing compiled graph population derivation and its protected consuming boundary; bind local/recovery/terminal contexts and source effects independently of proposed rows/test lists."
+  "next_action": "Extend existing compiled graph population derivation and its protected consuming boundary; bind local/recovery/terminal contexts and source effects independently of proposed rows/test lists.",
+  "exact_source_native_reachability_followup": {
+    "authority": false,
+    "subject": {
+      "commit_sha": "d60b7209cb3bfc42dcb9199fec73977de77649d1",
+      "tree_sha": "dbec273846f9115b3e607c0bc7951eb2ba084252"
+    },
+    "files": 1187,
+    "functions": 10185,
+    "roots": {
+      "bcf_governance/tooling/ci_authority_submit.py::_normalize_submission": {
+        "reached_functions": 179,
+        "unresolved_calls": 2468,
+        "literal_native_candidates_on_resolved_paths": [
+          {
+            "module": "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
+            "function": "_git",
+            "line": 39,
+            "effect": "subprocess.run",
+            "source_sha256": "e38555a0a4c0aeaf061977ed39e6167f7f54da9fe52ce89c458fb9fb74208909"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_distribution.py",
+            "function": "validate_source_distribution",
+            "line": 32,
+            "effect": "subprocess.run",
+            "source_sha256": "f1091f250ebc4245aa5ac7e4a2acc02718ab154917ad30443fbdd27439517821"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+            "function": "pr_context",
+            "line": 132,
+            "effect": "subprocess.run",
+            "source_sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+            "function": "pr_context",
+            "line": 139,
+            "effect": "subprocess.run",
+            "source_sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+            "function": "_validate_pull_request_changelog_update",
+            "line": 192,
+            "effect": "subprocess.run",
+            "source_sha256": "063b923ad942b4566211cc66b84bd73e5096a1ab02e54dce4543852b509a4522"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+            "function": "_validate_pull_request_changelog_update",
+            "line": 209,
+            "effect": "subprocess.run",
+            "source_sha256": "063b923ad942b4566211cc66b84bd73e5096a1ab02e54dce4543852b509a4522"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+            "function": "_validate_pull_request_changelog_update",
+            "line": 225,
+            "effect": "subprocess.run",
+            "source_sha256": "063b923ad942b4566211cc66b84bd73e5096a1ab02e54dce4543852b509a4522"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_ownership_typescript.py",
+            "function": "discover_typescript_source",
+            "line": 182,
+            "effect": "subprocess.run",
+            "source_sha256": "9eca8741155a447a4bbf4d78188c2a4716ec81a5ee5a149ab7b38db5807bc1ee"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_source_paths.py",
+            "function": "_source_git",
+            "line": 16,
+            "effect": "subprocess.run",
+            "source_sha256": "834e47e20bbb8d9147b7a59504653ceaa8eda8cde9adf043d1507e2828427bfc"
+          },
+          {
+            "module": "bcf_governance/tooling/test_manifests.py",
+            "function": "_collect_raw_nodes",
+            "line": 212,
+            "effect": "subprocess.run",
+            "source_sha256": "686d53eb892a27ae4db59c4bd152d06debe1df7ac0422b6b9e51531bc104592b"
+          }
+        ]
+      },
+      "bcf_governance/tooling/local_pr.py::_run_prospective_train": {
+        "reached_functions": 912,
+        "unresolved_calls": 12858,
+        "literal_native_candidates_on_resolved_paths": [
+          {
+            "module": "bcf_governance/tooling/affected_proof_closure.py",
+            "function": "changed_paths",
+            "line": 74,
+            "effect": "subprocess.run",
+            "source_sha256": "e9fc027fadb373a6e63c98e657071998941a5274791be79b73a519b4689aa656"
+          },
+          {
+            "module": "bcf_governance/tooling/affected_proof_closure.py",
+            "function": "changed_paths",
+            "line": 84,
+            "effect": "subprocess.run",
+            "source_sha256": "e9fc027fadb373a6e63c98e657071998941a5274791be79b73a519b4689aa656"
+          },
+          {
+            "module": "bcf_governance/tooling/affected_proof_closure.py",
+            "function": "changed_paths",
+            "line": 91,
+            "effect": "subprocess.run",
+            "source_sha256": "e9fc027fadb373a6e63c98e657071998941a5274791be79b73a519b4689aa656"
+          },
+          {
+            "module": "bcf_governance/tooling/ci_authority_preflight.py",
+            "function": "_provider_checkout",
+            "line": 18,
+            "effect": "subprocess.run",
+            "source_sha256": "2f4078e311dcb278b2c904f2b84246089140d0ab777957aa010ebef642f925e0"
+          },
+          {
+            "module": "bcf_governance/tooling/ci_authority_prospective_lanes.py",
+            "function": "git_blob",
+            "line": 46,
+            "effect": "subprocess.run",
+            "source_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5"
+          },
+          {
+            "module": "bcf_governance/tooling/ci_authority_prospective_lanes.py",
+            "function": "git_blob",
+            "line": 52,
+            "effect": "subprocess.run",
+            "source_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5"
+          },
+          {
+            "module": "bcf_governance/tooling/ci_graph_controller_lifecycle.py",
+            "function": "_git",
+            "line": 48,
+            "effect": "subprocess.run",
+            "source_sha256": "17ceeaaf3360459b3230516d34bfee0431a36255bd12314ba928e13b1242b03d"
+          },
+          {
+            "module": "bcf_governance/tooling/ci_graph_controller_lifecycle.py",
+            "function": "resolve_controller_lifecycle",
+            "line": 147,
+            "effect": "subprocess.run",
+            "source_sha256": "17ceeaaf3360459b3230516d34bfee0431a36255bd12314ba928e13b1242b03d"
+          },
+          {
+            "module": "bcf_governance/tooling/editorial_audit_projection.py",
+            "function": "editorial_base",
+            "line": 17,
+            "effect": "subprocess.run",
+            "source_sha256": "15412ec95deeaa4e9448791fa203e2a45816ab6c128482bf4bcfcb13057268a7"
+          },
+          {
+            "module": "bcf_governance/tooling/evidence_planning.py",
+            "function": "_git",
+            "line": 47,
+            "effect": "subprocess.run",
+            "source_sha256": "49447cbb9679aa506a3ccabb462169d18d79d1095e8a1e4c830b7562e6adf857"
+          },
+          {
+            "module": "bcf_governance/tooling/evidence_process_supervisor.py",
+            "function": "run_owned_command",
+            "line": 229,
+            "effect": "subprocess.Popen",
+            "source_sha256": "1236af54331a8889de27b034a18831ebdd1b1f4a7b577983c352613493bc834a"
+          },
+          {
+            "module": "bcf_governance/tooling/evidence_sessions.py",
+            "function": "_git",
+            "line": 45,
+            "effect": "subprocess.run",
+            "source_sha256": "b7dcb7b1100cab1abd852f99d1ddb7d505f433728f734b0942d4f340dc932698"
+          },
+          {
+            "module": "bcf_governance/tooling/evidence_sessions.py",
+            "function": "_assert_artifact_root",
+            "line": 89,
+            "effect": "subprocess.run",
+            "source_sha256": "b7dcb7b1100cab1abd852f99d1ddb7d505f433728f734b0942d4f340dc932698"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_truth_support.py",
+            "function": "verify_attestation",
+            "line": 417,
+            "effect": "subprocess.run",
+            "source_sha256": "e911abf4a286256859210652ec78c9b4cad5033fa7c56f20a9cc0b89f09066c2"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/artifact_policy.py",
+            "function": "_git_show_sha256",
+            "line": 252,
+            "effect": "subprocess.run",
+            "source_sha256": "fb0ba6b5d8c7cad49436514fa1fbd0f0fc677c5a98f3786e9117516886662d86"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
+            "function": "_git",
+            "line": 39,
+            "effect": "subprocess.run",
+            "source_sha256": "e38555a0a4c0aeaf061977ed39e6167f7f54da9fe52ce89c458fb9fb74208909"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/editorial_contract.py",
+            "function": "check_editorial",
+            "line": 21,
+            "effect": "subprocess.run",
+            "source_sha256": "636cc4037b9ed68a844672c3dfdc807a8b79e90d400b99883aa074f4803d5ba1"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/native_adoption.py",
+            "function": "_authenticated_native_adoption",
+            "line": 51,
+            "effect": "subprocess.run",
+            "source_sha256": "b5fbe918e0efa886dfe847f949005e94dd19c878fcb75edc915ccd0a69df52cc"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/native_adoption.py",
+            "function": "_authenticated_native_adoption",
+            "line": 57,
+            "effect": "subprocess.run",
+            "source_sha256": "b5fbe918e0efa886dfe847f949005e94dd19c878fcb75edc915ccd0a69df52cc"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/native_adoption.py",
+            "function": "_authenticated_native_adoption",
+            "line": 85,
+            "effect": "subprocess.run",
+            "source_sha256": "b5fbe918e0efa886dfe847f949005e94dd19c878fcb75edc915ccd0a69df52cc"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_distribution.py",
+            "function": "validate_source_distribution",
+            "line": 32,
+            "effect": "subprocess.run",
+            "source_sha256": "f1091f250ebc4245aa5ac7e4a2acc02718ab154917ad30443fbdd27439517821"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+            "function": "git_value",
+            "line": 20,
+            "effect": "subprocess.run",
+            "source_sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+            "function": "tracked_files",
+            "line": 33,
+            "effect": "subprocess.run",
+            "source_sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+            "function": "pr_context",
+            "line": 132,
+            "effect": "subprocess.run",
+            "source_sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+            "function": "pr_context",
+            "line": 139,
+            "effect": "subprocess.run",
+            "source_sha256": "81cba003754fbd54e7c405a26ca4cc390aebafe833d17ea32723eeda7c242d97"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+            "function": "_validate_pull_request_changelog_update",
+            "line": 192,
+            "effect": "subprocess.run",
+            "source_sha256": "063b923ad942b4566211cc66b84bd73e5096a1ab02e54dce4543852b509a4522"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+            "function": "_validate_pull_request_changelog_update",
+            "line": 209,
+            "effect": "subprocess.run",
+            "source_sha256": "063b923ad942b4566211cc66b84bd73e5096a1ab02e54dce4543852b509a4522"
+          },
+          {
+            "module": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+            "function": "_validate_pull_request_changelog_update",
+            "line": 225,
+            "effect": "subprocess.run",
+            "source_sha256": "063b923ad942b4566211cc66b84bd73e5096a1ab02e54dce4543852b509a4522"
+          },
+          {
+            "module": "bcf_governance/tooling/ordinary_protection_projection.py",
+            "function": "_git_file",
+            "line": 37,
+            "effect": "subprocess.run",
+            "source_sha256": "c4460d307077f703ad1b2a341785fc8aa4b904b9c8092b559c888e27c360d0c1"
+          },
+          {
+            "module": "bcf_governance/tooling/reconcile_stage_ledger.py",
+            "function": "_ledger_path",
+            "line": 20,
+            "effect": "subprocess.run",
+            "source_sha256": "e1e5b9bf4395f1a0789f0d2fb9099146ddd650f79fc79efbf7108700631b54a1"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_authority_migrations.py",
+            "function": "_validate_exact_base",
+            "line": 60,
+            "effect": "subprocess.run",
+            "source_sha256": "d84e346aec76c1a757cdef6bd7f80b09bbaf95ea73fb7c89ba6f104403ff3fc9"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_authority_migrations.py",
+            "function": "_git_yaml",
+            "line": 157,
+            "effect": "subprocess.run",
+            "source_sha256": "d84e346aec76c1a757cdef6bd7f80b09bbaf95ea73fb7c89ba6f104403ff3fc9"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_authority_migrations.py",
+            "function": "_git_yaml",
+            "line": 162,
+            "effect": "subprocess.run",
+            "source_sha256": "d84e346aec76c1a757cdef6bd7f80b09bbaf95ea73fb7c89ba6f104403ff3fc9"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_derivations.py",
+            "function": "_reproduce_outputs",
+            "line": 156,
+            "effect": "subprocess.run",
+            "source_sha256": "6fc00883e23768c38d9afdd09bf3f8f5bcd643b73eda94c56fe6d77fefc07940"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_ownership_scan.py",
+            "function": "_git",
+            "line": 303,
+            "effect": "subprocess.run",
+            "source_sha256": "c429d3eb20199d0308374c65ef0dc8565e2a41cc724d2272b3cd45b5bd8f5ffc"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_ownership_typescript.py",
+            "function": "discover_typescript_source",
+            "line": 182,
+            "effect": "subprocess.run",
+            "source_sha256": "9eca8741155a447a4bbf4d78188c2a4716ec81a5ee5a149ab7b38db5807bc1ee"
+          },
+          {
+            "module": "bcf_governance/tooling/semantic_source_paths.py",
+            "function": "_source_git",
+            "line": 16,
+            "effect": "subprocess.run",
+            "source_sha256": "834e47e20bbb8d9147b7a59504653ceaa8eda8cde9adf043d1507e2828427bfc"
+          },
+          {
+            "module": "bcf_governance/tooling/test_duration_observations.py",
+            "function": "_git",
+            "line": 31,
+            "effect": "subprocess.run",
+            "source_sha256": "d9d1b204dd8723307af8f7e5e6a8e2dc88401f98cc317efe057cb26ca62b297e"
+          },
+          {
+            "module": "bcf_governance/tooling/test_duration_observations.py",
+            "function": "_cache_root",
+            "line": 54,
+            "effect": "subprocess.run",
+            "source_sha256": "d9d1b204dd8723307af8f7e5e6a8e2dc88401f98cc317efe057cb26ca62b297e"
+          },
+          {
+            "module": "bcf_governance/tooling/test_duration_observations.py",
+            "function": "_is_ancestor",
+            "line": 89,
+            "effect": "subprocess.run",
+            "source_sha256": "d9d1b204dd8723307af8f7e5e6a8e2dc88401f98cc317efe057cb26ca62b297e"
+          },
+          {
+            "module": "bcf_governance/tooling/test_manifests.py",
+            "function": "_collect_raw_nodes",
+            "line": 212,
+            "effect": "subprocess.run",
+            "source_sha256": "686d53eb892a27ae4db59c4bd152d06debe1df7ac0422b6b9e51531bc104592b"
+          },
+          {
+            "module": "bcf_governance/tooling/truth_receipts.py",
+            "function": "_git",
+            "line": 75,
+            "effect": "subprocess.run",
+            "source_sha256": "905fb9cf33d1d55c2353d68fd41650d245a29bee2d3c6a16d2e3954714b016c4"
+          }
+        ]
+      }
+    },
+    "limits": [
+      "Resolved static reachability is a lower bound; unresolved dispatch and initializer/native effects remain conservative obligations.",
+      "A literal call on a resolved path does not by itself prove execution while the native lease is held.",
+      "No exclusion, runtime conformance, suppression or lifecycle authority is granted."
+    ],
+    "raw_sha256": {
+      "inventory.json": "1256235943c112a56268341d876c714f058017ddc0a088ffcca116bfcb32193e",
+      "stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "returncode": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "summary.json": "c558cb1860cfc9bf085408323ce82643281e63b33ed03f687fa213cdd5f9bd1b",
+      "_run_prospective_train.json": "2054ff7edd087b9fa687bfa197380cd61b5261f36d3a6d2a22ebd3e1ada4a521",
+      "scheduling.json": "f7fcff1dfcd6f8bd1a85312878556ba372ccc1d33895b83d3e1f9bfef3910b70",
+      "_normalize_submission.json": "ad0a87b809ce9d273744b9b16c319d35aba997566823cadabc8820df7d64815d",
+      "stdout": "eb4c676c9cb4ebb3fab484d5c73b7e43d8c2514e47f20a374b9d4315ef0f3aa6"
+    },
+    "scope": "Existing exact Python inventory and source-operation population owners; independent direct subprocess AST census joined to resolved calls. Static lower bound, not runtime closure."
+  }
 }

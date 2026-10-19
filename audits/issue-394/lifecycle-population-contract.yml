@@ -115,3 +115,19 @@ semantic_source_git_execution_boundary:
   - Exercise the three discovery consumers through fresh and upgrade installation with the source SDK unavailable, verifying private module origin and preservation of repository fsmonitor configuration.
   - This prevents configured Git program execution only; ambient repository redirection, dynamic runtime effects and complete lifecycle population authentication remain separate obligations.
   forbidden: Repository configuration mutations, patching immutable234/235 tools, global Git settings, new evaluator or receipt family, and lifecycle or performance closure from static checks.
+
+semantic_source_native_custody:
+  bounded_context: semantic_ownership
+  architectural_layer: tooling
+  operation_side: query
+  target: bcf_governance/tooling/semantic_source_paths.py::_source_git
+  tests: [tests/test_semantic_source_paths.py, tests/test_installed_source_admission.py, tests/test_native_lease_custody.py]
+  observed: Exact d60b7209 real-Git observation retains four commands beneath an actual native_lease_custody binding and zero owned-guardian calls.
+  shared_kernel_decision: Reuse the existing evidence_process_supervisor.run_admitted_command kernel custody port already consumed across tooling contexts; semantic source ownership and evidence policy authority remain with their existing owners.
+  contract:
+  - Both candidate-path and committed-population readers must enter the existing admitted-command port; an active native lease requires actual guardian custody before command allocation.
+  - Preserve the ordinary unbound subprocess runner and byte results, Git refusal/configuration protections, public signatures and existing errors.
+  - Inherit body and cleanup bounds from the existing authenticated lease; do not invent a separate timeout, scheduler, evaluator or receipt.
+  - Retain real-Git failing path/population controls before implementation; require actual guardian descriptor identity, successful exact Git results and terminal quiescence after the repair.
+  - Qualify source, copied private runtimes and fresh/upgrade consumers along with affected native ABI and architecture/semantic/governance checks.
+  limits: This closes two concrete semantic reader consumers only; unresolved dispatch and the complete native/lifecycle/deadline populations remain open.
