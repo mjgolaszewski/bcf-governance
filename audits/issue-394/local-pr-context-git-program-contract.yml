@@ -17,6 +17,7 @@ targets:
 - bcf_governance/tooling/local_pr_context.py
 - tests/test_candidate_submit.py
 - tests/test_local_pr.py
+- tests/test_native_preflight_consumers.py
 - tests/test_installed_source_admission.py
 contract:
 - Characterize repository-configured fsmonitor through the actual default runner for submit, prospective validation and canonical prospective input derivation before any production edit.
