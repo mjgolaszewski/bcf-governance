@@ -115,3 +115,52 @@ def test_uncommitted_runtime_cannot_authorize_current_applicability(tmp_path: Pa
     assert owner.trusted_runtime_source_files(root)  # Genuinely local authored inventory stays usable.
     with pytest.raises(owner.TrustedControllerCompatibilityError, match='clean|uncommitted'):
         owner.classify_trusted_controller_applicability(root, target_commit=target)
+
+
+@pytest.mark.parametrize('replacement', ['hide', 'substitute'])
+def test_replacement_ref_cannot_hide_or_replace_protected_classifier(tmp_path: Path, monkeypatch, replacement: str) -> None:
+    root, _ = _repository(tmp_path)
+    original_marker, forged_marker = tmp_path / 'original-target', tmp_path / 'replacement-target'
+    classifier = _classifier(root, original_marker, 'source')
+    target = _commit(root, 'original protected evaluator')
+    if replacement == 'hide':
+        classifier.unlink()
+    else:
+        _classifier(root, forged_marker, 'source')
+    substitute = _commit(root, 'replacement evaluator')
+    _git(root, 'replace', target, substitute)
+    monkeypatch.setattr(owner, '_candidate_pending_topology', lambda *_: ({}, [], {}))
+    owner._verify_installed_pending_topology(root, target_commit=target)
+    assert original_marker.exists(), 'replacement-ref-hid-protected-evaluator'
+    assert not forged_marker.exists(), 'replacement-ref-supplied-evaluator-authority'
+
+
+def test_checkout_hook_cannot_rewrite_protected_evaluator(tmp_path: Path, monkeypatch) -> None:
+    import sys
+    root, _ = _repository(tmp_path)
+    original_marker, injected_marker = tmp_path / 'original-code', tmp_path / 'hook-code'
+    classifier = _classifier(root, original_marker, 'source')
+    target = _commit(root, 'protected original evaluator')
+    _classifier(root, injected_marker, 'source')
+    injected = classifier.read_text()
+    _git(root, 'restore', '--', classifier.relative_to(root).as_posix())
+    hook = root / '.git/hooks/post-checkout'
+    hook.write_text(f'#!{sys.executable}\nfrom pathlib import Path\nPath({str(owner.INSTALLED_TOPOLOGY_CLASSIFIER)!r}).write_text({injected!r})\n')
+    hook.chmod(0o700)
+    monkeypatch.setattr(owner, '_candidate_pending_topology', lambda *_: ({}, [], {}))
+    owner._verify_installed_pending_topology(root, target_commit=target)
+    assert original_marker.exists(), 'checkout-hook-replaced-protected-evaluator'
+    assert not injected_marker.exists(), 'checkout-hook-code-obtained-authority'
+
+
+def test_foreign_git_namespace_cannot_authorize_candidate(tmp_path: Path, monkeypatch) -> None:
+    import subprocess
+    root, target = _repository(tmp_path)
+    foreign = tmp_path / 'foreign'
+    subprocess.run(['git', 'clone', '-q', '--no-hardlinks', str(root), str(foreign)], check=True)
+    (root / 'bcf_governance/tooling/ci_github_api.py').write_text('class GitHubAPI:\n    changed = True\n')
+    _commit(root, 'changed candidate runtime')
+    monkeypatch.setenv('GIT_DIR', str(foreign / '.git'))
+    monkeypatch.setenv('GIT_WORK_TREE', str(foreign))
+    with pytest.raises(owner.TrustedControllerCompatibilityError, match='repository|environment|namespace|redirect'):
+        owner.classify_trusted_controller_applicability(root, target_commit=target)
