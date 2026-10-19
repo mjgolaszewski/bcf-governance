@@ -187,5 +187,97 @@
       "Real-Git19 cases in these two behavioral modules, other consumers, canonical private projection, full required governance/semantic and installed qualification remain pending.",
       "Primary54b09168 and actual installedSDK250 package bytes are unchanged;82whole requirements/38slices unchanged."
     ]
+  },
+  "phase_ledger_presence_followup": {
+    "authority": false,
+    "contract_subject": "402f87ea",
+    "test_subject": "142a1b4f",
+    "implementation_subject": "2012c595",
+    "valid_phase_control_subject": "3bdc53e1",
+    "source_sha256": {
+      "bcf_governance/tooling/ci_authority_submit.py": "3700c8e356f931d2b6f863d46ef5f6960be5306d94023133a14c6288d1de6991",
+      "tests/test_authored_control_admission.py": "528cce1c7fb771d8a7bbf04f2e267477226d601fbda980fe5d93fbce9d7ac531"
+    },
+    "observations": {
+      "red": {
+        "cases": 3,
+        "passed": 1,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "green": {
+        "cases": 3,
+        "passed": 3,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "complete_green": {
+        "cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "disabled_predicate": {
+        "cases": 4,
+        "passed": 2,
+        "failed": 2,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "admission_regression": {
+        "cases": 41,
+        "passed": 41,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "candidate_regression": {
+        "cases": 61,
+        "passed": 61,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      },
+      "pure_architecture": {
+        "cases": 4,
+        "passed": 4,
+        "failed": 0,
+        "errors": 0,
+        "skipped": 0,
+        "forbidden_audit_events": 0
+      }
+    },
+    "raw_sha256": {
+      "phase-ledger-presence-red-attempt1/report.json": "bd9f42608e892f8968860a7feee9930c6bf2d9c993e2e78575a01b8e6ed19c0b",
+      "phase-ledger-presence-red-attempt1/cases.xml": "8af570753b256d6e4c90858457fbba7020e1663b0b4a67aee5d0843d8f34ff68",
+      "phase-ledger-presence-green-attempt1/report.json": "fd7c3846f28cbc54929e2dea2a574dac6c68fb4219b0ee3b921c062208849473",
+      "phase-ledger-presence-green-attempt1/cases.xml": "861f33a2fe03e54a5c925329fb512793ad2c5d3da8fcc2e71f554fa09ba38261",
+      "phase-ledger-presence-complete-green-attempt1/report.json": "234303afa4d7c879218b70aef85980e0875ca545928f5726f68e4c102bff9260",
+      "phase-ledger-presence-complete-green-attempt1/cases.xml": "4be706931080b98cc087024291c415bb392f2debb9c18cee64f0fa47bd6c7241",
+      "phase-ledger-presence-disabled-predicate-attempt1/report.json": "cd6b28f27c9767b57d86663953d238b37d58b54d5ce34606f7196a08c1359a7d",
+      "phase-ledger-presence-disabled-predicate-attempt1/cases.xml": "cc27aeaa909d3b35560bb0a50c49306dfb4503c22f0c66e357ce7c422b117059",
+      "submission-frontdoor-phase-presence-pure-regression-attempt1/report.json": "4546cf129b3cce4f8463e80b6e1f36ae299eb57be8009e7322f677509be84152",
+      "submission-frontdoor-phase-presence-pure-regression-attempt1/cases.xml": "803b86564c2d6eae16c6a00ead45e41dc65deb37c2c301e59f8a0ff1c4b7b1e3",
+      "submission-frontdoor-phase-presence-candidate-pure-attempt1/report.json": "93303b7ab826748af9c8a55fd3738ffd6975ca003de954b35262bf1fc73563aa",
+      "submission-frontdoor-phase-presence-candidate-pure-attempt1/cases.xml": "e91caa0cf97b78b913e57a2a96c619eaf83af296c5d4395e81a26a01035e6785",
+      "submission-frontdoor-phase-presence-pure-architecture-attempt1/report.json": "c63895995aceec2ac1e31434142d125a4a73792fdc37a8f6d0afec7fb6da970d",
+      "submission-frontdoor-phase-presence-pure-architecture-attempt1/cases.xml": "3772c53eb2d037acb9cd38bd41cbd648aca8ba2b3d4e5aa8db1236a892e325e7"
+    },
+    "scope": "Existing authored phase owner now receives malformed directory/dangling entries before environment selection; existing load_yaml_path refuses nonregular/nonsymlink input without opening FIFO/special-file content. No new phase evaluator.",
+    "limits": [
+      "Source behavioral102 and pure architecture4 pass; nineteen real-Git cases in these two behavioral modules plus other consumers, canonical private projection, complete required and installed qualification remain pending.",
+      "Complete phase fixtures validate before each single filesystem-type mutation; valid phase-present and absent-adopter paths reach existing environment selection.",
+      "Restoring only old is_file predicate in memory reproduces both genuine refusal-order failures without changing source files.",
+      "Primary54b09168 and actualSDK250 bytes unchanged; no independent workitem/phase/provider/release authority."
+    ]
   }
 }
