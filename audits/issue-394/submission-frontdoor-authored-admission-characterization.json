@@ -63,6 +63,15 @@
       "skips": 0,
       "forbidden_audit_events": 0,
       "scope": "Forty-three existing candidate submission test functions; two real-Git functions/thirteen cases retained for native qualification. Distinct from35 admission/registry/CLI cases; no real provider or native custody execution."
+    },
+    "pure_architecture": {
+      "cases": 4,
+      "passed": 4,
+      "failed": 0,
+      "errors": 0,
+      "skips": 0,
+      "forbidden_audit_events": 0,
+      "scope": "Four original architecture selectors for package layer/context, module size and public-wrapper import exclusion; actual selector identities retained in raw JUnit. Other architecture selectors and canonical qualification remain pending."
     }
   },
   "raw_sha256": {
@@ -81,7 +90,11 @@
     "submission-frontdoor-bdc8befc-candidate-pure-attempt1/report.json": "93303b7ab826748af9c8a55fd3738ffd6975ca003de954b35262bf1fc73563aa",
     "submission-frontdoor-bdc8befc-candidate-pure-attempt1/cases.xml": "b10a61af81853a0cd0e7b436f5bdf5c10f08b651048057067ec377004efb7f4e",
     "submission-frontdoor-bdc8befc-candidate-pure.stdout": "acdab3932349e368bc4d5b4a37285d5a23cc8f5e61c9a86b91ece5ffcb657585",
-    "submission-frontdoor-bdc8befc-candidate-pure.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    "submission-frontdoor-bdc8befc-candidate-pure.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "submission-frontdoor-65cdf59b-pure-architecture-attempt1/report.json": "c63895995aceec2ac1e31434142d125a4a73792fdc37a8f6d0afec7fb6da970d",
+    "submission-frontdoor-65cdf59b-pure-architecture-attempt1/cases.xml": "e5e4d22945a70d070e98a22f724d4a9ad72b97a86859bf1cce94eb8664fd7da0",
+    "submission-frontdoor-65cdf59b-pure-architecture.stdout": "d6d18a18d08a4d388ce94897bb1d2612a3d4fe92d7d450736c876fe19075cede",
+    "submission-frontdoor-65cdf59b-pure-architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
   },
   "limits": [
     "Guarded pure source unit observations only; forbidden selection witnesses did not materialize environments.",
@@ -90,7 +103,8 @@
     "Isolated branch is unintegrated; exact edcf successor source and its active SDK matrix remain unchanged.",
     "All82 whole requirements/38 bounded slice statuses unchanged; P32 active/P33-P35 dormant.",
     "Subsequent35-case pure regression passes without forbidden audit events. Six original real-Git cases and broader native/architecture/semantic/canonical projection/installed qualification remain pending; primary54b09168 unchanged.",
-    "Subsequent61 candidate submission pure cases pass with zero forbidden audit events; combined distinct source-unit population96. Four real-Git functions/nineteen cases across these two modules remain pending, as do other consuming modules and all native/canonical/installed qualification. No primary candidate changes."
+    "Subsequent61 candidate submission pure cases pass with zero forbidden audit events; combined distinct source-unit population96. Four real-Git functions/nineteen cases across these two modules remain pending, as do other consuming modules and all native/canonical/installed qualification. No primary candidate changes.",
+    "Four pure architecture cases pass4.66s with zero forbidden audit events. Source behavioral96 and architecture4 are distinct observations; this does not cover all eight architecture gates or installed/native consumers."
   ],
   "next_action": "After the current successor landing, independently qualify existing CLI/admission/normalization consumers, canonical projection and installed parity before integrating this bounded correction."
 }
