@@ -156,7 +156,8 @@ def test_native_guardian_retains_lease_after_parent_interruption(
     command = (
         "import json,os,sys,time; "
         "from pathlib import Path; "
-        "Path(sys.argv[1]).write_text(json.dumps([os.getppid(),os.getpid()])); "
+        "target=Path(sys.argv[1]); staged=target.with_suffix('.new'); "
+        "staged.write_text(json.dumps([os.getppid(),os.getpid()])); staged.replace(target); "
         "time.sleep(15)"
     )
     worker = """
@@ -208,7 +209,8 @@ def test_expired_cleanup_retains_lease_without_late_kill(
     runtime_root = Path(local_execution_admission.__file__).resolve().parents[2]
     command = (
         "import json,os,sys,time; from pathlib import Path; "
-        "Path(sys.argv[1]).write_text(json.dumps([os.getppid(),os.getpid()])); "
+        "target=Path(sys.argv[1]); staged=target.with_suffix('.new'); "
+        "staged.write_text(json.dumps([os.getppid(),os.getpid()])); staged.replace(target); "
         "time.sleep(15)"
     )
     worker = """
