@@ -80,5 +80,17 @@
     "adapter_calls": 13,
     "runtime_reachability": false,
     "dynamic_completeness": false
+  },
+  "predecessor_authority_disposition": {
+    "operator_control": "49803821-d798-537d-80e1-c638e93f673c",
+    "direct_user_request_cursor": 12209,
+    "instruction": "Prior-certified bytes retain their existing project gates. Record discovered flaws for successor repair/refactor; impose no retrospective release gate.",
+    "versions_preserved": [
+      "2.3.4",
+      "2.3.5"
+    ],
+    "new_repair_release_or_adoption_prerequisite_for_prior_projects": false,
+    "new_retrospective_host_envelope_gate_for_prior_projects": false,
+    "successor_qualification_scope": "Remaining repair and new capability qualification applies to the proposed2.5 implementation, not retroactive invalidation of predecessor custody."
   }
 }
