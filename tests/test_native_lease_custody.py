@@ -398,3 +398,47 @@ def test_invalid_native_timeout_rejects_before_command_allocation(
             )
         assert not marker.exists(), "invalid native deadline allocated its command"
     assert not _busy(lease_path)
+
+
+@pytest.mark.parametrize("consumer", ["shell-syntax", "interpreter-identity"])
+def test_preflight_children_observe_native_guardian(
+    lease_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, consumer: str,
+) -> None:
+    from bcf_governance.tooling import evidence_process_supervisor, preflight
+
+    # An actual executable fixture observes its kernel parent and descriptor table.
+    # It produces valid syntax/identity output only after proving custody.
+    monkeypatch.delenv("VIRTUAL_ENV", raising=False)
+    binary = tmp_path / ("bash" if consumer == "shell-syntax" else "identity-python")
+    with local_gate_lease("9" * 40):
+        identity = lease_path.stat()
+        program = f"""#!{sys.executable}
+import json,os,sys
+from pathlib import Path
+parent=Path('/proc',str(os.getppid()))
+expected=({identity.st_dev},{identity.st_ino})
+def descriptors(root):
+    found=False
+    for entry in (root/'fd').iterdir():
+        try: value=entry.stat()
+        except FileNotFoundError: continue
+        found |= (value.st_dev,value.st_ino)==expected
+    return found
+owned={str(Path(evidence_process_supervisor.__file__).resolve())!r}.encode() in (parent/'cmdline').read_bytes().split(bytes([0]))
+if not owned or not descriptors(parent) or descriptors(Path('/proc/self')):
+    print('preflight-native-owner-bypassed',file=sys.stderr)
+    sys.exit(23)
+if {consumer!r}=='interpreter-identity':
+    print(json.dumps(dict(executable={str(binary)!r},prefix=sys.prefix,base_prefix=sys.base_prefix,python_version='3.12.0')))
+"""
+        binary.write_text(program)
+        binary.chmod(0o700)
+        if consumer == "shell-syntax":
+            shell = tmp_path / "fixture.sh"
+            shell.write_text("true\n")
+            monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
+            monkeypatch.setattr(preflight, "_tracked_files", lambda _: [shell])
+            assert preflight._syntax_checks(tmp_path) == {"python": 0, "yaml": 0, "json": 0, "shell": 1}
+        else:
+            assert preflight._interpreter_identity(binary)["executable"] == str(binary)
+    assert not _busy(lease_path)
