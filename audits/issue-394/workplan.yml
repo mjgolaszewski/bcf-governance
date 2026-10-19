@@ -262,6 +262,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/semantic-operation-admission-verification.json
+    - audits/issue-394/semantic-shape-admission-contract.json
+    - audits/issue-394/semantic-shape-admission-verification.json
     - audits/issue-394/authored-control-admission-verification.json
     - audits/issue-394/scheduled-phase-native-profiles-verification.json
     - audits/issue-394/scheduled-phase-owner-controls-verification.json
@@ -841,6 +843,8 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - audits/issue-394/semantic-operation-admission-verification.json
+    - audits/issue-394/semantic-shape-admission-contract.json
+    - audits/issue-394/semantic-shape-admission-verification.json
     - audits/issue-394/authored-control-admission-verification.json
     - audits/issue-394/scheduled-phase-native-profiles-verification.json
     - audits/issue-394/scheduled-phase-owner-controls-verification.json
