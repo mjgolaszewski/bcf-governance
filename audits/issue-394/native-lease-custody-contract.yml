@@ -135,3 +135,19 @@ linux_input_abi_extension:
     - Exercise original native stdin/custody tests using both the source interpreter and the actual managed interpreter that exposed the failure before rebuilding/installing archives.
     - Unsupported kernel sealing must reject before command allocation, with no unsealed fallback; preserve original failure evidence and predecessor tool bytes.
   forbidden: [weakening seals, patching predecessor SDK or interpreter, claiming complete platform/runtime population from one interpreter pair]
+
+precommand_timeout_extension:
+  observed_source: 75befe3d145eed3b36e25912487faecf15ac3334
+  retained_failure: Original262 managed consumer rerun passes261 but guardian readiness can exceed explicit100ms body; current caller raises unknown-cleanup instead of authenticated TimeoutExpired before any command request.
+  required_behavior:
+    - Authenticate guardian readiness and explicit no-command terminal proof within the original absolute body-plus-cleanup ceiling; cleanup time is never additional command launch or execution authority.
+    - A late ready guardian receives only a pre-command cancellation request, never an expired command request. Guardian independently rejects every launch after body expiry.
+    - Before emitting unstarted timeout or cancellation, guardian proves kernel ECHILD; no dead-PID or absent marker substitutes for that proof.
+    - Preserve strict identity validation, stdout/stderr EOF, reaping, actual acquired native descriptor ownership and existing failed-exec error ABI.
+    - Only after exact authenticated no-command terminal and cleanup may the caller preserve TimeoutExpired. Missing, contradictory or expired proof remains a typed custody failure.
+    - Retain one same absolute cleanup boundary; no restart, extra cleanup window or late signals/mutations.
+  controls:
+    - Deterministically delay actual guardian construction past a short body deadline; prove command marker absent, explicit command_pid null timeout terminal, actual guardian reaped and original native capacity held until scope exit.
+    - Tampered unstarted identity, missing kernel-empty proof, duplicate/partial messages and exhausted cleanup still fail closed.
+    - Existing ordinary command timeout, failed exec, stdin, fatal parent and foreign sibling controls remain required.
+  compatibility: Internal parent and guardian ship as the same existing helper bytes; no new CLI, provider status, broker, graph or receipt family. Immutable operator helper71fd and predecessor installations remain unchanged.
