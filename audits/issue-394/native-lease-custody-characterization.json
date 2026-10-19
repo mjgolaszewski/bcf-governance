@@ -376,5 +376,37 @@
       "operation.json": "7047218e36944f6e3c2209009fafb19f969b2a61f550e70030a713dd56a31b47",
       "cases.xml": "0fe8426a9dfe02c6154360847efd28bace1c34883c13f9c9e7d4d929cd721485"
     }
+  },
+  "finite_stdin_structural_qualification": {
+    "authority": false,
+    "source": "2f07cef866a10add90baf946a05b6823d1ad66ce",
+    "tree": "0544a83edc7e8ac33a51519a72a64045cc5123ed",
+    "architecture_cases": 6,
+    "semantic_observations": 21,
+    "gates": [
+      "lint",
+      "existing_compile_gate",
+      "governance"
+    ],
+    "not_type_soundness": true,
+    "q_eof_reap": true,
+    "fresh_original_fence": true,
+    "raw_sha256": {
+      "native-lease-2f07cef8-structural-owned-attempt1/focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-owned-attempt1/focused.stdout": "cae056b54224c695d4e31a540783e7b20b3fb41b487612d985cf9aa673b993d0",
+      "native-lease-2f07cef8-structural-owned-attempt1/operation.json": "0e6495eef9de2b56a13d61a72feae0db9930231cd89e5edecb1250dad3cc22f2",
+      "native-lease-2f07cef8-structural-attempt1/architecture.stdout": "c3ef1d2bad5580f307ed3441c112f86e3d824d731f0d89789b3f24da5b58901c",
+      "native-lease-2f07cef8-structural-attempt1/architecture.xml": "6a14f546b1af8139294ffc3baca89788d4f04bd8ea6383224d53eeeda76900ed",
+      "native-lease-2f07cef8-structural-attempt1/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "native-lease-2f07cef8-structural-attempt1/report.json": "bcef796a8c82a91a21606c739e1d6d190ba416a3814595eb02e0c0850f5ee40c",
+      "native-lease-2f07cef8-structural-attempt1/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-attempt1/architecture.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-attempt1/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-attempt1/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-attempt1/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "native-lease-2f07cef8-structural-attempt1/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f"
+    },
+    "known_handles_verified_absent": true
   }
 }
