@@ -7,6 +7,7 @@ import hashlib
 from pathlib import Path
 import shutil
 import subprocess
+from .evidence_process_supervisor import run_admitted_command
 import tempfile
 from typing import Any, Mapping, Sequence
 
@@ -192,9 +193,9 @@ def _route(
         command = [
             str(python_executable) if value == "{python}" else value for value in argv
         ]
-        result = subprocess.run(
+        result = run_admitted_command(
             command,
-            cwd=root,
+            unbound_runner=subprocess.run, cwd=root,
             env={
                 "BCF_CONTROLLER_ROUTE_FILE": str(source),
                 "GITHUB_OUTPUT": str(output),
