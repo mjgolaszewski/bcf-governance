@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 from types import SimpleNamespace
+import json
+from pathlib import Path
 
 import pytest
 
 from tests.test_semantic_authority import REPO_ROOT, _yaml, contracts
-from bcf_governance.tooling.semantic_ownership_registry import load_registry
+from bcf_governance.tooling.semantic_ownership_registry import Registry, load_registry
 from bcf_governance.tooling import semantic_ownership_scan as scan
 
 
@@ -107,3 +109,49 @@ def test_valid_structural_catalog_preserves_counts_without_discovery(
         "families": len(_yaml("governance/semantic-families.yml")["families"]),
         "operations": len(_yaml("governance/application-operations.yml")["operations"]),
     }
+
+
+@pytest.mark.parametrize("state", ["disabled", "not_applicable", "advisory", "blocking"])
+@pytest.mark.parametrize("python_only", [False, True])
+def test_operation_admission_preserves_independent_registry_order(
+    tmp_path: Path, state: str, python_only: bool, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    (tmp_path / "governance-profile.yml").write_text(json.dumps({
+        "semantic_capabilities": {key: state for key in contracts.CAPABILITIES},
+    }))
+    events: list[str] = []
+    source = {"files": [], "types": [], "functions": [], "constructors": [],
+              "normalizations": [], "unresolved": []}
+    registry = Registry(
+        phase="P04", mode="report_only", unresolved_dynamic_policy="report",
+        authoritative_python_roots=("src",), generated_mirror_roots=(), entries=(),
+        raw={"source_authority": {"typescript_engine": "not_applicable_until_declared_by_consumer"}},
+    )
+
+    def canonical_registry(root):
+        if "discovery" not in events or (not python_only and "typescript-files" not in events):
+            pytest.fail("canonical registry read before independent source discovery")
+        events.append("registry")
+        return registry
+
+    def operations(root):
+        events.append("operations")
+        return SimpleNamespace(raw=_yaml("governance/application-operations.yml"))
+
+    monkeypatch.setattr(contracts, "load_application_operations", operations)
+    monkeypatch.setattr(scan, "load_registry", canonical_registry)
+    monkeypatch.setattr(scan, "discover_python_source",
+                        lambda root: (events.append("discovery") or source))
+    monkeypatch.setattr(scan, "tracked_typescript_files",
+                        lambda root: (events.append("typescript-files") or []))
+    monkeypatch.setattr(scan, "resolve_python_imports",
+                        lambda root, value, roots: (events.append("imports") or value))
+    monkeypatch.setattr(scan, "discover_source",
+                        lambda *args, **kwargs: (events.append("complete-source") or
+                                                (source, source, {}, registry)))
+    result = scan._discover_ownership_inputs(tmp_path, python_only=python_only)
+    expected = (["operations"] if state in {"advisory", "blocking"} else [])
+    expected += ["discovery"] + ([] if python_only else ["typescript-files"])
+    expected += ["registry", "imports"] + ([] if python_only else ["complete-source"])
+    assert events == expected
+    assert result[1] is source
