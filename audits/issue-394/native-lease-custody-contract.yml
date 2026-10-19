@@ -186,3 +186,15 @@ protected_runtime_closure_extension:
     - Candidate changes and committed target facts remain separate for source and installed-private layouts; target-only files and symlinks cannot evade source custody.
     - Dirty candidate or failed target inventory cannot authorize applicability; existing unrelated-file, schema/version, bootstrap and alternate-lane consumers remain mandatory.
   forbidden: [candidate-authored protected population, nonzero-is-absence, new graph or registry or receipt family, changing immutable predecessor gates]
+
+protected_git_namespace_extension:
+  owner: bcf_governance/tooling/trusted_controller_compatibility.py
+  required_behavior:
+    - Exact protected object queries and materialization ignore Git replacement refs; candidate-controlled checkout hooks cannot rewrite evaluator source.
+    - Reject inherited Git repository/index/object namespace redirection in authoritative committed-context capture; verify actual repository root before applicability.
+    - Run the selected protected classifier in isolated Python with explicit target import root and verify module origin. Preserve normal target-free authored inventory and existing public CLI/provider status names.
+  controls_before_production:
+    - Real replacement refs hiding or substituting the target classifier cannot suppress or replace protected code.
+    - A real post-checkout hook cannot inject another evaluator during compatibility materialization.
+    - Foreign GIT_DIR/GIT_WORK_TREE cannot authorize CURRENT for another candidate.
+  scope_limit: This extends existing Git/source/compatibility owners; complete dynamic effect and lifecycle populations remain independent open requirements.
