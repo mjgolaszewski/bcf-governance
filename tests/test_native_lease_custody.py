@@ -197,3 +197,61 @@ with local_gate_lease('d' * 40):
         # Resumed guardian observes the dead parent's channel and owns cleanup.
         # Do not kill or unlock it to make this assertion pass.
         _wait_for(lambda: not _busy(lease_path))
+
+
+def test_expired_cleanup_retains_lease_without_late_kill(
+    lease_path: Path, tmp_path: Path,
+) -> None:
+    from bcf_governance.tooling import local_execution_admission
+
+    marker = tmp_path / "expired-ready.json"
+    runtime_root = Path(local_execution_admission.__file__).resolve().parents[2]
+    command = (
+        "import json,os,sys,time; from pathlib import Path; "
+        "Path(sys.argv[1]).write_text(json.dumps([os.getppid(),os.getpid()])); "
+        "time.sleep(15)"
+    )
+    worker = """
+import os,sys
+sys.path.insert(0, sys.argv[1])
+from bcf_governance.tooling.local_execution_admission import local_gate_lease
+from bcf_governance.tooling.evidence_process_supervisor import run_owned_command
+with local_gate_lease('e' * 40):
+    run_owned_command([sys.executable, '-I', '-c', sys.argv[3], sys.argv[2]],
+                      cwd=os.getcwd(), env=os.environ.copy(),
+                      timeout_seconds=1, cleanup_seconds=1)
+"""
+    owner = subprocess.Popen(
+        [sys.executable, "-I", "-c", worker, str(runtime_root), str(marker), command],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+    )
+    guardian = child = None
+    child_start = None
+    try:
+        _wait_for(marker.exists)
+        guardian, child = json.loads(marker.read_text())
+        child_stat = Path('/proc', str(child), 'stat')
+        child_start = child_stat.read_text().rsplit(')', 1)[1].split()[19]
+        os.kill(guardian, signal.SIGSTOP)
+        _wait_for(lambda: Path('/proc', str(guardian), 'stat').read_text().split()[2] == 'T')
+        owner.kill()
+        owner.communicate(timeout=5)
+        time.sleep(2.1)  # Both declared body and cleanup boundaries now expired.
+        os.kill(guardian, signal.SIGCONT)
+        time.sleep(0.1)
+        assert child_stat.read_text().split()[2] != 'Z', "late cleanup killed the live child"
+        assert _busy(lease_path), "expired cleanup released unresolved native custody"
+    finally:
+        if guardian is not None:
+            try:
+                os.kill(guardian, signal.SIGCONT)
+            except ProcessLookupError:
+                pass
+        if owner.poll() is None:
+            owner.kill()
+        owner.communicate(timeout=5)
+        if child is not None and Path('/proc', str(child), 'stat').exists():
+            current = Path('/proc', str(child), 'stat').read_text().rsplit(')', 1)[1].split()
+            assert current[19] == child_start, "fixture cannot signal a recycled identity"
+            os.kill(child, signal.SIGKILL)  # Explicit reconciliation of this fixture's child.
+        _wait_for(lambda: not _busy(lease_path))
