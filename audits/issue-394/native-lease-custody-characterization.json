@@ -53,8 +53,9 @@
     "subject": "0fd3ec94e6d33975652cc5e66db12832939008b5",
     "cases_passed": 8,
     "original_test_unchanged": true,
-    "all_enclosing_descriptors_retained": true,
-    "terminal_quiescence_output_eof_supervisor_reap_observed": true
+    "terminal_quiescence_output_eof_supervisor_reap_observed": true,
+    "source_implements_all_enclosing_descriptor_handoff": true,
+    "nested_command_descriptor_control": "authored_unrun"
   },
   "direct_runner_characterization": {
     "subject": "3b80a4ca182a5f0b2f0ff2bdfd9760a3547fa8ae",
@@ -62,7 +63,7 @@
     "fixture_errors": 0
   },
   "adapter_implementation": {
-    "subject": "36fc28bf",
+    "subject": "36fc28bf650bb9ae0c8d9a17f49ded912aacc691",
     "status": "authored_unrun",
     "scope": [
       "submission runner",
@@ -74,7 +75,7 @@
     "complete_native_consumer_coverage": false
   },
   "conservative_source_census": {
-    "subject": "36fc28bf",
+    "subject": "36fc28bf650bb9ae0c8d9a17f49ded912aacc691",
     "module_import_closure": 166,
     "direct_effect_candidates": 63,
     "adapter_calls": 13,
@@ -82,8 +83,6 @@
     "dynamic_completeness": false
   },
   "predecessor_authority_disposition": {
-    "operator_control": "49803821-d798-537d-80e1-c638e93f673c",
-    "direct_user_request_cursor": 12209,
     "instruction": "Prior-certified bytes retain their existing project gates. Record discovered flaws for successor repair/refactor; impose no retrospective release gate.",
     "versions_preserved": [
       "2.3.4",
@@ -91,6 +90,7 @@
     ],
     "new_repair_release_or_adoption_prerequisite_for_prior_projects": false,
     "new_retrospective_host_envelope_gate_for_prior_projects": false,
-    "successor_qualification_scope": "Remaining repair and new capability qualification applies to the proposed2.5 implementation, not retroactive invalidation of predecessor custody."
+    "successor_qualification_scope": "Remaining repair and new capability qualification applies to the proposed2.5 implementation, not retroactive invalidation of predecessor custody.",
+    "operator_instruction_date": "2026-10-19"
   }
 }
