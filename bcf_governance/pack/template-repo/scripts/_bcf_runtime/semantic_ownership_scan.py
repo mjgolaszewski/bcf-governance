@@ -38,10 +38,10 @@ from .semantic_authority_contracts import (
     SemanticAuthorityError,
     OPERATIONS_PATH,
     validate_application_operations,
-    validate_semantic_contract_structure,
     validate_semantic_authority,
 )
 from .semantic_authority_commands import main as authority_main
+from . import semantic_authority_contracts as authority_contracts
 
 
 def _path_in_roots(symbol: str, roots: tuple[str, ...]) -> bool:
@@ -311,10 +311,13 @@ def _git(repo_root: Path, expression: str) -> str:
 
 
 def _discover_ownership_inputs(repo_root: Path, *, python_only: bool = False):
-    registry = load_registry(repo_root)
-    validate_semantic_contract_structure(repo_root, registry)
+    states = authority_contracts.capability_states(repo_root)
+    if states["application_operation_inventory"] in {"advisory", "blocking"}:
+        operations = authority_contracts.load_application_operations(repo_root)
+        authority_contracts._validate_operation_structure(operations.raw)
     inventory = discover_python_source(repo_root)
     typescript_files = [] if python_only else tracked_typescript_files(repo_root)
+    registry = load_registry(repo_root)
     inventory = resolve_python_imports(repo_root, inventory, registry.python_import_roots)
     if python_only:
         qualified = replace(registry, entries=tuple(entry for entry in registry.entries
