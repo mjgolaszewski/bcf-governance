@@ -15,6 +15,7 @@ from typing import Any
 
 import yaml
 
+from .evidence_process_supervisor import run_admitted_command
 from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
 
 from .ci_github_api import GitHubAPI, GitHubAPIError
@@ -41,9 +42,10 @@ class CIAuthorityPinResult:
 
 
 def _git(root: Path, *args: str, input_bytes: bytes | None = None) -> bytes:
-    result = subprocess.run(
+    result = run_admitted_command(
         ["git", "-C", str(root), *args],
         input=input_bytes,
+        unbound_runner=subprocess.run,
         capture_output=True,
         check=False,
     )

@@ -279,5 +279,73 @@
       "native-lease-b8e7daf9-structural-attempt1/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "native-lease-b8e7daf9-structural-attempt1/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f"
     }
+  },
+  "finite_stdin_extension": {
+    "contract_subject": "2b58ae8e",
+    "characterization": {
+      "authority": false,
+      "source": "c479a4a7c17f8a682058dc7087b61c48435afd3b",
+      "genuine_git_bypasses": 2,
+      "unsupported_bound_input_cases": 7,
+      "already_rejected_invalid_controls": 3,
+      "fixture_errors": 0,
+      "q_eof_reap": true,
+      "handles_absent": [
+        388810,
+        388818,
+        388819
+      ],
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "c634ec63b317ffc19399b333894637b33671e2cb1dc198a8837bce584884d2a4",
+        "operation.json": "21b77fbf0d57bd8e0d4f836357ae8f9b5e03cce13af56e5734a98400f9896a3b",
+        "cases.xml": "9ba7abeeb36face657f61c4d6f218120e22f1fd693decb77a524c0175224a6f7"
+      }
+    },
+    "implementation_subject": "d5f7ae5fd2b73efdbbf3017819f625efa51a4f29",
+    "partial_first_run": {
+      "passed": 33,
+      "fixture_failure": 1,
+      "cause": "Original ordinary-release inode assertion misplaced under newly added failed-exec input test; restored exact original AST in a50ddf9b. Production unchanged by fixture repair."
+    },
+    "qualification": {
+      "authority": false,
+      "source": "a50ddf9be34456c7e39d92737616f8697526234f",
+      "tree": "1d08eeb587cd8a399c05302bdcf4678ef9c496f3",
+      "cases_passed": 34,
+      "stdin_cases_included": 12,
+      "original_namespace_case_unchanged": true,
+      "q_eof_reap": true,
+      "handles_absent": [
+        394929,
+        394937,
+        394938
+      ],
+      "fresh_original_fence": true,
+      "raw_sha256": {
+        "focused.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "focused.stdout": "008fa8c12ac8d6aa8237696175b667504bae228f2d78d729ce3fee1fc81dbb07",
+        "operation.json": "49ef28e82f88073a6d031480568919564c5499b8fa92fd41f6398ec738a349cd",
+        "cases.xml": "973a445d94c45e7ae10475f403e0c9ec5e5770446116e9c7bdee51046017fb39"
+      },
+      "complete_native_population_or_installed_claim": false
+    },
+    "stdin_delivery": "Finite bytes staged in sealed anonymous file; guardian validates actual descriptor identity and seals. Intended stdin alone reaches command; unbound runners unchanged. No general streaming or terminal-input contract claimed.",
+    "additional_controls": {
+      "subject": "5a2007e0",
+      "count": 2,
+      "scope": "Input mutation refusal and actual stdin lifetime across fatal parent death",
+      "status": "authored_unrun"
+    },
+    "canonical_projection": {
+      "owner": ".github/scripts/build_pack_manifest.py",
+      "generator_check": "passed",
+      "exact_template_copies": 6,
+      "scope": "Three canonical modules in both template copies; manifest generation only; installed qualification remains pending"
+    },
+    "original_authority_reconciliation_consumers": "pending",
+    "installed_qualification": false,
+    "complete_native_population": false
   }
 }

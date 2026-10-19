@@ -528,7 +528,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "2f7477d3998dbe42ffc29c04659a60b7043522b1f19b4cb32a22b1684b413965"
+      "sha256": "d6c7160452d375a5727bd5296cecd4f902aede8d551164378b638bf7dd1bcd22"
     },
     "scripts/_bcf_runtime/ci_authority_preflight.py": {
       "operation": "copy",
@@ -952,7 +952,7 @@
     },
     "scripts/_bcf_runtime/evidence_process_supervisor.py": {
       "operation": "copy",
-      "sha256": "145c2ad5e1cfd10e13bedc792568365d27353f9c2499ed3117ce6582be7a577d"
+      "sha256": "2760ae0e62c3b4a11f84b9f02d72f6d535e43a17ced71ee96bfad4cc766a0666"
     },
     "scripts/_bcf_runtime/evidence_reuse_attestations.py": {
       "operation": "copy",
@@ -1407,7 +1407,7 @@
     },
     "scripts/_bcf_runtime/reconcile_authority_transition.py": {
       "operation": "copy",
-      "sha256": "0f1545c07579afe3ef35af3541120f0fc8daf429bd320e77df962aa57c01c193"
+      "sha256": "bb8b071e32d2834f783036bdace99f4c8a1d3fd891f26ee24af12b2a0207cc50"
     },
     "scripts/_bcf_runtime/reconcile_stage_ledger.py": {
       "operation": "copy",

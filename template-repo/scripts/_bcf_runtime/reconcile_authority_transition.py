@@ -12,6 +12,7 @@ from typing import Callable, Iterable, Protocol
 
 import yaml
 
+from .evidence_process_supervisor import run_admitted_command
 from .governance_install.transaction import copy_repository_shadow
 from .governance_validation.evidence_contracts import validate_authored_gate_controls
 
@@ -54,9 +55,10 @@ def _git(
     input_bytes: bytes | None = None,
     check: bool = True,
 ) -> subprocess.CompletedProcess[bytes]:
-    result = subprocess.run(
+    result = run_admitted_command(
         ["git", "-C", str(root), *args],
         input=input_bytes,
+        unbound_runner=subprocess.run,
         capture_output=True,
         check=False,
     )
