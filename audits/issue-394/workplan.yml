@@ -317,7 +317,6 @@ workitems:
     - audits/issue-394/recovery-mutation-frontier-verification.json
   foundation.deadlines:
     summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
-    next_action: Retain semantic_source_reader_custody evidence in native-lease-custody-characterization.json; complete remaining native consumer/deadline populations and qualify combined archives/adopters before closure.
     status: IN_PROGRESS
     owner: home:bcf-governance:bcf-394-ironwatch
     bounded_context: ci_authority
@@ -2597,6 +2596,7 @@ measurement_policy:
   - no p95 certification from insufficient observations
   approved_targets: null
 verification_commands:
+- .venv/bin/python -m pytest -q tests/test_ci_graph_composition.py::test_train_inventory_covers_all_identified_requirements_and_workitems tests/test_ci_graph_composition.py::test_workitem_completion_cites_observations_without_promoting_them_to_truth
 - .venv/bin/python scripts/validate_governance_yaml.py --repo-root .
 - .venv/bin/python -m pytest -q tests
 completion:
@@ -4698,8 +4698,3 @@ implementation_slices:
     - Actual current provider-selected adopter profiles, malicious same-user isolation and host-wide admission remain unqualified.
     - Canonical exact combined proof and independently computed closure remain required; no whole I03/I21/I23, P33 activation,
       approved performance or immutable2.5 custody claim.
-    preflight_runtime_qualification:
-      subject: 09e3ef8b980fd50998b5dc233863fe7ac6bd688f
-      evidence: audits/issue-394/native-lease-custody-characterization.json#preflight_runtime_consumers
-      scope: Four preflight consumers;53 source,69 managed consumer and4 installed cases;8 actual guardian descriptors per installation.
-      limits: Complete native/lifecycle/deadline populations, latest combined archives and real adopters remain open; no acceptance status advances.

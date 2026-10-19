@@ -1138,6 +1138,36 @@
       "All82 whole requirement objects and38 existing slice statuses remain unchanged; P32 active, P33-P35 dormant.",
       "Preserved immutable2.3.4 and2.3.5 SDKs were not modified."
     ],
-    "previous_governed_summary": "692cb9e4: semantic Git guardian custody109x2/4fresh-upgradePASS;2source+2stale-copyRED retained. Full lifecycle/native/deadlines/adopters/targets/custody open;82/38 unchanged. See audits/issue-394/native-lease-custody-characterization.json."
+    "previous_governed_summary": "692cb9e4: semantic Git guardian custody109x2/4fresh-upgradePASS;2source+2stale-copyRED retained. Full lifecycle/native/deadlines/adopters/targets/custody open;82/38 unchanged. See audits/issue-394/native-lease-custody-characterization.json.",
+    "workplan_schema_correction": {
+      "authority": false,
+      "scope": "Data correction only; closed schema/tests/production remain unchanged",
+      "source_subject": "ad5a87701965df0780e42caa23a9ac48cf01666a",
+      "before_sha256": "72c94e6acb83be4e1101b0b765e3ca763c41ef1e486a2f2ff44daa0d2019af04",
+      "unsupported_fields": {
+        "workitems.foundation.deadlines.next_action": "Retain semantic_source_reader_custody evidence in native-lease-custody-characterization.json; complete remaining native consumer/deadline populations and qualify combined archives/adopters before closure.",
+        "implementation_slices.evidence-command-terminal-cleanup.preflight_runtime_qualification": {
+          "subject": "09e3ef8b980fd50998b5dc233863fe7ac6bd688f",
+          "evidence": "audits/issue-394/native-lease-custody-characterization.json#preflight_runtime_consumers",
+          "scope": "Four preflight consumers;53 source,69 managed consumer and4 installed cases;8 actual guardian descriptors per installation.",
+          "limits": "Complete native/lifecycle/deadline populations, latest combined archives and real adopters remain open; no acceptance status advances."
+        }
+      },
+      "genuine_failures": 3,
+      "source_cases_passed": 2450,
+      "wheel_sdist_matrix_stages": "unstarted",
+      "disposition": "Preserve unsupported values here; retain qualification/deadline citations through existing workitem evidence fields. Do not widen schema or weaken tests.",
+      "after_sha256": "0f2d82a6e1935ca519d4eabb506f41ad11243f9e4008677a42c0c18c3dc285b5",
+      "previous_governed_summary": "40ed3750: preflight custody53source/69managed/4installed PASS;8guardians/install,6architecture/21semantics PASS. Full lifecycle/native/deadlines/adopters/targets/custody open;82/38 unchanged. See audits/issue-394/native-lease-custody-characterization.json.",
+      "focused_existing_tests_passed": 5,
+      "production_schema_and_tests_changed": false,
+      "verification_command_added_before_full_suite": ".venv/bin/python -m pytest -q tests/test_ci_graph_composition.py::test_train_inventory_covers_all_identified_requirements_and_workitems tests/test_ci_graph_composition.py::test_workitem_completion_cites_observations_without_promoting_them_to_truth",
+      "raw_sha256": {
+        "bound-input-ad5a8770-matrix-attempt1/report.json": "1b45eee41448356d226fafc21f2c6f4094104b7fd0e792d1a3d83fa652545a52",
+        "bound-input-ad5a8770-matrix-attempt1/source-matrix-tests.stdout": "51cfd228d12884fd2a5861ef5680c55afc882051c8d1f53cc0d043f282cc67ce",
+        "workplan-schema-repair-focused-attempt1/cases.xml": "e6c8fc9674436075edfb45c351d67b316a3833eda5da3752ac3e7f81f23be714",
+        "runtime/runtime-verification.json": "a6ef790e49e16bf1055aaf92748845a10c43fe76bf6080a2bdec8f5e226ab1e0"
+      }
+    }
   }
 }
