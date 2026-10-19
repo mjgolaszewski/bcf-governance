@@ -67,6 +67,128 @@ def test_native_lease_releases_after_ordinary_unbound_scope(lease_path: Path) ->
         identity = lease_path.stat()
         assert _busy(lease_path)
     assert not _busy(lease_path)
+
+
+@pytest.mark.parametrize("consumer", ["workflow-authority", "authority-transition"])
+def test_git_authority_stdin_has_real_native_custody(
+    lease_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, consumer: str,
+) -> None:
+    import hashlib
+    import shutil
+    from bcf_governance.tooling import ci_authority_pins, reconcile_authority_transition
+    from bcf_governance.tooling import evidence_process_supervisor
+
+    git = shutil.which("git")
+    assert git is not None
+    subprocess.run([git, "init", "-q", str(tmp_path)], check=True)
+    binary = tmp_path / "git"
+    payload = b"native stdin\x00\xff\n"
+    expected = hashlib.sha1(b"blob " + str(len(payload)).encode() + b"\x00" + payload).hexdigest()
+    with local_gate_lease("8" * 40):
+        identity = lease_path.stat()
+        binary.write_text(f"""#!{sys.executable}
+import os,sys
+from pathlib import Path
+parent=Path('/proc',str(os.getppid()))
+expected=({identity.st_dev},{identity.st_ino})
+def has_lease(root):
+    for entry in (root/'fd').iterdir():
+        try: value=entry.stat()
+        except FileNotFoundError: continue
+        if (value.st_dev,value.st_ino)==expected: return True
+    return False
+owned={str(Path(evidence_process_supervisor.__file__).resolve())!r}.encode() in (parent/'cmdline').read_bytes().split(bytes([0]))
+if not owned or not has_lease(parent) or has_lease(Path('/proc/self')):
+    print('git-stdin-native-owner-bypassed',file=sys.stderr)
+    sys.exit(23)
+os.execv({git!r},[{git!r},*sys.argv[1:]])
+""")
+        binary.chmod(0o700)
+        monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
+        owner = ci_authority_pins if consumer == "workflow-authority" else reconcile_authority_transition
+        actual = owner._git(tmp_path, "hash-object", "--stdin", input_bytes=payload)
+        assert actual.strip() == expected.encode()
+    assert not _busy(lease_path)
+
+
+@pytest.mark.parametrize("payload,text", [(b"\x00\xff\n", False), ("mañana\r\n", True), (b"", False), ("", True)])
+def test_bound_native_stdin_delivers_exact_bytes(lease_path: Path, payload, text: bool) -> None:
+    import hashlib
+    import locale
+    from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+
+    expected = payload.encode("utf-8" if sys.flags.utf8_mode else locale.getencoding()) if text else payload
+    program = "import hashlib,sys; print(hashlib.sha256(sys.stdin.buffer.read()).hexdigest())"
+    with local_gate_lease("7" * 40):
+        result = run_admitted_command(
+            [sys.executable, "-I", "-c", program], capture_output=True, text=text,
+            input=payload, timeout=5, check=True,
+        )
+        digest = result.stdout.strip()
+        assert digest == (hashlib.sha256(expected).hexdigest() if text else hashlib.sha256(expected).hexdigest().encode())
+    assert not _busy(lease_path)
+
+
+def test_bound_native_none_input_preserves_inherited_stdin(lease_path: Path) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+
+    identity = os.fstat(0)
+    program = "import os; s=os.fstat(0); print(str(s.st_dev)+':'+str(s.st_ino))"
+    with local_gate_lease("6" * 40):
+        result = run_admitted_command(
+            [sys.executable, "-I", "-c", program], capture_output=True, text=True,
+            input=None, timeout=5, check=True,
+        )
+        assert result.stdout.strip() == f"{identity.st_dev}:{identity.st_ino}"
+
+
+def test_bound_native_unread_large_input_cannot_stall_timeout(lease_path: Path) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+
+    with local_gate_lease("5" * 40):
+        with pytest.raises(subprocess.TimeoutExpired):
+            run_admitted_command(
+                [sys.executable, "-I", "-c", "import time; time.sleep(10)"],
+                capture_output=True, input=b"x" * 1048576, timeout=.05,
+            )
+        assert _busy(lease_path)
+    assert not _busy(lease_path)
+
+
+@pytest.mark.parametrize("payload,text", [("wrong", False), (b"wrong", True), (23, False)])
+def test_bound_native_invalid_input_rejects_before_child(
+    lease_path: Path, tmp_path: Path, payload, text: bool,
+) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import OwnedProcessError, run_admitted_command
+
+    marker = tmp_path / "invalid-stdin-child"
+    with local_gate_lease("4" * 40):
+        with pytest.raises((TypeError, OwnedProcessError)):
+            run_admitted_command(
+                [sys.executable, "-I", "-c", "from pathlib import Path; import sys; Path(sys.argv[1]).touch()", str(marker)],
+                capture_output=True, text=text, input=payload,
+            )
+        assert not marker.exists()
+
+
+def test_bound_native_failed_exec_closes_input_descriptors(lease_path: Path) -> None:
+    from bcf_governance.tooling.evidence_process_supervisor import run_admitted_command
+
+    def descriptors():
+        values = set()
+        for entry in Path('/proc/self/fd').iterdir():
+            try: values.add((entry.name, os.readlink(entry)))
+            except FileNotFoundError: pass
+        return values
+
+    with local_gate_lease("3" * 40):
+        before = descriptors()
+        with pytest.raises(FileNotFoundError):
+            run_admitted_command(
+                [str(lease_path.parent / "missing-stdin-executable")],
+                capture_output=True, input=b"owned input", timeout=5,
+            )
+        assert descriptors() == before
     assert lease_path.stat().st_ino == identity.st_ino
 
 
