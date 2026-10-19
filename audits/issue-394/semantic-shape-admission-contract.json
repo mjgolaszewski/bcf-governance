@@ -17,7 +17,8 @@
     "After schema and structural validation, validate every authored operation semantic shape before any population discovery or effect traversal, including contradictions in the final row.",
     "Use the existing predicate without duplicating its semantic rules or introducing another evaluator.",
     "Consume the same predicate during enabled structural contract admission before callers allocate source inventory or a TypeScript compiler.",
-    "The actual shared scanner input boundary must consume enabled structural admission before source discovery. Loading the existing registry moves before inventory; no parallel admission owner or ambient provider context is added.",
+    "The actual shared scanner input boundary must consume enabled operation schema, identity and semantic-shape admission before source discovery. The canonical semantic Registry must still load after independent Python and TypeScript file discovery; early operation admission must neither supply nor filter the discovered source population.",
+    "Preserve the existing discovery_preceded_registry_load report proposition with actual execution order; do not change the flag, redefine discovery or weaken the original test to conceal an earlier canonical Registry read.",
     "Preserve disabled and nonenabled capability behavior: no new ambient contract reads, source discovery or network access.",
     "Preserve language-filter behavior: authored semantic contradictions remain invalid even for operations whose source language is not selected, as the existing operation validator already requires.",
     "Valid operations retain their original discovery, exact population, entrypoint, effect ordering and observation semantics. Structural acceptance confers no runtime, lifecycle or release authority.",
@@ -28,6 +29,7 @@
     "Projection without a read model, nonmutating declared ports, mutation without a port, authority without a port, and model-callable authority each reject through the existing predicate.",
     "Enabled structural admission rejects the same contradictions with source discovery forbidden; disabled and nonenabled capability counterparts preserve existing no-read behavior.",
     "The actual authored scanner rejects each late contradiction with its source-discovery function forbidden, rather than relying on an unrelated earlier caller to have validated it.",
+    "Run unchanged tests.test_semantic_ownership::test_source_discovery_precedes_registry_access before the compatibility correction. Add an enabled-capability counterpart that checks early operation admission while canonical Registry access still follows independent discovery.",
     "Valid structural admission and complete ordinary operation evaluation remain accepted; Python-only and mixed/TypeScript compatibility are qualified separately."
   ],
   "verification": [
