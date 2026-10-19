@@ -1,0 +1,63 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/native-lease-custody-contract.yml
+  status: planned
+  authority: false
+workitems: [P32-P0-05, P32-P0-07]
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+baseline: 8e48dddc056a805d5fa20979fce167e2d9f5adb6
+problem:
+  - Released 2.3.4 and 2.3.5 unconditionally unlock the native lease in the calling process and lack the qualified child-tree supervisor.
+  - The successor supervises evidence commands, but its lease still unlocks unconditionally; the supervisor exits on unresolved cleanup without owning the native descriptor.
+  - Normalization and reconciliation also invoke subprocess runners beneath that lease. Fixing one evidence consumer cannot establish complete native custody.
+scope:
+  intent: Bind the existing native lease to the existing kernel child-tree owner throughout interrupted execution and unresolved cleanup, preserving the canonical submission transaction and CLI.
+  targets:
+    - bcf_governance/tooling/local_execution_admission.py
+    - bcf_governance/tooling/evidence_process_supervisor.py
+    - bcf_governance/tooling/evidence_execution.py
+    - bcf_governance/tooling/local_pr_context.py
+    - bcf_governance/tooling/local_pr.py
+    - bcf_governance/tooling/ci_authority_submit.py
+    - bcf_governance/tooling/scaffold_governance_artifacts.py
+    - tests/test_evidence_process_supervisor.py
+    - tests/test_local_execution_admission.py
+    - tests/test_native_lease_custody.py
+  source_boundaries:
+    - Inventory every native command consumer reached while the canonical normalization or prospective lease is held, including nested and recovery paths.
+    - Reuse existing command, deadline, execution-state and supervisor owners; add no broker, daemon service, graph or receipt family.
+    - Existing pinned operator supervisor bytes remain immutable. Qualify changed candidate supervision beneath that independent operator owner.
+required_behavior:
+  - Before command allocation, bind the actual acquired descriptor to the kernel supervisor; the invoking SDK process exiting must not release custody of live descendants.
+  - A parent context must not explicitly unlock an inherited open-file-description lock while the kernel guardian still requires it.
+  - Normal completion releases capacity only after owned children are quiescent and output and termination have been authenticated through the existing protocol.
+  - Interrupted observation, parent death, exhausted cleanup, escaped descendants and lost reports cannot imply successful cleanup or unowned capacity.
+  - Unresolved cleanup retains the actual descriptor in a live, identifiable owner for explicit reconciliation; missing capture or stale owner text cannot clear it.
+  - Preserve the existing logical submission transaction separately from native capacity. Hosted provider waiting must not retain an idle whole-submit native lease or authorize a duplicate mutation.
+  - Bind existing declared body and cleanup limits before allocation, clamp recovery to the same absolute boundary and perform no cleanup mutation after it expires.
+  - Route all applicable native consumers through qualified custody while preserving argument, environment, output, error and genuinely local or unbound behavior.
+  - Preserve installed runtime and protected evaluator or policy source separation. A caller-authored namespace or source override cannot stand in for lease custody.
+  - Keep ordinary CLI grammar, provider statuses, exact push and recovery semantics unchanged; explicitly version any unavoidable public contract change.
+controls_before_production:
+  - Use real processes and locks to demonstrate the existing unconditional-unlock gap; distinguish fixture failures from a genuine ownership failure.
+  - A competing invocation remains busy and allocates no child while an escaped descendant or unresolved guardian still owns the original lease.
+  - Kill or interrupt the invoking process during command execution and during cleanup; the exact guardian descriptor remains held until independently observed quiescence.
+  - Cover parent death before command launch, failed exec, missing or contradictory completion, output retained by descendants and report persistence failure.
+  - Cover timeout, SIGINT, SIGTERM, fatal parent death and escaped setsid grandchildren without affecting a foreign sibling.
+  - Verify normal release, no descriptor leaks and no native capacity held during the existing provider-wait portion of submission.
+  - Verify normalization failure, busy admission, crash after accepted mutation, duplicate invocation and out-of-order recovery callbacks cannot push or allocate duplicate proof.
+qualification:
+  - Run the complete affected original runner, normalization, prospective, supervisor and recovery consumers plus cause-specific controls.
+  - Prove complete lease-to-native-consumer coverage; removing an edge and its direct test together must not erase the independent population obligation.
+  - Run architecture, semantic, governance and canonical package checks on exact candidate bytes.
+  - Qualify source, wheel, sdist and SDK-absent projected runtimes through their real consumers before integration or a supported-runtime claim.
+  - A released repair requires exact published custody and authorized adopter installation; local implementation or an AgentBus acknowledgment is not that release receipt.
+forbidden:
+  - Patching immutable predecessor SDK installations or inventing inherited-FD CLI flags or namespace capabilities.
+  - Resetting or replacing the original physical fence or inferring safety from a free lock, dead parent PID or missing output alone.
+  - Killing an unresolved guardian merely to make a retry possible.
+  - Editing maintained adopters, generated workflows or authority pins by hand.
+  - Advancing any of the 82 whole requirements or activating P33 from this bounded contract.
+next_action: Characterize the actual lease and supervisor failure with real-process controls, then implement the smallest complete ownership handoff through the existing native consumer boundaries.
