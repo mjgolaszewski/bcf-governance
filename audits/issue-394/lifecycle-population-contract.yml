@@ -225,3 +225,20 @@ submission_frontdoor_authored_admission:
     observations: Four genuine ordering failures corrected; six unchanged CLI controls and ten CLI/direct consumers pass; disabling only the CLI edge restores the same four failures.
     status: isolated_pure_source_only
     next_action: Qualify canonical projection, complete affected consumers and installed parity after the current frozen successor transaction; do not infer normalization closure.
+
+submission_frontdoor_provider_configuration:
+  workitem: P32-P0-07
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query_then_command
+  targets: [bcf_governance/tooling/ci_commands.py, tests/test_authored_control_admission.py]
+  observed: Actual installedSDK250 rejects absent GITHUB_TOKEN before constructing its provider client, but submit CLI currently attempts project environment selection first.
+  contract:
+  - After existing cheap authored admission, construct the existing environment_api client before project environment selection or materialization.
+  - Missing token and invalid non-HTTPS API configuration must fail through existing typed CLI errors before project resources or proof/provider mutation ports.
+  - This constructor performs configuration checks only; it makes no provider request and confers no authenticated repository, lifecycle or release authority.
+  - Valid configuration still reaches the unchanged project interpreter selection and the same constructed client is consumed by submit_candidate.
+  - Preserve ordinary CLI grammar, error causes, credential confidentiality and direct submission APIs; do not add token fallback or credential storage to product code.
+  controls: [real missing-token constructor refusal, real non-HTTPS constructor refusal, valid configuration reaches existing environment selection]
+  forbidden: [primary54b09168 mutation, immutable tool changes, new provider evaluator, credential logging, network calls in pure configuration tests, phase or normalization closure]
