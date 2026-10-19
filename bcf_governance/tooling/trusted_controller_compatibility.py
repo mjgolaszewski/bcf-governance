@@ -636,7 +636,7 @@ def verify_pr_bootstrap_compatibility(
 
 def _require_candidate_subject(root: Path, expected: str) -> None:
     if _git(root, "rev-parse", "HEAD") != expected or _git(root, "status", "--porcelain"):
-        raise TrustedControllerCompatibilityError("candidate subject changed during trusted applicability")
+        raise TrustedControllerCompatibilityError("candidate subject changed or contains uncommitted changes during trusted applicability")
 
 
 def verify_trusted_controller_compatibility(
