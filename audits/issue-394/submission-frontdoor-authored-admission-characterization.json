@@ -614,5 +614,97 @@
       "manifest-check.stdout": "3449683b90dc528e4a2aa3257a04081f8fa8ee99f0e8fe057aefc4917e505dd0"
     },
     "limits": "Canonical projection and one private-copy architecture test only; full required/semantic/package/installed checks and integration pending"
+  },
+  "required_source_qualification": {
+    "authority": false,
+    "source": {
+      "commit_sha": "bd32f30ab93e1e033a84cbf4eaf7014142a39b35",
+      "tree_sha": "c4d8b622da0dccee1d10855b49e91499fc42099d"
+    },
+    "commands": [
+      {
+        "label": "lint",
+        "returncode": 0,
+        "elapsed_seconds": 4.645557566997013
+      },
+      {
+        "label": "typecheck",
+        "returncode": 0,
+        "elapsed_seconds": 2.626768895002897
+      },
+      {
+        "label": "pack-parity",
+        "returncode": 0,
+        "elapsed_seconds": 12.147911818989087
+      },
+      {
+        "label": "runtime-smoke",
+        "returncode": 0,
+        "elapsed_seconds": 1.199413034992176
+      },
+      {
+        "label": "secret-scan",
+        "returncode": 0,
+        "elapsed_seconds": 0.9780346240004292
+      },
+      {
+        "label": "architecture-canonical-union",
+        "returncode": 0,
+        "elapsed_seconds": 173.05359915101144
+      },
+      {
+        "label": "governance",
+        "returncode": 0,
+        "elapsed_seconds": 27.23830560699571
+      }
+    ],
+    "architecture": {
+      "canonical_gates": 8,
+      "exact_cases": 9,
+      "authority": false,
+      "gate_receipts_issued": false
+    },
+    "semantic": {
+      "authority": false,
+      "verdict": "conformant",
+      "unchanged_operations": 21,
+      "elapsed_seconds": 185.08642332199088
+    },
+    "input_files_unchanged": 2188,
+    "source_clean_unchanged": true,
+    "elapsed_seconds_unmatched": 409.425,
+    "independent_readback_sha256": "12351568a27f4016748c3cc5d4eb87ae8637bd319b24506f7213d601e61ca635",
+    "raw_sha256": {
+      "stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "execution.json": "07c46413ea00e880292e1891dac776e5cabc44db4cb2b56132b1911b1fb0bad8",
+      "guardian-kernel-resource-readback.json": "e29deeeed4a7b8ec9822d4ef5d644cd9b950dab1b49d4c4b148ef43d80c860a4",
+      "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command.stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "immediate-live-readback.json": "262181bb0c84bcbdc325016556688a08297b5da86cff9bb56db1349b70dd14d4",
+      "command.stdout.log": "3d85882b852972a652961f52596b9efade1fea9e4c61b9b1668a17fb6dfa05e2",
+      "admission.json": "e5043d2264e0128088d483c3072504fed072713bfcd2033c04ff6bd78d6ab025",
+      "checks/architecture-canonical-union.stdout": "984b52cf7cc5250048e881dacd252b100b605594bd29b79c034d8aa174a6c8ef",
+      "checks/architecture.xml": "d8fbb90b6f9777ccd81f2ad510f0b149db9fc1904d6cd80e6b73a95ac9eb4247",
+      "checks/governance.stdout": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b",
+      "checks/report.json": "fb272d305fd6fa44228063982ec76591d56a7dab3559e9d5c231b40371cdb358",
+      "checks/runtime-smoke.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/pack-parity.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/runtime-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/lint.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/lint.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/typecheck.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/architecture-canonical-union.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/pack-parity.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/typecheck.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/secret-scan.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/governance.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/secret-scan.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "checks/semantic-observation.json": "4aa3321f60ad18fb79b9244e18a0b5afc83199252be01bb20213f693d457fb6f"
+    },
+    "limits": [
+      "Source required-check observations only; no governed gate receipts issued",
+      "Development distribution and installed consumer qualification pending",
+      "No complete lifecycle, phase or release authority"
+    ]
   }
 }
