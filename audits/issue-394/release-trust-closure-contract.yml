@@ -1,0 +1,48 @@
+schema_version: '1.0'
+issue: 394
+status: CONTRACT_AUTHORED_IMPLEMENTATION_PENDING
+authority: false
+bounded_context: release_dependency_closure
+architectural_layer: existing_release_infrastructure
+operation: command_admitted_dependency_update
+baseline_commit: 0471f66d41c2ade290471b9d848896ac0f3c94bf
+problem:
+  advisory: https://github.com/advisories/GHSA-6q48-6c7w-9gw2
+  admitted_certifi: 2026.7.22
+  minimum_remediated_certifi: 2026.10.19
+  consequence: retained closure cannot qualify final release trust
+scope:
+  target_files:
+    - release/requirements-cp312-linux-x86_64.lock
+    - release/wheelhouse-manifest.yml
+  existing_owners:
+    - bcf_governance/tooling/release_closure.py
+    - bcf_governance/tooling/release_runtime_verification.py
+    - bcf_governance/tooling/release_source_bindings.py
+  test_only_installer: replace affected retained pip with authenticated patched installer in a new qualification packet
+  public_contract_change: false
+invariants:
+  - Authenticate exact replacement wheel name and SHA256 against official publisher metadata and actual bytes.
+  - Update lock and manifest together; derive manifest lock digest from exact lock bytes.
+  - Preserve every unrelated dependency version and digest unless resolution proves a required change.
+  - Admit only exact manifest wheels; installs remain offline and hash required.
+  - Inspect actual replacement CA bundle for removal of compromised emSign ECC Root CA G3.
+  - Actual installed consumers must resolve certifi and trust bytes from their admitted environment.
+  - Existing source, wheel, sdist, installed-runtime and matrix observations retain their original subject.
+  - A dependency change requires new exact source distribution and installed-runtime qualification.
+  - No historical behavioral result closes the new dependency security residual.
+  - Preserve certified predecessor bytes and maintained adopter installations.
+expected_verification:
+  - Existing closure verifier rejects substituted wheel bytes and mismatched lock or manifest.
+  - Exact wheel metadata and CA contents prove the intended version and root disposition.
+  - Fresh offline wheel and sdist runtime consumers pass canonical verification on the updated source.
+  - Cause-specific negative control retains affected historical bundle as rejected security input.
+  - Governance, architecture, package, required security and affected consumer gates pass on final integrated bytes.
+forbidden:
+  - Mutating the fixed frontdoor candidate or its retained artifacts before their transaction disposition.
+  - Replacing historical wheelhouse or evidence in place.
+  - Editing certified 2.3.4 tool or backup.
+  - Changing shared OS trust, global tools, service state or other repositories.
+  - Network dependency fetch, new environment or consuming qualification without current workspace admission.
+  - New evaluator, claim registry, receipt family, public CLI grammar or release authority.
+next_action: authenticate publisher metadata and prepare exact replacement closure without consuming installation
