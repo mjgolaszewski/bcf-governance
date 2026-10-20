@@ -8,7 +8,7 @@ subject:
   abi: cp312
 resolution:
   lock_path: release/requirements-cp312-linux-x86_64.lock
-  lock_sha256: 2c801a3a1cf476253e85ba7748afbdd460aa2fba2e57eb83277f4eff0da6b55b
+  lock_sha256: 754d5509e74b5ddf32319b62b43e22c94e064687f776f686875c925ddd253392
   direct_requirements: [setuptools, wheel, build, twine, PyYAML, jsonschema, pytest]
   network_policy: candidate_may_download_only_manifest_admitted_wheels
   build_install: {no_index: true, require_hashes: true, no_isolation: true}
@@ -16,7 +16,7 @@ resolution:
 wheels:
   attrs-26.1.0-py3-none-any.whl: c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309
   build-1.6.0-py3-none-any.whl: f7aaf1ebbb79178a02ba248bb524f2176b256017e17e8e4bd4289c7b38cc2bad
-  certifi-2026.7.22-py3-none-any.whl: 62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775
+  certifi-2026.10.19-py3-none-any.whl: 42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b
   cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl: c1453022f490d2459a11819d83ad1d586e9ff65a12ac3e705ffebd46d3685dcf
   charset_normalizer-3.5.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl: b9af956078716df40d985fb0dfeb2c2120c5ca92ba4ff4b388acfd01cdc14d08
   cryptography-50.0.1-cp311-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl: ff838d62ec1bfce4f9ba7fa16f4a7b554cd8d0c299e6be37502161a660c84eef
