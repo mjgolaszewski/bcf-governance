@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "scope": "lock_manifest_structural_only",
+  "closure_count": 41,
+  "unchanged_dependencies": 40,
+  "historical_lock_mismatch": "REJECTED",
+  "actual_new_wheel_bytes": "PENDING",
+  "actual_CA_contents": "PENDING",
+  "installed_runtime": "PENDING",
+  "authority": false,
+  "lock_sha256": "754d5509e74b5ddf32319b62b43e22c94e064687f776f686875c925ddd253392",
+  "source_commit": "87c58a7e",
+  "contract_commit": "d525d77e",
+  "publisher_metadata_sha256": "5b6ba21c20c09f5e4ca52bf8251de25fafbdb56909c60e3ba44d4f2b6ef5d319",
+  "advisory": "https://github.com/advisories/GHSA-6q48-6c7w-9gw2",
+  "disposition": "Structural data qualification only; security residual remains open pending actual wheel and installed runtime verification. No lifecycle promotion."
+}
