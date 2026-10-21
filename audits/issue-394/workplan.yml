@@ -852,6 +852,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/interpreter-consumed-input-contract.json
     - audits/issue-394/interpreter-install-input-boundary-contract.json
     - audits/issue-394/semantic-operation-admission-verification.json
     - audits/issue-394/semantic-shape-admission-contract.json

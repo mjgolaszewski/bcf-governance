@@ -442,6 +442,13 @@ compiles to the exact selected pin while the original constraint remains bound
 to the source identity. A missing declaration adds the selected pin. An old
 exact pin or an incompatible bound fails before environment allocation.
 
+Authenticated project metadata remains readable without a bootstrap projection,
+but materialization requires its declared projection before selecting a runtime
+or allocating state. BCF checks input identity again after acquiring the cache
+lock, after probing a cached environment, and after setup. Pip consumes the
+compiled requirement tuple, so a later projection-file change cannot substitute
+dependency arguments after validation.
+
 An SDK upgrade does not relax project-owned dependency policy. If an existing
 requirements source pins `pip==26.2.1`, its owner must approve a compatible
 constraint before materialization can proceed. Change the authoritative input,
