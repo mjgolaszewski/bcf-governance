@@ -60,7 +60,7 @@ def test_single_phase_train_retains_its_declared_terminal():
     "wrong-build-block", "unknown-active", "wrong-active-block", "wrong-version",
     "ambiguous-version", "supplemental", "unknown-dependency", "self-dependency",
     "duplicate-dependency", "cycle", "multiple-terminals", "missing-history",
-    "overlapping-history", "retained-member-without-dependencies", "empty-version",
+    "contradictory-history", "retained-member-without-dependencies", "empty-version",
 ])
 def test_terminal_declaration_rejects_incomplete_or_ambiguous_catalog(defect):
     values = _catalog()
@@ -97,11 +97,27 @@ def test_terminal_declaration_rejects_incomplete_or_ambiguous_catalog(defect):
         build["phase_sequence"][-1]["hard_dependencies"] = ["P32"]
     elif defect == "missing-history":
         history["entries"] = []
-    elif defect == "overlapping-history":
-        history["entries"].append(deepcopy(product["execution_phases"][0]))
+    elif defect == "contradictory-history":
+        row = deepcopy(product["execution_phases"][0])
+        row["build_block"] = "foreign"
+        history["entries"].append(row)
     elif defect == "retained-member-without-dependencies":
         history["entries"].append({"phase_id": "P30", "release_train": "release_27"})
     elif defect == "empty-version":
         values["version"] = ""
     with pytest.raises(GovernanceValidationError):
         declared_release_train_terminal(**values)
+
+
+@pytest.mark.parametrize("cycle", [False, True])
+def test_retained_phase_snapshot_does_not_replace_declared_dependency_edges(cycle):
+    values = _catalog()
+    snapshot = deepcopy(values["product"]["execution_phases"][0])
+    snapshot.update(derived_state_at_capture="closed", verification_snapshot={})
+    values["history"]["entries"].append(snapshot)
+    if cycle:
+        values["build"]["phase_sequence"][0]["hard_dependencies"] = ["P35"]
+        with pytest.raises(GovernanceValidationError, match="cycle"):
+            declared_release_train_terminal(**values)
+    else:
+        assert declared_release_train_terminal(**values) == "P35"

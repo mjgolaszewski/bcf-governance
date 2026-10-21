@@ -62,5 +62,6 @@
       "authorizer certified phase comparison"
     ],
     "remaining_full_train_obligation": "Independently authenticated predecessor closure and the complete applicable acceptance/installed/performance/custody evidence remain mandatory; a declaration query does not satisfy them."
-  }
+  },
+  "retained_snapshot_disposition": "Canonical artifact_policy allows phase-history snapshots for still-declared train phases. Accept consistent build/release identity, reject contradictory overlap, and never seed current dependency resolution from an asserted retained closure. Full predecessor proof still requires existing trusted_inputs provider verification."
 }
