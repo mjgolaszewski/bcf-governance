@@ -1048,3 +1048,41 @@ def test_source_movement_at_materialization_lock_rejects_before_cache_lookup(
     monkeypatch.setattr(owner, "run_admitted_command", forbidden)
     with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
         materialize_interpreter_environment(tmp_path, Path(sys.executable))
+
+
+def test_source_movement_during_cached_inventory_rejects_before_reuse(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bcf_governance.tooling import interpreter_environment as owner
+
+    _fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    apply_interpreter_environment_projection(plan)
+    metadata = tmp_path / "pyproject.toml"
+    native_calls: list[list[str]] = []
+    inventory_calls = 0
+    monkeypatch.setattr(owner, "select_materialization_base", lambda *_: Path(sys.executable))
+
+    def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        native_calls.append(argv)
+        if argv[1:3] == ["-m", "venv"]:
+            _simulate_owned_venv(argv)
+        return subprocess.CompletedProcess(argv, 0, "", "")
+
+    def inventory(*args: object) -> str:
+        nonlocal inventory_calls
+        inventory_calls += 1
+        if inventory_calls == 2:
+            metadata.write_text(metadata.read_text(encoding="utf-8") + "\n# moved during inventory\n", encoding="utf-8")
+        return "PyYAML==6.0.3\n"
+
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setattr(owner, "_installed_inventory", inventory)
+    retained = materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    before = list(native_calls)
+    with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    assert inventory_calls == 2
+    assert native_calls == before
+    assert retained.is_file()
