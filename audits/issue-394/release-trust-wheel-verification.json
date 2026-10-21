@@ -1,0 +1,24 @@
+{
+  "authority": false,
+  "status": "PASS",
+  "scope": "actual archive bytes and cause-specific CA root control only",
+  "source_commit": "87c58a7e",
+  "publisher_metadata_sha256": "5b6ba21c20c09f5e4ca52bf8251de25fafbdb56909c60e3ba44d4f2b6ef5d319",
+  "observations": {
+    "historical": {
+      "wheel_sha256": "62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775",
+      "CA_sha256": "9cc2a774b5198dcff14d9be1e66091f538975d867ce029a96bce15a55dfd730f",
+      "compromised_G3_present": true,
+      "root_count": 121
+    },
+    "replacement": {
+      "wheel_sha256": "42d35340cc5b9ba78e818ddbff0c5b1c2b779de448a340fd1b989f5fa8670e1b",
+      "CA_sha256": "50f79f98dac192b20dbf73f35c56f0b0c557ab267ff5199d1117cc1180b70785",
+      "compromised_G3_present": false,
+      "root_count": 120
+    }
+  },
+  "installed_runtime": "PENDING",
+  "full_security": "PENDING",
+  "phase_or_release_promotion": false
+}
