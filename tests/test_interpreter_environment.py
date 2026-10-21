@@ -894,3 +894,19 @@ def test_gate_installer_constraint_change_invalidates_identity(tmp_path: Path) -
     with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
         verify_interpreter_environment_projection(before)
     assert not (tmp_path / ".artifacts").exists()
+
+
+@pytest.mark.parametrize("pack_root", ["template-repo", "bcf_governance/pack/template-repo"])
+def test_actual_template_installer_input_closes_to_canonical_patch(
+    tmp_path: Path, pack_root: str,
+) -> None:
+    _legacy_fixture(tmp_path)
+    authored = (REPO_ROOT / pack_root / "requirements-governance.txt").read_bytes()
+    source = tmp_path / "requirements-governance.txt"
+    source.write_bytes(authored)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    assert [row for row in plan.requirements if row.startswith("pip==")] == ["pip==26.2.2"]
+    verify_interpreter_environment_projection(plan)
+    assert source.read_bytes() == authored
+    assert not (tmp_path / ".artifacts").exists()
