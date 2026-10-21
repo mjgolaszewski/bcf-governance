@@ -1,0 +1,54 @@
+schema_version: '1.0'
+issue: 394
+status: CONTRACT_AUTHORED_IMPLEMENTATION_PENDING
+authority: false
+bounded_context: governed_project_environment
+architectural_layer: existing_interpreter_and_dependency_source_owners
+operation: compile_then_materialize_governed_environment
+baseline_commit: a77aeda680602ef4b8ca64a2d2e8edebab13fc28
+problem:
+  observed_release: 2.3.5
+  retained_requirement: pip==26.2.1
+  adopter_requirement: pip>=26.2.2,<27
+  failure: literal equality guards reject a compatible patched installer declaration before planning
+  security_constraint: do not downgrade an adopter or patch immutable released runtime
+scope:
+  target_modules:
+    - bcf_governance/tooling/interpreter_environment.py
+    - bcf_governance/tooling/interpreter_dependency_sources.py
+  existing_consumers:
+    - legacy interpreter requirement planning
+    - governed project requirement planning
+    - recursive governed dependency-source compilation
+    - selected-interpreter environment materialization and reuse validation
+  expected_tests:
+    - tests/test_interpreter_environment.py
+    - existing governed dependency-source tests
+    - actual selected-interpreter and installed-runtime consumer controls
+  public_cli_grammar_change: false
+required_behavior:
+  - Select an exact authenticated patched installer version through canonical BCF ownership.
+  - Accept a project requirement only when its complete applicable specifier permits that exact version.
+  - Keep the authored project constraint in authenticated source and invalidation inputs.
+  - Compile one unambiguous exact effective installer requirement without duplicate distribution rows.
+  - Block incompatible, malformed, ambiguous, URL or unsafe installer declarations before environment allocation.
+  - Preserve real marker and selected-interpreter semantics; do not treat an unevaluated marker as approval.
+  - Missing project installer declaration must still produce the canonical exact patched requirement.
+  - Source-graph digest, interpreter identity and effective installer bytes invalidate old environment reuse.
+  - Keep legacy and governed consumers consistent through existing owners rather than a parallel resolver.
+  - Never infer actual project environment qualification from a tooling-venv pip upgrade.
+verification:
+  - Compatible range pip>=26.2.2,<27 and exact patched pin both produce a patched exact effective installer.
+  - An incompatible upper bound or old exact pin blocks before any environment or dependency mutation.
+  - Missing declaration, nested requirements and duplicate or contradictory declarations have explicit controls.
+  - Removing the fix must reproduce the original adopter compatibility failure.
+  - Actual installed selected-interpreter metadata and pip-vendored CA match admitted package bytes.
+  - Existing source-binding, invalidation, recovery, architecture, governance and installed consumer gates remain required.
+forbidden:
+  - Modifying the fixed matrix candidate or its existing artifacts and evidence.
+  - Downgrading maintained adopters or editing their project dependency policy.
+  - Mutating any certified predecessor tool or released archive.
+  - Accepting arbitrary installer versions merely because a specifier can be parsed.
+  - Environment overrides, monkeypatches, disabled validators or synthetic acceptance receipts.
+  - New broker, evaluator, claim registry, public CLI or product receipt family.
+next_action: review existing requirement parsing and commit cause-specific failing controls before production changes
