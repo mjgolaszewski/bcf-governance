@@ -129,6 +129,8 @@ class InterpreterEnvironmentPlan:
     def installation_path(self) -> Path | None:
         """Return the authenticated dependency input consumed by pip."""
 
+        if self.source_kind == "project_metadata_projection":
+            return self.projection_path
         return self.projection_path or self.source_path
 
     def pip_arguments(self) -> tuple[str, ...]:
