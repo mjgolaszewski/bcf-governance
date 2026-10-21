@@ -1,0 +1,66 @@
+{
+  "authority": false,
+  "kind": "independent_periodic_provider_observation",
+  "scope": "One scheduled run only; retained failure and timing, no matched optimization sample or release acceptance.",
+  "repository": "mjgolaszewski/bcf-governance",
+  "run_id": 39539586062,
+  "run_attempt": 1,
+  "job_id": 119024013076,
+  "source_commit": "100dc2c0b618dc4a9079f90e81a32c86c8bab0fe",
+  "source_tree": "b18eddf2dc35111e9814e4c8c92c3039da9c685a",
+  "event": "schedule",
+  "actual_conclusion": "failure",
+  "stable_run_identity_reread": true,
+  "complete_job_and_artifact_inventories_reread": true,
+  "job_seconds": 1010.0,
+  "preflight_step_seconds": 672.0,
+  "control_step_seconds": 315.0,
+  "provider_runtime": {
+    "python_version": "3.12.15",
+    "node_version": "22.23.2",
+    "typescript_version": "6.0.3"
+  },
+  "high_value": {
+    "expected": 23,
+    "infrastructure_failures": 0,
+    "killed": 21,
+    "survived": 2
+  },
+  "semantic_high_value": {
+    "expected": 10,
+    "infrastructure_failures": 0,
+    "killed": 10,
+    "survived": 0
+  },
+  "survivors": [
+    "phase-catalog-set-match",
+    "memory-active-artifact-sync"
+  ],
+  "artifact": {
+    "id": 12319577194,
+    "sha256": "29b1ec2a57bb733c575c653654f850467a3b9315a57de79d1083ed636e0501d4",
+    "bytes": 4755,
+    "member_sha256": {
+      "nightly-semantic.json": "7057262d9fd04a3faff9b06cce6839194f5573f2dc4fbf7fa54c1e1a3a7c2e60",
+      "nightly-validator.json": "ddc46bf6661ebf3748d73b62cc6a4840907306d0140da5e7029ad9032e6f9f78",
+      "nightly-result.json": "c879db744354fb36ce5da9183e13f30bdff6755599578b30adf58a353560dbea",
+      "preflight.json": "49e98aeed39462aa9dd3a852a257351253c940221442011239026c945a1f6418"
+    }
+  },
+  "local_source_disposition": "Existing local late-owner killers and separate early-owner mutants retain prior scoped evidence in scheduled-phase-native-profiles-verification.json. Fresh exact integration, installed and scheduled-profile qualification remain required; source presence is not acceptance.",
+  "performance_disposition": "Retain all failed/slow periodic work. Different runtime patch and unmatched cohort prohibit p50/p95 or improvement/target claims.",
+  "decoded_provider_capture_sha256": {
+    "run-capture1.json": "894fb4253a429660073ecf2d86cf87bf3a44b5be89a9b68aebfed606e97adadf",
+    "run-capture2.json": "894fb4253a429660073ecf2d86cf87bf3a44b5be89a9b68aebfed606e97adadf",
+    "jobs-capture1.json": "36b1fb1aa71d5171640ae424da88c6dbd0eb384d139ca26513618063c5fedd40",
+    "jobs-capture2.json": "36b1fb1aa71d5171640ae424da88c6dbd0eb384d139ca26513618063c5fedd40",
+    "artifacts-capture2.json": "e2559ed660c54b88f83f312e69ad23791b52bc44024e90dfc62be50e56293006",
+    "capture1.log": "a7716e705ac92ca8c2bef978ad93fd41b6ffafc81facebd0f8a62163a39c1ebf"
+  },
+  "document": {
+    "kind": "noncertifying_periodic_observation",
+    "path": "audits/issue-394/periodic-main100dc-20261021-observation.json"
+  },
+  "provider_run_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39539586062",
+  "provider_artifact_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/39539586062/artifacts/12319577194"
+}

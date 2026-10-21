@@ -436,6 +436,20 @@ bcf environment apply --repo-root .
 bcf environment check --repo-root .
 ```
 
+BCF 2.5 selects `pip==26.2.2` for governed project environments. An authored
+installer constraint must permit that version: for example, `pip>=26.2.2,<27`
+compiles to the exact selected pin while the original constraint remains bound
+to the source identity. A missing declaration adds the selected pin. An old
+exact pin or an incompatible bound fails before environment allocation.
+
+An SDK upgrade does not relax project-owned dependency policy. If an existing
+requirements source pins `pip==26.2.1`, its owner must approve a compatible
+constraint before materialization can proceed. Change the authoritative input,
+then regenerate any declared `requirements_projection` with the commands above.
+The tooling environment's pip version does not qualify the project environment.
+URL, marker, and extra dependency declarations remain unsupported; this installer
+change does not waive those checks or ambiguous duplicate declarations.
+
 Preflight requires exact projection bytes and then verifies the selected executable,
 Python constraint, virtual-environment identity, and installed distribution versions.
 Evidence, mutants, package tests, and release verification are downstream of this
