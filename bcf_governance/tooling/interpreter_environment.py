@@ -142,7 +142,7 @@ class InterpreterEnvironmentPlan:
             raise InterpreterEnvironmentError(
                 "interpreter dependency projection is unavailable"
             )
-        return ("--requirement", str(self.projection_path))
+        return self.requirements
 
 
 def probe_interpreter_environment(
@@ -609,6 +609,7 @@ def materialize_interpreter_environment(
     parent.mkdir(parents=True, exist_ok=True)
     with lock_path.open("a+b") as lock:
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        verify_interpreter_environment_projection(plan)
         cached = _matching_cached_environment(parent, plan_identity)
         if cached is not None:
             target, payload = cached
@@ -618,6 +619,7 @@ def materialize_interpreter_environment(
                 raise InterpreterEnvironmentError(
                     "derived project interpreter inventory is stale"
                 )
+            verify_interpreter_environment_projection(plan)
             return python
         temporary = parent / f".{plan_identity}.building-{os.getpid()}"
         if temporary.exists() or temporary.is_symlink():
@@ -644,6 +646,7 @@ def materialize_interpreter_environment(
                     "derived project interpreter creation failed: " + detail
                 )
             candidate = temporary / "venv/bin/python"
+            verify_interpreter_environment_projection(plan)
             install_command = [
                 str(candidate),
                 "-m",
