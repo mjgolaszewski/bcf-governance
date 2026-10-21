@@ -875,3 +875,22 @@ def test_unsafe_or_excluding_installer_declaration_blocks(
     with pytest.raises(InterpreterEnvironmentError):
         derive_interpreter_environment(tmp_path)
     assert not (tmp_path / ".artifacts").exists()
+
+
+def test_gate_installer_constraint_change_invalidates_identity(tmp_path: Path) -> None:
+    _installer_security_fixture(tmp_path, "project", None)
+    gate = tmp_path / "governance/gate-contracts.yml"
+    data = yaml.safe_load(gate.read_text())
+    data["interpreter_contract"]["gate_requirements"] = {"test": ["pip>=26.2.2,<27"]}
+    gate.write_text(yaml.safe_dump(data))
+    before = derive_interpreter_environment(tmp_path)
+    assert before is not None
+    apply_interpreter_environment_projection(before)
+    gate.write_text(gate.read_text().replace("pip>=26.2.2,<27", "pip>=26.2.2,<28"))
+    after = derive_interpreter_environment(tmp_path)
+    assert after is not None
+    assert before.requirements == after.requirements
+    assert before.identity(Path(sys.executable)) != after.identity(Path(sys.executable))
+    with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
+        verify_interpreter_environment_projection(before)
+    assert not (tmp_path / ".artifacts").exists()
