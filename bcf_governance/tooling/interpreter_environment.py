@@ -343,7 +343,8 @@ def derive_interpreter_environment(
     registry_path = root / "governance/gate-contracts.yml"
     if not registry_path.is_file():
         return None
-    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry_bytes = registry_path.read_bytes()
+    registry = yaml.safe_load(registry_bytes.decode("utf-8"))
     registry = _mapping(registry, "gate contract registry is invalid")
     contract = registry.get("interpreter_contract")
     if contract is None:
@@ -450,7 +451,7 @@ def derive_interpreter_environment(
         requires_python=requires_python,
         projection_path=_safe_projection(root, contract.get("requirements_projection")),
         source_path=root / "pyproject.toml",
-        source_sha256=hashlib.sha256(project_bytes).hexdigest(),
+        source_sha256=hashlib.sha256(project_bytes + b"\0" + registry_bytes).hexdigest(),
     )
 
 
@@ -463,7 +464,10 @@ def verify_interpreter_environment_projection(
         try:
             if plan.source_path.is_symlink() or not plan.source_path.is_file():
                 raise OSError("unsafe project dependency source")
-            observed = hashlib.sha256(plan.source_path.read_bytes()).hexdigest()
+            registry = plan.source_path.parent / "governance/gate-contracts.yml"
+            if registry.is_symlink() or not registry.is_file():
+                raise OSError("unsafe interpreter contract source")
+            observed = hashlib.sha256(plan.source_path.read_bytes() + b"\0" + registry.read_bytes()).hexdigest()
         except OSError as exc:
             raise InterpreterEnvironmentError("interpreter dependency source is missing or unsafe") from exc
         if observed != plan.source_sha256:
