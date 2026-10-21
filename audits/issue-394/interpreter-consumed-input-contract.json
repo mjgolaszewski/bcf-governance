@@ -1,0 +1,43 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/interpreter-consumed-input-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-07",
+  "bounded_context": "governed_project_environment",
+  "architectural_layer": "tooling",
+  "operation_side": "query_then_command",
+  "target_modules": [
+    "bcf_governance/tooling/interpreter_environment.py",
+    "tests/test_interpreter_environment.py"
+  ],
+  "contract": [
+    "Retain initial authored-source and projection validation before allocation.",
+    "Reauthenticate the existing plan after obtaining the materialization lock and before cache lookup/reuse; reject source movement while waiting.",
+    "Reauthenticate the existing plan after setup and before dependency installation; reject changed pyproject, gate registry or projection through existing typed errors and owned temporary cleanup.",
+    "Native pip consumes only the already derived closed immutable requirements tuple in every supported source mode. A later projection path read must not introduce unbound bytes after validation.",
+    "Metadata still requires a declared valid projection for materialization; authenticated source identity is not an executable projection.",
+    "Preserve normal CLI grammar, exact source-based identity, compatible dependency semantics and existing legacy/governed behavior. No alternate resolver, evaluator, receipt or authority policy."
+  ],
+  "expected_tests": [
+    "Source movement at materialization-lock acquisition rejects before cache lookup or native work.",
+    "Projection, pyproject and gate-registry mutations during controlled setup each reject before pip; owned incomplete setup is cleaned.",
+    "Mutation at the final native install boundary cannot change dependency arguments from the exact derived tuple.",
+    "All existing projected-metadata/legacy/governed planning/materialization/reuse controls remain in the consumer module; actual environment and installed-runtime qualification remain separate."
+  ],
+  "forbidden_surfaces": [
+    "Original frozen two-case RED checkout or packet",
+    "Maintenance source and immutable release assets",
+    "Manual private-runtime/manifest/workflow changes",
+    "Claims of executed exploit or verified fix before causal execution"
+  ],
+  "source_observation": {
+    "commit_sha": "ffabff7c6c277d9d78c3d7db584c463177d9945a",
+    "status": "unproven_hypothesis",
+    "finding": "Metadata pip_arguments reads a mutable requirements path after initial validation and setup; no source recheck exists after materialization lock or setup."
+  },
+  "verification": "Contract then tests then production. Existing 84-case scope is historical until new exact collection and execution. Full P32/P33 requirements and release remain open."
+}
