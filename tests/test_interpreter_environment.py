@@ -1033,13 +1033,18 @@ def test_source_movement_at_materialization_lock_rejects_before_cache_lookup(
     apply_interpreter_environment_projection(plan)
     metadata = tmp_path / "pyproject.toml"
     real_flock = fcntl.flock
+    moved = False
 
     def flock(lock: int | BinaryIO, operation: int) -> None:
+        nonlocal moved
         real_flock(lock, operation)
-        if str(getattr(lock, "name", "")).endswith(".materialize.lock"):
+        descriptor = lock if isinstance(lock, int) else lock.fileno()
+        if Path(f"/proc/self/fd/{descriptor}").resolve(strict=True).name == ".materialize.lock":
             metadata.write_text(metadata.read_text(encoding="utf-8") + "\n# moved at lock\n", encoding="utf-8")
+            moved = True
 
     def forbidden(*args: object, **kwargs: object) -> None:
+        assert moved, "lock control did not inject source movement"
         pytest.fail("changed dependency source reached cache lookup or native work")
 
     monkeypatch.setattr(owner, "select_materialization_base", lambda *_: Path(sys.executable))
@@ -1048,6 +1053,7 @@ def test_source_movement_at_materialization_lock_rejects_before_cache_lookup(
     monkeypatch.setattr(owner, "run_admitted_command", forbidden)
     with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
         materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    assert moved
 
 
 def test_source_movement_during_cached_inventory_rejects_before_reuse(
