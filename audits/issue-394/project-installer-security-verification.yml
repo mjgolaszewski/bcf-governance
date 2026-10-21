@@ -1,0 +1,36 @@
+schema_version: '1.0'
+issue: 394
+authority: false
+status: SOURCE_IMPLEMENTED_CHECKS_PENDING
+contract: audits/issue-394/project-installer-security-contract.yml
+retained_memory_entry: Git custody:9 focused/478 affected/private PASS;17 guardians/install.
+  9arch/21semantics PASS. Full lifecycle/native/deadlines/normalization/adopters/targets/custody
+  open;82/38 unchanged. See audits/issue-394/preflight-repository-context-custody-verification.json.
+red_characterization:
+  commit: c616992bd8d9514c556d914f47e0a98366463c8d
+  cases: 15
+  failed: 12
+  passed: 3
+  actual_returncode: 1
+  junit_sha256: a8aeef4ff376053fc642c6ae4c18b2cc571bbae159d332ecb56bc7250182cbe6
+  cause: Nine compatible or missing declarations fail patched exact closure; three
+    old exact declarations are wrongly accepted. Three incompatible upper-bound declarations
+    correctly block.
+  scope: Pure planner execution, no environment allocation, native work or network.
+  terminal_cleanup: true
+implementation:
+  installer: pip==26.2.2
+  owner: existing interpreter_dependency_sources compiler shared by three existing
+    planners
+  authored_constraint: Retained in source and authenticated identity, compiled to
+    one exact effective requirement.
+  rejection: Incompatible constraints and unsafe, malformed or ambiguous declarations
+    block before allocation.
+verification_pending:
+- affected planner, recursive dependency and actual materialization consumers
+- cause-specific disabled guards
+- canonical private projections, installed wheel/sdist consumers and full retained
+  matrix
+- required architecture, governance, semantic and package checks
+acceptance: All 82 whole requirements and 38 recorded slices unchanged; P32 active,
+  P33-P35 dormant.

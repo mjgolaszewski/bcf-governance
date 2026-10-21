@@ -406,16 +406,16 @@ with tempfile.TemporaryDirectory(prefix='bcf-private-fact-query-') as temporary:
         (requirement_root / 'governance').mkdir(parents=True)
         requirement_policy = {'interpreter_contract': {'project_dependencies': True,
             'build_system_requirements': True, 'requirements_projection': 'requirements.txt',
-            'optional_dependency_groups': [], 'gate_requirements': {'test': ['pip==26.2.1']}},
+            'optional_dependency_groups': [], 'gate_requirements': {'test': ['pip==26.2.2']}},
             'gates': {'test': {}}}
         (requirement_root / 'governance/gate-contracts.yml').write_text(json.dumps(requirement_policy))
         project = requirement_root / 'pyproject.toml'
         declaration = ('[build-system]\nrequires=["setuptools>=69","wheel"]\n'
             '[project]\nname="fixture"\nversion="1.0"\nrequires-python=">=3.11"\n'
-            'dependencies=["setuptools>=69","pip==26.2.1","PyYAML>=6,<7"]\n')
+            'dependencies=["setuptools>=69","pip==26.2.2","PyYAML>=6,<7"]\n')
         project.write_text(declaration)
         plan = interpreter.derive_interpreter_environment(requirement_root)
-        assert plan.requirements.count('setuptools>=69') == plan.requirements.count('pip==26.2.1') == 1
+        assert plan.requirements.count('setuptools>=69') == plan.requirements.count('pip==26.2.2') == 1
         assert project.read_text() == declaration and not (requirement_root / 'requirements.txt').exists()
         project.write_text(declaration.replace('dependencies=["setuptools>=69",', 'dependencies=["setuptools>=68",'))
         try: interpreter.derive_interpreter_environment(requirement_root)
