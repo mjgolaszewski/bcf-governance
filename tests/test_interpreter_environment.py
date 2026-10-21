@@ -910,3 +910,42 @@ def test_actual_template_installer_input_closes_to_canonical_patch(
     verify_interpreter_environment_projection(plan)
     assert source.read_bytes() == authored
     assert not (tmp_path / ".artifacts").exists()
+
+
+def _unprojected_metadata_fixture(repo: Path) -> None:
+    _fixture(repo)
+    registry = repo / "governance/gate-contracts.yml"
+    authored = registry.read_text(encoding="utf-8")
+    declaration = "requirements_projection: requirements-governance.txt, "
+    assert declaration in authored
+    registry.write_text(authored.replace(declaration, ""), encoding="utf-8")
+
+
+def test_metadata_source_identity_does_not_supply_an_install_projection(
+    tmp_path: Path,
+) -> None:
+    _unprojected_metadata_fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    assert plan.source_path == tmp_path / "pyproject.toml"
+    assert plan.source_sha256 is not None
+    verify_interpreter_environment_projection(plan)
+    assert plan.installation_path is None
+    assert not (tmp_path / ".artifacts").exists()
+
+
+def test_missing_metadata_projection_rejects_before_runtime_or_allocation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bcf_governance.tooling import interpreter_environment as owner
+
+    _unprojected_metadata_fixture(tmp_path)
+
+    def forbidden(*args: object, **kwargs: object) -> None:
+        pytest.fail("missing install input reached runtime selection or allocation")
+
+    for name in ("select_materialization_base", "allocate_execution_state", "run_admitted_command"):
+        monkeypatch.setattr(owner, name, forbidden)
+    with pytest.raises(InterpreterEnvironmentError, match="authenticated dependency source"):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    assert not (tmp_path / ".artifacts").exists()
