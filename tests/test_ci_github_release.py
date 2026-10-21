@@ -31,6 +31,7 @@ from bcf_governance.tooling.ci_github_release import (
 )
 from bcf_governance.tooling.ci_github_release_inputs import (
     _release_version_at_main,
+    require_terminal_release_phase_at_main,
     load_release_authorization_inputs,
     release_input_outputs,
     release_publication_outputs,
@@ -150,7 +151,7 @@ def _release_catalog_content(
         ]},
         "plans/phase-ledger.yml": {
             "active_phase": {"id": "P01", "build_block": "fixture", "lifecycle_status": "completed"},
-            "release_trains": {"release_1": {"target_version": "1.0.0rc1"}},
+            "release_trains": {"release_1": {"target_version": "1.0.0rc1", "status": "active"}},
         },
         "plans/phase-history.yml": {"entries": []},
     }
@@ -892,7 +893,7 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
         main_reads += 1
         if move_main and main_reads > 1:
             return MainIdentity("101", "main", "c" * 40, "d" * 40)
-        return MainIdentity("101", "main", COMMIT, TREE)
+        return main
 
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.resolve_main",
@@ -2034,3 +2035,40 @@ def test_release_authorizer_rejects_intermediate_release_train_phase(
         )
     assert content_reads, "release rejection must derive authenticated train inputs"
     assert not output.exists()
+
+
+@pytest.mark.parametrize("status", ["planned", "abandoned", None])
+def test_release_terminal_declaration_cannot_activate_an_ineligible_train(status):
+    def content(repository: str, path: str, *, ref: str) -> GitHubContent:
+        value = _release_catalog_content(repository, path, ref=ref)
+        if path == "plans/phase-ledger.yml":
+            data = yaml.safe_load(value.content)
+            data["release_trains"]["release_1"]["status"] = status
+            return GitHubContent(path, value.blob_oid, yaml.safe_dump(data).encode())
+        return value
+
+    with pytest.raises(GitHubControllerError, match="release train is not active or completed"):
+        require_terminal_release_phase_at_main(
+            SimpleNamespace(content=content), repository="owner/repo",
+            main=MainIdentity("101", "main", COMMIT, TREE),
+        )
+
+
+def test_release_terminal_source_ignores_candidate_checkout(tmp_path, monkeypatch):
+    (tmp_path / "plans").mkdir()
+    (tmp_path / "plans/phase-ledger.yml").write_text("active_phase: {id: P99}\n")
+    monkeypatch.chdir(tmp_path)
+    reads: list[str] = []
+
+    def content(repository: str, path: str, *, ref: str) -> GitHubContent:
+        reads.append(path)
+        return _release_catalog_content(repository, path, ref=ref)
+
+    assert require_terminal_release_phase_at_main(
+        SimpleNamespace(content=content), repository="owner/repo",
+        main=MainIdentity("101", "main", COMMIT, TREE),
+    ) == "P01"
+    assert set(reads) == {
+        "governance/public-contracts.yml", "plans/product-spec.yml",
+        "plans/build-plan.yml", "plans/phase-ledger.yml", "plans/phase-history.yml",
+    }
