@@ -1934,7 +1934,17 @@ def test_release_authorizer_rejects_intermediate_release_train_phase(
         assert path in paths, "terminal eligibility fetched an undeclared source"
         payload = yaml.safe_load((REPO_ROOT / path).read_text())
         if path == "plans/phase-ledger.yml":
-            payload["active_phase"]["id"] = closed_phase
+            phase_number = closed_phase[1:]
+            active = payload["active_phase"]
+            active["id"] = closed_phase
+            active["build_block"] = next(
+                row["build_block"]
+                for row in yaml.safe_load((REPO_ROOT / "plans/product-spec.yml").read_text())["execution_phases"]
+                if row["phase_id"] == closed_phase
+            )
+            active["plan"] = f"plans/phase-{phase_number}-plan.yml"
+            active["workitems"] = f"plans/phase-{phase_number}-workitems.yml"
+            active["log"] = f"phases/phase-{phase_number}-log.yml"
         content_reads.append(path)
         return GitHubContent(path, "d" * 40, yaml.safe_dump(payload).encode())
 
@@ -1945,7 +1955,7 @@ def test_release_authorizer_rejects_intermediate_release_train_phase(
         "bcf_governance.tooling.ci_github_release.load_authority", forbidden,
     )
     output = tmp_path / "authorization.json"
-    with pytest.raises(GitHubControllerError, match="release train"):
+    with pytest.raises(GitHubControllerError, match="release train requires terminal phase P35"):
         authorize_release(
             SimpleNamespace(content=content),  # type: ignore[arg-type]
             repository="owner/repo", bundle_dir=bundle,
