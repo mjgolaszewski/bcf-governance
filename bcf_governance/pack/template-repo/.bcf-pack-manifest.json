@@ -184,7 +184,7 @@
     },
     "requirements-governance.txt": {
       "operation": "copy",
-      "sha256": "2d3f9f27b2c401aeb9530aeada21f355eaa7d4a09e261e2ce8963c257a2f4285"
+      "sha256": "f2961d9b833a08b5080ac65cca8679fd39efb502c3da3a1c39c3c39921bf59c9"
     },
     "schemas/agents.schema.json": {
       "operation": "copy",
@@ -1283,11 +1283,11 @@
     },
     "scripts/_bcf_runtime/interpreter_dependency_sources.py": {
       "operation": "copy",
-      "sha256": "2dfeea0182d8449f97cf2ea3d4afd789a2947e3bde4300f9b1398d5bf54d3214"
+      "sha256": "972dde57336fabdcd4f1042e911cb61c836cd89daf37b3e1272a401c248ede4a"
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "bcc27c20fa1758f74431e8ab3dc769d69b433938d128e9c19b0c097f4f6b7798"
+      "sha256": "d898a6933e4c4c55d9a4036541d394cc9ead001c9b8036a0717804f644537248"
     },
     "scripts/_bcf_runtime/local_cli_receipt.py": {
       "operation": "copy",

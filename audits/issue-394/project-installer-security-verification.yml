@@ -27,11 +27,11 @@ implementation:
   rejection: Incompatible constraints and unsafe, malformed or ambiguous declarations
     block before allocation.
 verification_pending:
-- affected planner, recursive dependency and actual materialization consumers
-- cause-specific disabled guards
-- canonical private projections, installed wheel/sdist consumers and full retained
-  matrix
+- actual selected-interpreter materialization and source/wheel/sdist installed consumer
+  controls
 - required architecture, governance, semantic and package checks
+- expanded full matrix preserving all old oracles and39 additional interpreter cases
+  per stage
 acceptance: All 82 whole requirements and 38 recorded slices unchanged; P32 active,
   P33-P35 dormant.
 pure_qualification:
@@ -57,8 +57,8 @@ template_characterization:
   junit_sha256: bc98f0d993bfbfd89868b55c125ad1341ff7344c90a98604a1fbd326fbec6a28
   cause: Actual canonical and packaged template requirements retained old installer
     pin, independently reproduced as incompatible with canonical patched installer.
-  correction: Canonical template pin updated; canonical builder projection and final
-    complete module checks pending.
+  correction: Canonical template corrected and existing builder projected all mirrors.
+    Both actual-input controls now pass within complete82-case module.
 independent_adopter_residuals:
 - status: OPEN
   kind: unsupported_dependency_spelling
@@ -71,3 +71,28 @@ independent_adopter_residuals:
   treatment: No policy weakening or grammar expansion in this slice. A flat projection
     needs mechanical selected Python/platform/group/extras applicability and source
     parity; explicit external environment preparation is not BCF planner proof.
+canonical_projection:
+  source_commit: c2b3819b2979ee94b59374746fec3a47f7c22843
+  passed_interpreter_cases: 82
+  failed: 0
+  skipped: 0
+  actual_seconds: 41.478
+  canonical_commands:
+  - pack generation
+  - pack parity check
+  - all test manifest update with real collection
+  generated_sha256:
+    bcf_governance/pack/template-repo/.bcf-pack-manifest.json: 0caf69e258e5a721bccfa632755029a3d9d15b9169161974fa257b5ddf9f375e
+    bcf_governance/pack/template-repo/requirements-governance.txt: f2961d9b833a08b5080ac65cca8679fd39efb502c3da3a1c39c3c39921bf59c9
+    bcf_governance/pack/template-repo/scripts/_bcf_runtime/interpreter_dependency_sources.py: 972dde57336fabdcd4f1042e911cb61c836cd89daf37b3e1272a401c248ede4a
+    bcf_governance/pack/template-repo/scripts/_bcf_runtime/interpreter_environment.py: d898a6933e4c4c55d9a4036541d394cc9ead001c9b8036a0717804f644537248
+    governance/test-manifests/contract-test.txt: 12b53fcbb1b5bf87866c7133e2b4dd5c1ed4749fc2efe3d5bcc62f7a3df29b5d
+    governance/test-manifests/test.txt: 2a61b4e7d546451077cdf0771be4872106ea56de1a1f3550783606451c91ef71
+    template-repo/.bcf-pack-manifest.json: 0caf69e258e5a721bccfa632755029a3d9d15b9169161974fa257b5ddf9f375e
+    template-repo/scripts/_bcf_runtime/interpreter_dependency_sources.py: 972dde57336fabdcd4f1042e911cb61c836cd89daf37b3e1272a401c248ede4a
+    template-repo/scripts/_bcf_runtime/interpreter_environment.py: d898a6933e4c4c55d9a4036541d394cc9ead001c9b8036a0717804f644537248
+  other_unchanged_inputs: 2184
+  junit_sha256: 9f527374921769e6b990c8a380a70291238e8b5c4161da6ac2ae600974d734b2
+  independent_terminal_and_source_readback: true
+  scope: Canonical source and generated parity with pure/simulated module execution;
+    no actual installed or release qualification.

@@ -35,6 +35,7 @@ from .python_runtime_selection import (
 from .interpreter_dependency_sources import (
     InterpreterDependencySourceError,
     compile_governed_dependency_source,
+    close_installer_requirement,
 )
 
 
@@ -42,7 +43,7 @@ class InterpreterEnvironmentError(ValueError):
     """Raised when the governed interpreter environment cannot be compiled."""
 
 
-PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.1"
+PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.2"
 
 
 def validate_runtime_import_dependencies(repo_root: Path) -> None:
@@ -283,19 +284,12 @@ def _legacy_interpreter_environment(
         raise InterpreterEnvironmentError(
             "interpreter dependency declarations must have unique names"
         )
-    installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    installer_requirements = [
-        value
-        for value in requirements
-        if _normalized_name(value) == installer_name
-    ]
-    if not installer_requirements:
-        requirements.append(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    elif installer_requirements != [PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT]:
-        raise InterpreterEnvironmentError(
-            "project environment installer requirement must equal "
-            + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
+    try:
+        requirements = close_installer_requirement(
+            requirements, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
         )
+    except InterpreterDependencySourceError as exc:
+        raise InterpreterEnvironmentError(str(exc)) from exc
     graph_path = root / "governance/ci-graph.yml"
     python_minor: str | None = None
     if graph_path.is_symlink():
@@ -349,7 +343,8 @@ def derive_interpreter_environment(
     registry_path = root / "governance/gate-contracts.yml"
     if not registry_path.is_file():
         return None
-    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry_bytes = registry_path.read_bytes()
+    registry = yaml.safe_load(registry_bytes.decode("utf-8"))
     registry = _mapping(registry, "gate contract registry is invalid")
     contract = registry.get("interpreter_contract")
     if contract is None:
@@ -377,7 +372,8 @@ def derive_interpreter_environment(
     if contract.get("project_dependencies") is not True:
         raise InterpreterEnvironmentError("interpreter contract is invalid")
     try:
-        project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        project_bytes = (root / "pyproject.toml").read_bytes()
+        project = tomllib.loads(project_bytes.decode("utf-8"))
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise InterpreterEnvironmentError(
             "interpreter project dependency source is invalid"
@@ -431,17 +427,12 @@ def derive_interpreter_environment(
         )
     # Repeating the exact same predicate across source roles is idempotent.
     requirements = list(dict.fromkeys(requirements))
-    installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    installer_requirements = [
-        value for value in requirements if _normalized_name(value) == installer_name
-    ]
-    if not installer_requirements:
-        requirements.append(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    elif installer_requirements != [PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT]:
-        raise InterpreterEnvironmentError(
-            "project environment installer requirement must equal "
-            + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
+    try:
+        requirements = close_installer_requirement(
+            requirements, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
         )
+    except InterpreterDependencySourceError as exc:
+        raise InterpreterEnvironmentError(str(exc)) from exc
     normalized = [_normalized_name(value) for value in requirements]
     if len(set(normalized)) != len(requirements):
         raise InterpreterEnvironmentError(
@@ -459,6 +450,8 @@ def derive_interpreter_environment(
         ),
         requires_python=requires_python,
         projection_path=_safe_projection(root, contract.get("requirements_projection")),
+        source_path=root / "pyproject.toml",
+        source_sha256=hashlib.sha256(project_bytes + b"\0" + registry_bytes).hexdigest(),
     )
 
 
@@ -467,12 +460,22 @@ def verify_interpreter_environment_projection(
 ) -> None:
     """Reject a stale hand-maintained bootstrap dependency surface."""
 
+    if plan.source_kind == "project_metadata_projection" and plan.source_path is not None:
+        try:
+            if plan.source_path.is_symlink() or not plan.source_path.is_file():
+                raise OSError("unsafe project dependency source")
+            registry = plan.source_path.parent / "governance/gate-contracts.yml"
+            if registry.is_symlink() or not registry.is_file():
+                raise OSError("unsafe interpreter contract source")
+            observed = hashlib.sha256(plan.source_path.read_bytes() + b"\0" + registry.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise InterpreterEnvironmentError("interpreter dependency source is missing or unsafe") from exc
+        if observed != plan.source_sha256:
+            raise InterpreterEnvironmentError("interpreter dependency source changed after derivation")
     path = plan.projection_path
     if path is None:
         if (
             plan.source_kind == "project_metadata_projection"
-            and plan.source_path is None
-            and plan.source_sha256 is None
         ):
             return
         if (
