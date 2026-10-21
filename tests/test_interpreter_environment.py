@@ -1009,7 +1009,7 @@ def test_native_install_consumes_closed_plan_even_if_projection_moves_at_boundar
         elif argv[1:4] == ["-m", "pip", "install"]:
             projection.write_text("unbound-dependency==99\n", encoding="utf-8")
             seen.append(tuple(argv[argv.index("--disable-pip-version-check") + 1:]))
-            assert seen[-1] == plan.requirements
+            assert seen[-1] == plan.requirements, "native install did not consume the closed requirement tuple"
         else:
             pytest.fail("unexpected native command in controlled materialization")
         return subprocess.CompletedProcess(argv, 0, "", "")
