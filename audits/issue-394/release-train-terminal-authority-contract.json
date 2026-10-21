@@ -1,0 +1,55 @@
+{
+  "authority": false,
+  "status": "AUTHORED_CONTRACT_EXECUTION_PENDING",
+  "bounded_context": "ci-authority/tooling release authorization",
+  "layer": "application orchestration with pure existing lifecycle queries",
+  "side": "query derivation before authorized command mutation",
+  "requirement": "Release authority must distinguish a successful phase closure from completion of the declared release train. For release_27, P32-P34 closure permits declared lifecycle progress; immutable2.5 custody requires P35 and applicable full-train evidence.",
+  "source_review": {
+    "base_commit": "2590a55374bffa880f5e262834a3118d12db7f61",
+    "observations": [
+      "authored_post_merge_scope returns closure for a completed active phase with all active workitems DONE, independently of remaining declared train phases",
+      "is_terminal_phase_certification recognizes a well-formed successful phase_closed proposition, independently of train membership",
+      "authorize_release authenticates exact current main and phase closure; reviewed call path does not derive the terminal train phase"
+    ],
+    "limitation": "Static source observations establish separate predicates, not an executed early-publication incident. Adversarial authorizer/provider fixture is required before qualification."
+  },
+  "owners": [
+    "plans/product-spec.yml execution_phases release_train",
+    "plans/build-plan.yml phase_sequence hard_dependencies",
+    "plans/phase-ledger.yml active_phase and release_trains",
+    "plans/phase-history.yml retained predecessor closure",
+    "governance/public-contracts.yml package.version",
+    "bcf_governance/tooling/ci_github_release.py authorize_release",
+    "bcf_governance/tooling/ci_github_release_inputs.py authenticated current-main resolution",
+    "bcf_governance/tooling/evaluation_scope.py typed phase closure"
+  ],
+  "invariants": [
+    "Derive train/version/membership/terminal from unique authenticated exact-main canonical bytes; caller or candidate checkout cannot select them.",
+    "Authenticate phase closure separately; do not redefine phase_closed as whole-train closure or prevent P32->P33 lifecycle progress.",
+    "Reject missing/ambiguous train, version mismatch, contradictory active phase, cyclic/incomplete dependency inventory, intermediate phase, wrong certified phase, and unresolved required predecessor truth before release allocation or mutation.",
+    "Preserve supported single-phase trains and immutable predecessor bytes; do not create an alternate maintenance publication authority from a supplemental-publication catalog row.",
+    "Use existing owners and receipt families; no parallel phase graph, release registry, evaluator or broker.",
+    "Reauthenticate moving main at consuming boundaries; exact-main movement cannot inherit earlier terminal eligibility."
+  ],
+  "target_modules": [
+    "bcf_governance/tooling/ci_github_release.py",
+    "bcf_governance/tooling/ci_github_release_inputs.py",
+    "existing lifecycle derivation owner selected after complete call-path review"
+  ],
+  "expected_tests": [
+    "Successful P32/P33/P34 typed closures rejected for2.5 release, with no build/output/provider mutation",
+    "P35 exact train eligibility accepted only with applicable predecessor closure evidence",
+    "Single-phase compatibility; retained/compacted predecessor identity",
+    "Missing/duplicate/foreign train, mismatched version, wrong phase, malformed/cyclic dependencies",
+    "Moved protected main and candidate-supplied policy cannot authorize",
+    "Existing PR/workitem/phase lifecycle predicates and public CLI remain unchanged"
+  ],
+  "forbidden_files": [
+    "maintained adopter repositories",
+    "immutable v2.3.4/v2.3.5 artifacts",
+    "generated workflows/authority commits outside canonical reconciliation",
+    "frozen installer RED subjects and qualification scripts"
+  ],
+  "execution": "No test/build/native/provider execution admitted or performed for this contract. Contract commit precedes production changes; exact qualification and source integration remain required."
+}
