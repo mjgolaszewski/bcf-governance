@@ -1,0 +1,46 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "UNQUALIFIED_RUNTIME_BINDING_REQUIRED",
+  "reviewed_source": "385e4808e7b34ce0defadce66da98527bc0a2058",
+  "inputs_sha256": {
+    "bcf_governance/tooling/ci_github_release_inputs.py": "412cb3ac763f7aa33dc621920bde5a4a41e59170041c41974426c4cbd4edb5e8",
+    "bcf_governance/tooling/ci_github_transport.py": "e7287b57a2e2d5dfbeb5eb1871ad641b5da26e47ed1268dfdffbe74e701e5a9d",
+    "bcf_governance/tooling/provider_read.py": "b1674ad7593d4b50c828e685b06bfc8ad7e05ae9272fb504a49a7909f00e85e4",
+    "bcf_governance/tooling/ci_github_response.py": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+    "bcf_governance/tooling/trusted_inputs.py": "703b24557aab46e2b5c70a02be5f2730ab675371a805153fac0eb053869710ae",
+    "bcf_governance/tooling/prior_evidence_transport.py": "98a431f81e3c518438009eb37e81d270a91cbc30b658720863145cdcee7b61ef",
+    "governance/ci-extensions/bcf-release.yml": "1d11327a41f93d5077ee5cc2b35876361475800a4391008c31e4c6ed013e27f3"
+  },
+  "existing_owner": "P32-P0-05 and ci_graph_composition_costs protected deadline binding, provider_read/ci_github_response runtime transport",
+  "release_authorizer_outer_seconds": 600,
+  "new_declaration_reads_per_invocation": 5,
+  "source_population": [
+    "governance/public-contracts.yml",
+    "plans/product-spec.yml",
+    "plans/build-plan.yml",
+    "plans/phase-ledger.yml",
+    "plans/phase-history.yml"
+  ],
+  "declared_transport_components": {
+    "open_timeout_seconds": 30,
+    "attempts": 3,
+    "max_retry_delay_seconds": 30.0,
+    "response_body_deadline_seconds": 30,
+    "nominal_component_sum_per_read_seconds": 180.0,
+    "nominal_component_sum_five_reads_seconds": 900.0
+  },
+  "limits": [
+    "The nominal sum assumes each opener timeout were an elapsed setup bound; that assumption is NOT established by this review. DNS/TLS/header/redirect setup, cleanup and parsing require their own grounded bounds. Therefore180seconds is NOT certified as a finite total per-read envelope.",
+    "Even the nominal five-read component reservation is900seconds, above the existing600second authorizer job, before other existing work/headroom. This is a readiness contradiction, not an observed timeout or performance claim.",
+    "Early input resolution and authorizer are separate consuming boundaries in the same job; reauthentication and any justified immutable reuse need explicit context/custody binding. Do not erase required reads or enlarge timeouts using this partial census.",
+    "The full predecessor population remains to be bound through existing trusted_inputs provider verification. Existing100MiB archive/256MiB expanded limits are per-input, not a certified aggregate retention/cleanup budget."
+  ],
+  "required_next_action": [
+    "Complete independent sibling operation/consumer inventory and bind real retry/setup/response/cleanup/headroom to the actual whole-job deadline before proof allocation.",
+    "Derive and admit bounded predecessor proof population/storage/retention through existing owners; authenticated coordinates and authored closed labels cannot substitute for provider verification.",
+    "Run cause-specific runtime exhaustion/slow-header/read/setup controls and actual consumer qualification; retain the568second inner/600second outer boundary case."
+  ],
+  "forbidden_inference": "No release readiness, whole-train truth, approved performance target, verified phase or accepted deadline envelope follows from source arithmetic.",
+  "acceptance_advance": false
+}
