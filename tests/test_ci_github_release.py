@@ -133,6 +133,31 @@ def _public_contract(
     return GitHubContent(content_path, "d" * 40, payload)
 
 
+
+def _release_catalog_content(
+    repository: str, path: str, *, ref: str,
+) -> GitHubContent:
+    """Provider fixture supplies canonical single-phase declaration bytes."""
+    assert repository == "owner/repo" and ref == COMMIT
+    if path == "governance/public-contracts.yml":
+        return _public_contract()
+    documents = {
+        "plans/product-spec.yml": {"execution_phases": [
+            {"phase_id": "P01", "build_block": "fixture", "release_train": "release_1"},
+        ]},
+        "plans/build-plan.yml": {"phase_sequence": [
+            {"phase_id": "P01", "build_block": "fixture", "hard_dependencies": []},
+        ]},
+        "plans/phase-ledger.yml": {
+            "active_phase": {"id": "P01", "build_block": "fixture", "lifecycle_status": "completed"},
+            "release_trains": {"release_1": {"target_version": "1.0.0rc1"}},
+        },
+        "plans/phase-history.yml": {"entries": []},
+    }
+    payload = {"document": {"path": path}, **documents[path]}
+    return GitHubContent(path, "d" * 40, yaml.safe_dump(payload).encode())
+
+
 def test_nonterminal_privileged_inventory_accepts_only_pinned_partial_jobs(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -624,8 +649,9 @@ def test_trusted_receipt_rejects_candidate_lookalike_and_binds_all_roles(
         )
 
 
+@pytest.mark.parametrize("move_main", [False, True])
 def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, move_main: bool
 ) -> None:
     bundle = tmp_path / "bundle"
     bundle.mkdir()
@@ -645,6 +671,15 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         bundle / "evidence-session.json",
         {"producer": {"run_id": "50", "run_attempt": "1"}},
     )
+    main_reads = 0
+
+    def current_main(*args: object, **kwargs: object) -> MainIdentity:
+        nonlocal main_reads
+        main_reads += 1
+        if move_main and main_reads > 1:
+            return MainIdentity("101", "main", "c" * 40, "d" * 40)
+        return MainIdentity("101", "main", COMMIT, TREE)
+
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.verify_bundle",
         lambda root: {"subject": {"commit_sha": COMMIT, "tree_sha": TREE}},
@@ -655,7 +690,7 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.resolve_main",
-        lambda api, repository: MainIdentity("101", "main", COMMIT, TREE),
+        current_main,
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release.load_authority",
@@ -710,10 +745,28 @@ def test_release_authorizer_binds_newest_certification_and_controller_artifacts(
         "release/wheelhouse-manifest.yml": b"manifest bytes",
     }
     api = SimpleNamespace(
-        content=lambda repository, path, ref: GitHubContent(
-            path, "9" * 40, source_bytes[path]
+        content=lambda repository, path, ref: (
+            GitHubContent(path, "9" * 40, source_bytes[path])
+            if path in source_bytes
+            else _release_catalog_content(repository, path, ref=ref)
         )
     )
+    if move_main:
+        with pytest.raises(GitHubControllerError, match="release source moved"):
+            authorize_release(
+                api, repository="owner/repo", bundle_dir=bundle,
+                run_id="60", run_attempt="1", certification_artifact={
+                    "run_id": "50", "run_attempt": "1", "artifact_id": "41",
+                    "artifact_name": "certification", "provider_digest": "sha256:" + "a" * 64,
+                }, controller={
+                    "run_id": "100", "run_attempt": "1", "artifact_id": "42",
+                    "artifact_name": "controller", "provider_digest": "sha256:" + "b" * 64,
+                    "commit_sha": COMMIT, "tree_sha": TREE,
+                }, controller_wheel_path=controller_wheel,
+                output_path=tmp_path / "authorization.json",
+            )
+        assert not (tmp_path / "authorization.json").exists()
+        return
     result = authorize_release(
         api,  # type: ignore[arg-type]
         repository="owner/repo",
@@ -820,8 +873,9 @@ def test_release_authorizer_rejects_bounded_workitem_certification(
         )
 
 
+@pytest.mark.parametrize("move_main", [False, True])
 def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, move_main: bool
 ) -> None:
     main = MainIdentity("101", "main", COMMIT, TREE)
     controller = ProviderArtifact(
@@ -831,9 +885,18 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
         "50", 3, "42", "bcf-exact-main-certification-50-3",
         f"sha256:{'b' * 64}", {},
     )
+    main_reads = 0
+
+    def current_main(*args: object, **kwargs: object) -> MainIdentity:
+        nonlocal main_reads
+        main_reads += 1
+        if move_main and main_reads > 1:
+            return MainIdentity("101", "main", "c" * 40, "d" * 40)
+        return MainIdentity("101", "main", COMMIT, TREE)
+
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.resolve_main",
-        lambda *args, **kwargs: main,
+        current_main,
     )
     monkeypatch.setattr(
         "bcf_governance.tooling.ci_github_release_inputs.load_authority",
@@ -884,9 +947,16 @@ def test_release_authorization_inputs_are_provider_resolved_without_caller_ids(
     api = SimpleNamespace(
         workflow_runs=lambda *args, **kwargs: runs,
         run=lambda _repository, run_id: next(row for row in runs if str(row["id"]) == str(run_id)),
-        content=lambda *args, **kwargs: _public_contract(),
+        content=_release_catalog_content,
     )
     path = tmp_path / "release-inputs.json"
+    if move_main:
+        with pytest.raises(GitHubControllerError, match="release source moved"):
+            resolve_release_authorization_inputs(
+                api, repository="owner/repo", output_path=path,
+            )
+        assert not path.exists()
+        return
     result = resolve_release_authorization_inputs(
         api, repository="owner/repo", output_path=path  # type: ignore[arg-type]
     )
@@ -958,7 +1028,7 @@ def test_release_input_resolution_never_falls_back_from_newest_finalizer(
     api = SimpleNamespace(
         workflow_runs=lambda *args, **kwargs: runs,
         run=lambda _repository, run_id: next(row for row in runs if str(row["id"]) == str(run_id)),
-        content=lambda *args, **kwargs: _public_contract(),
+        content=_release_catalog_content,
     )
     with pytest.raises(GitHubControllerError, match="newest finalizer is failed"):
         resolve_release_authorization_inputs(
