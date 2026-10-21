@@ -784,3 +784,52 @@ def test_differing_cross_role_requirement_strings_remain_blocked(tmp_path, requi
         "dependencies=['PyYAML>=6,<7', " + repr(requirement) + "]"))
     with pytest.raises(InterpreterEnvironmentError, match='unique names'):
         derive_interpreter_environment(tmp_path)
+
+
+def _installer_security_fixture(repo: Path, mode: str, requirement: str | None) -> None:
+    if mode == "project":
+        _fixture(repo)
+        gate = repo / "governance/gate-contracts.yml"
+        data = yaml.safe_load(gate.read_text())
+        data["interpreter_contract"]["gate_requirements"] = {}
+        gate.write_text(yaml.safe_dump(data))
+        if requirement is not None:
+            project = repo / "pyproject.toml"
+            project.write_text(project.read_text().replace(
+                "dev=['pytest==9.0.3']", "dev=['pytest==9.0.3', '" + requirement + "']"
+            ))
+    else:
+        _legacy_fixture(repo)
+        source = repo / "requirements-governance.txt"
+        if mode == "source":
+            (repo / "governance/gate-contracts.yml").write_text(
+                "profile_contract_version: '3.0'\n"
+                "interpreter_contract: {dependency_source: requirements-governance.txt}\n"
+                "gates: {test: {}}\n"
+            )
+        if requirement is not None:
+            source.write_text(source.read_text() + requirement + "\n")
+
+
+@pytest.mark.parametrize("mode", ["legacy", "project", "source"])
+@pytest.mark.parametrize("requirement", [None, "pip==26.2.2", "pip>=26.2.2,<27"])
+def test_patched_installer_closes_compatible_project_constraint(
+    tmp_path: Path, mode: str, requirement: str | None,
+) -> None:
+    _installer_security_fixture(tmp_path, mode, requirement)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    installers = [value for value in plan.requirements if value.startswith("pip")]
+    assert installers == ["pip==26.2.2"]
+    assert not (tmp_path / ".artifacts").exists()
+
+
+@pytest.mark.parametrize("mode", ["legacy", "project", "source"])
+@pytest.mark.parametrize("requirement", ["pip==26.2.1", "pip<26.2.2"])
+def test_incompatible_installer_blocks_before_environment_allocation(
+    tmp_path: Path, mode: str, requirement: str,
+) -> None:
+    _installer_security_fixture(tmp_path, mode, requirement)
+    with pytest.raises(InterpreterEnvironmentError, match="installer"):
+        derive_interpreter_environment(tmp_path)
+    assert not (tmp_path / ".artifacts").exists()
