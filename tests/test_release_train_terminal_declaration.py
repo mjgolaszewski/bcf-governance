@@ -65,24 +65,43 @@ def test_single_phase_train_retains_its_declared_terminal():
 def test_terminal_declaration_rejects_incomplete_or_ambiguous_catalog(defect):
     values = _catalog()
     product, build, ledger, history = (values[key] for key in ("product", "build", "ledger", "history"))
-    if defect == "duplicate-product": product["execution_phases"].append(deepcopy(product["execution_phases"][0]))
-    elif defect == "duplicate-build": build["phase_sequence"].append(deepcopy(build["phase_sequence"][0]))
-    elif defect == "duplicate-history": history["entries"].append(deepcopy(history["entries"][0]))
-    elif defect == "missing-build": build["phase_sequence"].pop()
-    elif defect == "wrong-build-block": build["phase_sequence"][0]["build_block"] = "foreign"
-    elif defect == "unknown-active": ledger["active_phase"]["id"] = "P99"
-    elif defect == "wrong-active-block": ledger["active_phase"]["build_block"] = "foreign"
-    elif defect == "wrong-version": values["version"] = "2.3.5"
-    elif defect == "ambiguous-version": ledger["release_trains"]["other"] = {"target_version": "2.5.0"}
-    elif defect == "supplemental": ledger["release_trains"]["release_27"]["kind"] = "supplemental_publication"
-    elif defect == "unknown-dependency": build["phase_sequence"][0]["hard_dependencies"] = ["P99"]
-    elif defect == "self-dependency": build["phase_sequence"][0]["hard_dependencies"] = ["P32"]
-    elif defect == "duplicate-dependency": build["phase_sequence"][0]["hard_dependencies"] = ["P31", "P31"]
-    elif defect == "cycle": build["phase_sequence"][0]["hard_dependencies"] = ["P35"]
-    elif defect == "multiple-terminals": build["phase_sequence"][-1]["hard_dependencies"] = ["P32"]
-    elif defect == "missing-history": history["entries"] = []
-    elif defect == "overlapping-history": history["entries"].append(deepcopy(product["execution_phases"][0]))
-    elif defect == "retained-member-without-dependencies": history["entries"].append({"phase_id": "P30", "release_train": "release_27"})
-    elif defect == "empty-version": values["version"] = ""
+    if defect == "duplicate-product":
+        product["execution_phases"].append(deepcopy(product["execution_phases"][0]))
+    elif defect == "duplicate-build":
+        build["phase_sequence"].append(deepcopy(build["phase_sequence"][0]))
+    elif defect == "duplicate-history":
+        history["entries"].append(deepcopy(history["entries"][0]))
+    elif defect == "missing-build":
+        build["phase_sequence"].pop()
+    elif defect == "wrong-build-block":
+        build["phase_sequence"][0]["build_block"] = "foreign"
+    elif defect == "unknown-active":
+        ledger["active_phase"]["id"] = "P99"
+    elif defect == "wrong-active-block":
+        ledger["active_phase"]["build_block"] = "foreign"
+    elif defect == "wrong-version":
+        values["version"] = "2.3.5"
+    elif defect == "ambiguous-version":
+        ledger["release_trains"]["other"] = {"target_version": "2.5.0"}
+    elif defect == "supplemental":
+        ledger["release_trains"]["release_27"]["kind"] = "supplemental_publication"
+    elif defect == "unknown-dependency":
+        build["phase_sequence"][0]["hard_dependencies"] = ["P99"]
+    elif defect == "self-dependency":
+        build["phase_sequence"][0]["hard_dependencies"] = ["P32"]
+    elif defect == "duplicate-dependency":
+        build["phase_sequence"][0]["hard_dependencies"] = ["P31", "P31"]
+    elif defect == "cycle":
+        build["phase_sequence"][0]["hard_dependencies"] = ["P35"]
+    elif defect == "multiple-terminals":
+        build["phase_sequence"][-1]["hard_dependencies"] = ["P32"]
+    elif defect == "missing-history":
+        history["entries"] = []
+    elif defect == "overlapping-history":
+        history["entries"].append(deepcopy(product["execution_phases"][0]))
+    elif defect == "retained-member-without-dependencies":
+        history["entries"].append({"phase_id": "P30", "release_train": "release_27"})
+    elif defect == "empty-version":
+        values["version"] = ""
     with pytest.raises(GovernanceValidationError):
         declared_release_train_terminal(**values)

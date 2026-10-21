@@ -13,6 +13,8 @@ from typing import Any
 import yaml
 
 from .semantic_yaml import SemanticYAMLError, load_unique_yaml_text
+from .governance_validation.common import GovernanceValidationError
+from .governance_validation.supplemental_releases import declared_release_train_terminal
 
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
@@ -73,6 +75,59 @@ def _release_version_at_main(
         return parse_release_version(version)
     except ReleaseVersionError as exc:
         raise GitHubControllerError("current-main release version is not releasable") from exc
+
+
+def require_terminal_release_phase_at_main(
+    api: GitHubAPI, *, repository: str, main: MainIdentity,
+) -> str:
+    """Reject intermediate phase release work using exact-main declarations.
+
+    This is a necessary declaration gate, not independent predecessor truth.
+    The authorizer still authenticates the exact terminal phase certification.
+    """
+    version = _release_version_at_main(api, repository=repository, main=main)
+    documents: dict[str, dict[str, Any]] = {}
+    paths = {
+        "product": "plans/product-spec.yml",
+        "build": "plans/build-plan.yml",
+        "ledger": "plans/phase-ledger.yml",
+        "history": "plans/phase-history.yml",
+    }
+    for name, path in paths.items():
+        content = api.content(repository, path, ref=main.checkout_sha)
+        if content.path != path:
+            raise GitHubControllerError("release train source path is not exact")
+        try:
+            value = load_unique_yaml_text(content.content.decode("utf-8"))
+        except (UnicodeDecodeError, yaml.YAMLError, SemanticYAMLError) as exc:
+            raise GitHubControllerError("release train source is invalid") from exc
+        if (
+            not isinstance(value, dict)
+            or not isinstance(value.get("document"), dict)
+            or value["document"].get("path") != path
+        ):
+            raise GitHubControllerError("release train source identity is invalid")
+        documents[name] = value
+    try:
+        terminal = declared_release_train_terminal(
+            product=documents["product"], build=documents["build"],
+            ledger=documents["ledger"], history=documents["history"],
+            version=version.value,
+        )
+    except GovernanceValidationError as exc:
+        raise GitHubControllerError(f"release train declaration is invalid: {exc}") from exc
+    active = documents["ledger"]["active_phase"]
+    if active["id"] != terminal:
+        raise GitHubControllerError(f"release train requires terminal phase {terminal}")
+    if active.get("lifecycle_status") != "completed":
+        raise GitHubControllerError("release train terminal phase is not authored complete")
+    release = next(
+        row["release_train"] for row in documents["product"]["execution_phases"]
+        if row["phase_id"] == terminal
+    )
+    if documents["ledger"]["release_trains"][release].get("status") not in {"active", "completed"}:
+        raise GitHubControllerError("release train is not active or completed")
+    return terminal
 
 
 def _exact_role_run(
@@ -152,6 +207,7 @@ def resolve_release_authorization_inputs(
     """Resolve release inputs without caller-selected provider identities."""
 
     main = resolve_main(api, repository)
+    require_terminal_release_phase_at_main(api, repository=repository, main=main)
     require_controller_execution(
         compile_controller_custody(
             resolve_effective_controller(api, repository=repository),
@@ -208,6 +264,8 @@ def resolve_release_authorization_inputs(
             "tree_sha": main.tree_sha,
         },
     }
+    if resolve_main(api, repository) != main:
+        raise GitHubControllerError("release source moved during input resolution")
     write_exclusive(output_path, payload)
     return payload
 
