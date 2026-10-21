@@ -1,0 +1,1086 @@
+{
+  "authority": false,
+  "classification": "HISTORICAL_PROVIDER_OBSERVATION_NOT_MATCHED_BENCHMARK",
+  "source": {
+    "repository": "mjgolaszewski/bcf-governance",
+    "repository_id": 1207503211,
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6",
+    "version_context": "immutable v2.3.4 predecessor; project workflow subject, not a claim that all effective-controller runtime bytes equal this commit"
+  },
+  "read_window_utc": [
+    "2026-10-21T20:17:38Z",
+    "2026-10-21T20:21:13Z"
+  ],
+  "provider_inventory": {
+    "head_run_collection_url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/runs?head_sha=d02f11ef3eafd99e451c1482c5d3403c2feefd03&per_page=30",
+    "total_count": 16,
+    "returned_count": 16,
+    "job_attempt_populations": [
+      {
+        "key": "exactmain_attempt1",
+        "url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/runs/38858875383/attempts/1/jobs?per_page=100",
+        "total_count": 3,
+        "jobs": [
+          {
+            "id": 116836384781,
+            "run_id": 38858875383,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Build independent exact-main trusted controller",
+            "conclusion": "success",
+            "seconds": 781,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 0
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 5
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 8
+              },
+              {
+                "name": "Observe provider-effective controller for non-authoritative routing",
+                "seconds": 384
+              },
+              {
+                "name": "Classify exact-main semantic evidence applicability",
+                "seconds": 2
+              },
+              {
+                "name": "Allocate the private controller custody directory",
+                "seconds": 0
+              },
+              {
+                "name": "Project the provider-authenticated controller custody capsule",
+                "seconds": 367
+              },
+              {
+                "name": "Upload exact controller custody",
+                "seconds": 1
+              },
+              {
+                "name": "Build the exact-main trusted controller bundle",
+                "seconds": 9
+              },
+              {
+                "name": "Upload the exact-main trusted controller bundle",
+                "seconds": 2
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116840184335,
+            "run_id": 38858875383,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence",
+            "conclusion": "skipped",
+            "seconds": -1,
+            "steps": []
+          },
+          {
+            "id": 116840184388,
+            "run_id": 38858875383,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Authenticate exact-main admission and publish pending authority",
+            "conclusion": "skipped",
+            "seconds": -1,
+            "steps": []
+          }
+        ]
+      },
+      {
+        "key": "exactmain_attempt2",
+        "url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/runs/38858875383/attempts/2/jobs?per_page=100",
+        "total_count": 8,
+        "jobs": [
+          {
+            "id": 116846098054,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Build independent exact-main trusted controller",
+            "conclusion": "success",
+            "seconds": 782,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 6
+              },
+              {
+                "name": "Observe provider-effective controller for non-authoritative routing",
+                "seconds": 387
+              },
+              {
+                "name": "Classify exact-main semantic evidence applicability",
+                "seconds": 1
+              },
+              {
+                "name": "Allocate the private controller custody directory",
+                "seconds": 0
+              },
+              {
+                "name": "Project the provider-authenticated controller custody capsule",
+                "seconds": 374
+              },
+              {
+                "name": "Upload exact controller custody",
+                "seconds": 1
+              },
+              {
+                "name": "Build the exact-main trusted controller bundle",
+                "seconds": 6
+              },
+              {
+                "name": "Upload the exact-main trusted controller bundle",
+                "seconds": 1
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116850037667,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Authenticate exact-main admission and publish pending authority",
+            "conclusion": "success",
+            "seconds": 459,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 5
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Authenticate exact-main admission with the effective controller",
+                "seconds": 5
+              },
+              {
+                "name": "Mint repository-scoped protection inspection token",
+                "seconds": 0
+              },
+              {
+                "name": "Authenticate and preserve prior merged-PR evidence",
+                "seconds": 441
+              },
+              {
+                "name": "Upload exact prior evidence transport",
+                "seconds": 2
+              },
+              {
+                "name": "Post Mint repository-scoped protection inspection token",
+                "seconds": 1
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116852419179,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence / Validate governance front door",
+            "conclusion": "success",
+            "seconds": 154,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2
+              },
+              {
+                "name": "Download exact prior-evidence-transport evidence",
+                "seconds": 0
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 7
+              },
+              {
+                "name": "Run canonical cheap preflight with exact prior evidence",
+                "seconds": 140
+              },
+              {
+                "name": "Upload the exact evidence session",
+                "seconds": 1
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116853239523,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence / Evidence / Evidence shard 3",
+            "conclusion": "success",
+            "seconds": 19,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 1
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 6
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 5
+              },
+              {
+                "name": "Verify and materialize the locked offline TypeScript test compiler",
+                "seconds": 0
+              },
+              {
+                "name": "Download this attempt's evidence session",
+                "seconds": 1
+              },
+              {
+                "name": "Restore downloaded evidence-session modes",
+                "seconds": 0
+              },
+              {
+                "name": "Capture the mechanically derived evidence shard",
+                "seconds": 0
+              },
+              {
+                "name": "Upload this attempt's exact evidence shard",
+                "seconds": 1
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 1
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116853239524,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence / Evidence / Evidence shard 1",
+            "conclusion": "success",
+            "seconds": 19,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 2
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 5
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 5
+              },
+              {
+                "name": "Verify and materialize the locked offline TypeScript test compiler",
+                "seconds": 0
+              },
+              {
+                "name": "Download this attempt's evidence session",
+                "seconds": 1
+              },
+              {
+                "name": "Restore downloaded evidence-session modes",
+                "seconds": 0
+              },
+              {
+                "name": "Capture the mechanically derived evidence shard",
+                "seconds": 0
+              },
+              {
+                "name": "Upload this attempt's exact evidence shard",
+                "seconds": 1
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116853239528,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence / Evidence / Evidence shard 2",
+            "conclusion": "success",
+            "seconds": 23,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 2
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 7
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 5
+              },
+              {
+                "name": "Verify and materialize the locked offline TypeScript test compiler",
+                "seconds": 0
+              },
+              {
+                "name": "Download this attempt's evidence session",
+                "seconds": 1
+              },
+              {
+                "name": "Restore downloaded evidence-session modes",
+                "seconds": 0
+              },
+              {
+                "name": "Capture the mechanically derived evidence shard",
+                "seconds": 1
+              },
+              {
+                "name": "Upload this attempt's exact evidence shard",
+                "seconds": 1
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116853239715,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence / Evidence / Evidence shard 0",
+            "conclusion": "success",
+            "seconds": 19,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 2
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 5
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 3
+              },
+              {
+                "name": "Verify and materialize the locked offline TypeScript test compiler",
+                "seconds": 1
+              },
+              {
+                "name": "Download this attempt's evidence session",
+                "seconds": 1
+              },
+              {
+                "name": "Restore downloaded evidence-session modes",
+                "seconds": 0
+              },
+              {
+                "name": "Capture the mechanically derived evidence shard",
+                "seconds": 0
+              },
+              {
+                "name": "Upload this attempt's exact evidence shard",
+                "seconds": 2
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116853370355,
+            "run_id": 38858875383,
+            "run_attempt": 2,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Run exact-main governance evidence / Verify exact-tree governance evidence",
+            "conclusion": "success",
+            "seconds": 26,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 2
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 3
+              },
+              {
+                "name": "Download exact prior-evidence-transport evidence",
+                "seconds": 1
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 1
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 7
+              },
+              {
+                "name": "Download only this attempt's evidence shards",
+                "seconds": 1
+              },
+              {
+                "name": "Restore private evidence-session modes",
+                "seconds": 0
+              },
+              {
+                "name": "Verify exact-tree governance evidence with prior transport",
+                "seconds": 7
+              },
+              {
+                "name": "Preserve a causal terminal result",
+                "seconds": 0
+              },
+              {
+                "name": "Upload this attempt's terminal truth report",
+                "seconds": 1
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 1
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "release_authority",
+        "url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/runs/38865931369/attempts/1/jobs?per_page=100",
+        "total_count": 3,
+        "jobs": [
+          {
+            "id": 116858641412,
+            "run_id": 38865931369,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Observe provider-effective controller for non-authoritative release routing",
+            "conclusion": "success",
+            "seconds": 272,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 0
+              },
+              {
+                "name": "Check out the exact candidate commit",
+                "seconds": 3
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 7
+              },
+              {
+                "name": "Observe provider-effective controller for non-authoritative routing",
+                "seconds": 259
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out the exact candidate commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116860174687,
+            "run_id": 38865931369,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Authorize newest certified exact main without candidate checkout",
+            "conclusion": "success",
+            "seconds": 475,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 6
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Allocate private release authorization directories",
+                "seconds": 0
+              },
+              {
+                "name": "Resolve provider-authenticated release inputs",
+                "seconds": 449
+              },
+              {
+                "name": "Download only the mechanically resolved certification artifact",
+                "seconds": 1
+              },
+              {
+                "name": "Download only the mechanically resolved controller artifact",
+                "seconds": 2
+              },
+              {
+                "name": "Authorize exact provider and Git custody",
+                "seconds": 10
+              },
+              {
+                "name": "Upload immutable release authorization inputs",
+                "seconds": 3
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116862820485,
+            "run_id": 38865931369,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Build exact certified release bytes on a fresh hosted runner",
+            "conclusion": "success",
+            "seconds": 43,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 2
+              },
+              {
+                "name": "Check out only the authorized exact commit",
+                "seconds": 3
+              },
+              {
+                "name": "Select the closed release interpreter",
+                "seconds": 12
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 7
+              },
+              {
+                "name": "Download this attempt's authorization only",
+                "seconds": 1
+              },
+              {
+                "name": "Test and build the exact authorized release bundle",
+                "seconds": 13
+              },
+              {
+                "name": "Upload the exact untrusted build bundle",
+                "seconds": 2
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Select the closed release interpreter",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out only the authorized exact commit",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "release_verifier",
+        "url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/runs/38867337948/attempts/1/jobs?per_page=100",
+        "total_count": 2,
+        "jobs": [
+          {
+            "id": 116863087831,
+            "run_id": 38867337948,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Execute token-free offline wheel and sdist verification",
+            "conclusion": "success",
+            "seconds": 106,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1
+              },
+              {
+                "name": "Select the closed release interpreter",
+                "seconds": 8
+              },
+              {
+                "name": "Select the exact real-compiler test Node runtime",
+                "seconds": 6
+              },
+              {
+                "name": "Download the triggering run's trusted authorization and controller",
+                "seconds": 2
+              },
+              {
+                "name": "Install the triggering run's checksum-admitted controller",
+                "seconds": 6
+              },
+              {
+                "name": "Download only the triggering build artifact",
+                "seconds": 3
+              },
+              {
+                "name": "Execute package verification without provider credentials",
+                "seconds": 74
+              },
+              {
+                "name": "Upload raw runtime evidence from this attempt",
+                "seconds": 2
+              },
+              {
+                "name": "Post Select the exact real-compiler test Node runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Select the closed release interpreter",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116863701379,
+            "run_id": 38867337948,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+            "conclusion": "success",
+            "seconds": 61,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 6
+              },
+              {
+                "name": "Select the closed release interpreter",
+                "seconds": 0
+              },
+              {
+                "name": "Download the triggering run's trusted authorization and controller",
+                "seconds": 3
+              },
+              {
+                "name": "Install the triggering run's checksum-admitted controller",
+                "seconds": 14
+              },
+              {
+                "name": "Download only the triggering build artifact",
+                "seconds": 4
+              },
+              {
+                "name": "Download only this verifier attempt's runtime evidence",
+                "seconds": 2
+              },
+              {
+                "name": "Allocate private release verification directories",
+                "seconds": 0
+              },
+              {
+                "name": "Authenticate provider state and recompute evidence hashes only",
+                "seconds": 9
+              },
+              {
+                "name": "Recompute provider, Git, dependency, runtime, and exact-asset custody",
+                "seconds": 13
+              },
+              {
+                "name": "Upload the sole authoritative release receipt and exact assets",
+                "seconds": 5
+              },
+              {
+                "name": "Post Select the closed release interpreter",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "key": "release_publisher",
+        "url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/runs/38867648790/attempts/1/jobs?per_page=100",
+        "total_count": 2,
+        "jobs": [
+          {
+            "id": 116864072085,
+            "run_id": 38867648790,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Observe provider-effective controller for non-authoritative publication routing",
+            "conclusion": "success",
+            "seconds": 391,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 1
+              },
+              {
+                "name": "Check out only the triggering authorized release subject",
+                "seconds": 2
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Install the declared governance environment",
+                "seconds": 7
+              },
+              {
+                "name": "Observe provider-effective controller for non-authoritative routing",
+                "seconds": 378
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Post Check out only the triggering authorized release subject",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          },
+          {
+            "id": 116866291608,
+            "run_id": 38867648790,
+            "run_attempt": 1,
+            "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+            "name": "Publish one exact idempotent transaction after governed qualification",
+            "conclusion": "success",
+            "seconds": 491,
+            "steps": [
+              {
+                "name": "Set up job",
+                "seconds": 8
+              },
+              {
+                "name": "Validate all required environment inputs before work",
+                "seconds": 0
+              },
+              {
+                "name": "Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Allocate private release publication directories",
+                "seconds": 0
+              },
+              {
+                "name": "Resolve the newest exact-main release receipt mechanically",
+                "seconds": 442
+              },
+              {
+                "name": "Download only the resolver-selected receipt and certified assets",
+                "seconds": 4
+              },
+              {
+                "name": "Attest the exact closed release asset inventory",
+                "seconds": 3
+              },
+              {
+                "name": "Mint one repository-scoped release publication token",
+                "seconds": 1
+              },
+              {
+                "name": "Publish only the authenticated pre-certified bytes",
+                "seconds": 28
+              },
+              {
+                "name": "Post Mint one repository-scoped release publication token",
+                "seconds": 1
+              },
+              {
+                "name": "Post Provision the declared Python runtime",
+                "seconds": 0
+              },
+              {
+                "name": "Complete job",
+                "seconds": 0
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "capture_sha256": [
+      {
+        "capture": "runs",
+        "capture_sha256": "6aa12eb4f8d9dab5bc079a01ae8d3d95c347fc335efe0a9c9f7ee1e223f8d63b"
+      },
+      {
+        "capture": "attempt1",
+        "capture_sha256": "1dc5f87dbbd0a09c3aff8f3c447a72e9b2514b07dee8cc8920397f315326f9b6"
+      },
+      {
+        "capture": "attempt2",
+        "capture_sha256": "f60efcd09446203cebf61b0c7018919f704d0c41dd007aa8e3a78b7aa839ffd0"
+      },
+      {
+        "capture": "exactmain_attempt1",
+        "capture_sha256": "50648693d6780730e297b01670250db5ea41c663a39475b417956fd834692cd2"
+      },
+      {
+        "capture": "exactmain_attempt2",
+        "capture_sha256": "cbb813ca5dde75f794cf4fe7de2df2d6d37dc9d29386a77a152fc43516beacc0"
+      },
+      {
+        "capture": "release_authority",
+        "capture_sha256": "36ef5003de116efe9aeb1dce0d554d71b56ace0e2d4e8324a6d6f8aac7bfe1a6"
+      },
+      {
+        "capture": "release_verifier",
+        "capture_sha256": "d413980697bec8add4e7c53048d20790df68697564061c31e084f34e4429df1f"
+      },
+      {
+        "capture": "release_publisher",
+        "capture_sha256": "7cb014806464bfcc921dde7e87e39e66336385eb3e95d1a8574dfe59cd1999fb"
+      }
+    ],
+    "log_captures": [
+      {
+        "job_id": 116836384781,
+        "provider_url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/jobs/116836384781/logs",
+        "decoded_utf8_bytes": 387065,
+        "decoded_utf8_sha256": "7f128f1d190678165b49b146148f419eb8c5d1618f6592854ac78dc84e1366a2"
+      },
+      {
+        "job_id": 116860174687,
+        "provider_url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/jobs/116860174687/logs",
+        "decoded_utf8_bytes": 20999,
+        "decoded_utf8_sha256": "df5267259ac87581f79608f4da0fcf1b023e1547b8dc776fe34b65bed25018ff"
+      },
+      {
+        "job_id": 116866291608,
+        "provider_url": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/jobs/116866291608/logs",
+        "decoded_utf8_bytes": 21502,
+        "decoded_utf8_sha256": "1278e8e6f609b8a155506370105eda1ec9b169ac4872e2df8fef5e3cb63310eb"
+      }
+    ]
+  },
+  "observed_intervals": {
+    "exact_main_attempt1_controller_job_seconds": 781,
+    "exact_main_attempt2_controller_job_seconds": 782,
+    "attempt1_routing_seconds": 384,
+    "attempt1_custody_projection_seconds": 367,
+    "attempt2_routing_seconds": 387,
+    "attempt2_custody_projection_seconds": 374,
+    "attempt2_prior_evidence_transport_seconds": 441,
+    "attempt2_preflight_seconds": 140,
+    "release_input_resolution_seconds": 449,
+    "release_build_step_seconds": 13,
+    "release_runtime_verification_step_seconds": 74,
+    "publication_routing_seconds": 378,
+    "publication_receipt_resolution_seconds": 442,
+    "publication_mutation_step_seconds": 28,
+    "release_workflow_chain_created_to_last_updated_seconds": 1862
+  },
+  "retained_exceptions": [
+    "Attempt1 semantic applicability log explicitly says pending_rotation and semantic_evidence_applicable=false; two skipped governance/admission job rows have end before start by1second. Retain raw rows, do not convert negative intervals to valid duration samples.",
+    "Attempt1 and attempt2 are correlated retries of the same run and use different controller lifecycle contexts; not two independent matched cohort samples.",
+    "Same-head nightly run38872840385 is failure; its metadata is retained in full16-run inventory. Periodic cause and timing need a separate pipeline observation; it is not silently removed or folded into release timings.",
+    "Provider run/step timestamps have second-level resolution and include setup, orchestration and provider latency; they do not establish request counts, retry/read/setup breakdown, allocation bounds or root cause."
+  ],
+  "interpretation": "Provider/controller observation, custody projection and release-input/receipt resolution are measured dominant paths in these captures. Investigate request/custody populations and exact freshness boundaries before proposing reuse or tuning; retain independent verifiers and moving-subject reauthentication.",
+  "next_action": "Add separate exact-main/controller and release/custody baseline cohorts using governed runs plus controlled isolated trials; freeze sample sizes, exclusions, statistical treatment and targets with user approval before optimized measurement. No p50/p95 claim or target approval derives from these observations.",
+  "acceptance_advance": false,
+  "targets_approved": false
+}
