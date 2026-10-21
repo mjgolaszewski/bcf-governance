@@ -1039,7 +1039,7 @@ def test_source_movement_at_materialization_lock_rejects_before_cache_lookup(
         nonlocal moved
         real_flock(lock, operation)
         descriptor = lock if isinstance(lock, int) else lock.fileno()
-        if Path(f"/proc/self/fd/{descriptor}").resolve(strict=True).name == ".materialize.lock":
+        if Path(f"/proc/self/fd/{descriptor}").readlink().name == ".materialize.lock":
             metadata.write_text(metadata.read_text(encoding="utf-8") + "\n# moved at lock\n", encoding="utf-8")
             moved = True
 
