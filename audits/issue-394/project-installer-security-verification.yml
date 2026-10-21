@@ -34,3 +34,40 @@ verification_pending:
 - required architecture, governance, semantic and package checks
 acceptance: All 82 whole requirements and 38 recorded slices unchanged; P32 active,
   P33-P35 dormant.
+pure_qualification:
+  source_commit: e6be7964250d04875edd353132e06dce4f4484d9
+  focused:
+    passed: 37
+    failed: 0
+    skipped: 0
+    junit_sha256: dce37929793a7dbd61366e29bed2eed1d8a99a5ef13df1bb1f936a79fab2b95d
+  complete_interpreter_module:
+    passed: 80
+    failed: 0
+    skipped: 0
+    junit_sha256: 02c74305d01e976c4d423d97969305a03a52c24d71ee707f6d91cf5a384409f2
+  scope: Pure planning and simulated materialization only. Both actual runs independently
+    checked; source pins, terminal quiescence and cleanup verified.
+template_characterization:
+  source_commit: d73a4c50b494dc832c844aeb58ca5e4a5886c641
+  cases: 2
+  failed: 2
+  errors: 0
+  skipped: 0
+  junit_sha256: bc98f0d993bfbfd89868b55c125ad1341ff7344c90a98604a1fbd326fbec6a28
+  cause: Actual canonical and packaged template requirements retained old installer
+    pin, independently reproduced as incompatible with canonical patched installer.
+  correction: Canonical template pin updated; canonical builder projection and final
+    complete module checks pending.
+independent_adopter_residuals:
+- status: OPEN
+  kind: unsupported_dependency_spelling
+  declarations:
+  - psycopg[binary,pool]>=3.3.3,<4
+  - pyjwt[crypto]>=2.15.0,<3
+  observed_release: 2.3.5
+  consequence: Extras refusal precedes installer conflict; pip-only fix does not establish
+    full adopter planner compatibility.
+  treatment: No policy weakening or grammar expansion in this slice. A flat projection
+    needs mechanical selected Python/platform/group/extras applicability and source
+    parity; explicit external environment preparation is not BCF planner proof.

@@ -1,6 +1,6 @@
 schema_version: '1.0'
 issue: 394
-status: CONTRACT_AUTHORED_IMPLEMENTATION_PENDING
+status: IMPLEMENTED_QUALIFICATION_IN_PROGRESS
 authority: false
 bounded_context: governed_project_environment
 architectural_layer: existing_interpreter_and_dependency_source_owners
@@ -54,4 +54,4 @@ forbidden:
   - Accepting arbitrary installer versions merely because a specifier can be parsed.
   - Environment overrides, monkeypatches, disabled validators or synthetic acceptance receipts.
   - New broker, evaluator, claim registry, public CLI or product receipt family.
-next_action: review existing requirement parsing and commit cause-specific failing controls before production changes
+next_action: project canonical mirrors, verify complete interpreter and installed consumers, and run required gates before integration
