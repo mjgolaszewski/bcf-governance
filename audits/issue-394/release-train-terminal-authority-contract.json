@@ -35,7 +35,8 @@
   "target_modules": [
     "bcf_governance/tooling/ci_github_release.py",
     "bcf_governance/tooling/ci_github_release_inputs.py",
-    "existing lifecycle derivation owner selected after complete call-path review"
+    "existing lifecycle derivation owner selected after complete call-path review",
+    "bcf_governance/tooling/governance_validation/supplemental_releases.py existing release_phase_ids owner"
   ],
   "expected_tests": [
     "Successful P32/P33/P34 typed closures rejected for2.5 release, with no build/output/provider mutation",
@@ -51,5 +52,15 @@
     "generated workflows/authority commits outside canonical reconciliation",
     "frozen installer RED subjects and qualification scripts"
   ],
-  "execution": "No test/build/native/provider execution admitted or performed for this contract. Contract commit precedes production changes; exact qualification and source integration remain required."
+  "execution": "No test/build/native/provider execution admitted or performed for this contract. Contract commit precedes production changes; exact qualification and source integration remain required.",
+  "declaration_slice": {
+    "query": "declared_release_train_terminal",
+    "ownership": "Existing release catalog and authored phase mapping owners; derive the existing build-plan dependency DAG, no new registry or stored graph",
+    "result": "Declared terminal phase only, not verified predecessor truth, performance acceptance, phase activation or release authority",
+    "required_consumers": [
+      "early provider release-input resolution",
+      "authorizer certified phase comparison"
+    ],
+    "remaining_full_train_obligation": "Independently authenticated predecessor closure and the complete applicable acceptance/installed/performance/custody evidence remain mandatory; a declaration query does not satisfy them."
+  }
 }
