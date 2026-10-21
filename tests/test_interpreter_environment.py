@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import fcntl
 import json
 from pathlib import Path
 import subprocess
 import sys
+from typing import BinaryIO
 
 import pytest
 import yaml
@@ -949,3 +951,100 @@ def test_missing_metadata_projection_rejects_before_runtime_or_allocation(
     with pytest.raises(InterpreterEnvironmentError, match="authenticated dependency source"):
         materialize_interpreter_environment(tmp_path, Path(sys.executable))
     assert not (tmp_path / ".artifacts").exists()
+
+
+def _simulate_owned_venv(argv: list[str]) -> None:
+    environment = Path(argv[-1])
+    (environment / "bin").mkdir(parents=True)
+    (environment / "bin/python").symlink_to(sys.executable)
+    (environment / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
+
+
+@pytest.mark.parametrize("moving_input", ["projection", "metadata", "registry"])
+def test_source_movement_during_setup_rejects_before_dependency_install(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, moving_input: str,
+) -> None:
+    from bcf_governance.tooling import interpreter_environment as owner
+
+    _fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    projection = apply_interpreter_environment_projection(plan)
+    source = {
+        "projection": projection,
+        "metadata": tmp_path / "pyproject.toml",
+        "registry": tmp_path / "governance/gate-contracts.yml",
+    }[moving_input]
+    monkeypatch.setattr(owner, "select_materialization_base", lambda *_: Path(sys.executable))
+
+    def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if argv[1:3] == ["-m", "venv"]:
+            _simulate_owned_venv(argv)
+            source.write_text(source.read_text(encoding="utf-8") + "\n# moved during setup\n", encoding="utf-8")
+            return subprocess.CompletedProcess(argv, 0, "", "")
+        pytest.fail("moved dependency input reached native pip installation")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    with pytest.raises(InterpreterEnvironmentError, match="changed after derivation|projection drift"):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    assert not list(tmp_path.rglob("*.building-*"))
+
+
+def test_native_install_consumes_closed_plan_even_if_projection_moves_at_boundary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bcf_governance.tooling import interpreter_environment as owner
+
+    _fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    projection = apply_interpreter_environment_projection(plan)
+    seen: list[tuple[str, ...]] = []
+    monkeypatch.setattr(owner, "select_materialization_base", lambda *_: Path(sys.executable))
+    monkeypatch.setattr(owner, "_installed_inventory", lambda *_: "PyYAML==6.0.3\n")
+
+    def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+        if argv[1:3] == ["-m", "venv"]:
+            _simulate_owned_venv(argv)
+        elif argv[1:4] == ["-m", "pip", "install"]:
+            projection.write_text("unbound-dependency==99\n", encoding="utf-8")
+            seen.append(tuple(argv[argv.index("--disable-pip-version-check") + 1:]))
+            assert seen[-1] == plan.requirements
+        else:
+            pytest.fail("unexpected native command in controlled materialization")
+        return subprocess.CompletedProcess(argv, 0, "", "")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    python = materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    assert python.is_file()
+    assert seen == [plan.requirements]
+    with pytest.raises(InterpreterEnvironmentError, match="projection drift"):
+        verify_interpreter_environment_projection(plan)
+
+
+def test_source_movement_at_materialization_lock_rejects_before_cache_lookup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from bcf_governance.tooling import interpreter_environment as owner
+
+    _fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    apply_interpreter_environment_projection(plan)
+    metadata = tmp_path / "pyproject.toml"
+    real_flock = fcntl.flock
+
+    def flock(lock: int | BinaryIO, operation: int) -> None:
+        real_flock(lock, operation)
+        if str(getattr(lock, "name", "")).endswith(".materialize.lock"):
+            metadata.write_text(metadata.read_text(encoding="utf-8") + "\n# moved at lock\n", encoding="utf-8")
+
+    def forbidden(*args: object, **kwargs: object) -> None:
+        pytest.fail("changed dependency source reached cache lookup or native work")
+
+    monkeypatch.setattr(owner, "select_materialization_base", lambda *_: Path(sys.executable))
+    monkeypatch.setattr(fcntl, "flock", flock)
+    monkeypatch.setattr(owner, "_matching_cached_environment", forbidden)
+    monkeypatch.setattr(owner, "run_admitted_command", forbidden)
+    with pytest.raises(InterpreterEnvironmentError, match="changed after derivation"):
+        materialize_interpreter_environment(tmp_path, Path(sys.executable))
