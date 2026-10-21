@@ -61,6 +61,7 @@ def test_single_phase_train_retains_its_declared_terminal():
     "ambiguous-version", "supplemental", "unknown-dependency", "self-dependency",
     "duplicate-dependency", "cycle", "multiple-terminals", "missing-history",
     "contradictory-history", "retained-member-without-dependencies", "empty-version",
+    "unknown-phase-release", "invalid-phase-release",
 ])
 def test_terminal_declaration_rejects_incomplete_or_ambiguous_catalog(defect):
     values = _catalog()
@@ -105,6 +106,10 @@ def test_terminal_declaration_rejects_incomplete_or_ambiguous_catalog(defect):
         history["entries"].append({"phase_id": "P30", "release_train": "release_27"})
     elif defect == "empty-version":
         values["version"] = ""
+    elif defect == "unknown-phase-release":
+        product["execution_phases"][-1]["release_train"] = "missing"
+    elif defect == "invalid-phase-release":
+        product["execution_phases"][-1]["release_train"] = ["release_27"]
     with pytest.raises(GovernanceValidationError):
         declared_release_train_terminal(**values)
 
