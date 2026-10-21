@@ -98,8 +98,16 @@ def declared_release_train_terminal(
     phases = _phase_map(product.get("execution_phases"), context="release product phases")
     planned = _phase_map(build.get("phase_sequence"), context="release build phases")
     retained = _phase_map(history.get("entries"), context="release retained phases")
-    if phases.keys() != planned.keys() or phases.keys() & retained.keys():
+    if phases.keys() != planned.keys():
         raise GovernanceValidationError("release train phase inventory is contradictory")
+    for phase in phases.keys() & retained.keys():
+        snapshot = retained[phase]
+        if (
+            snapshot.get("build_block") != phases[phase].get("build_block")
+            or (snapshot.get("release_train") is not None
+                and snapshot.get("release_train") != phases[phase].get("release_train"))
+        ):
+            raise GovernanceValidationError("release train retained phase identity is contradictory")
     known = phases.keys() | retained.keys()
     if any(re.fullmatch(r"P[0-9]{2,}", phase) is None for phase in known):
         raise GovernanceValidationError("release train phase identity is invalid")
@@ -114,6 +122,10 @@ def declared_release_train_terminal(
         raise GovernanceValidationError("release train active phase is contradictory")
     release = _require_string(phases[active_id].get("release_train"), context="release train id")
     trains = _require_mapping(ledger.get("release_trains"), context="release trains")
+    for phase, declaration in phases.items():
+        owner = _require_string(declaration.get("release_train"), context=f"release phase {phase} owner")
+        if owner not in trains:
+            raise GovernanceValidationError("release train phase owner is undeclared")
     matching = []
     for name, value in trains.items():
         entry = _require_mapping(value, context=f"release train {name}")
@@ -135,7 +147,7 @@ def declared_release_train_terminal(
         ):
             raise GovernanceValidationError("release train dependency inventory is invalid")
         dependencies[phase] = set(values)
-    unresolved, resolved = set(planned), set(retained)
+    unresolved, resolved = set(planned), set(retained) - set(planned)
     while unresolved:
         ready = {phase for phase in unresolved if dependencies[phase] <= resolved}
         if not ready:
