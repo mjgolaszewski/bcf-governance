@@ -1,0 +1,41 @@
+{
+  "document": {
+    "kind": "affected_surface_contract",
+    "path": "audits/issue-394/interpreter-install-input-boundary-contract.json",
+    "status": "planned",
+    "authority": false
+  },
+  "phase": "P32",
+  "workitem": "P32-P0-07",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query_then_command",
+  "target_modules": [
+    "bcf_governance/tooling/interpreter_environment.py",
+    "tests/test_interpreter_environment.py"
+  ],
+  "contract": [
+    "Keep authenticated metadata source identity distinct from executable pip installation input. A pyproject source_path authenticates the plan and is not a requirements projection.",
+    "A metadata plan with no requirements_projection remains derivable and source-bound for read-only queries, but cannot materialize or reuse an environment.",
+    "Reject missing executable install input before interpreter selection, execution-state allocation, cache access or native commands.",
+    "Legacy and governed requirements-source plans retain their existing installation paths and in-memory bounded requirement arguments; metadata plans with a declared projection retain supported behavior.",
+    "Use the existing plan installation_path owner and existing typed InterpreterEnvironmentError; no new resolver, receipt, evaluator, CLI or policy exception."
+  ],
+  "expected_tests": [
+    "Metadata without projection retains authenticated source_path/source_sha256 and has no executable installation path.",
+    "Materialization of metadata without projection raises the existing typed missing-source failure before any runtime selection, allocation or native command; no artifacts created.",
+    "Existing positive legacy, recursive governed-source and projected metadata materialization/reuse cases remain in the full consumer module."
+  ],
+  "forbidden_surfaces": [
+    "Maintenance owner source or released assets",
+    "Provider or maintained adopter mutation",
+    "New authority or acceptance status",
+    "Generated mirrors/manifests edited by hand",
+    "Loss of metadata/gate source identity binding"
+  ],
+  "source_observation": {
+    "commit_sha": "9f6cc75c25b515f9059a61b2dc45bc7f60709d6c",
+    "finding": "Metadata source_path addition causes generic installation_path fallback to admit pyproject as an install projection; pip_arguments only rejects after runtime selection/allocation/venv."
+  },
+  "verification": "Contract and causal tests precede production correction. Pure execution requires a fresh finite admission. No pass or phase closure inferred from source inspection."
+}
