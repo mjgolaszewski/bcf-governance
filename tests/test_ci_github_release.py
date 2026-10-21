@@ -1888,3 +1888,69 @@ def test_release_identity_rejects_before_archive_or_runtime_work(tmp_path: Path,
         _verify(values, output, artifact_id="" if defect == "artifact-id" else "40",
                 artifact_digest="not-a-digest" if defect == "provider-digest" else f"sha256:{'e' * 64}")
     assert not output.exists()
+
+
+@pytest.mark.parametrize("closed_phase", ["P32", "P33", "P34"])
+def test_release_authorizer_rejects_intermediate_release_train_phase(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, closed_phase: str
+) -> None:
+    """A valid phase closure cannot supply the remaining train's authority."""
+    bundle = tmp_path / "bundle"
+    bundle.mkdir()
+    scope = _terminal_scope()
+    target = {"kind": "phase", "id": closed_phase}
+    scope["evaluation_scope"] = {"intent": "closure", "target": target}
+    proposition = scope["certified_proposition"]
+    assert isinstance(proposition, dict)
+    proposition["target"] = target
+    _json(bundle / "ci-certification.json", {
+        "authority_contract_version": "1.1",
+        "subject": {"checkout_sha": COMMIT, "tree_sha": TREE},
+        **scope,
+    })
+    _json(bundle / "controller-custody.json", _controller_custody())
+    _json(bundle / "evidence-session.json", {})
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_bundle",
+        lambda _: {"subject": {"commit_sha": COMMIT, "tree_sha": TREE}},
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.verify_ci_certification",
+        lambda *args, **kwargs: SimpleNamespace(status="pass", computed_state="certified"),
+    )
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.resolve_main",
+        lambda *_: MainIdentity("101", "main", COMMIT, TREE),
+    )
+    content_reads: list[str] = []
+    paths = {
+        "plans/product-spec.yml", "plans/build-plan.yml",
+        "plans/phase-ledger.yml", "plans/phase-history.yml",
+        "governance/public-contracts.yml",
+    }
+
+    def content(repository: str, path: str, *, ref: str) -> GitHubContent:
+        assert repository == "owner/repo" and ref == COMMIT
+        assert path in paths, "terminal eligibility fetched an undeclared source"
+        payload = yaml.safe_load((REPO_ROOT / path).read_text())
+        if path == "plans/phase-ledger.yml":
+            payload["active_phase"]["id"] = closed_phase
+        content_reads.append(path)
+        return GitHubContent(path, "d" * 40, yaml.safe_dump(payload).encode())
+
+    def forbidden(*args: object, **kwargs: object) -> None:
+        pytest.fail("intermediate phase reached release role allocation before train rejection")
+
+    monkeypatch.setattr(
+        "bcf_governance.tooling.ci_github_release.load_authority", forbidden,
+    )
+    output = tmp_path / "authorization.json"
+    with pytest.raises(GitHubControllerError, match="release train"):
+        authorize_release(
+            SimpleNamespace(content=content),  # type: ignore[arg-type]
+            repository="owner/repo", bundle_dir=bundle,
+            run_id="1", run_attempt="1", certification_artifact={}, controller={},
+            controller_wheel_path=tmp_path / "absent.whl", output_path=output,
+        )
+    assert content_reads, "release rejection must derive authenticated train inputs"
+    assert not output.exists()
