@@ -1223,7 +1223,7 @@
     },
     "scripts/_bcf_runtime/interpreter_environment_plan.py": {
       "operation": "copy",
-      "sha256": "d298d52d603f2d7e3de813141b1a0a856dc58ec8a0028c64255921d63f2f051c"
+      "sha256": "d21f72d01ca05a1c765f0220171ceb5b5f0420ba9af1d80c5f6090b7e8bbabd9"
     },
     "scripts/_bcf_runtime/interpreter_locked_project.py": {
       "operation": "copy",
@@ -1657,14 +1657,92 @@
     }
   ],
   "retired_files": {
+    "schemas/authored-phase-state-result.schema.json": [
+      "72518be5539a7a50fc411ba0ed44c219cc651b61af5048d42b6c37c10b07d92c"
+    ],
+    "schemas/ci-lifecycle-composition.schema.json": [
+      "85781ff360710fcee8924ac2a4b65f6715adfcf47863b8d609839524f5458e13",
+      "cfd6e50884c972f976c95079114538b8bd8cc3c2a4ed315889a16b7964cc1f4e",
+      "dc1e233ec3483f648cb26abd5b4a548933cdab41684516951213a2ac4e5f43ba",
+      "e7036bdeac25937aab951a66f7a00a6d42c7e9ba464c4ddc0fd70908e214c515"
+    ],
+    "schemas/release-train-backtrace.schema.json": [
+      "02c08e72c64911cd99303ae6cbe1da5bbf2f8ca5db8677ddf6d63171b38b90b9",
+      "94eab2f62f619d1f864de231bea96927d18c01d9689aa00f142c9cae2b581821",
+      "cc6372de5926cbe0e484f0233c14c6fab81f9d46292dd7ae4ed67f43935656a0",
+      "edaa652bcc34ace5d01ea1a87c8a92e1749dce5dcf4841261dab9a33db28ef16"
+    ],
+    "schemas/semantic-call-contracts.schema.json": [
+      "e812ce939497056f4551e70a9773cb4d44da11348645493f0ea2846c034db149"
+    ],
+    "schemas/semantic-initialization-contracts.schema.json": [
+      "ef58f8d9eef278a28a22a02995a022896c86402a03cee54df231aba18dc4dc9c"
+    ],
+    "scripts/_bcf_runtime/ci_authority_prospective_truth.py": [
+      "9e942c9c712a2d5ec675f7d87431cb3acd5f25a2d801373bc33c0407b25c4e99"
+    ],
     "scripts/_bcf_runtime/ci_github_release_qualification.py": [
       "4960706ee68abb7f0143350fc8925fe94c0448066265a6e466817115976440ae",
       "7dff42728249979f34b887fe3e71174049d4937f7931ed0bb3d5c04ba4538a38",
       "d4669009ed0b064989919642c0c2d5d20959c979bf16e54e21d7fba1109ac1ae",
       "d773af6e934e8d66f7ac60ebc3729ad5dd9c6e76e228a494213fe2284bbf486f"
     ],
+    "scripts/_bcf_runtime/ci_graph_composition.py": [
+      "02ab2d7bfb8b16aadfb94d37f7dce48b4b0ef78ae39a74d365f40544d21660a5",
+      "0aabb3a9638a3ffc34bccdfea4a1b5cf392a342526b24f6cc5ca669262575779",
+      "2412f16ee30bc3398fee7f19327ccfb45190f092b83398e1e6cba58b594bc631",
+      "31fe1e14a3b6a4f8a3a2f3a38b3efb7739bfa66746e7de45a61146f3ad0839d1",
+      "33f3cc4eba5f98c17dcc45866410832f8d48d8ae34e427ea55ddaeac685320cc",
+      "41a8676a152c63ac17a6dfdf22e4b1649d361271909cb991d7e134b6fc15bbb2",
+      "482ae9f48bb9a372f1e197b725e6d4e142d96dd294be1ebf18b2eaf7d50f45af",
+      "4afb99c1c0459d78d9e2778815acf7ce874e4497b1b04d7aaa6b2511b59ad5b4",
+      "4c0ca96e50d7d277282363c1886107ea788e33ad9ff83897d1df5ce5a2f64bd8",
+      "67872186cdcfd27df24986ec905363cfc4248db0864647026da724471033428f",
+      "8543704feb37e52d5f3cd80b250e69aa1fabcc09c5cc7122414fd550f9fb908e",
+      "8ea29532e44f77d25021069e50e131895841799b956f2e2a145daf6d04052d1e",
+      "b3cc6d7b742dbf1e9d763a910cec75c91443b60c7b4820f66d64e9cd0c18df0f",
+      "b573f3b4f323a03a16a0534eb0feed629c257a694e6716a52c4969a5ed353145",
+      "c0ea6e07a1dd94832b0c0304e1bcf9efe30bc6dd9f5554a6ce2097a840c0748a",
+      "c4023858eece101cdac8522c9331d999c7b3e2e27b7516744fd1048b17830a7e",
+      "c98a80260968d1f0c41d2ce716c8cf1d3bb9dbc857e8d31b4638b4ad38f09f5c",
+      "c9c97414ed092346dcd37a50b46ed7b29545682a4c92c32e648ade1d6f24affd",
+      "d4eea8cd407fee5fa045755c99cf50c14e53c2004ad43d10aa554eebc9148b3d",
+      "d691544163e0390dec792c20882bb2354efb085c41412edcdd22e5b395fb71be",
+      "e164d4eb3d78b587aad8f6c57af4ee0a932e4c698bbe664176970ce76def01dd",
+      "fa121dcebe3d4e04d678a88c5c24ede5180bee1184888b1418b7201f192cef92",
+      "fabfc08478299a1fe941012a9c5dd73ae06064126692f211dc51ff27f57356bc",
+      "fb59c8b391bbf52d52bbb9721a11a5947439fa6b7d04d8d8169b8ad342cf5e91"
+    ],
+    "scripts/_bcf_runtime/ci_graph_composition_costs.py": [
+      "2a7261a7f996537fb865747bb6fc575e45f5a87391700650fb69078672a5e867",
+      "9f8e39f32427b5c2f0d22d5856dd4fca8dfd9301a1a86038fc105aa4b22c85f4",
+      "c24fa2aa692a92ba3e2c5a741eac2fd877338a3e567aa3d23382886ddaddaaaf"
+    ],
+    "scripts/_bcf_runtime/ci_graph_composition_operations.py": [
+      "0c14f71455937c1fd43f8cfcf5a60afe4445d7e9bfe6632b3e0e04436b86cd7f",
+      "9a89f29fdff66c4842cba03691df5bb5c9edfb8d75d49d3b61f1ba2f3b8b80af",
+      "c7c9f70b643265d6a3339a966eb7b19ffb468899e9d0b529540640c5f1e13b06"
+    ],
+    "scripts/_bcf_runtime/ci_graph_composition_populations.py": [
+      "d781d011e371c991d7e28fe42af4c26673ec9307cdf10e40ec23f483982705ba"
+    ],
+    "scripts/_bcf_runtime/ci_graph_composition_schemas.py": [
+      "c397191cfb172dca087f26db83332a5f35930c74e641b5c7047efceecff2107a"
+    ],
+    "scripts/_bcf_runtime/ci_graph_composition_views.py": [
+      "3dc9b46f41d03dc551bf3f0c453656ea30a97f95263c7f9df8a9eb5ddfb6899c"
+    ],
     "scripts/_bcf_runtime/ci_prospective_telemetry.py": [
       "7bb6d555ab073f37b279acf663602911edce5611688eb2e75228f646f223f6f3"
+    ],
+    "scripts/_bcf_runtime/evidence_process_supervisor.py": [
+      "71fd1f0627f2556feeaf7cd9c39f7a8c36d2089d3ac4956446abaee78d9b796f",
+      "7e387bccfd47ffef1f7d77cf1b4cb5dd200b64d082ca30e275e53a20b9ce3e0b",
+      "8d1c44e8062b34189096e00eaaf93ecb3947b634cbc7fbf4d5d516207d4cffcb"
+    ],
+    "scripts/_bcf_runtime/governance_validation/preflight_distribution.py": [
+      "398ec7b9b0b39f399ed8ff3314d2708f538c3ff0fa382af10e3fdb871fe58481",
+      "cfe82ffce75fd4fd4a4d1a159d09f280341b02c4a07a277a85952d4017d860c1"
     ],
     "scripts/_bcf_runtime/local_producer_workspaces.py": [
       "52df9dbf284cb63579e2c84f51593c389aae2793af93f553dfc6a9213cdd0d63",
@@ -1675,6 +1753,16 @@
     ],
     "scripts/_bcf_runtime/prospective_telemetry.py": [
       "dd87a27ed69ac0aadd88afc7d3e88e25fe3934086d1059a7fa7a977defdd53c7"
+    ],
+    "scripts/_bcf_runtime/semantic_authority_operations.py": [
+      "4bc8c8f73742dec26f18cbf7dbe19083c9a99f94d49a0efc933fbb045c9e164d",
+      "b4c46d2578899ea6cd9a8aaed360dba3ebd185c091be815bdca51c786a453323",
+      "ea816895d481aacf85d17a99478a315055d031ab7f90f897a3af09e721849517"
+    ],
+    "scripts/_bcf_runtime/semantic_python_calls.py": [
+      "20c4a389a39affd89dc99e3f225d861e1342bd4d04d9e422ee2db21dbc6860b5",
+      "44034c2ea13a6d4b4742f3c508bb9ae423e51e97940310064224d910cca04361",
+      "b1289030f086c0c05550e7909f503e5d0ab6ee897b86100332c34c0a951b1523"
     ]
   },
   "schema_version": "2.0"
