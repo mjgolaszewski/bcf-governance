@@ -465,9 +465,6 @@ def main(argv: list[str] | None = None) -> None:
                 python_executable=project_python,
                 provider_api=environment_api(),
                 remote=args.remote,
-                progress_sink=lambda event: print(
-                    json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
-                ),
             )
             _print(result, args.format)
             return

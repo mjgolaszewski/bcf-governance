@@ -1,0 +1,57 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF07 Hotfix Log
+  id: bcf-governance-phase-31-hotfix07
+  version: 1.0.0
+  generated_at_utc: '2026-10-21T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix07.yml
+hotfix:
+  id: P31-HF07
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 7
+  summary: preserve secure authored installer constraints and qualify selected dependency closure
+execution_evidence:
+  planned_commands:
+  - python -m pytest -q tests/test_maintenance_installer_closure.py
+  - python -m pytest -q tests/test_interpreter_environment.py
+  - python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+  - python -m pytest -q --noconftest -p no:cacheprovider tests/test_maintenance_installer_closure.py
+  notes:
+  - Baseline eighteen-case characterization failed with no errors or skips; independent terminal readback confirmed source and environment unchanged.
+  - Shared compiler now selects pip26.2.2 only when authored constraints permit it; project source and registry remain authenticated reuse inputs.
+  - Existing URL, marker, extras and ambiguity rejection remains; extras and selected lock closure need a separate contract and qualification.
+  - Source implementation is unqualified; private runtime mirrors and actual materialization and distributions remain pending.
+  - The thirty-five compatibility and source-identity controls passed with independent terminal readback; separate two-case RED reproduced the metadata install-input regression without actual allocation.
+  - Metadata installation inputs now require a projection and preserve read-only source authentication; legacy and governed inputs retain their existing paths. Fresh thirty-nine-case qualification is pending.
+  - Independent full interpreter plus maintenance qualification passed all seventy-six pure and simulated cases on f81df4e3; no actual environment or distribution qualification is implied.
+  - Before locked-source integration, immutable plan and typed parsing move unchanged to one tooling owner; existing import entrypoints remain. Seven selected-lock and six consuming-boundary controls are authored before implementation and await finite execution alongside all seventy-six prior cases.
+  - Independent eighty-nine-case RED retained all seventy-six prior passes and reproduced five unsupported selected-lock positive cases plus six source-consuming failures; two new invalid-input controls already refused as expected.
+  - Bounded selected-lock graph compilation now binds full marker and runtime-platform selectors, PEP735 groups and distinct extras to source identity; lock native installation disables dependency resolving and checks installed metadata against the source closure. Synthetic, actual-consumer and distribution qualification remain pending.
+  - First 108-case execution retained 107 passes and one invalid lock-hook failure; the hook expected a file object while production passes an integer descriptor. Original lock RED is not causal movement proof; exact owned-descriptor injection is corrected without changing production rejection or cache prohibition.
+  - Separate preflight-query cohort and unsupported resolution-configuration controls precede their production remedy; exact source/native qualification remains open.
+  - Narrow seven-case characterization passed corrected real descriptor injection and two positive controls while reproducing four missing query/configuration refusals. Existing preflight now reuses runtime and installed-closure verification; unqualified UV and lock configuration is rejected. Fresh full 114-case qualification is pending.
+  - Independent handback15510 accepted all114 pure cases on10fe7f5b; source and environment remained exact. Prior invalid descriptor-hook failures remain retained and are not causal proof.
+  - Grant15810 and independent handback15818 accepted actual134-record consumer source parity against two pinned UV0.13.4 frozen offline exports across eight selected source cohorts. Native3.14.5 selector is input only; no installed runtime, CI/image, distribution or release acceptance. Raw corroboration SHA256 e55cfab6944aa8acd86d9e466b1bb7a14a29e15b1180c2a14eb6f5b8436565b0.
+  - Added compatible authored-floor change control so stale lock metadata must fail even when the selected exact version still satisfies the new floor; this additional parameter remains unexecuted pending finite qualification.
+  - Grant15878 regenerated canonical mirrors and manifests and passed115 pure cases; governance validation rejected the unsupported top-level known_constraints log key, and lint/type commands were not reached. Constraints are retained here as notes without changing the schema.
+  - Original15878 automatic cleanup failed because its generated-path inventory omitted the canonical builder-owned packaged requirements copy. Custodian15912 separately reconciled the exact secure mirror and retired only the quiescent holder after independent input/environment and child proof; original negative and HOLD evidence remain unchanged.
+  - Immutable2.3.5 remains unchanged; any modified release requires a distinct maintenance version and qualified existing-owner publication route.
+  - Canonical projection, installed consumer and exact distribution/release qualification remain required; source and pure controls do not establish those outcomes.
+  - Check-only15989 independently failed on the101KiB gate registry context budget; builder parity passed and later gates were unrun, with zero source/environment drift and verified cleanup. Removed1000 optional flow-entry separator spaces after asserting full parsed registry equality; all gates, controls, selectors, scalar mutation strings and the existing budget remain unchanged. Fresh remaining checks are pending.
+  - Independent16040 accepted all four remaining source gates on a3907bff, including eight structural/parity cases; lint means whitespace/AST and typecheck means version-assignment/compileall, not Ruff or static mypy. Source and environment were unchanged; no distribution/native/release acceptance.
+  - Independent16093 accepted baseline2PASS and each of two intended registry-mutant node failures without errors/skips; mutation and JUnit hashes are retained in causal-attempt1. This characterizes source controls, not controller certification.
+  - Prepare distinct UNPUBLISHED local candidate2.3.6 through the single canonical version owner under source scope16095. Existing full reconcile owns all version projections and workflow/authority pairs; they are intentionally pending finite execution. No public version reservation, publication, adopter installation or modified2.3.5 identity is implied.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence: [test, contract-test]
+    security_review_complete:
+      required_evidence: [governance-validate]
+    health_checks_green:
+      required_evidence: [runtime-smoke]
+  reconciliation:
+    required_evidence: [governance-validate, governance-exposure-scan]
+  finding_registry: governance/findings.yml

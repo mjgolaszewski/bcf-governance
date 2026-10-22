@@ -347,28 +347,3 @@ def test_registry_rejects_unsafe_import_root_before_source_evaluation(
 
     with pytest.raises(SemanticOwnershipRegistryError, match="unsafe path"):
         load_registry(tmp_path)
-
-
-@pytest.mark.parametrize('defect', ['ambiguous', 'empty'])
-def test_import_path_population_rejects_before_ast_parse(tmp_path, monkeypatch, defect):
-    from bcf_governance.tooling import semantic_ownership_inventory as owner
-    first = tmp_path / 'dupe.py'
-    first.write_text('def work():\n    return True\n')
-    if defect == 'ambiguous':
-        package = tmp_path / 'dupe'
-        package.mkdir()
-        second = package / '__init__.py'
-        second.write_text('value = 1\n')
-        paths, roots = [first, second], ('.',)
-    else:
-        (tmp_path / 'empty').mkdir()
-        paths, roots = [first], ('empty',)
-    parsed = []
-    real = owner.ast.parse
-    def parse(*args, **kwargs):
-        parsed.append(kwargs.get('filename'))
-        return real(*args, **kwargs)
-    monkeypatch.setattr(owner.ast, 'parse', parse)
-    with pytest.raises(owner.SemanticInventoryError):
-        owner.discover_python_source(tmp_path, files=paths, import_roots=roots)
-    assert parsed == []

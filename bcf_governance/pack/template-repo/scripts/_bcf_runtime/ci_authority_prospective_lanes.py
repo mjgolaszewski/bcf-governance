@@ -10,8 +10,6 @@ from typing import Any, Callable, Literal, overload
 
 from .ci_authority_decisions import status_context_for_evaluation
 from .ci_graph_post_merge import PostMergeEvaluation
-from .ci_github_values import sha
-from .local_pr_context import CandidateIdentity, LocalPRContext, Runner, _changed_paths, _checked, _run
 from .evaluation_scope import is_terminal_phase_certification
 from .routine_controller_rotation import ROTATION_POLICY_PATHS, controller_policy_digest
 
@@ -167,29 +165,9 @@ def prospective_policy_binding(
     base_tree: str,
     candidate_sha: str,
     candidate_tree: str,
-    policy_context: LocalPRContext | None = None,
-    runner: Runner = _run,
 ) -> tuple[str, dict[str, Any]]:
     """Classify and bind the exact applicable post-merge policy surface."""
 
-    if policy_context is not None:
-        source_sha, source_tree = policy_context.protected_default_sha, policy_context.protected_default_tree
-        if policy_context.base_sha != base_sha or policy_context.head_sha != candidate_sha:
-            raise ProspectiveLaneError("policy context does not bind the candidate comparison subject")
-        if (source_sha is None) != (source_tree is None):
-            raise ProspectiveLaneError("protected default policy snapshot is incomplete")
-        if source_sha is None and (policy_context.repository is not None or policy_context.comparison_base_ref != policy_context.default_branch):
-            raise ProspectiveLaneError("authenticated policy context lacks its protected default snapshot")
-        if source_sha is not None:
-            try:
-                base_sha = sha(source_sha, field="protected default policy commit")
-                base_tree = sha(source_tree, field="protected default policy tree")
-                observed_tree = _checked(runner, ["git", "rev-parse", "--verify", f"{base_sha}^{{tree}}"], cwd=repo_root)
-                if observed_tree != base_tree:
-                    raise ProspectiveLaneError("protected default policy tree disagrees with exact Git subject")
-                changed_paths = _changed_paths(repo_root, CandidateIdentity(candidate_sha, candidate_tree, base_sha), runner=runner)
-            except ValueError as exc:
-                raise ProspectiveLaneError(str(exc)) from exc
     read = lambda ref, path: git_blob(repo_root, ref=ref, path=path)
     if lane == "direct_protected_main":
         base_graph = git_blob(

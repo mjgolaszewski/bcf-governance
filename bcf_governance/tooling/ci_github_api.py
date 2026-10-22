@@ -281,8 +281,6 @@ class GitHubAPI(
         )
         if not isinstance(value, dict):
             raise GitHubAPIError("commit response must be an object")
-        if value.get("sha") != exact:
-            raise GitHubAPIError("commit response does not match requested SHA")
         return value
 
     def compare_commits(
@@ -332,8 +330,6 @@ class GitHubAPI(
         )
         if not isinstance(value, dict):
             raise GitHubAPIError("Git reference response must be an object")
-        if value.get("ref") != f"refs/{ref}":
-            raise GitHubAPIError("Git reference response does not match requested ref")
         return value
 
     def content(self, repository: str, path: str, *, ref: str) -> GitHubContent:

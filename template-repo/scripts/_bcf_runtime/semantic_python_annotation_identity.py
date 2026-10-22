@@ -10,15 +10,6 @@ from typing import Any
 BindingTarget = Callable[[Mapping[str, Any], list[str]], str | None]
 
 
-def annotation_text(node: ast.expr | None) -> str:
-    if node is None:
-        return "untyped"
-    try:
-        return ast.unparse(node)
-    except (AttributeError, ValueError):
-        return "unresolved"
-
-
 def external_import_identity(
     path: str,
     binding: Mapping[str, Any],

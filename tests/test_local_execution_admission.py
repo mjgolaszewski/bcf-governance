@@ -137,28 +137,6 @@ def test_adopter_cannot_select_controller_as_project_python(tmp_path: Path) -> N
         )
 
 
-def test_directory_alias_cannot_disguise_controller_environment(tmp_path: Path) -> None:
-    import venv
-    controller_root = tmp_path / 'controller'
-    venv.create(controller_root, with_pip=False, symlinks=True)
-    alias = tmp_path / 'project-alias'
-    alias.symlink_to(controller_root, target_is_directory=True)
-    with pytest.raises(LocalExecutionAdmissionError, match='controller interpreter cannot serve as project Python'):
-        resolve_local_project_python(tmp_path, controller_root / 'bin/python', requested=alias / 'bin/python')
-
-
-def test_materialized_controller_environment_cannot_bypass_custody_guard(tmp_path: Path, monkeypatch) -> None:
-    import venv
-    controller_root = tmp_path / 'controller'
-    venv.create(controller_root, with_pip=False, symlinks=True)
-    controller = controller_root / 'bin/python'
-    monkeypatch.setattr('bcf_governance.tooling.local_execution_admission.derive_interpreter_environment', lambda _root: object())
-    monkeypatch.setattr('bcf_governance.tooling.local_execution_admission.materialize_interpreter_environment', lambda *_args: controller)
-    monkeypatch.setattr('bcf_governance.tooling.local_execution_admission.probe_interpreter_environment', lambda *_args: pytest.fail('controller reached project dependency probe'))
-    with pytest.raises(LocalExecutionAdmissionError, match='controller interpreter cannot serve as project Python'):
-        ensure_local_project_python(tmp_path, controller)
-
-
 def test_local_cli_receipt_binds_one_safe_executable_after_install(tmp_path: Path) -> None:
     executable = tmp_path / "candidate/bin/bcf"
     executable.parent.mkdir(parents=True)

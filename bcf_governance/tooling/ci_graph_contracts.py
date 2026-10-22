@@ -39,7 +39,7 @@ from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_jo
 from .ci_graph_storage import validate_evidence_storage
 from .ci_graph_routing import validate_candidate_routing
 from .ci_graph_rotation_outputs import validate_rotation_output_directories
-from .ci_graph_edges import EdgeContract, compile_edge_contracts, validate_edge_population
+from .ci_graph_edges import EdgeContract, compile_edge_contracts
 
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
@@ -771,7 +771,6 @@ def validate_ci_graph(
     validate_candidate_routing(composed, storage_contract=storage_contract)
     _validate_workflows(composed)
     edge_contracts = compile_edge_contracts(composed)
-    validate_edge_population(composed, edge_contracts)
     validate_gate_job_timeouts(repo_root, composed)
     validate_component_job_timeouts(composed)
     validate_graph_authority_policy(repo_root, composed)

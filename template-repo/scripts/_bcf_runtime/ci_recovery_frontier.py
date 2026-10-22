@@ -41,7 +41,6 @@ _EDGES = {
     ("provider_read", "terminal"): ("stop", "terminal_blocked"),
     ("provider_read", "exhausted"): ("stop", "terminal_blocked"),
     ("protected_merge", "pending"): ("observe_same_subject", "pr_pending"),
-    ("protected_merge", "nondefault_base"): ("observe_same_subject", "pr_pending"),
     ("protected_merge", "prospective_proved"): (
         "request_provider_auto_merge", "pr_pending"
     ),
@@ -61,6 +60,14 @@ _EDGES = {
     ("controller_transition", "protected_policy_change"): (
         "invoke_exact_alternate_lane", "ordinary_current"
     ),
+    ("mutation_result", "unknown"): (
+        "observe_mutation_state", "classified_mutation_result"
+    ),
+    ("mutation_result", "committed"): ("consume_exact_result", "operation_continues"),
+    ("mutation_result", "not_committed"): (
+        "retry_same_idempotent_operation", "classified_mutation_result"
+    ),
+    ("mutation_result", "conflict"): ("stop", "terminal_blocked"),
 }
 
 
@@ -151,21 +158,6 @@ def compile_recovery_frontier(
             "repository", "repository_id", "pull_request", "base_sha",
             "head_sha", "tree_sha", "protection_sha256",
         }
-        refs = {"base_ref", "default_branch"}
-        if refs & set(identity):
-            required |= refs
-            if not refs <= set(identity) or any(
-                not isinstance(identity[field], str) or not identity[field]
-                for field in refs
-            ):
-                raise RecoveryFrontierError("protected merge branch context is incomplete")
-            nondefault = identity["base_ref"] != identity["default_branch"]
-            if state == "nondefault_base" and not nondefault:
-                raise RecoveryFrontierError("nondefault merge context names the default branch")
-            if nondefault and state in {"prospective_proved", "certified_mergeable"}:
-                raise RecoveryFrontierError("nondefault PR context cannot authorize protected-main merge")
-        elif state == "nondefault_base":
-            raise RecoveryFrontierError("nondefault merge context requires exact branch identities")
         if set(identity) != required or any(
             _SHA.fullmatch(str(identity[name])) is None
             for name in {"base_sha", "head_sha", "tree_sha"}
@@ -288,15 +280,13 @@ def protected_merge_frontier(
         operation="protected_merge",
         state=state,
         identity=identity,
-        owner=("ci_github_api.pull_request" if state == "nondefault_base"
-               else "ci_github_pr_mutations.enable_pull_request_auto_merge"),
-        prerequisites=(("exact_pr_subject", "authenticated_nondefault_target", "provider_pr_proof_required")
-                       if state == "nondefault_base" else (
+        owner="ci_github_pr_mutations.enable_pull_request_auto_merge",
+        prerequisites=(
             "exact_pr_subject",
             "app_15368_certification",
             "clean_governed_protection",
             "normal_merge_commit",
-        )),
+        ),
         preserve=("authenticated_pr_evidence", certification_identity),
         invalidate=("base_bound_prospective_proof",) if state == "base_advanced" else (),
         idempotency_key=(

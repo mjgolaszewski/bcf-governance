@@ -6,10 +6,6 @@ Licensed under the MIT License.
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
-
-from jsonschema import Draft202012Validator
 from typing import Any
 
 
@@ -30,143 +26,6 @@ MUTATION_CALL_PREFIXES = (
 
 class SemanticOperationEffectError(ValueError):
     """Raised when an operation bypasses its declared effect boundary."""
-
-
-
-def source_operation_call_population(
-    entrypoint: str, inventory: dict[str, Any], *, include_initialization: bool = False,
-) -> dict[str, Any]:
-    """Observe discovered Python calls through ports without interpreting effects.
-
-    The protected caller must authenticate parser inputs and their complete scope.
-    Optional initialization facts conservatively retain every discovered module.
-    Initialization execution, external/native behavior and dynamic dispatch remain
-    unqualified. Unknown calls cannot justify suppression.
-    """
-    def reject() -> None:
-        raise SemanticOperationEffectError("operation source call population is incompatible or ambiguous")
-
-    def digest(value: Any) -> bool:
-        return isinstance(value, str) and len(value) == 64 and all(
-            character in "0123456789abcdef" for character in value
-        )
-
-    if not isinstance(include_initialization, bool):
-        raise SemanticOperationEffectError("initialization population option must be boolean")
-    if inventory.get("call_contracts_version") != "1.0" or inventory.get("authority") is not False:
-        reject()
-    functions: dict[str, dict[str, Any]] = {}
-    if not isinstance(inventory.get("functions"), list) or not isinstance(inventory.get("files"), list):
-        reject()
-    for function in inventory["functions"]:
-        symbol = function.get("symbol") if isinstance(function, dict) else None
-        if not isinstance(symbol, str) or not symbol or symbol in functions:
-            reject()
-        functions[symbol] = function
-    if not isinstance(entrypoint, str) or entrypoint not in functions:
-        reject()
-    files: dict[str, str] = {}
-    for row in inventory.get("files", []):
-        path = row.get("path") if isinstance(row, dict) else None
-        sha = row.get("sha256") if isinstance(row, dict) else None
-        if not isinstance(path, str) or not path or path in files or not digest(sha):
-            reject()
-        files[path] = sha
-    if not files:
-        reject()
-    initialization = _initialization_population(inventory, files) if include_initialization else {}
-    calls: list[tuple[str, str, str, int, str]] = []
-    identities: set[tuple[str, str, int]] = set()
-    visited: set[str] = set()
-    pending = [entrypoint]
-    while pending:
-        caller = pending.pop()
-        if caller in visited:
-            continue
-        visited.add(caller)
-        function = functions[caller]
-        if caller.partition("::")[0] not in files:
-            reject()
-        if function.get("language", "python") != "python" or not isinstance(function.get("calls"), list):
-            reject()
-        for call in function["calls"]:
-            if not isinstance(call, dict):
-                reject()
-            callee = call.get("called_symbol")
-            fact = call.get("call_contract")
-            if not isinstance(fact, dict):
-                reject()
-            expression = fact.get("expression_sha256")
-            occurrence = fact.get("occurrence")
-            if (
-                not isinstance(callee, str) or not callee
-                or call.get("caller") != caller or fact.get("authority") is not False
-                or not digest(expression) or isinstance(occurrence, bool)
-                or not isinstance(occurrence, int) or occurrence < 0
-            ):
-                reject()
-            identity = (caller, expression, occurrence)
-            if identity in identities:
-                reject()
-            identities.add(identity)
-            resolved = (
-                callee in functions and call.get("dispatch_resolution") != "unresolved"
-                and call.get("call_name") not in {"__import__", "eval", "exec", "<dynamic>"}
-            )
-            calls.append((caller, callee, expression, occurrence, "source" if resolved else "unresolved"))
-            if resolved:
-                pending.append(callee)
-    result = {
-        "authority": False,
-        "execution_qualified": False,
-        "scope": "discovered_python_functions_only",
-        "source_files": tuple(sorted(files.items())),
-        "functions": tuple(sorted(visited)),
-        "calls": tuple(sorted(calls)),
-        "unresolved_calls": sum(row[4] == "unresolved" for row in calls),
-    }
-    result.update(initialization)
-    return result
-
-
-def _initialization_population(inventory: dict[str, Any], files: dict[str, str]) -> dict[str, Any]:
-    """Validate only with the executing distribution's schema, never candidate policy."""
-    source = Path(__file__).resolve()
-    schema_root = (
-        source.parents[1] / "pack/template-repo/schemas"
-        if source.parent.name == "tooling"
-        else source.parents[2] / "schemas"
-    )
-    try:
-        schema = json.loads((schema_root / "semantic-initialization-contracts.schema.json").read_text())
-        errors = list(Draft202012Validator(schema).iter_errors(inventory))
-    except (OSError, UnicodeError, ValueError) as exc:
-        raise SemanticOperationEffectError("initialization schema is unavailable or invalid") from exc
-    if errors:
-        raise SemanticOperationEffectError("initialization population facts are incompatible")
-    modules: dict[str, tuple[Any, ...]] = {}
-    for row in inventory["module_initializers"]:
-        path = row["path"]
-        if path not in files or path in modules:
-            raise SemanticOperationEffectError("initialization module population is duplicated or unbound")
-        identities: set[tuple[str, str, int]] = set()
-        sites = []
-        for site in row["sites"]:
-            identity = (site["kind"], site["expression_sha256"], site["occurrence"])
-            if identity in identities:
-                raise SemanticOperationEffectError("initialization site population is duplicated")
-            identities.add(identity)
-            sites.append((*identity, site["line"], site.get("call_name", "")))
-        modules[path] = (tuple(sorted(sites)), tuple(sorted(
-            (unknown["reason"], unknown["line"]) for unknown in row["unresolved"]
-        )), tuple(row["limitations"]))
-    if modules.keys() != files.keys():
-        raise SemanticOperationEffectError("initialization module population is incomplete")
-    return {
-        "scope": "discovered_python_functions_and_possible_initialization",
-        "completeness_qualified": False,
-        "module_initializers": tuple((path, *modules[path]) for path in sorted(modules)),
-    }
 
 
 def _resolve_function(
@@ -196,13 +55,13 @@ def _port_identity(
     return ("function", resolved) if resolved is not None else ("call", value)
 
 
-def validated_operation_effect_inventory(
+def validate_operation_effects(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
     *, source_modules: tuple[str, ...] = (),
-) -> tuple[tuple[str, str, str], ...]:
-    """Trace and validate effects once, then expose immutable classified ports."""
+) -> tuple[int, int]:
+    """Trace one entrypoint and require all effects to cross declared ports."""
     functions = {
         str(row["symbol"]): row for row in inventory.get("functions", [])
     }
@@ -320,28 +179,4 @@ def validated_operation_effect_inventory(
             f"operation {operation['id']} has undeclared authority effects: "
             + ", ".join(sorted(authority))
         )
-    return tuple(sorted(
-        (classification, target_kind, symbol)
-        for classification, ports in (
-            ("mutation", mutation_ports), ("authority", authority_ports),
-            ("observation", non_authoritative_ports),
-        )
-        for target_kind, symbol in ports & reached
-    ))
-
-
-def validate_operation_effects(
-    operation: dict[str, Any],
-    entrypoint_symbol: str,
-    inventory: dict[str, Any],
-    *, source_modules: tuple[str, ...] = (),
-) -> tuple[int, int]:
-    """Preserve the existing validator counts and fail-closed effect semantics."""
-
-    ports = validated_operation_effect_inventory(
-        operation, entrypoint_symbol, inventory, source_modules=source_modules,
-    )
-    return (
-        sum(classification == "mutation" for classification, _, _ in ports),
-        sum(classification == "authority" for classification, _, _ in ports),
-    )
+    return len(mutation_ports & reached), len(authority_ports & reached)

@@ -22,7 +22,6 @@ TRUTH_TARGETS = {
 EVIDENCE_TARGETS = {"scripts/governance_evidence.py", "scripts/evidence_claims.py"}
 SEMANTIC_TARGETS = {
     "scripts/semantic_authority_contracts.py",
-    "scripts/semantic_authority_operations.py",
     "scripts/semantic_derivations.py",
     "scripts/semantic_operation_effects.py",
 }
@@ -60,7 +59,7 @@ MUTANTS = (
         search="    if missing:\n        raise SemanticAuthorityError(\"unclassified public application operations: \" + \", \".join(missing))\n",
         replace="    if False and missing:\n        raise SemanticAuthorityError(\"unclassified public application operations: \" + \", \".join(missing))\n",
         profiles=("high-value", "full"),
-        target_path="scripts/semantic_authority_operations.py",
+        target_path="scripts/semantic_authority_contracts.py",
     ),
     Mutant(
         mutant_id="application-operation-effects",

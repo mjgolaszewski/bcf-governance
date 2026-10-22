@@ -14,7 +14,6 @@ from .application_assurance_graph import (
     compile_legacy_gate_catalog,
 )
 from .evidence_planning import parse_claim_model, receipt_producing_legacy_gates
-from .ci_graph_timeouts import LEGACY_GATE_CLEANUP_SECONDS
 from .interpreter_contract_projection import (
     InterpreterContractProjectionError,
     project_profile_interpreter_contract,
@@ -536,7 +535,7 @@ def load_contract(
         "schema_version": "2.0" if contract_version == "3.0" else "1.0",
         "profile_contract_version": contract_version,
         "target_profile": profile,
-        "execution_policy": {"default_timeout_seconds": 1800, "default_cleanup_timeout_seconds": LEGACY_GATE_CLEANUP_SECONDS},
+        "execution_policy": {"default_timeout_seconds": 1800},
         **({"interpreter_contract": interpreter_contract} if interpreter_contract else {}),
         **({"claim_model": persisted_claim_model} if persisted_claim_model else {}),
         "gates": gates,

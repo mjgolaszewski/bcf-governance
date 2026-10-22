@@ -60,25 +60,6 @@ def evaluation_scope(
     return EvaluationScope(selected, "pull_request_progress", subject_commit)
 
 
-
-def _validated_scope_target(
-    intent: object, target: object, *, subject_commit: str,
-) -> EvaluationScope:
-    """Apply the existing scope constructor once to an untrusted target."""
-
-    if (not isinstance(intent, str) or not isinstance(target, dict)
-            or set(target) != {"kind", "id"}
-            or not isinstance(target["id"], str) or not target["id"]):
-        raise EvaluationScopeError("evaluation target identity is invalid")
-    canonical = evaluation_scope(
-        intent, target=target["id"] if intent == EvaluationIntent.WORKITEM_CERTIFICATION else None,
-        phase_id=target["id"], subject_commit=subject_commit,
-    )
-    if canonical.as_dict()["target"] != target:
-        raise EvaluationScopeError("evaluation target kind or subject does not match intent")
-    return canonical
-
-
 def certified_proposition(
     scope: EvaluationScope,
     *,
@@ -88,10 +69,6 @@ def certified_proposition(
 ) -> dict[str, Any]:
     """Project the sole proposition implied by a truth evaluation."""
 
-    _validated_scope_target(
-        scope.intent.value, {"kind": scope.target_kind, "id": scope.target_id},
-        subject_commit=subject["commit_sha"],
-    )
     conclusion = "success" if status == "pass" else "failure"
     authorizes: list[str] = []
     successors: list[str] = []
@@ -110,7 +87,7 @@ def certified_proposition(
         target = reports.get(scope.target_id)
         if not isinstance(target, dict) or target.get("effective_state") != "closed":
             conclusion = "failure"
-        elif conclusion == "success":
+        else:
             successors = sorted(
                 item_id
                 for item_id, item in reports.items()
@@ -146,7 +123,6 @@ def validate_certified_proposition(
     if proposition.get("subject") != subject:
         raise EvaluationScopeError("truth proposition subject is not exact")
     intent = scope.get("intent")
-    _validated_scope_target(intent, target, subject_commit=subject["commit_sha"])
     expected = {
         "pr": "pull_request_progress_valid",
         "workitem": "workitem_closed",
@@ -180,26 +156,10 @@ def validate_certified_proposition(
 
 
 def is_terminal_phase_certification(certification: dict[str, Any]) -> bool:
-    """Recognize typed terminal closure; authentication belongs to its caller."""
+    """Return whether certification conveys only successful terminal closure."""
 
-    if not isinstance(certification, dict):
-        return False
-    scope = certification.get("evaluation_scope")
-    proposition = certification.get("certified_proposition")
-    if not isinstance(scope, dict) or not isinstance(proposition, dict):
-        return False
-    if scope.get("intent") != EvaluationIntent.PHASE_CLOSURE:
-        return False
-    target = scope.get("target")
-    try:
-        _validated_scope_target(scope["intent"], target, subject_commit="")
-    except EvaluationScopeError:
-        return False
     return (
-        proposition.get("target") == target
-        and proposition.get("predicate") == "phase_closed"
-        and proposition.get("conclusion") == "success"
-        and proposition.get("authorizes") == []
-        and proposition.get("eligible_successors") == []
-        and ("status" not in certification or certification["status"] == "pass")
+        certification.get("evaluation_scope", {}).get("intent") == "closure"
+        and certification.get("certified_proposition", {}).get("predicate") == "phase_closed"
+        and certification.get("certified_proposition", {}).get("conclusion") == "success"
     )

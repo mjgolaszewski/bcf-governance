@@ -36,7 +36,7 @@ def _fixture(repo: Path, *, projected: str = "") -> None:
         "interpreter_contract: {project_dependencies: true, "
         "build_system_requirements: true, requirements_projection: "
         "requirements-governance.txt, optional_dependency_groups: [dev], "
-        "gate_requirements: {test: [pip==26.2.1]}}\n"
+        "gate_requirements: {test: [pip==26.2.2]}}\n"
         "gates: {test: {}}\n",
         encoding="utf-8",
     )
@@ -141,7 +141,7 @@ def test_governed_dependency_source_closes_recursive_requirements(
         "PyYAML>=6,<7",
         "httpx==0.28.1",
         "pytest==9.1.1",
-        "pip==26.2.1",
+        "pip==26.2.2",
     )
     assert plan.pip_arguments() == plan.requirements
     verify_interpreter_environment_projection(plan)
@@ -183,7 +183,7 @@ def test_profile_v1_derives_isolated_environment_from_authenticated_legacy_input
     assert plan.requirements == (
         "PyYAML>=6,<7",
         "pytest==9.0.3",
-        "pip==26.2.1",
+        "pip==26.2.2",
     )
     assert plan.requires_python == "==3.12.*"
     assert plan.projection_path is None
@@ -191,7 +191,7 @@ def test_profile_v1_derives_isolated_environment_from_authenticated_legacy_input
     assert plan.pip_arguments() == (
         "PyYAML>=6,<7",
         "pytest==9.0.3",
-        "pip==26.2.1",
+        "pip==26.2.2",
     )
     verify_interpreter_environment_projection(plan)
 
@@ -331,7 +331,7 @@ def test_legacy_environment_materialization_installs_only_derived_requirements(
             (environment / "bin/python").symlink_to(sys.executable)
             (environment / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
         stdout = (
-            "pip==26.2.1\npytest==9.0.3\nPyYAML==6.0.3\n"
+            "pip==26.2.2\npytest==9.0.3\nPyYAML==6.0.3\n"
             if argv[-2:] == ["freeze", "--all"]
             else ""
         )
@@ -347,7 +347,7 @@ def test_legacy_environment_materialization_installs_only_derived_requirements(
         "--disable-pip-version-check",
         "PyYAML>=6,<7",
         "pytest==9.0.3",
-        "pip==26.2.1",
+        "pip==26.2.2",
     ]
     assert "requirements-governance.txt" not in commands[1]
 
@@ -366,7 +366,6 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
         "pip-audit",
         "pytest",
         "pyyaml",
-        "referencing",
         "setuptools",
         "urllib3",
         "wheel",
@@ -414,7 +413,7 @@ def test_apply_materializes_the_exact_derived_dependency_plan(tmp_path: Path) ->
     assert plan is not None
     path = apply_interpreter_environment_projection(plan)
     assert path.read_text(encoding="utf-8") == (
-        "pip==26.2.1\n"
+        "pip==26.2.2\n"
         "pytest==9.0.3\n"
         "PyYAML>=6,<7\n"
         "setuptools>=69\n"
@@ -442,7 +441,7 @@ def test_gate_requirement_pin_is_compiled_by_the_same_requirement_primitive(
     plan = derive_interpreter_environment(tmp_path)
 
     assert plan is not None
-    assert "pip==26.2.1" in plan.requirements
+    assert "pip==26.2.2" in plan.requirements
 
 
 def test_exact_installer_is_added_when_the_project_declares_no_pip(
@@ -452,7 +451,7 @@ def test_exact_installer_is_added_when_the_project_declares_no_pip(
     gate_contract = tmp_path / "governance/gate-contracts.yml"
     gate_contract.write_text(
         gate_contract.read_text(encoding="utf-8").replace(
-            "gate_requirements: {test: [pip==26.2.1]}",
+            "gate_requirements: {test: [pip==26.2.2]}",
             "gate_requirements: {}",
         ),
         encoding="utf-8",
@@ -461,7 +460,7 @@ def test_exact_installer_is_added_when_the_project_declares_no_pip(
     plan = derive_interpreter_environment(tmp_path)
 
     assert plan is not None
-    assert "pip==26.2.1" in plan.requirements
+    assert "pip==26.2.2" in plan.requirements
 
 
 def test_different_project_environment_installer_is_rejected(tmp_path: Path) -> None:
@@ -469,14 +468,14 @@ def test_different_project_environment_installer_is_rejected(tmp_path: Path) -> 
     gate_contract = tmp_path / "governance/gate-contracts.yml"
     gate_contract.write_text(
         gate_contract.read_text(encoding="utf-8").replace(
-            "pip==26.2.1", "pip==25.0.1"
+            "pip==26.2.2", "pip==25.0.1"
         ),
         encoding="utf-8",
     )
 
     with pytest.raises(
         InterpreterEnvironmentError,
-        match="installer requirement must equal pip==26.2.1",
+        match="installer requirement is incompatible with pip==26.2.2",
     ):
         derive_interpreter_environment(tmp_path)
 
@@ -489,7 +488,7 @@ def test_gate_requirement_rejects_unbounded_alternate_resolution(
     gate_contract = tmp_path / "governance/gate-contracts.yml"
     gate_contract.write_text(
         gate_contract.read_text(encoding="utf-8").replace(
-            "gate_requirements: {test: [pip==26.2.1]}",
+            "gate_requirements: {test: [pip==26.2.2]}",
             f"gate_requirements: {{test: [{requirement!r}]}}",
         ),
         encoding="utf-8",
@@ -540,7 +539,7 @@ def test_missing_project_environment_is_materialized_once_from_exact_plan(
             (environment / "bin").mkdir(parents=True)
             (environment / "bin/python").symlink_to(sys.executable)
             (environment / "pyvenv.cfg").write_text("home = exact\n", encoding="utf-8")
-        stdout = "pip==26.2.1\nPyYAML==6.0.3\n" if argv[-2:] == ["freeze", "--all"] else ""
+        stdout = "pip==26.2.2\nPyYAML==6.0.3\n" if argv[-2:] == ["freeze", "--all"] else ""
         return subprocess.CompletedProcess(argv, 0, stdout, "")
 
     monkeypatch.setattr(subprocess, "run", run)

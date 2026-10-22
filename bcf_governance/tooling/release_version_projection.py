@@ -14,15 +14,6 @@ SURFACES = (
     (Path("governance/public-contracts.yml"), "package", "version"),
 )
 TEXT_SURFACES = (Path("README.md"), Path("docs/USAGE.md"))
-RELEASE_VERSION_WATCH_PATHS = (
-    "bcf_governance/__init__.py", "bcf_governance/_version.py",
-    "scripts/_bcf_runtime/_version.py",
-    "bcf_governance/tooling/release_version_projection.py",
-    "scripts/_bcf_runtime/release_version_projection.py",
-    *(path.as_posix() for path, _, _ in SURFACES),
-    *(path.as_posix() for path in TEXT_SURFACES), "CHANGELOG.md",
-)
-
 CURRENT_VERSION_MARKERS = (
     "Supported package version:",
     "Install the `v",
@@ -69,10 +60,14 @@ def _replace_nested_scalar(path: Path, parent: str, key: str, value: str) -> Non
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _release_surfaces_present(repo_root: Path) -> bool:
+def reconcile_release_version_surfaces(
+    repo_root: Path, *, version: str, apply: bool
+) -> tuple[str, ...]:
+    """Check or project the package version through every mechanical owner."""
+
     present = tuple((repo_root / relative).exists() for relative, _, _ in SURFACES)
     if not any(present):
-        return False
+        return ()
     if not all(present):
         names = ", ".join(
             relative.as_posix()
@@ -82,45 +77,6 @@ def _release_surfaces_present(repo_root: Path) -> bool:
         raise ReleaseVersionProjectionError(
             f"release version ownership is partial; missing: {names}"
         )
-    return True
-
-
-def validate_authored_release_target(repo_root: Path, version: str) -> None:
-    """Reject authored release contradictions before changing derived bytes."""
-
-    if not _release_surfaces_present(repo_root):
-        return
-    path = repo_root / "CHANGELOG.md"
-    if not path.exists():
-        return
-    try:
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError) as exc:
-        raise ReleaseVersionProjectionError("release changelog is unreadable") from exc
-    targets = [index for index, line in enumerate(lines) if line.strip().startswith("Release target:")]
-    if not targets:
-        released = re.compile(r"## \[" + re.escape(version) + r"\] - \d{4}-\d{2}-\d{2}")
-        if any(released.fullmatch(line) for line in lines):
-            return
-        raise ReleaseVersionProjectionError("release changelog lacks the current release target or released entry")
-    unreleased = [index for index, line in enumerate(lines) if line == "## [Unreleased]"]
-    if len(targets) == 1 and len(unreleased) == 1:
-        target = targets[0]
-        end = next((index for index in range(unreleased[0] + 1, len(lines))
-                    if lines[index].startswith("## ")), len(lines))
-        if unreleased[0] < target < end and lines[target] == f"Release target: `{version}`":
-            return
-    raise ReleaseVersionProjectionError("release changelog target is stale ambiguous or outside Unreleased")
-
-
-def reconcile_release_version_surfaces(
-    repo_root: Path, *, version: str, apply: bool
-) -> tuple[str, ...]:
-    """Check or project the package version through every mechanical owner."""
-
-    if not _release_surfaces_present(repo_root):
-        return ()
-    validate_authored_release_target(repo_root, version)
     stale: list[tuple[Path, str, str]] = []
     for relative, parent, key in SURFACES:
         path = repo_root / relative

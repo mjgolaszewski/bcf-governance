@@ -3,12 +3,8 @@
 from __future__ import annotations
 
 import hashlib
-import importlib.metadata as metadata
-from email.parser import BytesParser
-import zipfile
 import json
 import os
-import platform
 from pathlib import Path
 import re
 import shutil
@@ -20,24 +16,15 @@ from typing import Any, Mapping, Sequence
 
 import yaml  # type: ignore[import-untyped]
 from jsonschema import Draft202012Validator
-from packaging.requirements import Requirement
-from packaging.metadata import Metadata, RawMetadata
-from packaging.utils import canonicalize_name
-from packaging.version import Version
 
 from .ci_github_values import GitHubValueError, remote_repository
 from .ci_github_identity import GitHubControllerError
-from .ci_github_api import GitHubAPI
-from .ci_github_errors import GitHubAPIError
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
     AdopterSourceError,
     AdopterSourceIdentity,
     require_adopter_profile,
     source_inventory_sha256,
-    require_provider_source_policy,
-    resolve_adopter_sources,
-    authenticate_adopter_sources,
 )
 from .release_asset_inventory import (
     checksum_declared_assets,
@@ -163,81 +150,6 @@ def run_candidate_qualification_train(
     )
 
 
-def _required_dependency_roots(wheel: Path, *, version: str) -> list[str]:
-    """Flatten the exact wheel's active installed dependency origins, not path hooks."""
-
-    try:
-        with zipfile.ZipFile(wheel) as archive:
-            names = [name for name in archive.namelist() if name.endswith('.dist-info/METADATA')]
-            if names != [f'bcf_governance-{version}.dist-info/METADATA']:
-                raise ValueError("wheel metadata is not unique")
-            raw_metadata = archive.read(names[0])
-            if BytesParser().parsebytes(raw_metadata).defects:
-                raise ValueError("wheel metadata contains parser defects")
-            declared = Metadata.from_email(raw_metadata)
-        if canonicalize_name(declared.name) != 'bcf-governance' or str(declared.version) != version:
-            raise ValueError("wheel metadata does not bind exact release identity")
-        if declared.requires_python and not declared.requires_python.contains(platform.python_version(), prereleases=True):
-            raise ValueError("wheel requires incompatible Python")
-        roots = {str(Path(value).resolve()) for key, value in sysconfig.get_paths().items()
-                 if key in {'purelib', 'platlib'} and Path(value).is_dir()}
-        pending = [(Requirement(raw), frozenset({''}))
-                   for raw in ['packaging', *map(str, declared.requires_dist or [])]]
-        visited = set()
-        while pending:
-            requirement, parent_extras = pending.pop()
-            if requirement.marker is not None and not any(
-                requirement.marker.evaluate({'extra': extra}) for extra in parent_extras
-            ):
-                continue
-            if requirement.url is not None:
-                raise ValueError("direct-URL dependency origin is not verifiable")
-            distribution = metadata.distribution(requirement.name)
-            info = distribution.metadata
-            defects = getattr(info, 'defects', None)
-            if not isinstance(defects, list) or defects:
-                raise ValueError("installed dependency metadata is incomplete or contradictory")
-            if any(len(info.get_all(field, [])) != 1 for field in ('Metadata-Version', 'Name', 'Version')):
-                raise ValueError("installed dependency identity is ambiguous")
-            raw_dependency: RawMetadata = {
-                'metadata_version': str(info['Metadata-Version']),
-                'name': str(info['Name']), 'version': str(info['Version']),
-                'requires_dist': info.get_all('Requires-Dist', []),
-                'provides_extra': info.get_all('Provides-Extra', []),
-            }
-            python_headers = info.get_all('Requires-Python', [])
-            if len(python_headers) > 1:
-                raise ValueError("installed dependency Python constraint is ambiguous")
-            if python_headers:
-                raw_dependency['requires_python'] = python_headers[0]
-            declared_dependency = Metadata.from_raw(raw_dependency)
-            if declared_dependency.requires_python and not declared_dependency.requires_python.contains(platform.python_version(), prereleases=True):
-                raise ValueError("installed dependency requires incompatible Python")
-            if (canonicalize_name(declared_dependency.name) != canonicalize_name(requirement.name)
-                    or declared_dependency.version != Version(distribution.version)):
-                raise ValueError("installed dependency identity is contradictory")
-            provided = set(declared_dependency.provides_extra or [])
-            if not {canonicalize_name(value) for value in requirement.extras} <= provided:
-                raise ValueError("installed dependency does not provide requested extras")
-            if requirement.specifier and not requirement.specifier.contains(distribution.version, prereleases=True):
-                raise ValueError(f"installed dependency violates {requirement}")
-            identity = (canonicalize_name(requirement.name), frozenset(requirement.extras))
-            if identity in visited:
-                continue
-            visited.add(identity)
-            root = Path(distribution.locate_file('.')).resolve()
-            if not root.is_dir():
-                raise ValueError("installed dependency root is unavailable")
-            roots.add(str(root))
-            extras = frozenset(requirement.extras) | {''}
-            pending.extend((Requirement(raw), extras) for raw in distribution.requires or ())
-        if not roots or any(value != value.strip() or '\n' in value or '\r' in value for value in roots):
-            raise ValueError("dependency root cannot be safely projected")
-        return sorted(roots)
-    except (OSError, ValueError, TypeError, KeyError, ExceptionGroup, metadata.PackageNotFoundError, zipfile.BadZipFile) as exc:
-        raise ReleaseQualificationError("invoking runtime dependency origins are invalid: " + str(exc)) from exc
-
-
 def _exact_release_runtime(
     wheel: Path,
     controller: Path,
@@ -248,7 +160,6 @@ def _exact_release_runtime(
 ) -> tuple[tuple[str, ...], dict[str, str]]:
     """Project one exact wheel over the already-admitted invoking runtime."""
 
-    dependency_roots = _required_dependency_roots(wheel, version=version)
     _run([sys.executable, "-m", "venv", str(controller)], cwd=cwd)
     controller_python = controller / "bin/python"
     site_packages = (
@@ -257,6 +168,15 @@ def _exact_release_runtime(
         / "site-packages"
     )
     site_packages.mkdir(parents=True, exist_ok=True)
+    dependency_roots = sorted({
+        str(Path(value).resolve())
+        for key, value in sysconfig.get_paths().items()
+        if key in {"purelib", "platlib"} and Path(value).is_dir()
+    })
+    if not dependency_roots:
+        raise ReleaseQualificationError(
+            "invoking release runtime dependency roots are unavailable"
+        )
     (site_packages / "bcf-admitted-runtime.pth").write_text(
         "".join(f"{value}\n" for value in dependency_roots), encoding="utf-8"
     )
@@ -478,11 +398,6 @@ def qualify_release(
     """Observe exact pinned adopter clones without mutating maintained checkouts."""
 
     contract = load_contract(repo_root.resolve())
-    try:
-        require_provider_source_policy(contract)
-        api = GitHubAPI(token=os.environ.get('GITHUB_TOKEN', ''))
-    except (AdopterSourceError, GitHubAPIError) as exc:
-        raise ReleaseQualificationError(str(exc)) from exc
     version, build_assets, assets = _release_assets(release_assets.resolve())
     try:
         build = json.loads(release_build_manifest.read_text(encoding="utf-8"))
@@ -531,25 +446,20 @@ def qualify_release(
         raise ReleaseQualificationError(
             "qualification producer identity is not exact"
         )
-    try:
-        sources = resolve_adopter_sources(api, contract)
-    except (GitHubAPIError, AdopterSourceError) as exc:
-        raise ReleaseQualificationError(str(exc)) from exc
-    for source in sources:
-        if supplied_identity[source.repository] != (source.commit_sha, source.tree_sha):
-            raise ReleaseQualificationError(
-                f'adopter resource differs from provider source: {source.repository}'
-            )
-        try:
-            require_adopter_profile(supplied[source.repository], source)
-        except AdopterSourceError as exc:
-            raise ReleaseQualificationError(str(exc)) from exc
-        if source.repository in adopter_pythons:
-            python = adopter_pythons[source.repository]
-            if not python.is_file() or not os.access(python, os.X_OK):
-                raise ReleaseQualificationError(
-                    f"adopter interpreter is unavailable: {source.repository}"
-                )
+    sources = tuple(
+        AdopterSourceIdentity(
+            id=str(item["id"]),
+            repository=str(item["repository"]),
+            repository_id=str(
+                int(hashlib.sha256(str(item["repository"]).encode()).hexdigest()[:15], 16)
+            ),
+            profile=str(item["profile"]),
+            default_branch="pinned-local",
+            commit_sha=supplied_identity[str(item["repository"])][0],
+            tree_sha=supplied_identity[str(item["repository"])][1],
+        )
+        for item in contract["required_adopters"]
+    )
     environment = dict(os.environ)
     reports: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:
@@ -591,8 +501,6 @@ def qualify_release(
                 temporary_root / f"{source.id}-base.git",
                 source.commit_sha,
             )
-            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
-            _commit(destination, f"test: install immutable BCF {version}")
             if repository_name in adopter_pythons:
                 adopter_python = adopter_pythons[repository_name]
                 if not adopter_python.is_file() or not os.access(adopter_python, os.X_OK):
@@ -614,6 +522,8 @@ def qualify_release(
                 project_python = ensure_local_project_python(
                     destination, Path(sys.executable)
                 )
+            _run([*bcf, "install", "--target", str(destination), "--upgrade", "--candidate-qualification-source", str(repo_root.resolve()), "--require-strict-validation"], cwd=destination, env=environment)
+            _commit(destination, f"test: install immutable BCF {version}")
             _run([*bcf, "reconcile", "--repo-root", str(destination), "--python", str(project_python), "--apply"], cwd=destination, env=environment)
             _commit(destination, f"test: reconcile BCF {version} qualification")
             result = _run(
@@ -647,10 +557,6 @@ def qualify_release(
                 "evaluation": report["post_merge_evaluation"],
                 "status": "pass",
             })
-    try:
-        authenticate_adopter_sources(api, sources)
-    except AdopterSourceError as exc:
-        raise ReleaseQualificationError(str(exc)) from exc
     receipt = {
         "schema_version": "1.1",
         "kind": "release_adopter_qualification",

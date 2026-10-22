@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.5.0/bcf_governance-2.5.0-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.6/bcf_governance-2.3.6-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -404,11 +404,6 @@ Administration read, Attestations read, and Contents write; the pinned token
 action revokes it in its post step. Operators never provision or remove a release
 token, and token format or length is not part of the contract.
 
-The canonical operation owner reconciles uncertain provider writes against the
-exact subject and provider outcome. Caller-authored outcome labels or an
-idempotency key do not authorize a retry. Historical recovery projections remain
-observations and cannot authorize a mutation.
-
 Workflow custody is compiled, not transcribed. Routine reconciliation owns the
 definition-plus-authority commit pair described above. The lower-level compiler
 remains available for diagnosis and reviewed recovery of an already committed
@@ -435,6 +430,33 @@ view. Regenerate it after changing an owner and check it without mutation:
 bcf environment apply --repo-root .
 bcf environment check --repo-root .
 ```
+
+An explicit `interpreter_contract.locked_project` selects a dependency closure
+from `pyproject.toml` and `uv.lock`. This mode requires `lockfile: uv.lock`,
+`dependency_groups` for PEP 735 groups, `optional_extras` for project optional
+extras, the complete PEP 508 `marker_environment`, and `runtime_platform` with
+`sysconfig_platform`, `libc_name`, and `libc_version`. Record those values from
+the intended interpreter; host defaults are never substituted. A local Python
+3.14 selection does not qualify a Python 3.12 CI or image environment.
+
+The compiler follows applicable locked edges and dependency extras, selects one
+Python fork, and enforces authored requirements. Unselected groups stay outside
+the plan. The supported input is uv lock version 1 revision 5 with public PyPI
+registry dependencies; other source kinds, ambiguous nodes, nested markers on
+root optional requirements, and lock markers using `extras` or
+`dependency_groups` sets fail closed. Existing project and requirement-source
+contracts keep their existing grammar.
+Unqualified lock configuration and `tool.uv` resolution overrides are rejected;
+a valid `tool.uv.required-version` authoring pin is permitted. Existing-interpreter
+preflight enforces the same marker, libc, and installed-closure checks as new
+environment materialization.
+
+Locked plans consume exact compiled requirements with dependency resolving
+disabled. Installed metadata must match the source-derived closure and pass
+dependency consistency checks before cache publication. Source and runtime
+selection changes invalidate reuse. This mode declares no hand-maintained
+requirements projection, so `environment apply` is not its update mechanism:
+change the authored project and lock through their owner, then derive the plan.
 
 Preflight requires exact projection bytes and then verifies the selected executable,
 Python constraint, virtual-environment identity, and installed distribution versions.
@@ -518,26 +540,6 @@ compatibility `release verify` command remains available, but BCF's governed top
 requires the split operations. The trusted collector recomputes the bindings; a
 candidate-authored pass label is not authority.
 
-Optional `bcf ci qualify-release` compatibility observations use the 1.4
-`governance/release-qualification.yml` source policy. BCF resolves every declared
-adopter's current default branch, commit and tree through authenticated provider
-reads. Supplied checkout roots and interpreters provide resources for those exact
-subjects. A mismatched checkout rejects before runtime allocation; provider
-movement before result collection rejects the completed observation. Maintained
-checkouts remain unchanged, and compatibility results retain no publication
-authority or effect on the required release proof population.
-Missing provider credentials reject before asset reads or checkout inspection.
-
-The 1.3 caller-selected source policy remains readable for historical verification.
-Starting a new qualification requires an explicitly authored 1.4 contract:
-`source: provider_default_branch_transaction`,
-`caller_checkout_role: materialization_resource_only`, and
-`source_freshness: provider_exact_at_capture_and_collection`, with document version
-`1.4.0` and schema version `1.4`. BCF blocks legacy execution before allocation;
-it does not silently upgrade the policy or substitute an older checkout. The CLI
-grammar and nonauthoritative 1.1 receipt format remain unchanged. Offline receipt
-validation does not establish current provider freshness.
-
 BCF retains the additive `finalize-callback` and `publish-callback` controller
 operations for event-driven fan-in. The finalizer always emits one immutable
 callback envelope: a pending envelope contains no candidate artifact, while a
@@ -579,9 +581,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.5.0 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.5.0
+gh release download v2.3.6 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.6
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.5.0 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.6 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -652,24 +654,15 @@ instead of first appearing in remote CI.
 
 ### Semantic-intent submission and proof composition
 
-Use `bcf ci submit --repo-root .` for governed in-progress changes, bounded
-workitem completion, and phase completion. The command normalizes derived
-surfaces and derives the lifecycle intent, active bounded target, exact base,
-commit and tree from canonical state. It then owns the complete order from
-deterministic preflight through controller compatibility, evidence planning,
-certification-shape verification, post-merge truth projection, finalizer scope,
-publication boundary, and successor eligibility. It rechecks unchanged custody
-immediately before pushing the exact proved commit. An optional `--intent`
-assertion must agree with the derived intent.
-
-Start from a clean committed authored candidate. When derived projections need
-normalization, the reconciliation transaction proves them in an isolated shadow
-and commits the exact derived candidate before prospective proof. Trusted
-workflow changes retain their definition and authority commit pair.
-
-Prospective stage events are flushed as non-authoritative JSON on stderr while
-the command runs. The terminal result remains on stdout. Progress events are
-observations; provider certification still comes from the independent authority.
+Use `bcf ci submit --repo-root . --intent pr` for governed in-progress changes,
+then use the same command with `--intent workitem` when the canonical lifecycle
+derives one authored-complete bounded target, or `--intent closure` after phase
+completion. The command derives the active bounded target, exact base, commit and tree,
+then owns the complete order from deterministic preflight through controller
+compatibility, evidence planning, certification-shape verification, post-merge
+truth projection, finalizer scope, publication boundary, and successor
+eligibility. It rechecks unchanged custody immediately before pushing the exact
+proved commit. The caller supplies semantic intent, not a sequence of validators.
 
 Profile v3 plans by claim and execution group. Authenticated prior receipts retain
 their original bytes and provider custody; the candidate and main planners
@@ -856,8 +849,8 @@ clears the general artifact root.
 - `bcf ci local-pr`: exact local pull-request context and preflight.
 - `bcf ci submit`: derive the exact repository, bounded target, commit, and tree;
   execute the complete prospective train in canonical order; recheck immutable
-  custody; and push only the exact proved commit. Lifecycle intent comes from
-  canonical state; stage progress is emitted on stderr.
+  custody; and push only the exact proved commit. Agents supply semantic intent,
+  not an ordered validation recipe.
 - `bcf ci adopt github`: transactional GitHub reference-topology adoption.
 - `bcf truth`: evidence-derived lifecycle and release state.
 - `bcf doctor`: configuration and wiring diagnostics.
@@ -963,9 +956,3 @@ CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
 or performs global Docker/build-cache pruning; it revalidates the exact ID and
 label immediately before deletion and removes container anonymous volumes.
-
-### BCF 2.5 evidence process cleanup
-
-The candidate BCF 2.5 command-containment backend requires Linux procfs, default SIGCHLD ownership, child-subreaper support and wait-without-reap support. Known unsupported host prerequisites block before namespace allocation. Each command receives a temporary supervisor with exclusive kernel child custody; command allocation follows verified subreaper readiness. Startup consumes the command timeout. Success requires the exact command terminal, an empty kernel child tree and drained output, including children adopted after new sessions or double forks. Unexpected live descendants become infrastructure failure after bounded cleanup. Missing or contradictory completion retains execution-state custody. The caller and supervisor share one cleanup allowance; a stalled supervisor cannot obtain another allowance. This is not a cgroup or malicious same-user isolation boundary and does not authorize a host-slot handoff. Source, installed and consumer qualification remain separate requirements.
-
-The gate registry keeps schema version `2.0` and accepts the additive `execution_policy.default_cleanup_timeout_seconds` field. BCF 2.5 uses a 60-second termination allowance when an older registry omits it; this is a safety budget, not a performance target. Canonical installation projects the explicit default. The interpreter metadata probe uses the same command owner. CI deadline validation includes its existing 30-second setup bound and cleanup, main execution and cleanup, plus independent headroom, so an older tightly sized job can now block before allocation. Correct its governed deadline and use canonical reconciliation. This is a per-command floor; complete gate/control sequences, namespace setup/retirement and pipeline bounds require separate composition. Historical receipts remain readable; source and installed-runtime qualification still require their exact subjects.

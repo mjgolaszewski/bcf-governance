@@ -2,10 +2,10 @@ document:
   kind: release_qualification_contract
   name: BCF release adopter qualification
   id: bcf-release-adopter-qualification
-  version: 1.4.0
+  version: 1.3.0
   status: active
   path: governance/release-qualification.yml
-schema_version: '1.4'
+schema_version: '1.3'
 required_adopters:
 - id: tradeflow-lite
   repository: moranwm/tradeflow
@@ -17,14 +17,14 @@ required_adopters:
   repository: mjgolaszewski/AgentBus
   profile: standard
 qualification:
-  source: provider_default_branch_transaction
-  caller_checkout_role: materialization_resource_only
+  source: explicit_pinned_local_clone_transaction
+  caller_checkout_role: exact_source_identity
   mutation_scope: disposable_clone_only
   fixed_point: required
   evaluation_scope: canonical_graph_derived
   authority: local_non_authoritative
   execution_provenance: local_observation_receipt
   continuation: compatibility_report_only
-  source_freshness: provider_exact_at_capture_and_collection
+  source_freshness: exact_at_observation
   product_failure: typed_remediation_input_no_publication_effect
   release_asset_identity: exact_sha256sums

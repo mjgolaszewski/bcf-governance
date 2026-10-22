@@ -42,9 +42,7 @@ def _agent_required_context_files(
     return paths
 
 
-def _validate_context_budgets(
-    repo_root: Path, manifest: dict[str, Any], *, projected_contents: dict[str, bytes] | None = None,
-) -> None:
+def _validate_context_budgets(repo_root: Path, manifest: dict[str, Any]) -> None:
     context_budgets = _require_mapping(
         manifest.get("context_budgets"),
         context="governance/artifact-manifest.yml context_budgets",
@@ -53,16 +51,6 @@ def _validate_context_budgets(
         context_budgets.get("agent_required_files"),
         context="governance/artifact-manifest.yml context_budgets.agent_required_files",
     )
-    if projected_contents is None:
-        projected_contents = {}
-    if not isinstance(projected_contents, dict) or any(
-        not isinstance(name, str) or not isinstance(raw, bytes)
-        for name, raw in projected_contents.items()
-    ):
-        raise GovernanceValidationError("projected context must bind paths to immutable bytes")
-    projected_contents = dict(projected_contents)
-    if set(projected_contents) - set(agent_required_files):
-        raise GovernanceValidationError("projected context has no declared canonical budget")
     violations: list[str] = []
     for relative_path, budget in agent_required_files.items():
         budget_context = (
@@ -71,7 +59,7 @@ def _validate_context_budgets(
         )
         line_hard_cap, kib_hard_cap = _context_budget_limits(budget, context=budget_context)
         path = _require_path(repo_root, str(relative_path), context=budget_context)
-        raw_content = projected_contents.get(str(relative_path), path.read_bytes())
+        raw_content = path.read_bytes()
         line_count = len(raw_content.decode("utf-8").splitlines())
         if line_count > line_hard_cap:
             violations.append(

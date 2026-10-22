@@ -70,7 +70,7 @@ class FakePRAuthorityAPI:
 
     def repository(self, repository: str) -> dict[str, object]:
         assert repository == REPOSITORY
-        return {"full_name": repository, "id": REPOSITORY_ID, "default_branch": "main"}
+        return {"id": REPOSITORY_ID, "default_branch": "main"}
 
     def reference(self, repository: str, ref: str) -> dict[str, object]:
         assert repository == REPOSITORY and ref == "heads/main"
@@ -351,7 +351,7 @@ class FakeProtectionAPI:
         self.updated = False
 
     def repository(self, repository: str) -> dict[str, object]:
-        return {"full_name": repository, "id": REPOSITORY_ID, "default_branch": "main"}
+        return {"id": REPOSITORY_ID, "default_branch": "main"}
 
     def pull_requests(self, repository: str, *, state: str) -> tuple[dict[str, object], ...]:
         assert state == "open"
@@ -451,134 +451,3 @@ def test_protection_rejects_wrong_canary_app() -> None:
     )
     with pytest.raises(GitHubControllerError, match="current successful"):
         apply_protection(api, repo_root=ROOT, repository=REPOSITORY)
-
-
-class BoundPRAuthorityAPI(FakePRAuthorityAPI):
-    def __init__(self):
-        super().__init__()
-        self.base_sha = '1' * 40
-        self.base_tree = '2' * 40
-        self.base_ref = 'stack'
-        self.ref_sha = self.base_sha
-        self.main_sha = MAIN
-
-    def reference(self, repository, ref):
-        if ref == 'heads/main':
-            return {'object': {'type': 'commit', 'sha': self.main_sha}}
-        if ref == 'heads/' + self.base_ref:
-            return {'ref': 'refs/' + ref, 'object': {'type': 'commit', 'sha': self.ref_sha}}
-        return super().reference(repository, ref)
-
-    def commit(self, repository, sha):
-        if sha == self.base_sha:
-            return {'tree': {'sha': self.base_tree}}
-        return super().commit(repository, sha)
-
-    def pull_request(self, repository, number):
-        result = super().pull_request(repository, number)
-        result['base'].update(sha=self.base_sha, ref=self.base_ref)
-        return result
-
-
-def test_bound_pr_evaluator_and_publisher_separate_comparison_from_protected_source(tmp_path):
-    api = BoundPRAuthorityAPI()
-    bundle = tmp_path / 'bundle'
-    observation = finalize_pr(api, repository=REPOSITORY,
-        event={'workflow_run': {'id': 30, 'run_attempt': 1}},
-        finalizer_run_id=50, finalizer_run_attempt=1, output_root=bundle)
-    assert observation['evaluator']['base'] == {'commit_sha': MAIN, 'tree_sha': MAIN_TREE, 'branch': 'main'}
-    assert observation['evaluator']['comparison'] == {'commit_sha': api.base_sha, 'tree_sha': api.base_tree, 'branch': 'stack'}
-    api.runs['50'].update(status='completed', conclusion='success')
-    result = publish_pr(api, repository=REPOSITORY,
-        event={'workflow_run': {'id': 50, 'run_attempt': 1}}, publisher_run_id=60,
-        publisher_run_attempt=1, bundle_root=bundle, target_url='https://example.invalid/run/50')
-    assert result['computed_state'] == 'successful'
-    assert len(api.created_checks) == 1
-
-
-@pytest.mark.parametrize('cause', ['reference-moved', 'invalid-tree'])
-def test_bound_pr_evaluator_rejects_bad_comparison_before_producers(tmp_path, monkeypatch, cause):
-    api = BoundPRAuthorityAPI()
-    if cause == 'reference-moved': api.ref_sha = '3' * 40
-    else: api.base_tree = 'not-a-tree'
-    monkeypatch.setattr(ci_github_pr, '_producer_state', lambda *_a, **_k: pytest.fail('producer consumed before comparison validation'))
-    with pytest.raises(GitHubControllerError):
-        finalize_pr(api, repository=REPOSITORY,
-            event={'workflow_run': {'id': 30, 'run_attempt': 1}}, finalizer_run_id=50,
-            finalizer_run_attempt=1, output_root=tmp_path / 'bundle')
-
-
-@pytest.mark.parametrize('cause', ['comparison', 'protected-source', 'comparison-ref'])
-def test_bound_pr_finalizer_rejects_movement_during_producer_reads(tmp_path, monkeypatch, cause):
-    api = BoundPRAuthorityAPI()
-    original = api.jobs
-    def jobs(*args, **kwargs):
-        result = original(*args, **kwargs)
-        if cause == 'comparison': api.base_sha = api.ref_sha = '3' * 40
-        elif cause == 'comparison-ref': api.ref_sha = '3' * 40
-        else: api.main_sha = '4' * 40
-        return result
-    monkeypatch.setattr(api, 'jobs', jobs)
-    with pytest.raises(GitHubControllerError, match='moved during finalization|comparison reference'):
-        finalize_pr(api, repository=REPOSITORY, event={'workflow_run': {'id': 30, 'run_attempt': 1}},
-            finalizer_run_id=50, finalizer_run_attempt=1, output_root=tmp_path / 'bundle')
-    assert not (tmp_path / 'bundle').exists()
-
-
-@pytest.mark.parametrize('cause', ['retarget', 'base', 'late-base', 'late-protected-source', 'late-ref'])
-def test_bound_pr_publisher_rejects_changed_context_before_write(tmp_path, monkeypatch, cause):
-    api = BoundPRAuthorityAPI()
-    bundle = tmp_path / 'bundle'
-    finalize_pr(api, repository=REPOSITORY, event={'workflow_run': {'id': 30, 'run_attempt': 1}},
-        finalizer_run_id=50, finalizer_run_attempt=1, output_root=bundle)
-    api.runs['50'].update(status='completed', conclusion='success')
-    if cause == 'retarget': api.base_ref = 'different-stack'
-    elif cause == 'base': api.base_sha = api.ref_sha = '3' * 40
-    else:
-        original = api.check_runs
-        def checks(*args, **kwargs):
-            result = original(*args, **kwargs)
-            if cause == 'late-base': api.base_sha = api.ref_sha = '3' * 40
-            elif cause == 'late-ref': api.ref_sha = '3' * 40
-            else: api.main_sha = '4' * 40
-            return result
-        monkeypatch.setattr(api, 'check_runs', checks)
-    with pytest.raises(GitHubControllerError, match='evaluator identity is not exact|moved before publication|comparison reference'):
-        publish_pr(api, repository=REPOSITORY, event={'workflow_run': {'id': 50, 'run_attempt': 1}},
-            publisher_run_id=60, publisher_run_attempt=1, bundle_root=bundle, target_url='https://example.invalid/run/50')
-    assert api.created_checks == []
-
-
-def test_nondefault_pr_cannot_consume_default_main_transition_equivalence(tmp_path, monkeypatch):
-    api = BoundPRAuthorityAPI()
-    original = ci_github_pr._protection
-    def protection(*args, **kwargs):
-        result = original(*args, **kwargs)
-        result['pr_certification']['producer_workflows'].append({'id': 'package',
-            'path': '.github/workflows/governance-pack.yml', 'required_job_names': ['package']})
-        return result
-    monkeypatch.setattr(ci_github_pr, '_protection', protection)
-    monkeypatch.setattr(ci_github_pr, '_producer_state', lambda *_a, **kw: {'id': kw['contract']['id'], 'state': 'successful'})
-    monkeypatch.setattr(ci_github_pr, 'transition_is_applicable', lambda *_a, **_k: pytest.fail('default-main transition for stacked PR'))
-    value = finalize_pr(api, repository=REPOSITORY, event={'workflow_run': {'id': 30, 'run_attempt': 1}},
-        finalizer_run_id=50, finalizer_run_attempt=1, output_root=tmp_path / 'bundle')
-    assert value['computed_state'] == 'successful'
-    assert value['evaluator']['comparison']['branch'] == 'stack'
-
-
-@pytest.mark.parametrize('ref_name', [None, 'refs/heads/other'])
-def test_bound_pr_finalizer_rejects_contradictory_ref_name_with_matching_object(tmp_path, ref_name):
-    api = BoundPRAuthorityAPI()
-    original = api.reference
-    def observed(repository, ref):
-        result = original(repository, ref)
-        if ref == 'heads/stack':
-            if ref_name is None: result.pop('ref', None)
-            else: result['ref'] = ref_name
-        return result
-    api.reference = observed
-    with pytest.raises(GitHubControllerError, match='comparison reference'):
-        finalize_pr(api, repository=REPOSITORY,
-            event={'workflow_run': {'id': 30, 'run_attempt': 1}},
-            finalizer_run_id=50, finalizer_run_attempt=1, output_root=tmp_path/'rejected')
-    assert not (tmp_path/'rejected').exists()

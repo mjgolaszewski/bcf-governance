@@ -37,6 +37,33 @@ def _normalized_name(value: str) -> str:
     return re.sub(r"[-_.]+", "-", requirement.name).lower()
 
 
+def close_installer_requirement(
+    requirements: list[str], installer_requirement: str,
+) -> list[str]:
+    """Close authored compatible constraints to one canonical exact installer."""
+
+    installer_name = _normalized_name(installer_requirement)
+    selected = Requirement(installer_requirement)
+    pins = list(selected.specifier)
+    if (
+        installer_name != "pip" or len(pins) != 1
+        or pins[0].operator != "==" or "*" in pins[0].version
+    ):
+        raise InterpreterDependencySourceError("canonical installer must be an exact pip pin")
+    authored = [item for item in requirements if _normalized_name(item) == installer_name]
+    if len(authored) > 1:
+        raise InterpreterDependencySourceError("project installer declarations are ambiguous")
+    if authored and not Requirement(authored[0]).specifier.contains(
+        pins[0].version, prereleases=True,
+    ):
+        raise InterpreterDependencySourceError(
+            "project installer requirement is incompatible with " + installer_requirement
+        )
+    if not authored:
+        return [*requirements, installer_requirement]
+    return [installer_requirement if item == authored[0] else item for item in requirements]
+
+
 def compile_governed_dependency_source(
     repo_root: Path,
     value: object,
@@ -127,17 +154,7 @@ def compile_governed_dependency_source(
         raise InterpreterDependencySourceError(
             "interpreter dependency declarations must have unique names"
         )
-    installer_name = _normalized_name(installer_requirement)
-    installed = [
-        item for item in requirements if _normalized_name(item) == installer_name
-    ]
-    if not installed:
-        requirements.append(installer_requirement)
-    elif installed != [installer_requirement]:
-        raise InterpreterDependencySourceError(
-            "project environment installer requirement must equal "
-            + installer_requirement
-        )
+    requirements = close_installer_requirement(requirements, installer_requirement)
     graph_path = repo_root.resolve() / "governance/ci-graph.yml"
     if graph_path.is_symlink() or not graph_path.is_file():
         raise InterpreterDependencySourceError(

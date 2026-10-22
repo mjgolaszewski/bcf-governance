@@ -18,7 +18,6 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .evidence_attestation import attest_bundle, bundle_digest
-from .ci_graph_timeouts import INTERPRETER_PROBE_TIMEOUT_SECONDS
 from .evidence_execution import (
     EvidenceError,
     _command,
@@ -578,8 +577,6 @@ def capture_gate(
                 "exit_code": result.returncode,
                 "execution_environment": environment_metadata,
                 "execution_timeout_seconds": contract["execution_timeout_seconds"],
-                "execution_cleanup_timeout_seconds": contract["execution_cleanup_timeout_seconds"],
-                "execution_setup_timeout_seconds": INTERPRETER_PROBE_TIMEOUT_SECONDS,
                 "environment_assertions": _environment_observations(contract, env),
                 "durable_evidence_inputs": durable_observations,
                 "execution_state": state_report,

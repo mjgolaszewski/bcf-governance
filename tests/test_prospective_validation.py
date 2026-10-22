@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import os
 from pathlib import Path
 import subprocess
 import sys
@@ -56,10 +55,7 @@ TRAIN = {
 
 
 @pytest.fixture(autouse=True)
-def _authored_target_ready(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
-    from bcf_governance.tooling import local_execution_admission as admission
-    namespace = hashlib.sha256(('unit-prospective:' + str(tmp_path)).encode()).hexdigest()
-    monkeypatch.setattr(admission, 'authenticated_execution_state_namespace', lambda _env: namespace)
+def _authored_target_ready(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         prospective, "validate_evaluation_authored_ready", lambda *_args, **_kwargs: None
     )
@@ -104,8 +100,6 @@ def _authored_target_ready(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
             "history_owner": "plans/phase-history.yml",
         },
     )
-    yield
-    Path(f'/tmp/bcf-local-gate-{os.getuid()}-{namespace}.lock').unlink(missing_ok=True)
 
 
 class Result:
@@ -118,8 +112,7 @@ class Result:
 def test_canonical_prospective_inputs_derive_subject_and_scope_without_caller_choice(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(candidate_identity, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
-    context = prospective.LocalPRContext("origin", "main", BASE, HEAD, "feature")
+    context = SimpleNamespace()
     monkeypatch.setattr(
         candidate_identity, "resolve_local_pr_context", lambda *_args, **_kwargs: context
     )
@@ -359,9 +352,6 @@ def _evaluation(mode: str = "workitem", target: str | None = "P27-P0-03") -> Sim
 
 
 def _front_door(monkeypatch: pytest.MonkeyPatch, trace: list[str]) -> None:
-    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
-    monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
-    monkeypatch.setattr(prospective, "_pack_manifest", lambda *_a, **_k: {"applicable": False}, raising=False)
     monkeypatch.setattr(
         prospective,
         "resolve_local_pr_context",
@@ -522,7 +512,6 @@ def test_pending_rotation_pr_projection_uses_direct_push_release_preflight(
 def test_provider_context_is_mechanically_bound_to_exact_prospective_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     api = object()
     monkeypatch.setattr(
         prospective,
@@ -562,7 +551,6 @@ def test_provider_context_is_mechanically_bound_to_exact_prospective_train(
 def test_direct_protected_main_lane_does_not_resolve_controller_authority(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(
         prospective,
         "validate_ci_graph",
@@ -591,17 +579,16 @@ def test_direct_protected_main_lane_does_not_resolve_controller_authority(
             "provider_api": kwargs["provider_api"],
         },
     )
-    read_api = object()
     report = prospective.run_prospective_train(
         tmp_path,
         **TRAIN,
         python_executable=Path("/python"),
         repository="owner/repo",
-        provider_api=read_api,  # type: ignore[arg-type]
+        provider_api=object(),  # type: ignore[arg-type]
     )
     assert report == {
         "repository": None,
-        "provider_api": read_api,
+        "provider_api": None,
         "local_execution_admission": {
             "status": "ready",
             "execution_id": "toolchain-only",
@@ -841,7 +828,6 @@ def test_provider_workflow_identity_mismatch_stops_before_prospective_evidence(
 def test_provider_bound_adopter_delegates_authority_applicability_to_exact_train(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     graph = {"workflows": [], "trusted_controller": {"kind": "executable"}}
     train_calls: list[dict[str, object]] = []
     monkeypatch.setattr(
@@ -1080,7 +1066,6 @@ def test_authored_todo_workitem_fails_before_reconcile_or_evidence(
 def test_authored_todo_workitem_fails_before_provider_resolution(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(prospective, "require_clean_candidate_root", lambda root, **_kw: root.resolve())
     monkeypatch.setattr(
         prospective,
         "validate_evaluation_authored_ready",
@@ -1305,7 +1290,6 @@ def test_typed_intent_must_match_canonical_graph_before_preflight(
 def test_terminal_reauthentication_rejects_base_movement(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    monkeypatch.setattr(prospective, "_negative_control_targets", lambda _root: 0)
     trace: list[str] = []
     contexts = iter(
         (
@@ -1673,267 +1657,3 @@ def test_train_telemetry_schema_rejects_missing_stage() -> None:
         match="stage inventory is not exact",
     ):
         prospective._validate_train_telemetry(REPO_ROOT, telemetry)
-
-
-@pytest.mark.parametrize('failure', ['workflow', 'controller', 'graph', 'oserror', None])
-def test_provider_authority_progress_brackets_existing_queries_without_changing_errors(monkeypatch, tmp_path, failure):
-    trace = []
-    events = []
-    _front_door(monkeypatch, trace)
-    error_type = OSError if failure == 'oserror' else prospective.CIGraphError if failure == 'graph' else prospective.GitHubControllerError
-    error = error_type('exact provider rejection')
-    def policy(graph):
-        if failure == 'graph':
-            raise error
-        return 'policy'
-    monkeypatch.setattr(prospective, 'graph_controller_policy_path', policy)
-    def verify(*args, **kwargs):
-        assert events[-1]['stage'] == 'provider_authority'
-        assert events[-1]['state'] == 'started'
-        trace.append('provider-workflow')
-        if failure == 'workflow':
-            raise error
-    def resolve(*args, **kwargs):
-        assert events[-1]['stage'] == 'provider_authority'
-        assert events[-1]['state'] == 'started'
-        trace.append('provider-controller')
-        if failure in {'controller', 'oserror'}:
-            raise error
-        return {'controller_commit_sha': BASE, 'controller_bundle_sha256': '6' * 64}
-    def preflight(*args, **kwargs):
-        assert any(row['stage'] == 'provider_authority' and row['state'] == 'complete' for row in events)
-        trace.append('preflight')
-        return {'status': 'pass', 'self_controller': None}
-    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', verify)
-    monkeypatch.setattr(prospective, 'effective_controller_authority', resolve)
-    monkeypatch.setattr(prospective, 'run_preflight', preflight)
-    monkeypatch.setattr(prospective, 'classify_trusted_controller_applicability', lambda *args, **kwargs: SimpleNamespace(state=SimpleNamespace(value='current')))
-    def run():
-        return prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
-            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
-    if failure:
-        with pytest.raises(type(error)) as caught:
-            run()
-        assert caught.value is error
-        assert 'preflight' not in trace
-    else:
-        run()
-    authority = [row for row in events if row['stage'] == 'provider_authority']
-    assert [row['state'] for row in authority] == ['started', 'failed' if failure else 'complete']
-    assert all(row['authority'] is False for row in events)
-
-
-def test_provider_authority_progress_absent_when_no_provider_is_required(monkeypatch, tmp_path):
-    events = []
-    _front_door(monkeypatch, [])
-    monkeypatch.setattr(prospective, 'run_preflight', lambda *args, **kwargs: {'status': 'pass', 'self_controller': None})
-    prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
-        runner=_runner, progress_sink=events.append)
-    assert all(row['stage'] != 'provider_authority' for row in events)
-
-
-def test_exposure_failure_stops_before_provider_authority_and_retains_cause(monkeypatch, tmp_path):
-    _front_door(monkeypatch, [])
-    events = []
-    failure = prospective.PreflightError('governance exposure preflight failed: retained audit')
-    def exposure(root):
-        raise failure
-    monkeypatch.setattr(prospective, '_exposure_scan', exposure, raising=False)
-    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *args, **kwargs: pytest.fail('provider ran before exposure rejection'))
-    monkeypatch.setattr(prospective, 'run_preflight', lambda *args, **kwargs: pytest.fail('late preflight ran'))
-    with pytest.raises(prospective.ProspectiveValidationError, match='governance exposure preflight failed') as caught:
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
-            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
-    assert caught.value.__cause__ is failure
-    assert [(row['stage'], row['state']) for row in events[-2:]] == [('exposure', 'started'), ('exposure', 'failed')]
-
-
-def test_static_control_failure_stops_before_provider_and_preserves_cause(monkeypatch, tmp_path):
-    _front_door(monkeypatch, [])
-    events = []
-    failure = prospective.PreflightError('scheduled mutant target is stale')
-    def controls(root):
-        raise failure
-    monkeypatch.setattr(prospective, '_negative_control_targets', controls, raising=False)
-    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *args, **kwargs: pytest.fail('provider ran before static control rejection'))
-    with pytest.raises(prospective.ProspectiveValidationError, match='scheduled mutant target is stale') as caught:
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
-            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
-    assert caught.value.__cause__ is failure
-    assert [(row['stage'], row['state']) for row in events[-2:]] == [('negative_controls', 'started'), ('negative_controls', 'failed')]
-
-
-def test_prospective_unit_namespace_retains_real_lease_exclusion():
-    from bcf_governance.tooling.local_execution_admission import local_gate_lease, LocalExecutionAdmissionError
-    with local_gate_lease(HEAD):
-        with pytest.raises(LocalExecutionAdmissionError, match='local_execution_busy_deferred: active=' + HEAD):
-            with local_gate_lease(BASE):
-                pytest.fail('unit namespace admitted overlapping host gate')
-
-
-def test_semantic_ownership_failure_rejects_before_provider_and_preserves_cause(monkeypatch, tmp_path):
-    _front_door(monkeypatch, [])
-    events = []
-    failure = prospective.PreflightError('semantic ownership preflight failed: downstream_normalization:retry')
-    def reject(*_a):
-        raise failure
-    monkeypatch.setattr(prospective, '_semantic_ownership', reject, raising=False)
-    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *_a, **_k: pytest.fail('provider reached before semantic rejection'))
-    with pytest.raises(prospective.ProspectiveValidationError, match='downstream_normalization') as caught:
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
-            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
-    assert caught.value.__cause__ is failure
-    assert [(e['stage'], e['state']) for e in events[-2:]] == [('semantic_ownership', 'started'), ('semantic_ownership', 'failed')]
-
-
-@pytest.mark.parametrize(("report", "message"), [
-    ({"status": "pass", "issues": [], "marker": "retained"}, None),
-    ({"status": "fail", "issues": ["first", "second"]}, "golden rejected candidate: first, second"),
-    ({"status": "fail"}, "golden rejected candidate: truth failed"),
-    ({"status": "failed", "issues": []}, "golden rejected candidate: truth failed"),
-    ({"issues": ["missing status"]}, "golden rejected candidate: missing status"),
-])
-def test_prospective_truth_acceptance_extraction_characterization(report, message):
-    if message is None:
-        observed = prospective._require_truth(report, boundary="golden")
-        assert observed == report and observed is not report
-    else:
-        with pytest.raises(prospective.ProspectiveValidationError) as observed:
-            prospective._require_truth(report, boundary="golden")
-        assert str(observed.value) == message
-
-
-def test_prospective_policy_consumer_receives_separate_protected_context(monkeypatch, tmp_path):
-    trace = []
-    _front_door(monkeypatch, trace)
-    context = LocalPRContext('origin', 'main', BASE, HEAD, 'feature', protected_default_sha=BASE, protected_default_tree=BASE_TREE)
-    monkeypatch.setattr(prospective, 'resolve_local_pr_context', lambda *_a, **_k: context)
-    def bind(*_args, **kwargs):
-        assert kwargs.get('policy_context') is context
-        assert kwargs.get('runner') is _runner
-        raise RuntimeError('policy context boundary observed')
-    monkeypatch.setattr(prospective, 'prospective_policy_binding', bind)
-    with pytest.raises(RuntimeError, match='policy context boundary observed'):
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False, runner=_runner)
-
-
-@pytest.fixture
-def policy_stack(tmp_path):
-    def git(*args):
-        return subprocess.check_output(['git', *args], cwd=tmp_path, text=True).strip()
-    git('init', '-q')
-    git('config', 'user.email', 'fixture@example.invalid')
-    git('config', 'user.name', 'Policy fixture')
-    policy = tmp_path / 'governance'
-    policy.mkdir()
-    (policy / 'ci-graph.yml').write_text('revision: protected\n')
-    (policy / 'ci-authority.yml').write_text('authority: protected\n')
-    git('add', '.')
-    git('commit', '-qm', 'protected source')
-    source, source_tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
-    (policy / 'ci-authority.yml').write_text('authority: feature\n')
-    git('add', '.')
-    git('commit', '-qm', 'feature base policy change')
-    base, base_tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
-    (tmp_path / 'README.md').write_text('leaf docs\n')
-    git('add', '.')
-    git('commit', '-qm', 'leaf docs')
-    head, tree = git('rev-parse', 'HEAD'), git('rev-parse', 'HEAD^{tree}')
-    context = LocalPRContext('origin', 'main', base, head, 'leaf', base_ref='stack', repository='owner/repo', repository_id=17,
-        protected_default_sha=source, protected_default_tree=source_tree)
-    return SimpleNamespace(root=tmp_path, context=context, source=source, source_tree=source_tree, base=base, base_tree=base_tree, head=head, tree=tree)
-
-
-def test_policy_invalidation_includes_feature_base_changes_relative_to_protected_source(policy_stack):
-    from bcf_governance.tooling.ci_authority_prospective_lanes import prospective_policy_binding
-    f = policy_stack
-    transition, policy = prospective_policy_binding(f.root, lane='trusted_exact_main', custody_state='ordinary_executable_controller',
-        changed_paths=('README.md',), base_sha=f.base, base_tree=f.base_tree, candidate_sha=f.head, candidate_tree=f.tree, policy_context=f.context)
-    assert transition == 'ordinary_authority_change'
-    assert policy['source']['commit_sha'] == f.source
-    assert policy['source']['tree_sha'] == f.source_tree
-    assert policy['source']['policy_sha256'] != policy['candidate']['policy_sha256']
-    assert f.context.base_sha == f.base
-
-
-@pytest.mark.parametrize('cause', ['partial-sha', 'partial-tree', 'missing-snapshot', 'wrong-tree', 'wrong-comparison', 'wrong-head', 'unknown-commit'])
-def test_policy_context_rejects_incomplete_or_wrong_source_subject(policy_stack, cause):
-    from dataclasses import replace
-    from bcf_governance.tooling.ci_authority_prospective_lanes import prospective_policy_binding, ProspectiveLaneError
-    f = policy_stack
-    fields = {'partial-sha': {'protected_default_sha': None}, 'partial-tree': {'protected_default_tree': None},
-        'missing-snapshot': {'protected_default_sha': None, 'protected_default_tree': None},
-        'wrong-tree': {'protected_default_tree': f.tree}, 'wrong-comparison': {'base_sha': f.source},
-        'wrong-head': {'head_sha': f.base}, 'unknown-commit': {'protected_default_sha': '0' * 40}}
-    with pytest.raises(ProspectiveLaneError):
-        prospective_policy_binding(f.root, lane='trusted_exact_main', custody_state='ordinary_executable_controller', changed_paths=('README.md',),
-            base_sha=f.base, base_tree=f.base_tree, candidate_sha=f.head, candidate_tree=f.tree, policy_context=replace(f.context, **fields[cause]))
-
-def test_source_distribution_failure_rejects_before_provider_and_preserves_cause(monkeypatch, tmp_path):
-    _front_door(monkeypatch, [])
-    events = []
-    failure = prospective.PreflightError('source distribution failed: source manifest omits tracked source: audits/collector.py')
-    def reject(*_a, **_k):
-        raise failure
-    monkeypatch.setattr(prospective, '_pack_manifest', reject, raising=False)
-    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', lambda *_a, **_k: pytest.fail('provider reached before source distribution rejection'))
-    with pytest.raises(prospective.ProspectiveValidationError, match='source manifest omits') as caught:
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'), execute_evidence=False,
-            repository='owner/repo', provider_api=object(), runner=_runner, progress_sink=events.append)
-    assert caught.value.__cause__ is failure
-    assert [(e['stage'], e['state']) for e in events[-2:]] == [('source_distribution', 'started'), ('source_distribution', 'failed')]
-
-
-def test_prospective_cache_identity_receives_resolved_context_and_lane(monkeypatch, tmp_path):
-    trace = []
-    _front_door(monkeypatch, trace)
-    context = LocalPRContext('origin', 'main', BASE, HEAD, 'feature', protected_default_sha=BASE, protected_default_tree=BASE_TREE)
-    monkeypatch.setattr(prospective, 'resolve_local_pr_context', lambda *_a, **_k: context)
-    monkeypatch.setattr(prospective, 'run_preflight', lambda *_a, **_k: {'status': 'pass', 'self_controller': 24,
-        'verification_plan': {'execution_dag': {'nodes': [{'id': 'test', 'producer': 'test', 'depends_on': []}], 'edges': []}}})
-    monkeypatch.setattr(prospective, 'planned_gate_targets', lambda *_a, **_k: ('test',))
-    monkeypatch.setattr(prospective, 'validate_controller_custody_graph', lambda *_a, **_k: (_evaluation(), {'status': 'proved', 'custody_state': 'ordinary_executable_controller'}))
-    monkeypatch.setattr(prospective, 'ordinary_authority_applicability', lambda *_a: 'bootstrap_provider_authority_absent')
-    def identity(**kwargs):
-        assert kwargs['comparison_context'] == {**context.as_dict(), 'validation_lane': 'provider_pr'}
-        raise RuntimeError('proof context observed')
-    monkeypatch.setattr(prospective, 'proof_identity', identity)
-    with pytest.raises(RuntimeError, match='proof context observed'):
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'),
-            repository='owner/repo', runner=_runner)
-
-
-def test_rendered_budget_failure_precedes_costly_qualification_with_exact_existing_owner(monkeypatch, tmp_path):
-    import yaml
-    from bcf_governance.tooling import preflight
-    from bcf_governance.tooling.governance_validation import preflight_distribution as distribution
-    from bcf_governance.tooling.profile_yaml import render_profile_surface
-    trace = []
-    _front_door(monkeypatch, trace)
-    (tmp_path/'bcf_governance/pack/template-repo').mkdir(parents=True)
-    (tmp_path/'governance').mkdir()
-    payload = {f'k{index}': 'x' for index in range(140)}
-    raw = yaml.safe_dump(payload, sort_keys=False)
-    assert len(raw.encode()) <= 1024 < len(render_profile_surface(payload, width=4096).encode())
-    contract = tmp_path/'governance/gate-contracts.yml'
-    contract.write_text(raw)
-    manifest = {'context_budgets': {'agent_required_files': {
-        'governance/gate-contracts.yml': {'line_hard_cap': 800, 'kib_hard_cap': 1}}}}
-    (tmp_path/'governance/artifact-manifest.yml').write_text(yaml.safe_dump(manifest))
-    monkeypatch.setattr(distribution, '_pack_manifest_entries', lambda *_a: {})
-    monkeypatch.setattr(distribution, 'derive_interpreter_environment', lambda *_a: None)
-    monkeypatch.setattr(distribution, 'validate_source_distribution', lambda *_a, **_k: {'applicable': True})
-    monkeypatch.setattr(prospective, '_pack_manifest', preflight._pack_manifest)
-    monkeypatch.setattr(prospective, '_exposure_scan', lambda *_a: trace.append('exposure'))
-    def forbidden(*_a, **_k): pytest.fail('rendered budget failure reached costly qualification or provider')
-    monkeypatch.setattr(prospective, '_negative_control_targets', forbidden)
-    monkeypatch.setattr(prospective, '_semantic_ownership', forbidden)
-    monkeypatch.setattr(prospective, 'verify_provider_workflow_authority', forbidden)
-    events = []
-    with pytest.raises(prospective.ProspectiveValidationError, match='exceeded context budgets'):
-        prospective._run_prospective_train(tmp_path, **TRAIN, python_executable=Path('/python'),
-            execute_evidence=False, repository='owner/repo', provider_api=object(), runner=_runner,
-            progress_sink=events.append)
-    assert trace == ['reconcile', 'exposure']
-    assert [(e['stage'], e['state']) for e in events[-2:]] == [('source_distribution','started'),('source_distribution','failed')]
-    assert contract.read_text() == raw

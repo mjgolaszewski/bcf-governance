@@ -2462,32 +2462,6 @@ violation; characterization precedes it; one governed change extracts at most
 one coherent existing responsibility; public CLI, authority, evidence,
 ordering, failures, and source/package/template parity remain compatible; and
 replaced code is deleted. No extraction may create a new agent-selected stage.
-# Issue #394 migration checkpoint
-
-The 2.5.0 foundation introduces `ci-lifecycle-composition.schema.json` and the
-pure `ci_graph_composition` compiler. The compiler composes the existing CI edge
-population with an independently supplied lifecycle relationship and runtime
-effect population. Its output has no truth or execution authority.
-
-This document remains historical and explanatory context during adoption. It
-must be replaced by generated views of the complete adopted machine-readable
-contract, including all edge contracts and canonical structural exclusions.
-The dormant compiler alone does not establish complete lifecycle coverage,
-executable conformance, profile parity, or retirement of the historical matrix.
-
-### Issue 394 authored release and static binding checkpoint
-
-Canonical reconciliation now checks the authored current-version changelog target
-before any derived-state mutation. A stale, absent, duplicated, or misplaced target
-rejects; an existing exact released entry remains compatible. Release-version cache
-applicability includes every inspected text surface and both runtime owner locations.
-
-The dormant lifecycle compiler also resolves implementation and terminal references
-against the independently supplied semantic source inventory, and test selectors
-against verified collection. Each reachable relationship must retain the protected
-cause-specific negative-control population. These static checks grant no execution
-qualification; actual protected-consumer wiring and runtime conformance still block
-retirement of this prose view.
 
 ### Issue 427 current-session input handoff
 
@@ -2509,29 +2483,28 @@ decoded contracts, control inventory, and scalar types remain unchanged, and
 repeated rendering remains deterministic. Exceeding the existing budget rejects
 the candidate rather than increasing the budget or dropping controls.
 
-### Evidence command terminal and cleanup boundary
+### Maintenance 2.3.6 interpreter source custody
 
-TR-003 execution consumes the gate registry's execution and cleanup bounds. The existing timeout compiler accounts for both before CI allocation. The candidate runtime holds the temporary supervisor unreaped until exact command termination, kernel child-tree quiescence and output drain are authenticated. An ordinary command that leaves live descendants fails after bounded child cleanup. New sessions and double forks retain kernel ancestry; missing terminal proof preserves execution-state custody. This replacement avoids host-global PID stability and remains subject to complete source/private/installed qualification. Source controls cover timeout, background-success, invalid preallocation budgets, inadequate outer deadlines and unresolved cleanup. The complete context-qualified lifecycle, escaped-process isolation and total setup/namespace-removal envelopes remain P32/P33 obligations; this prose does not confer their adoption or terminal authority.
+The maintenance candidate retains the publication and adopter-compatibility
+separation above. Its interpreter compiler changes the source identity consumed
+by the CI graph and workflow projections. Rebinding those projections requires
+the supported full reconcile owner; a prior workflow binding does not confer
+release authority on the changed candidate.
 
-### Lifecycle population query extraction
+| Interpreter state / reached event | Required transition and evidence |
+| --- | --- |
+| Valid authored locked project, selected native cohort | Derive the complete selected closure and source identity; materialize with the canonical installer and verify actual markers, platform, installed metadata and dependency consistency before publication. |
+| Valid cached environment, unchanged source | Reuse the same environment with exact installed closure and unchanged publication manifest, without a new installer or environment allocation. |
+| Source bytes move after successful dependency installation | Raise the typed source-changed refusal; publish no environment target or manifest and remove the owned temporary candidate. |
+| Source bytes move after final installed inventory, before publication | Revalidate source immediately before publication; the same typed refusal and temporary-candidate cleanup apply. Successful dependency inventory alone cannot authorize publication. |
+| Source bytes move during cached inventory | Refuse reuse with the typed source-changed error, run no installer, and preserve the original published manifest. |
+| Compiler or bound source identity changes | Reconcile graph and workflow source bindings through the existing full owner and qualify the resulting candidate independently; inherit no prior native or release acceptance. |
 
-The existing composition compiler delegates canonical byte serialization, CI-edge population hashing and static effect population validation to `ci_graph_composition_populations`. Public compiler imports, typed errors and function bodies are preserved. The full332-case compiler characterization passes before and after extraction. This change creates space for protected population derivation; it neither supplies the missing protected consumer nor qualifies complete runtime conformance. Caller-selected expected populations and static test references remain insufficient for lifecycle authority.
-
-The graph-consuming boundary independently derives all ordered distinct-node pairs from canonical workflow/job inventory and checks the edge producer output before timeout, resource and authority validation. Missing, duplicate, invented or self pairs, malformed reachability and contradictory dispositions reject there even if producer-side checks omit the same pair. This is a bounded CI pair-population invariant; it does not establish lifecycle-context completeness, semantic reachability of a forged canonical exclusion or runtime conformance.
-
-The unconsumed generic mutation-result frontier edges are retired. Arbitrary
-outcome labels, identity maps, prerequisite strings and caller keys cannot select
-a mutation retry. The existing exact submission, provider, immutable-read,
-protected-merge and controller owners retain their supported projections and
-must authenticate facts at consumption. This retirement closes an unsupported
-projection ingress; complete transaction recovery and terminal conformance remain
-separate lifecycle obligations.
-
-### Supplemental backtrace structural coverage
-
-Backtrace version3 closes the root inventory and validates the existing five
-supplemental contracts, their34 states and13 fact-boundary edges before derived
-work. Each primitive must resolve in the existing canonical primitive list;
-negative-control fixture qualification uses PRIM-QUALIFICATION rather than the
-previous undeclared label. Historical version2 retains its weaker reader.
-Neither structural version establishes complete lifecycle/runtime conformance.
+The retained actual native characterization observed both cold-path failures on
+pre-fix source and successful cached-path refusal. The two source validations
+are now authored, and eight focused simulated controls passed. Those observations
+do not establish post-fix native acceptance: fresh actual controls, full canonical
+reconciliation and exact artifact qualification remain required. Outer immutable
+input custody remains necessary across the final check and publication rename.
+No release-train phase, provider authorization, publication or adopter installation
+is promoted by this local maintenance transition.

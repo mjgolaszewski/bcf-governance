@@ -6,87 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.5.0`
-
-### Added
-
-- Registered the Issue #394 four-phase 2.5.0 train with explicit predecessor
-  custody, requirement ownership, scoped workitems, and separate baseline and
-  activation gates. Local adopter compatibility failures remain observations
-  under the existing publication policy.
-- Added a dormant lifecycle composition schema and pure compiler over existing
-  CI edges. Independent relationship and runtime-effect populations reject
-  omissions, false exclusions, stale identities, and missing causal controls;
-  compilation grants no execution or certification authority. Versioned authored
-  machine contracts regenerate without self-referential subject hashes; protected
-  fact catalogues bind exact source producers, verifiers, and proposition fields.
-
-- Added opt-in pipeline timing observations that keep elapsed time, overlapping
-  execution, external waits, unobserved gaps, and measured CPU separate. Failed,
-  cancelled, superseded, and skipped work remains visible.
+Release target: `2.3.6`
 
 ### Fixed
 
-- Retire unconsumed generic mutation recovery projections that accepted unbound
-  outcomes. Existing operation owners continue to derive exact recovery actions;
-  caller-supplied keys or authentication flags cannot create retry authority.
-- Independently validate complete CI node-pair populations at the consuming
-  graph boundary before downstream checks. Reject missing, duplicate or malformed
-  edges; preserve compiler imports and installed private-runtime behavior.
-- Close version3 backtrace structure over existing supplemental contracts and
-  reject undeclared primitive references and duplicate identities before derived
-  work. Preserve historical version2 reads without promoting structural evidence.
-- Authenticate provider repository names before default-branch or run-subject
-  discovery, and reject duplicate physical repositories or case aliases in
-  provider-selected adopter inventories before qualification allocation.
-- Derive qualification sources from the complete provider-selected inventory.
-  Caller checkouts remain resources; stale sources and legacy execution policy
-  block before new qualification. Historical policy remains readable.
-- Supervise Linux evidence commands through kernel child custody, including
-  new sessions, double forks and threaded descendants. Unproved cleanup blocks
-  state retirement; ordinary output decoding failures retain their original
-  error after verified cleanup. Unqualified containment contexts block safely.
-- Project explicit cleanup allowances and include interpreter setup, execution,
-  cleanup and headroom in command deadline floors before allocation. Complete
-  pipeline and response-read envelopes remain foundation work.
-- Reject contradictory optional local timing-capture repository metadata while
-  preserving historical captures that omit it. Provider timings remain
-  observations until matched cohorts and targets are reviewed.
-
-- Derive nested qualification dependency roots from exact wheel requirements
-  and installed origins, including active transitive and legacy dependencies.
-  Reject incompatible identities, versions, Python constraints and unsafe roots
-  before allocating a fresh controller.
-
-- Run generated-pack and rendered-budget admission after exposure checks and
-  before costly local control qualification, preserving canonical generation
-  prerequisites and every later required check.
-
-- Reject dirty committed-candidate inputs before provider discovery or proof
-  allocation. Ordinary local context reads still support edited trees, and
-  later exact-subject checks continue to detect new edits.
-
-- Reject provider commit/ref responses whose returned identity contradicts the
-  exact requested subject. Bound PR comparison checks also require the exact
-  returned ref name even when the object SHA matches.
-
-- Reject missing PR changelog deltas before normalization allocation using the
-  resolved comparison base and canonical candidate scope. Stacked-base changes
-  and ambient validation flags cannot substitute for the leaf PR obligation.
-
-- Submission now settles derived governance through the existing canonical
-  reconciliation owner before deriving lifecycle scope and capturing the exact
-  candidate. Authored contradictions, incorrect intent assertions, busy local
-  execution, and failed normalization stop before proof or push.
-  File-only normalization commits the verified derived candidate through the
-  existing isolated reconciliation transaction before exact-subject recapture.
-- Rejected nonfinite provider `Retry-After` values before sleeping or retrying,
-  preserving finite bounded delays and exact GET request identity.
-
-- Derived bounded post-merge workitem intent from the validated dependency DAG
-  instead of YAML list position, so one exact `DONE` predecessor can certify
-  its declared `TODO` successor without unrelated active work suppressing the
-  proposition; ambiguous, fan-in, and fan-out frontiers remain non-certifying.
+- Close installer dependencies over the selected Python, platform, groups and
+  extras, and validate the exact installed dependency set before adoption.
+- Restore the maintained 2.3.6 source through forward history for qualification
+  by the existing exact-main release path; preserve 2.5 development for return
+  until separate RC readiness and governed integration.
 
 ## [2.3.5] - 2026-10-16
 

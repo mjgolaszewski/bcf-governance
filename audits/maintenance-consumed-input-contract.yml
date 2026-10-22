@@ -1,0 +1,35 @@
+schema_version: '1.0'
+status: implemented_green_pending
+authority: false
+bounded_context: governed_project_environment
+architectural_layer: tooling
+side: command_materialize_already_compiled_plan
+source_observation: metadata_projection_path_remains_mutable_between_verification_and_pip_read
+required_behavior:
+  - Reauthenticate existing source identity and projection after materialization-lock acquisition before cache lookup.
+  - Reauthenticate source after cached inventory and after setup before installing dependencies.
+  - Pass already closed exact plan requirements to pip rather than a mutable projection pathname.
+  - Preserve missing-projection early rejection and all legacy/governed installation behavior.
+  - Refuse moved sources without installing unbound dependencies or destroying valid prior cache.
+target_modules: [bcf_governance/tooling/interpreter_environment.py, bcf_governance/tooling/interpreter_environment_plan.py]
+tests: tests/test_interpreter_consumed_inputs.py
+controls: [setup_projection_movement, setup_metadata_movement, setup_registry_movement, closed_tuple_at_install_call, lock_before_cache_movement, inventory_before_reuse_movement]
+verification: pure_simulation_before_actual_environment_qualification
+forbidden: [real_test_environment_allocation, unrelated_runtime_refactor, weakened_projection_verification]
+red:
+  source: 31d8621f9ee024f3830f7efd4e9adf4c62f63531
+  cases: 6
+  failures: 6
+  causal_status: five_valid_source_controls_and_one_hook_that_did_not_inject_movement
+  errors: 0
+  skipped: 0
+  batch_junit_sha256: c0e531f7ad9f1edd71d889b99f024730e7a423d4139becb516ccb096ddae2a20
+  independent_terminal_handback: true
+first_green_attempt:
+  source: 9ef8efde3a1971cabfb2f67c9165db1540307b22
+  consuming_cases: {passed: 5, failed: 1}
+  complete_batch: {tests: 108, passed: 107, failed: 1, errors: 0, skipped: 0}
+  failure: integer_flock_descriptor_did_not_match_file_object_hook_so_source_was_not_moved
+  batch_junit_sha256: 92f225669ff838fb7f57ea3d23d520a876a88cd2186ad4e6d579be8d654ec05a
+  independent_terminal_handback: true
+  correction: exact_owned_descriptor_readlink_and_explicit_injection_assertion_before_same_cache_prohibition

@@ -48,14 +48,14 @@ def apply_standard_pr_evaluator(graph: dict[str, Any]) -> None:
         "checkout-protected-pr-base": component(
             kind="action", name="Check out the exact protected PR base evaluator",
             action="checkout", **{"with": {
-                "ref": "${{ github.workflow_sha }}",
+                "ref": "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
                 "persist-credentials": False,
             }},
         ),
         "checkout-protected-finalizer-base": component(
             kind="action", name="Check out the exact protected finalizer base evaluator",
             action="checkout", **{"with": {
-                "ref": "${{ github.workflow_sha }}",
+                "ref": "${{ github.event.workflow_run.head_sha }}",
                 "persist-credentials": False,
             }},
         ),

@@ -7,7 +7,7 @@ prune tests/fixtures/typescript-toolchain/node_modules
 recursive-include examples *
 recursive-include scripts *.py
 recursive-include .github *.py *.yml *.yaml
-recursive-include audits *.md *.yml *.yaml *.json *.py
+recursive-include audits *.md *.yml *.yaml *.json
 recursive-include contracts *.md *.yml *.yaml *.json
 recursive-include governance *.md *.yml *.yaml *.json
 recursive-include governance *.txt

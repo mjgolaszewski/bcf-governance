@@ -13,7 +13,6 @@ authors = [{ name = "BCF Governance Maintainers" }]
 dependencies = [
   "PyYAML>=6.0,<7",
   "jsonschema>=4.21,<5",
-  "referencing>=0.37,<0.38",
   "packaging>=24,<27",
 ]
 

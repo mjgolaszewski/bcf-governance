@@ -1,0 +1,32 @@
+schema_version: '1.0'
+status: implemented_green_pending
+authority: false
+cause:
+  introduced_in: db39fe6b2bf610bc55ca5e0a2ff736a061fa2531
+  behavior: authenticated metadata source_path incorrectly becomes an executable installation input
+  baseline_release_defect: false
+required_behavior:
+  - Project metadata authentication remains usable for read-only planning and source verification.
+  - Only a requirements projection is an install input for project_metadata_projection plans.
+  - Missing installation input raises the existing typed error before runtime selection allocation cache reuse or subprocess execution.
+  - Legacy and governed requirement sources remain valid executable installation inputs.
+scope:
+  bounded_context: governed_project_environment
+  architectural_layer: tooling
+  side: query_install_input_selection
+  module: bcf_governance/tooling/interpreter_environment.py
+  property: InterpreterEnvironmentPlan.installation_path
+  tests: tests/test_maintenance_installer_closure.py
+  forbidden: [unrelated_2.5_ancestry, release_assets, adopter_mutation, environment_allocation]
+qualification:
+  red:
+    source: 868d638ec6af29705cd8def7f2f79df10647bad8
+    tests: 2
+    failures: 2
+    errors: 0
+    skipped: 0
+    seconds: 0.849
+    junit_sha256: 6eb54e6b1177baff91c571863298e3e29293ccc03d60cc502e5708bb3980a17f
+    independent_terminal_handback: true
+    real_allocation: false
+  green: pending_implementation_and_finite_admission

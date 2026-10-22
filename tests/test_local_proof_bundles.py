@@ -7,11 +7,8 @@ import subprocess
 import sys
 import tempfile
 
-import pytest
-
 from bcf_governance.tooling.local_proof_bundles import (
     FAILURE_MANIFEST_NAME,
-    LocalProofBundleError,
     _bounded_diagnostic,
     identity_digest,
     proof_identity,
@@ -43,7 +40,7 @@ def _repository(tmp_path: Path) -> Path:
     return root
 
 
-def _identity(comparison_context=None) -> dict:
+def _identity() -> dict:
     return proof_identity(
         repository="owner/repo",
         base_commit="1" * 40,
@@ -57,7 +54,6 @@ def _identity(comparison_context=None) -> dict:
         policy={"source": "exact"},
         toolchain={"python_version": "3.12", "node_version": "22.23.2"},
         python_executable=Path(sys.executable),
-        **({"comparison_context": comparison_context} if comparison_context is not None else {}),
     )
 
 
@@ -186,47 +182,3 @@ def test_failed_local_producer_retains_bounded_causal_bundle(
     assert inline.startswith("FIRST-CAUSAL-EXCEPTION")
     assert inline.endswith("TERMINAL-CONTEXT")
     assert "diagnostic characters omitted" in inline
-
-
-def _comparison_context():
-    return {'remote': 'origin', 'default_branch': 'main', 'base_sha': '1'*40, 'head_sha': '3'*40,
-        'head_ref': 'leaf', 'base_ref': 'stack', 'repository': 'owner/repo', 'repository_id': 17,
-        'pull_request_number': 7, 'pull_request_node_id': 'PR_exact7', 'provider_head_sha': '7'*40,
-        'protected_default_sha': '5'*40, 'protected_default_tree': '6'*40, 'validation_lane': 'provider_pr'}
-
-
-def test_proof_context_is_deterministic_detached_and_legacy_compatible():
-    context = _comparison_context()
-    identity = _identity(context)
-    assert identity == _identity(dict(reversed(list(context.items()))))
-    context['base_ref'] = 'changed'
-    assert identity['comparison_context']['base_ref'] == 'stack'
-    assert 'comparison_context' not in _identity()
-
-
-@pytest.mark.parametrize('field,value', [('base_ref','other-stack'), ('head_ref','other-leaf'),
-    ('pull_request_number',8), ('pull_request_node_id','PR_other'), ('provider_head_sha','8'*40),
-    ('protected_default_sha','9'*40), ('protected_default_tree','a'*40), ('repository_id',18),
-    ('validation_lane','isolated_candidate_qualification')])
-def test_changed_comparison_context_cannot_restore_previous_local_proof(tmp_path, field, value):
-    root = _repository(tmp_path)
-    evidence = tmp_path / 'evidence'
-    evidence.mkdir()
-    (evidence / 'evidence-session.json').write_text('{}\n')
-    (evidence / 'test').mkdir()
-    (evidence / 'test/test.evidence.json').write_text('{"result":"passed"}\n')
-    context = _comparison_context()
-    before = _identity(context)
-    store_proof_bundle(root, identity=before, source=evidence)
-    context[field] = value
-    assert restore_proof_bundle(root, identity=_identity(context), destination=tmp_path/'restored') is None
-
-
-@pytest.mark.parametrize('field,value', [('base_sha','b'*40), ('head_sha','c'*40), ('repository','other/repo')])
-def test_proof_context_contradiction_rejects_before_toolchain_probe(monkeypatch, field, value):
-    context = _comparison_context()
-    context[field] = value
-    monkeypatch.setattr('bcf_governance.tooling.local_proof_bundles.subprocess.run',
-        lambda *_a, **_k: pytest.fail('probed toolchain before context contradiction'))
-    with pytest.raises(LocalProofBundleError, match='comparison context'):
-        _identity(context)
