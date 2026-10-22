@@ -14,12 +14,23 @@ import shutil
 import subprocess
 import sys
 import tomllib
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore[import-untyped]
-from packaging.requirements import InvalidRequirement, Requirement
+
+from .interpreter_environment_plan import (
+    InterpreterEnvironmentError,
+    InterpreterEnvironmentPlan,
+    _dependency_name as _dependency_name,
+    _normalized_name,
+)
+from .interpreter_locked_project import (
+    compile_locked_project,
+    verify_locked_installed_closure,
+    verify_locked_runtime,
+    verify_locked_source,
+)
 
 from .runtime_capacity import (
     RuntimeCapacityError,
@@ -34,14 +45,11 @@ from .python_runtime_selection import (
 from .interpreter_dependency_sources import (
     InterpreterDependencySourceError,
     compile_governed_dependency_source,
+    close_installer_requirement,
 )
 
 
-class InterpreterEnvironmentError(ValueError):
-    """Raised when the governed interpreter environment cannot be compiled."""
-
-
-PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.1"
+PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.2"
 
 
 def validate_runtime_import_dependencies(repo_root: Path) -> None:
@@ -86,66 +94,14 @@ def validate_runtime_import_dependencies(repo_root: Path) -> None:
         )
 
 
-@dataclass(frozen=True)
-class InterpreterEnvironmentPlan:
-    """One canonical projection of every selected-interpreter requirement."""
-
-    requirements: tuple[str, ...]
-    requires_python: str | None
-    projection_path: Path | None
-    source_kind: str = "project_metadata_projection"
-    source_path: Path | None = None
-    source_sha256: str | None = None
-
-    @property
-    def distribution_names(self) -> frozenset[str]:
-        return frozenset(_normalized_name(value) for value in self.requirements)
-
-    def rendered_requirements(self) -> str:
-        return "".join(f"{value}\n" for value in self.requirements)
-
-    def identity(self, base_python: Path) -> str:
-        """Bind one derived environment to its source plan and base runtime."""
-
-        executable = base_python.resolve(strict=True)
-        digest = hashlib.sha256()
-        digest.update(self.rendered_requirements().encode("utf-8"))
-        digest.update(b"\0")
-        digest.update((self.requires_python or "").encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(self.source_kind.encode("utf-8"))
-        digest.update(b"\0")
-        digest.update((self.source_sha256 or "").encode("ascii"))
-        digest.update(b"\0")
-        with executable.open("rb") as stream:
-            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-                digest.update(chunk)
-        return digest.hexdigest()
-
-
-    @property
-    def installation_path(self) -> Path | None:
-        """Return the authenticated dependency input consumed by pip."""
-
-        return self.projection_path or self.source_path
-
-    def pip_arguments(self) -> tuple[str, ...]:
-        """Bind installation to the already-derived dependency proposition."""
-
-        if self.source_kind in {"legacy_governance_requirements", "governed_requirements_source"}:
-            return self.requirements
-        if self.projection_path is None:
-            raise InterpreterEnvironmentError(
-                "interpreter dependency projection is unavailable"
-            )
-        return ("--requirement", str(self.projection_path))
-
-
 def probe_interpreter_environment(
     plan: InterpreterEnvironmentPlan, python: Path
 ) -> dict[str, str]:
     """Authenticate the complete installed dependency plan for one interpreter."""
 
+    if plan.source_kind == "locked_project":
+        verify_locked_runtime(plan, python, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+        verify_locked_installed_closure(plan, python)
     probe = (
         "import importlib.metadata as m,json,platform,sys\n"
         "from packaging.requirements import Requirement\n"
@@ -197,26 +153,6 @@ def probe_interpreter_environment(
             "selected interpreter dependency inventory is incomplete"
         )
     return {str(key): str(value) for key, value in sorted(versions.items())}
-
-
-def _dependency_name(value: object) -> str:
-    if not isinstance(value, str):
-        raise InterpreterEnvironmentError("dependency declaration is not a string")
-    try:
-        requirement = Requirement(value)
-    except InvalidRequirement as exc:
-        raise InterpreterEnvironmentError(
-            "dependency declaration is not a bounded package requirement"
-        ) from exc
-    if requirement.url or requirement.marker or requirement.extras:
-        raise InterpreterEnvironmentError(
-            "dependency declaration must not use URLs, markers, or extras"
-        )
-    return requirement.name
-
-
-def _normalized_name(value: object) -> str:
-    return re.sub(r"[-_.]+", "-", _dependency_name(value)).lower()
 
 
 def _mapping(value: object, message: str) -> dict[str, Any]:
@@ -282,19 +218,12 @@ def _legacy_interpreter_environment(
         raise InterpreterEnvironmentError(
             "interpreter dependency declarations must have unique names"
         )
-    installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    installer_requirements = [
-        value
-        for value in requirements
-        if _normalized_name(value) == installer_name
-    ]
-    if not installer_requirements:
-        requirements.append(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    elif installer_requirements != [PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT]:
-        raise InterpreterEnvironmentError(
-            "project environment installer requirement must equal "
-            + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
+    try:
+        requirements = close_installer_requirement(
+            requirements, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
         )
+    except InterpreterDependencySourceError as exc:
+        raise InterpreterEnvironmentError(str(exc)) from exc
     graph_path = root / "governance/ci-graph.yml"
     python_minor: str | None = None
     if graph_path.is_symlink():
@@ -348,12 +277,17 @@ def derive_interpreter_environment(
     registry_path = root / "governance/gate-contracts.yml"
     if not registry_path.is_file():
         return None
-    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    registry_bytes = registry_path.read_bytes()
+    registry = yaml.safe_load(registry_bytes.decode("utf-8"))
     registry = _mapping(registry, "gate contract registry is invalid")
     contract = registry.get("interpreter_contract")
     if contract is None:
         return _legacy_interpreter_environment(root, registry)
     contract = _mapping(contract, "interpreter contract is invalid")
+    if "locked_project" in contract:
+        if set(contract) != {"locked_project"}:
+            raise InterpreterEnvironmentError("interpreter contract is ambiguous")
+        return compile_locked_project(root, contract["locked_project"], PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
     if "dependency_source" in contract:
         if set(contract) != {"dependency_source"}:
             raise InterpreterEnvironmentError("interpreter contract is ambiguous")
@@ -376,7 +310,8 @@ def derive_interpreter_environment(
     if contract.get("project_dependencies") is not True:
         raise InterpreterEnvironmentError("interpreter contract is invalid")
     try:
-        project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+        project_bytes = (root / "pyproject.toml").read_bytes()
+        project = tomllib.loads(project_bytes.decode("utf-8"))
     except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
         raise InterpreterEnvironmentError(
             "interpreter project dependency source is invalid"
@@ -428,17 +363,13 @@ def derive_interpreter_environment(
         requirements.extend(
             _requirements(values, "interpreter gate requirements must be lists")
         )
-    installer_name = _normalized_name(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    installer_requirements = [
-        value for value in requirements if _normalized_name(value) == installer_name
-    ]
-    if not installer_requirements:
-        requirements.append(PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
-    elif installer_requirements != [PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT]:
-        raise InterpreterEnvironmentError(
-            "project environment installer requirement must equal "
-            + PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
+    requirements = list(dict.fromkeys(requirements))
+    try:
+        requirements = close_installer_requirement(
+            requirements, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
         )
+    except InterpreterDependencySourceError as exc:
+        raise InterpreterEnvironmentError(str(exc)) from exc
     normalized = [_normalized_name(value) for value in requirements]
     if len(set(normalized)) != len(requirements):
         raise InterpreterEnvironmentError(
@@ -456,6 +387,8 @@ def derive_interpreter_environment(
         ),
         requires_python=requires_python,
         projection_path=_safe_projection(root, contract.get("requirements_projection")),
+        source_path=root / "pyproject.toml",
+        source_sha256=hashlib.sha256(project_bytes + b"\0" + registry_bytes).hexdigest(),
     )
 
 
@@ -464,12 +397,23 @@ def verify_interpreter_environment_projection(
 ) -> None:
     """Reject a stale hand-maintained bootstrap dependency surface."""
 
+    if plan.source_kind == "locked_project":
+        verify_locked_source(plan, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+        return
+    if plan.source_kind == "project_metadata_projection" and plan.source_path is not None:
+        try:
+            registry = plan.source_path.parent / "governance/gate-contracts.yml"
+            if any(path.is_symlink() or not path.is_file() for path in (plan.source_path, registry)):
+                raise OSError("unsafe interpreter contract source")
+            observed = hashlib.sha256(plan.source_path.read_bytes() + b"\0" + registry.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise InterpreterEnvironmentError("interpreter dependency source is missing or unsafe") from exc
+        if observed != plan.source_sha256:
+            raise InterpreterEnvironmentError("interpreter dependency source changed after derivation")
     path = plan.projection_path
     if path is None:
         if (
             plan.source_kind == "project_metadata_projection"
-            and plan.source_path is None
-            and plan.source_sha256 is None
         ):
             return
         if (
@@ -568,6 +512,8 @@ def materialize_interpreter_environment(
         base_python = select_materialization_base(plan.requires_python, base_python)
     except PythonRuntimeSelectionError as exc:
         raise InterpreterEnvironmentError(str(exc)) from exc
+    if plan.source_kind == "locked_project":
+        verify_locked_runtime(plan, base_python, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
     try:
         plan_identity = plan.identity(base_python)
     except OSError as exc:
@@ -601,11 +547,15 @@ def materialize_interpreter_environment(
     parent.mkdir(parents=True, exist_ok=True)
     with lock_path.open("a+b") as lock:
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+        verify_interpreter_environment_projection(plan)
         cached = _matching_cached_environment(parent, plan_identity)
         if cached is not None:
             target, payload = cached
             python = target / "venv/bin/python"
             inventory = _installed_inventory(python, root)
+            if plan.source_kind == "locked_project":
+                verify_locked_installed_closure(plan, python)
+            verify_interpreter_environment_projection(plan)
             if payload["inventory_sha256"] != _sha256_text(inventory):
                 raise InterpreterEnvironmentError(
                     "derived project interpreter inventory is stale"
@@ -636,12 +586,14 @@ def materialize_interpreter_environment(
                     "derived project interpreter creation failed: " + detail
                 )
             candidate = temporary / "venv/bin/python"
+            verify_interpreter_environment_projection(plan)
             install_command = [
                 str(candidate),
                 "-m",
                 "pip",
                 "install",
                 "--disable-pip-version-check",
+                *(("--no-deps",) if plan.source_kind == "locked_project" else ()),
                 *plan.pip_arguments(),
             ]
             installed = subprocess.run(
@@ -657,6 +609,9 @@ def materialize_interpreter_environment(
                 raise InterpreterEnvironmentError(
                     "derived project interpreter installation failed: " + detail
                 )
+            verify_interpreter_environment_projection(plan)
+            if plan.source_kind == "locked_project":
+                verify_locked_installed_closure(plan, candidate)
             inventory = _installed_inventory(candidate, root)
             inventory_sha256 = _sha256_text(inventory)
             identity = _sha256_text(plan_identity + "\0" + inventory_sha256)
@@ -680,6 +635,7 @@ def materialize_interpreter_environment(
                 + "\n",
                 encoding="utf-8",
             )
+            verify_interpreter_environment_projection(plan)
             temporary.replace(target)
         finally:
             if temporary.exists():

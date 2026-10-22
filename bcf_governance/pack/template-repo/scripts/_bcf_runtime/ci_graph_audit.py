@@ -13,7 +13,7 @@ from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
 from .ci_graph_import import inventory_github_workflows
 from .ci_graph_render import check_ci_graph
 from .ci_graph_routing import routing_audit
-from .ci_graph_timeouts import INTERPRETER_PROBE_TIMEOUT_SECONDS, gate_deadline_contract, gate_cleanup_timeout_seconds
+from .ci_graph_timeouts import gate_timeout_contract
 from .ci_graph_yaml import load_yaml_path
 from .evidence_gate_contracts import expected_evidence_kinds
 
@@ -104,7 +104,6 @@ def _gate_inventory(repo_root: Path) -> list[dict[str, Any]]:
                 "timeout_seconds",
                 registry.get("execution_policy", {}).get("default_timeout_seconds", 1800),
             ),
-            "cleanup_timeout_seconds": gate_cleanup_timeout_seconds(registry.get("execution_policy", {})),
             "evidence_kind": evidence_kinds.get(
                 gate_id, value.get("evidence", {}).get("kind", "unspecified")
             ),
@@ -281,7 +280,7 @@ def audit_ci_graph(repo_root: Path) -> dict[str, Any]:
     compiled = validate_ci_graph(root)
     inventory = inventory_github_workflows(root)
     render = check_ci_graph(root)
-    default_timeout, overrides, cleanup_timeout = gate_deadline_contract(root)
+    default_timeout, overrides = gate_timeout_contract(root)
     test_manifests = _test_manifest_inventory(root)
     gate_inventory = _gate_inventory(root)
     dependency_paths = _tracked(
@@ -362,8 +361,6 @@ def audit_ci_graph(repo_root: Path) -> dict[str, Any]:
         },
         "timeout_contract": {
             "default_gate_seconds": default_timeout,
-            "cleanup_timeout_seconds": cleanup_timeout,
-            "interpreter_probe_seconds": INTERPRETER_PROBE_TIMEOUT_SECONDS,
             "per_gate_seconds": dict(sorted(overrides.items())),
             "minimum_outer_headroom_seconds": compiled.graph["policy"].get(
                 "minimum_gate_timeout_headroom_seconds", 60

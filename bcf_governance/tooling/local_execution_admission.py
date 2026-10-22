@@ -77,7 +77,7 @@ def _supported_python_minors(repo_root: Path) -> set[str]:
 def _virtual_environment_root(executable: Path) -> Path | None:
     absolute = executable.absolute()
     root = absolute.parent.parent
-    return root.resolve() if absolute.parent.name == "bin" and (root / "pyvenv.cfg").is_file() else None
+    return root if absolute.parent.name == "bin" and (root / "pyvenv.cfg").is_file() else None
 
 
 def _shares_interpreter_custody(project: Path, controller: Path) -> bool:
@@ -171,10 +171,6 @@ def ensure_local_project_python(
         project_python = materialize_interpreter_environment(
             repo_root, controller_python
         )
-        if _shares_interpreter_custody(project_python, controller_python):
-            raise LocalExecutionAdmissionError(
-                "controller interpreter cannot serve as project Python"
-            )
         probe_interpreter_environment(plan, project_python)
     except InterpreterEnvironmentError as exc:
         raise LocalExecutionAdmissionError(str(exc)) from exc

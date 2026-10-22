@@ -12,11 +12,7 @@ class ArtifactInventoryError(ValueError):
 
 
 class _ArtifactInventoryChanged(ArtifactInventoryError):
-    """Retain bounded availability diagnostics without exposing provider objects."""
-
-    def __init__(self, message: str, *, attempt_outcomes: tuple[str, ...] = ()) -> None:
-        super().__init__(message)
-        self.attempt_outcomes = attempt_outcomes
+    """Raised when one bounded read observes concurrent provider mutation."""
 
 
 RequestJSON = Callable[[str, str], Any]
@@ -103,7 +99,6 @@ def complete_repository_artifacts(
     if name_prefix is not None and not re.fullmatch(r"[A-Za-z0-9_.-]+", name_prefix):
         raise ArtifactInventoryError("artifact name-prefix filter is unsafe")
     previous: tuple[dict[str, Any], ...] | None = None
-    outcomes: list[str] = []
     for _ in range(_MAX_STABLE_READ_ATTEMPTS):
         try:
             current = _read_repository_artifacts(
@@ -111,8 +106,7 @@ def complete_repository_artifacts(
                 endpoint=endpoint,
                 name=name,
             )
-        except _ArtifactInventoryChanged as exc:
-            outcomes.append(str(exc))
+        except _ArtifactInventoryChanged:
             previous = None
             continue
         relevant = (
@@ -127,12 +121,7 @@ def complete_repository_artifacts(
         fingerprint = _inventory_fingerprint(relevant)
         if fingerprint == previous:
             return relevant
-        outcomes.append(
-            "relevant artifact objects changed between complete snapshots"
-            if previous is not None else "complete snapshot awaiting independent confirmation"
-        )
         previous = fingerprint
-    raise _ArtifactInventoryChanged(
-        "repository artifact inventory changed or did not stabilize across bounded reads; "
-        + "; ".join(outcomes), attempt_outcomes=tuple(outcomes),
+    raise ArtifactInventoryError(
+        "repository artifact inventory changed or did not stabilize across bounded reads"
     )

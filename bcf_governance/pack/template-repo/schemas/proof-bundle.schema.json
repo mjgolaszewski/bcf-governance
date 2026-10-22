@@ -15,7 +15,6 @@
       "required": ["repository", "base", "candidate", "evaluation", "verification_plan_sha256", "controller", "policy", "toolchain", "producer_authority", "freshness"],
       "properties": {
         "repository": {"type": "string", "minLength": 1},
-        "comparison_context": {"type":"object","additionalProperties":false,"required":["remote","default_branch","base_sha","head_sha","head_ref","validation_lane"],"properties":{"remote":{"type":"string","minLength":1},"default_branch":{"type":"string","minLength":1},"head_ref":{"type":"string","minLength":1},"base_ref":{"type":"string","minLength":1},"repository":{"type":"string","minLength":1},"pull_request_node_id":{"type":"string","minLength":1},"base_sha":{"type":"string","pattern":"^[a-f0-9]{40}$"},"head_sha":{"type":"string","pattern":"^[a-f0-9]{40}$"},"provider_head_sha":{"type":"string","pattern":"^[a-f0-9]{40}$"},"protected_default_sha":{"type":"string","pattern":"^[a-f0-9]{40}$"},"protected_default_tree":{"type":"string","pattern":"^[a-f0-9]{40}$"},"repository_id":{"type":"integer","minimum":1},"pull_request_number":{"type":"integer","minimum":1},"validation_lane":{"enum":["provider_pr","isolated_candidate_qualification"]}}},
         "base": {"$ref": "#/$defs/subject"},
         "candidate": {"$ref": "#/$defs/subject"},
         "evaluation": {

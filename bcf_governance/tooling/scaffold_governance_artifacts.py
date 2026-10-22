@@ -35,16 +35,12 @@ from .semantic_authority_contracts import (
 from .ci_graph_post_merge import reconcile_post_merge_scope
 from .ci_graph_provider_permissions import reconcile_provider_permission_edges
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_timeouts import gate_timeout_contract
 from .ci_graph_values import declared_graph_value_source_paths
 from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
-from .release_version_projection import (
-    RELEASE_VERSION_WATCH_PATHS, reconcile_release_version_surfaces, validate_authored_release_target,
-)
+from .release_version_projection import reconcile_release_version_surfaces
 from .reconcile_authority_transition import (
     ReconcileAuthorityTransitionError,
     apply_workflow_authority_transition,
-    candidate_projection_source,
     result_json as authority_transition_json,
 )
 from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
@@ -301,7 +297,6 @@ def _reconcile_workflow_authority(repo_root: Path, *, apply: bool) -> None:
 def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     """Return the closed canonical projection order for this repository."""
 
-    gate_timeout_contract(repo_root)
     project_python = python.absolute()
     tool_python = Path(sys.executable).absolute()
     graph_value_sources = (
@@ -342,20 +337,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
             lambda: validate_ci_state_matrix(repo_root),
             watch_paths=(
                 "spec/RELEASE_TRAIN_STATE_DAG.md",
-                "spec/phase0/release-train-backtrace.yml",
-                "schemas/release-train-backtrace.schema.json",
                 "governance/ci-graph.yml",
                 "bcf_governance/tooling",
                 ".github/workflows",
             ),
         ))
     steps.extend([
-        ReconcileStep(
-            "authored-release-target",
-            lambda: validate_authored_release_target(repo_root, __version__),
-            lambda: validate_authored_release_target(repo_root, __version__),
-            watch_paths=RELEASE_VERSION_WATCH_PATHS,
-        ),
         ReconcileStep(
             "ci-provider-permissions",
             lambda: reconcile_provider_permission_edges(repo_root, apply=False),
@@ -394,7 +381,12 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
                 repo_root, version=__version__, apply=True
             ),
             apply_verifies=True,
-            watch_paths=RELEASE_VERSION_WATCH_PATHS,
+            watch_paths=(
+                "bcf_governance/__init__.py",
+                "bcf_governance/tooling/release_version_projection.py",
+                "manifest.yml",
+                "governance/public-contracts.yml",
+            ),
         ),
     ])
     if (repo_root / "governance/gate-contracts.yml").is_file():
@@ -640,23 +632,9 @@ def reconcile_main(argv: list[str] | None = None) -> None:
         action="store_true",
         help="recompute every check-stage as the selective-equivalence oracle",
     )
-    parser.add_argument("--commit-derived", action="store_true", help="commit exact derived candidate projections for canonical submission")
     args = parser.parse_args(argv)
-    if args.commit_derived and not args.apply:
-        parser.error("--commit-derived requires --apply")
     root = args.repo_root.resolve()
     try:
-        if args.force and not args.check:
-            raise ReconcileError("--force is valid only with --check")
-        if (root / "plans/phase-ledger.yml").is_file():
-            from .governance_validation.authored_phase_state import validate_authored_phase_state
-            validate_authored_phase_state(root)
-        validate_authored_release_target(root, __version__)
-        gate_timeout_contract(root)
-        from .governance_validation.ci_state_matrix import validate_ci_state_matrix
-        validate_ci_state_matrix(root, authored_only=True)
-        if args.commit_derived:
-            candidate_projection_source(root)
         project_python = (
             ensure_local_project_python(
                 root,
@@ -668,18 +646,19 @@ def reconcile_main(argv: list[str] | None = None) -> None:
         )
         steps = reconcile_steps(root, project_python)
         ledger = None
+        if args.force and not args.check:
+            raise ReconcileError("--force is valid only with --check")
         if args.check:
             ledger = check_reconcile_steps(root, steps, force=args.force)
             rounds = 0
         else:
             transition = None
-            if args.commit_derived or any(step.step_id == "workflow-authority" for step in steps):
+            if any(step.step_id == "workflow-authority" for step in steps):
                 transition = apply_workflow_authority_transition(
                     root,
                     step_factory=lambda candidate: reconcile_steps(candidate, project_python),
                     converge=converge,
                     snapshot=_reconcile_snapshot,
-                    commit_projection=args.commit_derived,
                 )
             if transition is not None:
                 record_reconcile_steps(root, reconcile_steps(root, project_python))

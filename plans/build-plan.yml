@@ -8,7 +8,7 @@ planning_inputs:
   planner: codex
   primary_source_of_truth: plans/product-spec.yml
   governance_references: [AGENTS.yml, MEMORY.yml, plans/phase-ledger.yml]
-global_delivery_rules: [change units default to the smallest valid vertical slice with low blast radius, 'every behavior change must update specs, plans, MEMORY, and tests together', preserve public contracts unless an explicit instruction and migration note authorize a breaking change, release gates must run in a declared runtime environment, governed artifacts must pass structural schema validation before semantic cross-artifact validation, 'architecture boundaries must be encoded in tests, not left as convention-only prose', packaged implementation stays under bcf_governance and public source scripts remain thin wrappers, 'canonical tooling, standalone private runtime, template source, and packaged template copies stay synchronized', 'governance changes must pass semantic validation, not only YAML parse checks', observability changes must preserve the shared telemetry and logging contract baseline, 'active phase lifecycle uses the governed taxonomy and records control metadata when work is blocked, paused, or abandoned', governed build artifacts must follow the template-pack naming and validation conventions, completed release trains must preserve governed phase history for each declared phase, new abstractions require proven reuse across at least two real call sites unless explicitly authorized, emergency red-CI and release-blocking fixes must use the governed hotfix lane, lite hotfix mode is reserved for a single-commit repair with no public-contract or security-scope change; all other hotfixes use full mode, candidate code never executes on persistent or trusted control-plane runners, profile-v1 public contracts remain compatible until a repository explicitly promotes to contract v2, 'provider state, evidence sessions, certification, and release receipts form an acyclic verification chain', 'trusted CI workflow, run, attempt, commit, tree, session, and bundle identity are reconstructed and compared mechanically before any status or release mutation', 'each BCF behavior commit updates and validates BCF''s own applicable governance contracts before successor work begins; local implementation may proceed while hosted Actions are unavailable, but remote candidate execution and publication stay disabled until disposable and trusted substrate acceptance is proven']
+global_delivery_rules: ['For one-off236 restore maintained payload through forward history and canonical reconciliation, qualify existing ordinary1.1 release, then restore250; preserved code is not release evidence', change units default to the smallest valid vertical slice with low blast radius, 'every behavior change must update specs, plans, MEMORY, and tests together', preserve public contracts unless an explicit instruction and migration note authorize a breaking change, release gates must run in a declared runtime environment, governed artifacts must pass structural schema validation before semantic cross-artifact validation, 'architecture boundaries must be encoded in tests, not left as convention-only prose', packaged implementation stays under bcf_governance and public source scripts remain thin wrappers, 'canonical tooling, standalone private runtime, template source, and packaged template copies stay synchronized', 'governance changes must pass semantic validation, not only YAML parse checks', observability changes must preserve the shared telemetry and logging contract baseline, 'active phase lifecycle uses the governed taxonomy and records control metadata when work is blocked, paused, or abandoned', governed build artifacts must follow the template-pack naming and validation conventions, completed release trains must preserve governed phase history for each declared phase, new abstractions require proven reuse across at least two real call sites unless explicitly authorized, emergency red-CI and release-blocking fixes must use the governed hotfix lane, lite hotfix mode is reserved for a single-commit repair with no public-contract or security-scope change; all other hotfixes use full mode, candidate code never executes on persistent or trusted control-plane runners, profile-v1 public contracts remain compatible until a repository explicitly promotes to contract v2, 'provider state, evidence sessions, certification, and release receipts form an acyclic verification chain', 'trusted CI workflow, run, attempt, commit, tree, session, and bundle identity are reconstructed and compared mechanically before any status or release mutation', 'each BCF behavior commit updates and validates BCF''s own applicable governance contracts before successor work begins; local implementation may proceed while hosted Actions are unavailable, but remote candidate execution and publication stay disabled until disposable and trusted substrate acceptance is proven', 'P31-HF07 requires selected-lock and consuming-input characterization then pure canonical actual-consumer distribution and supported-release-route qualification; current scope is unqualified']
 global_gates:
 - id: G1
   name: governed_foundation
@@ -18,33 +18,12 @@ global_gates:
   name: safe_execution_substrate
   applies_before: P10
   required_completion_criteria: [trusted control-plane VM executes no candidate code, every code-executing job receives a fresh disposable VM and ephemeral runner identity, no GitHub-hosted fallback is configured]
-phase_history: {path: plans/phase-history.yml, through_phase: P31}
+phase_history: {path: plans/phase-history.yml, through_phase: P30}
 phase_sequence:
-- phase_id: P32
-  build_block: idcc-foundation-2.5.0
-  objective: Issue 394 foundation with complete assurance through immutable 2.5.0 custody
-  hard_dependencies: [P31]
-  tightly_scoped_deliverables: ['Authenticate predecessor closure, installed authority, required adopter qualifications and immutable custody', Reconcile issues 354 215 298 343 345 and 352 against exact code tests and installed consumers, Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges, Independently trace implementation effects and producer consumer populations in both directions, Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early, Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets]
-  parallelizable_workstreams: [nonconflicting read-only characterization may overlap; canonical state changes remain ordered]
-  verification_commands: &id001 [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]
-- phase_id: P33
-  build_block: idcc-dormant-mechanisms-2.5.0
-  objective: Issue 394 dormant with complete assurance through immutable 2.5.0 custody
-  hard_dependencies: [P32]
-  tightly_scoped_deliverables: [Reject deterministically invalid authored generated and runtime inputs at the earliest authentic boundary, Authenticate proof applicability and exact resumable coalesced submit release and adopter transactions, Derive conservative claim test control impact with independently checked required populations, Schedule only the unresolved sound closure with deterministic resource-safe bounded fanout, Derive complete exact adopter subjects and safely reuse isolated outcomes through exact-byte custody, Project approved periodic policy and profile-specific dormant capabilities through canonical installation, Prove full governed versus shadow differential behavior and isolated installed-adopter parity]
-  parallelizable_workstreams: [nonconflicting read-only characterization may overlap; canonical state changes remain ordered]
-  verification_commands: *id001
-- phase_id: P34
-  build_block: idcc-guarded-activation-2.5.0
-  objective: Issue 394 activation with complete assurance through immutable 2.5.0 custody
-  hard_dependencies: [P33]
-  tightly_scoped_deliverables: [Expand compatible trusted consumers before protected context-specific opt-in activation, Activate approved due expiry grace catch-up findings and foreground priority semantics, Prove automatic unsafe-suppression disable opt-out and exact rollback preserving proof and history]
-  parallelizable_workstreams: [nonconflicting read-only characterization may overlap; canonical state changes remain ordered]
-  verification_commands: *id001
-- phase_id: P35
-  build_block: idcc-measured-certification-2.5.0
-  objective: Issue 394 certification with complete assurance through immutable 2.5.0 custody
-  hard_dependencies: [P34]
-  tightly_scoped_deliverables: [Tune measured critical paths only after complete assurance and isolation proof, Meet separately frozen PR exact-main release adopter custody and interruption targets, Certify exact source wheel sdist template installed-runtime and real-adopter equivalence, Publish admitted exact bytes and independently verify immutable custody without rebuilding]
-  parallelizable_workstreams: [nonconflicting read-only characterization may overlap; canonical state changes remain ordered]
-  verification_commands: *id001
+- phase_id: P31
+  build_block: adopter-assurance-authority-and-publication-2.3.0
+  objective: project consumer assurance and complete storage evaluator and publication authority through immutable BCF 2.3.0 custody
+  hard_dependencies: [P30]
+  tightly_scoped_deliverables: [consumer-owned assurance graph, reviewed existing-repository protection projection, evidence-storage topology and migration, base-pinned independent evaluator, atomic publication and immutable 2.3.0 custody]
+  parallelizable_workstreams: [adopter assurance and protection, evidence storage and migration, independent evaluation and publication, adopter parity and release custody]
+  verification_commands: [.venv/bin/python scripts/validate_governance_yaml.py --repo-root ., .venv/bin/python -m pytest -q tests]

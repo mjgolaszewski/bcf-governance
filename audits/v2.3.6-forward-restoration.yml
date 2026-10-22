@@ -1,0 +1,22 @@
+schema_version: '1.0'
+authority: false
+status: preparation_unqualified
+scope:
+  bounded_context: ordinary_exact_main_maintenance_release
+  layer: repository_governance_and_maintained_payload
+  side: forward_restoration_command
+  authorization: Operator approved temporary forward restoration on 2026-10-22 after comparison with permanent dual-subject bridge.
+  base_main: 100dc2c0b618dc4a9079f90e81a32c86c8bab0fe
+  maintained_payload: c0b3c89a51c54d145ce514d6e217f490250ec270
+  targets: Maintained236 authored tree, canonical governance synchronization and supported workflow reconciliation.
+  tests: Existing controller compatibility/planner, canonical submit, full required exact-tree release qualification and immutable readback.
+  forbidden: Force push, main reset, loss of250 or bridge source, modified235 tag/assets, invented qualification or provider evidence.
+preservation:
+  development: preserve/250-before-236-restoration-20261022
+  bridge: preserve/maintenance-bridge-20261022
+  bridge_commit: fe056ed1442cd66134e69e2f4cc806328f656576
+  bridge_submission: Exit1 at prospective negative_controls; stale release-build-failure-diagnostics-must-fail target. No remote push or publication.
+workflow_ownership: Generated workflows and authority pins retained from current main until canonical reconcile owns their replacement pair.
+release: Distinct unpublished236 through existing ordinary1.1 exact-main path; no dual-subject native protocol activated.
+restoration: After qualified236 immutable publication, restore250 development through a fresh governed forward change, preserving both histories.
+remaining: Actual effective controller resolution, committed target compatibility, canonical mirrors/pins, required gates, fresh assets and protected publication/readback.

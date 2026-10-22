@@ -1,0 +1,90 @@
+schema_version: '1.0'
+status: installer_implemented_qualification_pending
+authority: false
+baseline:
+  release: 2.3.5
+  tag_object: d862eb60d346e53b3ecbbfc54d2cd1816ee6533b
+  commit: f911f21c29114b8280866b75281673018a231c9c
+  tree: faafa07d41220386993d853d43aea9f81505264d
+scope:
+  bounded_context: governed_project_environment
+  architectural_layer: tooling
+  side: query_compilation_before_command_materialization
+  target_modules:
+    - bcf_governance/tooling/interpreter_environment.py
+    - bcf_governance/tooling/interpreter_dependency_sources.py
+  expected_tests:
+    - tests/test_interpreter_environment.py
+    - tests/test_runtime_custody_operations.py
+    - tests/test_install_governance_pack.py
+  forbidden:
+    - immutable_release_assets
+    - adopter_source_and_environments
+    - unrelated_primary_worktree_changes
+    - controller_authority_changes
+requirements:
+  installer:
+    - Select canonical exact patched pip while enforcing authored compatible constraints.
+    - Cover legacy, project metadata and recursive governed requirement inputs.
+    - Authenticate authored constraints and effective installer in reuse identity.
+    - Reject ambiguous, unsafe or incompatible declarations before allocation.
+  dependency_closure:
+    - Derive selected Python, platform, groups and extras from declared source inputs.
+    - Authenticate pyproject and lock bytes; reject stale or ambiguous closure.
+    - Never use a union of all lock records or installed freeze as source authority.
+    - Keep unsafe URLs and unresolved applicability fail closed.
+  custody:
+    - Review official same-version authenticated upgrade with no handwritten runtime lock.
+    - Qualify consumer customizations in isolated shadow before recommending mutation.
+    - Preserve original failed attempts and qualify source and distributions independently.
+source_findings:
+  - Three existing compiler paths require literal equality with pip==26.2.1.
+  - Both requirement parsers reject extras and markers before installer closure.
+  - Existing project compiler has no uv.lock selection and reads optional-dependencies rather than dependency-groups.
+  - Existing interpreter_environment.py has 789 lines; avoid exceeding 800-line guardrail.
+  - LOCAL_UNRELEASED release upgrade requires target authentication; equal versions are not rejected as downgrades.
+  - Unused AGENTS and MEMORY merge helpers are not called; active upgrade_state_files preserves existing product state bytes.
+qualification:
+  red_characterization:
+    commit: 70585940911da2311461ccd1fbd1c253df2da0d6
+    tests: 18
+    failures: 18
+    errors: 0
+    skipped: 0
+    junit_sha256: 4ba899145512f9c7addf3ea251890f8246f9cb9e951f7554dee421575af81096
+    seconds: 1.668
+    independent_terminal_handback: true
+    limitation: Three incompatible-upper-bound failures are diagnostic-only; three identity cases stop before identity comparison.
+  required_next: finite_custodian_admitted_green_packet
+  full_interpreter_pure_green:
+    source: f81df4e3e778dcb5d12fd393a674bd1e2172e381
+    tests: 76
+    passed: 76
+    seconds: 2.104
+    errors: 0
+    skipped: 0
+    junit_sha256: 0ff20d886ea845a9bffe8c6bd933200c0774ccc0340cccda71653f1f7eec9196
+    independent_terminal_handback: true
+  installer_pure_green:
+    source: db39fe6b2bf610bc55ca5e0a2ff736a061fa2531
+    tests: 35
+    passed: 35
+    errors: 0
+    skipped: 0
+    seconds: 0.967
+    junit_sha256: 220d8e3bc7cc5b0da0d89bd9b556cb627b5ffa7c19378dc9a8e70737bd06195f
+    independent_terminal_handback: true
+    limitation: Missing-projection regression separately characterized and corrected; current source requires fresh qualification.
+implementation:
+  installer: pip==26.2.2
+  shared_owner: bcf_governance/tooling/interpreter_dependency_sources.py
+  consumers: [legacy_requirements, project_metadata, recursive_governed_source]
+  authored_identity: project_and_gate_registry_bytes_bound_and_rechecked
+  source_module_lines: 793
+  new_pure_cases: 39
+  mirrors: canonical_builder_projection_pending
+  dependency_extras_and_lock_selection: pending_separate_contract
+release_handoff:
+  status: proposal_only
+  requirement: distinct_immutable_maintenance_version_after_complete_qualification
+  forbidden: rebranding_modified_runtime_as_2.3.5

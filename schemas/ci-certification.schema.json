@@ -266,12 +266,7 @@
       "properties": {
         "intent": {"enum": ["pr", "workitem", "closure"]},
         "target": {"$ref": "#/$defs/evaluationTarget"}
-      },
-      "oneOf": [
-        {"properties": {"intent": {"const": "pr"}, "target": {"properties": {"kind": {"const": "pull_request_progress"}, "id": {"$ref": "#/$defs/sha", "not": {"pattern": "[\\r\\n]"}}}}}},
-        {"properties": {"intent": {"const": "workitem"}, "target": {"properties": {"kind": {"const": "workitem"}, "id": {"type": "string", "pattern": "^[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+$", "not": {"pattern": "[\\r\\n]"}}}}}},
-        {"properties": {"intent": {"const": "closure"}, "target": {"properties": {"kind": {"const": "phase"}}}}}
-      ]
+      }
     },
     "certifiedProposition": {
       "type": "object",

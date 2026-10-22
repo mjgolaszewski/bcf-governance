@@ -28,9 +28,11 @@
       "additionalProperties": false,
       "oneOf": [
         {"required": ["project_dependencies", "optional_dependency_groups", "gate_requirements"]},
-        {"required": ["dependency_source"]}
+        {"required": ["dependency_source"]},
+        {"required": ["locked_project"]}
       ],
       "properties": {
+        "locked_project": {"type": "object", "additionalProperties": false, "required": ["lockfile", "dependency_groups", "optional_extras", "marker_environment", "runtime_platform"], "properties": {"lockfile": {"const": "uv.lock"}, "dependency_groups": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "optional_extras": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}, "marker_environment": {"type": "object", "additionalProperties": false, "required": ["implementation_name", "implementation_version", "os_name", "platform_machine", "platform_release", "platform_system", "platform_version", "python_full_version", "platform_python_implementation", "python_version", "sys_platform"], "properties": {"implementation_name": {"type": "string", "minLength": 1}, "implementation_version": {"type": "string", "minLength": 1}, "os_name": {"type": "string", "minLength": 1}, "platform_machine": {"type": "string", "minLength": 1}, "platform_release": {"type": "string", "minLength": 1}, "platform_system": {"type": "string", "minLength": 1}, "platform_version": {"type": "string", "minLength": 1}, "python_full_version": {"type": "string", "minLength": 1}, "platform_python_implementation": {"type": "string", "minLength": 1}, "python_version": {"type": "string", "minLength": 1}, "sys_platform": {"type": "string", "minLength": 1}}}, "runtime_platform": {"type": "object", "additionalProperties": false, "required": ["sysconfig_platform", "libc_name", "libc_version"], "properties": {"sysconfig_platform": {"type": "string", "minLength": 1}, "libc_name": {"type": "string"}, "libc_version": {"type": "string"}}}}},
         "project_dependencies": {"const": true},
         "dependency_source": {"type": "string", "minLength": 1},
         "build_system_requirements": {"const": true},
@@ -44,8 +46,7 @@
       "additionalProperties": false,
       "required": ["default_timeout_seconds"],
       "properties": {
-        "default_timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 21600},
-        "default_cleanup_timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 21600}
+        "default_timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 21600}
       }
     },
     "claim_model": {"$ref": "#/$defs/claimModel"},
@@ -152,27 +153,7 @@
             ,"timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 21600}
           }
         },
-        "evidence": {
-          "type": "object",
-          "properties": {
-            "test_contract": {
-              "type": "object",
-              "properties": {
-                "reference_inventories": {
-                  "type": "array", "minItems": 1, "uniqueItems": true,
-                  "items": {
-                    "type": "object", "additionalProperties": false,
-                    "required": ["path", "format"],
-                    "properties": {
-                      "path": {"type": "string", "minLength": 1},
-                      "format": {"const": "implementation_slice_bindings.v1"}
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
+        "evidence": {"type": "object"},
         "negative_controls": {
           "type": "array",
           "minItems": 0,

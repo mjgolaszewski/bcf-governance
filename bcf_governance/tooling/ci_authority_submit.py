@@ -7,7 +7,6 @@ from pathlib import Path
 import hashlib
 import json
 import re
-import time
 from typing import Any, Callable
 
 from .ci_github_api import GitHubAPI
@@ -19,98 +18,24 @@ from .candidate_provider_recovery import (
     resolve_candidate_provider_recovery,
 )
 from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_post_merge import authored_candidate_title, authored_post_merge_scope, candidate_post_merge_evaluation, candidate_semantic_scope, post_merge_evaluation
+from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
 from .github_protection import load_protection
 from .local_pr import (
     CandidateIdentity,
     LocalPRContext,
     ProspectiveValidationError,
-    ProgressSink,
     _candidate_identity,
     _confirm_unchanged,
     _run,
     resolve_local_pr_context,
     run_prospective_train,
 )
-from .operational_observations import progress_event, validate_progress_stream
 from .ordinary_protection_projection import validate_ordinary_protection_submission
-from .local_execution_admission import local_gate_lease
-from .nested_cli_runtime import exact_nested_cli_command
-from .release_version_projection import validate_authored_release_target
-from .test_manifests import validate_authored_test_reference_inventories
-from .semantic_ownership_scan import validate_authored_semantic_ownership
-from .governance_validation.preflight_distribution import validate_source_distribution
-from .runtime_capacity import executing_runtime_version
-from .ci_graph_timeouts import gate_timeout_contract
-from .governance_validation.authored_phase_state import validate_authored_phase_state
-from .governance_validation.required_artifacts import validate_pull_request_changelog_update
-from .local_pr_context import _pr_environment, require_clean_candidate_root
-from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 
 
 Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")
-
-
-def _normalize_submission(
-    root: Path,
-    *,
-    python_executable: Path,
-    execution_id: str,
-    semantic_intent: str | None,
-    runner: Runner,
-    context: LocalPRContext | None = None,
-) -> None:
-    """Settle derived state before consuming its submission authority projection."""
-
-    try:
-        if (root / "plans/phase-ledger.yml").is_file():
-            validate_authored_phase_state(root)
-        try:
-            version = executing_runtime_version()
-        except RuntimeError as exc:
-            raise ProspectiveValidationError(str(exc)) from exc
-        validate_authored_release_target(root, version)
-        gate_timeout_contract(root)
-        validate_ci_state_matrix(root, authored_only=True)
-        if semantic_intent is not None or context is not None:
-            mode, target = authored_post_merge_scope(root)
-            if context is not None:
-                mode, target = candidate_semantic_scope(mode, target, context=context)
-            if semantic_intent is not None and semantic_intent != mode:
-                raise ProspectiveValidationError(
-                    "submitted semantic intent does not match the authored lifecycle intent"
-                )
-            if mode == "pr" and context is not None:
-                with _pr_environment(context):
-                    validate_pull_request_changelog_update(root)
-        validate_authored_test_reference_inventories(root, python_executable=python_executable)
-        validate_authored_semantic_ownership(root)
-        validate_source_distribution(root, python_executable=python_executable)
-    except (OSError, ValueError) as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
-    with local_gate_lease(execution_id):
-        command = exact_nested_cli_command(
-            "reconcile", "--repo-root", str(root), "--python", str(python_executable),
-        )
-        checked = runner([*command, "--check"], cwd=root)
-        if checked.returncode == 0:
-            return
-        # Only the existing canonical owner decides whether inputs can converge.
-        # Keep its deferred write callbacks behind its CLI mutation boundary.
-        result = runner([*command, "--commit-derived", "--apply"], cwd=root)
-        if result.returncode:
-            detail = result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}"
-            raise ProspectiveValidationError(
-                f"canonical submission normalization failed: {detail}"
-            )
-        settled = runner([*command, "--check"], cwd=root)
-        if settled.returncode:
-            detail = settled.stderr.strip() or settled.stdout.strip() or f"exit {settled.returncode}"
-            raise ProspectiveValidationError(
-                f"canonical submission normalization did not converge: {detail}"
-            )
 
 
 @dataclass(frozen=True)
@@ -215,7 +140,7 @@ def _canonical_inputs(
     provider_api: GitHubAPI,
     runner: Runner,
 ) -> SubmissionAuthority:
-    evaluation = candidate_post_merge_evaluation(post_merge_evaluation(validate_ci_graph(repo_root).graph), context=context)
+    evaluation = post_merge_evaluation(validate_ci_graph(repo_root).graph)
     if evaluation.lane == "direct_protected_main":
         repository, repository_id = _provider_repository(
             repo_root,
@@ -229,8 +154,6 @@ def _canonical_inputs(
         repository_id = _provider_repository_id(
             provider_api, repository=repository
         )
-    if context.repository is not None and (context.repository != repository or context.repository_id != repository_id):
-        raise ProspectiveValidationError("candidate context repository changed after binding")
     try:
         applicability = validate_ordinary_protection_submission(
             provider_api,
@@ -288,35 +211,24 @@ def _request_protected_auto_merge(
     identity: CandidateIdentity,
     pull_request: dict[str, Any],
     prospective_frontier_sha256: str,
-    context: LocalPRContext | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     if pull_request.get("repository_id") != authority.repository_id:
         raise ProspectiveValidationError(
             "candidate pull request repository identity changed after admission"
         )
-    merge_identity = {
-        "repository": authority.repository,
-        "repository_id": str(pull_request["repository_id"]),
-        "pull_request": str(pull_request["number"]),
-        "base_sha": identity.base_sha,
-        "head_sha": identity.commit_sha,
-        "tree_sha": identity.tree_sha,
-        "protection_sha256": authority.protection_sha256,
-    }
-    nondefault = context is not None and context.comparison_base_ref != context.default_branch
-    if context is not None and context.base_ref is not None:
-        merge_identity.update(base_ref=context.comparison_base_ref, default_branch=context.default_branch)
-    if nondefault and (authority.mode != "pr" or authority.target is not None):
-        raise ProspectiveValidationError("nondefault PR cannot carry default-main terminal authority")
     frontier = protected_merge_frontier(
-        identity=merge_identity,
-        state="nondefault_base" if nondefault else "prospective_proved",
+        identity={
+            "repository": authority.repository,
+            "repository_id": str(pull_request["repository_id"]),
+            "pull_request": str(pull_request["number"]),
+            "base_sha": identity.base_sha,
+            "head_sha": identity.commit_sha,
+            "tree_sha": identity.tree_sha,
+            "protection_sha256": authority.protection_sha256,
+        },
+        state="prospective_proved",
         certification_identity=f"prospective:{prospective_frontier_sha256}",
     )
-    if nondefault:
-        if frontier["action"]["kind"] != "observe_same_subject":
-            raise ProspectiveValidationError("nondefault PR did not select observation-only progress")
-        return {"status": "provider_proof_required_no_default_main_authority", "pull_request": pull_request["number"]}, frontier
     if frontier["action"]["kind"] != "request_provider_auto_merge":
         raise ProspectiveValidationError(
             "proved candidate frontier did not select protected auto-merge"
@@ -335,7 +247,15 @@ def _request_protected_auto_merge(
         ) from exc
     if result.get("status") == "certified_clean":
         frontier = protected_merge_frontier(
-            identity=merge_identity,
+            identity={
+                "repository": authority.repository,
+                "repository_id": str(pull_request["repository_id"]),
+                "pull_request": str(pull_request["number"]),
+                "base_sha": identity.base_sha,
+                "head_sha": identity.commit_sha,
+                "tree_sha": identity.tree_sha,
+                "protection_sha256": authority.protection_sha256,
+            },
             state="certified_mergeable",
             certification_identity=f"prospective:{prospective_frontier_sha256}",
         )
@@ -366,58 +286,18 @@ def submit_candidate(
     provider_api: GitHubAPI,
     remote: str = "origin",
     runner: Runner = _run,
-    progress_sink: ProgressSink | None = None,
 ) -> dict[str, object]:
     """Prove and push only the exact immutable candidate that passed the train."""
 
-    root = require_clean_candidate_root(repo_root, runner=runner)
-    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
+    root = repo_root.resolve()
+    context = resolve_local_pr_context(root, remote=remote, runner=runner)
     identity = _candidate_identity(root, context, runner=runner)
-    progress = []
-    progress_started = time.monotonic_ns()
-    progress_identity = 'submission:' + identity.commit_sha
-
-    def emit(stage: str, state: str) -> None:
-        progress.append(progress_event(kind="submission_progress", execution_id=progress_identity, sequence=len(progress) + 1,
-            stage=stage, state=state, monotonic_ms=(time.monotonic_ns() - progress_started) // 1000000))
-        validate_progress_stream(progress)
-        if progress_sink is not None:
-            progress_sink(progress[-1])
-
-    emit('normalization', 'started')
-    try:
-        _normalize_submission(
-            root,
-            python_executable=python_executable,
-            execution_id=identity.commit_sha,
-            semantic_intent=semantic_intent,
-            runner=runner,
-            context=context,
-        )
-    except (ValueError, OSError) as exc:
-        try:
-            emit('normalization', 'failed')
-        except Exception as observation_error:
-            raise exc from observation_error
-        raise
-    emit('normalization', 'complete')
-    context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
-    identity = _candidate_identity(root, context, runner=runner)
-    emit('submission_authority', 'started')
-    try:
-        authority = _canonical_inputs(
-            root,
-            context=context,
-            provider_api=provider_api,
-            runner=runner,
-        )
-    except (ValueError, OSError) as exc:
-        try:
-            emit('submission_authority', 'failed')
-        except Exception as observation_error:
-            raise exc from observation_error
-        raise
-    emit('submission_authority', 'complete')
+    authority = _canonical_inputs(
+        root,
+        context=context,
+        provider_api=provider_api,
+        runner=runner,
+    )
     try:
         candidate_title = authored_candidate_title(
             root, mode=authority.mode, target=authority.target
@@ -452,7 +332,6 @@ def submit_candidate(
         repository=authority.repository,
         provider_api=provider_api,
         runner=runner,
-        progress_sink=progress_sink,
     )
     if proof.get("status") != "prospectively_admissible_provider_proof_required":
         raise ProspectiveValidationError(
@@ -471,7 +350,6 @@ def submit_candidate(
         initial_identity=identity,
         remote=remote,
         runner=runner,
-        provider_api=provider_api,
     )
     _push_exact_candidate(
         root, context=context, identity=identity, runner=runner
@@ -480,10 +358,7 @@ def submit_candidate(
         provider_api,
         repository=authority.repository,
         branch=context.head_ref,
-        base_ref=context.comparison_base_ref,
-        repository_default_branch=context.default_branch,
-        bound_pull_request=({"number": context.pull_request_number, "node_id": context.pull_request_node_id}
-                            if context.pull_request_number is not None else None),
+        base_ref=context.default_branch,
         base_sha=identity.base_sha,
         head_sha=identity.commit_sha,
         tree_sha=identity.tree_sha,
@@ -509,15 +384,11 @@ def submit_candidate(
         identity=identity,
         pull_request=pull_request,
         prospective_frontier_sha256=str(proved_frontier["frontier_sha256"]),
-        context=context,
     )
     provider_retry_submitted = execute_candidate_provider_recovery(
         provider_api,
         repository=authority.repository,
         frontier=provider_frontier,
-        candidate=identity,
-        context=context,
-        pull_request=pull_request,
     )
     return {
         "status": (

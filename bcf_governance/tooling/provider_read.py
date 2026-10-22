@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from email.message import Message
 import hashlib
-import math
 import ssl
 import time
 from typing import Any, Callable, ContextManager
@@ -40,7 +39,7 @@ def _retry_after(headers: Message | None, fallback: float) -> float:
         seconds = float(value)
     except (TypeError, ValueError) as exc:
         raise ProviderReadError("provider Retry-After is invalid") from exc
-    if not math.isfinite(seconds) or seconds < 0 or seconds > MAX_RETRY_AFTER_SECONDS:
+    if seconds < 0 or seconds > MAX_RETRY_AFTER_SECONDS:
         raise ProviderReadError("provider Retry-After is outside the bounded policy")
     return seconds
 

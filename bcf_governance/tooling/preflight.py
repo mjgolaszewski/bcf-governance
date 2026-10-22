@@ -39,7 +39,7 @@ from .governance_validation.required_artifacts import (
     validate_pull_request_changelog_update,
 )
 from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
-from .governance_validation.preflight_distribution import validate_distribution_pack
+from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     derive_interpreter_environment,
@@ -477,12 +477,30 @@ def _semantic_ownership(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def _pack_manifest(repo_root: Path, *, python_executable: Path | None = None) -> dict[str, Any]:
+def _pack_manifest(repo_root: Path) -> dict[str, Any]:
     """Verify BCF's generated pack bytes before package or evidence work."""
+
+    template_root = repo_root / "bcf_governance/pack/template-repo"
+    if not template_root.is_dir():
+        return {"applicable": False}
     try:
-        return validate_distribution_pack(repo_root, python_executable=python_executable)
-    except (OSError, InterpreterEnvironmentError, ValueError) as exc:
+        entries = _pack_manifest_entries(template_root)
+        interpreter = derive_interpreter_environment(template_root)
+        if interpreter is not None:
+            verify_interpreter_environment_projection(interpreter)
+    except (InterpreterEnvironmentError, ValueError) as exc:
         raise PreflightError(str(exc)) from exc
+    return {
+        "applicable": True,
+        "file_count": len(entries),
+        "template_interpreter": (
+            "not_declared"
+            if interpreter is None
+            else "dependencies_and_python"
+            if interpreter.requires_python is not None
+            else "dependencies_only"
+        ),
+    }
 
 
 def run_preflight(
@@ -522,7 +540,6 @@ def run_preflight(
         return operation()
 
     subject = step("git-state", lambda: _git_state(repo_root))
-    pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
     authored_phase_state = step(
         "authored-phase-state", lambda: validate_authored_phase_state(repo_root)
     )
@@ -595,6 +612,7 @@ def run_preflight(
     workflow_authority = step(
         "workflow-authority", lambda: _workflow_authority(repo_root)
     )
+    pr_context = step("pr-context", lambda: _pr_context(repo_root, mode))
     self_controller = step(
         "self-controller",
         lambda: _self_controller(
@@ -626,7 +644,7 @@ def run_preflight(
         "semantic-ownership", lambda: _semantic_ownership(repo_root)
     )
     source_locks = step("source-locks", lambda: _vendored_source_locks(repo_root))
-    pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root, python_executable=python))
+    pack_manifest = step("pack-manifest", lambda: _pack_manifest(repo_root))
     evidence_storage = step(
         "evidence-storage-topology", lambda: compile_migration_plan(repo_root)
     )

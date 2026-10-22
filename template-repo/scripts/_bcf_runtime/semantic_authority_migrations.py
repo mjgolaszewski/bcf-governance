@@ -17,7 +17,6 @@ from typing import Any
 import yaml  # type: ignore[import-untyped]
 
 from .semantic_ownership_registry import Registry
-from .semantic_yaml import SemanticYAMLError, load_unique_mapping_text
 from .semantic_locking import atomic_write, prepend_compact_list_rows
 
 
@@ -58,7 +57,7 @@ def _validate_exact_base(repo_root: Path, base_sha: str) -> None:
     if not re.fullmatch(r"[a-f0-9]{40}", base_sha):
         raise SemanticMigrationError("base SHA must be an exact 40-character commit")
     result = subprocess.run(
-        ["git", "--no-replace-objects", "merge-base", "--is-ancestor", base_sha, "HEAD"],
+        ["git", "merge-base", "--is-ancestor", base_sha, "HEAD"],
         cwd=repo_root,
         capture_output=True,
         check=False,
@@ -151,25 +150,17 @@ def register_operation_migration(
 
 
 def _git_yaml(repo_root: Path, base_sha: str, relative: Path) -> dict[str, Any] | None:
-    if not isinstance(base_sha, str) or re.fullmatch(r"[a-f0-9]{40}", base_sha) is None:
-        raise SemanticMigrationError("base registry requires an exact commit identity")
-    try:
-        result = subprocess.run(
-            ["git", "--no-replace-objects", "show", f"{base_sha}:{relative.as_posix()}"],
-            cwd=repo_root, capture_output=True, text=True, check=False,
-        )
-        if result.returncode != 0:
-            inventory = subprocess.run(
-                ["git", "--no-replace-objects", "--literal-pathspecs", "ls-tree", "-z",
-                 base_sha, "--", relative.as_posix()],
-                cwd=repo_root, capture_output=True, text=True, check=False,
-            )
-            if inventory.returncode == 0 and inventory.stdout == "":
-                return None
-            raise SemanticMigrationError(f"cannot authenticate base registry read or absence: {relative}")
-        return load_unique_mapping_text(result.stdout)
-    except (OSError, UnicodeError, SemanticYAMLError) as exc:
-        raise SemanticMigrationError(f"cannot decode base registry {relative}: {exc}") from exc
+    result = subprocess.run(
+        ["git", "show", f"{base_sha}:{relative.as_posix()}"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    payload = yaml.safe_load(result.stdout)
+    return payload if isinstance(payload, dict) else None
 
 
 def _migration_index(*payloads: dict[str, Any]) -> set[tuple[str, ...]]:
@@ -363,7 +354,8 @@ def validate_exact_base_migrations(
     base_sha = os.environ.get("BCF_PR_BASE_SHA")
     if not base_sha:
         return
-    _validate_exact_base(repo_root, base_sha)
+    if not re.fullmatch(r"[a-f0-9]{40}", base_sha):
+        raise SemanticMigrationError("BCF_PR_BASE_SHA must be an exact 40-character commit")
     old_families = _git_yaml(repo_root, base_sha, Path("governance/semantic-families.yml"))
     old_operations = _git_yaml(
         repo_root, base_sha, Path("governance/application-operations.yml")

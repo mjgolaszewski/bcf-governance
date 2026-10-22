@@ -1,0 +1,79 @@
+schema_version: '1.0'
+status: implemented_synthetic_qualification_pending
+authority: false
+scope:
+  bounded_context: governed_project_environment
+  architectural_layer: tooling
+  side: query_compile_selected_locked_dependencies
+  target_modules:
+    - bcf_governance/tooling/interpreter_environment.py
+    - bcf_governance/tooling/interpreter_environment_plan.py
+    - bcf_governance/tooling/interpreter_locked_project.py
+    - bcf_governance/tooling/interpreter_contract_projection.py
+  expected_tests:
+    - tests/test_interpreter_environment.py
+    - tests/test_maintenance_installer_closure.py
+    - tests/test_interpreter_locked_project.py
+  forbidden: [release_asset_mutation, adopter_source_mutation, installed_freeze_authority, unrelated_2.5_ancestry]
+preparatory_deconstruction:
+  reason: existing_interpreter_module_is_793_lines_before_locked_source_integration
+  responsibility: immutable_plan_identity_and_install_input_selection
+  move_to: bcf_governance/tooling/interpreter_environment_plan.py
+  preserve: [existing_import_entrypoints, typed_errors, parser_rejections, plan_identity_bytes, pip_arguments]
+  characterization: independently_accepted_76_case_interpreter_and_maintenance_suite
+  verification: same_76_cases_on_new_subject_before_acceptance
+input_contract:
+  discriminator: locked_project
+  lockfile: uv.lock
+  supported_format: {version: 1, revision: 5}
+  dependency_groups: explicitly_selected_PEP735_names
+  optional_extras: separately_selected_PEP621_project_extras
+  marker_environment: explicit_complete_PEP508_selection
+  runtime_platform: explicit_sysconfig_platform_and_libc_name_and_version
+  sources: [pyproject.toml, uv.lock, governance/gate-contracts.yml]
+required_behavior:
+  - Compile only reachable selected lock nodes, edges, extra expansions and marker forks.
+  - Validate authored project and selected group requirements against lock metadata and exact versions.
+  - Reject stale lock metadata after an authored floor changes even if its exact selected version remains compatible.
+  - Preserve PEP735 include-group expansion and detect cycles or normalized-name ambiguity.
+  - Reject unresolved nodes, unsupported source kinds, URLs and ambiguous applicability before allocation.
+  - Bind all source and selector bytes to plan identity and recheck at consuming boundaries.
+  - Require actual selected runtime and platform to match the authored marker cohort before allocation or reuse.
+  - Do not let a local Python3.14 cohort certify Python3.12 graph resources or image dependencies.
+  - Keep explicit groups and extras distinct and prevent unselected provider-group leakage.
+  - Consume closed exact requirement arguments rather than mutable projection bytes.
+  - Disable native dependency resolving for locked plans and verify installed metadata against the exact source-derived closure before caching.
+actual_consumer_cohort:
+  implementation: CPython
+  python_full_version: 3.14.5
+  sys_platform: linux
+  platform_machine: x86_64
+  sysconfig_platform: linux-x86_64
+  libc: glibc2.36
+  dependency_groups: [dev]
+  excluded_groups: [identity-e2e]
+  authored_dependency_extras: [psycopg.binary, psycopg.pool, pyjwt.crypto]
+qualification:
+  required: [pure_selected_graph_controls, actual_134_record_consumer_projection, frozen_offline_uv_0.13.4_corroboration, runtime_selection_mismatch_controls, source_and_distribution_consumers]
+  acceptance: source_controls_only_no_runtime_or_release
+  pure_controls: {source: 10fe7f5b2096b658490d5f3d7c0f1d7e76771678, passed: 114, independent_handback: 15510}
+  actual_source_parity:
+    source: 10fe7f5b2096b658490d5f3d7c0f1d7e76771678
+    consumer: 3562427d7c00eea3f1966e1bee200b1e9dbbc826
+    records: 134
+    selected_source_cohorts: 8
+    uv: 0.13.4
+    grant: 15810
+    independent_handback: 15818
+    corroboration_sha256: e55cfab6944aa8acd86d9e466b1bb7a14a29e15b1180c2a14eb6f5b8436565b0
+    runtime_qualified: false
+  additional_compatible_floor_control: authored_unexecuted
+known_constraints:
+  - Only uv lock format version1 revision5 and public PyPI registry dependencies are supported; other source kinds fail closed.
+  - Root optional requirements containing nested markers and lock markers using extras or dependency_groups sets remain unsupported and fail closed.
+  - Unqualified lock top-level fields and tool.uv resolution configuration fail closed; a valid required-version authoring pin is permitted.
+  - Synthetic controls do not qualify the actual consumer lock, artifact bytes, native environment or release route.
+references:
+  - https://packaging.python.org/en/latest/specifications/dependency-groups/
+  - https://docs.astral.sh/uv/concepts/projects/layout/
+  - https://docs.astral.sh/uv/concepts/resolution/

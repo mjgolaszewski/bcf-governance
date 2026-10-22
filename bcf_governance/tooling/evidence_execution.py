@@ -6,16 +6,11 @@ import hashlib
 import json
 import os
 import shutil
-import signal
 import site
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
-
-from .ci_graph_errors import CIGraphError
-from .evidence_process_supervisor import OwnedProcessError, run_owned_command
-from .ci_graph_timeouts import INTERPRETER_PROBE_TIMEOUT_SECONDS, LEGACY_GATE_CLEANUP_SECONDS, bounded_execution_seconds
 
 from .runtime_capacity import (
     EXECUTION_STATE_ENVIRONMENT,
@@ -31,33 +26,6 @@ STATE_ENVIRONMENT = frozenset(EXECUTION_STATE_ENVIRONMENT)
 
 class EvidenceError(ValueError):
     """Raised when evidence cannot be captured safely."""
-
-
-class EvidenceProcessCleanupError(EvidenceError):
-    """Command process custody is unresolved; its namespace must be retained."""
-
-
-def _execution_deadline(timeout_seconds: object, cleanup_seconds: object) -> tuple[int, int]:
-    try:
-        execution = bounded_execution_seconds(timeout_seconds, field='gate execution timeout')
-        cleanup = bounded_execution_seconds(cleanup_seconds, field='gate cleanup timeout')
-    except CIGraphError as exc:
-        raise EvidenceError(str(exc)) from exc
-    if os.name != 'posix' or not all(hasattr(os, name) for name in ('waitid', 'WNOWAIT', 'WEXITED', 'WNOHANG')):
-        raise EvidenceError('evidence command containment requires POSIX wait-without-reap support')
-    if sys.platform != 'linux' or not Path('/proc/self/stat').is_file():
-        raise EvidenceError('evidence command process-group inventory requires qualified Linux procfs')
-    if signal.getsignal(signal.SIGCHLD) != signal.SIG_DFL:
-        raise EvidenceError('evidence command custody requires default SIGCHLD ownership')
-    try:
-        raw = Path('/proc/self/stat').read_text()
-        fields = raw[raw.rfind(')') + 2:].split()
-        if (int(raw.split(' ', 1)[0]) != os.getpid() or int(fields[2]) != os.getpgrp()
-                or int(fields[3]) != os.getsid(0)):
-            raise EvidenceError('Linux procfs does not identify this execution namespace')
-    except (OSError, ValueError, IndexError) as exc:
-        raise EvidenceError('Linux execution namespace inventory is unavailable') from exc
-    return execution, cleanup
 
 
 def _sha256(path: Path) -> str:
@@ -108,14 +76,20 @@ def _run(
     cwd: Path,
     env: dict[str, str] | None = None,
     timeout_seconds: int,
-    cleanup_timeout_seconds: int = LEGACY_GATE_CLEANUP_SECONDS,
 ) -> subprocess.CompletedProcess[str]:
-    timeout_seconds, cleanup_timeout_seconds = _execution_deadline(timeout_seconds, cleanup_timeout_seconds)
     try:
-        return run_owned_command(command, cwd=cwd, env=env, timeout_seconds=timeout_seconds,
-                                 cleanup_seconds=cleanup_timeout_seconds)
-    except OwnedProcessError as exc:
-        raise EvidenceProcessCleanupError('child cleanup could not be authenticated') from exc
+        return subprocess.run(
+            command,
+            cwd=cwd,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=timeout_seconds,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return subprocess.CompletedProcess(
+            command, 126, "", f"bcf execution infrastructure failure: {exc}"
+        )
 
 
 def _execution_cwd(worktree: Path, contract: dict[str, Any]) -> Path:
@@ -130,15 +104,16 @@ def _execution_cwd(worktree: Path, contract: dict[str, Any]) -> Path:
 
 
 def _interpreter_metadata(
-    python_executable: Path, runtime_env: dict[str, str],
-    cleanup_timeout_seconds: int = LEGACY_GATE_CLEANUP_SECONDS,
+    python_executable: Path, runtime_env: dict[str, str]
 ) -> dict[str, str]:
     try:
-        version = _run(
+        version = subprocess.run(
             [str(python_executable), "-c", "import platform; print(platform.python_version())"],
-            cwd=Path.cwd(), env=runtime_env,
-            timeout_seconds=INTERPRETER_PROBE_TIMEOUT_SECONDS,
-            cleanup_timeout_seconds=cleanup_timeout_seconds,
+            env=runtime_env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
         )
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise EvidenceError(f"selected Python executable is not runnable: {exc}") from exc
@@ -234,8 +209,7 @@ def _execution_env(
     return env, {
         "declared": dict(sorted((str(key), str(value)) for key, value in configured.items())),
         "required_present": sorted(str(name) for name in required),
-        "selected_interpreter": _interpreter_metadata(python_executable, env,
-            contract.get("execution_cleanup_timeout_seconds", LEGACY_GATE_CLEANUP_SECONDS)),
+        "selected_interpreter": _interpreter_metadata(python_executable, env),
     }
 
 
@@ -258,11 +232,6 @@ def _run_with_execution_state(
 ]:
     """Run once with exact execution-state allocation and terminal retirement."""
 
-    _execution, cleanup_seconds = _execution_deadline(
-        contract['execution_timeout_seconds'],
-        contract.get('execution_cleanup_timeout_seconds', LEGACY_GATE_CLEANUP_SECONDS),
-    )
-
     if not require_state:
         env, metadata = _execution_env(
             worktree, contract, python_executable, job_environment=job_environment
@@ -273,7 +242,6 @@ def _run_with_execution_state(
                 cwd=_execution_cwd(worktree, contract),
                 env=env,
                 timeout_seconds=contract["execution_timeout_seconds"],
-                cleanup_timeout_seconds=cleanup_seconds,
             ),
             env,
             metadata,
@@ -288,7 +256,6 @@ def _run_with_execution_state(
         execution_id=execution_id,
         invocation=contract["invocation"],
     )
-    cleanup_unproven = False
     try:
         env, metadata = _execution_env(
             worktree,
@@ -302,12 +269,7 @@ def _run_with_execution_state(
             cwd=_execution_cwd(worktree, contract),
             env=env,
             timeout_seconds=contract["execution_timeout_seconds"],
-            cleanup_timeout_seconds=cleanup_seconds,
         )
-    except EvidenceProcessCleanupError:
-        cleanup_unproven = True
-        raise
     finally:
-        if not cleanup_unproven:
-            state_report = retire_execution_state(lease)
+        state_report = retire_execution_state(lease)
     return result, env, metadata, state_report
