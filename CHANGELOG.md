@@ -6,13 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+Release target: `2.3.6`
+
 ### Fixed
 
 - Close installer dependencies over the selected Python, platform, groups and
   extras, and validate the exact installed dependency set before adoption.
 - Restore the maintained 2.3.6 source through forward history for qualification
   by the existing exact-main release path; preserve 2.5 development for return
-  after publication.
+  until separate RC readiness and governed integration.
 
 ## [2.3.5] - 2026-10-16
 

@@ -20,3 +20,37 @@ workflow_ownership: Generated workflows and authority pins retained from current
 release: Distinct unpublished236 through existing ordinary1.1 exact-main path; no dual-subject native protocol activated.
 restoration: After qualified236 immutable publication, restore250 development through a fresh governed forward change, preserving both histories.
 remaining: Actual effective controller resolution, committed target compatibility, canonical mirrors/pins, required gates, fresh assets and protected publication/readback.
+
+submission_4911:
+  result: Failed local test producer;2447 passed and2 failed, no push or PR.
+  failure_bundle: f101f3a09997145001e6e05cfdefac1e28ff1229f576f7d79440b90eadfd2b65
+  failures: Missing236 changelog target; lossless gate renderer104006 bytes exceeds existing103424 limit.
+correction_scope:
+  bounded_context: profile_projection
+  layer: tooling_renderer_and_governance_docs
+  side: pure_projection
+  targets: profile_yaml.py and canonical mirrors, CHANGELOG, restoration audit/MEMORY/spec/plan.
+  decision: Use existing SafeDumper ANCHOR_TEMPLATE with short deterministic names; preserve decoded YAML and idempotence, do not raise budget.
+  tests: Existing full gate render/type/determinism controls plus generated version surfaces.
+  forbidden: Contract value changes, context budget increases, native1.2 backport, source changes during active transaction.
+operator_plan_update:
+  bus: [16968,16969,16970]
+  supersedes: Immediate postrelease250 restoration described above.
+  decision: If ordinary236 release succeeds, retain working main/release machinery;250 continues independently until closer RC and separate governed readiness.
+controller_observation:
+  source_repo: maintenance/release-stream-contract at fe056ed1442cd66134e69e2f4cc806328f656576
+  execution: Existing retained F6 interpreter, bounded600s GitHubAPI resolver; first120s and180s attempts failed, no fallback.
+  result: Full provider_transition resolution succeeded with18 authenticated active transition IDs.
+  subject: 100dc2c0b618dc4a9079f90e81a32c86c8bab0fe
+  tree: b18eddf2dc35111e9814e4c8c92c3039da9c685a
+  run: '39063214914/1'
+  artifact: '12112780895'
+  provider_digest: sha256:b8f535f24a690e14f8f3cae649e66929ff08dcec87c894421962afb1c04e2f36
+  wheel_sha256: 6f7f1e73b69cb004347fddf0e9d5a56dbfcba9e1730164be691e23f67a47c3a8
+  classifier: Actual100dc controller against committed restoration4911 returns pending_rotation, exit0; not incompatible or current.
+  transcript: AgentBus16963 and retained tool session51983 output.
+
+focused_correction_result:
+  tests: Four profile-render/version controls passed under retained F6, no skips.
+  rendering: Existing SafeDumper anchor template a%d yields102432 bytes versus103424 unchanged limit; decoded current contract, scalar types, determinism and idempotence pass.
+  qualification: Component checks only; full canonical resubmission still required.

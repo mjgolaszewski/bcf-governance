@@ -18,6 +18,8 @@ class _SharedScalar(str):
 class _ProfileSurfaceDumper(yaml.SafeDumper):
     """Safe dumper with deterministic compact control rendering."""
 
+    ANCHOR_TEMPLATE = "a%d"
+
     def ignore_aliases(self, value: Any) -> bool:
         return False if isinstance(value, _SharedScalar) else super().ignore_aliases(value)
 
