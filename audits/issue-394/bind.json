@@ -1,7 +1,7 @@
 {
   "authority": false,
   "bcf_receipt": false,
-  "status": "SOURCE_AND_TEST_DETECTOR_SCOPED_PASS_FURTHER_QUALIFICATION_PENDING",
+  "status": "BOUNDED_SOURCE_INSTALLED_CONTROLS_PASS_FOUNDATION_OPEN",
   "workitems": [
     "foundation.composition",
     "foundation.conformance",
@@ -98,6 +98,111 @@
       "skips": 0,
       "elapsed_seconds": 3.172,
       "allocated_output_bytes": 315392
+    },
+    {
+      "label": "canonical manifests",
+      "allocation": 18605,
+      "independent_cursor": 18607,
+      "subject": {
+        "commit": "490b9111effe23b16e0631bf7c8d5bd10c6dde1b",
+        "tree": "904f65e61c3f4a2020e03cad48082268dc6a9e36"
+      },
+      "plan_sha256": "e129050078d4990d6fb0008eaeab66701444cdc7486957dc565a8d8e2d2f28f2",
+      "terminal_sha256": "a2c0c9c65978bdeaa6d3519cdd0bb112bf2c9188150afefb9af0e467e8f1c748",
+      "independent_readback_sha256": "7ff3b85c069534e1c5366771fe7319612fc603327728a8aba27034eccac1d934",
+      "raw_exit": 0,
+      "elapsed_seconds": 56.505,
+      "allocated_output_bytes": 331776
+    },
+    {
+      "label": "11 architecture and pack controls",
+      "allocation": 18608,
+      "independent_cursor": 18611,
+      "subject": {
+        "commit": "2a671a794929fe2717df250d7d5bffcd1759251b",
+        "tree": "8643f535b481478446a6c32d0f921f7bd2437a92"
+      },
+      "plan_sha256": "f511ec1ae79eb6de3ccdc09239acaeeecb5694e6e0bc0fd59c53fa94d852acf9",
+      "terminal_sha256": "c36dc8265fd92fd8ae71633693140b8b98d25b72831fbe453e5a48a4da9e4691",
+      "independent_readback_sha256": "be80a515eacaee4eb70affe0ef098c209c0b9216e1c452f960b015a74a9a56bd",
+      "raw_exit": 0,
+      "elapsed_seconds": 140.413,
+      "allocated_output_bytes": 344064
+    },
+    {
+      "label": "canonical semantic lock",
+      "allocation": 18612,
+      "independent_cursor": 18616,
+      "subject": {
+        "commit": "2a671a794929fe2717df250d7d5bffcd1759251b",
+        "tree": "8643f535b481478446a6c32d0f921f7bd2437a92"
+      },
+      "plan_sha256": "60ebe4ed3946f5be5e2221c42bc0d8b7e27032dd4aeef132cef0b84972faa84f",
+      "terminal_sha256": "ea47021fa6e147f0732ea4eac52b860e12162f5a263e1722c563db24ffd815ac",
+      "independent_readback_sha256": "a89ae28c0199b597f83dc5cb5999e50bf3d142c0e304539d47522743f7fa7473",
+      "raw_exit": 0,
+      "elapsed_seconds": 160.342,
+      "allocated_output_bytes": 315392
+    },
+    {
+      "label": "full semantic and all10 manifests, lint/compile-only/pack",
+      "allocation": 18617,
+      "independent_cursor": 18620,
+      "subject": {
+        "commit": "41e287f76527e2ff98bcb7125059b258a99a7645",
+        "tree": "82e88c7ea34c70caf58a4979aa5d79921cc2efbd"
+      },
+      "plan_sha256": "aacdee70079384c5af33aecb10b9af69d0f4be9cdbff4dfe761c94e8dd769e85",
+      "terminal_sha256": "54146b9bea84f269310e7c3aa17db9dd43762e58195858f3f1d990b0eb24ff0c",
+      "independent_readback_sha256": "3ca92ac883bfad0aaf7c277ab23e4e3bfec72ce26e053515dfc483d1f7a113c0",
+      "raw_exit": 0,
+      "elapsed_seconds": 175.663,
+      "allocated_output_bytes": 630784
+    },
+    {
+      "label": "exact development source/wheel/sdist mapping",
+      "allocation": 18621,
+      "independent_cursor": 18624,
+      "subject": {
+        "commit": "41e287f76527e2ff98bcb7125059b258a99a7645",
+        "tree": "82e88c7ea34c70caf58a4979aa5d79921cc2efbd"
+      },
+      "plan_sha256": "0854a8300e6eef93c86251a5fea0ae2c4f74c86da6ef3a84fe6ef375b1333c59",
+      "terminal_sha256": "4e13cc053cbf2800230f074479915d8337293aa90062b91135d80c1984349cf5",
+      "independent_readback_sha256": "f51ce1b9635d4c2b81a4a5203c9da8bf835ede0fe7d1a545364db5241943c41b",
+      "raw_exit": 0,
+      "elapsed_seconds": 16.486,
+      "allocated_output_bytes": 93011968
+    },
+    {
+      "label": "existing offline archive/installed runtime matrix",
+      "allocation": 18625,
+      "independent_cursor": 18628,
+      "subject": {
+        "commit": "41e287f76527e2ff98bcb7125059b258a99a7645",
+        "tree": "82e88c7ea34c70caf58a4979aa5d79921cc2efbd"
+      },
+      "plan_sha256": "ffb9e42974fb9555562e224fafac4d51ced12758ba6b714dde7c318fd9611a6d",
+      "terminal_sha256": "0d94dd88b30fddb45466bd2eaa4fce010db4c8fe79f51f84c82b35a5471389f4",
+      "independent_readback_sha256": "3f3209e21dcef9a75def85b20e5912de4f6fd2672ff39c3f5bf0962a7f02712b",
+      "raw_exit": 0,
+      "elapsed_seconds": 183.687,
+      "allocated_output_bytes": 503808
+    },
+    {
+      "label": "six SDK-absent fresh/upgrade facade controls plus19 source/detectors",
+      "allocation": 18629,
+      "independent_cursor": 18632,
+      "subject": {
+        "commit": "649951f0912d980714db16f1825bfcfb67ac9831",
+        "tree": "a9768a88f00062a369f0d728b175a55474114d43"
+      },
+      "plan_sha256": "c923ff36390b476e4407901b1b53f08bebe724be21fafafa0e83045789a4b618",
+      "terminal_sha256": "689c448267ed8c3178f905dfd5d83c53c451193457dfe0dca12be8b8156f047b",
+      "independent_readback_sha256": "0639211c02f43d0d9d85fcf16f3372a09a5178f5542285b875eff7869ba996d9",
+      "raw_exit": 0,
+      "elapsed_seconds": 49.245,
+      "allocated_output_bytes": 6651904
     }
   ],
   "projection": {
@@ -159,5 +264,18 @@
     "P32 remains active, P33-P35 dormant; source behavior and test detector results do not authorize phase, suppression, provider-main or release progress.",
     "Performance targets remain unapproved; historical unmatched timings do not establish p50/p95 claims."
   ],
-  "next": "Generate exact canonical test manifests, run required architecture/semantic/package and supported installed consumers, retain negative history, then continue complete foundation populations through existing owners."
+  "next": "Normalize current manifests through existing owner, qualify schema-first admission before collection/allocation, and finish complete foundation populations/deadlines/adopter and matched baseline scope. No P33 activation or acceptance advance.",
+  "installed_contract": "audits/issue-394/installed-public-entrypoint-contract.json",
+  "qualification_disposition": {
+    "historical_pending_residuals": "Earlier entries retained verbatim; dispositions below apply only to the exact recorded subjects.",
+    "semantic": "41e287f7 fresh conformant/zero blocking violations, two dynamic rows retained; all10 manifests6121nodes; lint and compile-only type gate pass.",
+    "architecture": "2a671a79 exact11architecture/pack controls pass.",
+    "archives": "41e287f7 development only: all2235sdist sources and796wheel mappings independently checked; existing runtime1.1 matrix11commands0, not live adopters or release custody.",
+    "installed": "649951f0 six SDK-absent fresh/upgrade public facade and exact source-movement guards pass plus15source/4detectors; no production change after41e287f7, later test/record bytes are not relabeled as those archives.",
+    "remaining": [
+      "Canonical six-node manifest normalization and record schema/exposure checks for current subject.",
+      "Security, full lifecycle/effect/native/external/protected-context populations, actual adopter assurance, composed deadlines and approved matched performance targets remain open.",
+      "Versioned schema-first reference admission remains unimplemented."
+    ]
+  }
 }
