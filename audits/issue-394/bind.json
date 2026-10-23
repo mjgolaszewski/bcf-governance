@@ -278,6 +278,18 @@
       "Versioned schema-first reference admission remains unimplemented."
     ]
   },
+  "manifest_normalization_disposition": {
+    "authority": false,
+    "subject": "282702ee318e95aebfcfe138cfdebffaa57e8e21",
+    "allocation": 18633,
+    "independent_handback": 18644,
+    "plan_sha256": "8ccacd939dae166465226883a4da8e0ed17fe7e8cc20c65cb04eeec58b51fcac",
+    "terminal_sha256": "89da9ee97782d1e51ebae9af8c55bbde767db728f6f46c5cdb5719544a64fa19",
+    "result": "Six actual stages zero: authored workplan schema, test manifest, contract manifest, pack parity, governance and exposure;2237historical/generated pins checked. Only primary test manifest changed, six installed facade nodes added and none removed; contract manifest unchanged.",
+    "adopted_commit": "323947e3fbd6062f5055187658bb041b59a3d22c",
+    "disposition": "Earlier six-node normalization pending wording is historical for that bounded subject. Later schema/custody fixtures and contracts are distinct unrun subjects, not covered by this proof or prior exact development archives.",
+    "remaining": "Fresh causal baselines, implementation and canonical manifest normalization for20schema/9explicit-custody cases; current full governance, architecture, semantic, security, installed-consumer and complete foundation qualification remain pending. Recovery clear-runway retained."
+  },
   "schema_first_admission_followup": {
     "authority": false,
     "status": "CONTRACT_AND_11_TESTS_AUTHORED_UNRUN",
