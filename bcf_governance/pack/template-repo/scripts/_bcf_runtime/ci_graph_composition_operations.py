@@ -11,16 +11,18 @@ from typing import Any
 from .ci_graph_errors import CIGraphError
 from .semantic_authority_contracts import (
     SemanticAuthorityError, load_committed_application_operations,
-    _required_operation_population,
+    _required_operation_population, _discover_population,
 )
 
 
 def capture_public_operation_bindings(
-    repo_root: Path, *, policy_subject, required_relationships, relationship_roots,
+    repo_root: Path, *, policy_subject, runtime_subject, required_relationships, relationship_roots,
 ):
     """Reject policy/crosswalk contradictions before expensive source discovery."""
     if not isinstance(policy_subject, Mapping) or set(policy_subject) != {"commit_sha", "tree_sha"}:
         raise CIGraphError("public operation binding requires exact consumer policy subject")
+    if not isinstance(runtime_subject, Mapping) or set(runtime_subject) != {"commit_sha", "tree_sha"}:
+        raise CIGraphError("public operation binding requires exact runtime source subject")
     if not isinstance(required_relationships, Mapping):
         raise CIGraphError("public operation binding requires independent relationships")
     bindings = dict(required_relationships)
@@ -36,25 +38,41 @@ def capture_public_operation_bindings(
         raise CIGraphError(f"public operation policy capture failed: {exc}") from exc
     if bindings.keys() != {operation["id"] for operation in registry.operations}:
         raise CIGraphError("public operation binding omits or invents required operations")
+    try:
+        populations = {row["id"]: _discover_population(repo_root, row, source_subject=dict(runtime_subject))
+                       for row in registry.populations}
+    except (SemanticAuthorityError, OSError, ValueError) as exc:
+        raise CIGraphError(f"public operation catalog capture failed: {exc}") from exc
+    classified = set()
     for operation in registry.operations:
-        if any(not set(operation["entrypoints"]) <= relationship_roots[pair]
-               for pair in bindings[operation["id"]]):
-            raise CIGraphError("public operation entrypoint is absent from its lifecycle relationship")
+        slot = (operation["population"], operation["population_key"])
+        actual = populations[slot[0]].get(slot[1])
+        if slot in classified or actual is None or operation["entrypoints"] != [actual]:
+            raise CIGraphError("public operation entrypoint contradicts its exact source catalog")
+        classified.add(slot)
+    if classified != {(population, key) for population, entries in populations.items() for key in entries}:
+        missing = sorted(f"{population}:{key}" for population, entries in populations.items()
+                         for key in entries if (population, key) not in classified)
+        raise CIGraphError("unclassified public application operations: " + ", ".join(missing))
     metadata = dict(
         operations_checked=len(registry.operations), policy_subject=identity["subject"],
         policy_blob_oid=identity["blob_oid"], registry_sha256=identity["registry_sha256"],
         bindings=tuple(sorted((key, tuple(sorted(pairs))) for key, pairs in bindings.items())),
     )
-    return registry, metadata
+    return registry, metadata, {pair: frozenset(roots) for pair, roots in relationship_roots.items()}
 
 
 def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any], capture) -> dict[str, Any]:
     """Reuse one local factory capture; no caller-supplied capture ingress."""
-    registry, metadata = capture
+    registry, metadata, relationship_roots = capture
     try:
         population = _required_operation_population(repo_root, registry.raw, inventory, metadata["registry_sha256"])
     except SemanticAuthorityError as exc:
         raise CIGraphError(f"public operation source conformance failed: {exc}") from exc
+    relationships = dict(metadata["bindings"])
+    for operation, _, runtime_function in population["entrypoint_bindings"]:
+        if any(runtime_function not in relationship_roots[pair] for pair in relationships[operation]):
+            raise CIGraphError("public operation runtime function is absent from its lifecycle relationship")
     return dict(metadata, **population)
 
 

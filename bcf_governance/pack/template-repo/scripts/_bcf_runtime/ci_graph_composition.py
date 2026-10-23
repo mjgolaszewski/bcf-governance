@@ -589,10 +589,11 @@ def validate_reconstructed_lifecycle_bindings(
             repo_root, compiled=compiled, expected_source=expected_source,
             required_bindings=required_schema_bindings, schema_catalog=required_schema_catalog,
         )
+    subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
     capture = None
     if operation_policy_subject is not None or required_public_operation_relationships is not None:
         capture = capture_public_operation_bindings(
-            repo_root, policy_subject=operation_policy_subject,
+            repo_root, policy_subject=operation_policy_subject, runtime_subject=subject,
             required_relationships=required_public_operation_relationships,
             relationship_roots={pair: _binding_operation_roots(contract) for pair, contract in reachable.items()},
         )
@@ -600,7 +601,6 @@ def validate_reconstructed_lifecycle_bindings(
         from .ci_graph_composition_operations import validate_effect_binding_contexts
 
         validate_effect_binding_contexts(required_effect_bindings, capture, compiled)
-    subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
     try:
         inventory = discover_python_source(
             repo_root, source_subject=subject, call_contracts_version="1.0",

@@ -17,6 +17,7 @@ from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
 from .semantic_ownership_registry import Registry, load_registry
 from .semantic_operation_python import (
     _module_aliases, _expression_symbol, _function_for_entrypoint,
+    _operation_source_text, _inventory_source_subject,
 )
 from .semantic_operation_typescript import (
     TypeScriptOperationPopulationError,
@@ -361,13 +362,13 @@ def _validate_secondary_coverage(
         )
 
 
-def _python_mapping_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
+def _python_mapping_population(repo_root: Path, population: dict[str, Any], *, source_subject=None) -> dict[str, str]:
     source = _safe_path(repo_root, population["source"], context=f"population {population['id']} source")
     try:
-        tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(population["source"]))
+        tree = ast.parse(_operation_source_text(repo_root, source, source_subject), filename=str(population["source"]))
     except (OSError, UnicodeError, SyntaxError) as exc:
         raise SemanticAuthorityError(f"population {population['id']} cannot parse source: {exc}") from exc
-    aliases = _module_aliases(repo_root, tree, source)
+    aliases = _module_aliases(repo_root, tree, source, source_subject=source_subject)
     target_name = str(population["symbol"])
     found: list[ast.Dict] = []
     for node in tree.body:
@@ -396,9 +397,9 @@ def _python_mapping_population(repo_root: Path, population: dict[str, Any]) -> d
     return result
 
 
-def _python_decorator_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
+def _python_decorator_population(repo_root: Path, population: dict[str, Any], *, source_subject=None) -> dict[str, str]:
     source = _safe_path(repo_root, population["source"], context=f"population {population['id']} source")
-    tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(population["source"]))
+    tree = ast.parse(_operation_source_text(repo_root, source, source_subject), filename=str(population["source"]))
     allowed = set(population.get("decorators", []))
     found: dict[str, str] = {}
     for node in tree.body:
@@ -418,9 +419,9 @@ def _python_decorator_population(repo_root: Path, population: dict[str, Any]) ->
     return found
 
 
-def _python_exports_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
+def _python_exports_population(repo_root: Path, population: dict[str, Any], *, source_subject=None) -> dict[str, str]:
     source = _safe_path(repo_root, population["source"], context=f"population {population['id']} source")
-    tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(population["source"]))
+    tree = ast.parse(_operation_source_text(repo_root, source, source_subject), filename=str(population["source"]))
     explicit: list[str] | None = None
     definitions: list[str] = []
     for node in tree.body:
@@ -445,10 +446,10 @@ def _python_exports_population(repo_root: Path, population: dict[str, Any]) -> d
     return {name: f"{population['source']}::{name}" for name in names}
 
 
-def _yaml_population(repo_root: Path, population: dict[str, Any]) -> dict[str, str]:
-    value: Any = _load_yaml(
-        _safe_path(repo_root, population["source"], context=f"population {population['id']} source")
-    )
+def _yaml_population(repo_root: Path, population: dict[str, Any], *, source_subject=None) -> dict[str, str]:
+    source = _safe_path(repo_root, population["source"], context=f"population {population['id']} source")
+    value: Any = _load_yaml(source) if source_subject is None else load_unique_mapping_text(
+        _operation_source_text(repo_root, source, source_subject))
     for component in population.get("catalog_path", []):
         if not isinstance(value, dict) or component not in value:
             raise SemanticAuthorityError(f"population {population['id']} catalog path is unresolved")
@@ -474,8 +475,10 @@ def _typescript_population(repo_root: Path, population: dict[str, Any], inventor
         raise SemanticAuthorityError(str(exc)) from exc
 
 
-def _discover_population(repo_root: Path, population: dict[str, Any], inventory: dict[str, Any] | None = None) -> dict[str, str]:
+def _discover_population(repo_root: Path, population: dict[str, Any], inventory: dict[str, Any] | None = None, *, source_subject=None) -> dict[str, str]:
     if population["adapter"] == "typescript_exports":
+        if source_subject is not None:
+            raise SemanticAuthorityError("committed Python operation population cannot authenticate TypeScript source")
         return _typescript_population(repo_root, population, inventory)
     adapters = {
         "python_mapping": _python_mapping_population,
@@ -484,7 +487,10 @@ def _discover_population(repo_root: Path, population: dict[str, Any], inventory:
         "canonical_yaml_catalog": _yaml_population,
         "typescript_exports": _typescript_population,
     }
-    return adapters[str(population["adapter"])](repo_root, population)
+    try:
+        return adapters[str(population["adapter"])](repo_root, population, source_subject=source_subject)
+    except (OSError, UnicodeError, SyntaxError, ValueError) as exc:
+        raise SemanticAuthorityError(f"population {population['id']} source capture failed: {exc}") from exc
 
 
 def _validate_operation_structure(
@@ -726,9 +732,17 @@ def _required_operation_population(
             for port in row["effect_ports"]
         ))) for row in observations
     ))
+    functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
+    bindings = []
+    for row in observations:
+        function = _function_for_entrypoint(repo_root, row["entrypoint"], functions,
+                                           source_subject=_inventory_source_subject(inventory))
+        if function is None:
+            raise SemanticAuthorityError("public operation runtime entrypoint moved after validation")
+        bindings.append((row["operation"], row["entrypoint"], str(function["symbol"])))
     return dict(authority=False, execution_qualified=False,
                 scope="protected_registry_public_operations_only",
-                registry_sha256=registry_sha256, operations=rows)
+                registry_sha256=registry_sha256, operations=rows, entrypoint_bindings=tuple(sorted(bindings)))
 
 
 def required_committed_application_operation_population(
