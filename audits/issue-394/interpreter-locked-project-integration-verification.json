@@ -1,0 +1,196 @@
+{
+  "authority": false,
+  "status": "BOUNDED_LOCKED_PROJECT_SOURCE_PRIVATE_CONSUMER_AND_SEMANTIC_QUALIFIED",
+  "source_commit": "22d002dad4abbbbf50d37c16df9e04c0c33b89b1",
+  "source_tree": "937fbb8badd4ef1d863bb01c3e5c7f2253c74cb5",
+  "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "contract": "audits/issue-394/interpreter-locked-project-integration-contract.json",
+  "implementation": {
+    "owners": [
+      "interpreter_locked_project",
+      "interpreter_environment",
+      "interpreter_environment_plan",
+      "interpreter_contract_projection"
+    ],
+    "schema": "schemas/gate-contracts.schema.json",
+    "runtime_calls": "Three new probes consume existing run_admitted_command with30second per-probe bounds; original four materialization/probe admission calls preserved. Complete lifecycle/deadline composition remains open.",
+    "source_freshness": "Existing post-pip and pre-publication guards retained; locked-source compile reauthenticates three authored inputs.",
+    "legacy_behavior": "Existing dependency-source/project and immutable-plan behavior retained by full source cohort.",
+    "registry_bytes": 103415,
+    "registry_budget_bytes": 103424
+  },
+  "source_corpus": {
+    "subject": "4bc16e274072d0595871d39d3e2754399b24b4c0",
+    "cases": 133,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "independent_readback": 17697
+  },
+  "native_and_consumers": {
+    "allocation": 17725,
+    "subject": "22d002dad4abbbbf50d37c16df9e04c0c33b89b1",
+    "actual_stage_codes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "elapsed_seconds": 63.888,
+    "baseline_cases": 8,
+    "mutants": 4,
+    "actual_mutant_exit_codes": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "exact_failed_node_counts": [
+      3,
+      3,
+      1,
+      1
+    ],
+    "mutant_errors": 0,
+    "mutant_skips": 0,
+    "installed_cases": 2,
+    "consumer_modes": [
+      "fresh lite",
+      "same-candidate upgrade lite"
+    ],
+    "consumer_sdk": "absent",
+    "pip_inventory_effects": "simulated in publication probes; no actual locked dependency installation claim",
+    "installed_assertions": [
+      "Five exact private module origins",
+      "Closed selected uv dependency graph and canonical profile projection",
+      "Moving uv.lock rejected after derivation",
+      "Six existing publication movement cases per consumer",
+      "Profile YAML semantic and fixed-point roundtrip"
+    ],
+    "pack_parity": "passed",
+    "terminal_sha256": "a62eb8f0d8be78796850a5bef599c2fa58d9d0aed5b896f3e91a01eaf92145b4",
+    "native_results_sha256": "d42c7bda1b7f8bc2e9d3b286b8bd5036092d7b74418c3baf9c92f10edcf591a2",
+    "independent_readback": 17740
+  },
+  "retained_negatives": [
+    {
+      "allocation": 17677,
+      "subject": "dc5469239d8b8b785cca768fa20c268e67f7c070",
+      "cases": 1,
+      "failures": 1,
+      "cause": "Old public derive rejects with actual InterpreterEnvironmentError: interpreter contract is invalid.",
+      "independent": 17695
+    },
+    {
+      "allocation": 17683,
+      "cases": 133,
+      "passed": 131,
+      "failed": 2,
+      "cause": "Missing locked_project closed-tuple dispatch in immutable plan; corrected with one existing source-kind branch."
+    },
+    {
+      "allocation": 17701,
+      "actual_stage_codes": [
+        0,
+        0,
+        0,
+        0,
+        1
+      ],
+      "unstarted": [
+        "exposure"
+      ],
+      "cause": "Registered new mutation matched3sites; validator required exactly1.",
+      "independent": 17708
+    }
+  ],
+  "generation": {
+    "subject": "f979b36315088ab989abc523d8370af32639d0db",
+    "generated_commit": "9f04cdb1",
+    "allowed_paths": 16,
+    "new_private_module_paths": 2,
+    "post_source_files": 2221,
+    "manifest_additions_per_gate": 34,
+    "manifest_deletions": 0,
+    "independent": 17708
+  },
+  "residuals": [
+    "Exact new source/wheel/sdist distribution and full installed-runtime qualification",
+    "Exact new source/wheel/sdist and installed-runtime distribution qualification",
+    "Provider-selected live adopter and complete profile/upgrade/opt-out/rollback matrix",
+    "Actual selected locked dependency installation on isolated adopters",
+    "Complete runtime effect/lifecycle and outer deadline conformance",
+    "Matched baseline cohorts and approved separate pipeline targets",
+    "All82 whole requirements remain open;38 existing slice objects unchanged;P32active/P33-P35dormant"
+  ],
+  "acceptance_advance": false,
+  "main_machinery_changed": false,
+  "architecture": {
+    "subject": "22d002dad4abbbbf50d37c16df9e04c0c33b89b1",
+    "cases": 11,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "elapsed_seconds": 144.785,
+    "terminal_sha256": "43e95b5fd6be983d72224015039783eb5461b52fbbfa4603747f52e16a42824f",
+    "xml_sha256": "250cb10216f97ce30d280bf32e4e7895952c4160085917329627bca4853cbb9d",
+    "independent_readback": 17749
+  },
+  "semantic_lock": {
+    "subject": "22d002dad4abbbbf50d37c16df9e04c0c33b89b1",
+    "allocation": 17761,
+    "actual_stage_codes": [
+      0,
+      0,
+      0
+    ],
+    "elapsed_seconds": 164.925,
+    "projection_outputs": 120,
+    "actual_source_byte_changes": 0,
+    "generated_commit": null,
+    "independent_readback": 17769,
+    "terminal_sha256": "4cf73a41ffb2918fb85c03453603d4e83238fd95c605affc8e44d0ddd90e407d",
+    "scope": "Existing declared semantic-lock owner is idempotent; full semantic/current runtime conformance is separate."
+  },
+  "semantic": {
+    "allocation": 17781,
+    "report_sha256": "b3934a75461733e29369e1da32dd0edaf9b336342d44bee3735ae73591ae809d",
+    "terminal_sha256": "cff67124d1ca209ae9272e12edc97b59389ee0b6121e77e75d31080bedbf6c3b",
+    "registry_families": 22,
+    "unresolved_dynamic_flows": 2,
+    "subject": {
+      "commit_sha": "22d002dad4abbbbf50d37c16df9e04c0c33b89b1",
+      "discovery_preceded_registry_load": true,
+      "tree_sha": "937fbb8badd4ef1d863bb01c3e5c7f2253c74cb5",
+      "workspace_source_sha256": "3e8467eb6b9cb9deab8825185a5e27679a29347f7be12fa0160749ffb4aadb1e"
+    },
+    "actual_stage_codes": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "elapsed_seconds": 172.635,
+    "verdict": "conformant",
+    "blocking_violations": 0,
+    "all_manifest_gates": 10,
+    "declared_manifest_nodes": 6052,
+    "lint": "passed existing gate",
+    "typecheck": "compile-only gate passed; no strict type-soundness claim",
+    "pack_parity": "passed",
+    "independent_readback": 17788
+  },
+  "prior_admission_blocker": "Attempt six accounted for by PR431/main100dc noncertifying PR progress; no duplicate train. Bounded publication/renderer source, private/installed, native, architecture/semantic and exact development archive evidence are retained independently. Maintained2.3.6 locked-project integration, full profile/adopter/lifecycle conformance, composed deadlines and approved matched measurements remain open; all82whole requirements unchanged.",
+  "independent_receipt_sha256": {
+    "17695": "c623e2da1f4b7c8a340635cc1c458195957501582b4d1b8a61c60ef129c8fbd5",
+    "17697": "e9cac51f9001c3043f1672f68d7259187d233621d8274ecd7b0ed52b13dd1da9",
+    "17708": "d724159bd625bfb097edf9ad48931cade352de981bc5b64d178a57c13c8f0853",
+    "17740": "0d8a99c2ef4948651e0ce0ca33f6aa2e81c5d767142b5d597526af9d04e1d606",
+    "17749": "132ec6678540db0a1b50facade18d33239d854f086dda87b31a116cff3652843",
+    "17769": "31ceddc8a88f0e1e9581c34829d02fb61164b9d96bcd565add409eee917e875c",
+    "17788": "1515d58c6dfd002dc5e615deaf78cbb531ecc46fe2691de59c9e3a23cd130051"
+  }
+}
