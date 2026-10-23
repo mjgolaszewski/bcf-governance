@@ -1,6 +1,6 @@
 {
   "authority": false,
-  "status": "RENDERER_AND_DEPLOYED_CONSUMERS_QUALIFIED_REMAINING_GATES_PENDING",
+  "status": "BOUNDED_RENDERER_PUBLICATION_AND_DISTRIBUTION_QUALIFIED",
   "source": "df96363f5962799ec1ced71f542fa61aef3be5b9",
   "actual_cases": 16,
   "passed": 15,
@@ -22,10 +22,12 @@
     "source-pins.json": "a64d8aec9c6314a12bb7518faf93537f147ddd06fbc3eb28bf60020057de0de8"
   },
   "limits": [
-    "Retained predecessor RED remains negative",
-    "Architecture, semantic, registered native controls and exact archive consumers remain required",
-    "Compiled type gate is not strict mypy; installed dependency operations are simulated",
-    "No phase closure, performance target, provider acceptance or release claim"
+    "Authored bounded correction complete; verified/closed phase and release truth remain computed BCF authority, not this report",
+    "Two dynamic semantic-flow observations and every original negative remain retained",
+    "Exact archive evidence applies to recorded source and bytes; later audit commits are not those built bytes",
+    "Fresh/upgrade direct publication tests simulate dependency operations; exact archives add fresh lite SDK-absent consumers with real mixed-toolchain fixtures",
+    "Maintained2.3.6 locked-project integration, full profile/upgrade/rollback/provider-selected live adopters, lifecycle conformance and composed deadline coverage remain open",
+    "No approved performance targets, whole requirement advances, P33 activation or immutable2.5 custody claim"
   ],
   "acceptance_advance": false,
   "green": {
@@ -50,5 +52,121 @@
     "source_pins_sha256": "c1b886e45000df28c6985edb69d9b6e16a39e276260330c97206976a43e7c7fe",
     "junit_sha256": "3a68b72a384e252df75b085a67e045d611e4cf4e5ec98aef5589f5b78019c625",
     "independent_scoped_readback_sha256": "1dc6407d572dd95771b45a5ebdcf8e9d98adf50b0185c8128d58dce1f435f97a"
-  }
+  },
+  "architecture": {
+    "source_commit": "a94b7eaeeb879a7cd8cbaa4b2390f612199bd800",
+    "actual_cases": 11,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "original_packet_outcome": "negative: later semantic stage timed out; governance unstarted",
+    "junit_sha256": "4f3507937d2179b2eddff84209b69ed92eac63516632cd5bed637d799ce1693c"
+  },
+  "semantic": {
+    "source_commit": "0f956bbbd2c13e29c157cfb4cb45561647024116",
+    "verdict": "conformant",
+    "blocking_violations": 0,
+    "unresolved_dynamic_flows_retained": 2,
+    "report_sha256": "602e0025ac407134aa41af27bc8cafdbaf6efad0518c69cf5016356e306f83f8",
+    "canonical_lock_projection_population": 120,
+    "lock_contracts_and_population_unchanged": true,
+    "original_stale_lock_negative_retained": true
+  },
+  "registered_native_controls": {
+    "source_commit": "0f956bbbd2c13e29c157cfb4cb45561647024116",
+    "fresh_baseline_cases": 8,
+    "baseline_failures_errors_skips": 0,
+    "controls": [
+      {
+        "id": "interpreter-publication-post-pip-freshness-must-fail",
+        "actual_named_failures": 3,
+        "raw_exit": 1
+      },
+      {
+        "id": "interpreter-publication-post-inventory-freshness-must-fail",
+        "actual_named_failures": 3,
+        "raw_exit": 1
+      },
+      {
+        "id": "release-controller-wheel-binding-must-fail",
+        "actual_named_failures": 1,
+        "raw_exit": 1
+      },
+      {
+        "id": "release-resolver-authorizer-artifact-shape-must-fail",
+        "actual_named_failures": 1,
+        "raw_exit": 1
+      }
+    ],
+    "raw_artifact_count": 12,
+    "results_sha256": "8b69f76fd6c0b4b628e02cd8c00dbe132d78b3be65c3b1e021ed313369e98e43",
+    "baseline_junit_sha256": "f80f44a14aaae479ff1c255bed8dd64a6608b8511d1d1c0ae20f83428f93ad7a",
+    "authority": false
+  },
+  "development_distributions": {
+    "source_commit": "0f956bbbd2c13e29c157cfb4cb45561647024116",
+    "source_tree": "d1ee46e12046237d7fda65bf173c7d25d52c3795",
+    "artifacts": {
+      "bcf_governance-2.5.0-py3-none-any.whl": "17e0eab1f87d5e3a66f4a78acb873a08177d797085ec015e4c9e7ec525ab4615",
+      "bcf_governance-2.5.0.tar.gz": "b153b263315485a947fdb03db6cdd047134a45e207e02be850175759560206aa"
+    },
+    "actual_packaged_source_mappings": 794,
+    "actual_sdist_source_population": 2216,
+    "hash_closed_dependency_wheels": 41,
+    "python": "3.12.14",
+    "node": "22.23.2",
+    "typescript": "6.0.3",
+    "runtime_report_version": "1.1",
+    "runtime_commands_exit_zero": 11,
+    "raw_evidence_files": 22,
+    "canonical_cold_evidence_verification": "passed",
+    "consumers": {
+      "wheel": {
+        "status": "pass",
+        "bcf_package_absent_returncode": 0,
+        "installed_schemas_preserved": true,
+        "semantic_returncodes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      },
+      "sdist": {
+        "status": "pass",
+        "bcf_package_absent_returncode": 0,
+        "installed_schemas_preserved": true,
+        "semantic_returncodes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    "runtime_report_sha256": "819fe315ed677ff2ca232b353f0eb479a9032d066d1cc6e9c0f9d9df72f79027",
+    "negative_qualification_envelopes_retained": [
+      "interpreter-copy size exceeded local per-file admission",
+      "required declared Node omitted from restricted launcher PATH"
+    ],
+    "negative_stderr_sha256": [
+      "2d6cfb357466b9e9e69a8e1da128762d2fead0576774ff39c331b5b52662c43b",
+      "d1d035bebf8f4b7969ebbc2168e2131160331997cff4610dd9105b5b01a70710"
+    ],
+    "no_product_change_or_archive_rebuild_between_envelope_attempts": true
+  },
+  "independent_scoped_readbacks": {
+    "renderer": "1dc6407d572dd95771b45a5ebdcf8e9d98adf50b0185c8128d58dce1f435f97a",
+    "architecture_negative": "570b46a7847bde395fef9a6347db17ad6ad8b1314b1a87bfd4d57878af20037c",
+    "semantic_lock": "22a3ea5573b523a4215ebc72c75fa52c1067bbd9752b581fd52fa34f5beaab99",
+    "semantic": "1e73f2b6f140891f9ed903379c74ad60a4a9f9f947fe4e65a5f008712a42f725",
+    "native_controls": "797130b9f6f043faa889eb400f2c9bac8e36a8a263bdc121bd3cf33ac97a128d",
+    "archives": "90f7dd55e622bd5e13edaef34681cb8a2f62b432bb1c303a8d40662ed7335bd9",
+    "installed_runtime": "e19016de054a6599645edd1f86343f1a6c22b2a4e9c4c8bedb527d27ede18469"
+  },
+  "next_action": "Integrate only missing bounded changes into authoritative isolated successor; preserve protected main. Contract and qualify maintained2.3.6 locked-project consumer compatibility before full adopter matrix."
 }

@@ -22,7 +22,7 @@ admission:
   canonical_release_train_id: release_27
   rule: Derive phase and train IDs only after exact predecessor closure qualifications compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: "Attempt six accounted for by PR431/main100dc noncertifying PR progress; no duplicate submission. Current P32 install-input fixes await exact source/private/installed qualification and full lifecycle/deadline evidence. All82 whole requirements remain open; prior recovery wording is retained with disposition in P32 log."
+  blocker: "Attempt six accounted for by PR431/main100dc noncertifying PR progress; no duplicate train. Bounded publication/renderer source, private/installed, native, architecture/semantic and exact development archive evidence are retained independently. Maintained2.3.6 locked-project integration, full profile/adopter/lifecycle conformance, composed deadlines and approved matched measurements remain open; all82whole requirements unchanged."
   unblock_condition: Complete admitted v2.3.4 source integration and existing canonical execution path. Optional compatibility failures remain residuals under current policy.
   evidence: audits/issue-394/v234-successor-admission.json
 stages:
@@ -318,6 +318,7 @@ workitems:
     - audits/issue-394/interpreter-publication-freshness-contract.json
     - audits/issue-394/interpreter-publication-consumer-verification.json
     - audits/issue-394/profile-yaml-budget-and-oracle-binding-contract.json
+    - audits/issue-394/profile-yaml-budget-verification.json
   foundation.deadlines:
     summary: Compile complete provider operation deadline envelopes and reject inadequate outer deadlines early
     status: IN_PROGRESS
