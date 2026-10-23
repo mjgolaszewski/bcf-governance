@@ -1,0 +1,68 @@
+{
+  "authority": false,
+  "status": "SCOPED_SOURCE_CONTROLS_PASSED",
+  "subject": {
+    "commit": "c475bd9773519d5239e692e9d0bad3afb1ba8a34",
+    "tree": "643895195b6ce70971985f47b2b3498f071d152d"
+  },
+  "causal_predecessor": "52cc1fa30df054ea4fc712601f7e4e21519be581",
+  "results": [
+    {
+      "stage": 0,
+      "cases": 3,
+      "failure": 3,
+      "error": 0,
+      "skipped": 0
+    },
+    {
+      "stage": 1,
+      "cases": 33,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0
+    }
+  ],
+  "raw_evidence_sha256": {
+    "terminal.json": "e5c1f8bca9186968a9ab98c755888383b28c96fa57e6bd1c05745ad97790a506",
+    "0/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "0/stdout.log": "1e82dd6e33131e7cd0447bf9eb8b2cdf2aab159ac23c17963f8d98e1effa4e62",
+    "0/cases.xml": "05d2ebe0e9c1056b9728d66fe52663809630d3a78c27470e5737053f2de47f29",
+    "1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "1/stdout.log": "3b66f89fbd4ea8e76e94aa78e461303a7a84ebc5dcdbf9045e17725affae58ca",
+    "1/cases.xml": "91e3b82ae7499a6d8d0bb400510fb2bd971c38781c65aff23b6e9d3e7539373e"
+  },
+  "scope": [
+    "26 pure declaration cases",
+    "three intermediate-phase authorizer controls",
+    "three inactive-train refusals",
+    "one candidate-checkout independence control"
+  ],
+  "remaining": [
+    "whole protected predecessor population integration; source consumer modules passed126 cases",
+    "full predecessor truth through existing trusted_inputs owner",
+    "whole-job setup/retry/read/cleanup/headroom admission",
+    "canonical private mirrors and semantic manifests",
+    "source/wheel/sdist and installed/adopter qualification",
+    "all 82 whole requirements; P33-P35 dormant"
+  ],
+  "maintenance_disposition": "Immutable 2.3.6 and working maintained main are preserved. Continue 2.5 only in independent branch until separately governed RC readiness. No main workflow or authority mutation.",
+  "acceptance_advance": false,
+  "full_consumer_followup": {
+    "cases": 126,
+    "failure": 0,
+    "error": 0,
+    "skipped": 0,
+    "modules": {
+      "tests.test_release_train_terminal_declaration": 26,
+      "tests.test_ci_github_release": 72,
+      "tests.test_phase_closure_input": 28
+    },
+    "raw_sha256": {
+      "terminal.json": "b26d2cd0b70b5f63787ceab821430e6c7737d54187b0e4416303961f6fbe825d",
+      "0/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "0/stdout.log": "a63693380da01d65c97d0a014aebec2d7e7663f08cd3d32110ea5944741e7e42",
+      "0/cases.xml": "ae35178fe775442021f86e81db98e95217a7fbd6fe3a3e25cf42fd37a7173645"
+    },
+    "subject": "c475 production and tests, with subsequent first scoped audit/doc delta"
+  }
+}

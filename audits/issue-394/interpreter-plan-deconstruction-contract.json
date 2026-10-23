@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "status": "CONTRACT_BEFORE_DECONSTRUCTION",
+  "bounded_context": "selected-interpreter dependency tooling",
+  "layer": "immutable plan query and materialization command owner",
+  "side": "extract query data/error/requirement parsing without changing command orchestration",
+  "reason": "Current interpreter_environment.py is exactly800 lines. Freshness guards from maintained2.3.6 require space; extract one responsibility before adding behavior.",
+  "source": "c475bd9773519d5239e692e9d0bad3afb1ba8a34",
+  "target_modules": [
+    "bcf_governance/tooling/interpreter_environment.py",
+    "bcf_governance/tooling/interpreter_environment_plan.py"
+  ],
+  "sequence": [
+    "Characterize existing full interpreter module before extraction",
+    "Move immutable plan, shared error and requirement-name parsing with identical AST bodies; preserve original import reexports",
+    "Prove characterization and AST identity; regenerate private runtime via canonical owner",
+    "Separate later contract/tests for post-install and pre-publication source freshness; no behavior in extraction"
+  ],
+  "preserved": [
+    "closed pip tuple",
+    "metadata/projection/registry/lock/cache/setup checks",
+    "public CLI",
+    "existing original import paths",
+    "all old causal RED subjects and evidence",
+    "main release machinery"
+  ],
+  "expected_tests": [
+    "complete tests/test_interpreter_environment.py before/after",
+    "AST definition identity and source ownership gate",
+    "architecture module/import/context and private runtime parity",
+    "governance/semantic/lint/type and installed qualification"
+  ],
+  "forbidden": [
+    "main/default branch source or workflows",
+    "adopter source",
+    "manual workflow pins",
+    "new release authority or receipt family",
+    "test deletions",
+    "locked_project behavior transplanted implicitly"
+  ],
+  "acceptance_advance": false
+}
