@@ -1,6 +1,6 @@
 {
   "authority": false,
-  "status": "BOUNDED_LOCKED_PROJECT_SOURCE_PRIVATE_CONSUMER_AND_SEMANTIC_QUALIFIED",
+  "status": "BOUNDED_LOCKED_PROJECT_SOURCE_AND_EXACT_OFFLINE_DISTRIBUTION_INDEPENDENTLY_QUALIFIED",
   "source_commit": "22d002dad4abbbbf50d37c16df9e04c0c33b89b1",
   "source_tree": "937fbb8badd4ef1d863bb01c3e5c7f2253c74cb5",
   "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
@@ -117,8 +117,7 @@
     "independent": 17708
   },
   "residuals": [
-    "Exact new source/wheel/sdist distribution and full installed-runtime qualification",
-    "Exact new source/wheel/sdist and installed-runtime distribution qualification",
+    "Exact offline source/wheel/sdist qualified; no complete adopter/profile/upgrade matrix or release custody claim",
     "Provider-selected live adopter and complete profile/upgrade/opt-out/rollback matrix",
     "Actual selected locked dependency installation on isolated adopters",
     "Complete runtime effect/lifecycle and outer deadline conformance",
@@ -192,5 +191,49 @@
     "17749": "132ec6678540db0a1b50facade18d33239d854f086dda87b31a116cff3652843",
     "17769": "31ceddc8a88f0e1e9581c34829d02fb61164b9d96bcd565add409eee917e875c",
     "17788": "1515d58c6dfd002dc5e615deaf78cbb531ecc46fe2691de59c9e3a23cd130051"
+  },
+  "exact_distribution": {
+    "source_commit": "a536e7dd018f0fc4576b7fedd7b951e20f686483",
+    "source_tree": "e0e27d5d4dff664d262525c1a887e809ac97bfe2",
+    "artifacts": [
+      {
+        "name": "bcf_governance-2.5.0-py3-none-any.whl",
+        "bytes": 2144568,
+        "sha256": "b445533d1a444d276e4da613e299f07e3233da6573e50ed5854c3d27d8f65b66"
+      },
+      {
+        "name": "bcf_governance-2.5.0.tar.gz",
+        "bytes": 9490812,
+        "sha256": "5d4056f694ad102fbb5148684e774245ca442457a581953cc43f099624754479"
+      }
+    ],
+    "source_pins": 2222,
+    "wheel_mappings": 796,
+    "dependency_wheels": 41,
+    "independent_readback": 17831,
+    "independent_receipt_sha256": "31e499a24ef7ae487c07883cb54a8bd03e59102022dd7dbfaee9f47bf97c0816",
+    "records_independent_readback": 17826
+  },
+  "exact_offline_runtime": {
+    "source_commit": "a536e7dd018f0fc4576b7fedd7b951e20f686483",
+    "artifacts": [
+      "b445533d1a444d276e4da613e299f07e3233da6573e50ed5854c3d27d8f65b66",
+      "5d4056f694ad102fbb5148684e774245ca442457a581953cc43f099624754479"
+    ],
+    "report_sha256": "d19d09ece90142478c4aa9e4dc4255b86fa5c292fba9cb3622ae1dd361b3488e",
+    "native_terminal_sha256": "078e1a82c37466801a76cad46a5e63f396e10c5e6df9d0e1c9541d37fa97e363",
+    "actual_stage_exits": [
+      0,
+      0,
+      0
+    ],
+    "canonical_commands": 11,
+    "status": "passed",
+    "scope": "Existing offline source/wheel/sdist verifier, pure/mixed TypeScript consumers, SDK-absent installed private runtime; no live adopter/complete profile matrix or release authorization",
+    "independent_readback": 17847,
+    "independent_receipt_sha256": "7824b3c0f3d43f1d51bfd461172460827e5209b70c8047c595b93563e04898fd",
+    "verified_evidence_schema": "1.1",
+    "dependency_wheels": 41,
+    "raw_evidence_hashes": 22
   }
 }
