@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
 
 import pytest
 import yaml
@@ -97,3 +98,45 @@ def test_inventory_schema_movement_during_collection_blocks(schema_reference_rep
         owner.validate_authored_test_reference_inventories(
             schema_reference_repo, python_executable=sys.executable,
         )
+
+
+@pytest.mark.parametrize('boundary', ['normalization', 'submit-cli'])
+@pytest.mark.parametrize('defect', ['unexpected-field', 'missing-required'])
+def test_schema_rejection_precedes_environment_distribution_and_proof(
+    schema_reference_repo, monkeypatch, boundary, defect,
+):
+    from bcf_governance.tooling import ci_authority_submit as submit
+    from bcf_governance.tooling import local_execution_admission
+    from tests.test_authored_control_admission import _prepare_submit_frontdoor
+
+    path = schema_reference_repo / 'references.yml'
+    payload = yaml.safe_load(path.read_text())
+    if defect == 'unexpected-field':
+        payload['unmodeled_authority'] = True
+    else:
+        del payload['implementation_slices']
+    path.write_text(yaml.safe_dump(payload))
+    cli = _prepare_submit_frontdoor(monkeypatch)
+    # These existing admission contracts have separate causal coverage; this
+    # fixture isolates the schema-before-allocation ordering, using its real owner.
+    monkeypatch.setattr(submit, 'validate_authored_gate_controls', lambda *_a: None)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('resource allocation or collection preceded schema rejection')
+
+    monkeypatch.setattr(owner, 'collect_selector_maps', forbidden)
+    monkeypatch.setattr(submit, 'validate_source_distribution', forbidden)
+    monkeypatch.setattr(submit, 'local_gate_lease', forbidden)
+    monkeypatch.setattr(cli, 'ensure_local_project_python', forbidden)
+    monkeypatch.setattr(local_execution_admission, 'ensure_local_project_python', forbidden)
+    monkeypatch.setattr(local_execution_admission, 'materialize_interpreter_environment', forbidden)
+    if boundary == 'normalization':
+        with pytest.raises(submit.ProspectiveValidationError,
+                           match='reference inventory schema violation'):
+            submit._normalize_submission(
+                schema_reference_repo, python_executable=Path(sys.executable),
+                execution_id='schema-before-allocation', semantic_intent=None, runner=forbidden,
+            )
+    else:
+        with pytest.raises(SystemExit, match='reference inventory schema violation'):
+            cli.main(['submit', '--repo-root', str(schema_reference_repo)])
