@@ -1,0 +1,27 @@
+{
+  "authority": false,
+  "status": "SOURCE_REPORTED_DEFAULT_OBSERVER_COVERAGE_RESIDUAL",
+  "source_question": 17221,
+  "maintained_source": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "unchanged_template_sha256": "d0dfc6eb29506030f89b4a697bbc3429d962cd8d70574e99ab6ba8e17c842b26",
+  "template_path": "template-repo/backend/tests/architecture/test_boundaries_ast.py",
+  "reported_gaps": [
+    "layer-token source-root directory membership",
+    "individual-file source roots omitted by rglob",
+    "schema-supported package_metadata_ownership not consumed"
+  ],
+  "independent_observation": "Template bytes are identical in maintained236 and current250; current source lacks package_metadata_ownership consumption. Remaining behavioral reproduction required.",
+  "supported_adopter_path": "Standard targets and evidence contracts, not fixed SDK function names, are mandatory. Project-owned complete observers may be configured through the existing canonical gate registry, with full population and cause controls; preserve managed bytes and existing required tests/accounting.",
+  "primary_owners": [
+    "docs/MAINTAINING.md profile-v3 ownership",
+    "bcf_governance/tooling/governance_validation/release_gates.py::_validate_structural_gate_contract",
+    "bcf_governance/tooling/evidence_gate_contracts.py::_gate_contract",
+    "bcf_governance/tooling/governance_validation/evidence_contracts.py::_validate_gate_contract_registry"
+  ],
+  "reply_evidence": [
+    17234,
+    17235
+  ],
+  "next": "Bounded default-template conformance contract and cause controls through the existing owner; no parallel policy registry or adopter edit",
+  "acceptance_advance": false
+}

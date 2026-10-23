@@ -1,6 +1,6 @@
 {
   "authority": false,
-  "status": "SOURCE_EXTRACTION_EXECUTION_PENDING",
+  "status": "SOURCE_EXTRACTION_SCOPED_CHECKS_PASSED_DISTRIBUTIONS_PENDING",
   "contract": "audits/issue-394/interpreter-plan-deconstruction-contract.json",
   "characterization_subject": "f7701b4e351a962cad2b2525e745e70828284d57",
   "characterization_cases": 90,
@@ -31,10 +31,11 @@
   "public_import_compatibility": "Original class/error/private requirement helper names reexported from old owner; CLI unchanged.",
   "behavior": "No postpip or publication guards added in this extraction.",
   "remaining": [
-    "fresh source tests and three new boundary controls",
-    "architecture/lint/type/governance/semantic qualification",
-    "installed source/wheel/sdist parity",
-    "separate causal source-freshness fix integration"
+    "canonical expected test-manifest refresh and full submission",
+    "new-source wheel/sdist and SDK-absent installed/profile/adopter parity",
+    "separate maintained freshness and locked-project integration",
+    "full release-train predecessor/deadline evidence",
+    "all82 whole requirements unchanged"
   ],
   "acceptance_advance": false,
   "canonical_projection": {
@@ -55,5 +56,44 @@
       "bcf_governance/pack/template-repo/scripts/_bcf_runtime/interpreter_environment_plan.py": "f39c8e8559b5863e843da3ab43a34e09a41dc6f2e7ad0ecfb230b8f4e710689b"
     },
     "scope": "Two canonical private runtime copies and pack manifests; no root workflows or authority pins"
+  },
+  "source_qualification": {
+    "commit": "8c3cbfd685efc38059bd17872667e0689093b184",
+    "tree": "7a8335018b7e2e21690381c597ca8f16586b11ed",
+    "tests": {
+      "cases": 104,
+      "failure": 0,
+      "error": 0,
+      "skipped": 0
+    },
+    "governance_exit": 0,
+    "exposure_exit": 0,
+    "pack_check_exit": 0,
+    "native_lint_exit": 0,
+    "native_type_compilation_exit": 0,
+    "typing_limit": "Repository native compilation gate, not a strict mypy claim",
+    "initial_packet": "overall timeout at fourth stage after completed tests and validators; preserved as negative",
+    "remainder": "three remaining checks passed separately on unchanged source; no retrospective overall-pass packet",
+    "raw_partial_sha256": {
+      "terminal.json": "dfbec5f9cdd4a3e706ba6e3676cc82bfdd10116cbf64afa2161dabdc0200335d",
+      "0/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "0/stdout.log": "86d946343998d075b51ae152db238f0a673ad5a31851b97da6b9dbc65c8a309b",
+      "0/cases.xml": "d7a66345cdbc68026cc5d2ec23b0986c34b9f1207d68f5a85a0af6a81649e71e",
+      "2/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "2/stdout.log": "07383efeceb1bc8eebcd07c3bb881a879756f03f2510afe6444c5768b0a2e97d",
+      "3/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "3/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "1/stdout.log": "cf2f58d99809254d415612fa00947ee20cf4511a5196224354825f4758477f1b"
+    },
+    "raw_remainder_sha256": {
+      "terminal.json": "56628828b7f6baf49e72c0fedfc2cf5bc89c14743713565e62fde35379a5fc47",
+      "0/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "0/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "2/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "2/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "1/stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "1/stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
   }
 }

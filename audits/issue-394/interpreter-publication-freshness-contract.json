@@ -1,0 +1,36 @@
+{
+  "authority": false,
+  "status": "CONTRACT_BEFORE_FRESHNESS_PRODUCTION_CHANGE",
+  "bounded_context": "selected-interpreter dependency materialization",
+  "layer": "existing command orchestrator and existing source-projection query",
+  "side": "query freshness checks at two command-consuming boundaries",
+  "source_baseline": "8c3cbfd685efc38059bd17872667e0689093b184",
+  "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "target_modules": [
+    "bcf_governance/tooling/interpreter_environment.py"
+  ],
+  "required_behavior": [
+    "Revalidate authenticated projection/metadata/registry after successful pip, before installed inventory",
+    "Revalidate the same plan immediately before temporary environment publication",
+    "Source movement rejects without cache publication; owned temporary state is cleaned",
+    "Keep exact closed pip requirement tuple and existing setup/lock/cache checks",
+    "Retain genuine successful, failed-install, repeat and cached behavior"
+  ],
+  "tests": [
+    "Six metadata/projection/registry movement controls at postpip and postinventory boundaries",
+    "Correct the existing closed-tuple control to require refusal after its injected projection move, retaining the exact pip tuple assertion",
+    "Cause-qualified old-source RED before source change; new-source GREEN plus full interpreter/boundary cohort",
+    "Removing each guard must fail its own consuming-boundary cause controls",
+    "Canonical mirrors, architecture/governance/semantic and fresh installed/native qualification remain mandatory"
+  ],
+  "forbidden": [
+    "main or maintained release source mutation",
+    "any immutable predecessor byte changes",
+    "new policy, registry, receipt family or public CLI grammar",
+    "whole locked_project feature transplanted under this slice",
+    "dropping or weakening source/cache tests",
+    "manual workflow or authority pins"
+  ],
+  "ownership_note": "Only existing verify_interpreter_environment_projection calls are added; the separately qualified immutable-plan extraction made module space first.",
+  "acceptance_advance": false
+}

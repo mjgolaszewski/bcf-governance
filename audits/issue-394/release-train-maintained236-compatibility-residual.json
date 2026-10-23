@@ -1,0 +1,32 @@
+{
+  "authority": false,
+  "status": "STATIC_COMPATIBILITY_RESIDUAL_EXECUTION_PENDING",
+  "published_source": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "published_version": "2.3.6",
+  "active_phase": "P31",
+  "declared_train": {
+    "id": "release_26",
+    "target_version": "2.3.0",
+    "status": "completed",
+    "focus": [
+      "consumer_owned_assurance",
+      "protection_projection",
+      "evidence_storage_topology",
+      "base_pinned_evaluator",
+      "atomic_publication",
+      "immutable_release_custody"
+    ]
+  },
+  "input_sha256": {
+    "plans/phase-ledger.yml": "73ea5a4f86fb21d1b0a70b2bfd948ffd563796c9c4d0e98b9b17e94a3c75641f",
+    "plans/product-spec.yml": "29b9d8befee62d447eb9e35f1034d8af3a2806684b74edb82fe7ffd840553411",
+    "plans/build-plan.yml": "977f19cceddce341c7ed2d8cea9b2425eddf9edb8e21d653c1dd516ea7bda4df",
+    "plans/phase-history.yml": "8a1fc428ac565fe260c4b0f924c05ed1993bffa55eb823823ec8e6f5447df888",
+    "governance/public-contracts.yml": "e9d74288d062090087a6b69682e1c8f57554fef8ee83775731414e6a8f28d49f",
+    "bcf_governance/_version.py": "5143af47dda1c34003635898e855cabb12434b8b1d5b935c40589aa5725ec3a7"
+  },
+  "current_query_subject": "8c3cbfd685efc38059bd17872667e0689093b184",
+  "observation": "Current declaration query selects phase trains only by exact target_version equality. Maintained published2.3.6 owns completedP31/release_26 with historical target2.3.0. A positive historical-catalog consumer control is required before claiming maintained single-phase/hotfix compatibility.",
+  "limits": "Static source comparison only; no new provider execution or demonstrated runtime refusal. Current main and published236 bytes are unchanged. Do not silently weaken intermediate/missing/ambiguous train guards or invent a maintenance authority from supplemental rows.",
+  "next": "After current fixed-source extraction gates terminate, commit a bounded compatibility contract and cause-specific historical-catalog controls through existing release catalog/version/hotfix owners; preserve exact2.5train authority and existing single-phase publication behavior."
+}
