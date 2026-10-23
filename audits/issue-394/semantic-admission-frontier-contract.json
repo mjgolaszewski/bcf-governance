@@ -45,5 +45,42 @@
     "Live/frozen release assets, maintained adopters, manual generated pins/locks",
     "Claiming authored static conformance as runtime truth or full machine DAG adoption"
   ],
-  "dependency_acceptance": "Foundation source admission only; all full Issue 394 acceptance gates remain open. Reproduction scan after audit-only daf36f22 has unchanged authoritative code from failed 97c1e986."
+  "dependency_acceptance": "Foundation source admission only; all full Issue 394 acceptance gates remain open. Reproduction scan after audit-only daf36f22 has unchanged authoritative code from failed 97c1e986.",
+  "configured_static_gate_order_followup": {
+    "status": "authored_requirements_not_implemented_or_qualified",
+    "authority": false,
+    "execution_qualified": false,
+    "supporting_workitems": [
+      "P32-P0-03",
+      "P32-P0-04",
+      "P32-P0-07",
+      "P33-P0-01"
+    ],
+    "observation": {
+      "scope": "Isolated consumer qualification harness; local JUnit/type observations, not a BCF native receipt or product-wide ordering proof",
+      "allocation": 18698,
+      "source_plan_sha256": "0fc94c44e55ada2a17acf00e62e61dfe2466438be2dffdfb7d25e70122029242",
+      "terminal_sha256": "e4a8090b0e473b5e704075e7dafae2da2f8064575802d3fd557abf2ef57ece81",
+      "typing_log_sha256": "4c6ec337d97b6cee93f8d1e39b97d87ea3612708eeaad84b469f078e915d53b5",
+      "independent_handback": 18706,
+      "ordering": "Full metadata and behavior executed before strict typing reported the new fixture call-argument failure. Four original subprocess cases separately exposed a missing effect admission.",
+      "disposition": "Original overall failure retained; separate correction18712 independently18720 qualified six affected cases and four exact original probes. No savings/percentile claim."
+    },
+    "requirements": [
+      "Keep pure authored schema/source/identity checks before resource selection; type/lint need their actual approved tools, configuration and any prerequisite canonical generation.",
+      "Derive the earliest valid position from the existing context-qualified composition and authenticated dependency population; use existing owners and provider status identities.",
+      "Once exact tools/configuration/source prerequisites are admitted, reject known applicable typing/lint failures before dependent expensive metadata, behavior or process consumers allocate. Reauthenticate moving inputs at each consuming boundary.",
+      "Candidate plugins, configuration, test code or inferred tool availability cannot supply evaluator authority. Unknown applicability preserves required full checks; missing authority blocks.",
+      "Independently inventory actual child-process effects of retained tests and controls before their execution. Compare both directions so removing an effect edge and its test cannot hide missing population.",
+      "Preserve required original assertions, child-probe timeouts, finalizers, security/full-run sentinels and actual independent executions. No generic child allowance, skipped cases or retrospective failure upgrades.",
+      "Source/static preflight remains nonauthoritative and does not replace full generated/mixed-toolchain/installed-consumer or runtime-effect qualification."
+    ],
+    "expected_controls": [
+      "An applicable exact-source typing or lint failure prevents downstream allocation while retaining its precise cause and independent failure finalization.",
+      "A changed compiler configuration/plugin/source subject blocks before invocation; absent or unadmitted toolchains cannot manufacture a pass or execute candidate authority.",
+      "An original independent lock probe must appear in discovered effects and exact admitted scope; removal of its declaration and test together still fails independent population conformance.",
+      "Valid supported profiles preserve all required later gates and ordinary CLI/status contracts; generated workflow/authority updates remain canonical reconciliation only."
+    ],
+    "activation": "Dormant requirements only; qualify through canonical lifecycle dependencies and existing owners before any capability activation."
+  }
 }
