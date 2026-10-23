@@ -19,5 +19,10 @@
     "diagnostic": "MEMORY28.7KiB exceeds28KiB",
     "exposure": "not_run"
   },
-  "next": "Validate corrected governed record, then separately extract immutable plan without behavior; maintainedmain unchanged."
+  "next": "Validate corrected governed record, then separately extract immutable plan without behavior; maintainedmain unchanged.",
+  "additional_historical_entries_retained_verbatim": [
+    "Exact 3f253f7b development qualification passes source lite fresh/repair-upgrade (2), wheel/sdist build and offline Python3.12.14 runtime. SDK-absent private consumer rejects11 forged facts and3 busy cases;491 resources/788 mappings and20 raw streams bind exact archives. Three supervised stages quiescent0. Prior962 copied runtime fails substitution control. Full profiles, v2.3.4 upgrade, adopters and lifecycle remain open;82 requirements/38 slices unchanged. See audits/issue-394/development-distribution-3f253f7b-verification.json.",
+    "Busy local admission now reports only kernel-proven contention and explicitly unverified execution ownership; retained lock bytes are neither read nor echoed. Three stale/undecodable/untrusted-text failures are corrected, with 30 affected cases and one prospective exclusion case passing; restoring the old attribution fails all three controls. The actual holder remains locked, refused bytes unchanged, successful exact-file reuse preserved. One default-host-slot case was deselected during a foreign native owner. Governed checks and unchanged 21-operation authored semantics pass; corrected installed qualification remains pending; all 82 requirements unchanged. See audits/issue-394/local-gate-owner-observation-verification.json."
+  ],
+  "pre_compaction_memory_sha256": "563ed239db7a770bca0fa305bdf91fe5215b4e5af20a24ab9ce04a7e763632f2"
 }

@@ -32,10 +32,28 @@
   "behavior": "No postpip or publication guards added in this extraction.",
   "remaining": [
     "fresh source tests and three new boundary controls",
-    "canonical generator/private mirror synchronization",
     "architecture/lint/type/governance/semantic qualification",
     "installed source/wheel/sdist parity",
     "separate causal source-freshness fix integration"
   ],
-  "acceptance_advance": false
+  "acceptance_advance": false,
+  "canonical_projection": {
+    "generator": ".github/scripts/build_pack_manifest.py",
+    "returncode": 0,
+    "generated_path_sha256": {
+      "bcf_governance/pack/template-repo/.bcf-pack-manifest.json": "a43705c70902cc2d1b1d2789286c41ea1e7d165cf4e873f4e092c003632ed66f",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_github_release.py": "079860383448b375f5ca723336a5cf14f8fd14e06d0d4d68f0cc00b6c14b9586",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_github_release_inputs.py": "412cb3ac763f7aa33dc621920bde5a4a41e59170041c41974426c4cbd4edb5e8",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/governance_validation/supplemental_releases.py": "e7e4f3647e8008fce8a4f74ccabb37fbe7860e190093bb4eda52af5df57eb077",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/interpreter_environment.py": "e18cfd589748dd40146231c6caab8a25309ec314c1986dc33367b053dbc5b326",
+      "template-repo/.bcf-pack-manifest.json": "a43705c70902cc2d1b1d2789286c41ea1e7d165cf4e873f4e092c003632ed66f",
+      "template-repo/scripts/_bcf_runtime/ci_github_release.py": "079860383448b375f5ca723336a5cf14f8fd14e06d0d4d68f0cc00b6c14b9586",
+      "template-repo/scripts/_bcf_runtime/ci_github_release_inputs.py": "412cb3ac763f7aa33dc621920bde5a4a41e59170041c41974426c4cbd4edb5e8",
+      "template-repo/scripts/_bcf_runtime/governance_validation/supplemental_releases.py": "e7e4f3647e8008fce8a4f74ccabb37fbe7860e190093bb4eda52af5df57eb077",
+      "template-repo/scripts/_bcf_runtime/interpreter_environment.py": "e18cfd589748dd40146231c6caab8a25309ec314c1986dc33367b053dbc5b326",
+      "template-repo/scripts/_bcf_runtime/interpreter_environment_plan.py": "f39c8e8559b5863e843da3ab43a34e09a41dc6f2e7ad0ecfb230b8f4e710689b",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime/interpreter_environment_plan.py": "f39c8e8559b5863e843da3ab43a34e09a41dc6f2e7ad0ecfb230b8f4e710689b"
+    },
+    "scope": "Two canonical private runtime copies and pack manifests; no root workflows or authority pins"
+  }
 }

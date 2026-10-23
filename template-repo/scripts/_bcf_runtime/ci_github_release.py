@@ -44,6 +44,7 @@ from .release_source_bindings import (
 )
 from .release_publication_transaction import inspect_release, publish_release
 from .evaluation_scope import is_terminal_phase_certification
+from .ci_github_release_inputs import require_terminal_release_phase_at_main
 
 def _now() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")
@@ -122,6 +123,11 @@ def authorize_release(
             "release authorization controller custody is not exact main"
         )
     require_controller_execution(controller_custody)
+    terminal_phase = require_terminal_release_phase_at_main(
+        api, repository=repository, main=main
+    )
+    if certification["evaluation_scope"]["target"] != {"kind": "phase", "id": terminal_phase}:
+        raise GitHubControllerError("release train certification names the wrong terminal phase")
     authority = load_authority(api, repository, main, required_version="1.1")
     identity, _ = authenticate_role_job_inventory(
         api,
@@ -240,6 +246,8 @@ def authorize_release(
         ),
         "authorized_at": _now(),
     }
+    if resolve_main(api, repository) != main:
+        raise GitHubControllerError("release source moved during authorization")
     write_exclusive(output_path, payload)
     return payload
 

@@ -684,7 +684,7 @@
     },
     "scripts/_bcf_runtime/ci_github_release.py": {
       "operation": "copy",
-      "sha256": "5945e609911d158be950afcf55cf0c1b021f75cf651823eea207d358403aa05b"
+      "sha256": "079860383448b375f5ca723336a5cf14f8fd14e06d0d4d68f0cc00b6c14b9586"
     },
     "scripts/_bcf_runtime/ci_github_release_api.py": {
       "operation": "copy",
@@ -696,7 +696,7 @@
     },
     "scripts/_bcf_runtime/ci_github_release_inputs.py": {
       "operation": "copy",
-      "sha256": "f5524cf5fbdb15315389177ac82fb8f234a79800af77567c8cdc2a88a9b2dc09"
+      "sha256": "412cb3ac763f7aa33dc621920bde5a4a41e59170041c41974426c4cbd4edb5e8"
     },
     "scripts/_bcf_runtime/ci_github_release_staging.py": {
       "operation": "copy",
@@ -1267,7 +1267,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/supplemental_releases.py": {
       "operation": "copy",
-      "sha256": "c53ea30da45c6a2cf12eb8c18031c81371f1c7461d5b2527a8b1438242f8ab07"
+      "sha256": "e7e4f3647e8008fce8a4f74ccabb37fbe7860e190093bb4eda52af5df57eb077"
     },
     "scripts/_bcf_runtime/hotfix_scaffolding.py": {
       "operation": "copy",
@@ -1287,7 +1287,11 @@
     },
     "scripts/_bcf_runtime/interpreter_environment.py": {
       "operation": "copy",
-      "sha256": "d898a6933e4c4c55d9a4036541d394cc9ead001c9b8036a0717804f644537248"
+      "sha256": "e18cfd589748dd40146231c6caab8a25309ec314c1986dc33367b053dbc5b326"
+    },
+    "scripts/_bcf_runtime/interpreter_environment_plan.py": {
+      "operation": "copy",
+      "sha256": "f39c8e8559b5863e843da3ab43a34e09a41dc6f2e7ad0ecfb230b8f4e710689b"
     },
     "scripts/_bcf_runtime/local_cli_receipt.py": {
       "operation": "copy",
