@@ -1,0 +1,49 @@
+{
+  "authority": false,
+  "id": "issue-394-maintained-single-phase-terminal-compatibility",
+  "phase": "P32",
+  "bounded_context": "existing governance release catalog and exact-main release input resolver",
+  "problem": "The retained published 2.3.6 catalog owns completed single-phase P31/release_26 with historical target 2.3.0; exact target-version matching in the new terminal declaration query is a static compatibility residual, not yet a qualified runtime refusal.",
+  "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "owners": [
+    "bcf_governance/tooling/governance_validation/supplemental_releases.py::declared_release_train_terminal",
+    "bcf_governance/tooling/ci_github_release_inputs.py::require_terminal_release_phase_at_main",
+    "bcf_governance/tooling/release_versions.py::parse_release_version"
+  ],
+  "qualification_before_production": [
+    "Add the smallest positive completed single-phase historical-target patch fixture through existing declaration and exact-main consumer tests; capture actual failure before production changes.",
+    "Preserve all exact-target multi-phase topology controls and provider-authenticated input selection.",
+    "Compare the minimized fixture with the retained immutable maintenance catalog, separating its omitted historical population from the complete source evidence."
+  ],
+  "intended_compatibility": [
+    "Existing exact target matching is unchanged.",
+    "Only a stable strictly later patch in the same major/minor family may derive the current completed single-phase owner when exact phase-train version ownership is absent, its release status is completed, and the current active phase is authored completed.",
+    "All dependency and inventory checks still run; ambiguity, missing source, invalid versions, conflicting exact owners, noncompleted or multi-phase fallback, different family, prerelease fallback and supplemental authority remain blocked.",
+    "This declaration query never proves closure or publication authorization; exact protected-main version/catalog source and independent certification checks remain required."
+  ],
+  "tests": [
+    "positive historical target 2.3.0/current version 2.3.6 completed P31",
+    "exact-main reads ignore candidate checkout and preserve source paths",
+    "wrong family or lower patch or prerelease",
+    "active or planned phase/train fallback",
+    "ambiguous exact version owner",
+    "multi-phase fallback and intermediate terminal",
+    "existing exact 2.5.0 P32\u2013P35 declaration remains P35, with no phase progress implied"
+  ],
+  "forbidden": [
+    "main or maintained branch edits",
+    "published archives/tags/assets",
+    "hand-authored workflows or authority pins",
+    "new catalog, registry, broker, evaluator or receipt family",
+    "phase or whole-requirement advancement",
+    "broad semver fallback or source-presence-as-authority"
+  ],
+  "production_changes": "Not authorized by this record alone until cause-specific red is retained and the bounded existing-owner correction is reviewed against the contract. User train implementation authorization remains the task authority.",
+  "contract_version": 1,
+  "current_source": "74066382b65ccabf32c4375363cfe3518a2d5f38",
+  "changed_test_modules": [
+    "tests/test_release_train_terminal_declaration.py",
+    "tests/test_ci_github_release.py"
+  ],
+  "interface": "Existing query signature and CLI/status identities preserved; no schema migration or new public field."
+}
