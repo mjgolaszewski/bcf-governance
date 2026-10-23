@@ -1,0 +1,34 @@
+{
+  "authority": false,
+  "status": "CONTRACT_AUTHORED_QUALIFICATION_PENDING",
+  "phase": "P32",
+  "bounded_context": "existing delivery workplan validation",
+  "architectural_layer": "governed audit contract",
+  "operation_side": "query",
+  "problem": "Affected matrix18563 independently18573 exposed three failures because retained release_train_terminal_authority_followup data is absent from the closed workplan schema. Authenticated historical b8b89526 and832d3a58 already contain the field with additionalProperties false and no corresponding property.",
+  "target_modules": [
+    "audits/issue-394/workplan.schema.json",
+    "tests/test_issue394_workplan_schema.py"
+  ],
+  "invariants": [
+    "Preserve all historical workplan bytes and the closed top-level schema.",
+    "Model the existing followup as one closed typed object; require every current field.",
+    "authority and acceptance_advance remain literal false; authored statuses cannot become verified or closed.",
+    "Historical abbreviated commit displays are observations, not authenticated execution subjects or release authority.",
+    "Reject unknown fields, missing authority guards, invalid commit references and boolean query-case counts.",
+    "No phase, whole-requirement, evidence or release status advance from schema conformance.",
+    "Run this cheap authored schema check before the affected behavior matrix; canonical first-admission schema binding remains an explicit foundation followup through existing reference-inventory ownership, not a new registry or Issue394 hardcode."
+  ],
+  "expected_tests": [
+    "Canonical historical followup validates without modifying the workplan.",
+    "Unknown fields, true authority/acceptance, verified/closed authored statuses, missing guards, invalid commit ids and malformed counts reject.",
+    "Existing full workplan inventory and completion-evidence tests remain mandatory."
+  ],
+  "forbidden": [
+    "additionalProperties true",
+    "removing retained followup data",
+    "test deletion or weakened assertions",
+    "main/maintained repos/workflows/authority pins"
+  ],
+  "next": "Commit cause-specific schema controls before schema implementation, then run cheap schema validation ahead of the full affected matrix; retain actual original negatives."
+}
