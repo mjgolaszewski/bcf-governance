@@ -10,7 +10,9 @@
     "bcf_governance/tooling/interpreter_locked_project.py",
     "bcf_governance/tooling/interpreter_environment.py",
     "bcf_governance/tooling/interpreter_contract_projection.py",
-    "schemas/gate-contracts.schema.json"
+    "schemas/gate-contracts.schema.json",
+    "bcf_governance/tooling/interpreter_environment_plan.py",
+    "governance/gate-contracts.yml"
   ],
   "required_behavior": [
     "Accept an exclusive explicit locked_project contract for uv.lock format1/revision5, explicit marker/runtime cohort, dependency groups and extras",
@@ -36,5 +38,9 @@
     "acceptance or phase activation from authored completion"
   ],
   "migration": "Additive optional contract branch; existing contracts and CLI remain valid. Unsupported or incomplete declarations fail closed.",
-  "acceptance_advance": false
+  "acceptance_advance": false,
+  "bounded_refinement": {
+    "evidence": "First source cohort133 cases:131pass/2fail at immutable plan.pip_arguments for locked_project; raw1, no errors/skips. Original negative retained.",
+    "required": "Add locked_project to existing closed-tuple source kinds only; do not change projection behavior for other kinds. Update existing post-pip guard-removal mutation context to include conditional locked closure while removing only freshness guard. Preserve all prior oracle nodes and register locked-project consumer selectors and cause controls through existing registry."
+  }
 }
