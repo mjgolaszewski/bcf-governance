@@ -1,0 +1,43 @@
+{
+  "authority": false,
+  "status": "AUTHORED_CONTRACT_IMPLEMENTATION_PENDING",
+  "bounded_context": "test population and authored submission admission",
+  "owner": "bcf_governance/tooling/test_manifests.py existing reference-inventory owner",
+  "problem": "Current implementation validates reference slice syntax but does not validate the entire authored inventory against its declared schema before selector collection. Earlier workplan schema defect survived until later checks.",
+  "contract": {
+    "compatibility": "Preserve implementation_slice_bindings.v1 and absent declarations. Add closed implementation_slice_bindings.v2 with required repo-relative schema; old trusted evaluators must typed-block unsupported format. No automatic capability activation.",
+    "admission": "Validate descriptor/path/strict YAML/schema syntax/full inventory before any collection, project allocation, derived generation or push. Snapshot schema and inventory bytes through existing snapshot owner and reauthenticate both after collection.",
+    "authority": "Read-only observation authority=false/execution_qualified=false; authored schema cannot supply protected policy, proof authority or suppress required execution.",
+    "schema_constraints": "Regular nonsymlink repo-relative local JSON schema files only; schema syntax is checked before validating inventory. Permit local fragment references only; reject remote/file/external references before resolution without network. Schema and inventory captured by existing snapshot owner and reauthenticated after collection.",
+    "production_surfaces": [
+      "bcf_governance/tooling/test_manifests.py",
+      "bcf_governance/tooling/ci_authority_submit.py",
+      "schemas/gate-contracts.schema.json"
+    ],
+    "forbidden": [
+      "main",
+      "maintained repositories",
+      "workflow definitions",
+      "ci-authority pins",
+      "new registry/receipt/evaluator families"
+    ],
+    "tests": [
+      "valid v2 exact references",
+      "whole-inventory unexpected field fails before collection",
+      "missing/invalid schema",
+      "symlink/escape/remote references",
+      "schema changes during collection",
+      "inventory changes during collection",
+      "unsupported version",
+      "v1 unchanged",
+      "absent declarations unchanged",
+      "no allocation/generation/push on schema failure",
+      "test-scoped detector skipping validation must fail named guard",
+      "schema bypass detector must fail specific malformed whole-inventory test",
+      "all prior v1 error identities and no-collection absence behavior retained"
+    ]
+  },
+  "sequencing": "This bounded contract must be committed before fixtures/tests and production changes. No phase or acceptance advance. Preserve2.5 isolated worktree and all maintained machinery.",
+  "activation": "Implement and qualify v2 consumer while canonical declaration stays v1. Any isolated2.5 v2 activation requires explicit compatibility/migration evidence; old maintained evaluators must typed-block unsupported v2. Candidate declaration does not acquire protected policy/evaluator authority.",
+  "prior_evidence": "Historical18563 matrix retained three whole-workplan schema failures after expensive collection;18594 corrected closed schema; current schema-first execution order remains qualification-only, not universal canonical ingress."
+}
