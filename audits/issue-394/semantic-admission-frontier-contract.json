@@ -46,6 +46,30 @@
     "Claiming authored static conformance as runtime truth or full machine DAG adoption"
   ],
   "dependency_acceptance": "Foundation source admission only; all full Issue 394 acceptance gates remain open. Reproduction scan after audit-only daf36f22 has unchanged authoritative code from failed 97c1e986.",
+  "explicit_candidate_lane_followup": {
+    "status": "SOURCE_OBSERVATION_CONTRACT_UNIMPLEMENTED_UNQUALIFIED",
+    "authority": false,
+    "observation": "local_pr_context.derive_local_validation_lane returns any explicit requested lane before inspecting custody; run_prospective_train then computes candidate/policy/provider boundaries before the existing required_artifacts candidate-qualification check reauthenticates exact adopter base. This source observation does not establish a bypass of the retained final guard.",
+    "bounded_context": "Existing local PR lane derivation and adopter qualification custody",
+    "targets": [
+      "bcf_governance/tooling/local_pr_context.py",
+      "tests/test_local_pr.py",
+      "tests/test_release_adopter_qualification.py"
+    ],
+    "requirements": [
+      "An explicit PROVIDER_PR request retains its ordinary behavior and cannot be promoted to isolated qualification by a marker.",
+      "An explicit ISOLATED_CANDIDATE_QUALIFICATION request is a request, not authority: authenticate existing runtime custody and exact context.base_sha/tree against the existing candidate_qualification_matches owner before returning that lane.",
+      "Malformed custody, unavailable base tree, wrong adopter base or missing exact qualification custody produce a typed early rejection before prospective allocation or provider verification; do not silently convert an invalid explicit qualification request into an ordinary PR pass.",
+      "Preserve automatic authenticated lane derivation, genuinely local supported adopter qualification, public CLI grammar and independent later custody/changelog checks. Reauthenticate moving subjects at consuming boundaries; no new marker, receipt, evaluator or authority family."
+    ],
+    "expected_controls": [
+      "Explicit isolated request with missing, wrong-base or invalid custody rejects at lane derivation and cannot reach downstream allocation/provider callbacks.",
+      "Explicit isolated request with exact authenticated adopter base retains its qualified lane; automatic exact and ordinary cases preserve existing behavior.",
+      "Movement after early validation still rejects in the retained consuming-boundary custody check; early success cannot suppress later checks.",
+      "Test-scoped bypass of early custody validation must fail its named downstream-allocation control; installed adopter qualification and runtime parity remain required."
+    ],
+    "sequencing": "Contract before tests/production; source-only while Recovery clear-runway remains held. No runtime verdict, broad authority flaw or completed acceptance claim."
+  },
   "configured_static_gate_order_followup": {
     "status": "authored_requirements_not_implemented_or_qualified",
     "authority": false,
