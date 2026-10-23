@@ -1,0 +1,26 @@
+{
+  "authority": false,
+  "acceptance_advance": false,
+  "scope": "Installed private-runtime public entrypoint bindings; test-only bounded vertical slice",
+  "context": "existing lifecycle composition conformance and installation projection",
+  "side": "query",
+  "target_modules": [
+    "tests/test_installed_public_entrypoint_bindings.py"
+  ],
+  "expected_tests": [
+    "fresh and upgrade real installed Lite consumers with isolated SDK-absent interpreter",
+    "public facade resolves declared facade.py::main to runtime.py::produce without authority",
+    "moved facade bytes rejected by installed typed domain error",
+    "moved catalog bytes rejected by installed typed domain error"
+  ],
+  "implementation": "Reuse existing real-Git binding fixtures and canonical installed_consumer/isolated_python fixtures; pass typed fixture data via closed test-only JSON encoding into isolated subprocess importing only consumer _bcf_runtime. Verify imported implementation path under installed consumer. No candidate code execution or alternate evaluator.",
+  "forbidden_files": [
+    "main",
+    "maintained repositories",
+    "production modules",
+    "workflow definitions",
+    "governance/ci-authority.yml"
+  ],
+  "boundaries": "Tests prove installed transport parity of existing facade behavior, not protected-main authority, complete lifecycle population, native proof receipts or phase acceptance. Existing full runtime18625 is prior separate observation.",
+  "sequence": "Commit contract before tests. Run six concrete fresh/upgrade positive/negative cases plus affected source controls under finite allocation; then normalize derived test manifest through canonical owner."
+}
