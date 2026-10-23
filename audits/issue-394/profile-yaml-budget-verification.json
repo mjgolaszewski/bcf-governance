@@ -1,6 +1,6 @@
 {
   "authority": false,
-  "status": "PREDECESSOR_RED_QUALIFIED_GREEN_PENDING",
+  "status": "RENDERER_AND_DEPLOYED_CONSUMERS_QUALIFIED_REMAINING_GATES_PENDING",
   "source": "df96363f5962799ec1ced71f542fa61aef3be5b9",
   "actual_cases": 16,
   "passed": 15,
@@ -22,8 +22,33 @@
     "source-pins.json": "a64d8aec9c6314a12bb7518faf93537f147ddd06fbc3eb28bf60020057de0de8"
   },
   "limits": [
-    "This is renderer detector evidence, not a passing full packet or phase closure",
-    "Short-anchor production change, canonical projections, fresh/upgrade and native controls still require qualification"
+    "Retained predecessor RED remains negative",
+    "Architecture, semantic, registered native controls and exact archive consumers remain required",
+    "Compiled type gate is not strict mypy; installed dependency operations are simulated",
+    "No phase closure, performance target, provider acceptance or release claim"
   ],
-  "acceptance_advance": false
+  "acceptance_advance": false,
+  "green": {
+    "source_commit": "0f74082c1ed91be4d51c4fda7dc46be38bbe13c6",
+    "exact_generated_checkpoint": "a8798b9484cfc3cf65a8c86829f3a968aaefda9e",
+    "actual_cases": 22,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "stage_exits": {
+      "projection": 0,
+      "manifest-check": 0,
+      "lint": 0,
+      "compile": 0,
+      "governance": 0,
+      "exposure": 0,
+      "tests": 0,
+      "pack-check": 0
+    },
+    "registry_bytes": 102872,
+    "unchanged_budget_bytes": 103424,
+    "source_pins_sha256": "c1b886e45000df28c6985edb69d9b6e16a39e276260330c97206976a43e7c7fe",
+    "junit_sha256": "3a68b72a384e252df75b085a67e045d611e4cf4e5ec98aef5589f5b78019c625",
+    "independent_scoped_readback_sha256": "1dc6407d572dd95771b45a5ebdcf8e9d98adf50b0185c8128d58dce1f435f97a"
+  }
 }
