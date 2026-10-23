@@ -51,7 +51,9 @@ def capture_public_operation_bindings(
             raise CIGraphError("public operation entrypoint contradicts its exact source catalog")
         classified.add(slot)
     if classified != {(population, key) for population, entries in populations.items() for key in entries}:
-        raise CIGraphError("public operation catalog contains unclassified source entries")
+        missing = sorted(f"{population}:{key}" for population, entries in populations.items()
+                         for key in entries if (population, key) not in classified)
+        raise CIGraphError("unclassified public application operations: " + ", ".join(missing))
     metadata = dict(
         operations_checked=len(registry.operations), policy_subject=identity["subject"],
         policy_blob_oid=identity["blob_oid"], registry_sha256=identity["registry_sha256"],
