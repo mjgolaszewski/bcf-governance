@@ -1,0 +1,93 @@
+{
+  "authority": false,
+  "status": "PARTIAL_CONSUMER_PROOF_GOVERNANCE_NEGATIVE",
+  "source_before_generation": "35e0c933913e8a91c94471f31d5904d200e909ef",
+  "exact_content_checkpoint": "e8326b69dba09e7e5c2c36da04ee541589771221",
+  "checkpoint_scope": "Exact2213 file-content identities match captured source generation; this is not new execution on the checkpoint commit",
+  "test_counts": {
+    "cases": 101,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "tests_seconds": 8.19,
+  "consumer_paths": [
+    "source",
+    "fresh SDK-absent private runtime",
+    "upgraded SDK-absent private runtime"
+  ],
+  "simulated_effects": [
+    "pip install",
+    "installed inventory"
+  ],
+  "canonical_projection": "completed",
+  "exact_manifest_generation": "completed",
+  "manifest_accounting": [
+    {
+      "path": "governance/test-manifests/contract-test.txt",
+      "old_count": 1129,
+      "new_count": 1183,
+      "added": 56,
+      "superseded_unparameterized_aliases": {
+        "tests.test_ci_github_release::test_release_authorization_inputs_are_provider_resolved_without_caller_ids": [
+          "tests.test_ci_github_release::test_release_authorization_inputs_are_provider_resolved_without_caller_ids[False]",
+          "tests.test_ci_github_release::test_release_authorization_inputs_are_provider_resolved_without_caller_ids[True]"
+        ],
+        "tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts": [
+          "tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts[False]",
+          "tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts[True]"
+        ]
+      },
+      "unexplained_missing_nodes": []
+    },
+    {
+      "path": "governance/test-manifests/test.txt",
+      "old_count": 4738,
+      "new_count": 4792,
+      "added": 56,
+      "superseded_unparameterized_aliases": {
+        "tests.test_ci_github_release::test_release_authorization_inputs_are_provider_resolved_without_caller_ids": [
+          "tests.test_ci_github_release::test_release_authorization_inputs_are_provider_resolved_without_caller_ids[False]",
+          "tests.test_ci_github_release::test_release_authorization_inputs_are_provider_resolved_without_caller_ids[True]"
+        ],
+        "tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts": [
+          "tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts[False]",
+          "tests.test_ci_github_release::test_release_authorizer_binds_newest_certification_and_controller_artifacts[True]"
+        ]
+      },
+      "unexplained_missing_nodes": []
+    }
+  ],
+  "governance": {
+    "exit": 1,
+    "cause": "gate-contract registry context budget",
+    "actual_bytes": 104814,
+    "existing_budget_bytes": 103424
+  },
+  "overall_exit": 1,
+  "unstarted_checks": [
+    "exposure",
+    "lint",
+    "compile",
+    "pack-check"
+  ],
+  "raw_sha256": {
+    "projection.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "manifests.stdout": "2f6c5eeb24671056f2d1a7eceff6783fef80c979f511aa751bd6d8a9cde192c5",
+    "governance.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "manifests.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "projection.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "steps.json": "c421534f695fd01ef83b539ebd7c73e76dea3debb2ac1099028e3e7a10056ded",
+    "tests.xml": "bc70b21707e68a062159564a0e1455189357a5f996a27eb7f22d2349fdbb3e83",
+    "tests.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests.stdout": "0095c8cc52e0062d459e7e5484bb400592d8f32f12d958b2470f16941a0de810",
+    "governance.stderr": "855592cc3527ad4501e544110ec1a61f836d520c1e06964b71eaf727337d9497",
+    "source-pins.json": "f1e55c5e70b965a0184e25f38976ed0e9945298e80c22b8c2559629ddeb4d850"
+  },
+  "residuals": [
+    "two legacy native oracle aliases need original [False] binding",
+    "short anchor policy and lossless registry rendering need causal qualification",
+    "native mutations, architecture/semantic and exact wheel/sdist/installed runtime parity remain required"
+  ],
+  "acceptance_advance": false
+}

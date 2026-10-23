@@ -1,0 +1,35 @@
+{
+  "authority": false,
+  "status": "CONTRACT_BEFORE_PRODUCTION_CHANGE",
+  "bounded_context": "existing canonical profile rendering and native test-oracle bindings",
+  "layer": "existing profile serialization query and existing governed test contract",
+  "side": "lossless query projection and exact control metadata",
+  "source_checkpoint": "e8326b69dba09e7e5c2c36da04ee541589771221",
+  "target_modules": [
+    "bcf_governance/tooling/profile_yaml.py",
+    "governance/gate-contracts.yml"
+  ],
+  "required_behavior": [
+    "Reuse maintained2.3.6 short anchor naming in the existing dumper subclass; retain existing scalar/sequence sharing and comma-preserving compaction",
+    "Render registry through existing render_profile_surface at canonical4096 width; decoded values/types/control populations remain equal except explicitly corrected oracle identities",
+    "Preserve unchanged101KiB/900line declared context budget and existing stronger renderer test bound",
+    "Bind two legacy release controls to the original [False] behavior; retain [True] movement tests and all collected nodes",
+    "Keep fresh/upgrade installed bytes and canonical private runtime projections qualified"
+  ],
+  "existing_controls": [
+    "tests/test_profile_yaml.py::test_current_gate_contract_renders_inside_existing_context_budget",
+    "complete existing tests/test_profile_yaml.py type/scalar/fixed-point/budget controls"
+  ],
+  "sequence": [
+    "Execute existing renderer controls before source change; retain exact byte-budget RED and unrelated outcomes",
+    "Apply only short-anchor class configuration from immutable maintained source and canonical rendering",
+    "Run renderer GREEN, existing native release/publication controls, affected governance/architecture/semantic/package checks and installed/archive qualification"
+  ],
+  "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "forbidden": [
+    "main or immutable release mutations",
+    "raising budgets or dropping controls/selectors/tests",
+    "new renderer/broker/receipt family or broad maintained formatter transplant",
+    "qualification claims from proposal rendering or old subject results"
+  ]
+}
