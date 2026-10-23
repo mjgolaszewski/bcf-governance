@@ -100,3 +100,88 @@ def test_existing_direct_public_function_keeps_identity(public_reconstructed_bin
     )
     assert result['authority'] is False
     assert result['execution_qualified'] is False
+# Append to the bounded regression only after authenticating its actual RED.
+
+
+def test_public_facade_keeps_protected_policy_and_runtime_subjects_distinct(
+    public_facade_inputs, composition,
+):
+    inputs, _, _ = public_facade_inputs
+    protected = copy.deepcopy(inputs['operation_policy_subject'])
+    # Both functions are genuine existing relationship roots; the public policy
+    # keeps its declared facade identity while the runtime alias changes.
+    path = inputs['repo_root'] / 'facade.py'
+    path.write_text('from runtime import verify as main\n')
+    runtime = _capture_subject(inputs, composition)
+    inputs['operation_policy_subject'] = protected
+    result = validate_reconstructed_lifecycle_bindings(**inputs)
+    assert protected != runtime
+    assert result['public_operation_bindings']['policy_subject'] == protected
+    assert result['source_reconstruction']['subject'] == runtime
+    assert result['public_operation_bindings']['entrypoint_bindings'] == (
+        ('example.produce.v1', 'facade.py::main', 'runtime.py::verify'),
+    )
+    assert result['authority'] is False
+
+
+@pytest.mark.parametrize('catalog', [
+    'import facade\nCOMMANDS = {}\n',
+    'import facade\nCOMMANDS = {"produce": facade.main, "unclassified": facade.main}\n',
+])
+def test_public_catalog_changes_reject_before_full_discovery(
+    public_facade_inputs, composition, monkeypatch, catalog,
+):
+    from bcf_governance.tooling import semantic_ownership_inventory as source
+    from bcf_governance.tooling.ci_graph_errors import CIGraphError
+
+    inputs, _, _ = public_facade_inputs
+    protected = copy.deepcopy(inputs['operation_policy_subject'])
+    (inputs['repo_root'] / 'commands.py').write_text(catalog)
+    _capture_subject(inputs, composition)
+    inputs['operation_policy_subject'] = protected
+    monkeypatch.setattr(source, 'discover_python_source', lambda *a, **kw: pytest.fail(
+        'full source discovered before deterministic public catalog rejection',
+    ))
+    with pytest.raises(CIGraphError):
+        validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('path', ['facade.py', 'commands.py'])
+def test_public_facade_rejects_workspace_movement_at_capture(public_facade_inputs, path):
+    from bcf_governance.tooling.ci_graph_errors import CIGraphError
+
+    inputs, _, _ = public_facade_inputs
+    source = inputs['repo_root'] / path
+    source.write_text(source.read_text() + '\nsubstituted()\n')
+    with pytest.raises(CIGraphError):
+        validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+def test_public_facade_cannot_bind_an_unrelated_runtime_function(public_facade_inputs, composition):
+    from bcf_governance.tooling.ci_graph_errors import CIGraphError
+
+    inputs, _, _ = public_facade_inputs
+    (inputs['repo_root'] / 'facade.py').write_text('from runtime import declared_port as main\n')
+    _capture_subject(inputs, composition)
+    with pytest.raises(CIGraphError, match='lifecycle relationship'):
+        validate_reconstructed_lifecycle_bindings(**inputs)
+
+
+@pytest.mark.parametrize('path', ['facade.py', 'commands.py'])
+def test_public_facade_uses_captured_source_after_reconstruction(
+    public_facade_inputs, monkeypatch, path,
+):
+    from bcf_governance.tooling import semantic_ownership_inventory as source
+
+    inputs, _, _ = public_facade_inputs
+    actual = source.resolve_python_imports
+    def substitute_after_capture(*args, **kwargs):
+        inventory = actual(*args, **kwargs)
+        (inputs['repo_root'] / path).write_text('raise RuntimeError("must not execute")\n')
+        return inventory
+    monkeypatch.setattr(source, 'resolve_python_imports', substitute_after_capture)
+    result = validate_reconstructed_lifecycle_bindings(**inputs)
+    assert result['public_operation_bindings']['entrypoint_bindings'] == (
+        ('example.produce.v1', 'facade.py::main', 'runtime.py::produce'),
+    )
+    assert result['authority'] is False
