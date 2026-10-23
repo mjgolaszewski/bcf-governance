@@ -1,0 +1,163 @@
+{
+  "authority": false,
+  "bcf_receipt": false,
+  "status": "SOURCE_AND_TEST_DETECTOR_SCOPED_PASS_FURTHER_QUALIFICATION_PENDING",
+  "workitems": [
+    "foundation.composition",
+    "foundation.conformance",
+    "foundation.submit-normalization"
+  ],
+  "contract": "audits/issue-394/public-entrypoint-composition-contract.json",
+  "detector_contract": "audits/issue-394/public-entrypoint-detector-contract.json",
+  "schema_contract": "audits/issue-394/workplan-terminal-followup-schema-contract.json",
+  "declared_public_identity_distinct_from_runtime_function": true,
+  "protected_policy_subject_distinct_from_runtime_source": true,
+  "source_catalog_and_alias_reads": "existing exact committed regular-blob owner; genuinely unbound filesystem behavior retained",
+  "early_rejections": "Malformed/crosswalk/public-slot contradictions reject before full source discovery; actual runtime membership remains mandatory after genuine reconstruction",
+  "observations": [
+    {
+      "label": "real facade causal RED; direct function positive",
+      "allocation": 18530,
+      "independent_cursor": 18537,
+      "subject": {
+        "commit": "832d3a589404cf916d2d65ba45ab9f31658f9c5f",
+        "tree": "dc5749f60bfdf4eaf24fa3a3d1edf727a10a6cdc"
+      },
+      "plan_sha256": "f97b3cc0dc2c671942f74bb3c5efb33a6dfa889ceb9894fbfb75d5bc9e4dd1a7",
+      "terminal_sha256": "d8f0be50360d2131fa0efb251f132dd5c895ccb7de146a04b7edcfba72a451cf",
+      "independent_readback_sha256": "49e35235d18cc0bc728e4efc73043b14b9c49941eb465f51aedaafc195beebf3",
+      "raw_exit": 1,
+      "cases": {
+        "failed": 1,
+        "passed": 1
+      },
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 25.114,
+      "allocated_output_bytes": 622592
+    },
+    {
+      "label": "first affected matrix: diagnostic plus historical schema negatives",
+      "allocation": 18563,
+      "independent_cursor": 18573,
+      "subject": {
+        "commit": "ebffb2842b0f3de33eeff19023e61c2b14d7b866",
+        "tree": "bc83317cfa9422aa9391ee8ed42a2e58ba800b31"
+      },
+      "plan_sha256": "2f1fbc0e392673a2b0cadec29b01892c1e806d81e9a1d2fd4bd160edf12b4063",
+      "terminal_sha256": "42fb91785396268be0415cc926e0eee90ec25f788a1d6748a299a8acaf04ecf5",
+      "independent_readback_sha256": "b2453f0b822accc3f6d937c09f3b655abc3e673cab668a429b47c08b5155bc38",
+      "raw_exit": 1,
+      "cases": {
+        "failed": 4,
+        "passed": 386
+      },
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 39.38,
+      "allocated_output_bytes": 4210688
+    },
+    {
+      "label": "authored schema first, then full affected source matrix",
+      "allocation": 18594,
+      "independent_cursor": 18598,
+      "subject": {
+        "commit": "53840043bab6943d2bce5558913dee060a0c6e8b",
+        "tree": "d25c91880f05ebc7d6ac4aed0b38585723b43f99"
+      },
+      "plan_sha256": "5aa0db281f09629e18e73d0150d00219afa5ebd5b05ef1d577c2a02b2dacfea5",
+      "terminal_sha256": "68d39de6753e92ba895324f7bbc3ab5f1089a64217281fca7fde1842a6f94da8",
+      "independent_readback_sha256": "542a2652e9fac9a52a9b70a20fcc329e1f5711dd1f73a48a8572a9bff5e586dd",
+      "raw_exit": 0,
+      "cases": {
+        "schema_passed": 12,
+        "behavior_passed": 390,
+        "new_boundary_cases": 15
+      },
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 45.407,
+      "allocated_output_bytes": 380928
+    },
+    {
+      "label": "four test-scoped actual-guard detector cases",
+      "allocation": 18600,
+      "independent_cursor": 18603,
+      "subject": {
+        "commit": "5e755c7d3ab37715588247ad680f84ed7087c717",
+        "tree": "688faa3662ecc22ff2a8ce8f12007a681819938c"
+      },
+      "plan_sha256": "f05bd8efb73edfde76394cae053786b8ed377c8b7bf82c45fcb18f3157c52cc5",
+      "terminal_sha256": "27552666459996c0dc3cfbefd2d5426a3b940256da96396326633b2c6e06bc88",
+      "independent_readback_sha256": "e28a2681812cb010e98d4fce2ac66fca49bdb63eb2b742394c974673a2132a66",
+      "raw_exit": 0,
+      "cases": {
+        "detector_passed": 4
+      },
+      "errors": 0,
+      "skips": 0,
+      "elapsed_seconds": 3.172,
+      "allocated_output_bytes": 315392
+    }
+  ],
+  "projection": {
+    "commit": "b295641342c208ca2a983f8b8d726837e3a34f58",
+    "kind": "source generator and byte equality only",
+    "modules": [
+      {
+        "canonical": "bcf_governance/tooling/ci_graph_composition.py",
+        "sha256": "a6e694be404e998549d8bba3eb71d960ba376efcdf4621ee1fa1c8cd0bd13733",
+        "byte_identical_mirrors": [
+          "template-repo/scripts/_bcf_runtime/ci_graph_composition.py",
+          "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_graph_composition.py"
+        ]
+      },
+      {
+        "canonical": "bcf_governance/tooling/ci_graph_composition_operations.py",
+        "sha256": "7f89fafc26415bfe01d58b24caa56a2ff220c6572a18c8b723422f52e2f62a94",
+        "byte_identical_mirrors": [
+          "template-repo/scripts/_bcf_runtime/ci_graph_composition_operations.py",
+          "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_graph_composition_operations.py"
+        ]
+      },
+      {
+        "canonical": "bcf_governance/tooling/semantic_authority_contracts.py",
+        "sha256": "9f25801f3c279f89ad049eee2fb9c8505ba46ddec6257d8afbf961653bae3ba4",
+        "byte_identical_mirrors": [
+          "template-repo/scripts/_bcf_runtime/semantic_authority_contracts.py",
+          "bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_authority_contracts.py"
+        ]
+      },
+      {
+        "canonical": "bcf_governance/tooling/semantic_authority_operations.py",
+        "sha256": "956f34b50c89cff43621ac6efbc151f9057ade6e88f0729d4781bbb258d2c90d",
+        "byte_identical_mirrors": [
+          "template-repo/scripts/_bcf_runtime/semantic_authority_operations.py",
+          "bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_authority_operations.py"
+        ]
+      },
+      {
+        "canonical": "bcf_governance/tooling/semantic_operation_python.py",
+        "sha256": "7289391d3fc9b8bacd56d36969695e5c2af62091ce121c5628c9bfd03ea23e29",
+        "byte_identical_mirrors": [
+          "template-repo/scripts/_bcf_runtime/semantic_operation_python.py",
+          "bcf_governance/pack/template-repo/scripts/_bcf_runtime/semantic_operation_python.py"
+        ]
+      }
+    ]
+  },
+  "historical_schema_disposition": "Retained followup already present at b8b89526 and832d3a58 but absent from their closed schema. Typed closed object added without changing historical workplan data or false authority/acceptance guards.",
+  "detector_scope": "Original regressions and genuine fixture constructors, separate baseline/mutant repositories, precise named failures under single trusted in-memory guard faults; ordinary test/JUnit family, not a BCF native-control receipt",
+  "acceptance_advance": false,
+  "whole_requirements_open": 82,
+  "existing_slices_unchanged": 38,
+  "residuals": [
+    "Canonical test manifests and required governance/architecture/semantic/package/security gates pending.",
+    "Fresh/upgrade installed consumers and exact source/wheel/sdist/template qualification pending for these bytes.",
+    "Canonical earliest-admission schema binding remains unimplemented; current schema-first order is scoped to this qualification. Extend existing reference-inventory owner, with versioned compatibility and consuming-boundary freshness, rather than a second registry.",
+    "Complete runtime/effect/initialization/native/external/protected-context populations and trace conformance remain unqualified.",
+    "P32 remains active, P33-P35 dormant; source behavior and test detector results do not authorize phase, suppression, provider-main or release progress.",
+    "Performance targets remain unapproved; historical unmatched timings do not establish p50/p95 claims."
+  ],
+  "next": "Generate exact canonical test manifests, run required architecture/semantic/package and supported installed consumers, retain negative history, then continue complete foundation populations through existing owners."
+}
