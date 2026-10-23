@@ -4,11 +4,13 @@ from __future__ import annotations
 from copy import deepcopy
 from types import SimpleNamespace
 
+import pytest
 import yaml
 
 from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import MainIdentity
 from bcf_governance.tooling.ci_github_release_inputs import require_terminal_release_phase_at_main
+from bcf_governance.tooling.governance_validation.common import GovernanceValidationError
 from bcf_governance.tooling.governance_validation.supplemental_releases import (
     declared_release_train_terminal,
 )
@@ -71,3 +73,51 @@ def test_maintained_patch_terminal_uses_exact_main_and_ignores_candidate(tmp_pat
     ) == "P31"
     assert set(reads) == set(documents)
     assert values["ledger"]["active_phase"]["lifecycle_status"] == "completed"
+
+
+@pytest.mark.parametrize("defect", [
+    "other-minor", "other-major", "lower-patch", "prerelease", "invalid-target",
+    "active-train", "planned-train", "active-phase", "missing-phase-status",
+    "supplemental-owner", "conflicting-exact-owner", "competing-family-owner",
+    "multiple-members", "missing-history", "wrong-build-block",
+])
+def test_maintenance_fallback_rejects_unqualified_catalog(defect):
+    values = _maintained_catalog()
+    product, build, ledger = (values[key] for key in ("product", "build", "ledger"))
+    train = ledger["release_trains"]["release_26"]
+    if defect == "other-minor":
+        values["version"] = "2.4.0"
+    elif defect == "other-major":
+        values["version"] = "3.3.6"
+    elif defect == "lower-patch":
+        train["target_version"], values["version"] = "2.3.7", "2.3.6"
+    elif defect == "prerelease":
+        values["version"] = "2.3.6rc1"
+    elif defect == "invalid-target":
+        train["target_version"] = "2.3"
+    elif defect in {"active-train", "planned-train"}:
+        train["status"] = defect.split("-")[0]
+    elif defect == "active-phase":
+        ledger["active_phase"]["lifecycle_status"] = "active"
+    elif defect == "missing-phase-status":
+        ledger["active_phase"].pop("lifecycle_status")
+    elif defect == "supplemental-owner":
+        train["kind"] = "supplemental_publication"
+    elif defect in {"conflicting-exact-owner", "competing-family-owner"}:
+        ledger["release_trains"]["other"] = {
+            "target_version": "2.3.6" if defect == "conflicting-exact-owner" else "2.3.1",
+            "status": "completed",
+        }
+    elif defect == "multiple-members":
+        product["execution_phases"].append({
+            "phase_id": "P32", "build_block": "next", "release_train": "release_26",
+        })
+        build["phase_sequence"].append({
+            "phase_id": "P32", "build_block": "next", "hard_dependencies": ["P31"],
+        })
+    elif defect == "missing-history":
+        values["history"]["entries"] = []
+    elif defect == "wrong-build-block":
+        build["phase_sequence"][0]["build_block"] = "other"
+    with pytest.raises(GovernanceValidationError):
+        declared_release_train_terminal(**values)
