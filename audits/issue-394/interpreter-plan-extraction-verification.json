@@ -1,0 +1,41 @@
+{
+  "authority": false,
+  "status": "SOURCE_EXTRACTION_EXECUTION_PENDING",
+  "contract": "audits/issue-394/interpreter-plan-deconstruction-contract.json",
+  "characterization_subject": "f7701b4e351a962cad2b2525e745e70828284d57",
+  "characterization_cases": 90,
+  "characterization_failures": 0,
+  "exact_ast_definitions_sha256": {
+    "InterpreterEnvironmentError": "4270b6982963de12f9830d682c11939a3eb74e4a593daf1ca64d4a132632fda2",
+    "validate_runtime_import_dependencies": "f1e832f42d5d5652ba8902e406fef3c8f55122e41f8e2f217ce78099d9eec30a",
+    "InterpreterEnvironmentPlan": "ebe25aac48adf488c2dd9e886714be0eb1d6e9d15ac7e61018ad78c2c6f63508",
+    "probe_interpreter_environment": "509e63136ea68d91eb4e9862a46600ac4334cd6d2b80228841a3b03f3765565a",
+    "_dependency_name": "ba6eced742933637e4effce79f49786786d5db35c70827bfc7abc4ee9385c36f",
+    "_normalized_name": "b93557e907b61ebcbaef397cd574fc6c77619b68f06d72cd76a3c5d7fa277c1c",
+    "_mapping": "7aeda49bc0d536bc2555e5ae338df5f9154041ad1f1474a198748fe53d7f6643",
+    "_requirements": "04d49d1125b08ddc2ecfb8660b502b9b955a3a60a86a9ac0842264d6b92bce18",
+    "_safe_projection": "85026fbb87662972016e352358e9ec4d6eb5a0bca59e8e64cc2d13e36387e071",
+    "_legacy_interpreter_environment": "799d33c471e5d94fe7efe392eaa13db05ff7f0245c075f3ed772edc723a5e6e8",
+    "derive_interpreter_environment": "119c4f5b8ef357aa02a0d9dc6df62bb95d90473dd43583fc36cfdc7bec55aa1e",
+    "verify_interpreter_environment_projection": "e005d48a6c5a018fa899e72a5b49a95bb661dd2f36af0b719cff8186ed30905d",
+    "apply_interpreter_environment_projection": "381ff301b5198275d3b56dbe966c706c0f3aab9343f86852db45f763b4f99aab",
+    "reconcile_interpreter_environment": "457100992f326974264ca8d2f72138ea2af3334fe4d6b00ea8c086b2e987ac17",
+    "materialize_interpreter_environment": "397f906becb7d641cfb4d44653457036fc5a93f79499ca6fc6e11afa0069fa9c",
+    "_matching_cached_environment": "5c2d78a0492817fd2e15b7d4e1902a6f296df8ed473b4f7405a9e812a1996286",
+    "_installed_inventory": "155b7250680ef97efe1ca12311b6952d818dc22373558b50ffb8f76ad7c207b4",
+    "_sha256_text": "f29a6ddf4f2671eafff0eca696f6d17daa0c188977a236a059641f67379a15fd",
+    "main": "f7d8918998e08dbb530ed9a444b44a9c6a48f0ceab2066a81f24b0b828874478"
+  },
+  "owner_lines": 724,
+  "plan_lines": 91,
+  "public_import_compatibility": "Original class/error/private requirement helper names reexported from old owner; CLI unchanged.",
+  "behavior": "No postpip or publication guards added in this extraction.",
+  "remaining": [
+    "fresh source tests and three new boundary controls",
+    "canonical generator/private mirror synchronization",
+    "architecture/lint/type/governance/semantic qualification",
+    "installed source/wheel/sdist parity",
+    "separate causal source-freshness fix integration"
+  ],
+  "acceptance_advance": false
+}
