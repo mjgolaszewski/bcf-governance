@@ -286,6 +286,21 @@
     "contract_commit": "2a7888c3",
     "tests_commit": "800c86076c11cadb3ac3bcaa2e815345d8e21a91",
     "execution_disposition": "Scheduled baseline18658 withdrawn UNUSED before launch on directly read and acknowledged clear-runway operator control16d6b5be-3ff5-507e-b5f8-0e247683805e. No native session, test result or production implementation.",
-    "next": "Wait for explicit Recovery/operator runway release before fresh causal baseline allocation; independently qualify actual failure before production extension. No old grant or subject relabeling."
+    "next": "Wait for explicit Recovery/operator runway release before fresh causal baseline allocation; independently qualify actual failure before production extension. No old grant or subject relabeling.",
+    "additional_authored_controls": {
+      "commit": "a0278966",
+      "cases": 4,
+      "boundaries": [
+        "normalization before distribution/collection/lease/runner",
+        "submit CLI before project environment, proof or push"
+      ],
+      "defects": [
+        "whole-inventory unexpected field",
+        "missing required inventory population"
+      ],
+      "status": "AUTHORED_UNRUN_UNDER_CLEAR_RUNWAY",
+      "current_authored_population": 15,
+      "production_changes": false
+    }
   }
 }
