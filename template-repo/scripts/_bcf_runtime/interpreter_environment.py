@@ -592,6 +592,7 @@ def materialize_interpreter_environment(
                 raise InterpreterEnvironmentError(
                     "derived project interpreter installation failed: " + detail
                 )
+            verify_interpreter_environment_projection(plan)
             inventory = _installed_inventory(candidate, root)
             inventory_sha256 = _sha256_text(inventory)
             identity = _sha256_text(plan_identity + "\0" + inventory_sha256)
@@ -615,6 +616,7 @@ def materialize_interpreter_environment(
                 + "\n",
                 encoding="utf-8",
             )
+            verify_interpreter_environment_projection(plan)
             temporary.replace(target)
         finally:
             if temporary.exists():
