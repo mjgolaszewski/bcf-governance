@@ -71,3 +71,40 @@ def test_explicit_qualification_cannot_skip_exact_custody(
             requested=owner.LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
             runner=_git_runner,
         )
+
+
+@pytest.mark.parametrize('defect', ['absent', 'wrong-base'])
+def test_public_qualification_rejection_precedes_lease_toolchain_and_provider(
+    qualification_subject, monkeypatch, defect,
+):
+    from bcf_governance.tooling import local_pr
+
+    repo, context, snapshot = qualification_subject
+    if defect == 'absent':
+        snapshot = replace(snapshot, state=RuntimeCustodyState.ABSENT)
+    else:
+        snapshot = replace(snapshot, provenance_claim={
+            'adopter': {'commit_sha': 'f' * 40, 'tree_sha': 'e' * 40},
+        })
+    monkeypatch.setattr(owner, 'inspect_runtime_custody', lambda _root: snapshot)
+    monkeypatch.setattr(local_pr, 'resolve_local_pr_context', lambda *a, **k: context)
+    # Independent authored lifecycle admission has its own causal controls.
+    monkeypatch.setattr(local_pr, 'require_clean_candidate_root', lambda root, **k: root)
+    monkeypatch.setattr(local_pr, 'validate_evaluation_authored_ready', lambda *a, **k: None)
+
+    def forbidden(*args, **kwargs):
+        pytest.fail('qualification custody rejection followed resource/provider admission')
+
+    for name in ('local_gate_lease', 'validate_local_toolchain',
+                 'validate_direct_protection_prospective', 'verify_provider_workflow_authority'):
+        monkeypatch.setattr(local_pr, name, forbidden)
+    with pytest.raises((owner.LocalPRError, owner.ProspectiveValidationError),
+                       match='qualification'):
+        local_pr.run_prospective_train(
+            repo, semantic_intent='pr', evaluation_target=None,
+            subject_commit=context.head_sha,
+            subject_tree=_git(repo, 'rev-parse', 'HEAD^{tree}'),
+            python_executable=repo / '.venv/bin/python',
+            validation_lane=owner.LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
+            runner=_git_runner,
+        )
