@@ -414,3 +414,40 @@ def test_authoring_uv_version_pin_does_not_change_selected_graph(tmp_path: Path)
     plan = derive_interpreter_environment(tmp_path)
     assert plan is not None
     assert 'driver-binary==3.3.3' in plan.requirements
+
+
+def test_locked_probes_consume_existing_admitted_runner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """All three probe effects pass through 2.5 native ownership admission."""
+    from bcf_governance.tooling import interpreter_locked_project as locked
+
+    _fixture(tmp_path)
+    plan = derive_interpreter_environment(tmp_path)
+    assert plan is not None
+    runtime = {"markers": dict(ENVIRONMENT), "runtime_platform": {
+        "sysconfig_platform": "linux-x86_64", "libc_name": "glibc", "libc_version": "2.36",
+    }}
+    calls: list[list[str]] = []
+
+    def admitted(argv: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(argv)
+        assert kwargs["timeout"] == 30
+        assert kwargs["capture_output"] is True
+        assert kwargs["text"] is True
+        assert kwargs["check"] is False
+        code = argv[3] if argv[1:3] == ["-I", "-c"] else ""
+        value = runtime if "sysconfig.get_platform" in code else dict(
+            row.split("==") for row in plan.requirements
+        )
+        return subprocess.CompletedProcess(argv, 0, json.dumps(value), "")
+
+    def forbidden(*args: object, **kwargs: object) -> None:
+        pytest.fail("locked probe bypassed admitted native ownership")
+
+    monkeypatch.setattr(locked, "run_admitted_command", admitted)
+    monkeypatch.setattr(locked.subprocess, "run", forbidden)
+    locked.verify_locked_runtime(plan, Path(sys.executable), "pip==26.2.2")
+    locked.verify_locked_installed_closure(plan, Path(sys.executable))
+    assert len(calls) == 3
+    assert calls[1][1:] == ["-m", "pip", "check"]
