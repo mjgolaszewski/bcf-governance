@@ -2602,6 +2602,8 @@ measurement_policy:
   - earliest failure latency and downstream work avoided
   - planner overhead
   - compute storage API and complexity budgets
+  - exact-main/controller
+  - developer interruption
   reporting:
   - user-selected collection uses governed provider runs as they occur plus controlled isolated local and pinned-adopter trials
   - authenticate exact subject and clock then freeze matched cohorts before percentile claims
