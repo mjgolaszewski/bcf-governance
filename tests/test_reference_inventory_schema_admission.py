@@ -100,6 +100,40 @@ def test_inventory_schema_movement_during_collection_blocks(schema_reference_rep
         )
 
 
+def test_local_fragment_inventory_schema_preserves_exact_references(schema_reference_repo):
+    schema = {
+        '$defs': {'inventory': {'type': 'object', 'required': ['implementation_slices'],
+                              'additionalProperties': False,
+                              'properties': {'implementation_slices': {'type': 'object'}}}},
+        '$ref': '#/$defs/inventory',
+    }
+    (schema_reference_repo / 'inventory.schema.json').write_text(json.dumps(schema))
+    result = owner.validate_authored_test_reference_inventories(
+        schema_reference_repo, python_executable=sys.executable,
+    )
+    assert result == {'authority': False, 'execution_qualified': False,
+                      'inventories_checked': 1, 'nodes_checked': 2}
+
+
+@pytest.mark.parametrize('reference', ['https://invalid.example/schema.json',
+                                     'other.schema.json', 'file:///tmp/schema.json'])
+def test_unused_nested_external_schema_reference_rejected_before_collection(
+    schema_reference_repo, monkeypatch, reference,
+):
+    path = schema_reference_repo / 'inventory.schema.json'
+    schema = json.loads(path.read_text())
+    # Even an unused definition must not become a deferred network/file read.
+    schema['$defs'] = {'unused': {'items': {'$ref': reference}}}
+    path.write_text(json.dumps(schema))
+    monkeypatch.setattr(owner, 'collect_selector_maps', lambda *a, **k: pytest.fail(
+        'collected inventory before nested schema reference admission',
+    ))
+    with pytest.raises(owner.TestManifestError, match='reference inventory schema'):
+        owner.validate_authored_test_reference_inventories(
+            schema_reference_repo, python_executable=sys.executable,
+        )
+
+
 @pytest.mark.parametrize('boundary', ['normalization', 'submit-cli'])
 @pytest.mark.parametrize('defect', ['unexpected-field', 'missing-required'])
 def test_schema_rejection_precedes_environment_distribution_and_proof(
