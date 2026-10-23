@@ -28,5 +28,12 @@
   "current_query_subject": "8c3cbfd685efc38059bd17872667e0689093b184",
   "observation": "Current declaration query selects phase trains only by exact target_version equality. Maintained published2.3.6 owns completedP31/release_26 with historical target2.3.0. A positive historical-catalog consumer control is required before claiming maintained single-phase/hotfix compatibility.",
   "limits": "Static source comparison only; no new provider execution or demonstrated runtime refusal. Current main and published236 bytes are unchanged. Do not silently weaken intermediate/missing/ambiguous train guards or invent a maintenance authority from supplemental rows.",
-  "next": "After current fixed-source extraction gates terminate, commit a bounded compatibility contract and cause-specific historical-catalog controls through existing release catalog/version/hotfix owners; preserve exact2.5train authority and existing single-phase publication behavior."
+  "next": "After current fixed-source extraction gates terminate, commit a bounded compatibility contract and cause-specific historical-catalog controls through existing release catalog/version/hotfix owners; preserve exact2.5train authority and existing single-phase publication behavior.",
+  "dispositions": [
+    {
+      "status": "BOUNDED_CORRECTION_INDEPENDENTLY_QUALIFIED",
+      "evidence": "audits/issue-394/maintained-single-phase-terminal-verification.json",
+      "scope": "Original static observation and source remain historical; causal refusal and bounded correction now executed. No maintained-main or publication authority change."
+    }
+  ]
 }

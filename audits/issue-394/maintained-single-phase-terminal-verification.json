@@ -1,0 +1,141 @@
+{
+  "authority": false,
+  "status": "BOUNDED_MAINTENANCE_TERMINAL_SOURCE_PRIVATE_AND_EXACT_OFFLINE_DISTRIBUTION_INDEPENDENTLY_QUALIFIED",
+  "contract": "audits/issue-394/maintained-single-phase-terminal-contract.json",
+  "source_commit": "c2d5878a0901366c68d71e970f50d68b71b72a1d",
+  "source_tree": "05fcd049e7212352e0a666e67d80cc445b87a02f",
+  "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "owners": [
+    "governance_validation/supplemental_releases.py::declared_release_train_terminal",
+    "ci_github_release_inputs.py::require_terminal_release_phase_at_main",
+    "release_versions.py::parse_release_version"
+  ],
+  "behavior": "Exact version owners preserved; absent exact owner permits only sole completed single-phase stable later patch of same major/minor, with every inventory/dependency/topology guard retained. Declaration is not closure/publication authority. Protected-main consumer source unchanged.",
+  "qualification": {
+    "17896": {
+      "subject": "5554f56959eda62c0506c9d4b09b215c5106e3e6",
+      "tree": "783af20a50de5f6917c01828e02acd75ccef3a41",
+      "source_pin_count": 2224,
+      "plan_sha256": "832ffdbebccde7ac18746ca17acce01a2c3b513a91369724a8e4458aecabe0d0",
+      "actual_returncode": 1,
+      "terminal_sha256": "06735b52f50530f8d89ddc50a04d2b8d7f3e8648af59478fa3daf93e8a6ef82e",
+      "independent_readback": 17904,
+      "independent_receipt_sha256": "a862a953c88b09571646d6520fe8554a9592e3153372630e39a549946bca6481",
+      "scope": "Two actual causal failures; absent or ambiguous release version owner"
+    },
+    "17937": {
+      "subject": "5a30f40cfe6327ff6d3692891b3a7e8de4f800c4",
+      "tree": "3859300c7553b38d800d61b33beb25243889dc8e",
+      "source_pin_count": 2224,
+      "plan_sha256": "06e6c8b0551420b73c2d0e89ed937034c4698abcd6215126dc4abb8f205dfbc0",
+      "actual_returncode": 0,
+      "terminal_sha256": "4a7258e9eb00891d78ec6280e1e9719d6f5cc0bf49cceb6de01c00760f98a5ae",
+      "independent_readback": 17947,
+      "independent_receipt_sha256": "0a707e08fb27043d6dd60ffcbcb194d1c27c38ec85284c943341a462cd588462",
+      "scope": "115passed/0failed,error,skip plus full retained five-document catalog through actual consumer with fake exact provider"
+    },
+    "17983": {
+      "subject": "8d1f7f54831b2fd9ae7e30d5cf6339cfc3307fd4",
+      "tree": "f79299a803c620d51e3e7dcf5704bea93d8dcb21",
+      "source_pin_count": 2226,
+      "plan_sha256": "99e983377fc7aea8104364a1789163c86a684aa0fae895d0f46fb2bae8a8bc7b",
+      "actual_returncode": 0,
+      "terminal_sha256": "263d022dffa327d6ccdc197c52343087e52c8525cb73a0b66305c2acc7e72c0b",
+      "independent_readback": 17993,
+      "independent_receipt_sha256": "88cd45a1e877f8f95481a9003cf8bfc1539b256394d2a4364e0fe4357d95f65e",
+      "scope": "Six canonical generated paths, two manifests +19/-0 each; source-only projection"
+    },
+    "18006": {
+      "subject": "c2d5878a0901366c68d71e970f50d68b71b72a1d",
+      "tree": "05fcd049e7212352e0a666e67d80cc445b87a02f",
+      "source_pin_count": 2226,
+      "plan_sha256": "d96925ff91aee1a6d0bf281e8a8b3aad0aab99c36405ed5c3677f954eec53cab",
+      "actual_returncode": 0,
+      "terminal_sha256": "48362be31df1faa17271f787a9bf075e47a51f2bb4ba2244fcd350be4263a566",
+      "independent_readback": 18011,
+      "independent_receipt_sha256": "eb2d2b223d7787375b1a2cf17e596eacdc52cfd8466b51ab6e1b73571d0dc4b9",
+      "scope": "Four native baselines/four exact assertion-failing mutants, two SDK-absent fresh/upgrade Lite consumers with17assertions each"
+    },
+    "18021": {
+      "subject": "c2d5878a0901366c68d71e970f50d68b71b72a1d",
+      "tree": "05fcd049e7212352e0a666e67d80cc445b87a02f",
+      "source_pin_count": 2226,
+      "plan_sha256": "514224305670d2494cf94c5dc14326dd5ae4572bb96d5d8f5ad6fcf33573a10e",
+      "actual_returncode": 0,
+      "terminal_sha256": "b15e4b763798fd560e1693e679cdbea22848d2fce851cbc30a412b541753b158",
+      "independent_readback": 18029,
+      "independent_receipt_sha256": "6234ce89e1d478d3b41e5123bd49f0185ecbcf11562a710f89af57f60ea77ef8",
+      "scope": "Eleven architecture cases pass"
+    },
+    "18049": {
+      "subject": "c2d5878a0901366c68d71e970f50d68b71b72a1d",
+      "tree": "05fcd049e7212352e0a666e67d80cc445b87a02f",
+      "source_pin_count": 2226,
+      "plan_sha256": "e2c06625327ad0b3a91ead3f0732d71839446dc7b4a3de52af2ec82b207c0485",
+      "actual_returncode": 0,
+      "terminal_sha256": "cf389133eb507beeeb59a1af37d9ee332c6acfa9e3d8e270ce5844b3af2dfa0c",
+      "independent_readback": 18061,
+      "independent_receipt_sha256": "c6737b00e21d1b9e805d5167ded86d219a322613a8348b90d7db01ac365ee9d3",
+      "scope": "Canonical semantic lock idempotent/zero source bytes changed"
+    },
+    "18092": {
+      "subject": "c2d5878a0901366c68d71e970f50d68b71b72a1d",
+      "tree": "05fcd049e7212352e0a666e67d80cc445b87a02f",
+      "source_pin_count": 2226,
+      "plan_sha256": "0b4f48d5e06f72317f841c21e355fd9a4c574e60912f5da0298b3655edd6c58b",
+      "actual_returncode": 0,
+      "terminal_sha256": "de41d87d4f3baae73ceaf6c066f8cd20dd759c9c9b9871281dda55f8ce3662ec",
+      "independent_readback": 18104,
+      "independent_receipt_sha256": "b450f61b69c38c95cd87de131225a27087ff04dbb6ee9504a74f706ed9f5413e",
+      "scope": "Declared semantic report conformant/0blocking, two unresolved dynamic rows retained; ten manifests6090declared nodes, lint/compile-only/pack-parity pass"
+    }
+  },
+  "exact_distribution": {
+    "source_commit": "c2d5878a0901366c68d71e970f50d68b71b72a1d",
+    "artifacts": [
+      {
+        "name": "bcf_governance-2.5.0-py3-none-any.whl",
+        "bytes": 2145282,
+        "sha256": "0f25068a38223c3245d3d6531e462e5d9ec85fe5fc4290af6a3ebaf2b251430b"
+      },
+      {
+        "name": "bcf_governance-2.5.0.tar.gz",
+        "bytes": 9496707,
+        "sha256": "6103dc909191396b6aedf80f4602152525be889e31e8077e8d46d7dca7616623"
+      }
+    ],
+    "source_pins": 2226,
+    "wheel_mappings": 796,
+    "dependency_wheels": 41,
+    "independent_readback": 18117,
+    "independent_receipt_sha256": "6f7a54f837b29e2f60ce6fa862dd9ba52d9c0c3f30f13c8e42ee8500d7784e0e"
+  },
+  "exact_offline_runtime": {
+    "allocation": 18156,
+    "independent_readback": 18186,
+    "report_sha256": "2a88f23125bcace6506606f0c9628e2d71b045eb087821222ab17d594499377f",
+    "terminal_sha256": "971111aeedced7f904484b310e825f514cf3f3a4ba3ce5551f7dea102119474a",
+    "independent_receipt_sha256": "866549a2206ecd6ff66107981e1a57ae32dde73a4f8c6051bc07922ce2cbcc73",
+    "scope": "Existing exact offline source/wheel/sdist verifier and pure/mixed TypeScript installed private consumers; no live adopter or complete profile matrix",
+    "status": "passed",
+    "canonical_commands": 11,
+    "raw_evidence_hashes": 22,
+    "dependency_wheels": 41,
+    "actual_stage_exits": [
+      0,
+      0,
+      0
+    ],
+    "elapsed_seconds": 197.725,
+    "evidence_schema": "1.1"
+  },
+  "residuals": [
+    "All82whole requirements open/38existing slices unchanged;P32active/P33-P35dormant",
+    "Provider-selected live adopter and full profile/upgrade/opt-out/rollback population",
+    "Complete lifecycle/runtime-effect and outer-deadline conformance",
+    "Matched baseline cohorts and approved separate pipeline targets",
+    "Independent exact protected-main certification and immutable release custody"
+  ],
+  "acceptance_advance": false,
+  "main_machinery_changed": false
+}
