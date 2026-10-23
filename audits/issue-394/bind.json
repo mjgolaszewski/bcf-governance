@@ -301,6 +301,19 @@
       "status": "AUTHORED_UNRUN_UNDER_CLEAR_RUNWAY",
       "current_authored_population": 15,
       "production_changes": false
+    },
+    "current_authored_disposition": {
+      "subject": "9b25b3d2",
+      "population": 20,
+      "status": "AUTHORED_UNRUN_UNDER_CLEAR_RUNWAY",
+      "source_followups": [
+        "96e28a64: valid local-fragment ownership and three unused nested external-reference cases",
+        "9b25b3d2: forbid resolver/socket connections and independently mutate v2 schema or inventory during collection"
+      ],
+      "history": "Prior11/15-case counts describe retained earlier subjects; no baseline or result is upgraded.18658 remains withdrawn UNUSED.",
+      "next": "After explicit runway release, freeze a fresh exact20-case baseline packet and independently qualify actual failures before production implementation. Preserve v1 behavior, exact errors and existing canonical owners.",
+      "production_changes": false,
+      "execution_qualified": false
     }
   }
 }
