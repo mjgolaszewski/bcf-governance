@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import socket
 import sys
 from pathlib import Path
 
@@ -13,7 +14,13 @@ from tests.test_test_manifests import reference_repo
 
 
 @pytest.fixture
-def schema_reference_repo(reference_repo):
+def schema_reference_repo(reference_repo, monkeypatch):
+    def reject_network(*args, **kwargs):
+        pytest.fail('inventory schema admission attempted network resolution or connection')
+
+    monkeypatch.setattr(socket, 'getaddrinfo', reject_network)
+    monkeypatch.setattr(socket.socket, 'connect', reject_network)
+    monkeypatch.setattr(socket.socket, 'connect_ex', reject_network)
     policy = reference_repo / 'governance/gate-contracts.yml'
     payload = yaml.safe_load(policy.read_text())
     descriptor = payload['gates']['test']['evidence']['test_contract']['reference_inventories'][0]
@@ -85,9 +92,12 @@ def test_invalid_inventory_schema_precedes_collection(schema_reference_repo, mon
         )
 
 
-def test_inventory_schema_movement_during_collection_blocks(schema_reference_repo, monkeypatch):
+@pytest.mark.parametrize('changed', ['inventory.schema.json', 'references.yml'])
+def test_inventory_schema_movement_during_collection_blocks(
+    schema_reference_repo, monkeypatch, changed,
+):
     def collect(*args, **kwargs):
-        path = schema_reference_repo / 'inventory.schema.json'
+        path = schema_reference_repo / changed
         path.write_text(path.read_text() + '\n')
         return {'test': owner.PytestSelectorMap('test', (
             ('tests.test_sample::test_one', 'tests/test_sample.py::test_one'),
