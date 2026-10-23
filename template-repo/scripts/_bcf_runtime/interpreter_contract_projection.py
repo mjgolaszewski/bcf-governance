@@ -5,6 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from .interpreter_environment_plan import InterpreterEnvironmentError
+from .interpreter_locked_project import normalize_locked_project_contract
+
 
 DEFAULT_DEPENDENCY_SOURCE = "requirements-governance.txt"
 
@@ -70,6 +73,13 @@ def project_interpreter_contract(
         return {"dependency_source": DEFAULT_DEPENDENCY_SOURCE}
     if not isinstance(declared, dict):
         raise InterpreterContractProjectionError("interpreter_contract must be a mapping")
+    if "locked_project" in declared:
+        if set(declared) != {"locked_project"}:
+            raise InterpreterContractProjectionError("locked-project interpreter contract is ambiguous")
+        try:
+            return {"locked_project": normalize_locked_project_contract(declared["locked_project"])}
+        except InterpreterEnvironmentError as exc:
+            raise InterpreterContractProjectionError(str(exc)) from exc
     if "dependency_source" in declared:
         if set(declared) != {"dependency_source"}:
             raise InterpreterContractProjectionError(

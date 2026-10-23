@@ -27,6 +27,13 @@ from .interpreter_environment_plan import (
     _normalized_name,
 )
 
+from .interpreter_locked_project import (
+    compile_locked_project,
+    verify_locked_installed_closure,
+    verify_locked_runtime,
+    verify_locked_source,
+)
+
 from .runtime_capacity import (
     RuntimeCapacityError,
     allocate_execution_state,
@@ -93,6 +100,10 @@ def probe_interpreter_environment(
     plan: InterpreterEnvironmentPlan, python: Path
 ) -> dict[str, str]:
     """Authenticate the complete installed dependency plan for one interpreter."""
+
+    if plan.source_kind == "locked_project":
+        verify_locked_runtime(plan, python, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+        verify_locked_installed_closure(plan, python)
 
     probe = (
         "import importlib.metadata as m,json,platform,sys\n"
@@ -276,6 +287,10 @@ def derive_interpreter_environment(
     if contract is None:
         return _legacy_interpreter_environment(root, registry)
     contract = _mapping(contract, "interpreter contract is invalid")
+    if "locked_project" in contract:
+        if set(contract) != {"locked_project"}:
+            raise InterpreterEnvironmentError("interpreter contract is ambiguous")
+        return compile_locked_project(root, contract["locked_project"], PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
     if "dependency_source" in contract:
         if set(contract) != {"dependency_source"}:
             raise InterpreterEnvironmentError("interpreter contract is ambiguous")
@@ -385,6 +400,10 @@ def verify_interpreter_environment_projection(
     plan: InterpreterEnvironmentPlan,
 ) -> None:
     """Reject a stale hand-maintained bootstrap dependency surface."""
+
+    if plan.source_kind == "locked_project":
+        verify_locked_source(plan, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
+        return
 
     if plan.source_kind == "project_metadata_projection" and plan.source_path is not None:
         try:
@@ -500,6 +519,8 @@ def materialize_interpreter_environment(
         base_python = select_materialization_base(plan.requires_python, base_python)
     except PythonRuntimeSelectionError as exc:
         raise InterpreterEnvironmentError(str(exc)) from exc
+    if plan.source_kind == "locked_project":
+        verify_locked_runtime(plan, base_python, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
     try:
         plan_identity = plan.identity(base_python)
     except OSError as exc:
@@ -539,6 +560,8 @@ def materialize_interpreter_environment(
             target, payload = cached
             python = target / "venv/bin/python"
             inventory = _installed_inventory(python, root)
+            if plan.source_kind == "locked_project":
+                verify_locked_installed_closure(plan, python)
             if payload["inventory_sha256"] != _sha256_text(inventory):
                 raise InterpreterEnvironmentError(
                     "derived project interpreter inventory is stale"
@@ -577,6 +600,7 @@ def materialize_interpreter_environment(
                 "pip",
                 "install",
                 "--disable-pip-version-check",
+                *(("--no-deps",) if plan.source_kind == "locked_project" else ()),
                 *plan.pip_arguments(),
             ]
             installed = run_admitted_command(
@@ -593,6 +617,8 @@ def materialize_interpreter_environment(
                     "derived project interpreter installation failed: " + detail
                 )
             verify_interpreter_environment_projection(plan)
+            if plan.source_kind == "locked_project":
+                verify_locked_installed_closure(plan, candidate)
             inventory = _installed_inventory(candidate, root)
             inventory_sha256 = _sha256_text(inventory)
             identity = _sha256_text(plan_identity + "\0" + inventory_sha256)
