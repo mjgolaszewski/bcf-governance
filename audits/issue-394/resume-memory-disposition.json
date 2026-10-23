@@ -1,0 +1,23 @@
+{
+  "authority": false,
+  "source_commit": "f7701b4e351a962cad2b2525e745e70828284d57",
+  "source_memory_sha256": "c1b3fa5531815f363d1de16c23dd560498a9f45918c1f0c37424542c0c43959e",
+  "superseded_entries_retained_verbatim": [
+    "Release declaration and existing provider consumers now pass126 cases across all three complete modules (26 declaration/72 release/28 phase-input), after three exact old-source allocation failures. Full predecessor integration, deadlines, canonical mirrors and distributions remain open. Maintained main preserved;2.5 isolated. No acceptance advance; all82whole/38slices unchanged.",
+    "Scoped release-train declaration qualification: three old-source intermediate-phase controls fail the exact allocation oracle; current c475 passes33 cases. Main retained at immutable2.3.6 machinery;2.5 isolated until RC readiness. Full predecessor/deadline/mirror/consumer/installed proof remains open; all82whole/38slices unchanged. See audits/issue-394/release-train-declaration-verification.json.",
+    "Install-input f82fd8bc/b9652bf7 and release-train declaration guards UNTESTED. Closed pip tuple/input freshness and retained-aware protected-main terminal derivation need deadline/mirror/consumer qualification; predecessor truth remains OPEN. See P32 log/workplan for contracts/tests. Prior82pure remains scoped; all82whole/38slices unchanged."
+  ],
+  "replacement": "Release/train consumers126PASS and interpreter90PASS; three causal predecessor failures retained. Install freshness/predecessor/deadline/mirror/installed qualification open. Keep2.3.6main intact and2.5isolated;82whole/38slices unchanged. See release-train-declaration-verification.json and interpreter-plan-deconstruction-contract.json under audits/issue-394.",
+  "reason": "Existing28KiB MEMORY cap exceeded after scoped audit additions; preserve text here and compact active summary, budget unchanged.",
+  "characterization": {
+    "cases": 90,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0,
+    "subject": "f7701b4e",
+    "governance_exit": 1,
+    "diagnostic": "MEMORY28.7KiB exceeds28KiB",
+    "exposure": "not_run"
+  },
+  "next": "Validate corrected governed record, then separately extract immutable plan without behavior; maintainedmain unchanged."
+}
