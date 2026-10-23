@@ -1,0 +1,51 @@
+{
+  "authority": false,
+  "status": "CONTRACT_AUTHORED_DETECTOR_EXECUTION_PENDING",
+  "phase": "P32",
+  "source_behavior_subject": "53840043bab6943d2bce5558913dee060a0c6e8b",
+  "source_behavior_evidence": {
+    "allocation": 18594,
+    "independent": 18598,
+    "schema_cases": 12,
+    "behavior_cases": 390,
+    "new_boundary_cases": 15,
+    "failures": 0,
+    "errors": 0,
+    "skips": 0
+  },
+  "bounded_context": "Existing public operation and lifecycle composition test consumers",
+  "operation_side": "query",
+  "targets": [
+    "tests/test_public_entrypoint_detector_controls.py"
+  ],
+  "method": "Use existing qualified real-Git fixture constructors and regression functions. First prove the original regression, then replace one actual trusted canonical function guard in memory and require that same regression to observe the named fault. No synthetic source inventory, foreign evaluator or candidate code execution.",
+  "controls": [
+    {
+      "cause": "runtime membership removed",
+      "owner": "ci_graph_composition_operations.validate_public_operation_capture",
+      "expected_detector": "existing unrelated-function negative raises pytest Failed DID NOT RAISE when guard is removed"
+    },
+    {
+      "cause": "committed source replaced by working-tree reads",
+      "owner": "semantic_operation_python._operation_source_text and its existing contract import",
+      "variants": [
+        "facade",
+        "catalog"
+      ],
+      "expected_detector": "existing successful captured-source regression now raises typed public source-conformance error after postcapture substitution"
+    },
+    {
+      "cause": "earliest complete catalog check removed",
+      "owner": "ci_graph_composition_operations.capture_public_operation_bindings",
+      "expected_detector": "existing early-catalog regression raises its exact full-source-discovered-before-rejection failure"
+    }
+  ],
+  "invariants": [
+    "Four exact detector cases, separate baseline and mutant real-Git roots and restored module bindings.",
+    "Require the precise behavioral/domain failure; collection, setup, mutation-target mismatch and unrelated exceptions cannot qualify a detector.",
+    "Run through the existing canonical test gate and JUnit family; no new registry, receipt family, evaluator, broker or source-policy ownership.",
+    "Production source and all existing gate-control descriptors remain unchanged; current registry capacity and source limits retained.",
+    "Passing these test-scoped fault controls does not grant BCF receipt, phase, installed parity, runtime completeness or release authority."
+  ],
+  "next": "Commit bounded detector tests, execute exact four-case zero-skip cohort, independently read back source/result/custody, then canonical manifests and required architecture/semantic/package/installed gates."
+}
