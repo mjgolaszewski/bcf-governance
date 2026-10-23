@@ -185,3 +185,22 @@ def test_public_facade_uses_captured_source_after_reconstruction(
         ('example.produce.v1', 'facade.py::main', 'runtime.py::produce'),
     )
     assert result['authority'] is False
+
+
+@pytest.mark.parametrize('facade', [
+    'from runtime import missing as main\n',
+    'main = lambda: b"unbound"\n',
+    'from facade import main\n',
+    'from runtime import produce as main\nmain = lambda: b"shadow"\n',
+    'from runtime import produce as main\nif True:\n    main = lambda: b"shadow"\n',
+])
+def test_public_facade_rejects_missing_dynamic_or_shadowed_binding(
+    public_facade_inputs, composition, facade,
+):
+    from bcf_governance.tooling.ci_graph_errors import CIGraphError
+
+    inputs, _, _ = public_facade_inputs
+    (inputs['repo_root'] / 'facade.py').write_text(facade)
+    _capture_subject(inputs, composition)
+    with pytest.raises(CIGraphError, match='public operation'):
+        validate_reconstructed_lifecycle_bindings(**inputs)
