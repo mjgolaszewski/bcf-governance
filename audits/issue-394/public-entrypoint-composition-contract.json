@@ -1,0 +1,61 @@
+{
+  "authority": false,
+  "status": "CONTRACT_AUTHORED_IMPLEMENTATION_AND_QUALIFICATION_PENDING",
+  "phase": "P32",
+  "bounded_context": "existing governance semantic source and lifecycle composition",
+  "operation_side": "query",
+  "problem": "Local census18342 observed a valid public validate reexport rejected by the exact runtime-function population query. Existing public-operation owner already normalizes that alias. The composition public crosswalk currently requires declared entrypoint names in runtime implementation roots; qualify the actual factory before asserting a product defect.",
+  "targets": [
+    "bcf_governance/tooling/ci_graph_composition.py",
+    "bcf_governance/tooling/ci_graph_composition_operations.py",
+    "bcf_governance/tooling/semantic_operation_python.py",
+    "bcf_governance/tooling/semantic_authority_operations.py",
+    "bcf_governance/tooling/semantic_authority_contracts.py"
+  ],
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_composition.py": "41a8676a152c63ac17a6dfdf22e4b1649d361271909cb991d7e134b6fc15bbb2",
+    "bcf_governance/tooling/ci_graph_composition_operations.py": "9a89f29fdff66c4842cba03691df5bb5c9edfb8d75d49d3b61f1ba2f3b8b80af",
+    "bcf_governance/tooling/semantic_operation_python.py": "52f99e58884a923b0c696f7ae2fc5354d5c469b746a3dcd742d75e87c2f0e11f",
+    "bcf_governance/tooling/semantic_authority_operations.py": "47aa80a9760455528d80fb00172a8f7ec3435c2296d2edbca912549c3754a115",
+    "bcf_governance/tooling/semantic_authority_contracts.py": "611992488f9e2691448b33004458ad0cf537990772ce44715a1746157373b89c"
+  },
+  "existing_owners": [
+    "semantic_operation_python._function_for_entrypoint",
+    "semantic_authority_operations.required_operation_population",
+    "semantic_source_paths.committed_regular_blob_capture",
+    "ci_graph_composition_operations.capture_public_operation_bindings/validate_public_operation_capture",
+    "ci_graph_composition.validate_reconstructed_lifecycle_bindings"
+  ],
+  "invariants": [
+    "Preserve declared public entrypoint, actual runtime function, protected policy subject and runtime source subject separately.",
+    "Use authenticated committed runtime source bytes through the existing regular-blob owner for source-sensitive public catalog and alias reads. Keep protected policy subject distinct. Preserve existing source-movement/dirty-policy rejection and genuinely unbound filesystem behavior; neither mutable files nor candidate policy supply authority.",
+    "Keep source-independent malformed/omitted/ambiguous policy and relationship checks early; complete source-sensitive normalization at its earliest valid consuming boundary before dependent proof allocation.",
+    "Runtime implementation/fact/verifier/terminal obligations must still be genuine discovered exact functions and complete protected populations; never accept suffix guesses or manufactured function facts.",
+    "Retain unknown initialization/dynamic/native/external behavior as unqualified; source normalization cannot confer runtime completeness, suppression, phase or release authority.",
+    "No parallel graph/registry/evaluator/broker/receipt family and no CLI grammar/provider status change.",
+    "All touched production modules remain below800lines; semantic_authority_contracts currently765, so keep plumbing bounded or deconstruct before exceeding800."
+  ],
+  "qualification_before_production": [
+    "Commit the bounded contract, then real-Git positive public reexport case through existing composition factory and capture its actual cause-specific rejection.",
+    "Qualify distinct protected-policy/runtime subjects, dirty catalog/facade changes and late substitution after source capture. Preserve existing source movement rejections and local/unbound direct roots.",
+    "Reject missing, contradictory, cyclic, dynamic and wrong-root aliases and invalid commit/tree/blob/type. Repository/provider authentication remains the caller responsibility; Git object presence alone grants none.",
+    "Retain early malformed-policy/crosswalk controls and complete source/runtime relationship checks; no missing edge-and-test pair may vanish.",
+    "Qualify affected source, native controls, architecture, canonical package/private consumers and ordinary gates after smallest existing-owner change."
+  ],
+  "forbidden": [
+    "main/maintained pre2.5 changes",
+    "published archives/tags/assets",
+    "manual workflow/authority edits",
+    "guard weakening or unknown-as-complete",
+    "requirement/phase advancement from these observations"
+  ],
+  "interface_note": "Unreleased2.5 source-query normalization only. Preserve the low-level exact runtime-function contract, declared public identity, legacy four-field operations tuples, CLI grammar and provider statuses. Add explicitly non-authoritative entrypoint_bindings tuples(operation,declared_entrypoint,resolved_runtime_function) to the existing public binding observation; do not create a second registry or receipt family.",
+  "source_subject": "b8b8952632033d1082e22a5628eaf468ff2a7106",
+  "early_failure_order": [
+    "Reject malformed policy subject, missing/unknown/empty relationship crosswalk and operation omission before source discovery.",
+    "Using exact runtime-subject catalog bytes, reject protected entrypoint/catalog contradictions before source discovery.",
+    "Resolve legitimate public reexports against genuine reconstructed functions at the earliest consuming boundary; require every resolved function in every independently declared relationship root set.",
+    "Retain complete runtime call, initialization, effect, schema, fact, CI-edge and terminal obligations; normalization alone is never complete runtime proof."
+  ],
+  "verification": "No test execution, product defect or completed behavior is claimed by this contract."
+}
