@@ -168,5 +168,20 @@
     "archives": "90f7dd55e622bd5e13edaef34681cb8a2f62b432bb1c303a8d40662ed7335bd9",
     "installed_runtime": "e19016de054a6599645edd1f86343f1a6c22b2a4e9c4c8bedb527d27ede18469"
   },
-  "next_action": "Integrate only missing bounded changes into authoritative isolated successor; preserve protected main. Contract and qualify maintained2.3.6 locked-project consumer compatibility before full adopter matrix."
+  "next_action": "Integrate only missing bounded changes into authoritative isolated successor; preserve protected main. Contract and qualify maintained2.3.6 locked-project consumer compatibility before full adopter matrix.",
+  "records_context_budget": {
+    "authority": false,
+    "negative_source_commit": "78c87bee0fe71d16a92d9b45e250c2eb67e4038a",
+    "negative": "new disposition made compact JSON ledger exceed unchanged context cap; original negative retained",
+    "original_render_bytes": 16891,
+    "lossless_render_bytes": 15914,
+    "lossless_render_lines": 4,
+    "existing_byte_cap": 16384,
+    "existing_line_cap": 95,
+    "before_after_exact_data_and_type_equality": true,
+    "parsed_content_sha256": "6f3f65d7c0c6d596bb068fe71dcfd0e44017c2c187cb5d7b3c3eb3cde90cdb54",
+    "owner": "existing profile_yaml compact mappings and SafeDumper with standard flow layout",
+    "production_renderer_or_policy_changed": false,
+    "fresh_governance_exposure_required": true
+  }
 }
