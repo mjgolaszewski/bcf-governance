@@ -1,0 +1,40 @@
+{
+  "authority": false,
+  "status": "CONTRACT_BEFORE_LOCKED_PROJECT_PRODUCTION_CHANGE",
+  "bounded_context": "selected-interpreter dependency custody",
+  "layer": "existing interpreter plan query, contract projection and materialization command",
+  "side": "pure source graph selection with supervised runtime verification at command boundaries",
+  "source_baseline": "b6dee483e6ea45049cb4100ff3590a8440df4ab4",
+  "maintained_reference": "e39d72a0b0e2e849317e284a674848bbb7fcf000",
+  "target_modules": [
+    "bcf_governance/tooling/interpreter_locked_project.py",
+    "bcf_governance/tooling/interpreter_environment.py",
+    "bcf_governance/tooling/interpreter_contract_projection.py",
+    "schemas/gate-contracts.schema.json"
+  ],
+  "required_behavior": [
+    "Accept an exclusive explicit locked_project contract for uv.lock format1/revision5, explicit marker/runtime cohort, dependency groups and extras",
+    "Compile only selected reachable immutable PyPI graph; reject unsupported sources, ambiguous forks, mismatched authored metadata and stale source",
+    "Preserve canonical secure pip pin and exact closed tuple; locked installs use --no-deps",
+    "Verify selected runtime before allocation, source freshness after pip and immediately before publication, and exact installed closure on fresh and cached paths",
+    "Use existing run_admitted_command for every child probe and preserve all 2.5 ownership boundaries",
+    "Preserve dependency_source and ordinary project contracts and public CLI grammar"
+  ],
+  "verification": [
+    "Port maintained source fixtures through existing public derive/projection APIs; cause-qualified old-source RED must be behavioral, not missing-module collection failure",
+    "Run selected branches, groups/extras, ambiguous/unsupported sources, stale metadata, runtime mismatch, installed closure and cached behavior controls",
+    "Register cause-specific native controls through existing gate registry and retain both publication movement controls",
+    "Generate schema/private-runtime/template projections and test manifests through existing owners",
+    "Validate architecture, semantic, governance, affected source tests and exact installed source/wheel/sdist behavior before qualification"
+  ],
+  "forbidden": [
+    "main or maintained predecessor mutation",
+    "workflow or authority edits outside canonical reconciliation",
+    "new evaluator/registry/broker/receipt family",
+    "wholesale maintained source overwrite",
+    "weakening controls, budget caps or secure installer policy",
+    "acceptance or phase activation from authored completion"
+  ],
+  "migration": "Additive optional contract branch; existing contracts and CLI remain valid. Unsupported or incomplete declarations fail closed.",
+  "acceptance_advance": false
+}
