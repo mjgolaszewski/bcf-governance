@@ -7,6 +7,7 @@ import re
 from typing import Any
 
 from .common import GovernanceValidationError, _require_mapping, _require_string
+from ..release_versions import ReleaseVersionError, parse_release_version
 
 
 def release_phase_ids(
@@ -131,9 +132,39 @@ def declared_release_train_terminal(
         entry = _require_mapping(value, context=f"release train {name}")
         if entry.get("target_version") == version and entry.get("kind", "phase_train") == "phase_train":
             matching.append(name)
+    members = set(release_phase_ids(release, phases, retained))
+    if not matching and members == {active_id}:
+        entry = _require_mapping(trains[release], context=f"release train {release}")
+        if (
+            entry.get("kind", "phase_train") == "phase_train"
+            and entry.get("status") == "completed"
+            and active.get("lifecycle_status") == "completed"
+        ):
+            try:
+                selected = parse_release_version(version)
+                target = parse_release_version(_require_string(
+                    entry.get("target_version"), context="maintenance train target version",
+                ))
+                family_owners = [
+                    name for name, row in trains.items()
+                    if row.get("kind", "phase_train") == "phase_train"
+                    and parse_release_version(_require_string(
+                        row.get("target_version"), context="maintenance catalog version",
+                    )).ordering_key[:2] == selected.ordering_key[:2]
+                ]
+            except ReleaseVersionError as exc:
+                raise GovernanceValidationError("maintenance release version is invalid") from exc
+            # A completed single-phase patch keeps its historical catalog owner;
+            # this does not authenticate phase closure or publication authority.
+            if (
+                not selected.prerelease and not target.prerelease
+                and selected.ordering_key[:2] == target.ordering_key[:2]
+                and selected.ordering_key[2] > target.ordering_key[2]
+                and family_owners == [release]
+            ):
+                matching = [release]
     if matching != [release]:
         raise GovernanceValidationError("release train version owner is absent or ambiguous")
-    members = set(release_phase_ids(release, phases, retained))
     if not members or not members <= planned.keys():
         raise GovernanceValidationError("release train dependency inventory is incomplete")
     dependencies: dict[str, set[str]] = {}

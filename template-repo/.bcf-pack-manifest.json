@@ -1267,7 +1267,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/supplemental_releases.py": {
       "operation": "copy",
-      "sha256": "e7e4f3647e8008fce8a4f74ccabb37fbe7860e190093bb4eda52af5df57eb077"
+      "sha256": "b9b1c52f5c524dd4c24d0355fe4ca15e99a4dfd59826ea62ca47f59d3d57e849"
     },
     "scripts/_bcf_runtime/hotfix_scaffolding.py": {
       "operation": "copy",
