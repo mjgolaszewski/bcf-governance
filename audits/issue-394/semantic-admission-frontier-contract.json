@@ -53,13 +53,16 @@
     "bounded_context": "Existing local PR lane derivation and adopter qualification custody",
     "targets": [
       "bcf_governance/tooling/local_pr_context.py",
+      "bcf_governance/tooling/local_pr.py",
       "tests/test_local_pr.py",
+      "tests/test_explicit_qualification_lane_admission.py",
       "tests/test_release_adopter_qualification.py"
     ],
     "requirements": [
       "An explicit PROVIDER_PR request retains its ordinary behavior and cannot be promoted to isolated qualification by a marker.",
       "An explicit ISOLATED_CANDIDATE_QUALIFICATION request is a request, not authority: authenticate existing runtime custody and exact context.base_sha/tree against the existing candidate_qualification_matches owner before returning that lane.",
       "Malformed custody, unavailable base tree, wrong adopter base or missing exact qualification custody produce a typed early rejection before prospective allocation or provider verification; do not silently convert an invalid explicit qualification request into an ordinary PR pass.",
+      "The public run_prospective_train currently acquires local_gate_lease and admits toolchains before internal lane derivation. Its outer admission must validate the requested qualification subject before that lease/toolchain boundary, then reauthenticate at the existing internal consumer. Direct lane-unit success alone cannot qualify this ordering. local_pr.py must remain within800LOC; use existing owners and characterize any required deconstruction before production growth.",
       "Preserve automatic authenticated lane derivation, genuinely local supported adopter qualification, public CLI grammar and independent later custody/changelog checks. Reauthenticate moving subjects at consuming boundaries; no new marker, receipt, evaluator or authority family."
     ],
     "expected_controls": [
