@@ -48,3 +48,44 @@ provider_context_followup:
   - Missing event identity rejects. Optional caller-authenticated expected event must match exactly; event alone does not classify workflow intent.
   - All workflow context assignment remains caller-owned protected workflow policy. PR events may run trusted controllers or adopter workflows; never invent a global event-to-context mapping.
   - Preserve exact bytes of existing valid PR captures and keep observations nonauthoritative.
+
+matched_protocol_followup:
+  status: authored_requirements_not_reviewed_or_frozen
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/operational_observations.py
+  pipeline_population_owner: bcf_governance/tooling/operational_observations.py::PIPELINE_CLOCKS
+  approved_targets_owner: audits/issue-394/workplan.yml::measurement_policy.approved_targets
+  collection_strategy: governed provider runs as they occur plus controlled isolated local and provider-selected pinned-adopter trials
+  required_before_optimized_measurement:
+  - Review authenticated baseline observations before selecting numerical targets; the existing PR proposal is provisional.
+  - Freeze a versioned protocol with cohort membership, sizes, exclusions, statistical treatment and separate pipeline/resource targets before collecting optimized measurements for claims.
+  - Authenticate the complete existing pipeline-context population against the source and schema owners; do not infer one context from another workflow label.
+  - Keep PR, exact-main, controller, release, adopter, each terminal-custody clock, periodic work and developer interruption distinct unless an approved protocol explicitly defines their relationship.
+  subject_and_membership_requirements:
+  - Retain each original capture and its digest, repository identity, exact source commit/tree, trusted runtime/controller identity, governing policy and required-work population.
+  - Derive cohort membership mechanically from authenticated facts and the approved frozen protocol; caller labels and candidate policy cannot supply matching or statistical authority.
+  - Bind both baseline and optimized subjects explicitly; an intentional framework-version or mechanism difference cannot be silently normalized away.
+  - Controlled pairs require the same authenticated workload, required assurance population, adopter source/profile, toolchain, resource envelope and observed cache conditions apart from the declared treatment.
+  - Naturally occurring provider attempts remain observational unless the approved matching rule is satisfied; common workflow names or similar elapsed times are insufficient.
+  - Cold and warm observations require actual cache/environment facts; unknown conditions remain unknown and cannot enter either cohort by assumption.
+  - Resolve real adopter subjects through the existing provider owner and reauthenticate moving sources at collection; a convenient local checkout cannot select the population.
+  clock_and_cost_requirements:
+  - Authenticate the original clock basis and required start/end events; provider job timestamps cannot establish unobserved developer, merge, dispatch, publication or immutable-custody endpoints.
+  - Preserve execution unions, external waits, gaps, total elapsed and summed work separately through the existing timing owner.
+  - CPU remains unknown without complete independent execution observations; job-duration sums cannot estimate it.
+  - Retain failed, slow, cancelled, superseded and incomplete attempts with explicit outcome strata; no convenient success-only exclusion or deletion.
+  - Report foreground savings alongside shifted periodic work, catch-up, planner overhead and compute/API/storage/complexity costs; moving work does not erase its charge.
+  - Evaluate each approved pipeline target separately; assurance success cannot close a failed performance objective.
+  review_decisions_still_required:
+    cohort_sizes: null
+    exclusions: null
+    statistical_treatment: null
+    target_values: null
+  consuming_guards_to_implement_and_qualify:
+  - Missing or changed protocol, subjects, required endpoints or authentication cannot yield matched or percentile-certified results.
+  - Reject post-result protocol or exclusion changes as a new analysis subject, retaining the original protocol and outcomes.
+  - Insufficient samples remain observations under the reviewed statistical rule; never certify p95 from an arbitrary small population.
+  - Match claims to exact source/profile/context populations; one pipeline or adopter cannot certify another.
+  - Preserve authority false and execution_qualified false for observations; no scheduling, suppression, phase, controller or release authority follows.
+  implementation_status: No matched-cohort collector or certification is implemented or asserted by this contract.
