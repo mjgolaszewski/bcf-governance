@@ -15,8 +15,14 @@ root=Path.cwd().resolve()
 sys.path.insert(0,str(root/"scripts"))
 from _bcf_runtime import interpreter_environment as owner
 from _bcf_runtime import interpreter_environment_plan as plan_owner
+from _bcf_runtime import profile_yaml as renderer
 from _bcf_runtime.runtime_capacity import EXECUTION_STATE_POLICY
 import yaml
+assert Path(renderer.__file__).resolve().is_relative_to(root/"scripts/_bcf_runtime")
+profile_payload=yaml.safe_load((root/"governance/gate-contracts.yml").read_text())
+profile_rendered=renderer.render_profile_surface(profile_payload,width=4096)
+assert yaml.safe_load(profile_rendered)==profile_payload
+assert renderer.render_profile_surface(yaml.safe_load(profile_rendered),width=4096)==profile_rendered
 assert Path(owner.__file__).resolve().is_relative_to(root/"scripts/_bcf_runtime")
 assert owner.InterpreterEnvironmentPlan is plan_owner.InterpreterEnvironmentPlan
 assert owner.InterpreterEnvironmentError is plan_owner.InterpreterEnvironmentError
@@ -92,14 +98,14 @@ for boundary in ["post-pip","post-inventory"]:
    assert len(inventories)==(0 if boundary=="post-pip" else 1)
    assert not list(repo.rglob("environment.json")) and not list(repo.rglob("*.building-*"))
    results.append([boundary,moving])
-print(json.dumps({"source_sdk_absent":True,"closed_tuple":True,"refused":results}))
+print(json.dumps({"source_sdk_absent":True,"closed_tuple":True,"private_profile_roundtrip":True,"refused":results}))
 '''
 
 def test_installed_interpreter_refuses_moved_source_at_publication(
     installed_consumer, isolated_python,
 ):
     canonical = Path(__file__).resolve().parents[1] / "bcf_governance/tooling"
-    for name in ("interpreter_environment.py", "interpreter_environment_plan.py"):
+    for name in ("interpreter_environment.py", "interpreter_environment_plan.py", "profile_yaml.py"):
         assert (installed_consumer / "scripts/_bcf_runtime" / name).read_bytes() == (
             canonical / name
         ).read_bytes()
@@ -111,6 +117,7 @@ def test_installed_interpreter_refuses_moved_source_at_publication(
     report = json.loads(result.stdout)
     assert report["source_sdk_absent"] is True
     assert report["closed_tuple"] is True
+    assert report["private_profile_roundtrip"] is True
     assert report["refused"] == [[boundary, moving]
         for boundary in ("post-pip", "post-inventory")
         for moving in ("metadata", "projection", "registry")]

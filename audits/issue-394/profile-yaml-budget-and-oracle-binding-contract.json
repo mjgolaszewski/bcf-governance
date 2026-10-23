@@ -7,14 +7,16 @@
   "source_checkpoint": "e8326b69dba09e7e5c2c36da04ee541589771221",
   "target_modules": [
     "bcf_governance/tooling/profile_yaml.py",
-    "governance/gate-contracts.yml"
+    "governance/gate-contracts.yml",
+    "tests/test_installed_interpreter_publication.py"
   ],
   "required_behavior": [
     "Reuse maintained2.3.6 short anchor naming in the existing dumper subclass; retain existing scalar/sequence sharing and comma-preserving compaction",
     "Render registry through existing render_profile_surface at canonical4096 width; decoded values/types/control populations remain equal except explicitly corrected oracle identities",
     "Preserve unchanged101KiB/900line declared context budget and existing stronger renderer test bound",
     "Bind two legacy release controls to the original [False] behavior; retain [True] movement tests and all collected nodes",
-    "Keep fresh/upgrade installed bytes and canonical private runtime projections qualified"
+    "Keep fresh/upgrade installed bytes and canonical private runtime projections qualified",
+    "Fresh/upgrade SDK-absent consumers verify exact profile_yaml bytes and execute its private-runtime semantic/fixed-point roundtrip"
   ],
   "existing_controls": [
     "tests/test_profile_yaml.py::test_current_gate_contract_renders_inside_existing_context_budget",
@@ -31,5 +33,21 @@
     "raising budgets or dropping controls/selectors/tests",
     "new renderer/broker/receipt family or broad maintained formatter transplant",
     "qualification claims from proposal rendering or old subject results"
-  ]
+  ],
+  "predecessor_red": {
+    "source": "df96363f5962799ec1ced71f542fa61aef3be5b9",
+    "actual_cases": 16,
+    "passed": 15,
+    "failures": 1,
+    "errors": 0,
+    "skips": 0,
+    "expected_failure": {
+      "classname": "tests.test_profile_yaml",
+      "name": "test_current_gate_contract_renders_inside_existing_context_budget",
+      "time": "0.717"
+    },
+    "canonical_old_render_bytes": 104448,
+    "existing_budget_bytes": 103424,
+    "raw_exit": 1
+  }
 }

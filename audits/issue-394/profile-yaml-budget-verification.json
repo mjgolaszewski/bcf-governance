@@ -1,0 +1,29 @@
+{
+  "authority": false,
+  "status": "PREDECESSOR_RED_QUALIFIED_GREEN_PENDING",
+  "source": "df96363f5962799ec1ced71f542fa61aef3be5b9",
+  "actual_cases": 16,
+  "passed": 15,
+  "failures": 1,
+  "errors": 0,
+  "skips": 0,
+  "expected_failure": {
+    "classname": "tests.test_profile_yaml",
+    "name": "test_current_gate_contract_renders_inside_existing_context_budget",
+    "time": "0.717"
+  },
+  "cause": "canonical render104448bytes exceeds unchanged103424byte policy",
+  "raw_exit": 1,
+  "raw_sha256": {
+    "steps.json": "93f95dd8ac420b54f6baff74d07dc2b4b8bfaa37f4aeb96c83c6669e8efaf265",
+    "tests.xml": "dcff49226eb4fbc653ce46de2005ca05358fb36d8b7de9779153220e1d851cff",
+    "renderer-controls.stdout": "293d0e83c2d46cad6261887b7bdc5d88e6ae8ecb505b2c67272a6f429e580915",
+    "renderer-controls.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-pins.json": "a64d8aec9c6314a12bb7518faf93537f147ddd06fbc3eb28bf60020057de0de8"
+  },
+  "limits": [
+    "This is renderer detector evidence, not a passing full packet or phase closure",
+    "Short-anchor production change, canonical projections, fresh/upgrade and native controls still require qualification"
+  ],
+  "acceptance_advance": false
+}
