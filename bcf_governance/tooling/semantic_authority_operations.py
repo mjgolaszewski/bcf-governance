@@ -39,9 +39,14 @@ def _validate_operations(
         _function_for_entrypoint, validated_operation_effect_inventory,
         SemanticOperationEffectError,
     )
+    from .semantic_operation_python import _inventory_source_subject
 
     _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=consumer_owned_schema)
     _validate_operation_structure(payload)
+    try:
+        source_subject = _inventory_source_subject(inventory)
+    except ValueError as exc:
+        raise SemanticAuthorityError(str(exc)) from exc
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     python_sources = {
         str(row["path"]) for row in inventory.get("files", [])
@@ -52,12 +57,9 @@ def _validate_operations(
     for row in payload["populations"]:
         if source_language == "python" and row["adapter"] == "typescript_exports":
             continue
-        entries = (
-            _discover_population(repo_root, row, inventory) if row["adapter"] == "typescript_exports"
-            else _discover_population(repo_root, row)
-        )
+        entries = _discover_population(repo_root, row, inventory, source_subject=source_subject)
         if source_language == "python" and row["adapter"] == "canonical_yaml_catalog":
-            targets = [_function_for_entrypoint(repo_root, symbol, functions) for symbol in entries.values()]
+            targets = [_function_for_entrypoint(repo_root, symbol, functions, source_subject=source_subject) for symbol in entries.values()]
             if any(
                 (target is None and symbol.split("::", 1)[0] not in python_sources)
                 or (target is not None and target.get("language", "python") != "python")
@@ -88,7 +90,7 @@ def _validate_operations(
                 f"operation {operation['id']} entrypoints must exactly match discovered {actual_symbol}"
             )
         kind = _validate_operation_semantics(operation)
-        function = _function_for_entrypoint(repo_root, actual_symbol, functions)
+        function = _function_for_entrypoint(repo_root, actual_symbol, functions, source_subject=source_subject)
         if function is None:
             raise SemanticAuthorityError(
                 f"operation {operation['id']} entrypoint is absent from the shared source inventory"
