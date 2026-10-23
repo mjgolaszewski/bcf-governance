@@ -35,7 +35,7 @@
   "acceptance_advance": false,
   "consumer_qualification_extension": {
     "authority": false,
-    "status": "CONTRACT_BEFORE_CONSUMER_BINDINGS",
+    "status": "BINDINGS_AUTHORED_EXECUTION_PENDING",
     "source_baseline": "807ee07cfab85599627b1b482dbe8a98298d7be2",
     "target_modules": [
       "tests/test_installed_interpreter_publication.py",
@@ -57,7 +57,8 @@
       "Simulated pip/inventory effects are explicit; this does not prove real dependency installation or complete adopter qualification",
       "Canonical mirrors/manifests and exact source/wheel/sdist installed behavior remain required",
       "No new production behavior, evaluator, registry family, release activation or main write"
-    ]
+    ],
+    "bindings_commit": "73a49efe08b8a4ee3f363d95013cb063a7bd1341"
   },
   "cause_qualified_red": {
     "source": "5769d255410800902b9a7f7a107353a1d7239dc8",
