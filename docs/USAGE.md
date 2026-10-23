@@ -454,8 +454,37 @@ requirements source pins `pip==26.2.1`, its owner must approve a compatible
 constraint before materialization can proceed. Change the authoritative input,
 then regenerate any declared `requirements_projection` with the commands above.
 The tooling environment's pip version does not qualify the project environment.
-URL, marker, and extra dependency declarations remain unsupported; this installer
+In ordinary project and requirement-source modes, URL, marker, and extra
+dependency declarations remain unsupported; this installer
 change does not waive those checks or ambiguous duplicate declarations.
+
+An explicit `interpreter_contract.locked_project` selects a dependency closure
+from `pyproject.toml` and `uv.lock`. This mode requires `lockfile: uv.lock`,
+`dependency_groups` for PEP 735 groups, `optional_extras` for project optional
+extras, the complete PEP 508 `marker_environment`, and `runtime_platform` with
+`sysconfig_platform`, `libc_name`, and `libc_version`. Record those values from
+the intended interpreter; host defaults are never substituted. A local Python
+3.14 selection does not qualify a Python 3.12 CI or image environment.
+
+The compiler follows applicable locked edges and dependency extras, selects one
+Python fork, and enforces authored requirements. Unselected groups stay outside
+the plan. The supported input is uv lock version 1 revision 5 with public PyPI
+registry dependencies; other source kinds, ambiguous nodes, nested markers on
+root optional requirements, and lock markers using `extras` or
+`dependency_groups` sets fail closed. Existing project and requirement-source
+contracts keep their existing grammar.
+Unqualified lock configuration and `tool.uv` resolution overrides are rejected;
+a valid `tool.uv.required-version` authoring pin is permitted. Existing-interpreter
+preflight enforces the same marker, libc, and installed-closure checks as new
+environment materialization.
+
+Locked plans consume exact compiled requirements with dependency resolving
+disabled. Installed metadata must match the source-derived closure and pass
+dependency consistency checks before cache publication. Source and runtime
+selection changes invalidate reuse. This mode declares no hand-maintained
+requirements projection, so `environment apply` is not its update mechanism:
+change the authored project and lock through their owner, then derive the plan.
+
 
 Preflight requires exact projection bytes and then verifies the selected executable,
 Python constraint, virtual-environment identity, and installed distribution versions.

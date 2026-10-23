@@ -1,4 +1,5 @@
 """Fresh and upgraded SDK-absent consumers retain publication freshness checks."""
+import ast
 import json
 import subprocess
 from pathlib import Path
@@ -98,19 +99,45 @@ for boundary in ["post-pip","post-inventory"]:
    assert len(inventories)==(0 if boundary=="post-pip" else 1)
    assert not list(repo.rglob("environment.json")) and not list(repo.rglob("*.building-*"))
    results.append([boundary,moving])
-print(json.dumps({"source_sdk_absent":True,"closed_tuple":True,"private_profile_roundtrip":True,"refused":results}))
+exec(sys.argv[1],globals())
+with tempfile.TemporaryDirectory(dir=root) as temporary:
+ repo=Path(temporary);_fixture(repo)
+ locked_plan=owner.derive_interpreter_environment(repo);assert locked_plan is not None
+ assert locked_plan.source_kind=="locked_project"
+ assert locked_plan.requirements==("driver==3.3.3","driver-binary==3.3.3","forked==3.0","pip==26.2.2","pytest==9.0.3")
+ assert locked_plan.pip_arguments()==locked_plan.requirements
+ from _bcf_runtime.interpreter_contract_projection import project_interpreter_contract
+ declared=yaml.safe_load((repo/"governance/gate-contracts.yml").read_text())["interpreter_contract"]
+ assert project_interpreter_contract({},declared,default_if_required=False)==declared
+ assert not (repo/".artifacts").exists()
+ source=repo/"uv.lock";source.write_text(source.read_text()+"\n# moved source\n")
+ try:owner.verify_interpreter_environment_projection(locked_plan)
+ except owner.InterpreterEnvironmentError as error:assert "changed after derivation" in str(error)
+ else:raise AssertionError("installed locked-project source movement accepted")
+print(json.dumps({"source_sdk_absent":True,"closed_tuple":True,"private_profile_roundtrip":True,"locked_project_derived":True,"refused":results}))
 '''
 
 def test_installed_interpreter_refuses_moved_source_at_publication(
     installed_consumer, isolated_python,
 ):
     canonical = Path(__file__).resolve().parents[1] / "bcf_governance/tooling"
-    for name in ("interpreter_environment.py", "interpreter_environment_plan.py", "profile_yaml.py"):
+    for name in ("interpreter_environment.py", "interpreter_environment_plan.py", "profile_yaml.py",
+                 "interpreter_locked_project.py", "interpreter_contract_projection.py"):
         assert (installed_consumer / "scripts/_bcf_runtime" / name).read_bytes() == (
             canonical / name
         ).read_bytes()
+    fixture_path = Path(__file__).with_name("test_interpreter_locked_project.py")
+    fixture_source = fixture_path.read_text()
+    nodes = ast.parse(fixture_source).body
+    selected = [node for node in nodes if (
+        isinstance(node, ast.Assign) and any(
+            isinstance(target, ast.Name) and target.id == "ENVIRONMENT" for target in node.targets
+        )
+    ) or isinstance(node, ast.FunctionDef) and node.name == "_fixture"]
+    assert len(selected) == 2
+    fixture_code = "\n".join(ast.get_source_segment(fixture_source, node) for node in selected)
     result = subprocess.run(
-        [str(isolated_python), "-I", "-c", PROBE],
+        [str(isolated_python), "-I", "-c", PROBE, fixture_code],
         cwd=installed_consumer, env=_environment(), capture_output=True, text=True,
     )
     assert result.returncode == 0, _record(result)
@@ -118,6 +145,7 @@ def test_installed_interpreter_refuses_moved_source_at_publication(
     assert report["source_sdk_absent"] is True
     assert report["closed_tuple"] is True
     assert report["private_profile_roundtrip"] is True
+    assert report["locked_project_derived"] is True
     assert report["refused"] == [[boundary, moving]
         for boundary in ("post-pip", "post-inventory")
         for moving in ("metadata", "projection", "registry")]

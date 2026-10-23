@@ -622,7 +622,7 @@ gates:
     - {id: durable-upload-content-length-must-fail,mutation: {path: *a122,search: '"Content-Length": str(size),',replace: ''},oracle: {kind: *a37,node_ids: ['tests.test_evidence_storage::test_evidence_asset_streams_exact_content_length[object-archive]','tests.test_evidence_storage::test_evidence_asset_streams_exact_content_length[manifest]']}}
     - {id: session-input-binding-must-fail,mutation: {path: bcf_governance/tooling/evidence_session_inputs.py,search: 'if Path(value) in (SESSION_INPUT_NAMESPACE, namespace):',replace: *a48},oracle: {kind: *a37,node_ids: ['tests.test_governance_evidence::test_dependent_gate_consumes_exact_current_session_inputs[local]']}}
     - {id: locked-plan-must-fail,mutation: {path: bcf_governance/tooling/interpreter_environment_plan.py,search: ', "locked_project"',replace: ''},oracle: {kind: *a37,node_ids: ['tests.test_interpreter_locked_project::test_selected_lock_closure_expands_extras_and_pep735_groups']}}
-    - {id: locked-probes-owned-must-fail,mutation: {path: bcf_governance/tooling/interpreter_locked_project.py,search: run_admitted_command(,replace: subprocess.run(},oracle: {kind: *a37,node_ids: ['tests.test_interpreter_locked_project::test_locked_probes_consume_existing_admitted_runner']}}
+    - {id: locked-probes-owned-must-fail,mutation: {path: bcf_governance/tooling/interpreter_locked_project.py,search: checked = run_admitted_command(,replace: checked = subprocess.run(},oracle: {kind: *a37,node_ids: ['tests.test_interpreter_locked_project::test_locked_probes_consume_existing_admitted_runner']}}
   typecheck:
     invocation: {argv: [python3,*a33,*a29],cwd: .,env: {},required_env: []}
     evidence: {kind: gate}
