@@ -1015,9 +1015,17 @@ def test_native_install_consumes_closed_plan_even_if_projection_moves_at_boundar
         return subprocess.CompletedProcess(argv, 0, "", "")
 
     monkeypatch.setattr(subprocess, "run", run)
-    python = materialize_interpreter_environment(tmp_path, Path(sys.executable))
-    assert python.is_file()
+    try:
+        python = materialize_interpreter_environment(tmp_path, Path(sys.executable))
+    except InterpreterEnvironmentError as exc:
+        assert "projection drift" in str(exc)
+    else:
+        assert python.is_file()
+        assert seen == [plan.requirements]
+        pytest.fail("changed projection was published after closed tuple installation")
     assert seen == [plan.requirements]
+    assert not list(tmp_path.rglob("environment.json"))
+    assert not list(tmp_path.rglob("*.building-*"))
     with pytest.raises(InterpreterEnvironmentError, match="projection drift"):
         verify_interpreter_environment_projection(plan)
 
