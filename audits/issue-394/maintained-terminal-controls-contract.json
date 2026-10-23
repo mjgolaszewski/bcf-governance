@@ -3,5 +3,10 @@
   "parent": "audits/issue-394/maintained-single-phase-terminal-contract.json",
   "scope": "Add four cause-specific controls through existing gate registry and mutation owner: completed active phase, single phase membership, unique version-family owner and stable version. Preserve all existing selectors/controls and public schemas.",
   "registry_budget": "Keep existing101KiB/900line cap. Deterministically shorten only existing YAML anchor/alias labels (token-based, parsed data equal) before appending four records; no deleted controls or threshold increase.",
-  "forbidden": "No parallel registry/evaluator/receipt family; no main/workflow/authority edits; original red evidence retained."
+  "forbidden": "No parallel registry/evaluator/receipt family; no main/workflow/authority edits; original red evidence retained.",
+  "installed_consumer_population": "Existing fresh/upgrade Lite installation fixture, SDK-absent isolated interpreter, actual installed private declaration and exact-main consumer. Reuse all17 source contract assertions by AST-preserving import remap and stdlib assertRaises context; strip only pytest parametrization metadata, not assertions. No Pytest/SDK import in consumer; report scope only these two installation histories.",
+  "test_paths": [
+    "tests/test_maintained_release_terminal.py",
+    "tests/test_installed_maintained_terminal.py"
+  ]
 }
