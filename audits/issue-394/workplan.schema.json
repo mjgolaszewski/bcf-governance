@@ -1242,6 +1242,89 @@
       "additionalProperties": {
         "$ref": "#/$defs/implementation_slice"
       }
+    },
+    "release_train_terminal_authority_followup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "authority",
+        "contract_commit",
+        "controls_commit",
+        "execution",
+        "implementation",
+        "scope",
+        "next_action",
+        "acceptance_advance",
+        "declaration_contract_commit",
+        "declaration_tests_commit",
+        "query_cases_authored",
+        "retained_snapshot_correction",
+        "runtime_readiness",
+        "runtime_readiness_audit"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "TODO",
+            "IN_PROGRESS",
+            "DONE"
+          ]
+        },
+        "authority": {
+          "const": false
+        },
+        "contract_commit": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{8}|[0-9a-f]{40})$"
+        },
+        "controls_commit": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{8}|[0-9a-f]{40})$"
+        },
+        "execution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "implementation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1
+        },
+        "next_action": {
+          "type": "string",
+          "minLength": 1
+        },
+        "acceptance_advance": {
+          "const": false
+        },
+        "declaration_contract_commit": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{8}|[0-9a-f]{40})$"
+        },
+        "declaration_tests_commit": {
+          "type": "string",
+          "pattern": "^(?:[0-9a-f]{8}|[0-9a-f]{40})$"
+        },
+        "query_cases_authored": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "retained_snapshot_correction": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime_readiness": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runtime_readiness_audit": {
+          "const": "audits/issue-394/release-train-provider-budget-readiness.json"
+        }
+      }
     }
   }
 }
