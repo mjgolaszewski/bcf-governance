@@ -836,6 +836,17 @@ clears the general artifact root.
 
 ## Supporting commands
 
+The maintained read-contract candidate adds optional `allowed_read_ports` to
+application operations. Existing registries can omit it. A nonempty list requires
+`authoritative_read: true`; read ports must be reachable and cannot also appear
+as mutation, authority, or non-authoritative output ports. Source-resolved read
+bodies remain subject to effect traversal, and known writes, authority effects,
+and unsupported receiver aliases remain errors. Changing nonempty read-port
+declarations requires the existing exact-base `effect_changed` migration.
+Older SDKs reject the new field, so adopt it only with a qualified supporting
+maintenance release. This candidate does not resolve returned-model dispatch;
+Protocol annotations and read declarations do not prove projection purity.
+
 - `bcf validate`: schema and cross-file semantics.
 - `bcf semantic-ownership scan`: source-first evaluation of adopted semantic
   families, application operations, and representation provenance. The legacy

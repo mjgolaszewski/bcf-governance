@@ -80,6 +80,7 @@
         "model_callable": {"type": "boolean"},
         "allowed_mutation_ports": {"$ref": "#/$defs/stringArray"},
         "allowed_authority_ports": {"$ref": "#/$defs/stringArray"},
+        "allowed_read_ports": {"$ref": "#/$defs/stringArray"},
         "non_authoritative_output_effects": {"$ref": "#/$defs/stringArray"}
       }
     }

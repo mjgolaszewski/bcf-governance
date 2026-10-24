@@ -82,7 +82,19 @@ def validate_operation_effects(
         _port_identity(str(value), functions)
         for value in operation["non_authoritative_output_effects"]
     }
-    declared_ports = mutation_ports | authority_ports | non_authoritative_ports
+    read_ports = {
+        _port_identity(str(value), functions)
+        for value in operation.get("allowed_read_ports", [])
+    }
+    if read_ports and operation.get("authoritative_read") is not True:
+        raise SemanticOperationEffectError(
+            f"operation {operation['id']} read ports require authoritative_read=true"
+        )
+    if read_ports & (mutation_ports | authority_ports | non_authoritative_ports):
+        raise SemanticOperationEffectError(
+            f"operation {operation['id']} read ports overlap another effect category"
+        )
+    declared_ports = mutation_ports | authority_ports | non_authoritative_ports | read_ports
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
@@ -129,6 +141,35 @@ def validate_operation_effects(
                 raise SemanticOperationEffectError(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
+            name = str(call.get("call_name", ""))
+            receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
+            file_replace = name == "replace" and (
+                raw.startswith("os::")
+                or receiver in {"destination", "path", "staged", "target"}
+            )
+            shutil_write = name in SHUTIL_WRITE_CALLS and raw.startswith("shutil::")
+            unresolved_mutation = callee is None and name.startswith(
+                MUTATION_CALL_PREFIXES
+            )
+            known_write = (
+                name in WRITE_CALLS or file_replace or shutil_write or unresolved_mutation
+                or call.get("effect") == "write"
+            )
+            known_authority = (
+                name.lower().startswith(AUTHORITY_CALL_PREFIXES)
+                or call.get("authority_effect") is True
+            )
+            if identity in read_ports:
+                reached.add(identity)
+                if known_write or known_authority:
+                    raise SemanticOperationEffectError(
+                        f"operation {operation['id']} read port has a write or authority effect: {raw}"
+                    )
+                # A read declaration never conceals a source-resolved body.
+                # Unsupported receiver aliases have already failed above.
+                if callee is not None:
+                    pending.append(callee)
+                continue
             if identity in declared_ports:
                 reached.add(identity)
                 continue
@@ -144,19 +185,9 @@ def validate_operation_effects(
                 if callee is not None:
                     pending.append(callee)
                 continue
-            name = str(call.get("call_name", ""))
-            receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
-            file_replace = name == "replace" and (
-                raw.startswith("os::")
-                or receiver in {"destination", "path", "staged", "target"}
-            )
-            shutil_write = name in SHUTIL_WRITE_CALLS and raw.startswith("shutil::")
-            unresolved_mutation = callee is None and name.startswith(
-                MUTATION_CALL_PREFIXES
-            )
-            if name in WRITE_CALLS or file_replace or shutil_write or unresolved_mutation:
+            if known_write:
                 writes.add(raw)
-            if name.lower().startswith(AUTHORITY_CALL_PREFIXES):
+            if known_authority:
                 authority.add(raw)
             # Follow every source-resolved call until a declared effect port.
             # Module boundaries are organizational, not effect boundaries; a
