@@ -22,6 +22,8 @@ execution_evidence:
     - Recovery allocation 18940 ran forty-five focused cases successfully
     - Recovery allocation 18960 ran ten selected authority and migration regressions successfully
     - Recovery allocation 18965 ran native structural governance validation successfully
+    - Recovery allocation 18967 compared one native reference handler through four causal observations successfully
+    - Recovery allocation 18981 ran six functional projection callgraph controls successfully
   notes:
     - Corrected baseline 18922 passed thirty cases; earlier harness log-sink rejection collected no tests and remains retained.
     - Causal RED 18931 produced eight failures and four passes; causes reflect the proposed unsupported API, not eight proven regressions.
@@ -30,6 +32,8 @@ execution_evidence:
     - Earlier authority fixture errors were caused by harness Git discovery denial; the corrected ninety-second run timed out without a completed JUnit. Both remain retained, and the fresh explicitly bounded extended run kept identical source and tests.
     - Governance retained the advisory that required agent context is 443 KiB against the recommended 350 KiB; no context budget was raised.
     - Actual returned-model projection remains unsupported pending concrete construction and dispatch ownership; read labels alone cannot unblock Recovery.
+    - Recovery accepted genuine domain-function body extraction with retained model APIs and independent source guards as the application route; native owner qualification remains pending and no alias resolution is relaxed.
+    - Prepare unpublished candidate 2.3.7 through the single version owner and canonical reconciliation; exact complete source distribution adopter and release qualification remain pending.
 closeout_requirements:
   claims:
     required_suites_green:

@@ -192,7 +192,7 @@
     },
     "schemas/application-operations.schema.json": {
       "operation": "copy",
-      "sha256": "3b5b6133f7b2cba47fda6e50a3d45b0b046127dbfe36806ca3f08724408bee6a"
+      "sha256": "76df1354865deeefb0d9ef71e8837650fd9d4ce950b3550e132704e4b8aac549"
     },
     "schemas/architecture-boundaries.schema.json": {
       "operation": "copy",
@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "5143af47dda1c34003635898e855cabb12434b8b1d5b935c40589aa5725ec3a7"
+      "sha256": "5a86a5c0ad8fd64947822e2a48df0f8c4404fa203fed719fef931b3df241a671"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -1463,7 +1463,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",
-      "sha256": "3fb6cc14b6fdc3ac8a0cf1ac81e30375c752914c8aaa1dc7f4cb2f098e8aee4a"
+      "sha256": "e85f066cd5d23fbeca1f434b9f753f880665489871a6390990b428480e584904"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",
@@ -1475,7 +1475,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "bf70dd7f64c0f270ed46b304864aae86952b31305b2f020bafbc9ef52508653a"
+      "sha256": "fa9de31ea6385da0be201ab04ef24bc6cb5962ebdb099ca1f85a9eb3f2eecb2c"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",

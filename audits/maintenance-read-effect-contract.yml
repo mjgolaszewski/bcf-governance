@@ -40,7 +40,7 @@ disposition:
   supported_declaration_for_reported_shape: absent
   maintained_correction_required: true
   all_thirty_diagnostic_rejections_are_proven_defects: false
-  release_version_assignment: pending
+  release_version_assignment: unpublished_candidate_2_3_7
   design: additive_read_ports_first_result_dispatch_pending
   execution: focused_green_selected_authority_and_governance_pass_native_corroboration_pending
 read_port_contract:
@@ -93,6 +93,28 @@ evidence:
       result: two_passes_eight_fixture_errors_when_harness_denied_native_git_discovery
     - allocation: 18952
       result: timeout_without_completed_junit_not_a_product_test_result
+  functional_shape:
+    allocation: 18981
+    cases: 6
+    failures: 0
+    terminal_sha256: 620e7cf52212305e8b950a9181a0981262ef02f2236bb62009727706555f8a2c
+    scope: canonical_function_and_nested_effect_traversal_not_native_projection_acceptance
+  native_reference_owner:
+    allocation: 18967
+    observations: 4
+    terminal_sha256: 681fbce9e891bd4e34d31eb9c4269fbfb6d6cbc18295b3d69dc6a3c33e76cda6
+    result_sha256: c91148ed7239d41db3c046ea022bdda222868b2de3d7c405c1cac4afef8ea481
+    scope: released_rejection_candidate_success_missing_declaration_and_false_classification_refusals
+    excludes: [all_sixteen_reference_bindings, all_eighty_three_read_bindings, runtime_purity, adoption, standard_compliance]
+release_preparation:
+  bounded_context: maintained_release
+  architectural_layer: package_metadata_and_governance
+  side: release_projection
+  authored_targets: [bcf_governance/_version.py, CHANGELOG.md, phases/phase-31-hotfix08.yml, MEMORY.yml]
+  derived_targets: [manifest.yml, governance/public-contracts.yml, README.md, docs/USAGE.md, audits/v2.3.7-editorial-review.yml, template_and_pack_manifests, workflow_authority_pair]
+  projection_owner: canonical_bcf_reconcile_apply
+  expected_checks: [canonical_reconciliation, native_complete_candidate_train, actual_consumer_qualification, distributions, exact_main_certification, immutable_publication]
+  forbidden: [manual_workflow_or_authority_pin_edits, raw_push, immutable_2_3_6_mutation, experimental_2_5_integration]
 required_controls:
   - genuine typed async read followed by model projection
   - direct receiver alias and bound-method alias remain fail-closed

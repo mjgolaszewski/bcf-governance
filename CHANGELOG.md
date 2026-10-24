@@ -6,7 +6,22 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.6`
+Release target: `2.3.7`
+
+### Added
+
+- Optional `allowed_read_ports` for truthfully classified authoritative reads.
+  Declarations must be reachable and disjoint from other effect categories;
+  source-resolved read bodies remain subject to write and authority checks.
+  Existing registries can omit the new field. Older SDKs reject the field.
+
+### Fixed
+
+- Include read-boundary changes in exact-base operation-effect migrations while
+  treating an omitted declaration and an empty list equivalently. Unsupported
+  receiver aliases remain rejected; returned-model method dispatch is unchanged.
+
+## [2.3.6] - 2026-10-22
 
 ### Fixed
 
@@ -1590,7 +1605,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.8...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.6...HEAD
+[2.3.6]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.5...v2.3.6
 [2.1.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.7...v2.1.8
 [2.1.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.6...v2.1.7
 [2.1.6]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.5...v2.1.6
