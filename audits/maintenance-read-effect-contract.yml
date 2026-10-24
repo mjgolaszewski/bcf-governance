@@ -129,3 +129,16 @@ open_design_questions:
   - Establish the smallest explicit read-boundary contract without treating a declaration as proof of implementation purity.
   - Preserve traversal into actual projection owners without selecting targets by method-name suffix or annotation alone.
   - Distinguish supported genuine source-level application functions from analyzer-evasion wrappers.
+
+ci_matrix_correction:
+  scope: maintained_release_state_coverage_only
+  source_before_correction: 4e49bdda5fc86a8be3da12784184e68306a95f8d
+  failed_allocation: 19045
+  terminal_sha256: 694636d157acb861d38ea637580e4ec34bcaec5510f0821ada1cef58d4ccfe7f
+  native_exit: 1
+  failure: CIStateMatrixError_missing_same_candidate_matrix_update
+  reached_boundary: prospective_preflight_before_full_train_and_provider_submission
+  generated_contracts: eighteen_workflows_and_ci_graph
+  remediation: authored_state_matrix_covers_read_effect_and_generated_release_transitions
+  qualification: pending_fresh_finite_allocation_and_canonical_reconciliation
+  preserved: [original_source_commit, failed_attempt, full_train_requirement, ordinary_release_authority, immutable_2_3_6]
