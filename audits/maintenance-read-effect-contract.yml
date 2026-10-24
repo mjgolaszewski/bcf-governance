@@ -1,0 +1,144 @@
+document:
+  kind: maintenance_contract_review
+  id: maintained-read-effect-contract
+  status: partial_implementation_unqualified
+subject:
+  immutable_release: 2.3.6
+  source_commit: e39d72a0b0e2e849317e284a674848bbb7fcf000
+  request_cursors: [18828, 18831, 18900]
+  lane: maintained_pre_2_5
+scope:
+  bounded_context: semantic_ownership
+  architectural_layer: tooling
+  side: query_validation
+  targets:
+    - bcf_governance/tooling/semantic_operation_effects.py
+    - bcf_governance/tooling/semantic_python_method_identity.py
+    - bcf_governance/tooling/semantic_ownership_inventory.py
+    - bcf_governance/tooling/semantic_authority_contracts.py
+    - bcf_governance/tooling/semantic_authority_migrations.py
+    - schemas/application-operations.schema.json
+  expected_tests:
+    - tests/test_semantic_read_contract.py
+    - tests/test_semantic_read_ports.py
+    - tests/test_semantic_method_effects.py
+    - tests/test_semantic_authority.py
+  forbidden_surfaces:
+    - immutable_release_assets_and_tags
+    - consumer_authored_source_without_owner_handoff
+    - experimental_2_5_release_machinery
+    - provider_workflow_definitions_and_authority_pins
+    - execution_resource_limits
+observations:
+  - authoritative_read classifies an operation but declares no read boundary.
+  - Closed operation schema provides mutation authority and output ports only.
+  - Hard unresolved dispatch rejects before declared effect ports are consulted.
+  - Call-result data provenance includes receiver origins; returned models can be classified receiver_alias.
+  - A call can return self; dropping receiver provenance alone would weaken fail-closed semantics.
+  - Protocol return annotations alone do not prove concrete runtime method identity or purity.
+disposition:
+  supported_declaration_for_reported_shape: absent
+  maintained_correction_required: true
+  all_thirty_diagnostic_rejections_are_proven_defects: false
+  release_version_assignment: unpublished_candidate_2_3_7
+  design: additive_read_ports_first_result_dispatch_pending
+  execution: focused_green_selected_authority_and_governance_pass_native_corroboration_pending
+read_port_contract:
+  schema: optional_allowed_read_ports_in_existing_1_0_operation
+  omitted_field: equivalent_to_empty_list
+  classification: nonempty_read_ports_require_authoritative_read_true
+  separation: disjoint_from_mutation_authority_and_output_ports
+  reachability: every_declared_read_port_must_be_reached
+  traversal: source_resolved_read_bodies_remain_in_effect_walk
+  unresolved_boundary: existing_same_instance_or_chained_receiver_eligibility_only
+  exclusions: [known_write_effects, known_authority_effects, hard_aliases]
+  migration: nonempty_read_port_changes_require_exact_base_effect_changed_record
+  result_dispatch: unchanged_fail_closed_not_yet_supported
+evidence:
+  baseline:
+    allocation: 18922
+    cases: 30
+    failures: 0
+    terminal_sha256: 5171f6753b28c1b417f019afd8e0224d0d1a7b1d09f8a4b2ddcd92f181bd583f
+    scope: current_limitation_and_existing_negative_controls_only
+  causal_red:
+    allocation: 18931
+    cases: 12
+    failures: 8
+    controls_passed: 4
+    terminal_sha256: 9c91b89732773f58ff4f8fd6f698eadb1e86f402a55f97ea792b97355a3a38e9
+    scope: proposed_read_declaration_contract_not_eight_claimed_regressions
+  focused_green:
+    allocation: 18940
+    cases: 45
+    failures: 0
+    terminal_sha256: 211e2e64f35c227495551c16dcacc5436a10266551a28d030f2de298d36d4425
+    scope: optional_read_declaration_only_not_result_dispatch_or_release_acceptance
+  selected_authority:
+    allocation: 18960
+    cases: 10
+    failures: 0
+    deselected: 34
+    seconds: 111.61
+    terminal_sha256: b4f5dd38eb5006de6b7aa2757a53b2e6b8dcb6cef92f73d60430fe8d8798e648
+    scope: selected_real_authority_and_exact_base_migration_regressions
+  governance:
+    allocation: 18965
+    exit_code: 0
+    terminal_sha256: 483eec175f567376e50cfe22c350629a356c6ce17be737071248931685acded2
+    scope: native_structural_governance_validation_not_release_or_adopter_acceptance
+    retained_advisory: required_agent_context_443_KiB_exceeds_recommended_350_KiB
+  earlier_attempts:
+    - allocation: 18949
+      result: two_passes_eight_fixture_errors_when_harness_denied_native_git_discovery
+    - allocation: 18952
+      result: timeout_without_completed_junit_not_a_product_test_result
+  functional_shape:
+    allocation: 18981
+    cases: 6
+    failures: 0
+    terminal_sha256: 620e7cf52212305e8b950a9181a0981262ef02f2236bb62009727706555f8a2c
+    scope: canonical_function_and_nested_effect_traversal_not_native_projection_acceptance
+  native_reference_owner:
+    allocation: 18967
+    observations: 4
+    terminal_sha256: 681fbce9e891bd4e34d31eb9c4269fbfb6d6cbc18295b3d69dc6a3c33e76cda6
+    result_sha256: c91148ed7239d41db3c046ea022bdda222868b2de3d7c405c1cac4afef8ea481
+    scope: released_rejection_candidate_success_missing_declaration_and_false_classification_refusals
+    excludes: [all_sixteen_reference_bindings, all_eighty_three_read_bindings, runtime_purity, adoption, standard_compliance]
+release_preparation:
+  bounded_context: maintained_release
+  architectural_layer: package_metadata_and_governance
+  side: release_projection
+  authored_targets: [bcf_governance/_version.py, CHANGELOG.md, phases/phase-31-hotfix08.yml, MEMORY.yml]
+  derived_targets: [manifest.yml, governance/public-contracts.yml, README.md, docs/USAGE.md, audits/v2.3.7-editorial-review.yml, template_and_pack_manifests, workflow_authority_pair]
+  projection_owner: canonical_bcf_reconcile_apply
+  expected_checks: [canonical_reconciliation, native_complete_candidate_train, actual_consumer_qualification, distributions, exact_main_certification, immutable_publication]
+  forbidden: [manual_workflow_or_authority_pin_edits, raw_push, immutable_2_3_6_mutation, experimental_2_5_integration]
+required_controls:
+  - genuine typed async read followed by model projection
+  - direct receiver alias and bound-method alias remain fail-closed
+  - method returning self does not erase receiver provenance
+  - rebound decorated inherited and dynamic dispatch remain fail-closed
+  - writes and authority hidden in projection remain rejected
+  - missing unreachable and overlapping declarations fail
+  - no authoritative read is relabeled non_authoritative_output_effects
+  - canonical and portable runtime behavior remains identical
+  - immutable 2.3.6 stays unchanged
+open_design_questions:
+  - Establish the smallest explicit read-boundary contract without treating a declaration as proof of implementation purity.
+  - Preserve traversal into actual projection owners without selecting targets by method-name suffix or annotation alone.
+  - Distinguish supported genuine source-level application functions from analyzer-evasion wrappers.
+
+ci_matrix_correction:
+  scope: maintained_release_state_coverage_only
+  source_before_correction: 4e49bdda5fc86a8be3da12784184e68306a95f8d
+  failed_allocation: 19045
+  terminal_sha256: 694636d157acb861d38ea637580e4ec34bcaec5510f0821ada1cef58d4ccfe7f
+  native_exit: 1
+  failure: CIStateMatrixError_missing_same_candidate_matrix_update
+  reached_boundary: prospective_preflight_before_full_train_and_provider_submission
+  generated_contracts: eighteen_workflows_and_ci_graph
+  remediation: authored_state_matrix_covers_read_effect_and_generated_release_transitions
+  qualification: pending_fresh_finite_allocation_and_canonical_reconciliation
+  preserved: [original_source_commit, failed_attempt, full_train_requirement, ordinary_release_authority, immutable_2_3_6]

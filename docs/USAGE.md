@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.6/bcf_governance-2.3.6-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.7/bcf_governance-2.3.7-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -581,9 +581,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.6 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.6
+gh release download v2.3.7 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.7
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.6 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.7 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -835,6 +835,17 @@ session ID, and digest immediately before deleting that exact session. It never
 clears the general artifact root.
 
 ## Supporting commands
+
+The maintained read-contract candidate adds optional `allowed_read_ports` to
+application operations. Existing registries can omit it. A nonempty list requires
+`authoritative_read: true`; read ports must be reachable and cannot also appear
+as mutation, authority, or non-authoritative output ports. Source-resolved read
+bodies remain subject to effect traversal, and known writes, authority effects,
+and unsupported receiver aliases remain errors. Changing nonempty read-port
+declarations requires the existing exact-base `effect_changed` migration.
+Older SDKs reject the new field, so adopt it only with a qualified supporting
+maintenance release. This candidate does not resolve returned-model dispatch;
+Protocol annotations and read declarations do not prove projection purity.
 
 - `bcf validate`: schema and cross-file semantics.
 - `bcf semantic-ownership scan`: source-first evaluation of adopted semantic

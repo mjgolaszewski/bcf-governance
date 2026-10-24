@@ -1,0 +1,49 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF08 Hotfix Log
+  id: bcf-governance-phase-31-hotfix08
+  version: 1.0.0
+  generated_at_utc: '2026-10-24T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix08.yml
+hotfix:
+  id: P31-HF08
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 8
+  summary: declare truthful read boundaries while retaining fail-closed effect traversal
+execution_evidence:
+  planned_commands:
+    - python -m pytest -q --noconftest -p no:cacheprovider tests/test_semantic_read_ports.py tests/test_semantic_read_contract.py tests/test_semantic_method_effects.py tests/test_semantic_authority.py
+    - python scripts/validate_governance_yaml.py --repo-root .
+  executed_commands:
+    - Recovery allocation 18922 ran released typed-read characterization and existing method controls
+    - Recovery allocation 18931 ran proposed read-port contract causal RED
+    - Recovery allocation 18940 ran forty-five focused cases successfully
+    - Recovery allocation 18960 ran ten selected authority and migration regressions successfully
+    - Recovery allocation 18965 ran native structural governance validation successfully
+    - Recovery allocation 18967 compared one native reference handler through four causal observations successfully
+    - Recovery allocation 18981 ran six functional projection callgraph controls successfully
+  notes:
+    - Allocation 19045 closed with native exit one at prospective CI state-matrix preflight before the full train or provider submission; terminal 694636d157acb861d38ea637580e4ec34bcaec5510f0821ada1cef58d4ccfe7f and original source 4e49bdda5fc86a8be3da12784184e68306a95f8d are retained.
+    - Prepare same-candidate matrix coverage for read boundaries, exact-base migration, canonical graph and eighteen workflow bindings, controller and ordinary release permutations; no validator exemption or generated pin edit. Fresh reconciliation and complete qualification remain pending.
+    - Corrected baseline 18922 passed thirty cases; earlier harness log-sink rejection collected no tests and remains retained.
+    - Causal RED 18931 produced eight failures and four passes; causes reflect the proposed unsupported API, not eight proven regressions.
+    - Optional read declarations preserve omitted-field compatibility, exact-base migration, source effect traversal and hard-alias rejection.
+    - Allocation 18940 passed all forty-five focused cases; allocation 18960 passed ten selected authority and migration regressions with thirty-four cases deselected, and allocation 18965 passed native governance validation.
+    - Earlier authority fixture errors were caused by harness Git discovery denial; the corrected ninety-second run timed out without a completed JUnit. Both remain retained, and the fresh explicitly bounded extended run kept identical source and tests.
+    - Governance retained the advisory that required agent context is 443 KiB against the recommended 350 KiB; no context budget was raised.
+    - Actual returned-model projection remains unsupported pending concrete construction and dispatch ownership; read labels alone cannot unblock Recovery.
+    - Recovery accepted genuine domain-function body extraction with retained model APIs and independent source guards as the application route; native owner qualification remains pending and no alias resolution is relaxed.
+    - Prepare unpublished candidate 2.3.7 through the single version owner and canonical reconciliation; exact complete source distribution adopter and release qualification remain pending.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence: [test, contract-test]
+    security_review_complete:
+      required_evidence: [governance-validate]
+    health_checks_green:
+      required_evidence: [runtime-smoke]
+  reconciliation:
+    required_evidence: [governance-validate, governance-exposure-scan]
+  finding_registry: governance/findings.yml

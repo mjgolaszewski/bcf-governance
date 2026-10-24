@@ -2508,3 +2508,37 @@ reconciliation and exact artifact qualification remain required. Outer immutable
 input custody remains necessary across the final check and publication rename.
 No release-train phase, provider authorization, publication or adopter installation
 is promoted by this local maintenance transition.
+
+### Maintenance 2.3.7 read-effect and workflow projection custody
+
+The additive operation read boundary changes semantic source inputs consumed by
+canonical graph locking and workflow generation. Eighteen workflow source-hash
+bindings and the graph are therefore changed CI contracts even where executable
+workflow bodies are unchanged. The publisher's mechanically projected version
+identity advances from 2.3.6 to 2.3.7. Neither a hash-only projection nor prior
+2.3.6 certification exempts this candidate from same-candidate matrix coverage.
+
+| Reached state or permutation | Required producer/consumer transition | Rejection and authority boundary |
+| --- | --- | --- |
+| Operation omits read ports or declares an empty list | Existing operation/effect validator preserves the empty boundary and existing mutation/authority counts. | No read permission is inferred; unresolved hard aliases remain rejected. |
+| Operation declares nonempty read ports | Closed schema and effect validator require authoritative-read classification, disjoint resolved identities, reached ports and traversal into source-resolved bodies. | False classification, overlap, unreachable declaration, hidden writes or authority reject; a declaration alone proves no runtime purity. |
+| Exact-base operation read boundary changes | Migration validator authenticates the comparison base and requires the effect-change record for a nonempty semantic change. | Omitted versus empty remains equivalent; missing or stale exact-base migration rejects. |
+| Semantic source or release version changes graph/workflow projections | Full canonical reconciliation owns the definition/authority commit pair, exact workflow bindings and generated 2.3.7 publisher identity. | Hand-pinned workflows, stale graph/authority, wrong source or wrong version reject before provider submission. |
+| Reconciled candidate lacks same-candidate matrix coverage | Prospective preflight rejects before the full producer train and exact push/PR mutation. | Retain failed attempt 19045 and its original source identity; no proof or provider submission is inferred. |
+| Corrected PR candidate and reusable governance invocation | Existing local admission, exact comparison transport and complete prospective producer DAG qualify the new candidate. | Prior focused checks or reconciliation do not satisfy the full train; no PR or certification claim before exact authenticated output. |
+| Direct protected push / exact-main, controller current or pending rotation | Existing exact-main and controller owners classify the exact generated authority; pending rotation requires installation/probe and fresh ordinary-current certification. | Candidate PR proof and installed previous-controller identity never grant release authority to changed source. |
+| Terminal certification, build, verify, collect and publication retry/conflict | Existing ordinary schema-1.1 release owners bind the exact certified main, 2.3.7 assets, attestations, receipt and tag. | Bounded/focused evidence, stale source, conflicting tag/release or unretired credential cannot satisfy publication/custody. |
+| Pinned adopter observation, legacy or new operation declaration | Existing isolated compatibility owner records actual exact-runtime results independently of publication authority. | Source diagnostics and genuine application extraction are not SDK adoption, arbitrary subtype purity or full Standard closure. |
+
+Scheduled control runs, bounded workitem truth and unrelated adopter profiles
+retain their existing graph-selected propositions: this correction adds no
+producer, event trigger, permission, command, gate exemption, lifecycle target or
+publication prerequisite. They cannot substitute for exact-main terminal release
+certification. Returned-model alias dispatch remains fail-closed, and the
+experimental 2.5 lane is structurally outside this maintained release.
+
+The outward construction remains semantic declaration/schema and exact-base
+migration -> canonical graph/source binding -> generated definition/authority
+pair -> same-candidate preflight -> complete candidate proof -> protected merge
+-> exact-main/controller closure -> ordinary release and immutable custody.
+Failure custody from 19045 is diagnostic input only, never reusable PASS evidence.
