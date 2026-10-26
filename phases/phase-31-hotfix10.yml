@@ -1,0 +1,46 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF10 Hotfix Log
+  id: bcf-governance-phase-31-hotfix10
+  version: 1.0.0
+  generated_at_utc: '2026-10-26T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix10.yml
+hotfix:
+  id: P31-HF10
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 10
+  summary: Authenticate exact-main controller custody once before local routing
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - Allocation20322 reproduced both ordinary and recovery stale topology contract failures before the repair; independently verified physical closure.
+  - Allocation20327 full native reconciliation passed and native owner committed definition eaa9236e and authority5ef73f2f; production lint and21 release workflow tests passed.
+  - Allocation20328 passed227 expanded regression cases; one existing environment-preflight test incorrectly applied trusted no-checkout path scoping to candidate builder input. Test now asserts actual declared trust/checkout boundaries with original full-binding equality retained.
+  notes:
+  - Allocation20325 rejected missing local-route primitive on migration of an existing graph; primitive now belongs to the shared native builder migration owner for both installed and fresh graphs. No hand-authored generated graph.
+  - Allocation20323 rejected graph generation because the reused downloaded-custody component declared an external artifact input. The builder now uses a local-input component over the identical existing route command; no graph validator relaxation.
+  - Scope is CI graph projection and its prospective guard, query routing before classification. No public CLI change.
+  - Target owners are governance_install/ci_graph.py and controller_custody_prospective.py; topology, lane mutation and existing custody tests prove behavior.
+  - Generated graph, workflow and authority bindings are native reconcile outputs only. Recovery semantics, provider authority, permissions, deadlines, release owners and independent2.5 source are forbidden changes.
+  - Run40295381826 on c38c622 spent about eight minutes resolving twenty provider transitions, then repeated resolution during project-custody and exceeded the fifteen-minute builder budget before upload.
+  - Native reconciliation, full same-candidate proof, protected merge, hosted exact-main and immutable release custody remain pending.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

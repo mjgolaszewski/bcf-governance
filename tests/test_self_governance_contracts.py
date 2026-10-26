@@ -250,27 +250,17 @@ def test_exact_main_controller_wheel_is_built_once_after_pack_checks() -> None:
         compiled.trusted_controller_lifecycle.state
         is ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY
     )
-    expected_route = (
-        "resolve-recovery-controller-candidate"
-        if recovery
-        else "resolve-effective-controller-candidate"
-    )
-    expected_custody = (
-        ["setup-controller-custody-directory"]
-        if recovery
-        else [
-            "setup-controller-custody-directory",
-            "project-controller-custody",
-        ]
-    )
+    assert builder["timeout_minutes"] == 15
     assert builder["executor"]["components"] == [
         "checkout-candidate",
         "setup-python",
         "install-governance",
-        *(["setup-controller-custody-directory"] if recovery else []),
-        expected_route,
+        "setup-controller-custody-directory",
+        *(
+            ["resolve-recovery-controller-candidate"] if recovery else
+            ["project-controller-custody", "project-local-custody-controller-route"]
+        ),
         "classify-exact-main-controller",
-        *([] if recovery else expected_custody),
         "upload-controller-custody",
         "build-trusted-controller",
         "upload-trusted-controller",
@@ -313,7 +303,12 @@ def test_every_required_environment_is_validated_once_before_generated_work() ->
             observed += 1
             first = projection["jobs"][job["id"]]["steps"][0]
             assert first["name"] == "Validate all required environment inputs before work"
-            assert first["env"] == scope_runner_temp_value(bindings)
+            expected = (
+                scope_runner_temp_value(bindings)
+                if job["trust"] == "trusted" and job["checkout"] is False
+                else bindings
+            )
+            assert first["env"] == expected
     assert observed > 0
 
 

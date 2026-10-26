@@ -2631,7 +2631,7 @@ def test_bcf_exact_main_reentry_is_narrow_and_keeps_full_downstream_assurance() 
     route_component = (
         "resolve-recovery-controller-candidate"
         if recovery
-        else "resolve-effective-controller-candidate"
+        else "project-local-custody-controller-route"
     )
     assert builder["executor"]["components"].index(
         route_component

@@ -134,7 +134,7 @@ commands:
     environment: {}
     required_environment: [BCF_CONTROLLER_ROUTE_FILE]
   classify-exact-main-controller:
-    argv: ['{python}', -m, bcf_governance.cli, ci, controller-applicability, --repo-root, ., --target-commit, '${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}', --github-output, --format, json]
+    argv: ['{python}', -m, bcf_governance.cli, ci, controller-applicability, --repo-root, ., --target-commit, '${{ steps.controller-route.outputs.controller_commit_sha }}', --github-output, --format, json]
     cwd: .
     environment: {}
   exact-main-admit-effective:
@@ -520,6 +520,14 @@ step_components:
     environment: {}
     produces: [controller-custody]
     consumes: []
+  project-local-custody-controller-route:
+    kind: command
+    name: Project routing from locally produced custody
+    id: controller-route
+    command: project-controller-route
+    environment: {BCF_CONTROLLER_ROUTE_FILE: '${{ runner.temp }}/bcf-controller-custody/controller-custody.json'}
+    produces: []
+    consumes: []
 workflows:
 - id: governance
   path: .github/workflows/governance.yml
@@ -663,7 +671,7 @@ workflows:
     outputs: {controller_state: '${{ steps.exact-main-applicability.outputs.controller_state }}', semantic_evidence_applicable: '${{ steps.exact-main-applicability.outputs.semantic_evidence_applicable }}', target_commit: '${{ steps.exact-main-applicability.outputs.target_commit }}'}
     executor:
       kind: component_sequence
-      components: [checkout-candidate, setup-python, install-governance, resolve-effective-controller-candidate, classify-exact-main-controller, setup-controller-custody-directory, project-controller-custody, upload-controller-custody, build-trusted-controller, upload-trusted-controller]
+      components: [checkout-candidate, setup-python, install-governance, setup-controller-custody-directory, project-controller-custody, project-local-custody-controller-route, classify-exact-main-controller, upload-controller-custody, build-trusted-controller, upload-trusted-controller]
     produces: [controller-custody, trusted-controller-bundle]
     consumes: []
     required: true

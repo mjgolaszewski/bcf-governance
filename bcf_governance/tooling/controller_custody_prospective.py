@@ -322,6 +322,32 @@ def validate_controller_custody_chain(
         raise GitHubControllerError(
             "ordinary exact-main custody includes recovery routing"
         )
+    if ordinary_custody:
+        classification = graph["commands"]["classify-exact-main-controller"]["argv"]
+        local_route = graph["step_components"].get("project-local-custody-controller-route", {})
+        sequence = [
+            "setup-controller-custody-directory", "project-controller-custody",
+            "project-local-custody-controller-route", "classify-exact-main-controller",
+            "upload-controller-custody",
+        ]
+        if (
+            local_route.get("command") != "project-controller-route"
+            or local_route.get("id") != "controller-route"
+            or local_route.get("consumes") != []
+            or local_route.get("environment") != {
+                "BCF_CONTROLLER_ROUTE_FILE": "${{ runner.temp }}/bcf-controller-custody/controller-custody.json"
+            }
+            or "resolve-effective-controller-candidate" in custody_components
+            or any(custody_components.count(item) != 1 for item in sequence)
+            or any(not _ordered(custody_components, left, right)
+                   for left, right in zip(sequence[:-1], sequence[1:], strict=True))
+            or "--target-commit" not in classification
+            or classification[classification.index("--target-commit") + 1]
+            != "${{ steps.controller-route.outputs.controller_commit_sha }}"
+        ):
+            raise GitHubControllerError(
+                "ordinary exact-main custody must authenticate once before capsule routing"
+            )
     finalizer = _job(graph, "exact-main-finalizer", "finalize")
     finalizer_components = _components(finalizer)
     if (
