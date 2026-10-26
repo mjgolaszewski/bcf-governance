@@ -439,3 +439,56 @@ def test_standalone_custody_rejects_substituted_provider_contract(
             api, repository="owner/repo", main=main, authority={},
             run_id="12", run_attempt=1,
         )
+
+
+@pytest.mark.parametrize("recovery", [False, True])
+def test_builder_authenticates_custody_once_before_classifying(recovery: bool) -> None:
+    builder = {"id": "trusted-controller-build", "executor": {}}
+    graph = {
+        "workflows": [{"id": "exact-main", "jobs": [builder]}],
+        "commands": {"classify-exact-main-controller": {"argv": [
+            "--target-commit", "old-route", "--github-output",
+        ]}},
+    }
+    # Reproject both directions to catch stale route expressions after lifecycle changes.
+    for lane in (not recovery, recovery):
+        _project_exact_main_builder_topology(graph, recovery_reentry=lane)
+    components = builder["executor"]["components"]
+    assert "resolve-effective-controller-candidate" not in components
+    assert components.count("setup-controller-custody-directory") == 1
+    producer = ("resolve-recovery-controller-candidate" if recovery
+                else "project-controller-custody")
+    assert components.count(producer) == 1
+    assert components.index("setup-controller-custody-directory") < components.index(producer)
+    assert components.index(producer) < components.index("classify-exact-main-controller")
+    assert components.index("classify-exact-main-controller") < components.index("upload-controller-custody")
+    if not recovery:
+        assert components.index(producer) < components.index("project-local-custody-controller-route")
+        assert components.index("project-local-custody-controller-route") < components.index("classify-exact-main-controller")
+    argv = graph["commands"]["classify-exact-main-controller"]["argv"]
+    expected = ("${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}"
+                if recovery else "${{ steps.controller-route.outputs.controller_commit_sha }}")
+    assert argv[argv.index("--target-commit") + 1] == expected
+
+
+@pytest.mark.parametrize("defect", ["duplicate-query", "route-before-custody", "wrong-target", "wrong-command"])
+def test_ordinary_custody_rejects_duplicate_or_unbound_routing(defect: str) -> None:
+    root = Path(__file__).resolve().parents[1]
+    graph = copy.deepcopy(validate_ci_graph(root).graph)
+    _project_exact_main_builder_topology(graph, recovery_reentry=False)
+    builder = next(job for workflow in graph["workflows"]
+                   if workflow["id"] == "exact-main" for job in workflow["jobs"]
+                   if job["id"] == "trusted-controller-build")
+    components = builder["executor"]["components"]
+    if defect == "duplicate-query":
+        components.insert(3, "resolve-effective-controller-candidate")
+    elif defect == "route-before-custody":
+        components.remove("project-local-custody-controller-route")
+        components.insert(3, "project-local-custody-controller-route")
+    elif defect == "wrong-command":
+        graph["step_components"]["project-local-custody-controller-route"]["command"] = "resolve-effective-controller-candidate"
+    else:
+        argv = graph["commands"]["classify-exact-main-controller"]["argv"]
+        argv[argv.index("--target-commit") + 1] = COMMIT
+    with pytest.raises(GitHubControllerError, match="authenticate once before capsule routing"):
+        validate_controller_custody_chain(graph, python_executable=Path(sys.executable))

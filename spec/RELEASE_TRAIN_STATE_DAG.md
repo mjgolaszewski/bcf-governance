@@ -2570,3 +2570,17 @@ proof -> protected merge -> exact-main/controller closure -> ordinary release
 and verified immutable custody -> independent consuming qualification. No new
 producer, trigger, permission, lifecycle target or publication prerequisite is
 introduced by this maintenance repair.
+
+### Exact-main controller custody single-resolution repair
+
+The ordinary builder authenticates the provider chain once into its custody
+capsule, projects the controller commit locally, classifies applicability and
+uploads custody before building the controller. The existing fifteen-minute
+budget and downstream trusted capsule reauthentication remain unchanged.
+
+| State or permutation | Required transition | Rejection boundary |
+| --- | --- | --- |
+| Ordinary current or pending-rotation controller | Prepare custody directory, authenticate and project custody once, derive local route, classify, upload. | Duplicate live resolution, missing or reordered custody route, inconsistent capsule commits and classification from another output reject. |
+| Authenticated recovery reentry | Preserve recovery route producer and classify its authenticated output before upload. | Ordinary provider resolution or custody projection in the recovery exclusion lane rejects. |
+| Repeated lifecycle projection | Rebuild both component order and classification source for the selected lane. | A stale ordinary or recovery target cannot survive reprojection. |
+| Exact main after protected merge | Hosted builder must finish inside the unchanged deadline; existing rotation/finalizer/status and release owners authenticate actual artifacts. | Local tests and prior PR434 proof cannot establish fixed-main certification or immutable release custody. |

@@ -62,29 +62,33 @@ def _project_exact_main_builder_topology(
         "checkout-candidate",
         "setup-python",
         "install-governance",
-        *(["setup-controller-custody-directory"] if recovery_reentry else []),
-        (
-            "resolve-recovery-controller-candidate"
+        "setup-controller-custody-directory",
+        *(
+            ["resolve-recovery-controller-candidate"]
             if recovery_reentry
-            else "resolve-effective-controller-candidate"
+            else ["project-controller-custody", "project-local-custody-controller-route"]
         ),
         "classify-exact-main-controller",
-        *(
-            ["upload-controller-custody"]
-            if recovery_reentry
-            else [
-                "setup-controller-custody-directory",
-                "project-controller-custody",
-                "upload-controller-custody",
-            ]
-        ),
+        "upload-controller-custody",
         "build-trusted-controller",
         "upload-trusted-controller",
     ]
     builder["produces"] = ["controller-custody", "trusted-controller-bundle"]
+    classification = graph["commands"]["classify-exact-main-controller"]["argv"]
+    classification[classification.index("--target-commit") + 1] = (
+        "${{ steps.candidate-effective-controller.outputs.BCF_BOOTSTRAP_COMMIT_SHA }}"
+        if recovery_reentry
+        else "${{ steps.controller-route.outputs.controller_commit_sha }}"
+    )
 
 
 def _ensure_recovery_builder_primitives(graph: dict[str, Any]) -> None:
+    graph["step_components"]["project-local-custody-controller-route"] = {
+        "kind": "command", "name": "Project routing from locally produced custody",
+        "id": "controller-route", "command": "project-controller-route",
+        "environment": {"BCF_CONTROLLER_ROUTE_FILE": "${{ runner.temp }}/bcf-controller-custody/controller-custody.json"},
+        "produces": [], "consumes": [],
+    }
     graph["commands"]["resolve-recovery-controller-candidate"] = _command(
         [
             "{python}",

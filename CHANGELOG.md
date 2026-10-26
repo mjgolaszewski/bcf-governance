@@ -10,6 +10,9 @@ Release target: `2.3.8`
 
 ### Fixed
 
+- Authenticate exact-main controller custody once before local capsule routing,
+  preserving recovery exclusion, trusted verification and the existing timeout.
+
 - Preserve working generated Python console launchers and activation prefixes
   across atomic native environment publication, refresh installer records, and
   reject stale or changed launcher cache custody.
