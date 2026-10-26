@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
@@ -43,7 +44,7 @@ def discover_typescript_population(
     repo_root: Path, population: dict[str, Any], *, inventory: dict[str, Any] | None = None
 ) -> dict[str, str]:
     """Use the declared local compiler and exact lock to enumerate exports."""
-    source = _safe_file(
+    _safe_file(
         repo_root, population["source"], context=f"population {population['id']} source"
     )
     _safe_file(
@@ -70,7 +71,7 @@ def discover_typescript_population(
             f"population {population['id']} requires an exact locked TypeScript package"
         )
     if inventory is None:
-        def source_files():
+        def source_files() -> Iterator[Path]:
             yield from tracked_typescript_files(repo_root)
 
         try:

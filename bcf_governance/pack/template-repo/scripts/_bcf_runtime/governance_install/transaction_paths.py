@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Any
 
 from ..ci_graph_render import managed_generated_paths

@@ -8,37 +8,44 @@ from __future__ import annotations
 
 import ast
 import json
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
-from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
+from jsonschema import Draft202012Validator
 
-from .semantic_ownership_registry import Registry, load_registry
+from .semantic_authority_migrations import (
+    SemanticMigrationError,
+    validate_exact_base_migrations,
+)
+from .semantic_derivations import (
+    SemanticDerivationError,
+    collect_provenance,
+    legacy_generated_projections,
+    validate_explicit_provenance,
+)
+from .semantic_locking import atomic_write as atomic_write
+from .semantic_locking import render_lock_yaml as render_lock_yaml
+from .semantic_locking import sha256_bytes, stable_payload_digest
+from .semantic_operation_effects import (
+    SemanticOperationEffectError,
+    validate_operation_effects,
+)
 from .semantic_operation_python import (
-    _module_aliases, _expression_symbol, _function_for_entrypoint,
+    _expression_symbol,
+    _function_for_entrypoint,
+    _module_aliases,
 )
 from .semantic_operation_typescript import (
     TypeScriptOperationPopulationError,
     discover_typescript_population,
 )
-from .semantic_derivations import (
-    SemanticDerivationError,
-    collect_provenance,
-    legacy_generated_projections as _legacy_generated_projections,
-    validate_explicit_provenance as _validate_explicit_provenance,
-)
-from .semantic_authority_migrations import (
-    SemanticMigrationError,
-    validate_exact_base_migrations,
-)
-from .semantic_locking import atomic_write, render_lock_yaml, sha256_bytes, stable_payload_digest
-from .semantic_operation_effects import (
-    SemanticOperationEffectError,
-    validate_operation_effects,
-)
+from .semantic_ownership_registry import Registry, load_registry
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
 
+_legacy_generated_projections = legacy_generated_projections
+_validate_explicit_provenance = validate_explicit_provenance
 
 FAMILIES_PATH = Path("governance/semantic-families.yml")
 OPERATIONS_PATH = Path("governance/application-operations.yml")
@@ -260,7 +267,7 @@ def _validate_families(
         family_id = str(family["id"])
         canonical_ids = [str(value) for value in family["canonical_semantic_ids"]]
         for semantic_id in canonical_ids:
-            entry = registry_by_id[semantic_id]
+            _entry = registry_by_id[semantic_id]
         selectors = family["material_selectors"]
         symbols = [str(value) for value in selectors["symbols"]]
         if set(symbols) != {registry_by_id[value].canonical_symbol for value in canonical_ids}:
@@ -379,13 +386,12 @@ def _python_decorator_population(repo_root: Path, population: dict[str, Any]) ->
     for node in tree.body:
         if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
-        names = {
-            decorator.id if isinstance(decorator, ast.Name) else decorator.func.id
-            for decorator in node.decorator_list
-            if isinstance(decorator, ast.Name) or (
-                isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name)
-            )
-        }
+        names: set[str] = set()
+        for decorator in node.decorator_list:
+            if isinstance(decorator, ast.Name):
+                names.add(decorator.id)
+            elif isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Name):
+                names.add(decorator.func.id)
         if names & allowed and (not population["public_only"] or not node.name.startswith("_")):
             if node.name in found:
                 raise SemanticAuthorityError(f"population {population['id']} duplicates {node.name}")
@@ -452,7 +458,7 @@ def _typescript_population(repo_root: Path, population: dict[str, Any], inventor
 def _discover_population(repo_root: Path, population: dict[str, Any], inventory: dict[str, Any] | None = None) -> dict[str, str]:
     if population["adapter"] == "typescript_exports":
         return _typescript_population(repo_root, population, inventory)
-    adapters = {
+    adapters: dict[str, Callable[[Path, dict[str, object]], dict[str, str]]] = {
         "python_mapping": _python_mapping_population,
         "python_decorators": _python_decorator_population,
         "python_module_exports": _python_exports_population,
@@ -492,7 +498,7 @@ def _validate_operations(
 ) -> list[dict[str, Any]]:
     _schema(repo_root, "application-operations.schema.json", payload)
     populations = payload["populations"]
-    population_ids = _validate_operation_structure(payload)
+    _validate_operation_structure(payload)
     discovered = {str(row["id"]): (
         _discover_population(repo_root, row, inventory) if row["adapter"] == "typescript_exports"
         else _discover_population(repo_root, row)

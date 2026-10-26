@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
-from pathlib import PurePosixPath
 import re
 import tomllib
-from typing import Any, Callable
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import PurePosixPath
+from typing import Any
 
+import yaml
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.utils import canonicalize_name
-import yaml
 
 from .automation_contracts import AutomationContractError
 
@@ -39,7 +40,7 @@ def _requirement_version(requirement: Requirement) -> str:
 
 
 def _requirement_identity(requirement: Requirement) -> str:
-    identity = canonicalize_name(requirement.name)
+    identity: str = canonicalize_name(requirement.name)
     if requirement.marker is not None:
         identity += f"; {requirement.marker}"
     return _safe_text(identity, field="identity")

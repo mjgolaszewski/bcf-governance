@@ -4,20 +4,21 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
-from dataclasses import dataclass, field
-from pathlib import Path
 import re
 import subprocess
+import zipfile
+from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Protocol
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request
-import zipfile
 
+from ..bootstrap.contracts import GitHubProviderSettings
+from ..bootstrap.environment import github_provider_settings as _default_github_provider_settings
+from ..ci_github_artifacts import provider_digest
 from ..ci_github_downloads import open_download
 from ..provider_read import ProviderReadError, open_provider_get
-from ..ci_github_artifacts import provider_digest
 from ..release_asset_inventory import (
     exact_assets,
     release_asset_paths,
@@ -37,7 +38,6 @@ from .runtime_custody_operations import (
     RuntimeCustodyOperation,
     decide_runtime_custody_operation,
 )
-
 
 OFFICIAL_RELEASE_REPOSITORY = "mjgolaszewski/bcf-governance"
 MAXIMUM_WHEEL_BYTES = 100 * 1024 * 1024
@@ -603,15 +603,17 @@ def prepare_upgrade_release_custody(
     release_assets: Path | None,
     upgrade: bool,
     template_root: Path,
-    api: ReleaseProvider | None = None,
+    api: ReleaseProvider | None=None,
     *,
-    force_rescaffold: bool = False,
-    candidate_qualification_source: Path | None = None,
-    manifest_entries: dict[str, dict[str, Any]] | None = None,
-    retired_files: dict[str, tuple[str, ...]] | None = None,
-    upgrade_paths: tuple[str, ...] = (),
+    force_rescaffold: bool=False,
+    candidate_qualification_source: Path | None=None,
+    manifest_entries: dict[str, dict[str, Any]] | None=None,
+    retired_files: dict[str, tuple[str, ...]] | None=None,
+    upgrade_paths: tuple[str, ...]=(),
+    provider_settings: GitHubProviderSettings | None=None,
 ) -> UpgradeReleaseCustody:
     """Fail before mutation unless an upgrade can advance existing custody."""
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
 
     if release_assets is not None and not upgrade:
         raise RuntimeError("--release-assets requires --upgrade")
@@ -676,7 +678,7 @@ def prepare_upgrade_release_custody(
         release_assets,
         installed_version=executing_runtime_version(),
         template_root=template_root,
-        token=os.environ.get("GITHUB_TOKEN", ""),
+        token=provider_settings.token(),
         api=api,
     )
     return UpgradeReleaseCustody(

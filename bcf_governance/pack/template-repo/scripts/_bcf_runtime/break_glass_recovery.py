@@ -3,20 +3,22 @@
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import tempfile
-from typing import Any
 import zipfile
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
+from .bootstrap.contracts import CLIRequiredVariables
+from .bootstrap.environment import cli_required_variables as _default_cli_required_variables
 from .ci_github_api import GitHubAPI
 from .ci_github_bootstrap import (
     controller_metadata,
@@ -25,7 +27,6 @@ from .ci_github_bootstrap import (
     verify_controller_subject_metadata,
 )
 from .ci_github_identity import GitHubControllerError, resolve_main
-
 
 POLICY = Path("governance/break-glass-recovery.yml")
 POLICY_SCHEMA = Path("schemas/break-glass-recovery-policy.schema.json")
@@ -37,11 +38,18 @@ def _load(root: Path) -> dict[str, Any]:
     policy = yaml.safe_load((root / POLICY).read_text(encoding="utf-8"))
     schema = json.loads((root / POLICY_SCHEMA).read_text(encoding="utf-8"))
     Draft202012Validator(schema).validate(policy)
+    if not isinstance(policy, dict):
+        raise GitHubControllerError("validated contract must contain an object")
     return policy
 
 
-def _required(name: str) -> str:
-    value = os.environ.get(name, "")
+def _required(
+    name: str,
+    *,
+    cli_variables: CLIRequiredVariables | None=None,
+) -> str:
+    cli_variables = _default_cli_required_variables() if cli_variables is None else cli_variables
+    value = cli_variables.value(name)
     if not value:
         raise GitHubControllerError(f"recovery environment is missing {name}")
     return value
@@ -551,7 +559,7 @@ def finalize(api: GitHubAPI, **kwargs: Any) -> dict[str, Any]:
         "controller_confirmation": {"schema_version": "1.0", "installed_commit_sha": main.checkout_sha, "subject_commit_sha": main.checkout_sha, "subject_tree_sha": main.tree_sha, "bootstrap_run_id": str(install_run["id"]), "bootstrap_run_attempt": str(install_run["run_attempt"]), "probe_run_id": actor["run_id"], "probe_run_attempt": actor["run_attempt"]},
         "resulting_installed_controller": main.checkout_sha, "recovery_only": True, "governance_certified": False,
         "provider_timestamps": {"builder_created_at": build_run["created_at"], "install_created_at": install_run["created_at"], "probe_created_at": api.run(kwargs["repository"], actor["run_id"])["created_at"]},
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": datetime.now(UTC).isoformat(),
     }
     Draft202012Validator(json.loads((kwargs["root"] / RECEIPT_SCHEMA).read_text())).validate(receipt)
     _write_json(kwargs["output"], receipt)

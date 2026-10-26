@@ -46,6 +46,18 @@ Fresh CI installs this projection so its bootstrap does not depend on build-isol
 side effects. Canonical preflight derives the same plan independently and rejects any
 byte drift before probing the selected interpreter or allocating an evidence session.
 
+Native project environments finalize generated console launchers and activation/config
+prefixes while the staged tree is still private, refresh affected installer RECORD
+hashes, and then publish atomically. Internal cache manifest 1.1 binds launcher bytes,
+modes, links and installer records. Older 1.0 caches fail closed as stale; never edit
+a retained environment or relabel its manifest to manufacture successful custody.
+
+Existing-repository root discovery accepts Hatch wheel package declarations or a
+genuine setuptools build backend with explicit `tool.setuptools.packages.find.where`
+and pytest test paths. Roots must exist, contain tracked files and traverse no symlink.
+Ambiguous Hatch/setuptools declarations and unaccounted extra `package-dir` or
+`py-modules` roots fail closed rather than inventing a partial source inventory.
+
 Pack/runtime parity tests fail on drift. Keep implementation modules below 800
 lines and split by stable security or validation concepts, preserving focused
 characterization tests before a split.
@@ -440,3 +452,27 @@ creating or resuming a draft.
 The BCF repository is itself standard-governed. Its generated governance
 workflow and gate contracts must pass on the merge commit; a release tag never
 turns older-tree evidence into current evidence.
+
+
+Managed runtime quality maintenance uses the pinned `dev` extra in `pyproject.toml`.
+The native `lint` gate runs Ruff on canonical tooling and its standalone script
+projection; `typecheck` runs strict mypy on canonical tooling after compilation.
+Both checks use the consuming repository's strict rule set. Template pack parity
+and real adopter checks remain required, including its typed standalone wrappers.
+A successful compilation alone does not establish typing or lint acceptance.
+The jsonschema stub pin is published by typeshed for the jsonschema 4.26 runtime:
+https://pypi.org/project/types-jsonschema/4.26.0.20261006/ .
+
+Governance environment access belongs to the typed ports in
+`tooling/bootstrap/contracts.py`. Adapters resolve the current environment at
+use time; they preserve missing values, explicit empty values, child snapshots,
+read-only live views, scoped restoration, and persistent invocation markers.
+The native lint gate checks every managed module against the exact consumer
+catalog and adapter key/default contracts. It rejects raw reads, unknown
+capabilities, inward application imports, and aliases of the CLI compatibility
+accessor. That accessor remains restricted to its declared CLI roots.
+
+The package continues to support Python 3.11. Shared reconciliation actions use
+one frozen `ReconcileStep` contract, reexported from the original scaffold module.
+Typing maintenance must preserve that support rather than introducing newer
+syntax solely to satisfy a consuming repository's lint target.

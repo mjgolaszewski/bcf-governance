@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import sys
-
+from pathlib import Path
 
 _BOOTSTRAP = (
     "from pathlib import Path;import sys;"

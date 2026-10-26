@@ -4,12 +4,11 @@ from __future__ import annotations
 
 import io
 import json
-from typing import Any
 import zipfile
+from typing import Any
 
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError
-
 
 TRANSITION_REPORT = "controller-transition.json"
 

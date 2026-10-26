@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 from ..ci_graph_render import check_ci_graph
 

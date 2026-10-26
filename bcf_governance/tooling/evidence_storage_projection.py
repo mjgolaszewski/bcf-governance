@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import hashlib
-import os
-from pathlib import Path
 import shutil
 import subprocess
+from pathlib import Path
 from typing import Any
 
+from .bootstrap.contracts import EvidenceSettings
+from .bootstrap.environment import evidence_settings as _default_evidence_settings
 from .evidence_execution import EvidenceError
 from .evidence_storage_contracts import (
     evidence_input_reference_identity,
@@ -25,8 +26,12 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _durable_input_bindings() -> tuple[tuple[str, str], ...]:
-    raw = os.environ.get("BCF_EVIDENCE_INPUT_BINDINGS", "")
+def _durable_input_bindings(
+    *,
+    evidence_settings: EvidenceSettings | None=None,
+) -> tuple[tuple[str, str], ...]:
+    evidence_settings = _default_evidence_settings() if evidence_settings is None else evidence_settings
+    raw = evidence_settings.durable_input_bindings()
     if not raw:
         return ()
     result: list[tuple[str, str]] = []
@@ -86,6 +91,7 @@ def install_durable_inputs(
             )
         shutil.copy2(reference, worktree_reference)
         verify_materialized_inputs(worktree, worktree_reference, destination)
+        reference_sha256 = _sha256(reference)
         observation = {
             "manifest_sha256": identity.manifest_sha256,
             "repository_id": identity.repository_id,
@@ -94,7 +100,7 @@ def install_durable_inputs(
             "producer_run_id": identity.producer_run_id,
             "producer_run_attempt": identity.producer_run_attempt,
             "release_id": identity.release_id,
-            "reference_sha256": _sha256(reference),
+            "reference_sha256": reference_sha256,
             "materialization_root": root_value,
         }
         observations.append(observation)
@@ -105,7 +111,7 @@ def install_durable_inputs(
                 {
                     "path": destination_reference.name,
                     "media_type": "application/vnd.bcf.evidence-input-reference+json",
-                    "sha256": observation["reference_sha256"],
+                    "sha256": reference_sha256,
                 }
             )
     return observations, artifacts

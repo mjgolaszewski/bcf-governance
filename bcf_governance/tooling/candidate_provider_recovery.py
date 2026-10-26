@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
-from typing import Any, Mapping, Protocol
+from collections.abc import Mapping
+from typing import Any, Protocol
 
 import yaml
 
@@ -11,7 +11,6 @@ from .ci_authority_pins import CIAuthorityPinError, compiled_workflow_job_names
 from .ci_github import GithubReferenceError, authenticate_github_run
 from .ci_recovery_frontier import candidate_provider_frontier
 from .local_pr import ProspectiveValidationError
-
 
 GOVERNANCE_WORKFLOW = ".github/workflows/governance.yml"
 GOVERNANCE_WORKFLOW_NAME = "governance.yml"

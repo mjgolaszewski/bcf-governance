@@ -1,5 +1,4 @@
 """runner validation helpers."""
-# ruff: noqa: F403,F405
 
 from __future__ import annotations
 
@@ -8,22 +7,45 @@ import argparse
 from ..ci_graph_contracts import CIGraphError, validate_ci_graph
 from ..ci_graph_render import check_ci_graph
 from ..public_contracts import PublicContractError, validate_public_contracts
-from ..semantic_ownership_registry import (
-    SemanticOwnershipRegistryError,
-    load_registry as load_semantic_ownership_registry,
-)
 from ..semantic_authority_contracts import (
     SemanticAuthorityError,
     validate_semantic_contract_structure,
 )
-
-from .common import *  # noqa: F403,F405
-from .artifact_policy import _load_phase_history, _validate_artifact_manifest, _validate_observability_contracts
-from .context_budgets import _context_budget_advisories
+from ..semantic_ownership_registry import (
+    SemanticOwnershipRegistryError,
+)
+from ..semantic_ownership_registry import (
+    load_registry as load_semantic_ownership_registry,
+)
+from .artifact_policy import (
+    _load_phase_history,
+    _validate_artifact_manifest,
+    _validate_observability_contracts,
+)
 from .authored_phase_state import validate_authored_phase_state
 from .ci_state_matrix import validate_ci_state_matrix
+from .common import (
+    OPTIONAL_PLACEHOLDER_SCAN_PATHS,
+    VALIDATION_OUTPUT_FORMATS,
+    Any,
+    Path,
+    _emit_output,
+    _failure_report,
+    _load_architecture_boundaries,
+    _load_artifact_manifest,
+    _load_governance_profile,
+    _load_yaml,
+    _success_report,
+    _validate_document_path,
+    _validate_no_unresolved_placeholders,
+    _validate_schema,
+)
+from .common import (
+    GovernanceValidationError as GovernanceValidationError,
+)
+from .context_budgets import _context_budget_advisories
+from .editorial_contract import check_editorial as check_editorial
 from .evidence_contracts import _load_evidence_contracts, _validate_gate_contract_registry
-from .editorial_contract import check_editorial
 from .phase_artifacts import _validate_agents
 from .phase_catalog import (
     _validate_active_closeout_evidence_ownership,
@@ -31,7 +53,11 @@ from .phase_catalog import (
     _validate_declared_phase_catalog,
     _validate_hotfix_lane,
 )
-from .release_gates import _validate_ci_profile, _validate_release_gate_targets, _validate_structural_gate_contract
+from .release_gates import (
+    _validate_ci_profile,
+    _validate_release_gate_targets,
+    _validate_structural_gate_contract,
+)
 from .repo_cleanup import _load_repo_cleanup_contract
 from .runtime_custody import validate_runtime_custody
 from .structural_limits import validate_tooling_context_membership
@@ -81,6 +107,8 @@ def validate_repo_root(
     artifact_manifest, artifact_manifest_path = _load_artifact_manifest(
         repo_root, schema_cache, governance_profile
     )
+    if governance_profile is None or artifact_manifest is None:
+        raise GovernanceValidationError("required artifact manifest is missing")
     phase_history, phase_history_path = _load_phase_history(
         repo_root, schema_cache, artifact_manifest
     )
@@ -350,7 +378,7 @@ def main(argv: list[str] | None = None) -> None:
             output_format=args.output_format,
             compact=args.compact,
         )
-        raise SystemExit(1)
+        raise SystemExit(1) from error
     _emit_output(
         _success_report(
             repo_root,

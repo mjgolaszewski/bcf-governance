@@ -2,18 +2,29 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
 import hashlib
 import json
-from pathlib import Path
 import sys
+from dataclasses import asdict
+from pathlib import Path
 from typing import Any
+
 from .ci_authority_certification import CICertificationError
 from .ci_authority_contracts import CIAuthorityContractError
 from .ci_github_api import GitHubAPIError
 from .ci_github_bootstrap import install_controller, verify_controller_inventory
+from .ci_github_bundle import write_exclusive
 from .ci_github_callbacks import finalize_callback, publish_callback
 from .ci_github_canary import admit_authority_canary, observe_authority_canary
+from .ci_github_cli_io import (
+    github_output as _github_output,
+)
+from .ci_github_cli_io import (
+    github_output_path as _github_output_path,
+)
+from .ci_github_cli_io import (
+    required_environment as _required_environment,
+)
 from .ci_github_controller import (
     GitHubControllerError,
     environment_api,
@@ -22,18 +33,13 @@ from .ci_github_controller import (
     publish,
     result_dict,
 )
-from .ci_github_cli_io import (
-    github_output as _github_output,
-    github_output_path as _github_output_path,
-    required_environment as _required_environment,
-)
-from .ci_github_extension_commands import run_extension_command
-from .ci_github_identity import resolve_main, resolve_trusted_run
 from .ci_github_exact_main import (
     admit_exact_main,
     finalize_exact_main,
     publish_exact_main,
 )
+from .ci_github_extension_commands import run_extension_command
+from .ci_github_identity import resolve_main, resolve_trusted_run
 from .ci_github_release import (
     authorize_release,
     collect_release,
@@ -55,13 +61,13 @@ from .ci_self_controller import (
     compile_self_controller_pin,
     resolve_self_controller_artifact,
 )
-from .ci_github_bundle import write_exclusive
 from .release_asset_inventory import release_asset_paths
 from .release_runtime_verification import (
     run_release_runtime_verification,
     runtime_evidence_paths,
 )
 from .routine_controller_commands import run_controller_rotation_command
+
 
 def _exact_main_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="BCF authority-v1.1 exact-main control.")
@@ -170,10 +176,10 @@ def _exact_main(argv: list[str]) -> None:
 def _canary(argv: list[str]) -> None:
     parser = argparse.ArgumentParser(description="BCF isolated authority canary.")
     operations = parser.add_subparsers(dest="operation", required=True)
-    for operation in (operations.add_parser("admit"), operations.add_parser("observe")):
-        operation.add_argument("--repository", required=True)
-        operation.add_argument("--sha", required=True)
-        operation.add_argument("--target-url", required=True)
+    for operation_parser in (operations.add_parser("admit"), operations.add_parser("observe")):
+        operation_parser.add_argument("--repository", required=True)
+        operation_parser.add_argument("--sha", required=True)
+        operation_parser.add_argument("--target-url", required=True)
     args = parser.parse_args(argv)
     github_output = _github_output_path()
     operation = (

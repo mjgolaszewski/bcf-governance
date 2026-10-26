@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 class SemanticYAMLError(ValueError):
@@ -18,11 +19,12 @@ class _UniqueKeyLoader(yaml.SafeLoader):
 
 def _mapping(loader: _UniqueKeyLoader, node: yaml.MappingNode, deep: bool = False) -> dict[Any, Any]:
     result: dict[Any, Any] = {}
+    construct: Callable[[yaml.Node, bool], object] = loader.construct_object
     for key_node, value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)
+        key = construct(key_node, deep)
         if key in result:
             raise SemanticYAMLError(f"duplicate YAML key: {key}")
-        result[key] = loader.construct_object(value_node, deep=deep)
+        result[key] = construct(value_node, deep)
     return result
 
 

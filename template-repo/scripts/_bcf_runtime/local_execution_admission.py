@@ -2,19 +2,25 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
-from dataclasses import dataclass
 import fcntl
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
 import sys
-from typing import Any, Iterator, Mapping
+from collections.abc import Iterator, Mapping
+from contextlib import contextmanager
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
+from .bootstrap.contracts import CustodySettings, ScopedExecutionEnvironment
+from .bootstrap.environment import custody_settings as _default_custody_settings
+from .bootstrap.environment import (
+    scoped_execution_environment as _default_scoped_execution_environment,
+)
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     InterpreterEnvironmentPlan,
@@ -303,32 +309,32 @@ def validate_local_toolchain(
 @contextmanager
 def selected_toolchain_environment(
     admission: LocalExecutionAdmission,
+    *,
+    scoped_environment: ScopedExecutionEnvironment | None=None,
 ) -> Iterator[None]:
     """Project the mechanically selected Node binary for all downstream tools."""
+    scoped_environment = _default_scoped_execution_environment() if scoped_environment is None else scoped_environment
 
     if admission.node_executable is None:
         yield
         return
-    previous = os.environ.get("PATH")
-    node_directory = str(Path(admission.node_executable).parent)
-    os.environ["PATH"] = node_directory + (os.pathsep + previous if previous else "")
-    try:
+    with scoped_environment.toolchain_path(admission.node_executable):
         yield
-    finally:
-        if previous is None:
-            os.environ.pop("PATH", None)
-        else:
-            os.environ["PATH"] = previous
 
 
 @contextmanager
-def local_gate_lease(execution_id: str) -> Iterator[None]:
+def local_gate_lease(
+    execution_id: str,
+    *,
+    custody_settings: CustodySettings | None=None,
+) -> Iterator[None]:
     """Own one host-local expensive gate slot or return typed busy/deferred."""
+    custody_settings = _default_custody_settings() if custody_settings is None else custody_settings
 
     if re.fullmatch(r"[a-f0-9]{40}", execution_id) is None:
         raise LocalExecutionAdmissionError("local gate execution identity is invalid")
     try:
-        namespace = authenticated_execution_state_namespace(os.environ)
+        namespace = authenticated_execution_state_namespace(custody_settings.execution_inputs())
     except RuntimeCapacityError as exc:
         raise LocalExecutionAdmissionError(str(exc)) from exc
     suffix = f"-{namespace}" if namespace is not None else ""

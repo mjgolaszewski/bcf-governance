@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
-from .ci_github_identity import GitHubControllerError, MainIdentity, positive_int
 from .ci_controller_custody_auth import authenticate_controller_custody
+from .ci_github_identity import GitHubControllerError, MainIdentity, positive_int
 from .controller_custody import (
     compile_controller_custody,
     require_controller_execution,

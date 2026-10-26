@@ -1,0 +1,728 @@
+{
+  "authority": false,
+  "status": "ownership_review_pending",
+  "scope": "actual canonical os.environ/getenv AST nodes only; no source-string snippets",
+  "rows": [
+    {
+      "file": "bcf_governance/tooling/break_glass_recovery.py",
+      "line": 43,
+      "owner": "_required",
+      "expression": "os.environ.get(name, '')",
+      "ast_sha256": "ed3c4635a54a2a4e4e5a1ac1623c3f5f3031fe896841b1fadc263efc6ae92cae"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_authority_preflight.py",
+      "line": 35,
+      "owner": "verify_workflow_authority_preflight",
+      "expression": "os.environ.get('GITHUB_REPOSITORY', '')",
+      "ast_sha256": "847a7d2e51b802a60409c0a8d4492cbe4d1f97235446f88aa143c49c8308b8de"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_authority_preflight.py",
+      "line": 36,
+      "owner": "verify_workflow_authority_preflight",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_authority_preflight.py",
+      "line": 43,
+      "owner": "verify_workflow_authority_preflight",
+      "expression": "os.environ.get('GITHUB_API_URL', 'https://api.github.com')",
+      "ast_sha256": "b2d4fa18fc19988181309ba46f6f3edada91065105dbfac580d5056276ca1e84"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_commands.py",
+      "line": 304,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_commands.py",
+      "line": 330,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_controller_builder.py",
+      "line": 205,
+      "owner": "build",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_github_cli_io.py",
+      "line": 12,
+      "owner": "required_environment",
+      "expression": "os.environ.get(name, '')",
+      "ast_sha256": "ed3c4635a54a2a4e4e5a1ac1623c3f5f3031fe896841b1fadc263efc6ae92cae"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_github_controller.py",
+      "line": 448,
+      "owner": "environment_api",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_github_controller.py",
+      "line": 449,
+      "owner": "environment_api",
+      "expression": "os.environ.get('GITHUB_API_URL', 'https://api.github.com')",
+      "ast_sha256": "b2d4fa18fc19988181309ba46f6f3edada91065105dbfac580d5056276ca1e84"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_github_extension_commands.py",
+      "line": 122,
+      "owner": "_prior_evidence",
+      "expression": "os.environ.get('BCF_PROTECTION_INSPECT_REQUIRED')",
+      "ast_sha256": "1c489ac77f943758731a167d1859d42eb6496b219209ba30c48d9e1f0a23477b"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_github_extension_commands.py",
+      "line": 53,
+      "owner": "_automation",
+      "expression": "os.environ.get('GITHUB_API_URL', 'https://api.github.com')",
+      "ast_sha256": "b2d4fa18fc19988181309ba46f6f3edada91065105dbfac580d5056276ca1e84"
+    },
+    {
+      "file": "bcf_governance/tooling/ci_github_extension_commands.py",
+      "line": 127,
+      "owner": "_prior_evidence",
+      "expression": "os.environ.get('GITHUB_API_URL', 'https://api.github.com')",
+      "ast_sha256": "b2d4fa18fc19988181309ba46f6f3edada91065105dbfac580d5056276ca1e84"
+    },
+    {
+      "file": "bcf_governance/tooling/controller_custody.py",
+      "line": 159,
+      "owner": "require_controller_execution",
+      "expression": "os.environ.get('BCF_CONTROLLER_EXECUTION_REQUIRED')",
+      "ast_sha256": "fd89c98e0a8d5b70872127321c403ee87e68c09852791db810b830939fd6a5d9"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_execution.py",
+      "line": 167,
+      "owner": "_execution_env",
+      "expression": "projected: Mapping[str, str] = os.environ",
+      "ast_sha256": "b1cba236c645350de405f624545183d3b8992ec1e03659226b76e993bd788f51"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_execution.py",
+      "line": 189,
+      "owner": "_execution_env",
+      "expression": "os.environ.get('PATH', '')",
+      "ast_sha256": "59907c2e33e6d7b69895ff65a79148f8e5d73f608f30346cffe56526108503cf"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_execution.py",
+      "line": 203,
+      "owner": "_execution_env",
+      "expression": "os.environ[name]",
+      "ast_sha256": "99e98d18363285ed0aefd891dc216ffd796e9e63bf53ae079b4a29e1f0db8564"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_execution.py",
+      "line": 205,
+      "owner": "_execution_env",
+      "expression": "os.environ.get(name)",
+      "ast_sha256": "129d4027549913802ac439bebf6c640dc787ac52f6631ea1c25ea1ffebc0e171"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_session_inputs.py",
+      "line": 31,
+      "owner": "bind_current_session_inputs",
+      "expression": "os.environ[name]",
+      "ast_sha256": "99e98d18363285ed0aefd891dc216ffd796e9e63bf53ae079b4a29e1f0db8564"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_session_inputs.py",
+      "line": 31,
+      "owner": "bind_current_session_inputs",
+      "expression": "name in os.environ",
+      "ast_sha256": "25028c4a7dda775d6f95450a8f6e9983f97b1d4c9418589d64dbcb96f9afc133"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 136,
+      "owner": "_producer_identity",
+      "expression": "os.environ.get('GITHUB_ACTIONS')",
+      "ast_sha256": "a32cad673b4e56f5fcac1d826d65e7241bacf8585c8a71e08f04489ece482d47"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 364,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_JOB', '')",
+      "ast_sha256": "6eed4c37880d13bbb75835539f6f638b3f14ac6a997daea13c32646af2ec607d"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 140,
+      "owner": "_producer_identity",
+      "expression": "os.environ.get('GITHUB_REPOSITORY', repo_root.name)",
+      "ast_sha256": "35cd407107832603183ab8ad147c9bcc39a41cae7cf31a3d70687823b4a1ea62"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 141,
+      "owner": "_producer_identity",
+      "expression": "os.environ.get('GITHUB_REPOSITORY_ID', 'local')",
+      "ast_sha256": "d4724bdeb2d798529c7a74f1533414f89c690ada1db2d4f508f97bb8e26b9241"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 142,
+      "owner": "_producer_identity",
+      "expression": "os.environ.get('GITHUB_RUN_ID', 'local')",
+      "ast_sha256": "28f459beab4e7712e922e2f17a6f0ad60ca7ff373d74456ad90e71485c63d844"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 143,
+      "owner": "_producer_identity",
+      "expression": "os.environ.get('GITHUB_RUN_ATTEMPT', '1')",
+      "ast_sha256": "2884fc6b2a52210dbe8061b7b08ae8ee2c2fd2b2352496391a5b5c08a1696244"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 144,
+      "owner": "_producer_identity",
+      "expression": "os.environ.get('GITHUB_JOB', 'local')",
+      "ast_sha256": "a9c8adff6f5772d0038e551a5355d323a55d149506501edd440a7e97639be6b8"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 290,
+      "owner": "allocate_session",
+      "expression": "os.environ.get('GITHUB_JOB', 'local')",
+      "ast_sha256": "a9c8adff6f5772d0038e551a5355d323a55d149506501edd440a7e97639be6b8"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 355,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_WORKFLOW_REF', 'local')",
+      "ast_sha256": "cebaecb599fac24bd50d1e59e2eb014829170d77c5d724ffb26e6d83c0f3a1c4"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 356,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_JOB', 'local')",
+      "ast_sha256": "a9c8adff6f5772d0038e551a5355d323a55d149506501edd440a7e97639be6b8"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 357,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_RUN_ID', 'local')",
+      "ast_sha256": "28f459beab4e7712e922e2f17a6f0ad60ca7ff373d74456ad90e71485c63d844"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 358,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_RUN_ATTEMPT', '1')",
+      "ast_sha256": "2884fc6b2a52210dbe8061b7b08ae8ee2c2fd2b2352496391a5b5c08a1696244"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 372,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_WORKFLOW_REF', 'local')",
+      "ast_sha256": "cebaecb599fac24bd50d1e59e2eb014829170d77c5d724ffb26e6d83c0f3a1c4"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_sessions.py",
+      "line": 352,
+      "owner": "receipt_workflow_identity",
+      "expression": "os.environ.get('GITHUB_ACTIONS')",
+      "ast_sha256": "a32cad673b4e56f5fcac1d826d65e7241bacf8585c8a71e08f04489ece482d47"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 302,
+      "owner": "main",
+      "expression": "os.environ['BCF_PRIOR_SPLINTER_PROOF_ROOT']",
+      "ast_sha256": "ca633df6ce4ef582435259936f9f83a4f72b9df858141bbe72176b0b57cef2ba"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 303,
+      "owner": "main",
+      "expression": "os.environ['BCF_EVIDENCE_SHARD']",
+      "ast_sha256": "904096b54ff539927563e5e29a76eee66e93ae3b53492e5d09ee2966deb2c6e8"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 282,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_ACTIONS')",
+      "ast_sha256": "a32cad673b4e56f5fcac1d826d65e7241bacf8585c8a71e08f04489ece482d47"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 291,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_REPOSITORY', '')",
+      "ast_sha256": "847a7d2e51b802a60409c0a8d4492cbe4d1f97235446f88aa143c49c8308b8de"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 292,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_REPOSITORY_ID', '')",
+      "ast_sha256": "369770555f0d973c7d6f83657569e0bb917e14b796ad250a72921d7a62d15d57"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 293,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_SHA', '')",
+      "ast_sha256": "11bf170ceab02b4bb29ff23f3f323cfb4f742a298354349509249e1cdd29cb46"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 294,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_RUN_ID', '')",
+      "ast_sha256": "577edbffb119ffccf665c7d87b910ad3d8163e26e6490ad801c76ca79f68ce6a"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 296,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_JOB', '')",
+      "ast_sha256": "6eed4c37880d13bbb75835539f6f638b3f14ac6a997daea13c32646af2ec607d"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 287,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 288,
+      "owner": "main",
+      "expression": "os.environ.get('GITHUB_API_URL', 'https://api.github.com')",
+      "ast_sha256": "b2d4fa18fc19988181309ba46f6f3edada91065105dbfac580d5056276ca1e84"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_shards.py",
+      "line": 295,
+      "owner": "main",
+      "expression": "int(os.environ.get('GITHUB_RUN_ATTEMPT', '0'))",
+      "ast_sha256": "253771ec3740c3a53e62488333992a155e2ea8aaa2a982c60613c399c88f2e5e"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_storage_commands.py",
+      "line": 42,
+      "owner": "_required_tokens",
+      "expression": "os.environ.get(name, '')",
+      "ast_sha256": "ed3c4635a54a2a4e4e5a1ac1623c3f5f3031fe896841b1fadc263efc6ae92cae"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_storage_commands.py",
+      "line": 37,
+      "owner": "_api",
+      "expression": "os.environ.get('GITHUB_API_URL', 'https://api.github.com')",
+      "ast_sha256": "b2d4fa18fc19988181309ba46f6f3edada91065105dbfac580d5056276ca1e84"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_storage_commands.py",
+      "line": 36,
+      "owner": "_api",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_storage_graph.py",
+      "line": 86,
+      "owner": "prepare_graph_artifact",
+      "expression": "dict(os.environ if environment is None else environment)",
+      "ast_sha256": "c93e6796515b41e249f0eb30e530968fee215a1bf87b8c6133c4da2e7eb12a28"
+    },
+    {
+      "file": "bcf_governance/tooling/evidence_storage_projection.py",
+      "line": 29,
+      "owner": "_durable_input_bindings",
+      "expression": "os.environ.get('BCF_EVIDENCE_INPUT_BINDINGS', '')",
+      "ast_sha256": "87a3544bd97684dbc2815a18b50afd3b8fcbaa754da9e4dc420e05840cdf55ab"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_evidence.py",
+      "line": 639,
+      "owner": "capture_gate",
+      "expression": "os.environ.get('BCF_EVIDENCE_PRODUCER_KIND', default_producer_kind)",
+      "ast_sha256": "041715be5c237995ceae218aba734b2747a1470fbe499bb92da03c9192afe221"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_evidence.py",
+      "line": 656,
+      "owner": "capture_gate",
+      "expression": "os.environ.get('BCF_EVIDENCE_PRODUCER_ID')",
+      "ast_sha256": "f2f6a461772f889412b8e43df25c8a889cd9467c0698225b0c8245c093504b55"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_evidence.py",
+      "line": 657,
+      "owner": "capture_gate",
+      "expression": "os.environ.get('GITHUB_ACTOR')",
+      "ast_sha256": "8beaef484dd4d0bd0ea8de05d6def17d38c8bc9917ff0fc947e68e1398f7a155"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_evidence.py",
+      "line": 658,
+      "owner": "capture_gate",
+      "expression": "os.environ.get('USER')",
+      "ast_sha256": "c3f31960356116fe3894f74ce80a2867fa6987313ee4a80ad2943c277f3a58d4"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_evidence.py",
+      "line": 636,
+      "owner": "capture_gate",
+      "expression": "os.environ.get('GITHUB_ACTIONS')",
+      "ast_sha256": "a32cad673b4e56f5fcac1d826d65e7241bacf8585c8a71e08f04489ece482d47"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_install/release_custody.py",
+      "line": 678,
+      "owner": "prepare_upgrade_release_custody",
+      "expression": "os.environ.get('GITHUB_TOKEN', '')",
+      "ast_sha256": "20b989550d367aaf750a0e9558e8b5354bba10708e7e47372db6311ecd2e6659"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/ci_state_matrix.py",
+      "line": 39,
+      "owner": "_comparison_base",
+      "expression": "os.environ.get('BCF_COMPARISON_BASE_SHA', '')",
+      "ast_sha256": "8cc43b0ff2e0467b27a25b2bb337bbc5c5c29303db25012b8baad88af0f6d7ed"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/editorial_contract.py",
+      "line": 19,
+      "owner": "check_editorial",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 79,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_PROVIDER_EVENT', '')",
+      "ast_sha256": "076c840465bd30883aad9615560ff54983574975bcd554baf1867e91ed8156c6"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 80,
+      "owner": "pr_context",
+      "expression": "os.environ.get('GITHUB_EVENT_NAME', '')",
+      "ast_sha256": "4986c86de05c32bfab895d2a94d406b5a92b18216fb454dc6b2e662658680e23"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 109,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_INVOCATION_KIND', '')",
+      "ast_sha256": "8ab1ce7edcd314fcef1710d567caf8ef80cdf16e3c882dcdd839e42ff501db5a"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 112,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_COMPARISON_BASE_SHA', '')",
+      "ast_sha256": "8cc43b0ff2e0467b27a25b2bb337bbc5c5c29303db25012b8baad88af0f6d7ed"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 119,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_ORIGIN_COMPARISON_BASE_SHA', '')",
+      "ast_sha256": "6f20cfa27c0952eb4922de1176fb939bf1e89f2271aeee4348abe39aa9040d4c"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 120,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_CALLER_COMPARISON_BASE_SHA', '')",
+      "ast_sha256": "e9ef88199e92dbe348eb0a8b5072edcc18eca8a5ecdffb96bbd541d14501fb83"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 114,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_PR_BASE_SHA', '')",
+      "ast_sha256": "40ce9a2231328ca2e7929f096e59de553cd0becd727503254b8ceac8c1e9e978"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 129,
+      "owner": "pr_context",
+      "expression": "os.environ.get('BCF_PR_BASE_SHA', '')",
+      "ast_sha256": "40ce9a2231328ca2e7929f096e59de553cd0becd727503254b8ceac8c1e9e978"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/preflight_repository_context.py",
+      "line": 92,
+      "owner": "pr_context",
+      "expression": "os.environ.get(name, '')",
+      "ast_sha256": "ed3c4635a54a2a4e4e5a1ac1623c3f5f3031fe896841b1fadc263efc6ae92cae"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+      "line": 186,
+      "owner": "_validate_pull_request_changelog_update",
+      "expression": "os.environ.get('BCF_PR_BASE_SHA', '')",
+      "ast_sha256": "40ce9a2231328ca2e7929f096e59de553cd0becd727503254b8ceac8c1e9e978"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+      "line": 191,
+      "owner": "_validate_pull_request_changelog_update",
+      "expression": "os.environ.get('BCF_VALIDATION_LANE', LocalValidationLane.PROVIDER_PR.value)",
+      "ast_sha256": "df6158fe8116da3a529b7b44038797a77e83d1fb39d3fae6bfc853afe6adfb9f"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+      "line": 182,
+      "owner": "_validate_pull_request_changelog_update",
+      "expression": "os.environ.get('GITHUB_EVENT_NAME')",
+      "ast_sha256": "13e29f376e04dfc5a7a82cc18409f1a7aa70f4bd87e512e5907f4229882183fd"
+    },
+    {
+      "file": "bcf_governance/tooling/governance_validation/required_artifacts.py",
+      "line": 179,
+      "owner": "_validate_pull_request_changelog_update",
+      "expression": "os.environ.get('BCF_ENFORCE_PR_CHANGELOG', '').lower()",
+      "ast_sha256": "e6ca3f5f27bf291ea560a2658f77212833ec081acb64a2fe04f6ce885a8d3f4b"
+    },
+    {
+      "file": "bcf_governance/tooling/local_execution_admission.py",
+      "line": 315,
+      "owner": "selected_toolchain_environment",
+      "expression": "os.environ['PATH']",
+      "ast_sha256": "c55868da866c352323bf09489f0a1fd37375f7dca3d21f48dc0a8ba9b44feb63"
+    },
+    {
+      "file": "bcf_governance/tooling/local_execution_admission.py",
+      "line": 313,
+      "owner": "selected_toolchain_environment",
+      "expression": "os.environ.get('PATH')",
+      "ast_sha256": "7f247782ce05773c6d08f41ffdad70524bf0c1f4f724e949884d77285710a6c6"
+    },
+    {
+      "file": "bcf_governance/tooling/local_execution_admission.py",
+      "line": 332,
+      "owner": "local_gate_lease",
+      "expression": "authenticated_execution_state_namespace(os.environ)",
+      "ast_sha256": "483e75f8e935248a152fe09a4cee8b63ce762978d2e58836a237c9f461c40d24"
+    },
+    {
+      "file": "bcf_governance/tooling/local_execution_admission.py",
+      "line": 322,
+      "owner": "selected_toolchain_environment",
+      "expression": "os.environ['PATH']",
+      "ast_sha256": "c55868da866c352323bf09489f0a1fd37375f7dca3d21f48dc0a8ba9b44feb63"
+    },
+    {
+      "file": "bcf_governance/tooling/local_execution_admission.py",
+      "line": 320,
+      "owner": "selected_toolchain_environment",
+      "expression": "os.environ.pop('PATH', None)",
+      "ast_sha256": "43d6669eb93bb7acd6c22b2ae111e96e84516fc806f800fed022ed295e8b21be"
+    },
+    {
+      "file": "bcf_governance/tooling/local_pr_context.py",
+      "line": 254,
+      "owner": "_pr_environment",
+      "expression": "os.environ.update(values)",
+      "ast_sha256": "3e4b8775f843fef37288a1b9711eb6e3e14827a2c510e1b1fd3d7d02ec6c3915"
+    },
+    {
+      "file": "bcf_governance/tooling/local_pr_context.py",
+      "line": 221,
+      "owner": "run_local_pr_validation",
+      "expression": "project_python_environment(repo_root, project_python, os.environ)",
+      "ast_sha256": "be27f9270257ac91172d5450e091b3cc98527b26a8abe0d4c27c64a1b6427c08"
+    },
+    {
+      "file": "bcf_governance/tooling/local_pr_context.py",
+      "line": 253,
+      "owner": "_pr_environment",
+      "expression": "os.environ.get(key)",
+      "ast_sha256": "a08585d255221378850afcdcf31c5580151054d9b2d210ed046e8e56eac8b12a"
+    },
+    {
+      "file": "bcf_governance/tooling/local_pr_context.py",
+      "line": 223,
+      "owner": "run_local_pr_validation",
+      "expression": "os.environ.copy()",
+      "ast_sha256": "2ca2271927cdd13c184f0356425cf202fb8f3ad4aa63a1676378aae9a1395edd"
+    },
+    {
+      "file": "bcf_governance/tooling/local_pr_context.py",
+      "line": 262,
+      "owner": "_pr_environment",
+      "expression": "os.environ[key]",
+      "ast_sha256": "d6fcad89d9a4daef3524ad71c1c2aaeeb717a5ac692532f8f357414a1d539c5e"
+    },
+    {
+      "file": "bcf_governance/tooling/local_pr_context.py",
+      "line": 260,
+      "owner": "_pr_environment",
+      "expression": "os.environ.pop(key, None)",
+      "ast_sha256": "a841aad4f5aa54dc43ea9dbdd30ece23dae671aecc2a126173d66502f26646d4"
+    },
+    {
+      "file": "bcf_governance/tooling/preflight.py",
+      "line": 325,
+      "owner": "_interpreter_identity",
+      "expression": "os.environ.get('VIRTUAL_ENV')",
+      "ast_sha256": "2083e2be8ee088eecb73748a0a30730e648cb902708910b002cf0265dce45f0e"
+    },
+    {
+      "file": "bcf_governance/tooling/preflight.py",
+      "line": 310,
+      "owner": "_interpreter_identity",
+      "expression": "os.environ.get('VIRTUAL_ENV')",
+      "ast_sha256": "2083e2be8ee088eecb73748a0a30730e648cb902708910b002cf0265dce45f0e"
+    },
+    {
+      "file": "bcf_governance/tooling/preflight.py",
+      "line": 544,
+      "owner": "run_preflight",
+      "expression": "os.environ.get('BCF_ENFORCE_PR_CHANGELOG', '').lower()",
+      "ast_sha256": "e6ca3f5f27bf291ea560a2658f77212833ec081acb64a2fe04f6ce885a8d3f4b"
+    },
+    {
+      "file": "bcf_governance/tooling/preflight.py",
+      "line": 675,
+      "owner": "run_preflight",
+      "expression": "os.environ.get('GITHUB_JOB', 'local')",
+      "ast_sha256": "a9c8adff6f5772d0038e551a5355d323a55d149506501edd440a7e97639be6b8"
+    },
+    {
+      "file": "bcf_governance/tooling/python_runtime_selection.py",
+      "line": 24,
+      "owner": "interpreter_subprocess_environment",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/release_adopter_qualification.py",
+      "line": 464,
+      "owner": "qualify_release",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/release_adopter_qualification.py",
+      "line": 297,
+      "owner": "_commit",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/release_runtime_verification.py",
+      "line": 32,
+      "owner": "is_release_sdist_test_context",
+      "expression": "os.environ.get(SDIST_PORTABLE_TEST_ENV)",
+      "ast_sha256": "fb0aa0d294c7758c6119b7d1dbc2ebcdb89afed4fbd6e913ca9e8283fb429287"
+    },
+    {
+      "file": "bcf_governance/tooling/release_runtime_verification.py",
+      "line": 58,
+      "owner": "runtime_environment",
+      "expression": "os.environ.get('PATH', '/usr/local/bin:/usr/bin:/bin')",
+      "ast_sha256": "f687d91385baf75ee30ef593504b12c91fbdae4ba5ba500896bfab566b198470"
+    },
+    {
+      "file": "bcf_governance/tooling/release_runtime_verification.py",
+      "line": 64,
+      "owner": "runtime_environment",
+      "expression": "os.environ[name]",
+      "ast_sha256": "99e98d18363285ed0aefd891dc216ffd796e9e63bf53ae079b4a29e1f0db8564"
+    },
+    {
+      "file": "bcf_governance/tooling/release_runtime_verification.py",
+      "line": 64,
+      "owner": "runtime_environment",
+      "expression": "os.environ.get(name)",
+      "ast_sha256": "129d4027549913802ac439bebf6c640dc787ac52f6631ea1c25ea1ffebc0e171"
+    },
+    {
+      "file": "bcf_governance/tooling/repository_comparison_context.py",
+      "line": 80,
+      "owner": "local_push_environment",
+      "expression": "os.environ.get(key)",
+      "ast_sha256": "a08585d255221378850afcdcf31c5580151054d9b2d210ed046e8e56eac8b12a"
+    },
+    {
+      "file": "bcf_governance/tooling/repository_comparison_context.py",
+      "line": 85,
+      "owner": "local_push_environment",
+      "expression": "os.environ[key]",
+      "ast_sha256": "d6fcad89d9a4daef3524ad71c1c2aaeeb717a5ac692532f8f357414a1d539c5e"
+    },
+    {
+      "file": "bcf_governance/tooling/repository_comparison_context.py",
+      "line": 83,
+      "owner": "local_push_environment",
+      "expression": "os.environ.pop(key, None)",
+      "ast_sha256": "a841aad4f5aa54dc43ea9dbdd30ece23dae671aecc2a126173d66502f26646d4"
+    },
+    {
+      "file": "bcf_governance/tooling/repository_comparison_context.py",
+      "line": 93,
+      "owner": "local_push_environment",
+      "expression": "os.environ[key]",
+      "ast_sha256": "d6fcad89d9a4daef3524ad71c1c2aaeeb717a5ac692532f8f357414a1d539c5e"
+    },
+    {
+      "file": "bcf_governance/tooling/repository_comparison_context.py",
+      "line": 91,
+      "owner": "local_push_environment",
+      "expression": "os.environ.pop(key, None)",
+      "ast_sha256": "a841aad4f5aa54dc43ea9dbdd30ece23dae671aecc2a126173d66502f26646d4"
+    },
+    {
+      "file": "bcf_governance/tooling/routine_controller_provider.py",
+      "line": 681,
+      "owner": "dispatch_post_rotation_certification",
+      "expression": "load_callback_outcome(Path(os.environ.get('BCF_CONTROLLER_CUSTODY_PATH', '')))",
+      "ast_sha256": "169d5739a0f8daac92d4f97e3604e6d5e11213a3a2a61498bfb4add534dc8b4b"
+    },
+    {
+      "file": "bcf_governance/tooling/scaffold_governance_artifacts.py",
+      "line": 270,
+      "owner": "_run_reconcile_command",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/semantic_authority_migrations.py",
+      "line": 359,
+      "owner": "validate_exact_base_migrations",
+      "expression": "os.environ.get('BCF_PR_BASE_SHA')",
+      "ast_sha256": "83b2baf66434ad69669620bb263b95a7fd5bf8c5670fcd451ce54b65ddabda05"
+    },
+    {
+      "file": "bcf_governance/tooling/semantic_derivations.py",
+      "line": 154,
+      "owner": "_reproduce_outputs",
+      "expression": "dict(os.environ)",
+      "ast_sha256": "7bf456bcd0209b6b8b74073bd679faae9009eebf2f16d7dedbf4da758825d410"
+    },
+    {
+      "file": "bcf_governance/tooling/test_manifests.py",
+      "line": 209,
+      "owner": "_collect_raw_nodes",
+      "expression": "project_python_environment(repo_root, python, os.environ)",
+      "ast_sha256": "cd64bdf587267c063c5f0609c3d458d2ffb81e73204c0d40f817f7f477d7225e"
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 import yaml
@@ -25,7 +25,6 @@ from bcf_governance.tooling.python_runtime_selection import (
     select_materialization_base,
 )
 from bcf_governance.tooling.runtime_capacity import EXECUTION_STATE_POLICY
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -361,12 +360,16 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
     assert plan.distribution_names == {
         "build",
         "jsonschema",
+        "mypy",
         "packaging",
         "pip",
         "pip-audit",
         "pytest",
         "pyyaml",
+        "ruff",
         "setuptools",
+        "types-jsonschema",
+        "types-pyyaml",
         "urllib3",
         "wheel",
     }

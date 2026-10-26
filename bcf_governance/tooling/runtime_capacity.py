@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
 import json
-from pathlib import Path
 import re
 import shutil
-from typing import Any, Callable, Mapping
+from collections.abc import Callable, Mapping
+from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import Any
 
 import yaml
-
 
 _RUNTIME_VERSION_PATTERN = re.compile(
     r'^__version__\s*=\s*["\']([^"\']+)["\']',
@@ -174,7 +174,7 @@ def _read_state_manifest(root: Path) -> dict[str, Any]:
             "execution-state namespace ownership is unreadable"
         ) from exc
     expected = {"schema_version", "namespace", "lifecycle", "workload_id", "binding_sha256"}
-    if set(payload) != expected or payload.get("schema_version") != "1.0":
+    if not isinstance(payload, dict) or set(payload) != expected or payload.get("schema_version") != "1.0":
         raise RuntimeCapacityError("execution-state namespace ownership is invalid")
     return payload
 

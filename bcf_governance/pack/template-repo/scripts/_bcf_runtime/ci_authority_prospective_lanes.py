@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import subprocess
-from typing import Any, Callable, Literal, overload
+from collections.abc import Callable
+from pathlib import Path
+from typing import Any, Literal, overload
 
 from .ci_authority_decisions import status_context_for_evaluation
 from .ci_graph_post_merge import PostMergeEvaluation
 from .evaluation_scope import is_terminal_phase_certification
 from .routine_controller_rotation import ROTATION_POLICY_PATHS, controller_policy_digest
-
 
 ORDINARY_AUTHORITY_POLICY_PATHS = (
     "governance/ci-graph.yml",
@@ -168,7 +168,8 @@ def prospective_policy_binding(
 ) -> tuple[str, dict[str, Any]]:
     """Classify and bind the exact applicable post-merge policy surface."""
 
-    read = lambda ref, path: git_blob(repo_root, ref=ref, path=path)
+    def read(ref: str, path: str) -> bytes:
+        return git_blob(repo_root, ref=ref, path=path)
     if lane == "direct_protected_main":
         base_graph = git_blob(
             repo_root,
@@ -270,7 +271,7 @@ def provider_boundaries(
     """Project exact-main and controller custody without an untyped bypass."""
 
     direct = evaluation.lane == "direct_protected_main"
-    lifecycle = {
+    lifecycle: dict[str, object] = {
         "id": "controller_lifecycle",
         "state": (
             "not_adopted_direct_lane"

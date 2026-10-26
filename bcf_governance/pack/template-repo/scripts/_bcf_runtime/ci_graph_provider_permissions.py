@@ -7,7 +7,6 @@ from typing import Any
 
 from .ci_graph_yaml import load_yaml_path, render_yaml
 
-
 _CAPTURE_SCRIPT = "scripts/capture_governance_shard.py"
 _LEVEL = {"none": 0, "read": 1, "write": 2}
 

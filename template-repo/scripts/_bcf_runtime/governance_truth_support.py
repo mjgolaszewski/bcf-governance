@@ -8,14 +8,14 @@ import json
 import subprocess
 import tempfile
 from collections import Counter, defaultdict
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .governance_evidence import bundle_digest
 from .truth_reporting import eligible_receipts
-
 
 BLOCKING_FINDING_DISPOSITIONS = {"open", "remediation_completed", "deferred", "accepted_risk"}
 DSSE_PAYLOAD_TYPE = "application/vnd.bcf.evidence-bundle.v1+json"
@@ -285,6 +285,7 @@ def finding_report(
         authority_id = str(authority.get("id")) if isinstance(authority, dict) else ""
         risk_authorized = bool(
             disposition == "accepted_risk"
+            and isinstance(risk_acceptance, dict)
             and authority_id in permitted_risk_authorities
             and isinstance(risk_acceptance.get("reference"), str)
             and risk_acceptance.get("reference")

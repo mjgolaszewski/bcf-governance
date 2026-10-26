@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 from .ci_github_identity import GitHubControllerError
@@ -51,7 +51,7 @@ def verify_bundle(root: Path) -> dict[str, Any]:
     except (OSError, json.JSONDecodeError) as exc:
         raise GitHubControllerError("certification bundle manifest is invalid") from exc
     files = manifest.get("files") if isinstance(manifest, dict) else None
-    if not isinstance(files, dict) or not files:
+    if not isinstance(manifest, dict) or not isinstance(files, dict) or not files:
         raise GitHubControllerError("certification bundle file inventory is missing")
     actual: set[str] = set()
     for path in root.rglob("*"):

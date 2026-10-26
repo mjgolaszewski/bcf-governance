@@ -6,16 +6,14 @@ import argparse
 import copy
 import hashlib
 import json
-import os
 import re
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .governance_install.transaction import apply_transaction
-
 
 LEGACY_CLOSEOUT_FIELDS = (
     "all_tickets_closed",

@@ -6,7 +6,7 @@ import shlex
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .ci_github_actions import action_pin
 from .repository_comparison_context import direct_comparison_environment
@@ -36,8 +36,8 @@ def render_makefile(contract: dict[str, Any]) -> str:
     for target, gate in gates.items():
         from .profile_v2_surfaces import render_make_argv
 
-        command = list(gate["invocation"]["argv"])
-        argv = render_make_argv(command)
+        command_argv = list(gate["invocation"]["argv"])
+        argv = render_make_argv(command_argv)
         env = " ".join(
             f"{key}={shlex.quote(value)}"
             for key, value in gate["invocation"]["env"].items()

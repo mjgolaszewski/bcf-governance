@@ -4,24 +4,32 @@ from __future__ import annotations
 
 import os
 import platform
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 from packaging.specifiers import InvalidSpecifier, SpecifierSet
 from packaging.version import InvalidVersion, Version
+
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 
 
 class PythonRuntimeSelectionError(ValueError):
     """Raised when no exact runtime satisfies the authenticated contract."""
 
 
-def interpreter_subprocess_environment(python: Path) -> dict[str, str]:
+def interpreter_subprocess_environment(
+    python: Path,
+    *,
+    process_environment: ChildProcessEnvironment | None=None,
+) -> dict[str, str]:
     """Remove controller-only Python custody from project interpreter work."""
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
-    environment = dict(os.environ)
+    environment = process_environment.snapshot()
     for name in ("PYTHONHOME", "PYTHONPATH", "VIRTUAL_ENV"):
         environment.pop(name, None)
     bin_directory = python.absolute().parent

@@ -14,8 +14,8 @@ import yaml
 
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
+from .ci_github_artifacts import ProviderArtifact as ProviderArtifact
 from .ci_github_artifacts import (
-    ProviderArtifact,
     provider_artifact_reference,
     provider_artifact_reference_keys,
     resolve_role_artifact,
@@ -31,9 +31,8 @@ from .ci_github_identity import (
 from .ci_github_membership import select_latest_admission
 from .ci_self_controller import resolve_self_controller_artifact
 from .controller_custody import compile_controller_custody, require_controller_execution
-from .routine_controller_provider import resolve_effective_controller
 from .release_versions import ReleaseVersion, ReleaseVersionError, parse_release_version
-
+from .routine_controller_provider import resolve_effective_controller
 
 RELEASE_INPUT_KEYS = {
     "schema_version",
@@ -253,9 +252,8 @@ def load_release_authorization_inputs(path: Path) -> dict[str, Any]:
     exact_main = value.get("exact_main")
     certification = value.get("certification_artifact")
     controller = value.get("controller")
-    if not all(isinstance(item, dict) for item in (
-        subject, exact_main, certification, controller
-    )):
+    if (not isinstance(subject, dict) or not isinstance(exact_main, dict)
+        or not isinstance(certification, dict) or not isinstance(controller, dict)):
         raise GitHubControllerError("release authorization input sections are invalid")
     provider_artifact_reference(certification, label="certification artifact")
     controller_keys = provider_artifact_reference_keys() | {"commit_sha", "tree_sha"}

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 import hashlib
 import json
-from pathlib import Path, PurePosixPath
 import tempfile
+from datetime import UTC, datetime
+from pathlib import Path, PurePosixPath
 from typing import Any, cast
 
 from jsonschema import Draft202012Validator
@@ -20,7 +20,6 @@ from .evidence_storage_contracts import (
 from .evidence_storage_github import resolve_input_reference
 from .evidence_storage_github_api import GitHubEvidenceAPI
 from .evidence_storage_github_releases import durable_release_inventory
-
 
 SNAPSHOT_SCHEMA = Path("schemas/evidence-retention-snapshot.schema.json")
 
@@ -180,8 +179,8 @@ def plan_retention(
     for handoff in snapshot["actions_handoffs"]:
         manifest = handoff["published_manifest_sha256"]
         selected = by_manifest.get(manifest) if manifest is not None else None
-        reference = selected[1] if selected is not None else None
-        source = reference["source_handoff"] if reference is not None else None
+        handoff_reference = selected[1] if selected is not None else None
+        source = handoff_reference["source_handoff"] if handoff_reference is not None else None
         authenticated_reference = (
             isinstance(source, dict)
             and source["artifact_id"] == handoff["artifact_id"]

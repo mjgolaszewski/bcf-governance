@@ -5,18 +5,18 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from enum import StrEnum
 from pathlib import Path
-import re
-from typing import Any, Callable, Iterable, Mapping, Sequence
+from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .ci_authority_contracts import authority_role_jobs, authority_role_workflow
 from .ci_authority_pins import compiled_workflow_jobs
 from .ci_github_identity import GitHubControllerError, MainIdentity
-
 
 SCHEMA = Path("schemas/controller-transition.schema.json")
 _SHA = re.compile(r"^[a-f0-9]{40}$")
@@ -128,14 +128,14 @@ def classify_callback_topology(
         actual[name] = value
     normalized = dict(actual)
     for facade, expansion in (skipped_facades or {}).items():
-        value = normalized.pop(facade, None)
-        if value is None:
+        facade_value = normalized.pop(facade, None)
+        if facade_value is None:
             continue
-        if value.get("conclusion") != "skipped" or set(expansion) & set(normalized):
+        if facade_value.get("conclusion") != "skipped" or set(expansion) & set(normalized):
             raise RoutineCallbackTopologyError(
                 "rotation callback matrix facade is not an exact skipped job"
             )
-        normalized.update({name: value for name in expansion})
+        normalized.update({name: facade_value for name in expansion})
     if set(normalized) != expected_jobs:
         raise RoutineCallbackTopologyError(
             "rotation callback job inventory is not exact"
@@ -382,8 +382,8 @@ def validate_transition(repo_root: Path, payload: object) -> dict[str, Any]:
     }[value["state"]]
     for stage in ("bootstrap", "probe", "promotion"):
         proofs = value[stage]
-        expected = runners if stage in completed_stages else []
-        if sorted(item["runner"] for item in proofs) != expected:
+        expected_runners = runners if stage in completed_stages else []
+        if sorted(item["runner"] for item in proofs) != expected_runners:
             raise RoutineRotationError(f"{stage} runner inventory is not exact")
         if any(item["controller_commit"] != artifact["commit_sha"] for item in proofs):
             raise RoutineRotationError(f"{stage} controller identity is not exact")

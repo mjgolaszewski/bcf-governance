@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
+from .bootstrap.contracts import GitHubProviderSettings, WorkflowSettings
+from .bootstrap.environment import github_provider_settings as _default_github_provider_settings
+from .bootstrap.environment import workflow_settings as _default_workflow_settings
 from .ci_authority_pins import (
     verify_provider_workflow_authority,
     verify_workflow_authority,
@@ -27,20 +29,27 @@ def _provider_checkout(repo_root: Path, repository: str) -> bool:
     return remote.endswith("/" + repository) or remote.endswith(":" + repository)
 
 
-def verify_workflow_authority_preflight(repo_root: Path) -> int:
+def verify_workflow_authority_preflight(
+    repo_root: Path,
+    *,
+    provider_settings: GitHubProviderSettings | None=None,
+    workflow_settings: WorkflowSettings | None=None,
+) -> int:
     """Verify bytes always and provider identity in its authenticated checkout."""
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
 
     authority = Path("governance/ci-authority.yml")
     count = verify_workflow_authority(repo_root, authority_path=authority)
-    repository = os.environ.get("GITHUB_REPOSITORY", "")
-    token = os.environ.get("GITHUB_TOKEN", "")
+    repository = workflow_settings.repository("")
+    token = provider_settings.token()
     if repository and token and _provider_checkout(repo_root, repository):
         verify_provider_workflow_authority(
             repo_root,
             authority_path=authority,
             api=GitHubAPI(
                 token=token,
-                api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+                api_url=provider_settings.api_url(),
             ),
             repository=repository,
         )

@@ -50,7 +50,11 @@ def _capture_splinter_proofs(
     proofs = report.get("proofs")
     results = report.get("results")
     splinters = report.get("splinters")
-    if not all(isinstance(value, list) for value in (proofs, results, splinters)):
+    if (
+        not isinstance(proofs, list)
+        or not isinstance(results, list)
+        or not isinstance(splinters, list)
+    ):
         return False, []
     expected = [
         str(value.get("id")) for value in splinters if isinstance(value, dict)

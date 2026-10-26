@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Mapping, Protocol
+from collections.abc import Mapping
+from typing import Any, Protocol
 
 from .local_pr import ProspectiveValidationError
 

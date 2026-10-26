@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
+from pathlib import Path
 from typing import Any
 
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph

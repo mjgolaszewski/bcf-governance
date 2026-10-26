@@ -4,27 +4,20 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
-from pathlib import Path
 import sys
+from collections.abc import Mapping
+from pathlib import Path
 
+from .automation_commands import adopt_dependabot
+from .automation_contracts import AutomationContractError, load_automation_registry
+from .bootstrap.contracts import GitHubProviderSettings
+from .bootstrap.environment import github_provider_settings as _default_github_provider_settings
 from .ci_adopt_github import (
     GithubAdoptionError,
     apply_github_adoption,
     plan_github_adoption,
     render_github_adoption,
 )
-from .ordinary_protection_projection import (
-    apply_ordinary_protection_projection,
-    project_ordinary_protection,
-)
-from .ci_graph_commands import add_graph_parser, run_graph_command
-from .automation_commands import adopt_dependabot
-from .automation_contracts import AutomationContractError, load_automation_registry
-from .ci_github_api import GitHubAPI
-from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_controller_lifecycle import recovery_builder_route
-from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_authority_pins import (
     CIAuthorityPinError,
     pin_workflow_authority,
@@ -32,42 +25,53 @@ from .ci_authority_pins import (
     provider_workflow_ids,
 )
 from .ci_authority_submit import submit_candidate
-from .ci_github_identity import GitHubControllerError
+from .ci_controller_adoption import adopt_trusted_controller
+from .ci_github_api import GitHubAPI
 from .ci_github_cli_io import github_output, github_output_path
+from .ci_github_identity import GitHubControllerError
+from .ci_graph_commands import add_graph_parser, run_graph_command
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_controller_lifecycle import recovery_builder_route
+from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_self_controller import project_self_controller_pin
-from .local_pr_context import (
-    LocalPRError,
-    run_local_pr_validation,
+from .local_execution_admission import (
+    LocalExecutionAdmissionError,
+    ensure_local_project_python,
 )
 from .local_pr import (
     ProspectiveValidationError,
     run_prospective_train,
 )
+from .local_pr_context import (
+    LocalPRError,
+    run_local_pr_validation,
+)
+from .ordinary_protection_projection import (
+    apply_ordinary_protection_projection,
+    project_ordinary_protection,
+)
 from .prospective_candidate_identity import canonical_prospective_inputs
-from .local_execution_admission import (
-    ensure_local_project_python,
-    LocalExecutionAdmissionError,
+from .release_adopter_qualification import (
+    ReleaseQualificationError,
+    qualify_release,
 )
 from .runtime_capacity import (
     RuntimeCapacityError,
     check_runtime_capacity,
     load_runtime_contract,
 )
-from .release_adopter_qualification import (
-    ReleaseQualificationError,
-    qualify_release,
-)
 from .trusted_controller_compatibility import (
     TrustedControllerCompatibilityError,
     classify_trusted_controller_applicability,
 )
-from .ci_controller_adoption import adopt_trusted_controller
+
+_DEFAULT_REPO_ROOT = Path.cwd()
 
 
 def _local_pr_command(
     command: tuple[str, ...],
     *,
-    repo_root: Path = Path.cwd(),
+    repo_root: Path = _DEFAULT_REPO_ROOT,
     project_python: Path | None = None,
 ) -> tuple[str, ...]:
     if command and command[0] == "--":
@@ -269,7 +273,7 @@ def _parser() -> argparse.ArgumentParser:
     return parser
 
 
-def _print(payload: dict[str, object], output_format: str) -> None:
+def _print(payload: Mapping[str, object], output_format: str) -> None:
     if output_format == "json":
         print(json.dumps(payload, sort_keys=True))
     else:
@@ -277,7 +281,12 @@ def _print(payload: dict[str, object], output_format: str) -> None:
             print(f"{key}: {value}")
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(
+    argv: list[str] | None=None,
+    *,
+    provider_settings: GitHubProviderSettings | None=None,
+) -> None:
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
     args = _parser().parse_args(argv)
     try:
         if args.operation == "graph":
@@ -298,24 +307,24 @@ def main(argv: list[str] | None = None) -> None:
                     args.format,
                 )
                 return
-            token = os.environ.get("GITHUB_TOKEN", "")
-            result = adopt_dependabot(
+            token = provider_settings.token()
+            dependabot_result = adopt_dependabot(
                 GitHubAPI(token=token),
                 repo_root=args.repo_root,
                 repository=args.repository,
                 apply=args.apply,
             )
-            _print(result.as_dict(), args.format)
-            if args.check and result.status != "clean":
+            _print(dependabot_result.as_dict(), args.format)
+            if args.check and dependabot_result.status != "clean":
                 raise SystemExit(1)
             return
         if args.operation == "adopt":
             if args.provider == "trusted-controller":
-                result = adopt_trusted_controller(
+                controller_adoption_result = adopt_trusted_controller(
                     args.repo_root, config=args.config, apply=args.apply
                 )
-                _print(result.as_dict(), args.format)
-                if args.check and result.status != "clean":
+                _print(controller_adoption_result.as_dict(), args.format)
+                if args.check and controller_adoption_result.status != "clean":
                     raise SystemExit(1)
                 return
             graph_path = args.repo_root / "governance/ci-graph.yml"
@@ -324,23 +333,23 @@ def main(argv: list[str] | None = None) -> None:
                 protection = None
                 if args.repository:
                     protection = project_ordinary_protection(
-                        GitHubAPI(token=os.environ.get("GITHUB_TOKEN", "")),
+                        GitHubAPI(token=provider_settings.token()),
                         repo_root=args.repo_root,
                         repository=args.repository,
                         apply=False,
                     )
-                result = apply_ci_graph(args.repo_root) if args.apply else check_ci_graph(args.repo_root)
+                graph_result = apply_ci_graph(args.repo_root) if args.apply else check_ci_graph(args.repo_root)
                 if args.apply and protection is not None:
                     protection = apply_ordinary_protection_projection(
                         repo_root=args.repo_root,
                         projection=protection,
                     )
-                changed_paths = set(result.changed_paths)
+                changed_paths = set(graph_result.changed_paths)
                 if protection is not None:
                     changed_paths.update(protection.changed_paths)
                 status = (
                     "clean"
-                    if result.status == "clean"
+                    if graph_result.status == "clean"
                     and (protection is None or protection.status == "clean")
                     else ("changed" if args.apply else "actionable")
                 )
@@ -361,13 +370,13 @@ def main(argv: list[str] | None = None) -> None:
                 trusted_labels=tuple(args.trusted_label or ()),
                 producer_argv=tuple(args.producer_arg or ()),
             )
-            result = (
+            github_adoption_result = (
                 apply_github_adoption(args.repo_root.resolve(), desired=desired)
                 if args.apply
                 else plan_github_adoption(args.repo_root.resolve(), desired=desired)
             )
             _print(
-                {"status": result.status, "changed_paths": list(result.changed_paths)},
+                {"status": github_adoption_result.status, "changed_paths": list(github_adoption_result.changed_paths)},
                 args.format,
             )
             return
@@ -412,7 +421,7 @@ def main(argv: list[str] | None = None) -> None:
                 from .ci_github_controller import environment_api
 
                 provider_api = environment_api()
-            result = run_prospective_train(
+            train_result = run_prospective_train(
                 args.repo_root,
                 semantic_intent=str(canonical["semantic_intent"]),
                 evaluation_target=canonical["evaluation_target"],
@@ -426,7 +435,7 @@ def main(argv: list[str] | None = None) -> None:
                     json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
                 ),
             )
-            _print(result, args.format)
+            _print(train_result, args.format)
             return
         if args.operation == "qualify-release":
             interpreters: dict[str, Path] = {}
@@ -441,7 +450,7 @@ def main(argv: list[str] | None = None) -> None:
                 "kind": "local",
                 "id": "bcf-release-compatibility",
             }
-            result = qualify_release(
+            qualification_result = qualify_release(
                 args.repo_root,
                 repository=args.repository,
                 release_assets=args.release_assets,
@@ -451,7 +460,7 @@ def main(argv: list[str] | None = None) -> None:
                 producer=producer,
                 output=args.output,
             )
-            _print(result, args.format)
+            _print(qualification_result, args.format)
             return
         if args.operation == "submit":
             from .ci_github_controller import environment_api
@@ -459,30 +468,30 @@ def main(argv: list[str] | None = None) -> None:
             project_python = ensure_local_project_python(
                 args.repo_root, Path(sys.executable), requested=args.python
             )
-            result = submit_candidate(
+            submission_result = submit_candidate(
                 args.repo_root,
                 semantic_intent=args.intent,
                 python_executable=project_python,
                 provider_api=environment_api(),
                 remote=args.remote,
             )
-            _print(result, args.format)
+            _print(submission_result, args.format)
             return
         if args.operation == "controller-applicability":
-            result = classify_trusted_controller_applicability(
+            applicability_result = classify_trusted_controller_applicability(
                 args.repo_root.resolve(), target_commit=args.target_commit
             ).as_dict()
             if args.github_output:
-                github_output(result, path=github_output_path())
-            _print(result, args.format)
+                github_output(applicability_result, path=github_output_path())
+            _print(applicability_result, args.format)
             return
         if args.operation == "controller-recovery-route":
-            result = recovery_builder_route(
+            recovery_result = recovery_builder_route(
                 args.repo_root.resolve(), output=args.output
             )
             if args.github_output:
-                github_output(result, path=github_output_path())
-            _print(result, args.format)
+                github_output(recovery_result, path=github_output_path())
+            _print(recovery_result, args.format)
             return
         if args.operation == "pin-authority":
             workflows = validate_ci_graph(args.repo_root).workflows
@@ -503,7 +512,7 @@ def main(argv: list[str] | None = None) -> None:
                         workflow_paths=workflow_paths,
                     ),
                 )
-            result = pin_workflow_authority(
+            authority_result = pin_workflow_authority(
                 args.repo_root,
                 authority_path=args.authority,
                 definition_commit=args.definition_commit,
@@ -512,8 +521,8 @@ def main(argv: list[str] | None = None) -> None:
                 workflow_ids=workflow_ids,
                 apply=args.apply,
             )
-            _print(result.as_dict(), args.format)
-            if args.check and result.status != "clean":
+            _print(authority_result.as_dict(), args.format)
+            if args.check and authority_result.status != "clean":
                 raise SystemExit(1)
             return
         if args.operation == "sync-self-controller":
@@ -527,18 +536,18 @@ def main(argv: list[str] | None = None) -> None:
                 confirmation = confirmation_payload.get(
                     "trusted_controller_installation"
                 )
-            result = project_self_controller_pin(
+            controller_pin_result = project_self_controller_pin(
                 args.repo_root,
                 pin=value,
                 confirmation=confirmation,
                 apply=args.apply,
             )
-            _print(result.as_dict(), args.format)
-            if args.check and result.status != "clean":
+            _print(controller_pin_result.as_dict(), args.format)
+            if args.check and controller_pin_result.status != "clean":
                 raise SystemExit(1)
             return
         explicit_command = bool(args.command)
-        project_python = (
+        local_project_python = (
             ensure_local_project_python(
                 args.repo_root, Path(sys.executable), requested=args.python
             )
@@ -548,19 +557,19 @@ def main(argv: list[str] | None = None) -> None:
         command = _local_pr_command(
             tuple(args.command),
             repo_root=args.repo_root,
-            project_python=project_python,
+            project_python=local_project_python,
         )
-        result = run_local_pr_validation(
+        local_validation_result = run_local_pr_validation(
             args.repo_root.resolve(),
             command=command,
             remote=args.remote,
-            project_python=project_python,
+            project_python=local_project_python,
         )
-        if result.stdout:
-            print(result.stdout, end="")
-        if result.stderr:
-            print(result.stderr, end="", file=sys.stderr)
-        raise SystemExit(result.returncode)
+        if local_validation_result.stdout:
+            print(local_validation_result.stdout, end="")
+        if local_validation_result.stderr:
+            print(local_validation_result.stderr, end="", file=sys.stderr)
+        raise SystemExit(local_validation_result.returncode)
     except (
         CIAuthorityPinError,
         AutomationContractError,

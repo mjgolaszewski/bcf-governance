@@ -6,7 +6,6 @@ import ast
 from collections.abc import Callable, Mapping
 from typing import Any
 
-
 BindingTarget = Callable[[Mapping[str, Any], list[str]], str | None]
 
 

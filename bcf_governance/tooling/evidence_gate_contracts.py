@@ -5,10 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .evidence_execution import EvidenceError
-
 
 TEST_POLICIES = {
     "automated_tests",

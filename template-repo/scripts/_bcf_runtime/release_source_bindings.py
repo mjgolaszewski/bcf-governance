@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError
-
 
 SOURCES = {
     "dependency_lock": "release/requirements-cp312-linux-x86_64.lock",

@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .automation_contracts import (
     AutomationContractError,
@@ -19,9 +19,8 @@ from .automation_contracts import (
     select_producer,
 )
 from .ci_github_api import GitHubAPI
-from .ci_github_identity import GitHubControllerError, positive_int
-from .ci_github_identity import resolve_main
-
+from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
+from .protection_inspection_client import ProtectionInspectionClient
 
 PROTECTION_PATH = Path("governance/github-protection.yml")
 SCHEMA_PATH = Path("schemas/github-protection.schema.json")
@@ -203,7 +202,7 @@ def _normalized_provider(value: dict[str, Any]) -> dict[str, Any]:
 
 
 def _select_declared_ruleset(
-    api: GitHubAPI,
+    api: GitHubAPI | ProtectionInspectionClient,
     *,
     repository: str,
     declaration: dict[str, Any],
@@ -251,16 +250,16 @@ def _targets_declared_branch(value: dict[str, Any], *, branch: str) -> bool:
 
 
 def provider_protection_snapshot(
-    api: GitHubAPI, *, repository: str, branch: str
+    api: GitHubAPI | ProtectionInspectionClient, *, repository: str, branch: str
 ) -> ProviderProtectionSnapshot:
     """Bind one complete branch-target ruleset observation or exact absence."""
 
     matches: list[dict[str, Any]] = []
     for item in api.repository_rulesets(repository):
         ruleset_id = positive_int(item.get("id"), field="ruleset ID")
-        detail = api.ruleset(repository, ruleset_id)
-        if _targets_declared_branch(detail, branch=branch):
-            matches.append(detail)
+        candidate_detail = api.ruleset(repository, ruleset_id)
+        if _targets_declared_branch(candidate_detail, branch=branch):
+            matches.append(candidate_detail)
     if len(matches) > 1:
         raise GitHubControllerError(
             "provider has ambiguous rulesets targeting the declared branch"
@@ -272,7 +271,7 @@ def provider_protection_snapshot(
         raise GitHubControllerError(
             "protection inspection bypass actors are absent or redacted"
         )
-    ruleset_id = (
+    selected_ruleset_id = (
         positive_int(detail.get("id"), field="ruleset ID")
         if detail is not None
         else None
@@ -282,7 +281,7 @@ def provider_protection_snapshot(
         "branch": branch,
         "status": "present" if detail is not None else "missing",
         "ruleset": (
-            {"id": ruleset_id, **_normalized_provider(detail)}
+            {"id": selected_ruleset_id, **_normalized_provider(detail)}
             if detail is not None
             else None
         ),
@@ -293,7 +292,7 @@ def provider_protection_snapshot(
     return ProviderProtectionSnapshot(
         status=str(payload["status"]),
         sha256=digest,
-        ruleset_id=ruleset_id,
+        ruleset_id=selected_ruleset_id,
         detail=detail,
     )
 
@@ -308,7 +307,7 @@ def inspect_protection(
 
 
 def inspect_protection_declaration(
-    api: GitHubAPI, *, repository: str, declaration: dict[str, Any]
+    api: GitHubAPI | ProtectionInspectionClient, *, repository: str, declaration: dict[str, Any]
 ) -> ProtectionResult:
     """Inspect provider protection against an already authenticated declaration."""
 

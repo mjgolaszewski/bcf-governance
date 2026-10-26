@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import os
-from pathlib import Path
 import re
 import subprocess
+from pathlib import Path
 from typing import Any
+
+from ..bootstrap.contracts import ComparisonSettings
+from ..bootstrap.environment import comparison_settings as _default_comparison_settings
 
 
 class RepositoryContextError(ValueError):
@@ -73,11 +76,17 @@ def git_state(repo_root: Path) -> dict[str, Any]:
     }
 
 
-def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
+def pr_context(
+    repo_root: Path,
+    mode: str,
+    *,
+    comparison_settings: ComparisonSettings | None=None,
+) -> dict[str, Any]:
     """Authenticate event-owned comparison context independently of intent."""
+    comparison_settings = _default_comparison_settings() if comparison_settings is None else comparison_settings
 
-    declared_event = os.environ.get("BCF_PROVIDER_EVENT", "")
-    ambient_event = os.environ.get("GITHUB_EVENT_NAME", "")
+    declared_event = comparison_settings.provider_event()
+    ambient_event = comparison_settings.event_name()
     if declared_event and ambient_event and declared_event != ambient_event:
         raise ValueError("provider comparison event does not match GITHUB_EVENT_NAME")
     event = declared_event or ambient_event
@@ -88,15 +97,7 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
     if event in {"schedule", "workflow_dispatch"}:
         if mode != "release":
             raise ValueError("non-comparison provider event requires release preflight mode")
-        forbidden = {
-            name: os.environ.get(name, "")
-            for name in (
-                "BCF_COMPARISON_BASE_SHA",
-                "BCF_ORIGIN_COMPARISON_BASE_SHA",
-                "BCF_CALLER_COMPARISON_BASE_SHA",
-                "BCF_PR_BASE_SHA",
-            )
-        }
+        forbidden = comparison_settings.declared_bases()
         if any(forbidden.values()):
             raise ValueError("non-comparison provider event cannot carry comparison identity")
         return {
@@ -106,18 +107,18 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         }
     if event not in {"pull_request", "push"}:
         raise ValueError("repository comparison event is not supported")
-    invocation = os.environ.get("BCF_INVOCATION_KIND", "")
+    invocation = comparison_settings.invocation_kind()
     if invocation not in {"direct_event", "reusable_call"}:
         raise ValueError("repository comparison invocation kind is missing or unsupported")
-    base = os.environ.get("BCF_COMPARISON_BASE_SHA", "")
+    base = comparison_settings.base_sha()
     if not base and event == "pull_request":
-        base = os.environ.get("BCF_PR_BASE_SHA", "")
+        base = comparison_settings.pr_base_sha()
     if not re.fullmatch(r"[a-f0-9]{40,64}", base):
         raise ValueError("repository preflight requires exact comparison base SHA")
     if set(base) == {"0"}:
         raise ValueError("repository comparison base SHA cannot be the zero object")
-    origin_base = os.environ.get("BCF_ORIGIN_COMPARISON_BASE_SHA", "")
-    caller_base = os.environ.get("BCF_CALLER_COMPARISON_BASE_SHA", "")
+    origin_base = comparison_settings.origin_base_sha()
+    caller_base = comparison_settings.caller_base_sha()
     if origin_base != base:
         raise ValueError("repository comparison base does not match provider origin")
     if invocation == "reusable_call":
@@ -126,7 +127,7 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
     elif caller_base:
         raise ValueError("direct event cannot carry a reusable caller comparison base")
     if event == "pull_request":
-        pr_base = os.environ.get("BCF_PR_BASE_SHA", "")
+        pr_base = comparison_settings.pr_base_sha()
         if pr_base != base:
             raise ValueError("pull-request comparison base does not match BCF_PR_BASE_SHA")
     available = subprocess.run(

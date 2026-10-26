@@ -14,6 +14,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .semantic_authority_commands import main as authority_main
+from .semantic_authority_contracts import (
+    SemanticAuthorityError,
+    validate_semantic_authority,
+)
+from .semantic_ownership_cross_language import build_endpoint_traces
 from .semantic_ownership_inventory import (
     SemanticInventoryError,
 )
@@ -23,21 +29,20 @@ from .semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
     load_registry,
 )
-from .semantic_source_discovery import (
-    discover_source, compiler_contracts,
-    discover_optional_python_source as discover_python_source,
-    resolve_optional_python_imports as resolve_python_imports,
-)
-from .semantic_ownership_cross_language import build_endpoint_traces
 from .semantic_ownership_typescript import (
     TypeScriptDiscoveryError,
     tracked_typescript_files,
 )
-from .semantic_authority_contracts import (
-    SemanticAuthorityError,
-    validate_semantic_authority,
+from .semantic_source_discovery import (
+    compiler_contracts,
+    discover_source,
 )
-from .semantic_authority_commands import main as authority_main
+from .semantic_source_discovery import (
+    discover_optional_python_source as discover_python_source,
+)
+from .semantic_source_discovery import (
+    resolve_optional_python_imports as resolve_python_imports,
+)
 
 
 def _path_in_roots(symbol: str, roots: tuple[str, ...]) -> bool:

@@ -17,7 +17,6 @@ from .ci_self_controller import (
 )
 from .routine_controller_rotation import controller_policy_digest
 
-
 SELF_ROTATION_POLICY_PATHS = (
     "governance/github-protection.yml",
     "governance/self-governance-policy.yml",

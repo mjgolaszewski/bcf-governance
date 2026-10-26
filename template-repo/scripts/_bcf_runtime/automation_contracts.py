@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
+import json
+import re
 from dataclasses import dataclass
 from fnmatch import fnmatchcase
-import json
 from pathlib import Path, PurePosixPath
-import re
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
-
+from jsonschema import Draft202012Validator
 
 REGISTRY_PATH = Path("governance/automation-producers.yml")
 SCHEMA_PATH = Path("schemas/automation-producers.schema.json")

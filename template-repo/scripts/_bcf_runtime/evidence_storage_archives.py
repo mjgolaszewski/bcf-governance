@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import gzip
 import hashlib
 import os
-from pathlib import Path, PurePosixPath
 import stat
 import tarfile
 import tempfile
-from typing import Any, IO
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
+from typing import IO, Any
 
 from .evidence_storage_contracts import EvidenceStorageError
-
 
 MEDIA_TYPE = "application/vnd.bcf.evidence-input.tar+gzip"
 

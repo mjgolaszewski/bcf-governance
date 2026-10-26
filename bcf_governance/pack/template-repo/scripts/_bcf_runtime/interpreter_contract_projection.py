@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from .interpreter_environment_plan import InterpreterEnvironmentError
 from .interpreter_locked_project import normalize_locked_project_contract
-
 
 DEFAULT_DEPENDENCY_SOURCE = "requirements-governance.txt"
 

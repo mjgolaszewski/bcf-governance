@@ -5,12 +5,19 @@ from __future__ import annotations
 import argparse
 import json
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .governance_install.transaction import apply_transaction, copy_repository_shadow
+from .profile_yaml import render_governance_profile
+from .semantic_adoption_dependencies import (
+    DependencySnapshot,
+    SemanticDependencyError,
+    snapshot_adoption_dependencies,
+)
 from .semantic_adoption_diagnostics import validate_adoption_repository
 from .semantic_authority_contracts import (
     FAMILIES_PATH,
@@ -22,21 +29,18 @@ from .semantic_authority_contracts import (
     build_semantic_lock,
     validate_semantic_authority,
 )
-from .semantic_source_discovery import discover_source, compiler_contracts
+from .semantic_authority_migrations import (
+    SemanticMigrationError,
+    register_operation_migration,
+)
 from .semantic_locking import (
     SemanticLockError,
     render_compact_semantic_yaml,
     validated_lock_bytes,
 )
-from .semantic_adoption_dependencies import DependencySnapshot, SemanticDependencyError, snapshot_adoption_dependencies
-from .semantic_ownership_typescript import TypeScriptDiscoveryError
 from .semantic_ownership_registry import load_registry
-from .profile_yaml import render_governance_profile
-from .semantic_authority_migrations import (
-    SemanticMigrationError,
-    register_operation_migration,
-)
-
+from .semantic_ownership_typescript import TypeScriptDiscoveryError
+from .semantic_source_discovery import compiler_contracts, discover_source
 
 MANAGED_PATHS = (
     FAMILIES_PATH.as_posix(),

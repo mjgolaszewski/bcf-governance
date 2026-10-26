@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import math
-from pathlib import Path
 import statistics
+from pathlib import Path
 from typing import Any
 
 from ..ci_graph_contracts import validate_ci_graph
@@ -125,6 +125,7 @@ def validate_product_certification(repo_root: Path, contract: dict[str, Any]) ->
             (("feedback", "median"), ("feedback", "p95"),
              ("certification", "median"), ("certification", "p95")),
             values,
+            strict=False,
         )
     }
     if metrics != expected_metrics:
@@ -150,7 +151,8 @@ def validate_product_certification(repo_root: Path, contract: dict[str, Any]) ->
     simplicity = _mapping(contract.get("simplicity"), "simplicity")
     workflows = _list(simplicity.get("workflows"), "simplicity.workflows")
     compiled = validate_ci_graph(repo_root)
-    if sorted(item.get("id") for item in workflows if isinstance(item, dict)) != sorted(
+    workflow_ids: list[str] = [item["id"] for item in workflows if isinstance(item, dict)]
+    if sorted(workflow_ids) != sorted(
         item["id"] for item in compiled.workflows
     ):
         raise ProductCertificationError("workflow simplicity inventory differs from graph")

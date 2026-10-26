@@ -2,13 +2,18 @@
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import Enum, StrEnum
 from typing import Any
 from urllib.parse import urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-class GitHubDownloadKind(str, Enum):
+
+class GitHubDownloadKind(StrEnum):
     """Provider endpoint families with distinct GitHub media-type contracts."""
+    # Preserve the existing public Enum string/format contract.
+    __str__ = Enum.__str__
+    __format__ = Enum.__format__
+
 
     ACTIONS_ARTIFACT = "actions_artifact"
     RELEASE_ASSET = "release_asset"
@@ -28,7 +33,7 @@ def _origin(url: str) -> tuple[str, str, int | None]:
 class CredentialSafeRedirectHandler(HTTPRedirectHandler):
     """Follow provider downloads without forwarding credentials across origins."""
 
-    def redirect_request(  # type: ignore[override]
+    def redirect_request(
         self,
         req: Request,
         fp: Any,

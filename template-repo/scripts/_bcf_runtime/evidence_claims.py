@@ -5,11 +5,13 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import subprocess
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from pathlib import Path
+from typing import Any
 
+from .evidence_claim_resolution import claim_gate_projection, load_claim_gate_projection
 from .evidence_execution import EvidenceError
 from .evidence_planning import (
     build_dependency_manifest,
@@ -17,7 +19,6 @@ from .evidence_planning import (
     load_claim_model,
     parse_claim_model,
 )
-from .evidence_claim_resolution import claim_gate_projection, load_claim_gate_projection
 from .evidence_session_schema import is_planned_session
 
 
@@ -117,8 +118,8 @@ def capture_subject_preflight(repo_root: Path, output_dir: Path) -> dict[str, An
     if resolved_output == root:
         raise EvidenceError("evidence output cannot be the governed repository root")
     if resolved_output.is_relative_to(root):
-        relative = resolved_output.relative_to(root).as_posix()
-        ignored = subprocess.run(["git", "check-ignore", "--no-index", "--quiet", relative],
+        output_relative = resolved_output.relative_to(root).as_posix()
+        ignored = subprocess.run(["git", "check-ignore", "--no-index", "--quiet", output_relative],
                                  cwd=repo_root, check=False)
         if ignored.returncode:
             raise EvidenceError("in-repository evidence output must be ignored by Git")
@@ -147,7 +148,9 @@ def claim_capture(
     references: list[dict[str, str]] = []
     if session is not None and is_planned_session(session.payload):
         dag = session.payload.get("execution_dag")
-        nodes = dag.get("nodes") if isinstance(dag, dict) else []
+        nodes = dag.get("nodes", []) if isinstance(dag, dict) else []
+        if nodes is None:
+            raise EvidenceError("planned session node inventory is missing")
         node = next((value for value in nodes if isinstance(value, dict)
                      and value.get("producer") == target), {})
         references = [

@@ -2,18 +2,30 @@
 
 from __future__ import annotations
 
-from .common import *  # noqa: F403,F405
-from .phase_artifacts import _validate_document_path
+from ..interpreter_contract_projection import (
+    InterpreterContractProjectionError,
+    project_interpreter_contract,
+)
 from ..yaml_mutations import (
     YAMLMutationPathError,
     mutation_mode,
     replace_yaml_value_bytes,
     typed_mutation_value,
 )
-from ..interpreter_contract_projection import (
-    InterpreterContractProjectionError,
-    project_interpreter_contract,
+from .common import (
+    Any,
+    GovernanceValidationError,
+    Path,
+    _load_yaml,
+    _require_mapping,
+    _require_path,
+    _require_sequence,
+    _require_string,
+    _require_string_sequence,
+    _validate_portable_relative_path,
+    _validate_schema,
 )
+from .phase_artifacts import _validate_document_path
 
 TEST_COMMAND_POLICIES = {
     "automated_tests",
@@ -174,8 +186,6 @@ def _validate_gate_contract_registry(
                 )
                 if check_mutation_state:
                     mutation_file = repo_root / mutation_path
-                    search = mutation.get("search")
-                    yaml_path = mutation.get("yaml_path")
                     if not mutation_file.is_file() or mutation_file.is_symlink():
                         mutation_issues.append(f"{control.get('id')}:missing-path")
                         continue
@@ -190,6 +200,7 @@ def _validate_gate_contract_registry(
                         mutation_issues.append(f"{control.get('id')}:{issue}")
                         continue
                     if mode == "text":
+                        search = mutation["search"]
                         occurrences = mutation_file.read_text(encoding="utf-8").count(search)
                         if occurrences != 1:
                             mutation_issues.append(
@@ -200,7 +211,7 @@ def _validate_gate_contract_registry(
                         try:
                             value = typed_mutation_value(mutation)
                             _mutated, current = replace_yaml_value_bytes(
-                                source, yaml_path, value
+                                source, mutation["yaml_path"], value
                             )
                         except YAMLMutationPathError:
                             mutation_issues.append(f"{control.get('id')}:stale-yaml-path")

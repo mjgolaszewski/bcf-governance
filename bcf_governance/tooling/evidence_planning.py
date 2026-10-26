@@ -6,22 +6,31 @@ module only evaluates those declarations; it is not a second claim registry.
 
 from __future__ import annotations
 
+import subprocess
+from collections.abc import Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-import subprocess
-from typing import Any, Iterable, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
-from .evidence_execution import EvidenceError
 from .affected_proof_closure import (
     DEPENDENCY_CLASSES,
-    canonical_sha256 as _canonical_sha256,
-    changed_paths as _changed_paths,
     derive_affected_proof_set,
+)
+from .affected_proof_closure import (
+    canonical_sha256 as _canonical_sha256,
+)
+from .affected_proof_closure import (
+    changed_paths as _changed_paths,
+)
+from .affected_proof_closure import (
     matches as _matches,
+)
+from .affected_proof_closure import (
     patterns_for_claims as _patterns_for_claims,
 )
+from .evidence_execution import EvidenceError
 from .evidence_scheduling import (
     assign_duration_aware_shards,
     duration_estimates,
@@ -29,7 +38,6 @@ from .evidence_scheduling import (
     invalidate_dependency_reuse,
     validate_group_dependencies,
 )
-
 
 INVALIDATION_BY_CLASS = {
     "subject": ("subject_dependency_changed",),
@@ -67,7 +75,11 @@ def parse_claim_model(payload: object) -> dict[str, Any]:
     sets = model.get("dependency_sets")
     groups = model.get("execution_groups")
     claims = model.get("claims")
-    if not all(isinstance(value, dict) and value for value in (sets, groups, claims)):
+    if (
+        not isinstance(sets, dict) or not sets
+        or not isinstance(groups, dict) or not groups
+        or not isinstance(claims, dict) or not claims
+    ):
         raise EvidenceError("claim model sets, groups, and claims must be nonempty")
     non_proof = model.get("non_proof_dependencies", [])
     if (
@@ -538,9 +550,10 @@ def plan_verification(
         ]
         declared_patterns = _patterns_for_claims(model, routable_claims)
         all_patterns = [pattern for values in declared_patterns.values() for pattern in values]
-        known_nonbehavior = lambda path: path.startswith(
-            ("docs/", "plans/", "phases/", "audits/")
-        ) or path in {"README.md", "CHANGELOG.md", "MEMORY.yml"}
+        def known_nonbehavior(path: str) -> bool:
+            return path.startswith(
+                ("docs/", "plans/", "phases/", "audits/")
+            ) or path in {"README.md", "CHANGELOG.md", "MEMORY.yml"}
         unknown_paths = [
             path for path in changed
             if not any(_matches(path, pattern) for pattern in all_patterns)
@@ -653,6 +666,25 @@ def plan_verification(
     nodes = assign_duration_aware_shards(
         nodes, duration_estimates(receipts, model)
     )
+    decision_explanations: list[str] = [
+        *[
+            f"reused because {item['claim_id']} dependency fingerprints remain applicable"
+            for item in reused
+        ],
+        *[
+            f"executed because {node['id']} has unresolved claims: "
+            + ", ".join(node["claims"])
+            for node in nodes
+        ],
+        *(
+            ["expanded because dependency closure was ambiguous for: " + ", ".join(unknown_paths)]
+            if unknown_paths else []
+        ),
+        *(
+            ["expanded because a prior subject was unavailable from repository history"]
+            if change_ambiguity else []
+        ),
+    ]
     result = {
         "current_subject": current,
         "prior_subject": prior_subject,
@@ -681,30 +713,12 @@ def plan_verification(
                 for dependency in node["depends_on"]
             ],
         },
-        "decision_explanations": [
-            *[
-                f"reused because {item['claim_id']} dependency fingerprints remain applicable"
-                for item in reused
-            ],
-            *[
-                f"executed because {node['id']} has unresolved claims: "
-                + ", ".join(node["claims"])
-                for node in nodes
-            ],
-            *(
-                ["expanded because dependency closure was ambiguous for: " + ", ".join(unknown_paths)]
-                if unknown_paths else []
-            ),
-            *(
-                ["expanded because a prior subject was unavailable from repository history"]
-                if change_ambiguity else []
-            ),
-        ],
+        "decision_explanations": decision_explanations,
     }
     if affected is not None:
         result["affected_proof_set"] = affected
         if ambiguous_claims:
-            result["decision_explanations"].append(
+            decision_explanations.append(
                 "expanded because affected-proof reachability was ambiguous for: "
                 + ", ".join(sorted(ambiguous_claims))
             )

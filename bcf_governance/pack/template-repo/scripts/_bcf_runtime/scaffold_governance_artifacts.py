@@ -3,58 +3,69 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
 import hashlib
 import json
 import os
-from pathlib import Path
 import subprocess
 import sys
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from pathlib import Path
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
+
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
-from .runtime_capacity import executing_runtime_version
+from .reconcile_contracts import Action as Action
+from .reconcile_contracts import ReconcileStep as ReconcileStep
 from .reconcile_stage_ledger import (
-    ReconcileError,
-    check_reconcile_steps,
+    ReconcileError as ReconcileError,
+)
+from .reconcile_stage_ledger import (
+    check_reconcile_steps as check_reconcile_steps,
+)
+from .reconcile_stage_ledger import (
     record_reconcile_steps,
 )
-
+from .runtime_capacity import executing_runtime_version
 
 __version__ = executing_runtime_version()
 
-from .test_manifests import declared_test_gates
+from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
+from .ci_graph_contracts import validate_ci_graph
+from .ci_graph_post_merge import reconcile_post_merge_scope
+from .ci_graph_provider_permissions import reconcile_provider_permission_edges
+from .ci_graph_values import declared_graph_value_source_paths
+from .editorial_audit_projection import editorial_base
+from .evidence_storage_topology import compile_migration_plan
 from .governance_validation.structural_limits import validate_structural_limits
+from .hotfix_scaffolding import (
+    HOTFIX_MODES,
+    register_hotfix_log,
+    scaffold_hotfix_log,
+)
+from .interpreter_environment import reconcile_interpreter_environment
+from .local_execution_admission import ensure_local_project_python
+from .nested_cli_runtime import exact_nested_cli_command
+from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
+from .reconcile_authority_transition import (
+    ReconcileAuthorityTransitionError,
+    apply_workflow_authority_transition,
+)
+from .reconcile_authority_transition import (
+    result_json as authority_transition_json,
+)
+from .release_version_projection import reconcile_release_version_surfaces
 from .semantic_authority_contracts import (
     FAMILIES_PATH,
     LOCK_PATH,
     OPERATIONS_PATH,
     capability_states,
 )
-from .ci_graph_post_merge import reconcile_post_merge_scope
-from .ci_graph_provider_permissions import reconcile_provider_permission_edges
-from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_values import declared_graph_value_source_paths
-from .ci_authority_pins import projected_workflow_paths, reconcile_workflow_authority
-from .release_version_projection import reconcile_release_version_surfaces
-from .reconcile_authority_transition import (
-    ReconcileAuthorityTransitionError,
-    apply_workflow_authority_transition,
-    result_json as authority_transition_json,
-)
-from .profile_surface_generation import reconcile_makefile, reconcile_template_workflow
-from .interpreter_environment import reconcile_interpreter_environment
-from .local_execution_admission import ensure_local_project_python
 from .test_duration_observations import reconcile_test_duration_observations
-from .editorial_audit_projection import editorial_base
-from .evidence_storage_topology import compile_migration_plan
-from .hotfix_scaffolding import (
-    HOTFIX_MODES,
-    register_hotfix_log,
-    scaffold_hotfix_log,
-)
-from .nested_cli_runtime import exact_nested_cli_command
+from .test_manifests import declared_test_gates
+
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
     """Reject machine-local command records before any artifact is written."""
@@ -244,22 +255,17 @@ def scaffold_phase_artifacts(
     return {"plan": plan_path, "workitems": workitems_path, "log": log_path}
 
 
-Action = Callable[[], None]
 
 
-@dataclass(frozen=True)
-class ReconcileStep:
-    """One canonical projection owner with distinct check and apply actions."""
-
-    step_id: str
-    check: Action
-    apply: Action
-    apply_verifies: bool = False
-    watch_paths: tuple[str, ...] | None = None
-
-
-def _run_reconcile_command(command: list[str], *, repo_root: Path, step_id: str) -> None:
-    environment = dict(os.environ)
+def _run_reconcile_command(
+    command: list[str],
+    *,
+    repo_root: Path,
+    step_id: str,
+    process_environment: ChildProcessEnvironment | None=None,
+) -> None:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
+    environment = process_environment.snapshot()
     environment.pop("PYTHONPATH", None)
     result = subprocess.run(
         command,
@@ -311,7 +317,7 @@ def reconcile_steps(repo_root: Path, python: Path) -> tuple[ReconcileStep, ...]:
     )
     from .governance_validation.ci_state_matrix import validate_ci_state_matrix
     phase_ledger_present = (repo_root / "plans/phase-ledger.yml").is_file()
-    active_paths = active_phase_paths(repo_root) if phase_ledger_present else ()
+    active_paths: tuple[str, ...] = active_phase_paths(repo_root) if phase_ledger_present else ()
     hotfix_paths = validate_authored_hotfix_state(repo_root) if phase_ledger_present else ()
     steps: list[ReconcileStep] = []
     if phase_ledger_present:

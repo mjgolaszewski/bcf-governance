@@ -6,8 +6,8 @@ import argparse
 import json
 from pathlib import Path
 
-from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_audit import audit_ci_graph
+from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_diagnostics import diagnose_ci_graph
 from .ci_graph_import import check_workflow_inventory, write_workflow_inventory
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
@@ -126,23 +126,23 @@ def run_graph_command(args: argparse.Namespace) -> None:
                 args.format,
             )
             raise SystemExit(1)
-        result = (
+        lock_result = (
             apply_ci_graph_locks(repo_root)
             if args.apply
             else check_ci_graph_locks(repo_root)
         )
         _print(
-            {"status": result.status, "changed_inputs": list(result.changed_inputs)},
+            {"status": lock_result.status, "changed_inputs": list(lock_result.changed_inputs)},
             args.format,
         )
-        if args.check and result.status != "clean":
+        if args.check and lock_result.status != "clean":
             raise SystemExit(1)
         return
-    result = (
+    inventory_result = (
         write_workflow_inventory(repo_root, args.output)
         if args.write
         else check_workflow_inventory(repo_root, args.output)
     )
-    _print({"status": result.status, "path": result.path}, args.format)
-    if args.check and result.status != "clean":
+    _print({"status": inventory_result.status, "path": inventory_result.path}, args.format)
+    if args.check and inventory_result.status != "clean":
         raise SystemExit(1)

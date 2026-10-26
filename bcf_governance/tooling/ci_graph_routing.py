@@ -9,7 +9,6 @@ from typing import Any
 
 from .ci_graph_errors import CIGraphError
 
-
 HOSTED_RUNNERS = frozenset({"ubuntu-24.04", "ubuntu-latest"})
 LOCAL_CASES = (
     "same_repository_pull_request",
@@ -119,7 +118,8 @@ def _eligibility(policy: dict[str, Any]) -> str:
 def render_runner(resource: dict[str, Any]) -> str | list[str]:
     """Preserve literal/matrix legacy runners or emit one closed selection."""
     if "routing" not in resource:
-        return copy.deepcopy(resource["runner"])
+        runner: str | list[str] = resource["runner"]
+        return copy.deepcopy(runner)
     policy = resource["routing"]
     local = json.dumps(policy["local_runner"], separators=(",", ":"))
     hosted = json.dumps([resource["runner"]], separators=(",", ":"))

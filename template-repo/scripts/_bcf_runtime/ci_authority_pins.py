@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from copy import deepcopy
-from dataclasses import dataclass
 import hashlib
-from itertools import product
 import os
-from pathlib import Path
 import re
 import subprocess
 import tempfile
+from copy import deepcopy
+from dataclasses import dataclass
+from itertools import product
+from pathlib import Path
 from typing import Any
 
 import yaml
@@ -261,7 +261,7 @@ def compiled_workflow_events(raw: bytes) -> tuple[str, ...]:
         raise CIAuthorityPinError("committed workflow must be a mapping")
     triggers = workflow.get("on", workflow.get(True))
     if isinstance(triggers, str):
-        events = (triggers,)
+        events: tuple[str, ...] = (triggers,)
     elif isinstance(triggers, dict):
         events = tuple(str(value) for value in triggers)
     elif isinstance(triggers, list) and all(isinstance(value, str) for value in triggers):

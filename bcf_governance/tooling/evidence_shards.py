@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 import sys
 import tempfile
@@ -13,18 +12,21 @@ from typing import Any
 
 import yaml
 
-from .ci_graph_contracts import validate_ci_graph
+from .bootstrap.contracts import GitHubProviderSettings, InvocationEnvironment, WorkflowSettings
+from .bootstrap.environment import github_provider_settings as _default_github_provider_settings
+from .bootstrap.environment import invocation_environment as _default_invocation_environment
+from .bootstrap.environment import workflow_settings as _default_workflow_settings
 from .ci_github_api import GitHubAPI
+from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_execution import (
     local_gate_job_environments,
     resolve_local_job_environment,
 )
-from .evidence_sessions import load_session, select_session
 from .evidence_session_schema import is_planned_session
+from .evidence_sessions import load_session, select_session
 from .evidence_test_adapters import captured_receipt_succeeded
 from .governance_evidence import capture_gate
 from .test_splinter_proofs import materialize_prior_provider_proofs
-
 
 SHARD_DISPLAY_NAMES = tuple(f"Evidence shard {index}" for index in range(4))
 
@@ -44,7 +46,11 @@ def required_gate_targets(repo_root: Path) -> list[str]:
     catalog = contracts.get("gate_catalog")
     executable = contracts.get("gates")
     configured = profile.get("release_gate_profile", {}).get("gates")
-    if not all(isinstance(value, dict) for value in (catalog, executable, configured)):
+    if (
+        not isinstance(catalog, dict)
+        or not isinstance(executable, dict)
+        or not isinstance(configured, dict)
+    ):
         raise ValueError("gate profile and contracts must contain mappings")
     targets = sorted(
         str(value["target"])
@@ -206,11 +212,12 @@ def planned_gate_targets(
         if nodes == [] and planned_targets == []:
             return []
         raise ValueError("planned execution DAG must contain its gate inventory")
-    assignments = [
-        node.get("assigned_shard") if isinstance(node, dict) else None for node in nodes
-    ]
-    if any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in assignments):
-        raise ValueError("planned shard assignment is incomplete or ambiguous")
+    assignments: list[int] = []
+    for node in nodes:
+        assignment = node.get("assigned_shard") if isinstance(node, dict) else None
+        if isinstance(assignment, bool) or not isinstance(assignment, int) or assignment < 0:
+            raise ValueError("planned shard assignment is incomplete or ambiguous")
+        assignments.append(assignment)
     shard_count = max(assignments) + 1
     return [
         gate
@@ -225,7 +232,16 @@ def planned_gate_targets(
     ]
 
 
-def main(argv: list[str] | None = None) -> None:
+def main(
+    argv: list[str] | None=None,
+    *,
+    invocation_environment: InvocationEnvironment | None=None,
+    provider_settings: GitHubProviderSettings | None=None,
+    workflow_settings: WorkflowSettings | None=None,
+) -> None:
+    invocation_environment = _default_invocation_environment() if invocation_environment is None else invocation_environment
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--shard-index", type=int)
@@ -280,28 +296,30 @@ def main(argv: list[str] | None = None) -> None:
         )
     prior_temp: tempfile.TemporaryDirectory[str] | None = None
     try:
-        if not args.all_planned and "test" in gates and os.environ.get("GITHUB_ACTIONS") == "true":
+        if not args.all_planned and "test" in gates and workflow_settings.actions() == "true":
+            if args.shard_index is None:
+                raise SystemExit("provide shard coordinates or --all-planned")
             prior_temp = tempfile.TemporaryDirectory(prefix="bcf-prior-splinter-proofs-")
             prior_root = Path(prior_temp.name)
             report = materialize_prior_provider_proofs(
                 GitHubAPI(
-                    token=os.environ.get("GITHUB_TOKEN", ""),
-                    api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+                    token=provider_settings.token(),
+                    api_url=provider_settings.api_url(),
                 ),
                 prior_root,
-                repository=os.environ.get("GITHUB_REPOSITORY", ""),
-                repository_id=os.environ.get("GITHUB_REPOSITORY_ID", ""),
-                head_sha=os.environ.get("GITHUB_SHA", ""),
-                run_id=os.environ.get("GITHUB_RUN_ID", ""),
-                current_attempt=int(os.environ.get("GITHUB_RUN_ATTEMPT", "0")),
-                job=os.environ.get("GITHUB_JOB", ""),
+                repository=workflow_settings.repository(""),
+                repository_id=workflow_settings.repository_id(""),
+                head_sha=workflow_settings.head_sha(""),
+                run_id=workflow_settings.run_id(""),
+                current_attempt=int(workflow_settings.run_attempt("0")),
+                job=workflow_settings.job(""),
                 shard=int(args.shard_index),
             )
             (prior_root / "provider.json").write_text(
                 json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
             )
-            os.environ["BCF_PRIOR_SPLINTER_PROOF_ROOT"] = str(prior_root)
-            os.environ["BCF_EVIDENCE_SHARD"] = str(args.shard_index)
+            invocation_environment.prior_splinter_root(str(prior_root))
+            invocation_environment.evidence_shard(str(args.shard_index))
         for gate in gates:
             if args.all_planned:
                 receipt = capture_gate(

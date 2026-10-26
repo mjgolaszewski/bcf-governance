@@ -7,15 +7,20 @@ from pathlib import Path
 from typing import Any
 
 from .semantic_ownership_inventory import (
-    SemanticInventoryError, discover_python_source, resolve_python_imports, tracked_python_files,
+    SemanticInventoryError,
+    discover_python_source,
+    resolve_python_imports,
+    tracked_python_files,
 )
 from .semantic_ownership_registry import Registry, load_registry
 from .semantic_ownership_typescript import (
-    TypeScriptContract, TypeScriptDiscoveryError, contract_from_mapping,
-    discover_typescript_source, tracked_typescript_files,
+    TypeScriptContract,
+    TypeScriptDiscoveryError,
+    contract_from_mapping,
+    discover_typescript_source,
+    tracked_typescript_files,
 )
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
-
 
 FACT_LISTS = (
     "files", "types", "functions", "constructors", "codecs", "translations",

@@ -8,17 +8,17 @@ import re
 from typing import Any
 
 from .automation_changelog import render_automation_changelog
-from .automation_dependencies import derive_dependency_transitions
 from .automation_contracts import (
-    AutomationContractError,
     REGISTRY_PATH,
+    AutomationContractError,
     load_automation_registry_bytes,
     select_producer,
 )
+from .automation_dependencies import DependencyTransition, derive_dependency_transitions
 from .automation_projections import project_automation_outputs
+from .ci_authority_state import CandidateIdentity
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import packaged_repo_root
-from .ci_authority_state import CandidateIdentity
 from .ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
@@ -27,7 +27,6 @@ from .ci_github_identity import (
     positive_int,
     resolve_main,
 )
-
 
 ADMISSION_WORKFLOW = ".github/workflows/bcf-automation-admission.yml"
 RECONCILER_WORKFLOW = ".github/workflows/bcf-automation-reconcile.yml"
@@ -55,7 +54,11 @@ def _pr_identity(pr: dict[str, Any]) -> dict[str, Any]:
     head = pr.get("head")
     base = pr.get("base")
     actor = pr.get("user")
-    if not all(isinstance(item, dict) for item in (head, base, actor)):
+    if (
+        not isinstance(head, dict)
+        or not isinstance(base, dict)
+        or not isinstance(actor, dict)
+    ):
         raise GitHubControllerError("pull request identity is incomplete")
     head_repo = head.get("repo")
     base_repo = base.get("repo")
@@ -164,7 +167,7 @@ def _automation_subject(
 ) -> tuple[
     dict[str, Any], Any, str, CandidateIdentity, tuple[tuple[str, str, str], ...]
 ]:
-    run = observer.run(repository, run_id)
+    run = observer.run(repository, positive_int(run_id, field="automation run ID"))
     pr_number = _pull_request_number(run)
     pr, match, source_state, _inventory = _authenticated_match(
         observer,
@@ -292,7 +295,7 @@ def reconcile_automation_changelog(
     repository_id = int(main.repository_id)
     changelog_path = str(registry["policy"]["changelog_path"])
     current = observer.content(repository, changelog_path, ref=pr["head_sha"])
-    transitions = ()
+    transitions: tuple[DependencyTransition, ...] = ()
     if registry["schema_version"] == "1.1":
         dependency_inventory = {
             path: (status, blob)

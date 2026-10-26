@@ -2,17 +2,24 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from email.message import Message
 import hashlib
 import ssl
 import time
-from typing import Any, Callable, ContextManager
+from collections.abc import Callable
+from contextlib import AbstractContextManager
+from dataclasses import dataclass
+from email.message import Message
+from typing import Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
 
 from .ci_recovery_frontier import provider_read_frontier
 
+
+class ByteResponse(Protocol):
+    """The byte-read operation supported by HTTP response objects."""
+
+    def read(self, size: int = -1, /) -> bytes: ...
 
 RETRYABLE_HTTP = frozenset({429, 500, 502, 503, 504})
 BACKOFF_SECONDS = (1.0, 2.0)
@@ -56,10 +63,10 @@ def open_provider_get(
     request: Request,
     *,
     timeout: int,
-    opener: Callable[..., ContextManager[Any]],
+    opener: Callable[..., AbstractContextManager[ByteResponse]],
     sleeper: Callable[[float], None] = time.sleep,
     observations: list[ProviderReadAttempt] | None = None,
-) -> ContextManager[Any]:
+) -> AbstractContextManager[ByteResponse]:
     """Open one exact GET with a closed transient retry taxonomy.
 
     Callers still own response size, schema, digest, and identity validation.
@@ -87,38 +94,38 @@ def open_provider_get(
         except HTTPError as exc:
             if exc.code not in RETRYABLE_HTTP:
                 if action("terminal") != "stop":
-                    raise AssertionError("terminal provider read selected continuation")
+                    raise AssertionError("terminal provider read selected continuation") from exc
                 if observations is not None:
                     observations.append(ProviderReadAttempt(ordinal, f"http_{exc.code}", request_sha256))
                 raise
             if index == attempts - 1:
                 if action("exhausted") != "stop":
-                    raise AssertionError("exhausted provider read selected continuation")
+                    raise AssertionError("exhausted provider read selected continuation") from exc
                 if observations is not None:
                     observations.append(ProviderReadAttempt(ordinal, "exhausted", request_sha256))
                 raise ProviderReadError("provider GET transient retry exhausted") from exc
             delay = _retry_after(exc.headers, BACKOFF_SECONDS[index])
             if action("transient") != "retry_identical_read":
-                raise AssertionError("transient provider read did not select exact retry")
+                raise AssertionError("transient provider read did not select exact retry") from exc
             if observations is not None:
                 observations.append(ProviderReadAttempt(ordinal, f"http_{exc.code}", request_sha256, delay))
             sleeper(delay)
         except URLError as exc:
             if not _transient_url_error(exc):
                 if action("terminal") != "stop":
-                    raise AssertionError("terminal provider transport selected continuation")
+                    raise AssertionError("terminal provider transport selected continuation") from exc
                 if observations is not None:
                     observations.append(ProviderReadAttempt(ordinal, "terminal_transport", request_sha256))
                 raise
             if index == attempts - 1:
                 if action("exhausted") != "stop":
-                    raise AssertionError("exhausted provider transport selected continuation")
+                    raise AssertionError("exhausted provider transport selected continuation") from exc
                 if observations is not None:
                     observations.append(ProviderReadAttempt(ordinal, "exhausted", request_sha256))
                 raise ProviderReadError("provider GET transient retry exhausted") from exc
             delay = BACKOFF_SECONDS[index]
             if action("transient") != "retry_identical_read":
-                raise AssertionError("transient provider transport did not select exact retry")
+                raise AssertionError("transient provider transport did not select exact retry") from exc
             if observations is not None:
                 observations.append(ProviderReadAttempt(ordinal, "transient_transport", request_sha256, delay))
             sleeper(delay)

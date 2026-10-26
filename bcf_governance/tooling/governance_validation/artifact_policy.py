@@ -1,17 +1,44 @@
 """artifact policy validation helpers."""
-# ruff: noqa: F403,F405
 
 from __future__ import annotations
 
 import hashlib
 import shlex
 import subprocess
-from .common import *  # noqa: F403,F405
+
 from .audit_artifacts import validate_audit_root_policy as _validate_audit_root_policy
+from .common import (
+    GOVERNANCE_MARKER_DIRS,
+    GOVERNANCE_MARKER_FILENAMES,
+    OBSERVABILITY_CONTRACT_PATHS,
+    OBSERVABILITY_CONTRACT_SCHEMA,
+    PHASE_HISTORY_SCHEMA,
+    PHASE_HISTORY_STATUSES,
+    PHASE_RETENTION_MODES,
+    Any,
+    GovernanceValidationError,
+    Path,
+    _iter_repo_files,
+    _load_yaml,
+    _relative_path_is_under,
+    _relative_path_is_under_any,
+    _repo_relative_path,
+    _require_mapping,
+    _require_non_negative_int,
+    _require_path,
+    _require_sequence,
+    _require_string,
+    _require_string_sequence,
+    _validate_document_path,
+    _validate_portable_relative_path,
+    _validate_schema,
+    re,
+)
 from .context_budgets import _validate_context_budgets
 from .native_adoption import authenticated_native_adoption_files
 from .phase_artifacts import _phase_number
 from .required_artifacts import _validate_required_artifacts
+
 
 def _validate_observability_contracts(
     repo_root: Path, schema_cache: dict[str, dict[str, Any]]
@@ -388,6 +415,7 @@ def _validate_phase_history_entries(
                         f"missing {field}"
                     )
         entry_source = entry.get("retention_source")
+        retention_source: str | None
         if policy_mode is not None:
             retention_source = _require_string(
                 entry_source,
@@ -446,6 +474,7 @@ def _validate_phase_history_entries(
                     f"entries.{phase_id}.archived_artifacts[{artifact_index}].sha256"
                 ),
             )
+            actual_sha: str | None
             if artifact_path.exists():
                 actual_sha = _file_sha256(artifact_path)
             elif retention_source == "git_history":

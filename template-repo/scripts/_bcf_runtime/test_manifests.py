@@ -3,14 +3,15 @@
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
 from .evidence_execution import _selected_python
 from .local_execution_admission import project_python_environment
@@ -201,12 +202,14 @@ def _collect_raw_nodes(
     repo_root: Path,
     selectors: list[str],
     *,
-    python_executable: str | Path | None = None,
+    python_executable: str | Path | None=None,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> list[str]:
     """Collect one deduplicated selector union through one pytest process."""
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
     python = _selected_python(python_executable)
-    environment = project_python_environment(repo_root, python, os.environ)
+    environment = project_python_environment(repo_root, python, process_environment.live())
     environment["PYTHONDONTWRITEBYTECODE"] = "1"
     result = subprocess.run(
         [str(python), "-m", "pytest", "--collect-only", "-q", *selectors],

@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import shutil
+from collections.abc import Callable, Iterable, Mapping
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, Iterable, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
-from ..ci_graph_yaml import render_yaml
 from ..ci_graph_defaults import evidence_capture_environment
 from ..ci_graph_provider_permissions import project_provider_permission_edges
+from ..ci_graph_yaml import render_yaml
 from ..profile_surface_generation import reconcile_makefile
 from ..profile_yaml import render_governance_profile
-from ..runtime_capacity import EXECUTION_STATE_POLICY
 from ..repository_comparison_context import comparison_base_input_contract
+from ..runtime_capacity import EXECUTION_STATE_POLICY
 from ..test_duration_observations import (
     OBSERVATIONS_PATH,
     reconcile_test_duration_observations,
@@ -135,8 +136,9 @@ def _ensure_mapping(parent: dict[str, Any], key: str, template_value: object) ->
     if isinstance(value, dict):
         return value
     replacement = template_value if isinstance(template_value, dict) else {}
-    parent[key] = dict(replacement)
-    return parent[key]
+    copied = dict(replacement)
+    parent[key] = copied
+    return copied
 
 
 
@@ -369,7 +371,9 @@ def _upgrade_agents_yaml(template_root: Path, target_root: Path) -> None:
     payload = _load_yaml_mapping(path)
     template = _template_yaml(template_root, "AGENTS.yml")
     governance = _ensure_mapping(payload, "governance", template.get("governance"))
-    template_governance = template.get("governance") if isinstance(template.get("governance"), dict) else {}
+    template_governance = template.get("governance")
+    if not isinstance(template_governance, dict):
+        template_governance = {}
 
     schema_contract = _ensure_mapping(
         governance,
@@ -466,7 +470,9 @@ def _upgrade_memory_yaml(template_root: Path, target_root: Path) -> None:
     payload = _load_yaml_mapping(path)
     template = _template_yaml(template_root, "MEMORY.yml")
     stable = _ensure_mapping(payload, "stable_decisions", template.get("stable_decisions"))
-    template_stable = template.get("stable_decisions") if isinstance(template.get("stable_decisions"), dict) else {}
+    template_stable = template.get("stable_decisions")
+    if not isinstance(template_stable, dict):
+        template_stable = {}
     stable.setdefault("canonical_phase_history", template_stable.get("canonical_phase_history"))
 
     environment = _ensure_mapping(payload, "environment_facts", template.get("environment_facts"))

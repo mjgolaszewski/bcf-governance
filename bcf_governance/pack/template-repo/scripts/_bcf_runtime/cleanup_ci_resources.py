@@ -7,9 +7,9 @@ import json
 import re
 import subprocess
 import sys
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Callable
 
 from .evidence_session_cleanup import (
     SessionCleanupError,

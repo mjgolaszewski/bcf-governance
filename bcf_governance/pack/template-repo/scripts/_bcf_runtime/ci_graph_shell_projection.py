@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 from typing import Any
 
-
 _WORKFLOW_EXPRESSION = re.compile(r"\$\{\{.*?\}\}")
 _INTERPRETER_SINK = re.compile(
     r"(?m)(?:^|[;&|]\s*|\s)(?:eval|source)\s+"
@@ -76,8 +75,14 @@ def hoist_run_expressions(steps: list[dict[str, Any]]) -> None:
                 "workflow expression cannot enter an interpreter source sink"
             )
         expressions: dict[str, str] = {}
+        run_source = source
 
-        def replace(match: re.Match[str]) -> str:
+        def replace(
+            match: re.Match[str],
+            *,
+            expressions: dict[str, str] = expressions,
+            source: str = run_source,
+        ) -> str:
             expression = match.group(0)
             if expression not in expressions:
                 expressions[expression] = f"BCF_RUN_EXPRESSION_{len(expressions)}"

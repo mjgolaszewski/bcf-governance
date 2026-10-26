@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TypedDict
 
+# Closed action keyword shape, shared by the two graph projection owners.
+ComponentActionInputs = TypedDict("ComponentActionInputs", {"with": dict[str, object]})
 
 def job(
     job_id: str,

@@ -3,14 +3,29 @@
 from __future__ import annotations
 
 import json
-import os
-import re
+import os as os
+import re as re
 import sys
-from pathlib import Path
-from typing import Any
+from pathlib import Path as Path
+from typing import Any as Any
+from typing import Protocol, SupportsIndex, SupportsInt
 
-from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
-import yaml  # type: ignore[import-untyped]
+import yaml
+from jsonschema import Draft202012Validator, ValidationError
+
+
+class _IntegerBuffer(Protocol):
+    def __buffer__(self, flags: int, /) -> memoryview: ...
+
+
+class _LegacyIntegerTruncation(Protocol):
+    def __trunc__(self) -> int: ...
+
+
+if sys.version_info < (3, 14):
+    _IntegerInput = str | bytes | bytearray | SupportsInt | SupportsIndex | _IntegerBuffer | _LegacyIntegerTruncation
+else:
+    _IntegerInput = str | bytes | bytearray | SupportsInt | SupportsIndex | _IntegerBuffer
 
 
 class GovernanceValidationError(ValueError):
@@ -222,8 +237,10 @@ def _require_string(value: object, *, context: str) -> str:
     return value
 
 
-def _require_positive_int(value: object, *, context: str) -> int:
+def _require_positive_int(value: _IntegerInput | None, *, context: str) -> int:
     try:
+        if value is None:
+            raise TypeError("integer value is missing")
         number = int(value)
     except (TypeError, ValueError) as exc:
         raise GovernanceValidationError(f"{context} must be a positive integer") from exc
@@ -232,8 +249,10 @@ def _require_positive_int(value: object, *, context: str) -> int:
     return number
 
 
-def _require_non_negative_int(value: object, *, context: str) -> int:
+def _require_non_negative_int(value: _IntegerInput | None, *, context: str) -> int:
     try:
+        if value is None:
+            raise TypeError("integer value is missing")
         number = int(value)
     except (TypeError, ValueError) as exc:
         raise GovernanceValidationError(f"{context} must be a non-negative integer") from exc
@@ -362,7 +381,7 @@ def _classify_failure(error: GovernanceValidationError) -> dict[str, str]:
 def _success_report(
     repo_root: Path, *, allow_placeholders: bool, advisories: list[str] | None = None
 ) -> dict[str, Any]:
-    report = {
+    report: dict[str, object] = {
         "status": "pass",
         "engine": "structural_validation",
         "checks": {
@@ -419,8 +438,8 @@ def _load_schema(
     return schema_cache[schema_name]
 
 
-def _schema_error_location(context: str, error: object) -> str:
-    path = ".".join(str(token) for token in getattr(error, "absolute_path"))
+def _schema_error_location(context: str, error: ValidationError) -> str:
+    path = ".".join(str(token) for token in error.absolute_path)
     return f"{context}.{path}" if path else context
 
 

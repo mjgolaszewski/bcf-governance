@@ -2,16 +2,16 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-import os
-from pathlib import Path
 import re
 import sys
+from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
+from .bootstrap.contracts import CustodySettings
+from .bootstrap.environment import custody_settings as _default_custody_settings
 from .ci_github_identity import GitHubControllerError, exact_sha
 from .ci_self_controller import validate_controller_pin
-
 
 CUSTODY_KEYS = {
     "schema_version",
@@ -154,10 +154,15 @@ def authority_identity(custody: Mapping[str, Any]) -> dict[str, str]:
     }
 
 
-def require_controller_execution(custody: Mapping[str, Any]) -> None:
+def require_controller_execution(
+    custody: Mapping[str, Any],
+    *,
+    custody_settings: CustodySettings | None=None,
+) -> None:
     """Bind a privileged consumer to the exact installed target it selected."""
+    custody_settings = _default_custody_settings() if custody_settings is None else custody_settings
 
-    if os.environ.get("BCF_CONTROLLER_EXECUTION_REQUIRED") != "true":
+    if custody_settings.controller_execution_required() != "true":
         return
     expected = validate_controller_custody(custody)["controller"]["commit_sha"]
     observed = Path(sys.prefix).resolve().name

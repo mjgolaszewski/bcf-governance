@@ -72,12 +72,11 @@ def load_truth_reports(
         subject = report.get("subject")
         verifier = report.get("verifier")
         release = report.get("release_readiness")
-        checks = report.get("checks")
         claims = report.get("claims")
         reconciliation = report.get("reconciliation")
         findings = report.get("findings")
         durable_ref = report.get("durable_ref")
-        valid = (
+        if not (
             isinstance(phase_id, str)
             and report.get("schema_version") in {"2.0", "3.0"}
             and report.get("engine") == "evidence_truthfulness"
@@ -114,8 +113,7 @@ def load_truth_reports(
             and bool(verifier.get("id"))
             and isinstance(durable_ref, str)
             and bool(durable_ref)
-        )
-        if not valid:
+        ):
             raise ValueError(
                 "truth report must be a passing internally consistent closed computation with "
                 f"subject, bundle, release, and verifier provenance: {supplied_path}"

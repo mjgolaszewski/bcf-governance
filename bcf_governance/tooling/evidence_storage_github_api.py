@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 import re
 import tempfile
+from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -19,7 +19,6 @@ from .ci_github_downloads import (
     open_download,
 )
 from .provider_read import ProviderReadError, open_provider_get
-
 
 EVIDENCE_TAG = re.compile(r"^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$")
 

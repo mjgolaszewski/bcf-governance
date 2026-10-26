@@ -2,14 +2,21 @@
 
 from __future__ import annotations
 
-import os
+from collections.abc import Mapping
 from pathlib import Path
 
+from .bootstrap.contracts import CLIRequiredVariables
+from .bootstrap.environment import cli_required_variables as _default_cli_required_variables
 from .ci_github_identity import GitHubControllerError
 
 
-def required_environment(name: str) -> str:
-    value = os.environ.get(name, "")
+def required_environment(
+    name: str,
+    *,
+    cli_variables: CLIRequiredVariables | None=None,
+) -> str:
+    cli_variables = _default_cli_required_variables() if cli_variables is None else cli_variables
+    value = cli_variables.value(name)
     if not value:
         raise GitHubControllerError(f"trusted workflow environment is missing {name}")
     return value
@@ -22,7 +29,7 @@ def github_output_path() -> Path:
     return path
 
 
-def github_output(payload: dict[str, object], *, path: Path) -> None:
+def github_output(payload: Mapping[str, object], *, path: Path) -> None:
     lines: list[str] = []
     for key, value in sorted(payload.items()):
         if not key.replace("_", "").isalnum() or not key[0].isalpha():

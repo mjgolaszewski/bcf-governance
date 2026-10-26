@@ -12,15 +12,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 from jsonschema import Draft202012Validator
 
-from .evidence_test_adapters import recompute_test_artifact_observations
 from .evidence_claim_resolution import load_claim_gate_projection
 from .evidence_planning import qualification_applicability, receipt_applicability
+from .evidence_test_adapters import recompute_test_artifact_observations
 from .governance_truth_support import artifact_issues
 from .truth_sessions import apply_session_validation
-
 
 RECEIPT_SUFFIX = ".evidence.json"
 SECURITY_TOKENS = {
@@ -624,6 +623,8 @@ def _receipt_admission_identity(
             issues.append("evidence_receipt_identity_ambiguous")
     if issues:
         return None, sorted(set(issues))
+    if not isinstance(workflow, dict) or not isinstance(invocation, dict):
+        return None, ["evidence_receipt_identity_ambiguous"]
     admission = ReceiptAdmission(
         subject_identity=_identity_text(subject),
         session_identity=_identity_text(session),

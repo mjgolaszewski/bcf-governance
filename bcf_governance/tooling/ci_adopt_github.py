@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import re
 import shlex
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import yaml
@@ -13,7 +13,6 @@ import yaml
 from .ci_github import DISPATCH_EVENTS, topology_document
 from .ci_github_actions import action_pin
 from .governance_install.transaction import apply_transaction
-
 
 MANAGED_PATHS = (
     ".github/workflows/bcf-exact-main.yml",

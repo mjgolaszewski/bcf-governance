@@ -2,32 +2,39 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from enum import Enum
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
+from dataclasses import dataclass
+from enum import Enum, StrEnum
+from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .ci_graph_errors import CIGraphError
-
 
 AUTHORIZATION_SCHEMA = Path("schemas/recovery-reentry-authorization.schema.json")
 _SHA = re.compile(r"^[a-f0-9]{40}$")
 
 
-class ControllerLifecycleState(str, Enum):
+class ControllerLifecycleState(StrEnum):
+    # Preserve the existing public Enum string/format contract.
+    __str__ = Enum.__str__
+    __format__ = Enum.__format__
+
     ORDINARY_CURRENT = "ordinary-current"
     ORDINARY_PENDING_ROTATION = "ordinary-pending-rotation"
     AUTHENTICATED_RECOVERY_REENTRY = "authenticated-recovery-reentry"
 
 
-class ControllerRequirement(str, Enum):
+class ControllerRequirement(StrEnum):
+    # Preserve the existing public Enum string/format contract.
+    __str__ = Enum.__str__
+    __format__ = Enum.__format__
+
     CURRENT = "current"
     CURRENT_OR_RECOVERY_REENTRY = "current-or-recovery-reentry"
 

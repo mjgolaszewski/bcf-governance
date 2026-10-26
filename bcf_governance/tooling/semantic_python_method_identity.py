@@ -9,7 +9,6 @@ from __future__ import annotations
 import ast
 from typing import Any
 
-
 _OVERLOAD_DECORATORS = {
     "typing::module.overload",
     "typing::overload",
@@ -66,7 +65,7 @@ def runtime_function_scopes(
         ],
     ]
     result = []
-    missing = []
+    missing: list[str] = []
     for class_name, members in scopes:
         def is_overload(member: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
             return any(

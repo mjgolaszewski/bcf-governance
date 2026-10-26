@@ -17,13 +17,13 @@ _SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
+from .governance_cleanup import phase_retention as phase_retention_ops  # noqa: E402
+from .governance_cleanup import phase_retention_projection as retention_projection  # noqa: E402
 from .governance_cleanup.models import (  # noqa: E402
     CleanupAction,
     CleanupReport,
     ManualAction,
 )
-from .governance_cleanup import phase_retention as phase_retention_ops  # noqa: E402
-from .governance_cleanup import phase_retention_projection as retention_projection  # noqa: E402
 from .governance_cleanup.pack_removal import governed_pack_removal_paths  # noqa: E402
 
 OUTPUT_FORMATS = {"text", "json"}
@@ -253,7 +253,7 @@ def plan_cleanup(
         actions = _governance_pack_remove_actions(repo_root)
         manual_actions = _bcf_ci_reference_actions(repo_root)
         status = "actionable" if actions or manual_actions else "clean"
-        warnings = (
+        removal_warnings = (
             ["remove_governance_pack deletes BCF-owned governance files and evidence roots when applied"]
             if actions
             else []
@@ -266,7 +266,7 @@ def plan_cleanup(
             actions=actions,
             manual_actions=manual_actions,
             rewritten_files=[],
-            warnings=warnings,
+            warnings=removal_warnings,
         )
 
     actions = _audit_move_actions(repo_root)
@@ -389,7 +389,8 @@ def _reference_replacements(actions: list[CleanupAction]) -> dict[str, str]:
         if action.kind == "move_audit_artifact" and action.destination is not None
     ]
     for action in moved_audits:
-        replacements[action.source] = action.destination
+        if action.destination is not None:
+            replacements[action.source] = action.destination
     for source_root, destination_root in AUDIT_MOVE_ROOTS.items():
         if any(_path_is_under(action.source, source_root) for action in moved_audits):
             replacements[f"{source_root}/"] = f"{destination_root.rstrip('/')}/"
@@ -688,8 +689,8 @@ def _emit_text(report: CleanupReport) -> None:
                 print(f"- {action.kind}: {action.source}")
     if report.manual_actions:
         print("manual actions:")
-        for action in report.manual_actions:
-            print(f"- {action.kind}: {action.path} ({action.reason})")
+        for manual_action in report.manual_actions:
+            print(f"- {manual_action.kind}: {manual_action.path} ({manual_action.reason})")
     if report.rewritten_files:
         print("rewritten references:")
         for path in report.rewritten_files:

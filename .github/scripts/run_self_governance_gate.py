@@ -23,6 +23,10 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
+from bcf_governance.tooling.governance_validation.environment_boundaries import (  # noqa: E402
+    EnvironmentBoundaryError,
+    validate_environment_boundaries,
+)
 from bcf_governance.tooling.dependency_assurance import (  # noqa: E402
     DependencyAssuranceError,
     audit_envelope,
@@ -434,6 +438,10 @@ def _run_tests(gate: str) -> None:
 
 
 def _lint(gate: str) -> None:
+    try:
+        validate_environment_boundaries(REPO_ROOT / "bcf_governance/tooling")
+    except EnvironmentBoundaryError as exc:
+        _fail(gate, str(exc))
     for path in _tracked_files():
         if path.suffix not in {".py", ".md", ".yml", ".yaml", ".json", ".toml"}:
             continue
@@ -445,6 +453,15 @@ def _lint(gate: str) -> None:
                 ast.parse(text, filename=str(path))
             except SyntaxError as exc:
                 _fail(gate, str(exc))
+
+    result = subprocess.run(
+        [sys.executable, "-m", "ruff", "check", "--no-cache",
+         "bcf_governance/tooling", "template-repo/scripts"],
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if result.returncode:
+        _fail(gate, "Managed runtime Ruff lint failed")
 
 
 def _typecheck(gate: str) -> None:
@@ -465,6 +482,14 @@ def _typecheck(gate: str) -> None:
     )
     if result.returncode:
         _fail(gate, "Python compilation failed")
+    result = subprocess.run(
+        [sys.executable, "-m", "mypy", "--no-incremental", "bcf_governance/tooling"],
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if result.returncode:
+        _fail(gate, "Managed runtime strict mypy typecheck failed")
+
 
 
 def _secret_scan(gate: str) -> None:

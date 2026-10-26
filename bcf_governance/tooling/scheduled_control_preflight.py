@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from typing import Any
 
 from .ci_github_api import GitHubAPI
-from .preflight import run_preflight
 from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
+from .preflight import run_preflight
 from .routine_controller_provider import resolve_effective_controller
 
 

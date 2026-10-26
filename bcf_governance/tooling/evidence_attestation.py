@@ -10,7 +10,6 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 
-
 DSSE_PAYLOAD_TYPE = "application/vnd.bcf.evidence-bundle.v1+json"
 
 

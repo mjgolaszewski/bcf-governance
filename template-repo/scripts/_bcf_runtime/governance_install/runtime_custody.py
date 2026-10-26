@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from enum import StrEnum
 import hashlib
 import json
+from dataclasses import dataclass, field
+from enum import StrEnum
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
-
 
 RUNTIME_LOCK_PATH = "governance/bcf-runtime-lock.json"
 CANDIDATE_QUALIFICATION_PATH = "governance/bcf-candidate-qualification.json"

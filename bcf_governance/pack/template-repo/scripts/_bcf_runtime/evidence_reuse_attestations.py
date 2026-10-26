@@ -6,22 +6,26 @@ these bytes from the same admission's provider-authenticated transport.
 
 from __future__ import annotations
 
-from datetime import datetime
 import hashlib
 import json
+from collections.abc import Iterable, Mapping
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Protocol
+from typing import Any, Protocol
 
+import yaml
 from jsonschema import Draft202012Validator, ValidationError
-import yaml  # type: ignore[import-untyped]
 
-from .ci_github_bundle import canonical_json
 from .ci_github_authority import packaged_repo_root
+from .ci_github_bundle import canonical_json
 from .ci_github_identity import MainIdentity
 from .evidence_claims import qualification_equivalence
 from .evidence_execution import EvidenceError
 from .evidence_planning import (
-    _tree_entries, build_dependency_manifest, parse_claim_model, receipt_applicability,
+    _tree_entries,
+    build_dependency_manifest,
+    parse_claim_model,
+    receipt_applicability,
 )
 from .prior_evidence_receipts import load_provisional_transport
 
@@ -29,8 +33,11 @@ from .prior_evidence_receipts import load_provisional_transport
 class PriorTransportMaterial(Protocol):
     """Byte material only; implementing this shape does not confer custody."""
 
-    manifest: dict[str, Any]
-    files: dict[str, bytes]
+    @property
+    def manifest(self) -> dict[str, Any]: ...
+
+    @property
+    def files(self) -> dict[str, bytes]: ...
 
 
 def planned_reuse(plan: Mapping[str, Any]) -> dict[str, str]:

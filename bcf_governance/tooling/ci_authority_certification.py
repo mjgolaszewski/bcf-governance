@@ -2,19 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import UTC, datetime
 import hashlib
 import json
+from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from jsonschema import Draft202012Validator
-
-from .evidence_session_schema import (
-    EvidenceSessionSchemaError,
-    load_evidence_session_schema,
-)
 
 from .ci_authority_contracts import (
     CIAuthorityContractError,
@@ -39,6 +35,10 @@ from .ci_authority_state import (
     evaluate_authority,
 )
 from .evaluation_scope import EvaluationScopeError, validate_certified_proposition
+from .evidence_session_schema import (
+    EvidenceSessionSchemaError,
+    load_evidence_session_schema,
+)
 
 
 class CICertificationError(ValueError):
@@ -448,7 +448,7 @@ def normalize_ci_certification(
         "tree_sha": selected.candidate.tree_sha,
         "current_default_main_sha": current.checkout_sha,
     }
-    report = {
+    report: dict[str, object] = {
         "schema_version": "1.0",
         "authority_contract_version": str(authority["schema_version"]),
         "repository": dict(authority["repository"]),
@@ -484,7 +484,7 @@ def normalize_ci_certification(
     }
     scoped = (governance_truth, evaluation_scope)
     if any(value is not None for value in scoped):
-        if not all(value is not None for value in scoped):
+        if governance_truth is None or evaluation_scope is None:
             raise CICertificationError("certification scope inputs are incomplete")
         report["governance_truth"] = governance_truth
         report["evaluation_scope"] = evaluation_scope

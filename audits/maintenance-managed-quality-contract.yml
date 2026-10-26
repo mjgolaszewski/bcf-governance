@@ -1,0 +1,190 @@
+{
+  "document": {
+    "kind": "maintenance_contract",
+    "name": "Managed runtime strict quality contract",
+    "id": "maintenance-managed-quality-contract",
+    "version": "1.0.0",
+    "generated_at_utc": "2026-10-24T00:00:00Z",
+    "status": "active",
+    "path": "audits/maintenance-managed-quality-contract.yml"
+  },
+  "scope": {
+    "owner": "bcf_governance/tooling",
+    "projections": [
+      "template-repo/scripts/_bcf_runtime",
+      "bcf_governance/pack/template-repo/scripts/_bcf_runtime"
+    ],
+    "entrypoints": "existing fourteen standalone template wrappers; runtime imports unchanged",
+    "repair": "strict typing, explicit dependency discovery and consumer Ruff compliance; truthful cold/warm launcher custody and declared setuptools existing-adoption roots"
+  },
+  "constraints": [
+    "No adopter runtime hand edits, consumer exclusions, new Any/casts/type ignores, waivers or raised limits.",
+    "Existing compileall typecheck and syntax/whitespace lint are not strict mypy/Ruff assurance.",
+    "Consumer acceptance requires exact maintained released artifact and full consuming qualification.",
+    "Preserve CQRS authority, public entrypoints, runtime object bindings, import exception behavior and supported Python versions."
+  ],
+  "observations": [
+    {
+      "allocation": 19668,
+      "scope": "isolated managed runtime diagnostic",
+      "mypy_errors": 501,
+      "previous_full_consumer_errors": 1184,
+      "acceptance": false
+    },
+    {
+      "allocation": 19672,
+      "scope": "corrected actual consumer Ruff profile",
+      "ruff_errors": 365,
+      "acceptance": false
+    },
+    {
+      "allocation": 19702,
+      "scope": "bounded I/UP035 source import repair",
+      "raw_exit": 1,
+      "fixed": 344,
+      "remaining_selected": 1,
+      "changed_allowed_files": 211,
+      "independently_verified": true,
+      "acceptance": false
+    },
+    {
+      "allocation": 19722,
+      "scope": "frozen managed-only probe; lacks actual consumer scripts package root",
+      "mypy_errors": 311,
+      "ruff_errors": 86,
+      "wrapper_context_errors": 14,
+      "acceptance": false
+    },
+    {
+      "allocation": 19741,
+      "scope": "six producer characterizations under Python3.14",
+      "passed": 4,
+      "failed": 2,
+      "cause": "AST dump omitted empty fields; independent Python3.12/source and Python3.14 show_empty readbacks prove all six moved functions match original goldens",
+      "acceptance": false
+    },
+    {
+      "allocation": 20105,
+      "scope": "actual native49-package environment",
+      "materialization": 0,
+      "inventory": 0,
+      "console_pip": 127,
+      "console_mypy": 127,
+      "console_ruff": 0,
+      "acceptance": false
+    },
+    {
+      "allocation": 20176,
+      "scope": "real SDK official237 existing adoption",
+      "result": "Hatch-only declaration rejection, zero writes; genuine setuptools layout retained",
+      "acceptance": false
+    },
+    {
+      "allocation": 20287,
+      "scope": "new actual native environment plus warm reuse",
+      "exact_distributions": 49,
+      "console_pip": 0,
+      "console_mypy": 0,
+      "console_ruff": 0,
+      "warm_same_path": true,
+      "full_release_acceptance": false
+    }
+  ],
+  "deconstruction_sequence": [
+    {
+      "owner": "governance_validation/phase_catalog.py",
+      "child": "governance_validation/hotfix_validation.py",
+      "responsibility": "existing hotfix validation",
+      "characterization": "exact moved function AST and facade bindings"
+    },
+    {
+      "owner": "preflight.py",
+      "child": "governance_validation/preflight_imports.py",
+      "responsibility": "pure source entrypoint import discovery",
+      "characterization": "exact moved function AST and facade bindings"
+    },
+    {
+      "owner": "governance_evidence.py",
+      "child": "evidence_output_artifacts.py",
+      "responsibility": "artifact hashing and output serialization",
+      "characterization": "exact moved function AST and facade bindings"
+    },
+    {
+      "owner": "preflight.py",
+      "child": "governance_validation/preflight_interpreter.py",
+      "exception_owner": "governance_validation/preflight_errors.py",
+      "responsibility": "selected-interpreter identity validation and shared error contract",
+      "reason": "typed environment dependency injection would cross800physicalLOC; split interpreter identity responsibility before adding behavior",
+      "characterization": "exact premove function/class AST hashes retained; compatibility imports preserve callable/exception names; controlled environment-port substitution will be normalized separately"
+    }
+  ],
+  "remaining": [
+    "Native reconciliation, final original/new installer controls, full native architecture/semantic/release checks.",
+    "Immutable official release and actual consuming repository qualification."
+  ],
+  "producer_quality_contract": {
+    "typecheck": "strict mypy on canonical tooling after compileall",
+    "lint": "Ruff on canonical tooling and standalone script projection after existing syntax/whitespace checks",
+    "dev_dependencies": [
+      "mypy==1.19.1",
+      "ruff==0.15.7",
+      "types-PyYAML==6.0.12.20250915",
+      "types-jsonschema==4.26.0.20261006"
+    ],
+    "stub_source": "https://pypi.org/project/types-jsonschema/4.26.0.20261006/",
+    "installed": false,
+    "dependency_qualification": "Private v7 supported jsonschema stub environment qualified19825; root development environment not changed."
+  },
+  "environment_boundary_implementation": {
+    "status": "64_targeted_cases_pass_allocation19944_including_native_guard_and_real_callers_fullquality_open",
+    "owner": "bcf_governance/tooling/bootstrap/environment.py",
+    "ports": "bcf_governance/tooling/bootstrap/contracts.py",
+    "tests": "tests/test_governance_environment.py",
+    "remaining": [
+      "Native guard wiring now written; needs causal producer test.",
+      "Actual consumer sourceguard allowance remains unchanged pending release adoption.",
+      "Full strict/lint/native semantic/pack/release/adopter assurance remains open"
+    ],
+    "guard": "bcf_governance/tooling/governance_validation/environment_boundaries.py"
+  },
+  "shared_reconciliation_contract": {
+    "decision": "One existing frozen ReconcileStep dataclass will move unchanged into reconcile_contracts.py; scaffold keeps explicit compatibility reexport; transition owner uses that concrete shared type rather than generic callbacks requiring Python3.12 syntax. Python>=3.11 retained.",
+    "owning_context": "tooling governance reconciliation",
+    "owning_layer": "tooling",
+    "two_real_consumers": [
+      "scaffold_governance_artifacts.py",
+      "reconcile_authority_transition.py"
+    ],
+    "pre_move_class_ast_sha256": "37224ba309011d4ba6179c9e4fb12f56bf737020ca0a67d46428b568c384139e",
+    "characterization": "Exact class AST and constructor defaults/frozen behavior/compatibility binding before runtime qualification."
+  },
+  "latest_quality_measure": {
+    "allocation": 19953,
+    "typed_modules": 309,
+    "mypy_errors": 0,
+    "ruff_findings": 0,
+    "targeted_cases_passed": 64,
+    "complete_acceptance": false,
+    "pending": "Updated native broad/source/pack/release/adopter assurance remains open; added launcher/adoption repairs have independent focused diagnostics."
+  },
+  "module_ownership": {
+    "bootstrap/": "tooling layer; runtime governance environment context; narrow query/command contracts and OS adapter owners",
+    "reconcile_contracts.py": "tooling layer; operations reconciliation context; shared existing frozen action value",
+    "enforcement": "self-governance-policy tooling_contexts plus native full architecture gates; no context exclusion"
+  },
+  "native_environment_launchers": {
+    "owner": "bcf_governance/tooling/interpreter_environment_launchers.py",
+    "contract": "Repair generated bin/config prefixes privately before atomic publish, preserve modes/native binaries, refresh affected RECORD hashes; internal1.1 cache manifest binds launcher custody and rejects stale1.0.",
+    "tests": [
+      "tests/test_interpreter_environment_relocation.py",
+      "tests/test_interpreter_environment_launchers.py"
+    ],
+    "negative": "Original real native environment and causal baseline retained; never relabel or hand repair installed custody."
+  },
+  "existing_adoption_roots": {
+    "owner": "bcf_governance/tooling/governance_install/existing_adoption.py",
+    "supported": "Existing Hatch package declarations, or real setuptools build_meta/:__legacy__ with explicit packages.find.where and pytest testpaths.",
+    "fail_closed": "Conflicting backends, unaccounted package-dir/py-modules, missing/empty/unsafe/untracked/symlink roots or ancestors.",
+    "tests": "tests/test_existing_adoption_setuptools.py"
+  }
+}

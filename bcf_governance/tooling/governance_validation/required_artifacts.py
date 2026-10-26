@@ -1,10 +1,11 @@
 """Semantic contracts for standard repository root artifacts."""
-# ruff: noqa: F403,F405
 
 from __future__ import annotations
 
 import subprocess
 
+from ..bootstrap.contracts import ComparisonSettings
+from ..bootstrap.environment import comparison_settings as _default_comparison_settings
 from ..governance_install.runtime_custody import (
     RuntimeCustodyError,
     candidate_qualification_matches,
@@ -16,7 +17,16 @@ from ..repository_comparison_context import (
     PULL_REQUEST_BASE_EXPRESSION,
     direct_comparison_environment,
 )
-from .common import *  # noqa: F403,F405
+from .common import (
+    Any,
+    GovernanceValidationError,
+    Path,
+    _load_yaml,
+    _require_mapping,
+    _require_string,
+    re,
+)
+from .common import os as os
 
 
 def _validate_required_artifacts(repo_root: Path, manifest: dict[str, Any]) -> list[Path]:
@@ -142,11 +152,12 @@ def _validate_changelog_workflow_contract(repo_root: Path) -> None:
 def _validate_workflow_comparison_contract(workflow_path: Path) -> None:
     display = workflow_path.as_posix()
     workflow = _load_yaml(workflow_path)
+    yaml_keys: dict[object, object] = {key: value for key, value in workflow.items()}
     environment = _require_mapping(
         workflow.get("env"), context=f"{display} env"
     )
     events = _require_mapping(
-        workflow.get("on", workflow.get(True)),
+        yaml_keys.get("on", yaml_keys.get(True)),
         context=f"{display} on",
     )
     comparison_input = "push" in events or "workflow_call" in events
@@ -167,22 +178,25 @@ def _validate_workflow_comparison_contract(workflow_path: Path) -> None:
         )
 
 
-def _validate_pull_request_changelog_update(repo_root: Path) -> None:
-    enforce = os.environ.get("BCF_ENFORCE_PR_CHANGELOG", "").lower()
+def _validate_pull_request_changelog_update(
+    repo_root: Path,
+    *,
+    comparison_settings: ComparisonSettings | None=None,
+) -> None:
+    comparison_settings = _default_comparison_settings() if comparison_settings is None else comparison_settings
+    enforce = comparison_settings.enforce_pr_changelog().lower()
     if enforce not in {"1", "true"}:
         return
-    if os.environ.get("GITHUB_EVENT_NAME") not in {"pull_request", "pull_request_target"}:
+    if comparison_settings.optional_event_name() not in {"pull_request", "pull_request_target"}:
         raise GovernanceValidationError(
             "pull-request changelog enforcement requires a pull-request event"
         )
-    base_sha = os.environ.get("BCF_PR_BASE_SHA", "")
+    base_sha = comparison_settings.pr_base_sha()
     if re.fullmatch(r"[a-fA-F0-9]{40}", base_sha) is None:
         raise GovernanceValidationError(
             "pull-request changelog enforcement requires BCF_PR_BASE_SHA"
         )
-    raw_lane = os.environ.get(
-        "BCF_VALIDATION_LANE", LocalValidationLane.PROVIDER_PR.value
-    )
+    raw_lane = comparison_settings.validation_lane(LocalValidationLane.PROVIDER_PR.value)
     try:
         validation_lane = LocalValidationLane(raw_lane)
     except ValueError as exc:

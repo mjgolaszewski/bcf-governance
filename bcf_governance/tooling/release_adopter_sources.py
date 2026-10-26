@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
 import json
+from collections.abc import Sequence
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Sequence
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 class AdopterSourceError(ValueError):

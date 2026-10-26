@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
 import json
-from pathlib import Path
 import subprocess
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
-from .ci_authority_contracts import CIAuthorityContractError, validate_ci_contract
 from .ci_adopt_github import (
     GithubAdoptionError,
     plan_github_adoption,
@@ -20,6 +19,7 @@ from .ci_adopt_github import (
     render_github_control_plane,
     render_github_v11_control_plane,
 )
+from .ci_authority_contracts import CIAuthorityContractError, validate_ci_contract
 from .ci_github import GithubReferenceError, validate_reference_topology
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_render import check_ci_graph
@@ -31,9 +31,10 @@ from .semantic_authority_contracts import (
 )
 from .semantic_ownership_registry import (
     SemanticOwnershipRegistryError,
+)
+from .semantic_ownership_registry import (
     load_registry as load_semantic_registry,
 )
-
 
 CONTRACT_ORDER = {"1.0": 1, "2.0": 2, "3.0": 3}
 
@@ -93,20 +94,20 @@ def resolve_install_contract_version(
     if requested is not None and requested not in CONTRACT_ORDER:
         raise ProfileV2Error("profile contract version must be 1.0, 2.0, or 3.0")
     if not upgrade:
-        selected = profile or "standard"
-        return selected, requested or ("1.0" if selected == "lite" else "2.0")
+        fresh_profile = profile or "standard"
+        return fresh_profile, requested or ("1.0" if fresh_profile == "lite" else "2.0")
     existing_profile = current_profile(repo_root)
     existing_version = current_contract_version(repo_root)
     if reset_options:
-        selected = profile or existing_profile
-        if selected not in {"lite", "standard", "regulated"}:
+        selected: str | None = profile or existing_profile
+        if selected is None or selected not in {"lite", "standard", "regulated"}:
             raise ProfileV2Error("--reset-options requires a valid --profile")
         if requested is not None and requested != existing_version:
             raise ProfileV2Error(
                 "upgrade preserves profile contract version; use bcf profile promote for v2"
             )
         return selected, existing_version
-    if existing_profile not in {"lite", "standard", "regulated"}:
+    if existing_profile is None or existing_profile not in {"lite", "standard", "regulated"}:
         raise ProfileV2Error("upgrade target has no valid existing governance profile")
     if requested is not None and requested != existing_version:
         raise ProfileV2Error(
@@ -238,7 +239,7 @@ def validate_profile_v2_readiness(
     except (SemanticAuthorityError, SemanticOwnershipRegistryError) as exc:
         raise ProfileV2Error(f"semantic authority: {exc}") from exc
     head = _head(repo_root)
-    instant = evaluated_at or datetime.now(timezone.utc)
+    instant = evaluated_at or datetime.now(UTC)
     na_paths = sorted((repo_root / "governance/capability-na").glob("*.yml"))
     na_capabilities: set[str] = set()
     for path in na_paths:
@@ -312,11 +313,9 @@ def validate_profile_v2_readiness(
         except GithubReferenceError as exc:
             raise ProfileV2Error(f"governance/github-ci-topology.yml: {exc}") from exc
         roles = {str(role["id"]): role for role in topology["roles"]}
-        common = {
-            "default_branch": str(topology["default_branch"]),
-            "candidate_labels": tuple(roles["exact-ref-producer"]["runner_labels"]),
-            "trusted_labels": tuple(roles["trusted-finalizer"]["runner_labels"]),
-        }
+        default_branch = str(topology["default_branch"])
+        candidate_labels = tuple(roles["exact-ref-producer"]["runner_labels"])
+        trusted_labels = tuple(roles["trusted-finalizer"]["runner_labels"])
         if topology.get("authority_contract_version") == "1.1":
             producer_jobs = tuple(
                 (
@@ -331,21 +330,25 @@ def validate_profile_v2_readiness(
                 for value in topology["producer_workflows"]
             )
             desired = render_github_v11_control_plane(
-                default_branch=common["default_branch"],
-                trusted_labels=common["trusted_labels"],
+                default_branch=default_branch,
+                trusted_labels=trusted_labels,
                 producer_jobs=producer_jobs,
                 controller_commit=str(topology["controller_commit"]),
             )
         elif "producer_workflows" in topology:
             desired = render_github_control_plane(
-                **common,
+                default_branch=default_branch,
+                candidate_labels=candidate_labels,
+                trusted_labels=trusted_labels,
                 producer_workflow_names=tuple(topology["producer_workflows"]),
                 dispatch_exact_ref=bool(topology.get("dispatch_exact_ref", False)),
                 controller_commit=topology.get("controller_commit"),
             )
         else:
             desired = render_github_adoption(
-                **common, producer_argv=tuple(topology["producer_argv"])
+                default_branch=default_branch,
+                candidate_labels=candidate_labels,
+                trusted_labels=trusted_labels, producer_argv=tuple(topology["producer_argv"])
             )
         try:
             adoption = plan_github_adoption(repo_root, desired=desired)

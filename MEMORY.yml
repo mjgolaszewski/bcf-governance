@@ -20,6 +20,7 @@ memory_retention_policy:
   stale_entry_handling: [mark_deprecated_before_removal, preserve_replacement_reference_when_available]
 environment_facts:
   current_repo_state:
+  - P31-HF09 reproduced native console relocation and genuine setuptools adoption blockers; focused56 cases, production/new-test strict typing and actual49-package cold/warm console custody pass locally. Native reconcile/installer/full release/adopter assurance remains open; audits/maintenance-managed-quality-contract.yml owns the current scope.
   - Maintained 2.3.7 attempt 19045 failed genuine same-candidate CI matrix preflight before full proof or provider submission; original 4e49 source and failed terminal remain retained. Matrix coverage correction is prepared; fresh canonical reconciliation and complete candidate/release qualification remain pending. See audits/maintenance-read-effect-contract.yml.
   - P31-HF08 prepares additive truthful read ports with source traversal and retained hard-alias rejection; thirty-case baseline and eight-failure/four-pass causal RED are retained. Forty-five focused cases, ten selected authority regressions and native governance validation pass. Concrete result-dispatch support, actual adopter qualification and a distinct maintenance release remain pending; see audits/maintenance-read-effect-contract.yml.
   - Operator approved a temporary forward restoration of maintained 2.3.6 on main, preserving 2.5 and bridge histories; ordinary1.1 exact-tree certification and immutable publication remain unqualified, retain working release machinery on success and keep 2.5 independent until closer RC with separate governed integration. See audits/v2.3.6-forward-restoration.yml.
@@ -40,6 +41,7 @@ environment_facts:
   - P31 and release_26 are closed; immutable v2.3.0 was published from certified commit 76c953c1f04b50d26df6e5c4162dc671a8eadcd5 and exact custody is recorded in audits/v2.3.0-release-custody.yml.
   active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-31-plan.yml, active_workitem_ledger: plans/phase-31-workitems.yml, active_phase_log: phases/phase-31-log.yml}
 known_constraints:
+- P31-HF09 managed runtime strict quality repair remains open; audits/maintenance-managed-quality-contract.yml and phases/phase-31-hotfix09.yml own measured diagnostics, preserved behavior and release qualification obligations.
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code
 - routine controller rotation becomes active only after its dormant provider compiler is installed through the one-time ordinary N/N+1 migration; provider evidence never grants release authority
 - legacy receipt v2 and session v1 evidence remains readable only for its exact original subject

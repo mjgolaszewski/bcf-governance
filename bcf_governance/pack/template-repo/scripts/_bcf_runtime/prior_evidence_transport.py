@@ -6,20 +6,20 @@ claim-applicability, equivalence, qualification, or reuse decision.
 
 from __future__ import annotations
 
-from dataclasses import asdict
 import hashlib
-from io import BytesIO
 import json
-from pathlib import Path, PurePosixPath
 import re
-from typing import Any, Mapping
 import zipfile
+from collections.abc import Mapping
+from dataclasses import asdict
+from io import BytesIO
+from pathlib import Path, PurePosixPath
+from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .ci_authority_state import CandidateIdentity
-from .controller_custody import authority_identity, validate_controller_custody
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import packaged_repo_root
 from .ci_github_bundle import canonical_json, prepare_output, write_exclusive
@@ -31,6 +31,7 @@ from .ci_github_identity import (
     positive_int,
     resolve_main,
 )
+from .controller_custody import authority_identity, validate_controller_custody
 from .github_protection import (
     PROTECTION_PATH,
     inspect_protection_declaration,
@@ -38,7 +39,6 @@ from .github_protection import (
 )
 from .protection_inspection_client import ProtectionInspectionClient
 from .provider_job_inventory import candidate_governance_job_inventory
-
 
 FINALIZER_WORKFLOW = ".github/workflows/bcf-pr-finalizer.yml"
 POLICY_PATH = "governance/self-governance-policy.yml"
@@ -393,7 +393,7 @@ def _controller_authority(
     runner = policy.get("runner_security")
     pin = runner.get("trusted_controller_artifact") if isinstance(runner, dict) else None
     installed = runner.get("trusted_controller_installation") if isinstance(runner, dict) else None
-    if not isinstance(pin, dict) or not isinstance(installed, dict):
+    if not isinstance(runner, dict) or not isinstance(pin, dict) or not isinstance(installed, dict):
         raise GitHubControllerError("trusted controller custody is incomplete")
     target = exact_sha(pin.get("BCF_BOOTSTRAP_COMMIT_SHA"), field="controller target")
     current = exact_sha(installed.get("installed_commit_sha"), field="installed controller")
@@ -493,7 +493,7 @@ def transport_prior_evidence(
         and value.get("id") == "governance"
         and value.get("state") == "successful"
     ] if isinstance(producers, list) else []
-    if len(successful) != 1 or len(producers) != 1:
+    if not isinstance(producers, list) or len(successful) != 1 or len(producers) != 1:
         raise GitHubControllerError("PR finalization producer inventory is not exact")
     producer = successful[0]
     producer_run = str(positive_int(producer.get("run_id"), field="producer run ID"))

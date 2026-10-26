@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from .ci_github_api import GitHubAPI, GitHubAPIConflictError
 from .ci_github_artifacts import provider_digest

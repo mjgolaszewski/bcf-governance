@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
+import sys
 from pathlib import Path
 
 from .release_receipts import ReleaseReceiptError, build_release_receipt, emit_release_receipt
@@ -43,8 +43,8 @@ def main(argv: list[str] | None = None) -> None:
             prior_transport_dir=args.prior_evidence_dir,
         )
     except TruthfulnessError as exc:
-        print(str(exc), file=os.sys.stderr)
-        raise SystemExit(1)
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(1) from exc
     if args.durable_ref:
         report["durable_ref"] = args.durable_ref
     rendered = json.dumps(

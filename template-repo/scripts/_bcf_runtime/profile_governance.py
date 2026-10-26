@@ -14,7 +14,6 @@ from .governance_profiles import apply_profile_contract, promote
 from .semantic_authority_commands import _apply_config, _load_config
 from .semantic_authority_contracts import capability_states
 
-
 MANAGED_PROFILE_PATHS = (
     "governance-profile.yml",
     "governance/evidence-policy.yml",
@@ -35,8 +34,8 @@ def _render_in_shadow(
     config: Path | None,
     shadow: Path,
     contract_version: str | None,
-    semantic_config: dict | None,
-) -> dict:
+    semantic_config: dict[str, object] | None,
+) -> dict[str, object]:
     contract = promote(
         repo_root, target, config, contract_version=contract_version
     )
@@ -75,8 +74,8 @@ def _check(
     target: str,
     config: Path | None,
     contract_version: str | None,
-    semantic_config: dict | None,
-) -> dict:
+    semantic_config: dict[str, object] | None,
+) -> dict[str, object]:
     with tempfile.TemporaryDirectory(prefix="bcf-profile-check-") as temporary:
         shadow = Path(temporary) / "repo"
         copy_repository_shadow(repo_root, shadow, preserve_git_history=True)
@@ -170,12 +169,15 @@ def main(argv: list[str] | None = None) -> None:
             preserve_git_history=True,
         )
         status = "profile-promotion-applied"
+    gates = contract["gates"]
+    if not isinstance(gates, dict):
+        raise ValueError("profile contract gates must be an object")
     payload = {
         "status": "pass",
         "operation": status,
         "target_profile": args.to,
         "profile_contract_version": contract["profile_contract_version"],
-        "required_gates": sorted(contract["gates"]),
+        "required_gates": sorted(gates),
     }
     if args.format == "json":
         print(json.dumps(payload, sort_keys=True))

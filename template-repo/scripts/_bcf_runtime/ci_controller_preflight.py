@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import re
-from typing import Any, Callable, Mapping
+from collections.abc import Callable, Mapping
+from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -51,7 +52,7 @@ def self_controller_preflight(
     pr_base_sha: str | None = None,
     transported_authority: Mapping[str, Any] | None = None,
     self_verifier: Callable[[Path], int] = verify_self_controller_projection,
-    compatibility_verifier: Callable[..., None] = verify_trusted_controller_compatibility,
+    compatibility_verifier: Callable[..., object] = verify_trusted_controller_compatibility,
     bootstrap_verifier: Callable[..., None] = verify_pr_bootstrap_compatibility,
     alternate_lane: Callable[[Path], bool] = ordinary_alternate_lane_available,
 ) -> int | dict[str, Any]:

@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import tempfile
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import yaml
@@ -30,7 +30,6 @@ from .ci_graph_controller_lifecycle import (
 )
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
 from .ci_graph_render import apply_ci_graph, check_ci_graph
-
 
 PIN_KEYS = (
     "BCF_BOOTSTRAP_ARTIFACT_ID",
@@ -584,6 +583,8 @@ def verify_self_controller_projection(repo_root: Path) -> int:
         if isinstance(runner_security, dict)
         else None
     )
+    if not isinstance(pin, dict):
+        raise GitHubControllerError("trusted controller pin is missing")
     result = project_self_controller_pin(root, pin=pin, apply=False)
     if result.status != "clean":
         raise GitHubControllerError(
@@ -594,7 +595,8 @@ def verify_self_controller_projection(repo_root: Path) -> int:
     except CIGraphError as exc:
         raise GitHubControllerError(str(exc)) from exc
     return 1 + sum(
-        job["trust"] == "trusted"
+        1
         for workflow in compiled.workflows
         for job in workflow["jobs"]
+        if job["trust"] == "trusted"
     )

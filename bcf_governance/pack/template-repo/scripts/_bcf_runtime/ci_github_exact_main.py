@@ -2,23 +2,24 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import UTC, datetime
 import hashlib
 import json
-from pathlib import Path
 import secrets
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from .ci_authority_certification import (
     normalize_ci_certification,
     verify_ci_certification,
 )
+from .ci_authority_contracts import authority_role_workflow
 from .ci_authority_decisions import (
     StatusConclusion,
     status_context_for_evaluation,
 )
-from .ci_authority_contracts import authority_role_workflow
+from .ci_exact_main_truth import authenticated_exact_main_truth
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import (
     authenticate_role_run,
@@ -31,9 +32,6 @@ from .ci_github_bundle import (
     verify_bundle,
     write_exclusive,
 )
-from .ci_exact_main_truth import authenticated_exact_main_truth
-from .controller_custody import require_controller_execution, validate_controller_custody
-from .ci_reuse_attestation_verifier import verify_same_admission_reuse
 from .ci_github_identity import (
     GitHubControllerError,
     resolve_main,
@@ -49,6 +47,8 @@ from .ci_github_membership import (
 )
 from .ci_github_status import publish as publish_bundle
 from .ci_github_status import publish_observation
+from .ci_reuse_attestation_verifier import verify_same_admission_reuse
+from .controller_custody import require_controller_execution, validate_controller_custody
 from .evaluation_scope import EvaluationIntent, evaluation_scope
 from .routine_controller_admission_custody import authenticate_admission_custody
 from .routine_controller_provider import resolve_effective_controller

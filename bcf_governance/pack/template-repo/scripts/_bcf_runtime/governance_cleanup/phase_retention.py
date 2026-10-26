@@ -9,10 +9,10 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .models import CleanupAction
-from .truth_reports import load_truth_reports
+from .truth_reports import load_truth_reports as load_truth_reports
 
 ARCHIVABLE_PHASE_STATUSES = {"completed"}
 DEFAULT_PHASE_ARCHIVE_ROOT = "governance/archive/phase-artifacts"
@@ -225,11 +225,12 @@ def _build_phase_ids(repo_root: Path) -> list[str]:
     phase_sequence = build_plan.get("phase_sequence")
     if not isinstance(phase_sequence, list):
         return []
-    phase_ids = [
-        phase.get("phase_id")
-        for phase in phase_sequence
-        if isinstance(phase, dict) and isinstance(phase.get("phase_id"), str)
-    ]
+    phase_ids: list[str] = []
+    for phase in phase_sequence:
+        if isinstance(phase, dict):
+            phase_id = phase.get("phase_id")
+            if isinstance(phase_id, str):
+                phase_ids.append(phase_id)
     return sorted(phase_ids, key=_phase_number)
 
 
@@ -519,14 +520,18 @@ def _phase_history_entry(
     product_spec = _load_yaml(repo_root / "plans" / "product-spec.yml") or {}
     build_plan = _load_yaml(repo_root / "plans" / "build-plan.yml") or {}
 
-    phase = plan.get("phase") if isinstance(plan.get("phase"), dict) else {}
-    summary = log.get("summary") if isinstance(log.get("summary"), dict) else {}
-    document = log.get("document") if isinstance(log.get("document"), dict) else {}
-    execution_evidence = (
-        log.get("execution_evidence")
-        if isinstance(log.get("execution_evidence"), dict)
-        else {}
-    )
+    phase = plan.get("phase")
+    if not isinstance(phase, dict):
+        phase = {}
+    summary = log.get("summary")
+    if not isinstance(summary, dict):
+        summary = {}
+    document = log.get("document")
+    if not isinstance(document, dict):
+        document = {}
+    execution_evidence = log.get("execution_evidence")
+    if not isinstance(execution_evidence, dict):
+        execution_evidence = {}
     release_train = None
     for entry in product_spec.get("execution_phases", []) or []:
         if isinstance(entry, dict) and entry.get("phase_id") == phase_id:

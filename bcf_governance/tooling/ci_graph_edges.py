@@ -53,7 +53,7 @@ def _reusable_target(
     if executor["kind"] != "reusable_workflow":
         return None
     path = executor["path"]
-    matches = [workflow["id"] for workflow in workflows if workflow["path"] == path]
+    matches: list[str] = [workflow["id"] for workflow in workflows if workflow["path"] == path]
     if len(matches) != 1:
         raise CIGraphError(
             f"reusable workflow edge for job {job['id']} does not resolve exactly once"

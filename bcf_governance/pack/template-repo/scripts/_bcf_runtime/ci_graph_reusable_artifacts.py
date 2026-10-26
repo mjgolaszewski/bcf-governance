@@ -7,7 +7,6 @@ from typing import Any
 
 from .ci_graph_errors import CIGraphError
 
-
 _PERMISSION_LEVEL = {"none": 0, "read": 1, "write": 2}
 
 

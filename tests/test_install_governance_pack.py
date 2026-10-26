@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import importlib.util
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -9,6 +9,7 @@ import subprocess
 import sys
 import venv
 from pathlib import Path
+from types import ModuleType
 
 import pytest
 import yaml
@@ -87,7 +88,7 @@ def _candidate_source_runtime(root: Path) -> tuple[Path, dict[str, str]]:
     return python, environment
 
 
-def _load_installer_module():
+def _load_installer_module() -> ModuleType:
     spec = importlib.util.spec_from_file_location("install_governance_pack", INSTALLER)
     assert spec is not None
     assert spec.loader is not None

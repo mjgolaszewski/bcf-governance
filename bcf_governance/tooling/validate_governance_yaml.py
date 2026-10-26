@@ -2,18 +2,13 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 _SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
-from .governance_validation.runner import (  # noqa: E402
-    GovernanceValidationError,
-    main,
-    validate_repo_root,
-)
 from .governance_validation.common import (  # noqa: E402
     MAKE_INVOKED_TARGET_PATTERN,
     PLACEHOLDER_PATTERN,
@@ -27,6 +22,11 @@ from .governance_validation.release_gates import (  # noqa: E402
     _release_gate_makefile_path,
     _release_gates_from_profile,
     _validate_release_gate_command_semantics,
+)
+from .governance_validation.runner import (  # noqa: E402
+    GovernanceValidationError,
+    main,
+    validate_repo_root,
 )
 
 __all__ = [

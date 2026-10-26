@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
 import hashlib
 import io
 import json
-from pathlib import Path, PurePosixPath
 import tempfile
-from typing import Any
 import zipfile
+from dataclasses import asdict
+from pathlib import Path, PurePosixPath
+from typing import Any
 
 import yaml
 
@@ -34,7 +34,6 @@ from .ci_github_identity import (
 from .ci_pr_transition import transition_is_applicable, verify_transition_equivalence
 from .github_protection import PROTECTION_PATH, load_protection_bytes
 from .governance_truth import TruthfulnessError, derive_truth
-
 
 FINALIZER_WORKFLOW = ".github/workflows/bcf-pr-finalizer.yml"
 PUBLISHER_WORKFLOW = ".github/workflows/bcf-pr-status-publisher.yml"
@@ -571,7 +570,11 @@ def _existing_observation(run: dict[str, Any], *, subject: str) -> StatusObserva
         ("completed", "success"): StatusConclusion.SUCCESS,
         ("completed", "failure"): StatusConclusion.FAILURE,
     }
-    key = (run.get("status"), run.get("conclusion"))
+    status = run.get("status")
+    conclusion = run.get("conclusion")
+    if not isinstance(status, str) or (conclusion is not None and not isinstance(conclusion, str)):
+        raise GitHubControllerError("published PR check has unsupported state")
+    key = (status, conclusion)
     if key not in conclusions:
         raise GitHubControllerError("published PR check has unsupported state")
     return StatusObservation(

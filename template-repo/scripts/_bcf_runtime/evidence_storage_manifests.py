@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 import hashlib
-from pathlib import Path
 import tempfile
-from typing import Any, Iterable
+from collections.abc import Iterable
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from .evidence_storage_archives import InputSpec, build_archive, materialize_bundle
 from .evidence_storage_contracts import (
@@ -19,7 +20,6 @@ from .evidence_storage_contracts import (
     sha256_bytes,
     validate_freshness,
 )
-
 
 MANIFEST_NAME = "evidence-input-manifest.json"
 CONTRACT_NAME = "evidence-storage.yml"

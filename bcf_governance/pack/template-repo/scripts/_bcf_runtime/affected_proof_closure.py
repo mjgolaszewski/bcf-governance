@@ -9,15 +9,15 @@ from __future__ import annotations
 import fnmatch
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from pathlib import Path
+from typing import Any
 
 from .evidence_execution import EvidenceError
 from .semantic_derivations import legacy_generated_projections
 from .semantic_ownership_registry import load_registry
-
 
 DEPENDENCY_CLASSES = (
     "subject",

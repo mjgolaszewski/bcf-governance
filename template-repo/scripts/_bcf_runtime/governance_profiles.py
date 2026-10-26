@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .application_assurance_graph import (
     ApplicationAssuranceGraphError,
@@ -20,12 +20,14 @@ from .interpreter_contract_projection import (
 )
 from .profile_surface_generation import (
     write_makefile as render_makefile,
+)
+from .profile_surface_generation import (
     write_workflow as render_workflow,
 )
-from .profile_yaml import render_governance_profile, render_profile_surface
 from .profile_v2_surfaces import apply_profile_v2_artifact_defaults
+from .profile_yaml import render_governance_profile
+from .profile_yaml import render_profile_surface as render_profile_surface
 from .yaml_mutations import YAMLMutationPathError, mutation_mode
-
 
 BUILTIN_TARGETS = {"governance-validate", "governance-exposure-scan"}
 PROFILE_ORDER = {"lite": 0, "standard": 1, "regulated": 2}

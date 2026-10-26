@@ -6,18 +6,32 @@ import argparse
 import base64
 import hashlib
 import json
-import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
-from .evidence_attestation import attest_bundle, bundle_digest
+from .bootstrap.contracts import EvidenceSettings, WorkflowSettings
+from .bootstrap.environment import evidence_settings as _default_evidence_settings
+from .bootstrap.environment import workflow_settings as _default_workflow_settings
+from .ci_graph_contracts import GRAPH_PATH, CIGraphError
+from .ci_graph_locks import apply_ci_graph_locks
+from .ci_graph_render import apply_ci_graph
+from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .evidence_attestation import attest_bundle
+from .evidence_attestation import bundle_digest as bundle_digest
+from .evidence_claims import (
+    capture_subject_preflight,
+    claim_capture,
+    claim_receipt_fields,
+    legacy_gates_requiring_qualification,
+)
 from .evidence_execution import (
     EvidenceError,
     _command,
@@ -28,45 +42,49 @@ from .evidence_execution import (
 from .evidence_gate_contracts import (
     _gate_contract,
     _load_yaml,
-    expected_evidence_kinds,
-    expected_invocations,
 )
-from .evidence_claims import (
-    capture_subject_preflight,
-    claim_capture,
-    claim_receipt_fields,
-    legacy_gates_requiring_qualification,
+from .evidence_gate_contracts import (
+    expected_evidence_kinds as expected_evidence_kinds,
 )
+from .evidence_gate_contracts import (
+    expected_invocations as expected_invocations,
+)
+from .evidence_output_artifacts import (
+    _sha256 as _sha256,
+)
+from .evidence_output_artifacts import (
+    _write_output_artifacts as _write_output_artifacts,
+)
+from .evidence_session_inputs import bind_current_session_inputs
 from .evidence_sessions import (
     allocate_session,
     bind_session,
     local_producer_identity,
+    receipt_workflow_identity,
     select_session,
 )
-from .evidence_sessions import receipt_workflow_identity
-from .evidence_session_inputs import bind_current_session_inputs
 from .evidence_storage_projection import install_durable_inputs as _install_durable_inputs
+from .evidence_test_adapters import captured_receipt_succeeded
 from .evidence_test_adapters import (
-    captured_receipt_succeeded,
-    recompute_test_artifact_observations,
+    recompute_test_artifact_observations as recompute_test_artifact_observations,
+)
+from .evidence_test_adapters import (
     test_observations as _test_observations,
 )
 from .negative_control_execution import (
     NegativeControlCommandError,
-    NegativeControlOracleExecution,
     execute_cross_gate_baseline,
     junit_nodes,
     negative_control_command,
     oracle_junit_node_ids,
-    resolve_negative_control_oracle, selected_oracle_manifest_index,
+    resolve_negative_control_oracle,
+    selected_oracle_manifest_index,
 )
-from .test_manifests import TestManifestError
-from .ci_graph_contracts import CIGraphError, GRAPH_PATH
-from .ci_graph_locks import apply_ci_graph_locks
-from .ci_graph_render import apply_ci_graph
-from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .negative_control_execution import (
+    NegativeControlOracleExecution as NegativeControlOracleExecution,
+)
+from .test_manifests import PytestSelectorMap, TestManifestError
 from .yaml_mutations import YAMLMutationPathError, replace_yaml_value_bytes, typed_mutation_value
-
 
 RECEIPT_SUFFIX = ".evidence.json"
 
@@ -81,31 +99,6 @@ def _git(repo_root: Path, *args: str, check: bool = True) -> str:
     if check and result.returncode != 0:
         raise EvidenceError(result.stderr.strip() or f"git {' '.join(args)} failed")
     return result.stdout.strip()
-
-
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def _write_output_artifacts(
-    output_dir: Path, gate_id: str, result: subprocess.CompletedProcess[str]
-) -> list[dict[str, str]]:
-    artifacts: list[dict[str, str]] = []
-    for suffix, value in (("stdout", result.stdout), ("stderr", result.stderr)):
-        path = output_dir / f"{gate_id}.{suffix}.txt"
-        path.write_text(value, encoding="utf-8")
-        artifacts.append(
-            {
-                "path": path.name,
-                "media_type": "text/plain",
-                "sha256": _sha256(path),
-            }
-        )
-    return artifacts
 
 
 def _tracked_mutation_path(worktree: Path, relative_path: object) -> Path | None:
@@ -295,7 +288,7 @@ def _negative_control_results(
         return [], []
     try:
         manifest_index = selected_oracle_manifest_index(repo_root, controls)
-        selector_maps = {}
+        selector_maps: dict[str, PytestSelectorMap] = {}
         oracle_executions = {
             str(control.get("id", f"control-{index}")): resolve_negative_control_oracle(
                 repo_root,
@@ -517,10 +510,14 @@ def capture_gate(
     gate_id: str,
     output_dir: Path,
     *,
-    python_executable: str | Path | None = None,
-    session_manifest: Path | None = None,
-    job_environment: dict[str, str] | None = None,
+    python_executable: str | Path | None=None,
+    session_manifest: Path | None=None,
+    job_environment: dict[str, str] | None=None,
+    evidence_settings: EvidenceSettings | None=None,
+    workflow_settings: WorkflowSettings | None=None,
 ) -> Path:
+    evidence_settings = _default_evidence_settings() if evidence_settings is None else evidence_settings
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
     repo_root = repo_root.resolve()
     caller_state = capture_subject_preflight(repo_root, output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -646,12 +643,10 @@ def capture_gate(
     default_producer_kind = (
         "workflow"
         if session_kind == "workflow"
-        or (session is None and os.environ.get("GITHUB_ACTIONS") == "true")
+        or (session is None and workflow_settings.actions() == "true")
         else "service"
     )
-    producer_kind = os.environ.get(
-        "BCF_EVIDENCE_PRODUCER_KIND", default_producer_kind
-    )
+    producer_kind = evidence_settings.producer_kind(default_producer_kind)
     if producer_kind not in {"human", "model", "service", "workflow"}:
         raise EvidenceError("BCF_EVIDENCE_PRODUCER_KIND must be human, model, service, or workflow")
     receipt = {
@@ -666,9 +661,9 @@ def capture_gate(
         ),
         "producer": {
             "kind": producer_kind,
-            "id": os.environ.get("BCF_EVIDENCE_PRODUCER_ID")
-            or os.environ.get("GITHUB_ACTOR")
-            or os.environ.get("USER")
+            "id": evidence_settings.producer_id()
+            or evidence_settings.actor()
+            or evidence_settings.user()
             or "bcf-evidence",
         },
         "invocation": {
@@ -785,8 +780,8 @@ def main(argv: list[str] | None = None) -> None:
                 args.actor_kind,
             )
     except (ValueError, subprocess.CalledProcessError) as exc:
-        print(str(exc), file=os.sys.stderr)
-        raise SystemExit(1)
+        print(str(exc), file=sys.stderr)
+        raise SystemExit(1) from exc
     print(path)
     if args.operation == "run" and not captured_receipt_succeeded(path):
         raise SystemExit(1)

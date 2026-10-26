@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from enum import StrEnum
 import re
-from typing import Any, Mapping
+from collections.abc import Mapping
+from enum import StrEnum
+from typing import Any
 
 from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import GitHubControllerError, positive_int

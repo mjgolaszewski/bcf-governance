@@ -1,18 +1,18 @@
 """Authority-v1.1 release authorization, verification, collection, and inspection."""
 from __future__ import annotations
 
-from dataclasses import asdict
-from datetime import UTC, datetime
 import hashlib
 import json
-from pathlib import Path
 import re
-from typing import Any, Iterable
+from collections.abc import Iterable
+from dataclasses import asdict
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from .ci_authority_certification import verify_ci_certification
 from .ci_authority_contracts import authority_role_workflow
 from .ci_github_api import GitHubAPI
-from .ci_github_bootstrap import verify_controller_inventory, verify_controller_subject_metadata
 from .ci_github_artifacts import (
     authenticate_role_artifact,
     provider_artifact_reference,
@@ -26,24 +26,27 @@ from .ci_github_authority import (
     load_authority,
     packaged_repo_root,
 )
-from .ci_github_release_collection import authenticate_release_collection_roles
+from .ci_github_bootstrap import verify_controller_inventory, verify_controller_subject_metadata
 from .ci_github_bundle import verify_bundle, write_exclusive
 from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
 from .ci_github_membership import select_latest_admission
+from .ci_github_release_collection import authenticate_release_collection_roles
 from .controller_custody import require_controller_execution, validate_controller_custody
+from .evaluation_scope import is_terminal_phase_certification
 from .release_asset_inventory import (
     exact_assets,
     verify_checksum_inventory,
 )
 from .release_closure import verify_archive, verify_release_lock, verify_wheelhouse
+from .release_publication_transaction import inspect_release as inspect_release
+from .release_publication_transaction import publish_release
 from .release_receipts import build_trusted_release_receipt, emit_release_receipt
 from .release_runtime_verification import verify_runtime_evidence
 from .release_source_bindings import (
     release_source_bindings,
     verify_release_source_bindings,
 )
-from .release_publication_transaction import inspect_release, publish_release
-from .evaluation_scope import is_terminal_phase_certification
+
 
 def _now() -> str:
     return datetime.now(UTC).isoformat().replace("+00:00", "Z")

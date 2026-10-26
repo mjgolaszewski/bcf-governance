@@ -5,15 +5,16 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .evidence_shards import workflow_shard_matrix
+from .ci_graph_builders import ComponentActionInputs
+from .ci_graph_builders import component as _component
+from .ci_graph_builders import job as _job
 from .ci_graph_execution import direct_post_merge_mode
-from .ci_graph_builders import component as _component, job as _job
 from .ci_graph_pr_evaluator import apply_standard_pr_evaluator
+from .evidence_shards import workflow_shard_matrix
 from .repository_comparison_context import (
     comparison_base_input_contract,
     push_comparison_inputs,
 )
-
 
 EXTENSION_POINTS = [
     "preflight",
@@ -189,11 +190,11 @@ def _v3_components() -> dict[str, Any]:
     return {
         "checkout-candidate": _component(
             kind="action", name="Check out the exact candidate commit", action="checkout",
-            **{"with": {"fetch-depth": 0, "persist-credentials": False}},
+            **ComponentActionInputs({"with": {"fetch-depth": 0, "persist-credentials": False}}),
         ),
         "setup-python": _component(
             kind="action", name="Provision the declared Python runtime", action="setup-python",
-            **{"with": {"python-version": "3.12"}},
+            **ComponentActionInputs({"with": {"python-version": "3.12"}}),
         ),
         "install-governance": _component(
             kind="command", name="Install the declared governance environment",
@@ -210,18 +211,18 @@ def _v3_components() -> dict[str, Any]:
         "upload-session": _component(
             kind="action", name="Upload the exact evidence session", action="upload-artifact",
             produces=["evidence-session"],
-            **{"with": {
+            **ComponentActionInputs({"with": {
                 "name": "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}",
                 "path": ".artifacts/bcf/sessions", "if-no-files-found": "error", "retention-days": 30,
-            }},
+            }}),
         ),
         "download-session": _component(
             kind="action", name="Download this attempt's evidence session", action="download-artifact",
             consumes=["evidence-session"],
-            **{"with": {
+            **ComponentActionInputs({"with": {
                 "name": "bcf-session-${{ github.run_id }}-${{ github.run_attempt }}",
                 "path": ".artifacts/bcf/sessions",
-            }},
+            }}),
         ),
         "restore-session-modes": _component(
             kind="command", name="Restore downloaded evidence-session modes",
@@ -234,18 +235,18 @@ def _v3_components() -> dict[str, Any]:
         "upload-receipts": _component(
             kind="action", name="Upload this attempt's exact evidence shard", action="upload-artifact",
             condition="always-step", produces=["governance-receipts"],
-            **{"with": {
+            **ComponentActionInputs({"with": {
                 "name": "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-shard-${{ matrix.shard }}",
                 "path": ".artifacts/bcf/sessions", "if-no-files-found": "error", "retention-days": 30,
-            }},
+            }}),
         ),
         "download-receipts": _component(
             kind="action", name="Download only this attempt's evidence shards", action="download-artifact",
             condition="evidence-prerequisites-green", consumes=["governance-receipts"],
-            **{"with": {
+            **ComponentActionInputs({"with": {
                 "pattern": "bcf-evidence-${{ github.run_id }}-${{ github.run_attempt }}-*",
                 "path": ".artifacts/bcf/fan-in",
-            }},
+            }}),
         ),
         "restore-receipt-modes": _component(
             kind="command", name="Restore private evidence-session modes",
@@ -265,10 +266,10 @@ def _v3_components() -> dict[str, Any]:
         "upload-truth": _component(
             kind="action", name="Upload this attempt's terminal truth report", action="upload-artifact",
             condition="always-step", produces=["truth-report"],
-            **{"with": {
+            **ComponentActionInputs({"with": {
                 "name": "bcf-governance-truth-${{ github.run_id }}-${{ github.run_attempt }}",
                 "path": ".artifacts/bcf/truth-report.json", "if-no-files-found": "error", "retention-days": 30,
-            }},
+            }}),
         ),
     }
 
