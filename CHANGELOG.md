@@ -17,6 +17,8 @@ Release target: `2.3.8`
   pytest declarations while retaining Hatch support and rejecting ambiguous,
   unsafe or incomplete root inventories.
 
+- Cover runtime quality, launcher publication, warm reuse and existing-adoption
+  transitions in the same-candidate release state matrix.
 - Run real strict typing and lint checks across the portable governance runtime
   and standalone wrappers, using declared typing and lint dependencies.
 - Resolve governance environment settings through narrow injected capabilities,
