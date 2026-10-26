@@ -17,6 +17,8 @@ execution_evidence:
   - bcf ci submit --repo-root .
   executed_commands:
   - Allocation20322 reproduced both ordinary and recovery stale topology contract failures before the repair; independently verified physical closure.
+  - Allocation20327 full native reconciliation passed and native owner committed definition eaa9236e and authority5ef73f2f; production lint and21 release workflow tests passed.
+  - Allocation20328 passed227 expanded regression cases; one existing environment-preflight test incorrectly applied trusted no-checkout path scoping to candidate builder input. Test now asserts actual declared trust/checkout boundaries with original full-binding equality retained.
   notes:
   - Allocation20325 rejected missing local-route primitive on migration of an existing graph; primitive now belongs to the shared native builder migration owner for both installed and fresh graphs. No hand-authored generated graph.
   - Allocation20323 rejected graph generation because the reused downloaded-custody component declared an external artifact input. The builder now uses a local-input component over the identical existing route command; no graph validator relaxation.

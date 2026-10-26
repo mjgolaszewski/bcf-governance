@@ -303,7 +303,12 @@ def test_every_required_environment_is_validated_once_before_generated_work() ->
             observed += 1
             first = projection["jobs"][job["id"]]["steps"][0]
             assert first["name"] == "Validate all required environment inputs before work"
-            assert first["env"] == scope_runner_temp_value(bindings)
+            expected = (
+                scope_runner_temp_value(bindings)
+                if job["trust"] == "trusted" and job["checkout"] is False
+                else bindings
+            )
+            assert first["env"] == expected
     assert observed > 0
 
 
