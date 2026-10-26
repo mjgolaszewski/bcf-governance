@@ -17,6 +17,8 @@ Release target: `2.3.8`
   pytest declarations while retaining Hatch support and rejecting ambiguous,
   unsafe or incomplete root inventories.
 
+- Keep the scheduled validator exit mutation aligned with exception chaining
+  while preserving its original nonzero-exit oracle.
 - Cover runtime quality, launcher publication, warm reuse and existing-adoption
   transitions in the same-candidate release state matrix.
 - Run real strict typing and lint checks across the portable governance runtime
