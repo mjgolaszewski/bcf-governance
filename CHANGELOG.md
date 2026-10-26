@@ -6,7 +6,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-## [2.3.8]
+Release target: `2.3.8`
 
 ### Fixed
 
@@ -25,7 +25,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 - Preserve Python 3.11 and existing reconciliation action bindings while sharing
   one characterized frozen action contract.
 
-## [2.3.7]
+## [2.3.7] - 2026-10-24
 
 ### Added
 
@@ -1624,8 +1624,7 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.8...HEAD
-[2.3.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.7...v2.3.8
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.7...HEAD
 [2.3.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.6...v2.3.7
 [2.3.6]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.5...v2.3.6
 [2.1.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.7...v2.1.8
