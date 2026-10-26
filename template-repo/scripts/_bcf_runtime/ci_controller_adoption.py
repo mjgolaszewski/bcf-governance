@@ -2,25 +2,25 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import shutil
 import tempfile
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
-from .ci_graph_contracts import validate_ci_graph
-from .ci_graph_render import apply_ci_graph
-from .ci_graph_yaml import load_yaml_path, render_yaml
-from .governance_install.ci_graph import apply_trusted_controller_management
-from .governance_install.transaction import apply_transaction
-from .trusted_controller_compatibility import verify_trusted_controller_compatibility
-from .github_protection import PROTECTION_PATH
 from .ci_controller_policy import (
     POLICY_PATH,
     ROTATION_EXTENSION,
     TrustedControllerPolicyError,
     validate_installed_controller_policy,
 )
+from .ci_graph_contracts import validate_ci_graph
+from .ci_graph_render import apply_ci_graph
+from .ci_graph_yaml import load_yaml_path, render_yaml
+from .github_protection import PROTECTION_PATH
+from .governance_install.ci_graph import apply_trusted_controller_management
+from .governance_install.transaction import apply_transaction
+from .trusted_controller_compatibility import verify_trusted_controller_compatibility
 
 
 @dataclass(frozen=True)

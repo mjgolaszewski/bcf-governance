@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import shutil
 import subprocess
 import sys
@@ -18,6 +17,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .semantic_ownership_registry import Registry
 
 
@@ -132,8 +133,14 @@ def _tree_hashes(root: Path, omitted: set[str]) -> dict[str, str]:
 
 
 def _reproduce_outputs(
-    repo_root: Path, entry: dict[str, Any], argv: list[str], outputs: list[str]
+    repo_root: Path,
+    entry: dict[str, Any],
+    argv: list[str],
+    outputs: list[str],
+    *,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> None:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
     with tempfile.TemporaryDirectory(prefix="bcf-semantic-derivation-") as temporary:
         shadow = Path(temporary) / "repo"
         shutil.copytree(
@@ -151,7 +158,7 @@ def _reproduce_outputs(
             if path.exists():
                 path.unlink()
         command = [sys.executable, *argv[1:]] if Path(argv[0]).name.startswith("python") else argv
-        environment = dict(os.environ)
+        environment = process_environment.snapshot()
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
         result = subprocess.run(
             command,

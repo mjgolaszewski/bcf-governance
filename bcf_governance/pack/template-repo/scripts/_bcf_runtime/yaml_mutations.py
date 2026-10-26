@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import base64
 import copy
-from dataclasses import dataclass
 import re
+from dataclasses import dataclass
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
-from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode  # type: ignore[import-untyped]
-
+import yaml
+from yaml.nodes import MappingNode, Node, ScalarNode, SequenceNode
 
 _SELECTOR = re.compile(r"^(?P<key>[^\[\]]+)\[(?P<field>[A-Za-z_][A-Za-z0-9_-]*)=(?P<value>[^\[\]]+)\]$")
 
@@ -131,28 +130,33 @@ def resolve_yaml_target(payload: Any, path: str) -> YAMLMutationTarget:
     if isinstance(current, list):
         if not final.isdigit() or int(final) >= len(current):
             raise YAMLMutationPathError(f"YAML assignment index {final!r} is absent")
-        key: str | int = int(final)
+        return YAMLMutationTarget(current, int(final), current[int(final)])
     elif isinstance(current, dict):
         if final not in current:
             raise YAMLMutationPathError(f"YAML assignment key {final!r} is absent")
-        key = final
+        return YAMLMutationTarget(current, final, current[final])
     else:
         raise YAMLMutationPathError("YAML assignment parent is not a container")
-    return YAMLMutationTarget(current, key, current[key])
 
 
 def assign_yaml_value(payload: Any, path: str, value: Any) -> Any:
     """Assign a value only after the typed path resolves exactly once."""
 
     target = resolve_yaml_target(payload, path)
-    target.container[target.key] = value
+    if isinstance(target.container, list) and isinstance(target.key, int):
+        target.container[target.key] = value
+    elif isinstance(target.container, dict) and isinstance(target.key, str):
+        target.container[target.key] = value
+    else:
+        raise YAMLMutationPathError("resolved YAML assignment container/key mismatch")
     return target.value
 
 
 def _mapping_value(node: Node, key: str) -> Node:
     if not isinstance(node, MappingNode):
         raise YAMLMutationPathError(f"YAML node containing {key!r} is not a mapping")
-    matches = [value for raw_key, value in node.value if isinstance(raw_key, ScalarNode) and raw_key.value == key]
+    pairs: list[tuple[Node, Node]] = node.value
+    matches = [value for raw_key, value in pairs if isinstance(raw_key, ScalarNode) and raw_key.value == key]
     if len(matches) != 1:
         raise YAMLMutationPathError(f"YAML mapping key {key!r} resolved {len(matches)} values")
     return matches[0]
@@ -164,8 +168,9 @@ def _node_step(current: Node, segment: str) -> Node:
         values = _mapping_value(current, selector["key"])
         if not isinstance(values, SequenceNode):
             raise YAMLMutationPathError(f"selected YAML value {selector['key']!r} is not a list")
-        matches = []
-        for item in values.value:
+        matches: list[Node] = []
+        items: list[Node] = values.value
+        for item in items:
             try:
                 identity = _mapping_value(item, selector["field"])
             except YAMLMutationPathError:
@@ -180,7 +185,8 @@ def _node_step(current: Node, segment: str) -> Node:
     if isinstance(current, SequenceNode):
         if not segment.isdigit() or int(segment) >= len(current.value):
             raise YAMLMutationPathError(f"YAML assignment index {segment!r} is absent")
-        return current.value[int(segment)]
+        sequence: list[Node] = current.value
+        return sequence[int(segment)]
     return _mapping_value(current, segment)
 
 
@@ -188,7 +194,7 @@ def _yaml_value_node(source: str, path: str) -> Node:
     root = yaml.compose(source)
     if root is None:
         raise YAMLMutationPathError("YAML mutation source is empty")
-    current = root
+    current: Node = root
     for segment in _segments(path):
         current = _node_step(current, segment)
     return current

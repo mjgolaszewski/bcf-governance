@@ -3,21 +3,21 @@
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
 import json
-from pathlib import Path
 import tomllib
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
-from .release_versions import ReleaseVersionError, parse_release_version
-from .install_governance_pack import UPGRADE_PROJECT_OWNED_PATHS
 from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     active_planned_session_version,
 )
+from .install_governance_pack import UPGRADE_PROJECT_OWNED_PATHS
+from .release_versions import ReleaseVersionError, parse_release_version
 
 
 class PublicContractError(ValueError):
@@ -74,7 +74,8 @@ def _assignment(source: Path, name: str) -> ast.AST:
         if isinstance(node, (ast.Assign, ast.AnnAssign)):
             targets = node.targets if isinstance(node, ast.Assign) else [node.target]
             if any(isinstance(target, ast.Name) and target.id == name for target in targets):
-                return node.value
+                if node.value is not None:
+                    return node.value
     raise PublicContractError(f"{source} has no canonical {name} assignment")
 
 

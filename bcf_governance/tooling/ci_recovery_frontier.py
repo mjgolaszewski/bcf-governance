@@ -5,7 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 
 class RecoveryFrontierError(ValueError):
@@ -300,6 +301,7 @@ def controller_transition_frontier(value: Mapping[str, Any]) -> dict[str, Any]:
     """Project one validated routine decision into its sole governed operation."""
 
     decision = str(value.get("decision", ""))
+    subject = value.get("subject")
     if decision == "no_transition":
         custody = value.get("controller_custody")
         if not isinstance(custody, Mapping):
@@ -314,6 +316,7 @@ def controller_transition_frontier(value: Mapping[str, Any]) -> dict[str, Any]:
         transition_value = value.get("transition")
         if not isinstance(transition_value, Mapping):
             raise RecoveryFrontierError("routine transition identity is missing")
+        subject = transition_value.get("subject")
         authority = transition_value.get("authority")
         artifact = transition_value.get("artifact")
         if not isinstance(authority, Mapping) or not isinstance(artifact, Mapping):
@@ -333,11 +336,6 @@ def controller_transition_frontier(value: Mapping[str, Any]) -> dict[str, Any]:
         lane = lane_value if isinstance(lane_value, Mapping) else None
     else:
         raise RecoveryFrontierError("routine decision has no recovery frontier")
-    subject = (
-        transition_value.get("subject")
-        if decision == "routine_transition_authorized"
-        else value.get("subject")
-    )
     if not isinstance(subject, Mapping):
         raise RecoveryFrontierError("controller decision subject is missing")
     return compile_recovery_frontier(

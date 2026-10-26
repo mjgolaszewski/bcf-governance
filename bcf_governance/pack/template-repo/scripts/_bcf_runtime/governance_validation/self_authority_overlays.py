@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 from jsonschema import Draft202012Validator
 
 from ..pack_installation_scope import (

@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import re
+from dataclasses import dataclass
 
-from .automation_dependencies import DependencyTransition
 from .automation_contracts import AutomationContractError
+from .automation_dependencies import DependencyTransition
 
 
 @dataclass(frozen=True)
@@ -72,16 +72,16 @@ def render_automation_changelog(
             raise AutomationContractError(
                 "dependency transitions must cover every authenticated dependency path"
             )
-        rendered = []
+        rendered_lines = []
         for item in ordered:
             fields = (item.dependency, item.previous_version, item.new_version, *item.paths)
             if any(not value or "`" in value or "\n" in value or "\r" in value for value in fields):
                 raise AutomationContractError("dependency transition contains unsafe text")
-            rendered.append(
+            rendered_lines.append(
                 f"`{item.dependency}` from `{item.previous_version}` to `{item.new_version}` "
                 f"({', '.join(f'`{path}`' for path in item.paths)})"
             )
-        detail = "; ".join(rendered)
+        detail = "; ".join(rendered_lines)
     else:
         detail = ", ".join(f"`{path}`" for path in paths)
     entry = f"- Automated dependency update `{producer_id}` from PR #{pr_number}: {detail}."

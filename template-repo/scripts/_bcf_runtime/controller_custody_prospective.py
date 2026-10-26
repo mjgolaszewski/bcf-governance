@@ -2,29 +2,29 @@
 
 from __future__ import annotations
 
-import json
 import hashlib
-from pathlib import Path
+import json
 import shutil
 import subprocess
 import tempfile
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
 
+from .ci_controller_policy import validate_installed_controller_policy
 from .ci_github_identity import GitHubControllerError
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_defaults import build_reference_ci_graph
-from .ci_graph_yaml import render_yaml
 from .ci_graph_post_merge import post_merge_evaluation
+from .ci_graph_yaml import render_yaml
+from .controller_custody import compile_controller_custody
 from .governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
     project_trusted_controller_management,
     release_authority_enabled,
 )
-from .ci_controller_policy import validate_installed_controller_policy
-from .self_workflow_contracts import validate_self_workflow_contracts
-from .controller_custody import compile_controller_custody
 from .routine_controller_rotation import prospective_no_transition_topology
-
+from .self_workflow_contracts import validate_self_workflow_contracts
 
 _ADOPTER_TRUSTED_LABELS = ["Linux", "X64", "fixture", "self-hosted"]
 
@@ -131,7 +131,8 @@ def _workflow(graph: Mapping[str, Any], workflow_id: str) -> Mapping[str, Any]:
         raise GitHubControllerError(
             f"controller custody workflow {workflow_id} is not unique"
         )
-    return matches[0]
+    selected: Mapping[str, object] = matches[0]
+    return selected
 
 
 def _job(
@@ -143,7 +144,8 @@ def _job(
         raise GitHubControllerError(
             f"controller custody job {workflow_id}/{job_id} is not unique"
         )
-    return matches[0]
+    selected: Mapping[str, object] = matches[0]
+    return selected
 
 
 def _components(job: Mapping[str, Any]) -> tuple[str, ...]:
@@ -402,9 +404,11 @@ def validate_controller_custody_chain(
             raise GitHubControllerError(
                 "post-authorization controller materialization inherited authorize routing"
             )
-    components = graph.get("step_components")
-    upload = components.get("upload-finalizer-controller-custody", {})
-    download = components.get("download-finalizer-controller-custody", {})
+    component_definitions = graph.get("step_components")
+    if not isinstance(component_definitions, Mapping):
+        raise GitHubControllerError("controller custody step components are missing")
+    upload = component_definitions.get("upload-finalizer-controller-custody", {})
+    download = component_definitions.get("download-finalizer-controller-custody", {})
     if (
         upload.get("with")
         != {
@@ -479,14 +483,14 @@ def validate_controller_custody_chain(
     }:
         raise GitHubControllerError("release custody consumer topology is partial")
     for workflow_id in sorted(release_workflows):
-        route = _job(graph, workflow_id, "controller-route")
+        release_route = _job(graph, workflow_id, "controller-route")
         consumer_id = "authorize" if workflow_id == "release-authority" else "publish"
-        consumer = _job(graph, workflow_id, consumer_id)
+        release_consumer = _job(graph, workflow_id, consumer_id)
         if (
-            route.get("trust") != "candidate"
-            or route.get("controller_requirement") is not None
-            or "controller-route" not in consumer.get("needs", [])
-            or consumer.get("trust") != "trusted"
+            release_route.get("trust") != "candidate"
+            or release_route.get("controller_requirement") is not None
+            or "controller-route" not in release_consumer.get("needs", [])
+            or release_consumer.get("trust") != "trusted"
         ):
             raise GitHubControllerError(
                 f"{workflow_id} route observation can confer authority"

@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
-import re
 from typing import Any
 
 from .ci_graph_errors import CIGraphError
@@ -12,7 +12,6 @@ from .ci_graph_provider_permissions import (
     component_required_permissions,
     permission_satisfies,
 )
-
 
 _EXPLICIT_EXECUTORS = {"component_sequence", "gate_shard", "terminal_truth"}
 _REPOSITORY_PREFIXES = ("./", ".artifacts/", ".github/", "governance/", "scripts/")
@@ -121,7 +120,8 @@ def exact_main_evaluation(
         ]
         if len(jobs) != 1:
             raise CIGraphError(f"exact-main semantic role {name} is not unique")
-        return jobs[0]
+        selected_job: dict[str, object] = jobs[0]
+        return selected_job
 
     try:
         admit = role("exact-main-admission")["executor"]

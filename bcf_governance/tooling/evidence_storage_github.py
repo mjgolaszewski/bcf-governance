@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path, PurePosixPath
 import stat
 import tempfile
-from typing import Any
 import zipfile
+from pathlib import Path, PurePosixPath
+from typing import Any
 
 from .evidence_storage_archives import materialize_bundle
 from .evidence_storage_contracts import (

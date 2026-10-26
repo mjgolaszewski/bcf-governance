@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from types import MappingProxyType
 
-
 ACTION_PINS = MappingProxyType(
     {
         "checkout": "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",

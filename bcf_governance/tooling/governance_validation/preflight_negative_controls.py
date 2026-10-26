@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
+from ..negative_control_execution import (
+    NegativeControlCommandError,
+    test_node_oracle_lane,
+)
+from ..test_manifests import TestManifestError, oracle_manifest_index
 from ..yaml_mutations import (
     YAMLMutationPathError,
     replace_yaml_value_bytes,
     typed_mutation_value,
-)
-from ..test_manifests import TestManifestError, oracle_manifest_index
-from ..negative_control_execution import (
-    NegativeControlCommandError,
-    test_node_oracle_lane,
 )
 
 

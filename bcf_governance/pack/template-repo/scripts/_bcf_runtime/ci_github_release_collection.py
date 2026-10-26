@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .ci_github import GithubRunIdentity
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import (
     authenticate_active_role_job_inventory,
@@ -23,7 +24,7 @@ def authenticate_release_collection_roles(
     verification: dict[str, Any],
     collector_run_id: object,
     collector_run_attempt: object,
-):
+) -> GithubRunIdentity:
     """Authenticate terminal inputs and the sole active collector attempt."""
 
     collector, _ = authenticate_active_role_job_inventory(

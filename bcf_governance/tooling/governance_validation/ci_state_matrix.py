@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from typing import Any
 
 import yaml
+
+from ..bootstrap.contracts import ComparisonSettings
+from ..bootstrap.environment import comparison_settings as _default_comparison_settings
 
 
 class CIStateMatrixError(ValueError):
@@ -35,8 +37,13 @@ def _git(repo_root: Path, *args: str) -> str | None:
     return result.stdout.strip() if result.returncode == 0 else None
 
 
-def _comparison_base(repo_root: Path) -> str | None:
-    declared = os.environ.get("BCF_COMPARISON_BASE_SHA", "")
+def _comparison_base(
+    repo_root: Path,
+    *,
+    comparison_settings: ComparisonSettings | None=None,
+) -> str | None:
+    comparison_settings = _default_comparison_settings() if comparison_settings is None else comparison_settings
+    declared = comparison_settings.base_sha()
     if declared:
         return declared
     return _git(repo_root, "merge-base", "HEAD", "origin/main")

@@ -10,9 +10,10 @@ import hashlib
 import json
 import shutil
 import subprocess
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from .semantic_adoption_dependencies import SemanticDependencyError, resolve_dependency_file
 from .semantic_source_paths import candidate_source_files

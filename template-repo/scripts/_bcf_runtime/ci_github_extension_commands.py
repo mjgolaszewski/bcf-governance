@@ -4,22 +4,24 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 from pathlib import Path
 
 from .automation_contracts import AutomationContractError
+from .bootstrap.contracts import CustodySettings, GitHubProviderSettings
+from .bootstrap.environment import custody_settings as _default_custody_settings
+from .bootstrap.environment import github_provider_settings as _default_github_provider_settings
 from .ci_github_api import GitHubAPI, GitHubAPIError
 from .ci_github_automation import admit_automation_pr, reconcile_automation_changelog
 from .ci_github_cli_io import github_output, github_output_path, required_environment
 from .ci_github_controller import environment_api
-from .controller_custody import compile_controller_custody, require_controller_execution
 from .ci_github_identity import GitHubControllerError
 from .ci_github_pr import finalize_pr, publish_pr
+from .controller_custody import compile_controller_custody, require_controller_execution
 from .github_protection import apply_protection, inspect_protection
 from .prior_evidence_transport import transport_prior_evidence
 from .routine_controller_provider import resolve_effective_controller
-from .scheduled_control_preflight import run_scheduled_control_preflight
 from .scheduled_control_execution import run_scheduled_control_profiles
+from .scheduled_control_preflight import run_scheduled_control_preflight
 
 
 def _event() -> dict[str, object]:
@@ -35,7 +37,12 @@ def _event() -> dict[str, object]:
     return value
 
 
-def _automation(argv: list[str]) -> dict[str, object]:
+def _automation(
+    argv: list[str],
+    *,
+    provider_settings: GitHubProviderSettings | None=None,
+) -> dict[str, object]:
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
     parser = argparse.ArgumentParser(description="Reconcile a trusted automation PR.")
     operations = parser.add_subparsers(dest="operation", required=True)
     for operation in (operations.add_parser("admit"), operations.add_parser("reconcile")):
@@ -50,7 +57,7 @@ def _automation(argv: list[str]) -> dict[str, object]:
         )
     writer = GitHubAPI(
         token=required_environment("BCF_AUTOMATION_APP_TOKEN"),
-        api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+        api_url=provider_settings.api_url(),
     )
     return reconcile_automation_changelog(
         environment_api(),
@@ -110,7 +117,14 @@ def _protection(argv: list[str]) -> dict[str, object]:
     ).as_dict()
 
 
-def _prior_evidence(argv: list[str]) -> dict[str, object]:
+def _prior_evidence(
+    argv: list[str],
+    *,
+    custody_settings: CustodySettings | None=None,
+    provider_settings: GitHubProviderSettings | None=None,
+) -> dict[str, object]:
+    custody_settings = _default_custody_settings() if custody_settings is None else custody_settings
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
     parser = argparse.ArgumentParser(description="Authenticate prior PR evidence.")
     operations = parser.add_subparsers(dest="operation", required=True)
     transport = operations.add_parser("transport")
@@ -119,12 +133,12 @@ def _prior_evidence(argv: list[str]) -> dict[str, object]:
     transport.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     credential = None
-    if os.environ.get("BCF_PROTECTION_INSPECT_REQUIRED") == "true":
+    if custody_settings.protection_inspect_required() == "true":
         credential = (
             required_environment("BCF_PROTECTION_INSPECT_APP_TOKEN"),
             required_environment("BCF_PROTECTION_INSPECT_INSTALLATION_ID"),
             required_environment("BCF_PROTECTION_INSPECT_OBSERVED_INSTALLATION_ID"),
-            os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+            provider_settings.api_url(),
         )
     api = environment_api()
     effective = resolve_effective_controller(api, repository=args.repository)

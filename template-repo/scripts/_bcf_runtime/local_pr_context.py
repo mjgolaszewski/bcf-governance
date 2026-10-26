@@ -2,17 +2,21 @@
 
 from __future__ import annotations
 
-from contextlib import contextmanager
-from dataclasses import asdict, dataclass
-from enum import Enum
 import json
-import os
-from pathlib import Path
 import subprocess
 import tempfile
 import time
-from typing import Callable, Iterator
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
+from dataclasses import asdict, dataclass
+from enum import Enum, StrEnum
+from pathlib import Path
 
+from .bootstrap.contracts import ChildProcessEnvironment, ScopedExecutionEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
+from .bootstrap.environment import (
+    scoped_execution_environment as _default_scoped_execution_environment,
+)
 from .governance_install.runtime_custody import (
     RuntimeCustodyError,
     RuntimeCustodyState,
@@ -30,8 +34,12 @@ class ProspectiveValidationError(ValueError):
     """The exact candidate has a mechanically knowable downstream rejection."""
 
 
-class LocalValidationLane(str, Enum):
+class LocalValidationLane(StrEnum):
     """Closed local validation contexts that cannot confer provider authority."""
+    # Preserve the existing public Enum string/format contract.
+    __str__ = Enum.__str__
+    __format__ = Enum.__format__
+
 
     PROVIDER_PR = "provider_pr"
     ISOLATED_CANDIDATE_QUALIFICATION = "isolated_candidate_qualification"
@@ -100,8 +108,10 @@ def derive_local_validation_lane(
     return LocalValidationLane.PROVIDER_PR
 
 
-def _run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(command, check=False, capture_output=True, text=True, **kwargs)
+def _run(
+    command: list[str], *, cwd: Path, env: dict[str, str] | None = None,
+) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(command, check=False, capture_output=True, text=True, cwd=cwd, env=env)
 
 
 def _checked(runner: Runner, command: list[str], *, cwd: Path) -> str:
@@ -194,11 +204,13 @@ def run_local_pr_validation(
     repo_root: Path,
     *,
     command: tuple[str, ...],
-    remote: str = "origin",
-    runner: Runner = _run,
-    project_python: Path | None = None,
+    remote: str='origin',
+    runner: Runner=_run,
+    project_python: Path | None=None,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> subprocess.CompletedProcess[str]:
     """Run exact argv with the same base and event identity used by remote PR CI."""
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
     if not command or any(not value for value in command):
         raise LocalPRError("local PR validation requires non-empty exact argv")
@@ -214,9 +226,9 @@ def run_local_pr_validation(
         event_path = Path(temporary) / "event.json"
         event_path.write_text(json.dumps(event, sort_keys=True) + "\n", encoding="utf-8")
         environment = (
-            project_python_environment(repo_root, project_python, os.environ)
+            project_python_environment(repo_root, project_python, process_environment.live())
             if project_python is not None
-            else os.environ.copy()
+            else process_environment.snapshot()
         )
         environment.update(_pr_environment_values(context, event_path=str(event_path)))
         return runner(list(command), cwd=repo_root.resolve(), env=environment)
@@ -243,19 +255,13 @@ def _candidate_identity(
 def _pr_environment(
     context: LocalPRContext,
     *,
-    validation_lane: LocalValidationLane = LocalValidationLane.PROVIDER_PR,
+    validation_lane: LocalValidationLane=LocalValidationLane.PROVIDER_PR,
+    scoped_environment: ScopedExecutionEnvironment | None=None,
 ) -> Iterator[None]:
+    scoped_environment = _default_scoped_execution_environment() if scoped_environment is None else scoped_environment
     values = _pr_environment_values(context, validation_lane=validation_lane)
-    previous = {key: os.environ.get(key) for key in values}
-    os.environ.update(values)
-    try:
+    with scoped_environment.comparison(values):
         yield
-    finally:
-        for key, value in previous.items():
-            if value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = value
 
 
 def _changed_paths(

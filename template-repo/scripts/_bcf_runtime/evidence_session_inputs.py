@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 
 if TYPE_CHECKING:
     from .evidence_sessions import EvidenceSession
@@ -18,17 +20,20 @@ def bind_current_session_inputs(
     session: EvidenceSession | None,
     required_environment: list[str],
     job_environment: dict[str, str] | None,
+    *,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> dict[str, str] | None:
     """Resolve only the reserved receipt namespace, without discovering sessions.
 
     The caller must first bind the immutable manifest, current subject and output.
     Other workspace paths and the authored gate/environment contract stay intact.
     """
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
     if session is None:
         return job_environment
     projected = (
-        {name: os.environ[name] for name in required_environment if name in os.environ}
+        {name: process_environment.required_values(required_environment)[name] for name in required_environment if name in process_environment.required_values(required_environment)}
         if job_environment is None
         else dict(job_environment)
     )

@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import hashlib
-from pathlib import Path
 import re
-from typing import Iterable
+from collections.abc import Iterable
+from pathlib import Path
 
 from .ci_github_identity import GitHubControllerError
 from .release_versions import ReleaseVersion, ReleaseVersionError, parse_release_version
-
 
 _WHEEL_IDENTITY = re.compile(
     r"^(?P<distribution>[A-Za-z0-9_]+)-"

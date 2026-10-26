@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import importlib.resources
-import os
 import re
 import shutil
 import subprocess
@@ -17,36 +16,47 @@ _SCRIPT_ROOT = Path(__file__).resolve().parent
 if str(_SCRIPT_ROOT) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_ROOT))
 
-from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
-from .governance_install.existing_adoption import compile_existing_adoption_inventory, extend_existing_adoption_paths, migrate_existing_adoption_contract, prepare_existing_adoption_shadow, project_existing_adoption_roots  # noqa: E402,E501
-from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
-from .governance_install.phase import generate_phase_artifacts  # noqa: E402
-from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
-from .governance_install.pack_manifest import PackManifest, load_pack_manifest  # noqa: E402
-from .local_cli_receipt import project_local_cli_receipt, resolve_local_cli  # noqa: E402
+from .ci_graph_locks import apply_ci_graph_locks  # noqa: E402
+from .ci_graph_post_merge import reconcile_post_merge_scope  # noqa: E402
+from .ci_graph_render import apply_ci_graph  # noqa: E402
 from .governance_install.artifacts import (  # noqa: E402
     ensure_required_artifacts,
-    merge_gitignore as _merge_gitignore,
+    merge_gitignore,
+)
+from .governance_install.ci_graph import write_reference_ci_graph  # noqa: E402
+from .governance_install.existing_adoption import (  # noqa: E402,E501
+    compile_existing_adoption_inventory,
+    extend_existing_adoption_paths,
+    migrate_existing_adoption_contract,
+    prepare_existing_adoption_shadow,
+    project_existing_adoption_roots,
+)
+from .governance_install.pack_manifest import PackManifest, load_pack_manifest  # noqa: E402
+from .governance_install.phase import generate_phase_artifacts  # noqa: E402
+from .governance_install.release_custody import prepare_upgrade_release_custody  # noqa: E402
+from .governance_install.semantic_upgrade import (  # noqa: E402,E501
+    install_transaction_requires_history,
+    reconcile_upgrade_semantic_custody,
 )
 from .governance_install.transaction import apply_transaction  # noqa: E402
-from .governance_install.validation import require_graph_parity, run_validation  # noqa: E402
+from .governance_install.transaction_paths import install_transaction_paths  # noqa: E402
 from .governance_install.upgrade import (  # noqa: E402
     copy_selected_template_paths,
     replace_placeholders_in_files,
     retire_self_authority_pack_surfaces,
     upgrade_state_files,
 )
+from .governance_install.validation import require_graph_parity, run_validation  # noqa: E402
 from .governance_profiles import (  # noqa: E402
     apply_profile_contract,
     apply_scaffold_requirements,
     load_contract,
 )
+from .local_cli_receipt import project_local_cli_receipt, resolve_local_cli  # noqa: E402
 from .profile_contract_v2 import resolve_install_contract_version  # noqa: E402
 from .semantic_authority_commands import _apply_config, _load_config  # noqa: E402
-from .governance_install.semantic_upgrade import install_transaction_requires_history, reconcile_upgrade_semantic_custody  # noqa: E402,E501
-from .ci_graph_locks import apply_ci_graph_locks  # noqa: E402
-from .ci_graph_post_merge import reconcile_post_merge_scope  # noqa: E402
-from .ci_graph_render import apply_ci_graph  # noqa: E402
+
+_merge_gitignore = merge_gitignore
 
 PROFILE_CHOICES = ("lite", "standard", "regulated")
 ADOPTION_MODE_CHOICES = ("fresh", "existing")
@@ -425,7 +435,9 @@ def _configure_architecture_boundaries(target_root: Path, profile: str) -> None:
 def _customized_default(
     args: argparse.Namespace, defaults: argparse.ArgumentParser, name: str
 ) -> bool:
-    return getattr(args, name) != defaults.get_default(name)
+    supplied: object = getattr(args, name)
+    default: object = defaults.get_default(name)
+    return supplied != default
 
 
 def _apply_adoption_mode_defaults(

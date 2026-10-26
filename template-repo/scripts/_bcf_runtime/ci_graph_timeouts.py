@@ -8,7 +8,6 @@ from typing import Any
 from .ci_graph_errors import CIGraphError
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
-
 LEGACY_GATE_TIMEOUT_SECONDS = 1800
 LEGACY_HEADROOM_SECONDS = 60
 

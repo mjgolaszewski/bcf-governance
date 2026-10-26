@@ -3,21 +3,20 @@
 from __future__ import annotations
 
 import hashlib
-from io import BytesIO
 import json
-from pathlib import Path, PurePosixPath
 import re
+import zipfile
+from io import BytesIO
+from pathlib import Path, PurePosixPath
 from typing import Any
 from xml.etree import ElementTree
-import zipfile
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .ci_github_api import GitHubAPI, GitHubAPIError
 from .ci_github_identity import GitHubControllerError, MainIdentity, positive_int
 from .github_protection import load_protection_bytes
-
 
 TRANSITION_PATH = "governance/pr-transition.yml"
 TRANSITION_SCHEMA = Path("schemas/pr-transition.schema.json")

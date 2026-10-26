@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
-
 
 SCHEMAS = {
     "authority": "ci-authority.schema.json",
@@ -280,7 +279,7 @@ def _parse_timestamp(value: str, *, field: str) -> datetime:
         raise CIAuthorityContractError(f"{field} must be an ISO-8601 timestamp") from exc
     if parsed.tzinfo is None:
         raise CIAuthorityContractError(f"{field} must include a timezone")
-    return parsed.astimezone(timezone.utc)
+    return parsed.astimezone(UTC)
 
 
 def _validate_capability_na(payload: dict[str, Any], *, evaluated_at: datetime) -> None:
@@ -467,10 +466,10 @@ def validate_ci_contract(
 
     _validate_schema(repo_root, contract, payload)
     if contract == "capability_na":
-        instant = evaluated_at or datetime.now(timezone.utc)
+        instant = evaluated_at or datetime.now(UTC)
         if instant.tzinfo is None:
             raise CIAuthorityContractError("evaluated_at must include a timezone")
-        _validate_capability_na(payload, evaluated_at=instant.astimezone(timezone.utc))
+        _validate_capability_na(payload, evaluated_at=instant.astimezone(UTC))
     elif contract == "authority":
         _validate_authority(payload)
     elif contract == "certification":

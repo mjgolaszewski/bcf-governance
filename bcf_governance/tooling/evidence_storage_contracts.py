@@ -2,18 +2,17 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import UTC, datetime
 import hashlib
 import json
 import os
-from pathlib import Path, PurePosixPath
 import tempfile
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path, PurePosixPath
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
-
+from jsonschema import Draft202012Validator
 
 CONTRACT_PATH = Path("governance/evidence-storage.yml")
 CONTRACT_SCHEMA = Path("schemas/evidence-storage.schema.json")

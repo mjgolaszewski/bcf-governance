@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .semantic_ownership_cross_language import build_endpoint_traces
 from .semantic_ownership_inventory import discover_python_source

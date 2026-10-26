@@ -17,7 +17,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["build==1.6.1", "pip-audit==2.10.1", "pytest==9.0.3", "urllib3>=2.8.0,<3"]
+dev = [
+  "build==1.6.1", "pip-audit==2.10.1", "pytest==9.0.3", "urllib3>=2.8.0,<3",
+  "mypy==1.19.1", "ruff==0.15.7",
+  "types-PyYAML==6.0.12.20250915", "types-jsonschema==4.26.0.20261006",
+]
 
 [project.scripts]
 bcf = "bcf_governance.cli:main"
@@ -40,3 +44,19 @@ bcf_governance = [
 [tool.pytest.ini_options]
 # Release successful disposable fixture directories during compiler-heavy suites.
 tmp_path_retention_policy = "failed"
+
+# Managed runtime checks use the same strict rules as the consuming repository.
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC"]
+ignore = ["E501", "UP009"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unreachable = true

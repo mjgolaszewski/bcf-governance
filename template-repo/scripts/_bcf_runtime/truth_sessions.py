@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
@@ -14,7 +15,6 @@ from .evidence_session_schema import (
     is_planned_session,
     load_evidence_session_schema,
 )
-
 
 SESSION_FILENAME = "evidence-session.json"
 SESSION_MEDIA_TYPE = "application/vnd.bcf.evidence-session+json"

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import time
-from typing import Any, Iterable
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
 
 from jsonschema import Draft202012Validator
 

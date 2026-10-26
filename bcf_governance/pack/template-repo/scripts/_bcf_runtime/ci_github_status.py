@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
 import json
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs, urlencode, urlsplit, urlunsplit
@@ -26,7 +26,6 @@ from .ci_github_identity import (
     positive_int,
     resolve_main,
 )
-
 
 STATUS_CONTEXT = StatusContext.EXACT_MAIN.value
 

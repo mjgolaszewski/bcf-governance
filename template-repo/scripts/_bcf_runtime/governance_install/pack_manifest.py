@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
-from pathlib import Path
 import re
-from typing import Any, Callable, Iterable
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -93,9 +94,9 @@ def load_pack_manifest(
     if not isinstance(raw_retirements, dict):
         raise ValueError("pack manifest retired_files must be a mapping")
     for raw_path, raw_digests in raw_retirements.items():
-        relative = _safe_relative(raw_path).as_posix()
-        if relative in entries:
-            raise ValueError(f"pack manifest path is both active and retired: {relative}")
+        retired_relative = _safe_relative(raw_path).as_posix()
+        if retired_relative in entries:
+            raise ValueError(f"pack manifest path is both active and retired: {retired_relative}")
         if (
             not isinstance(raw_digests, list)
             or not raw_digests
@@ -106,8 +107,8 @@ def load_pack_manifest(
                 for value in raw_digests
             )
         ):
-            raise ValueError(f"pack manifest has invalid retirements for {relative}")
-        retirements[relative] = tuple(raw_digests)
+            raise ValueError(f"pack manifest has invalid retirements for {retired_relative}")
+        retirements[retired_relative] = tuple(raw_digests)
 
     actual = {
         path.relative_to(template_root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
 from .ci_github_api import GitHubAPI
@@ -20,7 +20,6 @@ from .ci_github_identity import (
     positive_int,
     resolve_main,
 )
-
 
 CALLBACK_FILENAME = "callback-result.json"
 CALLBACK_KEYS = frozenset(

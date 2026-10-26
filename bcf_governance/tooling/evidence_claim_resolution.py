@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Iterator, Mapping
 from pathlib import Path
-from typing import Any, Iterable, Iterator, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 def load_claim_gate_projection(
@@ -96,7 +97,8 @@ def eligible_claim_receipts(
     identity = attestation.get("claim") if isinstance(attestation, dict) else None
     source = attestation.get("source_receipt") if isinstance(attestation, dict) else None
     if (
-        isinstance(identity, dict) and isinstance(source, dict)
+        isinstance(attestation, dict)
+        and isinstance(identity, dict) and isinstance(source, dict)
         and identity == {
             "claim_id": claim_id, "execution_group_id": claim["execution_group"],
         }

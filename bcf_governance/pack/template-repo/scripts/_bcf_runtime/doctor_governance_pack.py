@@ -7,31 +7,39 @@ import importlib.metadata
 import json
 import subprocess
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-try:
+if TYPE_CHECKING:
     from . import validate_governance_yaml as validator
-except ImportError:  # pragma: no cover - direct standalone execution
-    import validate_governance_yaml as validator  # type: ignore[no-redef]
-
-try:
     from .governance_install.runtime_custody import (
         RuntimeCustodyError,
         RuntimeCustodyState,
         inspect_runtime_custody,
     )
-except ImportError:  # pragma: no cover - direct standalone execution
-    from governance_install.runtime_custody import (  # type: ignore[no-redef]
-        RuntimeCustodyError,
-        RuntimeCustodyState,
-        inspect_runtime_custody,
-    )
-
-try:
     from .runtime_capacity import executing_runtime_version
-except ImportError:  # pragma: no cover - direct standalone execution
-    from runtime_capacity import executing_runtime_version  # type: ignore[no-redef]
+else:
+    try:
+        from . import validate_governance_yaml as validator
+    except ImportError:  # pragma: no cover - direct standalone execution
+        import validate_governance_yaml as validator  # type: ignore[no-redef]
 
+    try:
+        from .governance_install.runtime_custody import (
+            RuntimeCustodyError,
+            RuntimeCustodyState,
+            inspect_runtime_custody,
+        )
+    except ImportError:  # pragma: no cover - direct standalone execution
+        from governance_install.runtime_custody import (  # type: ignore[no-redef]
+            RuntimeCustodyError,
+            RuntimeCustodyState,
+            inspect_runtime_custody,
+        )
+
+    try:
+        from .runtime_capacity import executing_runtime_version
+    except ImportError:  # pragma: no cover - direct standalone execution
+        from runtime_capacity import executing_runtime_version  # type: ignore[no-redef]
 
 __version__ = executing_runtime_version()
 
@@ -159,7 +167,7 @@ def _release_gate_diagnostics(repo_root: Path) -> tuple[list[str], list[str], li
         return blockers, warnings, next_actions
 
     release_text = "\n".join(release_check_body)
-    contract_version = str(profile.get("profile_contract_version", "1.0"))
+    contract_version = str(profile.get("profile_contract_version", "1.0")) if profile is not None else "1.0"
     if contract_version in {"2.0", "3.0"}:
         captures_typed_evidence = (
             "scripts/capture_governance_shard.py" in release_text

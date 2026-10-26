@@ -9,7 +9,6 @@ from typing import Any
 
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
-
 SOURCE_PATTERN = re.compile(
     r"\{source:([A-Za-z0-9][A-Za-z0-9._-]*):([A-Za-z0-9][A-Za-z0-9._-]*(?:\.[A-Za-z0-9][A-Za-z0-9._-]*)*)\}"
 )

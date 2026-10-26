@@ -1,10 +1,14 @@
 build==1.6.1
 jsonschema>=4.21,<5
+mypy==1.19.1
 packaging>=24,<27
 pip==26.2.2
 pip-audit==2.10.1
 pytest==9.0.3
 PyYAML>=6.0,<7
+ruff==0.15.7
 setuptools>=69
+types-jsonschema==4.26.0.20261006
+types-PyYAML==6.0.12.20250915
 urllib3>=2.8.0,<3
 wheel

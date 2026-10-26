@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping
 from dataclasses import asdict, dataclass, fields
-import re
 from typing import Any
 
 from .ci_github_api import GitHubAPI

@@ -1,0 +1,86 @@
+{
+  "document": {
+    "kind": "hotfix_execution_log",
+    "name": "P31-HF09 Hotfix Log",
+    "id": "bcf-governance-phase-31-hotfix09",
+    "version": "1.0.0",
+    "generated_at_utc": "2026-10-24T00:00:00Z",
+    "status": "completed",
+    "path": "phases/phase-31-hotfix09.yml"
+  },
+  "hotfix": {
+    "id": "P31-HF09",
+    "mode": "full",
+    "related_phase_id": "P31",
+    "hotfix_number": 9,
+    "summary": "Qualify strict portable runtime, atomic native environment launchers and real setuptools adoption roots"
+  },
+  "execution_evidence": {
+    "planned_commands": [
+      "python -m mypy --strict --no-incremental scripts",
+      "python -m ruff check --no-cache scripts",
+      "python -m pytest -q tests/test_managed_runtime_quality.py tests/test_pack_sync.py tests/test_operational_observations.py",
+      "python scripts/validate_governance_yaml.py --repo-root .",
+      "bcf ci submit --repo-root ."
+    ],
+    "executed_commands": [
+      "Recovery allocation 19668 retained managed-only strict diagnostic with 501 errors.",
+      "Recovery allocation 19672 retained exact-profile Ruff diagnostic with 365 errors.",
+      "Recovery allocation 19702 closed bounded source import repair: raw one, 344 findings fixed, one selected finding remaining; protected pins unchanged.",
+      "Recovery allocation 19722 retained isolated managed probe with 311 typing and 86 lint errors; fourteen wrapper diagnostics reflect absent actual consumer package context.",
+      "Recovery allocation 19741 executed all six characterizations: four passed, two AST-serialization failures retained; independent original source readback proves unchanged moved bodies.",
+      "Recovery19758: seven managed quality characterizations passed; original Python3.12 AST goldens preserved with portable empty-field serialization.",
+      "Recovery19825: exact public types-jsonschema wheel installed and inventoried in private v7 typing environment; no global or consumer environment mutation.",
+      "Recovery19833: supported full managed diagnostic97 typing errors and70 Ruff findings retained.",
+      "Recovery19867 plus19909:19 foundation cases and strict3 modules passed; independently exact import-only correction passed Ruff3.",
+      "Recovery19921: all36 exact caller and guard behavior cases passed; full308file managed projection remains red with102 typing errors and123 Ruff findings.",
+      "Recovery19933: exact import-only derivation fixed45 issues; all function/class ASTs and original1921 source pins unchanged;55 selected cases passed; strict19 errors and Ruff83 findings retained.",
+      "Recovery19944: next exact import-only derivation fixed32 modules; all64 behavior cases passed; full309file standalone typing reduced to1 error and Ruff3 findings; final small source corrections await v5 qualification.",
+      "Recovery19953/19955: raw0; all64 selected cases passed, strict309 files succeeded, full actual-profile consumer Ruff passed; all snapshot pins and physical process closure independently verified.",
+      "Recovery20105: actual offline49-package native materialization/inventory passed; pip and mypy consoles failed127 at deleted temporary prefixes, Ruff ELF passed; negative environment retained unchanged.",
+      "Recovery20176/20181: official2.3.7 fresh existing SDK install failed Hatch-only root discovery before any file writes; actual setuptools metadata and all120 protected inputs preserved.",
+      "Closure20277: exact old-source kernel launcher failure127 reproduced causally before repair; no infrastructure error counted.",
+      "Closure20283/20285:56 selected original/new cases passed, one actual installer integration deferred until native pack reconciliation; production strict3 explicit modules and strict3 new test modules passed.",
+      "Closure20282/20284/20286: all intermediate lint/type/assertion negatives retained; corrections require all14 real dependency roots and preserve all function bodies/assertions except that strengthened exact root list.",
+      "Closure20287: actual offline49-package NEW native environment and identical warm-cache selection passed real pip/mypy/Ruff consoles and exact inventory in both runs; final touched-scope Ruff passed; old negative environment unchanged.",
+      "Closure20288: native environment apply/check passed; reconcile authored fast-fail rejected an unsupported root known_constraints field before generation. Constraints retained in schema-owned execution notes, no schema bypass."
+    ],
+    "notes": [
+      "Implementation complete; native Git-owned pack/semantic/architecture/broader regression, release and actual adopter assurance remain open.",
+      "Applied final two import-only changes from independently hashed210cfabc... patch with exact current nonimport AST preservation.",
+      "Prepared unpublished maintenance target2.3.8; native reconciliation owns generated version, interpreter, pack and workflow-authority projections.",
+      "Internal native cache schema1.1 binds generated launcher bytes/modes/links/config/RECORD; stale1.0 caches fail closed rather than being silently repaired.",
+      "Existing adoption supports genuine setuptools build_meta explicit packages.find.where plus pytest roots, rejects ambiguous/unsafe/untracked/symlink-ancestor and unaccounted extra module roots; original Hatch behavior retained.",
+      "Native pack/semantic/architecture/installer/full release/actual adopter qualification remains open; these diagnostics do not grant publication or Standard acceptance.",
+      "Known constraint: Native reconciliation and final original/new installer integration must pass on the final source tree.",
+      "Known constraint: Full release qualification, official immutable publication and actual adopter acceptance remain pending."
+    ]
+  },
+  "closeout_requirements": {
+    "claims": {
+      "required_suites_green": {
+        "required_evidence": [
+          "test",
+          "contract-test"
+        ]
+      },
+      "security_review_complete": {
+        "required_evidence": [
+          "governance-validate"
+        ]
+      },
+      "health_checks_green": {
+        "required_evidence": [
+          "runtime-smoke"
+        ]
+      }
+    },
+    "reconciliation": {
+      "required_evidence": [
+        "governance-validate",
+        "governance-exposure-scan"
+      ]
+    },
+    "finding_registry": "governance/findings.yml"
+  }
+}

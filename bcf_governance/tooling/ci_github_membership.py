@@ -12,6 +12,7 @@ from .ci_authority_contracts import (
     authority_role_workflow,
     producer_workflow,
 )
+from .ci_github import GithubRunIdentity
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import (
     GitHubControllerError,
@@ -254,7 +255,7 @@ def _authenticate_admission_candidate(
     main: MainIdentity,
     workflow: dict[str, Any],
     candidate: dict[str, Any],
-):
+) -> GithubRunIdentity:
     """Authenticate one provider candidate through the canonical admission path."""
 
     if str(candidate.get("head_branch")) != main.default_branch:

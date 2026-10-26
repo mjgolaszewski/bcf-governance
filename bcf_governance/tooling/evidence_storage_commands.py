@@ -3,12 +3,14 @@
 from __future__ import annotations
 
 import argparse
-import os
-from pathlib import Path
 import sys
 import tarfile
 import zipfile
+from pathlib import Path
 
+from .bootstrap.contracts import CLIRequiredVariables, GitHubProviderSettings
+from .bootstrap.environment import cli_required_variables as _default_cli_required_variables
+from .bootstrap.environment import github_provider_settings as _default_github_provider_settings
 from .ci_github_api import GitHubAPIError
 from .evidence_storage_contracts import (
     EvidenceStorageError,
@@ -31,15 +33,24 @@ def _schemas(repo_root: Path | None = None) -> Path:
     return packaged
 
 
-def _api(token: str | None = None) -> GitHubEvidenceAPI:
+def _api(
+    token: str | None=None,
+    *,
+    provider_settings: GitHubProviderSettings | None=None,
+) -> GitHubEvidenceAPI:
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
     return GitHubEvidenceAPI(
-        token=os.environ.get("GITHUB_TOKEN", "") if token is None else token,
-        api_url=os.environ.get("GITHUB_API_URL", "https://api.github.com"),
+        token=provider_settings.token() if token is None else token,
+        api_url=provider_settings.api_url(),
     )
 
 
-def _required_tokens(*names: str) -> dict[str, str]:
-    values = {name: os.environ.get(name, "") for name in names}
+def _required_tokens(
+    *names: str,
+    cli_variables: CLIRequiredVariables | None=None,
+) -> dict[str, str]:
+    cli_variables = _default_cli_required_variables() if cli_variables is None else cli_variables
+    values = {name: cli_variables.value(name) for name in names}
     missing = sorted(name for name, value in values.items() if not value)
     if missing:
         raise EvidenceStorageError(

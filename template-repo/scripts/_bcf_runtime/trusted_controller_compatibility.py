@@ -3,15 +3,16 @@
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
-from enum import StrEnum
 import json
-from pathlib import Path, PurePosixPath
 import re
 import subprocess
 import sys
 import tempfile
-from typing import Any, Iterable
+from collections.abc import Iterable
+from dataclasses import dataclass
+from enum import StrEnum
+from pathlib import Path, PurePosixPath
+from typing import Any
 
 import yaml
 
@@ -19,7 +20,6 @@ from .ci_authority_pins import (
     CIAuthorityPinError,
     compiled_workflow_job_names,
 )
-
 
 TRUSTED_ENTRYPOINT = PurePosixPath(
     "bcf_governance/tooling/ci_github_commands.py"
@@ -270,8 +270,8 @@ def trusted_runtime_source_files(
                 "installed trusted controller runtime is incomplete"
             )
         if target_commit is not None:
-            for relative in observed_installed:
-                _git(root, "cat-file", "-e", f"{target_commit}:{relative}")
+            for installed_relative in observed_installed:
+                _git(root, "cat-file", "-e", f"{target_commit}:{installed_relative}")
         return tuple(sorted(observed_installed))
     pending = [TRUSTED_ENTRYPOINT]
     observed = set(DIRECT_RUNTIME_FILES)

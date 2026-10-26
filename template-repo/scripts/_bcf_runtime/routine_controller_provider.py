@@ -3,15 +3,21 @@
 from __future__ import annotations
 
 import hashlib
-import os
-from pathlib import Path
 import re
-from typing import Any, Mapping
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
 
-import yaml
-
+from .bootstrap.contracts import CustodySettings
+from .bootstrap.environment import custody_settings as _default_custody_settings
 from .ci_authority_contracts import authority_role_jobs
 from .ci_authority_pins import verify_provider_workflow_authority
+from .ci_controller_provider import (
+    policy_digest as _policy_digest,
+)
+from .ci_controller_provider import (
+    runner_policy as _runner_policy,
+)
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import (
     authenticate_role_run,
@@ -32,12 +38,19 @@ from .ci_github_membership import (
 from .ci_self_controller import (
     compile_self_controller_pin,
     resolve_self_controller_artifact,
-    validate_controller_installation,
     validate_controller_pin,
 )
+from .ci_self_controller import validate_controller_installation as validate_controller_installation
+from .controller_custody import (
+    compile_controller_custody,
+    require_controller_execution,
+    validate_controller_custody,
+)
+from .controller_transition_provider_custody import TRANSITION_REPORT as TRANSITION_REPORT
 from .controller_transition_provider_custody import (
-    TRANSITION_REPORT,
     github_is_ancestor as _is_ancestor,
+)
+from .controller_transition_provider_custody import (
     receipt_from_zip as _receipt_from_zip,
 )
 from .prior_evidence_transport import (
@@ -45,39 +58,33 @@ from .prior_evidence_transport import (
     authenticate_merged_pull,
     authenticate_pr_certification,
 )
-from .controller_custody import (
-    compile_controller_custody,
-    require_controller_execution,
-    validate_controller_custody,
+from .routine_controller_admission_custody import authenticate_admission_custody
+from .routine_controller_callback import (
+    load_callback_outcome,
+    validate_active_outcome,
+    validate_no_transition_outcome,
+)
+from .routine_controller_decision import (
+    ControllerTransitionClass,
+    RoutineDecision,
+)
+from .routine_controller_decision import (
+    validate_routine_decision as validate_routine_decision,
 )
 from .routine_controller_rotation import (
     RoutineRotationError,
     advance_transition,
-    alternate_policy_lane_contract,
     classify_provider_callback_topology,
-    controller_policy_digest,
     effective_controller_pin,
     select_controller_chain,
     transition_follows_normalization,
     transition_id,
     validate_transition,
 )
-from .routine_controller_callback import (
-    load_callback_outcome,
-    validate_active_outcome,
-    validate_no_transition_outcome,
+from .routine_controller_rotation import (
+    alternate_policy_lane_contract as alternate_policy_lane_contract,
 )
-from .routine_controller_admission_custody import authenticate_admission_custody
-from .routine_controller_decision import (
-    ControllerTransitionClass,
-    RoutineDecision,
-    validate_routine_decision,
-)
-from .ci_controller_provider import (
-    policy_digest as _policy_digest,
-    runner_policy as _runner_policy,
-)
-
+from .routine_controller_rotation import controller_policy_digest as controller_policy_digest
 
 TRANSITION_ARTIFACT_PREFIX = "bcf-controller-transition-"
 STAGE_JOB_PREFIXES = {
@@ -631,8 +638,10 @@ def dispatch_post_rotation_certification(
     callback_run_attempt: object,
     rotation_run_id: object,
     rotation_run_attempt: object,
+    custody_settings: CustodySettings | None=None,
 ) -> dict[str, Any]:
     """Authenticate callback authority and request one fresh exact-main cycle."""
+    custody_settings = _default_custody_settings() if custody_settings is None else custody_settings
 
     main = resolve_main(api, repository)
     authority = load_authority(api, repository, main, required_version="1.1")
@@ -670,7 +679,7 @@ def dispatch_post_rotation_certification(
     custody = compile_controller_custody(resolved, repository=repository)
     require_controller_execution(custody)
     raw_outcome = load_callback_outcome(
-        Path(os.environ.get("BCF_CONTROLLER_CUSTODY_PATH", ""))
+        Path(custody_settings.controller_custody_path())
     )
     if topology == "admission_noncertifying":
         if validate_controller_custody(raw_outcome) != validate_controller_custody(

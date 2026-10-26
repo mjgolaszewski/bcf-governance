@@ -1,12 +1,18 @@
 """Authenticate byte-bound native documents during existing-repository adoption."""
-# ruff: noqa: F403,F405
 
 from __future__ import annotations
 
 import hashlib
 import subprocess
 
-from .common import *  # noqa: F403,F405
+from .common import (
+    GovernanceValidationError,
+    Path,
+    _load_yaml,
+    _require_mapping,
+    _require_string,
+    re,
+)
 
 
 def _native_adoption_relative(value: object, *, context: str) -> str:

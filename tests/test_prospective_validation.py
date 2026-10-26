@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -431,8 +432,8 @@ def test_prospective_train_executes_exact_direct_push_preflight_before_evidence(
             assert kwargs["mode"] == "release"
             assert kwargs["evaluation_mode"] == "workitem"
             assert kwargs["evaluation_target"] == "P27-P0-03"
-            assert prospective.os.environ["BCF_PROVIDER_EVENT"] == "push"
-            assert prospective.os.environ["BCF_COMPARISON_BASE_SHA"] == BASE
+            assert os.environ["BCF_PROVIDER_EVENT"] == "push"
+            assert os.environ["BCF_COMPARISON_BASE_SHA"] == BASE
             raise prospective.PreflightError(
                 "bounded workitem target P27-P0-03 would strand unfinished workitems"
             )

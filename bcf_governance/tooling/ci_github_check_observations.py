@@ -10,7 +10,16 @@ from .ci_github_values import GitHubValueError, positive_id, repository
 class GitHubCheckObservationMixin:
     """Read exact check annotations without adding mutation capability."""
 
-    def _request(self, method: str, path: str, **kwargs: Any) -> Any: ...
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        payload: dict[str, object] | None = None,
+        not_found_none: bool = False,
+    ) -> object:
+        return None
+
 
     def check_run_annotations(
         self, repository_name: str, check_run_id: str | int

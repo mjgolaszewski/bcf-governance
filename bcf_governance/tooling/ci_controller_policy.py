@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Mapping
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
-
 
 POLICY_PATH = "governance/trusted-controller-policy.yml"
 POLICY_SCHEMA = "schemas/trusted-controller-policy.schema.json"

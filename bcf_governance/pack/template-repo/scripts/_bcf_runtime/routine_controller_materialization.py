@@ -2,18 +2,19 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from .ci_controller_provider import policy_digest, runner_policy
 from .ci_github_api import GitHubAPI
 from .ci_github_authority import authenticate_role_run, load_authority
 from .ci_github_identity import GitHubControllerError, positive_int, resolve_main
+from .ci_recovery_frontier import controller_transition_frontier
 from .ci_self_controller import (
     compile_self_controller_pin,
     validate_controller_pin,
 )
-from .ci_recovery_frontier import controller_transition_frontier
 from .prior_evidence_transport import (
     authenticate_merged_pull,
     authenticate_pr_certification,

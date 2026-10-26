@@ -3,14 +3,13 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import re
+from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
-
 
 HOTFIX_MODES = {"lite", "full"}
 

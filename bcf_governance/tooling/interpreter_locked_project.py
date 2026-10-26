@@ -3,21 +3,20 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
 import tomllib
+from pathlib import Path
 from typing import Any, NoReturn
 
-from packaging.markers import Marker, InvalidMarker
-from packaging.requirements import Requirement, InvalidRequirement
-from packaging.specifiers import SpecifierSet, InvalidSpecifier
-from packaging.version import Version, InvalidVersion
-import yaml  # type: ignore[import-untyped]
+import yaml
+from packaging.markers import InvalidMarker, Marker
+from packaging.requirements import InvalidRequirement, Requirement
+from packaging.specifiers import InvalidSpecifier, SpecifierSet
+from packaging.version import InvalidVersion, Version
 
 from .interpreter_environment_plan import InterpreterEnvironmentError, InterpreterEnvironmentPlan
 from .python_runtime_selection import interpreter_subprocess_environment
-
 
 MARKER_KEYS = frozenset({
     "implementation_name", "implementation_version", "os_name", "platform_machine",
@@ -305,10 +304,10 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
         _fail("canonical installer is invalid")
     if "pip" in selected and selected["pip"]["version"] != installer_pins[0].version:
         _fail("locked installer differs from canonical secure installer")
-    requirements = {name: name + "==" + str(row["version"]) for name, row in selected.items()}
-    requirements["pip"] = installer
+    pinned_requirements = {name: name + "==" + str(row["version"]) for name, row in selected.items()}
+    pinned_requirements["pip"] = installer
     return InterpreterEnvironmentPlan(
-        requirements=tuple(requirements[name] for name in sorted(requirements)),
+        requirements=tuple(pinned_requirements[name] for name in sorted(pinned_requirements)),
         requires_python="==" + str(version), projection_path=None,
         source_kind="locked_project", source_path=root / "uv.lock", source_sha256=digest,
     )

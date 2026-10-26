@@ -5,20 +5,23 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import sysconfig
 import tempfile
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from pathlib import Path
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 from jsonschema import Draft202012Validator
 
-from .ci_github_values import GitHubValueError, remote_repository
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .ci_github_identity import GitHubControllerError
+from .ci_github_values import GitHubValueError, remote_repository
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
     AdopterSourceError,
@@ -255,6 +258,8 @@ def parse_contract(contract_bytes: bytes, schema_bytes: bytes) -> dict[str, Any]
     errors = sorted(Draft202012Validator(schema).iter_errors(payload), key=lambda item: list(item.path))
     if errors:
         raise ReleaseQualificationError("release qualification contract is invalid: " + errors[0].message)
+    if not isinstance(payload, dict):
+        raise ReleaseQualificationError("validated contract must contain an object")
     repositories = [item["repository"] for item in payload["required_adopters"]]
     identifiers = [item["id"] for item in payload["required_adopters"]]
     if len(repositories) != len(set(repositories)) or len(identifiers) != len(set(identifiers)):
@@ -287,13 +292,19 @@ def _source_identity(root: Path) -> tuple[str, str, str]:
     return repository, commit, tree
 
 
-def _commit(root: Path, message: str) -> None:
+def _commit(
+    root: Path,
+    message: str,
+    *,
+    process_environment: ChildProcessEnvironment | None=None,
+) -> None:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
     _run(["git", "add", "-A"], cwd=root)
     result = subprocess.run(
         ["git", "diff", "--cached", "--quiet"], cwd=root, check=False
     )
     if result.returncode == 1:
-        environment = dict(os.environ)
+        environment = process_environment.snapshot()
         environment.update(
             {
                 "GIT_AUTHOR_DATE": "2000-01-01T00:00:00Z",
@@ -341,7 +352,7 @@ def _isolated_project_python(
 ) -> Path:
     """Copy a repository-owned environment and rewrite only its own editable path."""
 
-    executable = source_python.resolve()
+    source_python.resolve()
     try:
         relative = source_python.absolute().relative_to(source_root.resolve())
     except ValueError:
@@ -352,7 +363,7 @@ def _isolated_project_python(
         if probe.returncode or str(source_root.resolve()) in probe.stdout:
             raise ReleaseQualificationError(
                 "external adopter interpreter exposes the maintained checkout"
-            )
+            ) from None
         return source_python.absolute()
     if len(relative.parts) < 3 or relative.parts[-2:] != ("bin", "python"):
         raise ReleaseQualificationError(
@@ -394,8 +405,10 @@ def qualify_release(
     adopter_pythons: Mapping[str, Path],
     producer: Mapping[str, Any],
     output: Path,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> dict[str, Any]:
     """Observe exact pinned adopter clones without mutating maintained checkouts."""
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
     contract = load_contract(repo_root.resolve())
     version, build_assets, assets = _release_assets(release_assets.resolve())
@@ -460,7 +473,7 @@ def qualify_release(
         )
         for item in contract["required_adopters"]
     )
-    environment = dict(os.environ)
+    environment = process_environment.snapshot()
     reports: list[dict[str, Any]] = []
     with tempfile.TemporaryDirectory(prefix="bcf-release-qualification-") as temporary:
         temporary_root = Path(temporary)

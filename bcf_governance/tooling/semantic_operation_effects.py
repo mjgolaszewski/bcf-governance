@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 WRITE_CALLS = {
     "chmod", "mkdir", "rename", "rmdir", "symlink_to", "touch", "unlink",
     "write_bytes", "write_text",

@@ -8,25 +8,31 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any
+from contextlib import AbstractContextManager
+from http.client import HTTPMessage
+from typing import IO, Any
 from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .ci_github_api import GitHubAPIError
 from .ci_github_identity import positive_int
-
+from .ci_github_transport import ByteResponse
 
 _REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 _MAX_RESPONSE = 1_048_576
 
 
 class _NoRedirect(HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
+    def redirect_request(
+        self, req: Request, fp: IO[bytes], code: int, msg: str,
+        headers: HTTPMessage, newurl: str,
+    ) -> None:
         return None
 
 
-def _open_inspection(request: Request):
-    return build_opener(_NoRedirect()).open(request, timeout=30)
+def _open_inspection(request: Request) -> AbstractContextManager[ByteResponse]:
+    response: AbstractContextManager[ByteResponse] = build_opener(_NoRedirect()).open(request, timeout=30)
+    return response
 
 
 class ProtectionInspectionClient:

@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
 import sys
 import tempfile
+from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
 import yaml
+from jsonschema import Draft202012Validator
 
 from .break_glass_recovery import (
     RECEIPT_SCHEMA,
@@ -24,12 +24,12 @@ from .break_glass_recovery import (
 )
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError, resolve_main
-from .ci_graph_locks import apply_ci_graph_locks
-from .ci_graph_render import apply_ci_graph
 from .ci_graph_controller_lifecycle import (
     ControllerLifecycleState,
     resolve_controller_lifecycle,
 )
+from .ci_graph_locks import apply_ci_graph_locks
+from .ci_graph_render import apply_ci_graph
 from .ci_self_controller import (
     compile_resolved_self_controller_pin,
     project_self_controller_custody,

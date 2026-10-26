@@ -8,16 +8,17 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import re
 import subprocess
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
-from .semantic_ownership_registry import Registry
+from .bootstrap.contracts import ComparisonSettings
+from .bootstrap.environment import comparison_settings as _default_comparison_settings
 from .semantic_locking import atomic_write, prepend_compact_list_rows
+from .semantic_ownership_registry import Registry
 
 
 class SemanticMigrationError(ValueError):
@@ -354,9 +355,12 @@ def validate_exact_base_migrations(
     families: dict[str, Any],
     operations: dict[str, Any],
     registry: Registry,
+    *,
+    comparison_settings: ComparisonSettings | None=None,
 ) -> None:
     """Require typed custody for weakening or reassigning a governed contract."""
-    base_sha = os.environ.get("BCF_PR_BASE_SHA")
+    comparison_settings = _default_comparison_settings() if comparison_settings is None else comparison_settings
+    base_sha = comparison_settings.optional_pr_base_sha()
     if not base_sha:
         return
     if not re.fullmatch(r"[a-f0-9]{40}", base_sha):

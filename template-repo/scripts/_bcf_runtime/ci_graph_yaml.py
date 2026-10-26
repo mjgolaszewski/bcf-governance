@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import copy
-from pathlib import Path
 import re
+from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 class GraphYAMLError(ValueError):
@@ -22,11 +23,12 @@ def _construct_unique_mapping(
     loader: yaml.SafeLoader, node: yaml.MappingNode, deep: bool = False
 ) -> dict[Any, Any]:
     result: dict[Any, Any] = {}
+    construct: Callable[[yaml.Node, bool], object] = loader.construct_object
     for key_node, value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)
+        key = construct(key_node, deep)
         if key in result:
             raise GraphYAMLError(f"duplicate YAML key {key!r}")
-        result[key] = loader.construct_object(value_node, deep=deep)
+        result[key] = construct(value_node, deep)
     return result
 
 
@@ -40,7 +42,8 @@ for first_character, resolvers in list(_UniqueYAML12Loader.yaml_implicit_resolve
     _UniqueYAML12Loader.yaml_implicit_resolvers[first_character] = [
         item for item in resolvers if item[0] != "tag:yaml.org,2002:bool"
     ]
-_UniqueYAML12Loader.add_implicit_resolver(
+_add_bool_resolver: Callable[[str, re.Pattern[str], list[str]], None] = _UniqueYAML12Loader.add_implicit_resolver
+_add_bool_resolver(
     "tag:yaml.org,2002:bool",
     re.compile(r"^(?:true|false)$", re.IGNORECASE),
     list("tTfF"),

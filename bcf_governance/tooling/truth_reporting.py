@@ -4,16 +4,17 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
+from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
-from .evidence_claim_resolution import eligible_claim_receipts, eligible_receipts, verified_candidate
+from .evidence_claim_resolution import eligible_claim_receipts as eligible_claim_receipts
+from .evidence_claim_resolution import eligible_receipts as eligible_receipts
+from .evidence_claim_resolution import verified_candidate as verified_candidate
 from .evidence_session_schema import is_planned_session
-
 
 REQUIRED_DIRECT_CLAIMS = {
     "workitems_closed", "required_suites_green", "architecture_gates_green",
@@ -35,9 +36,10 @@ def current_subject(repo_root: Path) -> dict[str, Any]:
 def active_log_path(repo_root: Path) -> Path:
     ledger = yaml.safe_load((repo_root / "plans/phase-ledger.yml").read_text(encoding="utf-8"))
     active = ledger.get("active_phase") if isinstance(ledger, dict) else None
-    if not isinstance(active, dict) or not isinstance(active.get("log"), str):
+    log = active.get("log") if isinstance(active, dict) else None
+    if not isinstance(log, str):
         raise ValueError("plans/phase-ledger.yml active_phase.log is required")
-    return repo_root / active["log"]
+    return repo_root / log
 
 
 def current_session_plan(evidence_dir: Path, current: dict[str, Any]) -> dict[str, Any]:

@@ -5,19 +5,22 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from pathlib import Path
 import platform
 import re
 import subprocess
 import tarfile
 import tempfile
 import zipfile
-from typing import Any, Iterable
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
 
+from .bootstrap.contracts import ChildProcessEnvironment, RuntimeSettings
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
+from .bootstrap.environment import runtime_settings as _default_runtime_settings
 from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError
 from .release_closure import verify_archive, verify_wheelhouse
-
 
 EXPECTED_PYTHON = "3.12.14"
 EXPECTED_PLATFORM = "linux_x86_64"
@@ -26,10 +29,15 @@ SDIST_PORTABLE_TEST_ENV = "BCF_RELEASE_SDIST_PORTABLE_TEST"
 SDIST_CUSTODY_COMMIT_MESSAGE = "exact sdist"
 
 
-def is_release_sdist_test_context(repo_root: Path) -> bool:
+def is_release_sdist_test_context(
+    repo_root: Path,
+    *,
+    runtime_settings: RuntimeSettings | None=None,
+) -> bool:
     """Recognize only the synthetic Git custody created for an extracted sdist."""
+    runtime_settings = _default_runtime_settings() if runtime_settings is None else runtime_settings
 
-    marker = os.environ.get(SDIST_PORTABLE_TEST_ENV)
+    marker = runtime_settings.portable_sdist_test()
     if marker is None:
         return False
     if marker != "1":
@@ -50,18 +58,23 @@ def is_release_sdist_test_context(repo_root: Path) -> bool:
     return True
 
 
-def runtime_environment(*, home: Path) -> dict[str, str]:
+def runtime_environment(
+    *,
+    home: Path,
+    process_environment: ChildProcessEnvironment | None=None,
+) -> dict[str, str]:
     """Return the closed environment inherited by candidate package processes."""
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
     environment = {
         "HOME": str(home.resolve()),
-        "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+        "PATH": process_environment.live().get("PATH", "/usr/local/bin:/usr/bin:/bin"),
         "PIP_DISABLE_PIP_VERSION_CHECK": "1",
         "PIP_NO_INDEX": "1",
         "PYTHONNOUSERSITE": "1",
     }
     environment.update(
-        {name: os.environ[name] for name in _SAFE_HOST_ENVIRONMENT if os.environ.get(name)}
+        {name: process_environment.live()[name] for name in _SAFE_HOST_ENVIRONMENT if process_environment.live().get(name)}
     )
     return environment
 

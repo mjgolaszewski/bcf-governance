@@ -9,7 +9,6 @@ from typing import Any
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_routing import runner_remediation
 
-
 _SECRET = re.compile(r"\$\{\{\s*secrets\.([A-Z_][A-Z0-9_]*)\s*\}\}")
 
 

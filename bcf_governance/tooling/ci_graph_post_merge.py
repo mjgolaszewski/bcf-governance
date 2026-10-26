@@ -30,7 +30,6 @@ from .repository_comparison_context import (
     comparison_base_input_contract,
 )
 
-
 CALLER_MODE = "${{ inputs.evaluation_mode || 'pr' }}"
 CALLER_TARGET = "${{ inputs.evaluation_target || '' }}"
 
@@ -312,24 +311,24 @@ def _replace_caller_scope(
         return value, False
     if isinstance(value, list):
         changed = False
-        result = []
+        list_result = []
         for item in value:
             replaced, item_changed = _replace_caller_scope(
                 item, mode=mode, target=target
             )
-            result.append(replaced)
+            list_result.append(replaced)
             changed = changed or item_changed
-        return result, changed
+        return list_result, changed
     if isinstance(value, dict):
         changed = False
-        result = {}
+        mapping_result = {}
         for key, item in value.items():
             replaced, item_changed = _replace_caller_scope(
                 item, mode=mode, target=target
             )
-            result[key] = replaced
+            mapping_result[key] = replaced
             changed = changed or item_changed
-        return result, changed
+        return mapping_result, changed
     return value, False
 
 

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import os
-from pathlib import Path, PurePosixPath
 import stat
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .evidence_storage_contracts import (
@@ -15,8 +15,8 @@ from .evidence_storage_contracts import (
     load_storage_contract,
     validate_freshness,
 )
-from .evidence_storage_manifests import MANIFEST_NAME, manifest_digest
-
+from .evidence_storage_manifests import MANIFEST_NAME as MANIFEST_NAME
+from .evidence_storage_manifests import manifest_digest
 
 RESOLVED_MANIFEST = ".bcf-evidence-input-manifest.json"
 

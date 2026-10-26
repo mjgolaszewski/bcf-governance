@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from io import BytesIO
 import hashlib
 import json
+import zipfile
+from io import BytesIO
 from pathlib import PurePosixPath
 from typing import Any
-import zipfile
 
 from .ci_github_artifacts import provider_artifact_reference, resolve_role_artifact
 from .ci_github_identity import GitHubControllerError, MainIdentity, exact_sha
 from .evaluation_scope import EvaluationScopeError, validate_certified_proposition
-
 
 _MAX_ARCHIVE = 2_000_000
 _REPORT_NAME = "truth-report.json"
@@ -100,9 +99,8 @@ def authenticated_exact_main_truth(
     if not isinstance(report, dict):
         raise GitHubControllerError("governance truth report must contain an object")
     subject = {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha}
-    proposition: dict[str, Any] = {}
     if "certified_proposition" in report:
-        proposition = validate_exact_main_truth_payload(report, subject=subject)
+        validate_exact_main_truth_payload(report, subject=subject)
         expected_ref = (
             f"github-actions://{repository}/runs/{run_id}/attempts/"
             f"{run_attempt}/bcf-governance-truth"

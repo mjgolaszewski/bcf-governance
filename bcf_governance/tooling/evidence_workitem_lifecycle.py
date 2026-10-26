@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .truth_reporting import eligible_receipts
-
 
 DEPENDENCY_PREFIX = "requires-workitem-closure:"
 
@@ -192,7 +192,7 @@ def validate_phase_closure_authored_ready(repo_root: Path) -> None:
         hotfix = payload.get("hotfix") if isinstance(payload, dict) else None
         if not isinstance(hotfix, dict) or hotfix.get("related_phase_id") != phase_id:
             continue
-        hotfix_document = payload.get("document")
+        hotfix_document = payload.get("document") if isinstance(payload, dict) else None
         hotfix_id = str(hotfix.get("id", path.stem))
         if (
             not isinstance(hotfix_document, dict)

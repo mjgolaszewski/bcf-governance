@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .ci_graph_builders import component, job
+from .ci_graph_builders import ComponentActionInputs, component, job
 from .ci_graph_execution import (
     CANDIDATE_MATERIALIZATION_RELATIVE,
     CANDIDATE_MATERIALIZATION_ROOT,
@@ -47,25 +47,25 @@ def apply_standard_pr_evaluator(graph: dict[str, Any]) -> None:
     graph["step_components"].update({
         "checkout-protected-pr-base": component(
             kind="action", name="Check out the exact protected PR base evaluator",
-            action="checkout", **{"with": {
+            action="checkout", **ComponentActionInputs({"with": {
                 "ref": "${{ github.event.workflow_run.pull_requests[0].base.sha }}",
                 "persist-credentials": False,
-            }},
+            }}),
         ),
         "checkout-protected-finalizer-base": component(
             kind="action", name="Check out the exact protected finalizer base evaluator",
-            action="checkout", **{"with": {
+            action="checkout", **ComponentActionInputs({"with": {
                 "ref": "${{ github.event.workflow_run.head_sha }}",
                 "persist-credentials": False,
-            }},
+            }}),
         ),
         "checkout-pr-candidate-material": component(
             kind="action", name="Materialize the exact candidate without executing its evaluator",
-            action="checkout", **{"with": {
+            action="checkout", **ComponentActionInputs({"with": {
                 "ref": "${{ github.event.workflow_run.head_sha }}",
                 "path": CANDIDATE_MATERIALIZATION_RELATIVE,
                 "persist-credentials": False,
-            }},
+            }}),
         ),
         "pr-finalize-protected-base": component(
             kind="command", name="Evaluate the exact candidate with protected-base authority",
@@ -75,20 +75,20 @@ def apply_standard_pr_evaluator(graph: dict[str, Any]) -> None:
         ),
         "upload-pr-finalization": component(
             kind="action", name="Upload the authenticated PR observation",
-            action="upload-artifact", produces=["pr-finalization"], **{"with": {
+            action="upload-artifact", produces=["pr-finalization"], **ComponentActionInputs({"with": {
                 "name": "bcf-pr-finalization-${{ github.run_id }}-${{ github.run_attempt }}",
                 "path": "${{ runner.temp }}/bcf-pr-finalization",
                 "if-no-files-found": "error", "retention-days": 30,
-            }},
+            }}),
         ),
         "download-pr-finalization": component(
             kind="action", name="Download only the triggering finalizer observation",
-            action="download-artifact", consumes=["pr-finalization"], **{"with": {
+            action="download-artifact", consumes=["pr-finalization"], **ComponentActionInputs({"with": {
                 "name": "bcf-pr-finalization-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}",
                 "github-token": "${{ github.token }}", "repository": "${{ github.repository }}",
                 "run-id": "${{ github.event.workflow_run.id }}",
                 "path": "${{ runner.temp }}/bcf-pr-finalization",
-            }},
+            }}),
         ),
         "pr-publish-protected-base": component(
             kind="command", name="Publish the exact independent PR certification",

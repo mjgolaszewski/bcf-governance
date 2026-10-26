@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
-from pathlib import PurePosixPath
 import re
+from dataclasses import asdict, dataclass
+from pathlib import PurePosixPath
 from typing import Any
 
 from .ci_authority_state import CandidateIdentity
 from .ci_github import GithubReferenceError, GithubRunIdentity, authenticate_github_run
 from .ci_github_api import GitHubAPI, GitHubContent
-
 
 SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 

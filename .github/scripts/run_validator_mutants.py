@@ -182,8 +182,8 @@ MUTANTS = (
     Mutant(
         mutant_id="failure-exit-code",
         description="CLI failures must preserve a non-zero exit code",
-        search="        raise SystemExit(1)\n",
-        replace="        raise SystemExit(0)\n",
+        search="        raise SystemExit(1) from error\n",
+        replace="        raise SystemExit(0) from error\n",
         profiles=("high-value", "full"),
         target_path="scripts/governance_validation/runner.py",
     ),

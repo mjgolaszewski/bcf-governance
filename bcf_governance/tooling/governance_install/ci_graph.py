@@ -6,16 +6,16 @@ import hashlib
 from pathlib import Path
 from typing import Any
 
-from ..ci_graph_defaults import build_reference_ci_graph
-from ..ci_graph_execution import CANDIDATE_MATERIALIZATION_ROOT
-from ..ci_graph_render import apply_ci_graph
-from ..ci_graph_yaml import load_yaml_path, render_yaml
 from ..ci_controller_policy import (
     POLICY_PATH,
     ROTATION_EXTENSION,
     TrustedControllerPolicyError,
     validate_installed_controller_policy,
 )
+from ..ci_graph_defaults import build_reference_ci_graph
+from ..ci_graph_execution import CANDIDATE_MATERIALIZATION_ROOT
+from ..ci_graph_render import apply_ci_graph
+from ..ci_graph_yaml import load_yaml_path, render_yaml
 
 
 def _command(argv: list[str], *, environment: dict[str, str] | None = None) -> dict[str, Any]:

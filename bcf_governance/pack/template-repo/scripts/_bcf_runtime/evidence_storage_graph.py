@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import hashlib
-import os
-from pathlib import Path
 import subprocess
-from typing import Any, Mapping
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
 
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .ci_graph_contracts import validate_ci_graph
 from .evidence_storage_archives import InputSpec
 from .evidence_storage_contracts import EvidenceStorageError, parse_utc
@@ -64,9 +66,11 @@ def prepare_graph_artifact(
     *,
     artifact_id: str,
     output_dir: Path,
-    environment: Mapping[str, str] | None = None,
+    environment: Mapping[str, str] | None=None,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> Path:
     """Build one graph-owned handoff from authenticated ambient job identity."""
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
 
     root = repo_root.resolve()
     compiled = validate_ci_graph(root)
@@ -82,7 +86,7 @@ def prepare_graph_artifact(
     if len(producers) != 1:
         raise EvidenceStorageError("durable evidence source lacks one graph producer")
     workflow, job = producers[0]
-    env = dict(os.environ if environment is None else environment)
+    env = dict(process_environment.live() if environment is None else environment)
     repository = env.get("GITHUB_REPOSITORY", "")
     workflow_path = _workflow_path(env.get("GITHUB_WORKFLOW_REF"), repository)
     if workflow_path != workflow["path"] or env.get("GITHUB_JOB") != job["id"]:

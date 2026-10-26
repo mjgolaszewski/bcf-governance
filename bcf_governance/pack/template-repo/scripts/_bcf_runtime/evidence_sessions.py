@@ -8,19 +8,21 @@ import os
 import secrets
 import stat
 import subprocess
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
+from .bootstrap.contracts import WorkflowSettings
+from .bootstrap.environment import workflow_settings as _default_workflow_settings
 from .evidence_execution import EvidenceError
 from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     active_planned_session_version,
 )
-
 
 SESSION_FILENAME = "evidence-session.json"
 SESSION_ID_BYTES = 16
@@ -131,17 +133,21 @@ def local_producer_identity(
 
 
 def _producer_identity(
-    repo_root: Path, override: Mapping[str, str] | None = None
+    repo_root: Path,
+    override: Mapping[str, str] | None=None,
+    *,
+    workflow_settings: WorkflowSettings | None=None,
 ) -> dict[str, str]:
-    workflow = os.environ.get("GITHUB_ACTIONS") == "true"
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
+    workflow = workflow_settings.actions() == "true"
     identity = dict(override) if override is not None else {
         "kind": "workflow" if workflow else "local",
         "provider": "github-actions" if workflow else "local",
-        "repository": os.environ.get("GITHUB_REPOSITORY", repo_root.name),
-        "repository_id": os.environ.get("GITHUB_REPOSITORY_ID", "local"),
-        "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
-        "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
-        "producer_id": os.environ.get("GITHUB_JOB", "local"),
+        "repository": workflow_settings.repository(repo_root.name),
+        "repository_id": workflow_settings.repository_id("local"),
+        "run_id": workflow_settings.run_id("local"),
+        "run_attempt": workflow_settings.run_attempt("1"),
+        "producer_id": workflow_settings.job("local"),
     }
     required = {
         "kind",
@@ -276,18 +282,20 @@ def allocate_session(
     artifact_root: Path,
     expected_gates: Iterable[str],
     *,
-    expected_producers: Iterable[str] | None = None,
-    producer_identity: Mapping[str, str] | None = None,
-    verification_plan: Mapping[str, Any] | None = None,
+    expected_producers: Iterable[str] | None=None,
+    producer_identity: Mapping[str, str] | None=None,
+    verification_plan: Mapping[str, Any] | None=None,
+    workflow_settings: WorkflowSettings | None=None,
 ) -> EvidenceSession:
     """Create one fresh private session and atomically publish its manifest."""
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
     repo_root = _absolute_lexical(repo_root)
     status = _git(
         repo_root, "status", "--porcelain=v1", "--untracked-files=all", "--ignored=no"
     )
     if status:
         raise EvidenceError("evidence session requires a clean committed HEAD")
-    producers = expected_producers or [os.environ.get("GITHUB_JOB", "local")]
+    producers = expected_producers or [workflow_settings.job("local")]
     producer, producer_inventory = _producer_contract(
         repo_root, producers, producer_identity
     )
@@ -342,26 +350,30 @@ def allocate_session(
 
 
 def receipt_workflow_identity(
-    session: EvidenceSession | None, gate_id: str
+    session: EvidenceSession | None,
+    gate_id: str,
+    *,
+    workflow_settings: WorkflowSettings | None=None,
 ) -> dict[str, Any]:
     """Bind receipt workflow metadata to its session, or to the current producer."""
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
     if session is None:
         return {
             "provider": (
                 "github-actions"
-                if os.environ.get("GITHUB_ACTIONS") == "true"
+                if workflow_settings.actions() == "true"
                 else "local"
             ),
-            "path": os.environ.get("GITHUB_WORKFLOW_REF", "local"),
-            "job": os.environ.get("GITHUB_JOB", "local"),
-            "run_id": os.environ.get("GITHUB_RUN_ID", "local"),
-            "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", "1"),
+            "path": workflow_settings.workflow_ref("local"),
+            "job": workflow_settings.job("local"),
+            "run_id": workflow_settings.run_id("local"),
+            "run_attempt": workflow_settings.run_attempt("1"),
             "matrix": {"gate": gate_id},
         }
     producer = session.payload["producer"]
     job = producer["producer_id"]
     if producer["kind"] == "workflow":
-        job = os.environ.get("GITHUB_JOB", "")
+        job = workflow_settings.job("")
         if not job:
             raise EvidenceError("workflow evidence capture requires GITHUB_JOB")
     return {
@@ -369,7 +381,7 @@ def receipt_workflow_identity(
         "path": (
             "local"
             if producer["kind"] == "local"
-            else os.environ.get("GITHUB_WORKFLOW_REF", "local")
+            else workflow_settings.workflow_ref("local")
         ),
         "job": job,
         "run_id": producer["run_id"],

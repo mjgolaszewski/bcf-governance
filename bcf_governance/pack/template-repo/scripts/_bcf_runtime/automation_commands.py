@@ -3,24 +3,23 @@
 from __future__ import annotations
 
 import copy
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-import subprocess
 from typing import Any
 
 import yaml
 
-from .automation_dependencies import dependency_source_kind
 from .automation_contracts import (
-    AutomationContractError,
     REGISTRY_PATH,
+    AutomationContractError,
     dependabot_allowed_paths,
     load_automation_registry,
 )
+from .automation_dependencies import dependency_source_kind
 from .ci_github_api import GitHubAPI
 from .ci_graph_render import GENERATED_HEADER
 from .governance_install.transaction import apply_transaction
-
 
 DEPENDABOT_PATH = Path(".github/dependabot.yml")
 

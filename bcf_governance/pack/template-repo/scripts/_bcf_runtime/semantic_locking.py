@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import SchemaError
 
@@ -17,7 +17,7 @@ class SemanticLockError(ValueError):
     """A proposed semantic lock cannot be persisted as a valid contract."""
 
 
-class _NoAliasSafeDumper(yaml.SafeDumper):  # type: ignore[misc]
+class _NoAliasSafeDumper(yaml.SafeDumper):
     def ignore_aliases(self, data: Any) -> bool:
         return True
 

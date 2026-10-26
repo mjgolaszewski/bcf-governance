@@ -3,22 +3,23 @@
 from __future__ import annotations
 
 import argparse
-from contextlib import ExitStack, contextmanager
 import hashlib
 import json
-import os
-from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
 import tomllib
+from collections.abc import Iterator
+from contextlib import ExitStack, contextmanager
+from pathlib import Path
 
 from packaging.markers import default_environment
 from packaging.requirements import InvalidRequirement, Requirement
 
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .ci_github_bootstrap import verify_controller_inventory
-
 
 RUNTIME_REQUIREMENTS = ("PyYAML>=6.0,<7", "jsonschema>=4.21,<5", "packaging>=24,<27")
 
@@ -46,7 +47,7 @@ def _require_clean_head(repo_root: Path) -> None:
 
 
 @contextmanager
-def exact_head_source(repo_root: Path):
+def exact_head_source(repo_root: Path) -> Iterator[Path]:
     """Materialize committed HEAD without inheriting ignored build state."""
 
     repo_root = repo_root.resolve()
@@ -182,8 +183,14 @@ def _verify_offline_install(repo_root: Path, destination: Path, wheel: Path) -> 
 
 
 def build(
-    repo_root: Path, output: Path, *, run_id: str, run_attempt: str
+    repo_root: Path,
+    output: Path,
+    *,
+    run_id: str,
+    run_attempt: str,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> dict[str, object]:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
     repo_root = repo_root.resolve()
     destination = output if output.is_absolute() else repo_root / output
     if destination.is_symlink() or not destination.resolve().is_relative_to(repo_root):
@@ -203,7 +210,7 @@ def build(
             )
             source_root = _materialize_installed_source(repo_root, Path(temporary))
             requirements = RUNTIME_REQUIREMENTS
-        environment = dict(os.environ)
+        environment = process_environment.snapshot()
         environment["SOURCE_DATE_EPOCH"] = _git(repo_root, "show", "-s", "--format=%ct", "HEAD")
         _run(
             source_root,

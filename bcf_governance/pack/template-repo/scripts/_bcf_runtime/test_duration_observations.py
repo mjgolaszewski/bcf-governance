@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import subprocess
-from typing import Any, Iterable
 import xml.etree.ElementTree as ET
-
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Any
 
 OBSERVATIONS_PATH = Path("governance/test-duration-observations.json")
 MANIFEST_PATH = Path("governance/test-manifests/test.txt")

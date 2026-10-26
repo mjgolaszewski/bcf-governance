@@ -12,9 +12,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
-from jsonschema import Draft202012Validator  # type: ignore[import-untyped]
-
+import yaml
+from jsonschema import Draft202012Validator
 
 REGISTRY_PATH = Path("governance/canonical-representations.yml")
 SCHEMA_PATH = Path("schemas/canonical-representations.schema.json")

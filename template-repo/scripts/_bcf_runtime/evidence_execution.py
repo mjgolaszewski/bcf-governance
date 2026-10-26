@@ -9,9 +9,12 @@ import shutil
 import site
 import subprocess
 import sys
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from .bootstrap.contracts import ChildProcessEnvironment
+from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .runtime_capacity import (
     EXECUTION_STATE_ENVIRONMENT,
     allocate_execution_state,
@@ -146,9 +149,11 @@ def _execution_env(
     contract: dict[str, Any],
     python_executable: Path,
     *,
-    state_environment: dict[str, str] | None = None,
-    job_environment: dict[str, str] | None = None,
+    state_environment: dict[str, str] | None=None,
+    job_environment: dict[str, str] | None=None,
+    process_environment: ChildProcessEnvironment | None=None,
 ) -> tuple[dict[str, str], dict[str, Any]]:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
     invocation = contract["invocation"]
     configured = invocation.get("env", {})
     required = invocation.get("required_env", [])
@@ -162,7 +167,7 @@ def _execution_env(
         raise EvidenceError(
             "gate cannot override execution-state environment: " + ", ".join(conflicts)
         )
-    projected = os.environ
+    projected: Mapping[str, str] = process_environment.live()
     unsupported: list[str] = []
     if job_environment is not None:
         projected = dict(job_environment)
@@ -184,7 +189,7 @@ def _execution_env(
         raise EvidenceError("required gate environment is missing: " + ", ".join(missing))
     runtime_home = worktree.parent / ".bcf-home"
     runtime_home.mkdir(exist_ok=True)
-    caller_path = os.environ.get("PATH", "")
+    caller_path = process_environment.live().get("PATH", "")
     executable_directory = str(python_executable.parent)
     path_entries = [
         executable_directory,
@@ -198,9 +203,9 @@ def _execution_env(
         "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONUSERBASE": site.getuserbase(),
         **{
-            name: os.environ[name]
+            name: process_environment.live()[name]
             for name in LOADER_ENVIRONMENT
-            if os.environ.get(name)
+            if process_environment.live().get(name)
         },
         **{str(key): str(value) for key, value in configured.items()},
         **{str(name): projected[str(name)] for name in required},

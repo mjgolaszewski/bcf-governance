@@ -3,18 +3,18 @@
 from __future__ import annotations
 
 import hashlib
-from io import BytesIO
-from importlib import metadata
 import json
-import os
-from pathlib import Path
 import re
 import shutil
-from typing import Any, Mapping
+import sys
 import zipfile
+from collections.abc import Mapping
+from importlib import metadata
+from io import BytesIO
+from pathlib import Path
+from typing import Any
 
 from .evidence_scheduling import validate_test_splinter_plan
-
 
 KIND = "bcf.test-splinter-proof.v1"
 _SHA256 = re.compile(r"[a-f0-9]{64}")
@@ -55,7 +55,7 @@ def toolchain_sha256(repo_root: Path, python_executable: Path) -> str:
 
     inputs = {
         "python_executable_sha256": _file_sha256(python_executable.resolve()),
-        "python_version": os.sys.version,
+        "python_version": sys.version,
         "pytest_version": metadata.version("pytest"),
         "requirements_governance_sha256": _file_sha256(
             repo_root / "requirements-governance.txt"

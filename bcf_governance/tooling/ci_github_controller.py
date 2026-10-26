@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import hashlib
+import secrets
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
-import hashlib
-import os
 from pathlib import Path
-import secrets
 from typing import Any
 
+from .bootstrap.contracts import GitHubProviderSettings
+from .bootstrap.environment import github_provider_settings as _default_github_provider_settings
 from .ci_authority_certification import (
     normalize_ci_certification,
     verify_ci_certification,
@@ -20,19 +21,29 @@ from .ci_github_api import GitHubAPI, GitHubAPIError
 from .ci_github_authority import load_authority, packaged_repo_root
 from .ci_github_bundle import (
     canonical_json as _canonical,
+)
+from .ci_github_bundle import (
     prepare_output as _prepare_output,
+)
+from .ci_github_bundle import (
     write_exclusive as _write_exclusive,
 )
 from .ci_github_identity import (
-    GitHubControllerError,
+    GitHubControllerError as GitHubControllerError,
+)
+from .ci_github_identity import (
     MainIdentity,
     ProducerNotStarted,
     authenticate_producer_workflow,
     authenticate_trusted_run,
-    exact_sha as _sha,
-    positive_int as _positive,
     resolve_main,
     select_producer_run,
+)
+from .ci_github_identity import (
+    exact_sha as _sha,
+)
+from .ci_github_identity import (
+    positive_int as _positive,
 )
 from .ci_github_status import publish as _publish
 
@@ -434,9 +445,13 @@ def publish(
     )
 
 
-def environment_api() -> GitHubAPI:
-    token = os.environ.get("GITHUB_TOKEN", "")
-    api_url = os.environ.get("GITHUB_API_URL", "https://api.github.com")
+def environment_api(
+    *,
+    provider_settings: GitHubProviderSettings | None=None,
+) -> GitHubAPI:
+    provider_settings = _default_github_provider_settings() if provider_settings is None else provider_settings
+    token = provider_settings.token()
+    api_url = provider_settings.api_url()
     try:
         return GitHubAPI(token=token, api_url=api_url)
     except GitHubAPIError as exc:

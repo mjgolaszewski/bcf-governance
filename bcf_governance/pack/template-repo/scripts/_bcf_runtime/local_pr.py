@@ -4,17 +4,14 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
-from pathlib import Path
 import re
 import tempfile
 import time
-from typing import Any, Callable, Mapping
+from collections.abc import Callable, Mapping
+from pathlib import Path
+from typing import Any
 
-from .ci_graph_contracts import CIGraphError, validate_ci_graph
-from .ci_graph_post_merge import post_merge_evaluation
 from .ci_authority_pins import verify_provider_workflow_authority
-from .ci_controller_policy import graph_controller_policy_path
 from .ci_authority_prospective_lanes import (
     ProspectiveLaneError,
     ordinary_authority_applicability,
@@ -22,8 +19,19 @@ from .ci_authority_prospective_lanes import (
     provider_boundaries,
     terminal_boundaries,
 )
+from .ci_authority_prospective_telemetry import (
+    ProspectiveTelemetryError,
+    validate_train_telemetry,
+)
+from .ci_authority_prospective_telemetry import (
+    elapsed_ms as _elapsed_ms,
+)
+from .ci_controller_policy import graph_controller_policy_path
 from .ci_exact_main_truth import validate_exact_main_truth_payload
+from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError
+from .ci_graph_contracts import CIGraphError, validate_ci_graph
+from .ci_graph_post_merge import post_merge_evaluation
 from .controller_custody_prospective import validate_controller_custody_graph
 from .evaluation_scope import (
     EvaluationIntent,
@@ -31,35 +39,50 @@ from .evaluation_scope import (
     evaluation_scope,
 )
 from .evidence_execution import EvidenceError
-from .evidence_shards import local_gate_execution_environments, planned_gate_targets
 from .evidence_sessions import allocate_session, local_producer_identity
+from .evidence_shards import local_gate_execution_environments, planned_gate_targets
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_evaluation_authored_ready,
 )
 from .governance_truth import TruthfulnessError, derive_truth
-from .preflight import PreflightError, run_preflight
-from .ci_authority_prospective_telemetry import (
-    ProspectiveTelemetryError,
-    elapsed_ms as _elapsed_ms,
-    validate_train_telemetry,
-)
-from .ci_github_api import GitHubAPI
-from .routine_controller_provider import effective_controller_authority
-from .trusted_controller_compatibility import classify_trusted_controller_applicability
-from .routine_controller_rotation import alternate_policy_lane_contract
-from .repository_comparison_context import local_push_environment
-from .scaffold_governance_artifacts import (
-    ReconcileError,
-    check_reconcile_steps,
-    reconcile_steps,
-)
 from .local_execution_admission import (
     LocalExecutionAdmissionError,
     local_gate_lease,
     selected_toolchain_environment,
     validate_local_toolchain,
 )
+from .local_pr_context import (
+    CandidateIdentity as CandidateIdentity,
+)
+from .local_pr_context import (
+    LocalPRContext as LocalPRContext,
+)
+from .local_pr_context import LocalPRError as LocalPRError
+from .local_pr_context import (
+    LocalValidationLane,
+    Runner,
+    _changed_paths,
+    _checked,
+    _pr_environment,
+    derive_local_validation_lane,
+)
+from .local_pr_context import (
+    ProspectiveValidationError as ProspectiveValidationError,
+)
+from .local_pr_context import (
+    _candidate_identity as _candidate_identity,
+)
+from .local_pr_context import (
+    _confirm_unchanged as _confirm_context_unchanged,
+)
+from .local_pr_context import (
+    _run as _run,
+)
+from .local_pr_context import (
+    resolve_local_pr_context as resolve_local_pr_context,
+)
+from .local_pr_context import run_local_pr_validation as run_local_pr_validation
 from .local_proof_bundles import (
     LocalProofBundleError,
     cached_producer_observations,
@@ -79,24 +102,16 @@ from .ordinary_protection_projection import (
     validate_direct_protection_prospective,
     validate_ordinary_protection_submission,
 )
-from .local_pr_context import (
-    CandidateIdentity,
-    LocalPRContext,
-    LocalPRError,
-    LocalValidationLane,
-    ProspectiveValidationError,
-    Runner,
-    _checked,
-    _candidate_identity,
-    _changed_paths,
-    _confirm_unchanged as _confirm_context_unchanged,
-    _pr_environment,
-    _run,
-    derive_local_validation_lane,
-    resolve_local_pr_context,
-    run_local_pr_validation,
+from .preflight import PreflightError, run_preflight
+from .repository_comparison_context import local_push_environment
+from .routine_controller_provider import effective_controller_authority
+from .routine_controller_rotation import alternate_policy_lane_contract
+from .scaffold_governance_artifacts import (
+    ReconcileError,
+    check_reconcile_steps,
+    reconcile_steps,
 )
-
+from .trusted_controller_compatibility import classify_trusted_controller_applicability
 
 ProgressSink = Callable[[dict[str, Any]], None]
 _capture_planned_evidence = capture_producers
@@ -301,7 +316,7 @@ def _run_prospective_train(
         custody_state != "ordinary_executable_controller"
         or authority_applicability == "provider_verification_required"
     )
-    if verify_provider_authority:
+    if verify_provider_authority and repository is not None:
         if provider_api is None:
             raise ProspectiveValidationError(
                 "provider-authenticated prospective validation requires a provider API"
@@ -459,7 +474,9 @@ def _run_prospective_train(
         verification_plan = preflight["verification_plan"]
         execution_dag = verification_plan.get("execution_dag")
         try:
-            nodes = execution_dag.get("nodes") if isinstance(execution_dag, dict) else ()
+            nodes = execution_dag.get("nodes", ()) if isinstance(execution_dag, dict) else ()
+            if nodes is None:
+                raise ProspectiveValidationError("execution DAG node inventory is missing")
             inventory = [str(node.get("producer", "")) for node in nodes if isinstance(node, dict)]
             producers = tuple(planned_gate_targets(
                 root, planned_targets=inventory, execution_dag=execution_dag,
@@ -523,10 +540,12 @@ def _run_prospective_train(
         try:
             emit("evidence", "started")
             evidence_started = time.monotonic_ns()
-            producer_observations = (
-                cached_producer_observations(session_root, producers)
-                if bundle_manifest is not None
-                else _capture_planned_evidence(
+            if bundle_manifest is not None:
+                producer_observations = cached_producer_observations(session_root, producers)
+            else:
+                if session is None:
+                    raise ProspectiveValidationError("prospective evidence session is missing")
+                producer_observations = _capture_planned_evidence(
                     root,
                     python_executable=python_executable,
                     session_manifest=session.manifest_path,
@@ -534,7 +553,6 @@ def _run_prospective_train(
                     producers=producers,
                     producer_environments=producer_environments,
                 ) or []
-            )
             evidence_duration = _elapsed_ms(evidence_started)
             measurements.extend(
                 [

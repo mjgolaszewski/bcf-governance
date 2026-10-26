@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .ci_github_errors import GitHubAPIConflictError
-from .ci_github_values import positive_id, repository as exact_repository, sha
-
+from .ci_github_values import positive_id, sha
+from .ci_github_values import repository as exact_repository
 
 _SHA = re.compile(r"[a-f0-9]{40}")
 
@@ -73,6 +73,11 @@ def _graphql_auto_merge_pull(value: object) -> dict[str, Any]:
 class GitHubPRMutationMixin:
     """Expose only exact PR creation and normal protected merge mutations."""
 
+    if TYPE_CHECKING:
+        def pull_request(self, repository: str, number: object) -> dict[str, object]:
+            """Required read port supplied by GitHubAPI."""
+            raise NotImplementedError
+
     def _request(
         self,
         method: str,
@@ -133,7 +138,7 @@ class GitHubPRMutationMixin:
         ):
             raise ValueError("pull request metadata identity is unsafe")
         expected_sha = sha(expected_head_sha, field="pull request metadata head")
-        observed = self.pull_request(repository, numeric)  # type: ignore[attr-defined]
+        observed = self.pull_request(repository, numeric)
         head = observed.get("head") if isinstance(observed, dict) else None
         if (
             observed.get("state") != "open"
@@ -178,7 +183,7 @@ class GitHubPRMutationMixin:
         expected_base = sha(expected_base_sha, field="auto-merge pull request base")
         expected_head = sha(expected_head_sha, field="auto-merge pull request head")
         pull = _exact_pull_subject(
-            self.pull_request(repository, numeric),  # type: ignore[attr-defined]
+            self.pull_request(repository, numeric),
             number=numeric,
             node_id=node_id,
             expected_base_sha=expected_base,
@@ -223,7 +228,7 @@ class GitHubPRMutationMixin:
                 break
             except ValueError:
                 observed = _exact_pull_subject(
-                    self.pull_request(repository, numeric),  # type: ignore[attr-defined]
+                    self.pull_request(repository, numeric),
                     number=numeric,
                     node_id=node_id,
                     expected_base_sha=expected_base,
@@ -247,7 +252,7 @@ class GitHubPRMutationMixin:
             result = _graphql_auto_merge_pull(value)
         except _GraphQLResultError:
             observed = _exact_pull_subject(
-                self.pull_request(repository, numeric),  # type: ignore[attr-defined]
+                self.pull_request(repository, numeric),
                 number=numeric,
                 node_id=node_id,
                 expected_base_sha=expected_base,
@@ -296,7 +301,7 @@ class GitHubPRMutationMixin:
 
         def open_pull() -> dict[str, Any]:
             value = _exact_pull_subject(
-                self.pull_request(repository, numeric),  # type: ignore[attr-defined]
+                self.pull_request(repository, numeric),
                 number=numeric,
                 node_id=node_id,
                 expected_base_sha=expected_base,
@@ -308,7 +313,7 @@ class GitHubPRMutationMixin:
             return value
 
         def merged_pull() -> dict[str, Any] | None:
-            value = self.pull_request(repository, numeric)  # type: ignore[attr-defined]
+            value = self.pull_request(repository, numeric)
             if not isinstance(value, dict) or value.get("state") != "closed":
                 return None
             exact = _exact_pull_subject(

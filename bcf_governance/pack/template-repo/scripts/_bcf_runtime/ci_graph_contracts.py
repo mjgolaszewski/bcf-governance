@@ -10,37 +10,38 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .ci_graph_workflow_run import WorkflowRunTopologyError, validate_workflow_run_depth
-
 from jsonschema import Draft202012Validator
 
-from .ci_graph_errors import CIGraphError, execution_graph_error
-from .ci_graph_dag import ancestors as _ancestors, job_graph as _job_graph
-from .ci_graph_reusable_artifacts import (
-    project_reusable_workflow_permissions, reusable_artifact_binding,
-    validate_reusable_binding_declarations,
-)
-from .ci_graph_execution import (
-    controller_command_ids,
-    hosted_command_issues,
-    job_execution_issues,
-    validate_workflow_event_contract,
-)
+from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_authority_policy import validate_graph_authority_policy
 from .ci_graph_controller_lifecycle import (
     ControllerLifecycle,
     ControllerLifecycleState,
     resolve_controller_lifecycle,
 )
-from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
-from .ci_graph_yaml import GraphYAMLError, load_yaml_path
-from .ci_graph_values import CIGraphValueError, resolve_graph_values
-from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_job_timeouts
-from .ci_graph_storage import validate_evidence_storage
-from .ci_graph_routing import validate_candidate_routing
-from .ci_graph_rotation_outputs import validate_rotation_output_directories
+from .ci_graph_dag import ancestors as _ancestors
+from .ci_graph_dag import job_graph as _job_graph
 from .ci_graph_edges import EdgeContract, compile_edge_contracts
-
+from .ci_graph_errors import CIGraphError as CIGraphError
+from .ci_graph_errors import execution_graph_error
+from .ci_graph_execution import (
+    controller_command_ids,
+    hosted_command_issues,
+    job_execution_issues,
+    validate_workflow_event_contract,
+)
+from .ci_graph_reusable_artifacts import (
+    project_reusable_workflow_permissions,
+    reusable_artifact_binding,
+    validate_reusable_binding_declarations,
+)
+from .ci_graph_rotation_outputs import validate_rotation_output_directories
+from .ci_graph_routing import validate_candidate_routing
+from .ci_graph_storage import validate_evidence_storage
+from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_job_timeouts
+from .ci_graph_values import CIGraphValueError, resolve_graph_values
+from .ci_graph_workflow_run import WorkflowRunTopologyError, validate_workflow_run_depth
+from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
 EXTENSION_ROOT = Path("governance/ci-extensions")
@@ -143,7 +144,7 @@ def _load_extensions(
             raise CIGraphError(f"CI graph extension uses undeclared attachment point: {relative}")
         if not payload["workflows"] and not payload["jobs"]:
             raise CIGraphError(f"CI graph extension has no workflow or job contribution: {relative}")
-        for category, values in payload["extension"]["required_controls"].items():
+        for _category, values in payload["extension"]["required_controls"].items():
             for control_id in values:
                 if control_id in control_ids:
                     raise CIGraphError(

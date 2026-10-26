@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .audit_artifacts import _validated_code_root
 from .common import (
     GovernanceValidationError,
     _load_yaml,
@@ -13,7 +14,6 @@ from .common import (
     _require_string_sequence,
 )
 from .context_budgets import _validate_context_budgets
-from .audit_artifacts import _validated_code_root
 
 
 def validate_tooling_context_membership(repo_root: Path) -> None:

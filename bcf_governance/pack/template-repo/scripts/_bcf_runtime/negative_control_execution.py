@@ -2,20 +2,22 @@
 
 from __future__ import annotations
 
+import subprocess
+import xml.etree.ElementTree as ET
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-import subprocess
-from typing import Any, Callable
-import xml.etree.ElementTree as ET
+from typing import Any
 
 from .evidence_gate_contracts import _gate_contract
 from .test_manifests import (
     OracleManifestIndex,
     PytestSelectorMap,
     TestManifestError,
+    check_gate_selectors,
     junit_node_id,
+    oracle_manifest_index,
 )
-from .test_manifests import check_gate_selectors, oracle_manifest_index
 
 
 class NegativeControlCommandError(ValueError):
@@ -210,7 +212,7 @@ def execute_cross_gate_baseline(
     *,
     session_id: str,
     require_state: bool,
-    runner: Callable[..., tuple[subprocess.CompletedProcess[str], dict[str, str], dict[str, Any], dict[str, Any]]],
+    runner: Callable[..., tuple[subprocess.CompletedProcess[str], dict[str, str], dict[str, Any], dict[str, object] | None]],
     job_environment: dict[str, str] | None = None,
 ) -> bool:
     """Prove a cross-gate oracle passes before applying its exact mutation."""

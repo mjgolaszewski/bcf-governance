@@ -6,10 +6,10 @@ Licensed under the MIT License.
 
 from __future__ import annotations
 
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-import subprocess
-from typing import Any
+from typing import Any, TypedDict
 
 import yaml
 
@@ -128,7 +128,18 @@ def _profile(repo_root: Path) -> str:
     return str(selected)
 
 
-def _producer_workflows(repo_root: Path) -> list[dict[str, object]]:
+class _ProducerWorkflow(TypedDict):
+    id: str
+    path: str
+    required_job_names: list[str]
+
+
+class _RequiredCheck(TypedDict):
+    context: str
+    integration_id: int
+
+
+def _producer_workflows(repo_root: Path) -> list[_ProducerWorkflow]:
     compiled = validate_ci_graph(repo_root)
     candidates = [
         workflow
@@ -171,7 +182,7 @@ def _rule(detail: dict[str, Any], kind: str) -> dict[str, Any] | None:
 
 
 def _supported_existing_ruleset(
-    detail: dict[str, Any], *, required_check: dict[str, object]
+    detail: dict[str, Any], *, required_check: _RequiredCheck
 ) -> dict[str, Any]:
     allowed_types = {"pull_request", "required_status_checks", "non_fast_forward", "deletion"}
     rules = detail.get("rules")
@@ -215,7 +226,7 @@ def _supported_existing_ruleset(
     raw_checks = check_parameters.get("required_status_checks", [])
     if not isinstance(raw_checks, list) or any(not isinstance(value, dict) for value in raw_checks):
         raise GitHubControllerError("provider required status checks are malformed")
-    checks: list[dict[str, object]] = []
+    checks: list[_RequiredCheck] = []
     for value in raw_checks:
         context = value.get("context")
         if not isinstance(context, str) or not context:
@@ -267,7 +278,7 @@ def _supported_existing_ruleset(
     }
 
 
-def _default_ruleset(*, required_check: dict[str, object]) -> dict[str, Any]:
+def _default_ruleset(*, required_check: _RequiredCheck) -> dict[str, Any]:
     return {
         "name": "main-governance",
         "enforcement": "active",
@@ -304,7 +315,7 @@ def compile_ordinary_protection_proposal(
     profile = _profile(root)
     producers = _producer_workflows(root)
     terminal = str(producers[0]["required_job_names"][0])
-    required_check: dict[str, object] = {
+    required_check: _RequiredCheck = {
         "context": terminal if profile == "lite" else "bcf/pr-certification",
         "integration_id": 15368,
     }

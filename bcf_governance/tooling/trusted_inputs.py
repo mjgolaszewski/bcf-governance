@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 

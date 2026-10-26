@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import UTC, datetime
 import hashlib
 import json
 import os
+from collections.abc import Iterable
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
 from jsonschema import Draft202012Validator
-from .evaluation_scope import is_terminal_phase_certification
+
 from .controller_custody import validate_controller_custody
+from .evaluation_scope import is_terminal_phase_certification
 
 
 class ReleaseReceiptError(ValueError):

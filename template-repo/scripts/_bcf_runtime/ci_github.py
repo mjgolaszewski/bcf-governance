@@ -6,14 +6,13 @@ trusted default-branch workflow bytes when it constructs an authority identity.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
 import hashlib
-from pathlib import Path, PurePosixPath
 import re
+from dataclasses import asdict, dataclass
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .ci_authority_state import CandidateIdentity, WorkflowIdentity
-
 
 SHA_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 DISPATCH_EVENTS = (

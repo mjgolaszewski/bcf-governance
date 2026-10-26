@@ -6,6 +6,7 @@ import ast
 from pathlib import Path
 from typing import Any
 
+
 def _module_aliases(repo_root: Path, tree: ast.Module, source: Path) -> dict[str, str]:
     aliases: dict[str, str] = {}
     for node in tree.body:

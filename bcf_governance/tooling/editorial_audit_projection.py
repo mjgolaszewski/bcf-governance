@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .reconcile_stage_ledger import ReconcileError
 

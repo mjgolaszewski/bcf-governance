@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Callable
+from collections.abc import Callable
+from contextlib import AbstractContextManager
+from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request
 
 from .ci_github_downloads import GitHubDownloadKind, build_download_request
+from .provider_read import ByteResponse as ByteResponse
 from .provider_read import ProviderReadAttempt, ProviderReadError, open_provider_get
 
 
@@ -27,7 +30,7 @@ def request_json(
     token: str,
     payload: dict[str, Any] | None,
     not_found_none: bool,
-    opener: Callable[..., Any],
+    opener: Callable[..., AbstractContextManager[ByteResponse]],
     observations: list[ProviderReadAttempt],
 ) -> Any:
     if not path.startswith("/") or "\n" in path or "\r" in path:
@@ -78,7 +81,7 @@ def request_bytes(
     token: str,
     kind: GitHubDownloadKind,
     maximum_bytes: int,
-    opener: Callable[..., Any],
+    opener: Callable[..., AbstractContextManager[ByteResponse]],
     observations: list[ProviderReadAttempt],
 ) -> bytes:
     if not path.startswith("/") or "\n" in path or "\r" in path:

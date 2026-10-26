@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from enum import StrEnum
-import re
 from typing import Any
 
 
@@ -123,11 +123,12 @@ def validate_certified_proposition(
     if proposition.get("subject") != subject:
         raise EvaluationScopeError("truth proposition subject is not exact")
     intent = scope.get("intent")
-    expected = {
+    predicates: dict[object, str] = {
         "pr": "pull_request_progress_valid",
         "workitem": "workitem_closed",
         "closure": "phase_closed",
-    }.get(intent)
+    }
+    expected = predicates.get(intent)
     if expected is None or proposition.get("predicate") != expected:
         raise EvaluationScopeError("truth proposition does not match evaluation intent")
     if proposition.get("conclusion") not in {"success", "failure"}:
@@ -158,8 +159,10 @@ def validate_certified_proposition(
 def is_terminal_phase_certification(certification: dict[str, Any]) -> bool:
     """Return whether certification conveys only successful terminal closure."""
 
+    scope: dict[str, object] = certification.get("evaluation_scope", {})
+    proposition: dict[str, object] = certification.get("certified_proposition", {})
     return (
-        certification.get("evaluation_scope", {}).get("intent") == "closure"
-        and certification.get("certified_proposition", {}).get("predicate") == "phase_closed"
-        and certification.get("certified_proposition", {}).get("conclusion") == "success"
+        scope.get("intent") == "closure"
+        and proposition.get("predicate") == "phase_closed"
+        and proposition.get("conclusion") == "success"
     )

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import ast
 from dataclasses import dataclass
-from enum import Enum
+from enum import Enum, StrEnum
 from pathlib import Path
 
 from .common import (
@@ -21,12 +21,15 @@ from .common import (
     _validate_portable_relative_path,
 )
 
-
 FIRST_PARTY_CODE_SUFFIXES = frozenset({".py", ".pyi", ".ts", ".tsx"})
 
 
-class AuditArtifactKind(str, Enum):
+class AuditArtifactKind(StrEnum):
     """Closed classification used by audit-root enforcement."""
+    # Preserve the existing public Enum string/format contract.
+    __str__ = Enum.__str__
+    __format__ = Enum.__format__
+
 
     UNRELATED = "unrelated"
     CANONICAL_EVIDENCE = "canonical_evidence"

@@ -2,21 +2,22 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from pathlib import Path
 import hashlib
 import json
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
-from .ci_github_api import GitHubAPI
-from .ci_github_identity import GitHubControllerError
-from .ci_github_values import GitHubValueError, remote_repository
-from .ci_candidate_pr import ensure_candidate_pull_request
 from .candidate_provider_recovery import (
     execute_candidate_provider_recovery,
     resolve_candidate_provider_recovery,
 )
+from .ci_candidate_pr import ensure_candidate_pull_request
+from .ci_github_api import GitHubAPI
+from .ci_github_identity import GitHubControllerError
+from .ci_github_values import GitHubValueError, remote_repository
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
@@ -32,7 +33,6 @@ from .local_pr import (
     run_prospective_train,
 )
 from .ordinary_protection_projection import validate_ordinary_protection_submission
-
 
 Runner = Callable[..., Any]
 _SAFE_BRANCH = re.compile(r"(?!.*\.\.)(?!.*@\{)[A-Za-z0-9][A-Za-z0-9._/-]*")

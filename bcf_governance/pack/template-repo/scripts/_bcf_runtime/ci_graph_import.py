@@ -15,7 +15,6 @@ from .ci_graph_contracts import CIGraphError
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path, render_yaml
 from .governance_install.transaction import apply_transaction
 
-
 INVENTORY_PATH = Path("governance/ci-workflow-inventory.yml")
 INVENTORY_SCHEMA_PATH = Path("schemas/ci-workflow-inventory.schema.json")
 
@@ -51,7 +50,9 @@ def _artifact_steps(steps: list[Any]) -> list[dict[str, Any]]:
         uses = str(raw.get("uses", ""))
         if "upload-artifact@" not in uses and "download-artifact@" not in uses:
             continue
-        with_values = raw.get("with") if isinstance(raw.get("with"), dict) else {}
+        with_values = raw.get("with")
+        if not isinstance(with_values, dict):
+            with_values = {}
         result.append(
             {
                 "step_index": index,
@@ -94,9 +95,15 @@ def _authority_markers(job: dict[str, Any]) -> list[str]:
 
 
 def _job(job_id: str, raw: dict[str, Any]) -> dict[str, Any]:
-    steps = raw.get("steps") if isinstance(raw.get("steps"), list) else []
-    strategy = raw.get("strategy") if isinstance(raw.get("strategy"), dict) else {}
-    matrix = strategy.get("matrix") if isinstance(strategy.get("matrix"), dict) else {}
+    steps = raw.get("steps")
+    if not isinstance(steps, list):
+        steps = []
+    strategy = raw.get("strategy")
+    if not isinstance(strategy, dict):
+        strategy = {}
+    matrix = strategy.get("matrix")
+    if not isinstance(matrix, dict):
+        matrix = {}
     canonical = json.dumps(raw, sort_keys=True, separators=(",", ":")).encode("utf-8")
     return {
         "id": job_id,

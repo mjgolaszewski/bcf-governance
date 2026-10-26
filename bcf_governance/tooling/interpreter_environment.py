@@ -17,12 +17,24 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
+from .interpreter_dependency_sources import (
+    InterpreterDependencySourceError,
+    close_installer_requirement,
+    compile_governed_dependency_source,
+)
+from .interpreter_environment_launchers import launcher_custody, relocate_environment_launchers
 from .interpreter_environment_plan import (
-    InterpreterEnvironmentError,
-    InterpreterEnvironmentPlan,
+    InterpreterEnvironmentError as InterpreterEnvironmentError,
+)
+from .interpreter_environment_plan import (
+    InterpreterEnvironmentPlan as InterpreterEnvironmentPlan,
+)
+from .interpreter_environment_plan import (
     _dependency_name as _dependency_name,
+)
+from .interpreter_environment_plan import (
     _normalized_name,
 )
 from .interpreter_locked_project import (
@@ -31,23 +43,18 @@ from .interpreter_locked_project import (
     verify_locked_runtime,
     verify_locked_source,
 )
-
+from .python_runtime_selection import (
+    PythonRuntimeSelectionError,
+    select_materialization_base,
+)
+from .python_runtime_selection import (
+    interpreter_subprocess_environment as _interpreter_subprocess_environment,
+)
 from .runtime_capacity import (
     RuntimeCapacityError,
     allocate_execution_state,
     load_runtime_contract,
 )
-from .python_runtime_selection import (
-    PythonRuntimeSelectionError,
-    interpreter_subprocess_environment as _interpreter_subprocess_environment,
-    select_materialization_base,
-)
-from .interpreter_dependency_sources import (
-    InterpreterDependencySourceError,
-    compile_governed_dependency_source,
-    close_installer_requirement,
-)
-
 
 PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT = "pip==26.2.2"
 
@@ -620,11 +627,15 @@ def materialize_interpreter_environment(
                 raise InterpreterEnvironmentError(
                     "derived project interpreter target has unexplained state"
                 )
+            launchers_sha256 = relocate_environment_launchers(
+                temporary / "venv", target / "venv"
+            )
             temporary.mkdir(parents=True, exist_ok=True)
             (temporary / "environment.json").write_text(
                 json.dumps(
                     {
-                        "schema_version": "1.0",
+                        "schema_version": "1.1",
+                        "launchers_sha256": launchers_sha256,
                         "plan_identity": plan_identity,
                         "identity": identity,
                         "inventory_sha256": inventory_sha256,
@@ -669,13 +680,13 @@ def _matching_cached_environment(
         if (
             not isinstance(payload, dict)
             or set(payload)
-            != {"schema_version", "plan_identity", "identity", "inventory_sha256"}
-            or payload.get("schema_version") != "1.0"
+            != {"schema_version", "plan_identity", "identity", "inventory_sha256", "launchers_sha256"}
+            or payload.get("schema_version") != "1.1"
             or payload.get("identity") != target.name
             or not all(
                 isinstance(payload.get(name), str)
                 and re.fullmatch(r"[a-f0-9]{64}", payload[name]) is not None
-                for name in ("plan_identity", "identity", "inventory_sha256")
+                for name in ("plan_identity", "identity", "inventory_sha256", "launchers_sha256")
             )
             or payload.get("identity")
             != _sha256_text(
@@ -690,6 +701,10 @@ def _matching_cached_environment(
         if payload["plan_identity"] != plan_identity:
             raise InterpreterEnvironmentError(
                 "derived project interpreter namespace identity is stale"
+            )
+        if launcher_custody(target / "venv") != payload["launchers_sha256"]:
+            raise InterpreterEnvironmentError(
+                "derived project interpreter launcher custody is stale"
             )
         matches.append((target, payload))
     if len(matches) > 1:

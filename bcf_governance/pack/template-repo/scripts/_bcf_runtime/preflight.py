@@ -6,39 +6,74 @@ import argparse
 import ast
 import hashlib
 import json
-import os
-import re
 import runpy
 import subprocess
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
-from .evidence_execution import _selected_python
-from .evidence_workitem_lifecycle import (
-    WorkitemContractError,
-    validate_bounded_target_successor,
-)
-from .evidence_planning import verification_plan as build_verification_plan
-from .evaluation_scope import EvaluationIntent, evaluation_scope
+from .bootstrap.contracts import ComparisonSettings, WorkflowSettings
+from .bootstrap.environment import comparison_settings as _default_comparison_settings
+from .bootstrap.environment import workflow_settings as _default_workflow_settings
+from .check_governance_exposure import scan_exposures
 from .ci_authority_pins import CIAuthorityPinError
 from .ci_authority_preflight import verify_workflow_authority_preflight
+from .ci_controller_preflight import (
+    ControllerPreflightError,
+    self_controller_preflight,
+)
 from .ci_self_controller import verify_self_controller_projection
-from .check_governance_exposure import scan_exposures
+from .controller_custody_prospective import validate_controller_contracts_preflight
+from .evaluation_scope import EvaluationIntent, evaluation_scope
+from .evidence_execution import _selected_python
+from .evidence_planning import verification_plan as build_verification_plan
 from .evidence_sessions import (
     EvidenceSession,
     allocate_session,
     local_producer_identity,
 )
-from .governance_validation.runner import check_editorial, validate_repo_root
-from .governance_validation.structural_limits import validate_structural_limits
+from .evidence_storage_topology import compile_migration_plan
+from .evidence_workitem_lifecycle import (
+    WorkitemContractError,
+    validate_bounded_target_successor,
+)
 from .governance_validation.authored_phase_state import validate_authored_phase_state
 from .governance_validation.ci_state_matrix import validate_ci_state_matrix
+from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
+from .governance_validation.preflight_errors import PreflightError as PreflightError
+from .governance_validation.preflight_imports import (
+    _module_time_bcf_imports as _module_time_bcf_imports,
+)
+from .governance_validation.preflight_interpreter import (
+    _interpreter_identity as _interpreter_identity,
+)
+from .governance_validation.preflight_negative_controls import (
+    NegativeControlPreflightError,
+    inspect_negative_control_targets,
+    stale_negative_control_oracles,
+)
+from .governance_validation.preflight_repository_context import (
+    RepositoryContextError,
+)
+from .governance_validation.preflight_repository_context import (
+    git_state as _inspect_git_state,
+)
+from .governance_validation.preflight_repository_context import (
+    git_value as _git,
+)
+from .governance_validation.preflight_repository_context import (
+    pr_context as _pr_context,
+)
+from .governance_validation.preflight_repository_context import (
+    tracked_files as _tracked_files,
+)
 from .governance_validation.required_artifacts import (
     validate_pull_request_changelog_update,
 )
-from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
+from .governance_validation.runner import check_editorial, validate_repo_root
+from .governance_validation.structural_limits import validate_structural_limits
 from .install_governance_pack import _pack_manifest_entries
 from .interpreter_environment import (
     InterpreterEnvironmentError,
@@ -47,39 +82,27 @@ from .interpreter_environment import (
     validate_runtime_import_dependencies,
     verify_interpreter_environment_projection,
 )
-from .prior_evidence_receipts import load_prior_receipts, load_provisional_transport, provisional_receipts
-from .governance_validation.preflight_repository_context import (
-    RepositoryContextError,
-    git_value as _git,
-    git_state as _inspect_git_state,
-    pr_context as _pr_context,
-    tracked_files as _tracked_files,
-)
-from .governance_validation.preflight_negative_controls import (
-    NegativeControlPreflightError,
-    inspect_negative_control_targets,
-    stale_negative_control_oracles,
+from .prior_evidence_receipts import (
+    load_prior_receipts,
+    load_provisional_transport,
+    provisional_receipts,
 )
 from .semantic_ownership_scan import run_scan as run_semantic_ownership_scan
 from .test_manifests import check_all
 from .trusted_controller_compatibility import (
-    TrustedControllerCompatibilityError,
-    TrustedControllerRoutineRotationIncompatibleError,
-    TrustedControllerRuntimeStaleError,
+    TrustedControllerCompatibilityError as TrustedControllerCompatibilityError,
+)
+from .trusted_controller_compatibility import (
+    TrustedControllerRoutineRotationIncompatibleError as TrustedControllerRoutineRotationIncompatibleError,
+)
+from .trusted_controller_compatibility import (
+    TrustedControllerRuntimeStaleError as TrustedControllerRuntimeStaleError,
+)
+from .trusted_controller_compatibility import (
     ordinary_alternate_lane_available,
     verify_pr_bootstrap_compatibility,
     verify_trusted_controller_compatibility,
 )
-from .ci_controller_preflight import (
-    ControllerPreflightError,
-    self_controller_preflight,
-)
-from .controller_custody_prospective import validate_controller_contracts_preflight
-from .evidence_storage_topology import compile_migration_plan
-
-
-class PreflightError(ValueError):
-    """Raised before evidence or expensive gates when deterministic state is invalid."""
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -94,11 +117,12 @@ def _construct_unique_mapping(
     loader: _UniqueKeyLoader, node: yaml.MappingNode, deep: bool = False
 ) -> dict[Any, Any]:
     mapping: dict[Any, Any] = {}
+    construct: Callable[[yaml.Node, bool], object] = loader.construct_object
     for key_node, value_node in node.value:
-        key = loader.construct_object(key_node, deep=deep)
+        key = construct(key_node, deep)
         if key in mapping:
             raise PreflightError(f"duplicate YAML key: {key}")
-        mapping[key] = loader.construct_object(value_node, deep=deep)
+        mapping[key] = construct(value_node, deep)
     return mapping
 
 
@@ -189,28 +213,6 @@ def _exposure_scan(repo_root: Path) -> dict[str, int]:
     return {"scanned_files": report.scanned_files, "findings": 0}
 
 
-def _module_time_bcf_imports(tree: ast.Module) -> list[ast.Import | ast.ImportFrom]:
-    """Return package imports that execute while a source entrypoint starts."""
-
-    imports: list[ast.Import | ast.ImportFrom] = []
-
-    def visit(node: ast.AST) -> None:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
-            return
-        if isinstance(node, ast.Import):
-            if any(alias.name == "bcf_governance" or alias.name.startswith("bcf_governance.") for alias in node.names):
-                imports.append(node)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module == "bcf_governance" or (node.module or "").startswith("bcf_governance."):
-                imports.append(node)
-        for child in ast.iter_child_nodes(node):
-            visit(child)
-
-    for statement in tree.body:
-        visit(statement)
-    return imports
-
-
 def _source_entrypoint_authority(repo_root: Path) -> dict[str, int]:
     """Require source entrypoints to establish their checkout before package imports."""
 
@@ -272,70 +274,6 @@ def _source_entrypoint_authority(repo_root: Path) -> dict[str, int]:
             )
         checked += 1
     return {"discovered": discovered, "package_imports_checked": checked}
-
-
-def _interpreter_identity(python: Path) -> dict[str, str]:
-    """Prove the selected executable and any lexical virtual environment agree."""
-
-    probe = (
-        "import json,platform,sys\n"
-        "print(json.dumps({'executable':sys.executable,'prefix':sys.prefix,"
-        "'base_prefix':sys.base_prefix,'python_version':platform.python_version()},"
-        "sort_keys=True))\n"
-    )
-    try:
-        result = subprocess.run(
-            [str(python), "-I", "-c", probe],
-            capture_output=True,
-            text=True,
-            timeout=30,
-            check=False,
-        )
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        raise PreflightError("selected interpreter identity probe failed") from exc
-    if result.returncode:
-        raise PreflightError(
-            "selected interpreter is not runnable: "
-            + (result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "unknown")
-        )
-    try:
-        identity = json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise PreflightError("selected interpreter identity probe was invalid") from exc
-    if not isinstance(identity, dict) or not all(
-        isinstance(identity.get(key), str)
-        for key in ("executable", "prefix", "base_prefix", "python_version")
-    ):
-        raise PreflightError("selected interpreter identity is incomplete")
-    lexical = Path(os.path.abspath(python))
-    if Path(identity["executable"]) != lexical:
-        raise PreflightError("selected interpreter changed executable identity")
-    environment_root = lexical.parent.parent
-    venv_config = environment_root / "pyvenv.cfg"
-    claims_venv = ".venv" in lexical.parts or os.environ.get("VIRTUAL_ENV") is not None
-    if claims_venv and not venv_config.is_file():
-        raise PreflightError("selected virtual environment has no pyvenv.cfg")
-    if venv_config.is_file():
-        config: dict[str, str] = {}
-        for line in venv_config.read_text(encoding="utf-8").splitlines():
-            key, separator, value = line.partition("=")
-            if separator:
-                config[key.strip().lower()] = value.strip()
-        if Path(identity["prefix"]) != environment_root:
-            raise PreflightError("selected virtual environment prefix is inconsistent")
-        if identity["base_prefix"] == identity["prefix"]:
-            raise PreflightError("selected virtual environment is not isolated from base Python")
-        if config.get("include-system-site-packages", "false").lower() != "false":
-            raise PreflightError("selected virtual environment exposes system site packages")
-        declared = os.environ.get("VIRTUAL_ENV")
-        if declared and Path(os.path.abspath(declared)) != environment_root:
-            raise PreflightError("VIRTUAL_ENV does not identify the selected interpreter")
-        identity["environment_kind"] = "virtualenv"
-        identity["environment_root"] = str(environment_root)
-    else:
-        identity["environment_kind"] = "standalone"
-        identity["environment_root"] = identity["prefix"]
-    return {str(key): str(value) for key, value in sorted(identity.items())}
 
 
 def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
@@ -507,19 +445,23 @@ def run_preflight(
     repo_root: Path,
     *,
     mode: str,
-    python_executable: str | Path | None = None,
-    artifact_root: Path | None = None,
-    expected_producers: list[str] | None = None,
-    producer_identity: Mapping[str, str] | None = None,
-    evaluation_mode: str | None = None,
-    evaluation_target: str | None = None,
-    prior_receipts: list[Mapping[str, Any]] | None = None,
-    prior_transport_dir: Path | None = None,
-    transported_authority: Mapping[str, Any] | None = None,
-    controller_state_expectation: str | None = None,
-    trace: Callable[[str], None] | None = None,
+    python_executable: str | Path | None=None,
+    artifact_root: Path | None=None,
+    expected_producers: list[str] | None=None,
+    producer_identity: Mapping[str, str] | None=None,
+    evaluation_mode: str | None=None,
+    evaluation_target: str | None=None,
+    prior_receipts: Sequence[Mapping[str, Any]] | None=None,
+    prior_transport_dir: Path | None=None,
+    transported_authority: Mapping[str, Any] | None=None,
+    controller_state_expectation: str | None=None,
+    trace: Callable[[str], None] | None=None,
+    comparison_settings: ComparisonSettings | None=None,
+    workflow_settings: WorkflowSettings | None=None,
 ) -> dict[str, Any]:
     """Validate deterministic state, then optionally seed one fresh session."""
+    comparison_settings = _default_comparison_settings() if comparison_settings is None else comparison_settings
+    workflow_settings = _default_workflow_settings() if workflow_settings is None else workflow_settings
     if mode not in {"release", "pr"}:
         raise PreflightError("preflight mode must be release or pr")
     selected_mode = evaluation_mode or "pr"
@@ -546,7 +488,7 @@ def run_preflight(
     ci_state_matrix = step(
         "ci-state-matrix", lambda: validate_ci_state_matrix(repo_root)
     )
-    if mode == "pr" and os.environ.get("BCF_ENFORCE_PR_CHANGELOG", "").lower() in {
+    if mode == "pr" and comparison_settings.enforce_pr_changelog().lower() in {
         "1",
         "true",
     }:
@@ -655,7 +597,7 @@ def run_preflight(
     verification_plan = step(
         "verification-plan",
         lambda: build_verification_plan(
-            repo_root, subject, prior_receipts or [], evaluation_mode=selected_mode,
+            repo_root, subject, list(prior_receipts or []), evaluation_mode=selected_mode,
             evaluation_target=(
                 scope.target_id
                 if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
@@ -677,7 +619,7 @@ def run_preflight(
                 planned_producers,
                 expected_producers=(
                     expected_producers
-                    or [os.environ.get("GITHUB_JOB", "local")]
+                    or [workflow_settings.job("local")]
                 ),
                 producer_identity=producer_identity,
                 verification_plan=verification_plan,
@@ -722,7 +664,7 @@ def preflight_mode_for_evaluation(evaluation_mode: str | None) -> str:
     try:
         intent = EvaluationIntent(evaluation_mode or "pr")
     except ValueError as exc:
-        raise PreflightError("evaluation mode must be pr, workitem, or closure")
+        raise PreflightError("evaluation mode must be pr, workitem, or closure") from exc
     return "pr" if intent is EvaluationIntent.PR_PROGRESS else "release"
 
 

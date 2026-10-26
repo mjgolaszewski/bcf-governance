@@ -6,7 +6,30 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.7`
+Release target: `2.3.8`
+
+### Fixed
+
+- Preserve working generated Python console launchers and activation prefixes
+  across atomic native environment publication, refresh installer records, and
+  reject stale or changed launcher cache custody.
+- Derive existing repository roots from real setuptools package discovery and
+  pytest declarations while retaining Hatch support and rejecting ambiguous,
+  unsafe or incomplete root inventories.
+
+- Keep the scheduled validator exit mutation aligned with exception chaining
+  while preserving its original nonzero-exit oracle.
+- Cover runtime quality, launcher publication, warm reuse and existing-adoption
+  transitions in the same-candidate release state matrix.
+- Run real strict typing and lint checks across the portable governance runtime
+  and standalone wrappers, using declared typing and lint dependencies.
+- Resolve governance environment settings through narrow injected capabilities,
+  preserve existing read and mutation lifetimes, and reject unowned access and
+  compatibility-accessor aliases in the native lint gate.
+- Preserve Python 3.11 and existing reconciliation action bindings while sharing
+  one characterized frozen action contract.
+
+## [2.3.7] - 2026-10-24
 
 ### Added
 
@@ -1605,7 +1628,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.6...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.7...HEAD
+[2.3.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.6...v2.3.7
 [2.3.6]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.5...v2.3.6
 [2.1.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.7...v2.1.8
 [2.1.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.1.6...v2.1.7

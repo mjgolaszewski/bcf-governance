@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
+import json
 import re
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 from jsonschema import Draft202012Validator
 
 from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
-
 
 _SHA = re.compile(r"^[a-f0-9]{40}$")
 _TERMINAL = frozenset({"complete", "failed"})
@@ -66,8 +67,13 @@ def validate_progress_stream(events: Iterable[Mapping[str, Any]]) -> None:
     sequences = [item.get("sequence") for item in values]
     if sequences != list(range(1, len(values) + 1)):
         raise OperationalObservationError("progress stream is duplicated or out of order")
-    clocks = [item.get("monotonic_ms") for item in values]
-    if any(not isinstance(value, int) for value in clocks) or clocks != sorted(clocks):
+    clocks: list[int] = []
+    for item in values:
+        clock = item.get("monotonic_ms")
+        if not isinstance(clock, int):
+            raise OperationalObservationError("progress stream clock is not monotonic")
+        clocks.append(clock)
+    if clocks != sorted(clocks):
         raise OperationalObservationError("progress stream clock is not monotonic")
     if any(item.get("authority") is not False for item in values):
         raise OperationalObservationError("operational progress cannot carry authority")
@@ -80,7 +86,7 @@ def _timestamp(value: object) -> datetime | None:
         parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
     except ValueError:
         return None
-    return parsed.astimezone(timezone.utc)
+    return parsed.astimezone(UTC)
 
 
 def _latency(start: datetime | None, end: datetime | None) -> int | str:
@@ -199,7 +205,7 @@ def lifecycle_projection(repo_root: Path) -> dict[str, Any]:
 def validate_operational_observation(
     repo_root: Path, observation: Mapping[str, Any]
 ) -> None:
-    schema = __import__("json").loads(
+    schema = json.loads(
         (repo_root / "schemas/operational-observation.schema.json").read_text(
             encoding="utf-8"
         )

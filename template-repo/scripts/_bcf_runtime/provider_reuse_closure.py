@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 from .ci_github_identity import GitHubControllerError, MainIdentity
 from .evidence_planning import build_dependency_manifest, parse_claim_model
-
 
 CONTRACT_PATH = "governance/gate-contracts.yml"
 

@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import re
 import shutil
 import subprocess
-from typing import Any
 import zipfile
+from pathlib import Path
+from typing import Any
 
 from packaging.markers import default_environment
 from packaging.requirements import InvalidRequirement, Requirement
@@ -17,7 +17,6 @@ from packaging.utils import InvalidWheelFilename, canonicalize_name, parse_wheel
 
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import GitHubControllerError, positive_int
-
 
 _SUBJECT_METADATA_FIELDS = {
     "commit_sha",
@@ -95,12 +94,22 @@ def _wheel_metadata(path: Path) -> tuple[str, str, tuple[Requirement, ...]]:
     return canonicalize_name(names[0]), versions[0], requirements
 
 
+def _default_marker_environment() -> dict[str, str]:
+    """Validate packaging's string-valued runtime marker environment."""
+    environment: dict[str, str] = {}
+    for name, value in default_environment().items():
+        if not isinstance(value, str):
+            raise GitHubControllerError("runtime marker environment contains a non-string value")
+        environment[name] = value
+    return environment
+
+
 def _marker_environment(root: Path) -> dict[str, str]:
     metadata = controller_metadata(root / "CONTROL-METADATA.json")
     if metadata.get("schema_version") == "1.1":
         if set(metadata) != {"schema_version", *_SUBJECT_METADATA_FIELDS, *_RUNTIME_METADATA_FIELDS}:
             raise GitHubControllerError("controller metadata v1.1 field inventory is not exact")
-        environment = default_environment()
+        environment = _default_marker_environment()
         environment.update({field: metadata[field] for field in _RUNTIME_METADATA_FIELDS})
         return environment
     if metadata.get("schema_version") != "1.0" or set(metadata) != {
@@ -108,7 +117,7 @@ def _marker_environment(root: Path) -> dict[str, str]:
         *_SUBJECT_METADATA_FIELDS,
     }:
         raise GitHubControllerError("controller metadata schema is unsupported")
-    environment = default_environment()
+    environment = _default_marker_environment()
     environment["extra"] = ""
     return environment
 

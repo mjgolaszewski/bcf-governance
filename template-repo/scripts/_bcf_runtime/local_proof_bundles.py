@@ -5,19 +5,19 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-from pathlib import Path
 import shutil
 import stat
 import subprocess
 import tempfile
-from typing import Any, Mapping
+from collections.abc import Mapping
+from pathlib import Path
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
 from .ci_graph_execution import resolve_local_job_environment
 from .evidence_scheduling import receipt_duration_ms
 from .governance_evidence import capture_gate
-
 
 MANIFEST_NAME = "proof-bundle.json"
 PAYLOAD_ROOT = "evidence"
@@ -110,15 +110,15 @@ def capture_producers(
                     continue
                 for stream in ("stderr", "stdout"):
                     relative = raw_artifacts.get(stream)
-                    path = Path(str(relative)) if isinstance(relative, str) else None
+                    stream_path = Path(str(relative)) if isinstance(relative, str) else None
                     if (
-                        path is None
-                        or path.is_absolute()
-                        or ".." in path.parts
-                        or not (receipt.parent / path).is_file()
+                        stream_path is None
+                        or stream_path.is_absolute()
+                        or ".." in stream_path.parts
+                        or not (receipt.parent / stream_path).is_file()
                     ):
                         continue
-                    value = (receipt.parent / path).read_text(
+                    value = (receipt.parent / stream_path).read_text(
                         encoding="utf-8", errors="replace"
                     ).strip()
                     if value:
@@ -427,6 +427,8 @@ def _manifest(repo_root: Path, bundle: Path) -> dict[str, Any]:
     errors = sorted(Draft202012Validator(schema).iter_errors(payload), key=str)
     if errors:
         raise LocalProofBundleError(f"proof bundle schema violation: {errors[0].message}")
+    if not isinstance(payload, dict):
+        raise LocalProofBundleError("validated contract must contain an object")
     return payload
 
 

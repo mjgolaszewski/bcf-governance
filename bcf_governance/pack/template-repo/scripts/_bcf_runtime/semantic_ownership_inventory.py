@@ -9,28 +9,32 @@ from __future__ import annotations
 import ast
 import copy
 import hashlib
-from pathlib import Path
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 from typing import Any
 
-from .semantic_python_method_identity import (
-    bound_method_origins,
-    call_name as _call_name,
-    call_reference as _call_reference,
-    discover_class_facts,
-    method_binding,
-    method_dispatch_reference,
-    resolve_method_dispatch,
-    root_name as _root_name,
-    runtime_function_scopes,
-    source_symbol,
-)
 from .semantic_python_annotation_identity import (
     external_import_identity,
     resolve_annotation_identities,
 )
+from .semantic_python_method_identity import (
+    bound_method_origins,
+    discover_class_facts,
+    method_binding,
+    method_dispatch_reference,
+    resolve_method_dispatch,
+    runtime_function_scopes,
+    source_symbol,
+)
+from .semantic_python_method_identity import (
+    call_name as _call_name,
+)
+from .semantic_python_method_identity import (
+    call_reference as _call_reference,
+)
+from .semantic_python_method_identity import (
+    root_name as _root_name,
+)
 from .semantic_source_paths import candidate_source_files
-
 
 NORMALIZERS = {
     "casefold",

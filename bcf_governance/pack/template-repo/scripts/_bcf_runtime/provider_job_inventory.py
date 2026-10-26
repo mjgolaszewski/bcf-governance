@@ -7,7 +7,6 @@ from typing import Any
 from .ci_authority_pins import CIAuthorityPinError, compiled_workflow_job_names
 from .ci_github_identity import GitHubControllerError
 
-
 GOVERNANCE_WORKFLOW_PATH = ".github/workflows/governance.yml"
 
 

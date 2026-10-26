@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
-from pathlib import Path
 import re
 import subprocess
 import tempfile
-from typing import Callable, Iterable, Protocol
+from collections.abc import Callable, Iterable
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Protocol
 
 import yaml
 
 from .governance_install.transaction import copy_repository_shadow
+from .reconcile_contracts import ReconcileStep
 
 
 class ReconcileAuthorityTransitionError(ValueError):
@@ -20,10 +22,17 @@ class ReconcileAuthorityTransitionError(ValueError):
 
 
 class Step(Protocol):
-    step_id: str
-    check: Callable[[], None]
-    apply: Callable[[], None]
-    apply_verifies: bool
+    @property
+    def step_id(self) -> str: ...
+
+    @property
+    def check(self) -> Callable[[], object]: ...
+
+    @property
+    def apply(self) -> Callable[[], object]: ...
+
+    @property
+    def apply_verifies(self) -> bool: ...
 
 
 @dataclass(frozen=True)
@@ -236,7 +245,7 @@ def _changed_workflows(root: Path, head: str, paths: Iterable[str]) -> tuple[str
     )
 
 
-def _split_steps(steps: tuple[Step, ...]) -> tuple[tuple[Step, ...], tuple[Step, ...]]:
+def _split_steps(steps: tuple[ReconcileStep, ...]) -> tuple[tuple[ReconcileStep, ...], tuple[ReconcileStep, ...]]:
     matches = [index for index, step in enumerate(steps) if step.step_id == "workflow-authority"]
     if len(matches) != 1:
         raise ReconcileAuthorityTransitionError(
@@ -246,7 +255,7 @@ def _split_steps(steps: tuple[Step, ...]) -> tuple[tuple[Step, ...], tuple[Step,
     return steps[:index], steps[index:]
 
 
-def _workflow_projection_steps(before_authority: tuple[Step, ...]) -> tuple[Step, ...]:
+def _workflow_projection_steps(before_authority: tuple[ReconcileStep, ...]) -> tuple[ReconcileStep, ...]:
     owners = {
         "ci-graph-post-merge-scope",
         "ci-graph-lock",
@@ -259,8 +268,8 @@ def _workflow_projection_steps(before_authority: tuple[Step, ...]) -> tuple[Step
 def apply_workflow_authority_transition(
     repo_root: Path,
     *,
-    step_factory: Callable[[Path], tuple[Step, ...]],
-    converge: Callable[[Iterable[Step], Callable[[], str]], int],
+    step_factory: Callable[[Path], tuple[ReconcileStep, ...]],
+    converge: Callable[[Iterable[ReconcileStep], Callable[[], str]], int],
     snapshot: Callable[[Path], str],
 ) -> ReconcileAuthorityTransitionResult | None:
     """Prove and promote the mandatory definition-then-authority commit pair.

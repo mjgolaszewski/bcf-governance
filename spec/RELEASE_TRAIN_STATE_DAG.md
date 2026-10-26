@@ -2542,3 +2542,31 @@ migration -> canonical graph/source binding -> generated definition/authority
 pair -> same-candidate preflight -> complete candidate proof -> protected merge
 -> exact-main/controller closure -> ordinary release and immutable custody.
 Failure custody from 19045 is diagnostic input only, never reusable PASS evidence.
+
+### Maintenance 2.3.8 runtime quality and adoption transitions
+
+The strict runtime repair changes CI implementation source and the graph's
+source-hash projections. Those changes require this same-candidate matrix even
+when workflow permissions, events and release roles retain their existing
+semantics. The native definition/authority owner remains the only writer of
+changed workflow bindings; focused typing and installer results grant no push,
+merge, certification or publication authority.
+
+| Reached state or permutation | Required producer/consumer transition | Rejection and authority boundary |
+| --- | --- | --- |
+| Declared development or gate dependencies change | Native environment owners derive the complete interpreter/platform closure and verify installed metadata before any gate. Strict mypy covers canonical tooling; Ruff covers tooling and standalone wrappers. | Missing dependencies, wrong inventory, typing errors or lint errors reject; compile-only checks and private diagnostic environments cannot substitute. |
+| Cold native environment publishes atomically | Rebase generated text launchers, activation configuration and owned internal links to the final prefix before rename; refresh changed installer records and bind launcher custody. | The retained old-code127 result at a deleted staging prefix remains negative evidence. Native pip, mypy and Ruff consoles must execute from the new environment. |
+| Warm environment is exact, stale or altered | Reuse only identical source/inventory and schema1.1 launcher custody; reject stale manifests or altered launcher bytes, modes or links and materialize through the native owner. | Successful installation alone does not authorize reuse; the old broken environment is preserved as failed evidence. |
+| Existing repository declares Hatch or setuptools discovery | Derive package roots and pytest roots from genuine declarations, preserving existing application metadata. | Ambiguity, unsupported backend/layout, unsafe or symlinked roots and incomplete inventories reject before installation writes; fake Hatch declarations are not recovery. |
+| Environment settings are absent, empty, changed late, nested or exceptional | Narrow injected settings preserve the existing read and restoration lifetimes; native lint enforces the owned environment boundary. | Unknown keys, aliases and inward compatibility access fail; no consumer exclusion or ambient mutation bypass is introduced. |
+| Typed provider authorization reads an authenticated run identity | Declare the three actual authorization consumers and their exact canonical/generated source custody; keep the existing identity constructor and hostile decoder. | Missing consumer ownership still fails semantic scanning. YAML scalar sharing preserves every decoded registry value and the existing size budget. |
+| Interpreter validation moves into its stable owner | Preserve public bindings, baseline behavior and the two original preflight mutations/oracles at their actual defining module. | Path corrections do not count as mutant kills; the full native producer train must execute the real causal controls. |
+| Complete candidate proof, protected merge and exact main | Native submission authenticates comparison transport, runs the full prospective DAG and owns exact push/PR behavior. Existing controller owners certify the resulting exact main. | Missing same-candidate coverage rejects before the expensive train, as retained attempt20299 demonstrates. Focused PASS evidence is never reusable full-train authority. |
+| Terminal release or pinned adopter observation | Existing build, runtime verification, provider authentication, collection and publication owners bind exact2.3.8 assets, attestations, receipt and immutable tag; consuming repositories then qualify the official bytes independently. | Publication requires actual immutable custody. SDK/application findings remain separate and neither authorize nor block release; the independent2.5 branch remains outside this maintained train. |
+
+The outward path is declared source and dependency closure -> canonical
+projection and workflow custody -> same-candidate preflight -> full prospective
+proof -> protected merge -> exact-main/controller closure -> ordinary release
+and verified immutable custody -> independent consuming qualification. No new
+producer, trigger, permission, lifecycle target or publication prerequisite is
+introduced by this maintenance repair.

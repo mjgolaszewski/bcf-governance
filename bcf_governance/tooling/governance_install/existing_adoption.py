@@ -13,10 +13,9 @@ import yaml
 
 from ..governance_profiles import render_profile_surface
 
-
 NATIVE_GUIDANCE_PATH = "docs/governance/native-agent-guidance.md"
 NO_AUTHENTICATED_NATIVE_BASELINE = "no_authenticated_native_baseline"
-LEGACY_EMPTY_NATIVE_BASELINE = {
+LEGACY_EMPTY_NATIVE_BASELINE: dict[str, object] = {
     "transition_class": "not_applicable_to_fresh_install",
     "source": None,
     "files": [],
@@ -89,7 +88,8 @@ def _safe_roots(repo_root: Path, values: tuple[str, ...], *, context: str) -> tu
             raise ValueError(f"{context} contains unsafe path {raw!r}")
         normalized = relative.as_posix().rstrip("/")
         path = repo_root / normalized
-        if not path.is_dir() or path.is_symlink():
+        ancestors = (repo_root.joinpath(*relative.parts[:length]) for length in range(1, len(relative.parts) + 1))
+        if not path.is_dir() or any(parent.is_symlink() for parent in ancestors):
             raise ValueError(f"{context} path is not a repository directory: {normalized}")
         tracked = subprocess.run(
             ["git", "-C", str(repo_root), "ls-files", "--", normalized],
@@ -116,6 +116,22 @@ def _python_roots(repo_root: Path) -> tuple[tuple[str, ...], tuple[str, ...]] | 
     pytest = _mapping(tool.get("pytest", {}), context="pyproject.toml tool.pytest")
     ini = _mapping(pytest.get("ini_options", {}), context="pyproject.toml tool.pytest.ini_options")
     packages = wheel.get("packages")
+    package_context = "Hatch wheel packages"
+    setuptools = _mapping(tool.get("setuptools", {}), context="pyproject.toml tool.setuptools")
+    discovery = setuptools.get("packages")
+    if isinstance(discovery, dict) and "find" in discovery:
+        if packages is not None:
+            raise ValueError("existing adoption package roots are ambiguous between Hatch and setuptools")
+        system = _mapping(payload.get("build-system", {}), context="pyproject.toml build-system")
+        if system.get("build-backend") not in {"setuptools.build_meta", "setuptools.build_meta:__legacy__"}:
+            raise ValueError("existing adoption setuptools roots require the declared setuptools backend")
+        if setuptools.get("package-dir") or setuptools.get("py-modules"):
+            raise ValueError("existing adoption cannot infer additional setuptools package-dir or py-modules roots")
+        find = _mapping(discovery["find"], context="setuptools package discovery")
+        if "where" not in find:
+            raise ValueError("existing adoption requires explicit setuptools packages.find.where roots")
+        packages = find["where"]
+        package_context = "setuptools packages.find.where"
     testpaths = ini.get("testpaths")
     if packages is None and testpaths is None:
         return None
@@ -124,7 +140,7 @@ def _python_roots(repo_root: Path) -> tuple[tuple[str, ...], tuple[str, ...]] | 
             "existing adoption requires both Hatch wheel packages and pytest testpaths when either is declared"
         )
     return (
-        _safe_roots(repo_root, _strings(packages, context="Hatch wheel packages"), context="source root"),
+        _safe_roots(repo_root, _strings(packages, context=package_context), context="source root"),
         _safe_roots(repo_root, _strings(testpaths, context="pytest testpaths"), context="test root"),
     )
 

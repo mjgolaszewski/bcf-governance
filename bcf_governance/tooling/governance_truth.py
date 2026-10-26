@@ -2,53 +2,52 @@
 
 from __future__ import annotations
 
-import json
 import re
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
+from .affected_proof_closure import verify_session_affected_proof_set
+from .ci_authority_certification import (
+    CICertificationError,
+    verify_ci_certification,
+)
+from .evaluation_scope import (
+    EvaluationIntent,
+    EvaluationScopeError,
+    certified_proposition,
+    evaluation_scope,
+)
+from .evidence_claim_resolution import resolved_session_claims
+from .evidence_execution import EvidenceError
+from .evidence_plan_scope import truth_scope_projection
+from .evidence_planning import load_claim_model
+from .evidence_reuse_attestations import compose_local_reuse
+from .evidence_workitem_lifecycle import workitem_observation
 from .governance_evidence import (
     bundle_digest,
     expected_evidence_kinds,
     expected_invocations,
-)
-from .ci_authority_certification import (
-    CICertificationError,
-    verify_ci_certification,
 )
 from .governance_truth_support import (
     compute_hotfix_reports,
     finding_report,
     verify_attestation,
 )
-from .evidence_workitem_lifecycle import workitem_observation
-from .evidence_execution import EvidenceError
-from .evidence_plan_scope import truth_scope_projection
-from .evidence_reuse_attestations import compose_local_reuse
-from .affected_proof_closure import verify_session_affected_proof_set
 from .prior_evidence_receipts import load_provisional_transport, provisional_receipts
 from .truth_receipts import ReceiptError, load_receipts
-from .evidence_planning import load_claim_model
 from .truth_reporting import (
     REQUIRED_DIRECT_CLAIMS,
     active_log_path,
-    current_subject,
     current_session_plan,
+    current_subject,
     exact_session_binding,
     failure_envelope,
     profile_closeout_requirements,
     verified_candidate,
-)
-from .evidence_claim_resolution import resolved_session_claims
-from .evaluation_scope import (
-    EvaluationIntent,
-    EvaluationScopeError,
-    certified_proposition,
-    evaluation_scope,
 )
 from .truth_workflow_graph import graph_workflow_gate_issues
 
@@ -123,7 +122,7 @@ def _workflow_gate_issues(repo_root: Path, policy: dict[str, Any], gate_ids: set
         if not path.is_file():
             issues.append(f"workflow_path_{relative_path}_missing")
             continue
-        payload = _load_yaml(path)
+        payload: dict[object, object] = {key: value for key, value in _load_yaml(path).items()}
         if relative_path in roots:
             on_value = payload.get("on", payload.get(True))
             if isinstance(on_value, dict):
@@ -289,6 +288,7 @@ def derive_truth(
         else {}
     )
     if session_plan.get("schema_version") == "3.0":
+        assert claim_model is not None, "version 3 session requires the claim model"
         try:
             prior_receipts = (
                 provisional_receipts(load_provisional_transport(
@@ -593,7 +593,7 @@ def derive_truth(
         "status": "not_applicable",
     }
     if any(value is not None for value in ci_paths):
-        if not all(value is not None for value in ci_paths):
+        if ci_authority_path is None or ci_certification_path is None or ci_session_manifest_path is None:
             ci_certification = {
                 "applicability": "enabled",
                 "status": "fail",

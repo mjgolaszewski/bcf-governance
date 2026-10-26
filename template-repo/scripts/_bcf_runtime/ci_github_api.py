@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import base64
-from dataclasses import asdict, dataclass
 import json
 import re
+from dataclasses import asdict, dataclass
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -15,23 +15,32 @@ from .ci_github_artifact_inventory import (
     ArtifactInventoryError,
     complete_repository_artifacts,
 )
+from .ci_github_check_observations import GitHubCheckObservationMixin
 from .ci_github_downloads import (
     GitHubDownloadKind,
     open_download,
 )
-from .provider_read import ProviderReadAttempt
-from .ci_github_errors import GitHubAPIConflictError, GitHubAPIError
+from .ci_github_errors import GitHubAPIConflictError as GitHubAPIConflictError
+from .ci_github_errors import GitHubAPIError as GitHubAPIError
+from .ci_github_pr_mutations import GitHubPRMutationMixin
 from .ci_github_release_api import GitHubReleaseAPIMixin
 from .ci_github_transport import GitHubTransportError, request_bytes, request_json
-from .ci_github_pr_mutations import GitHubPRMutationMixin
-from .ci_github_check_observations import GitHubCheckObservationMixin
 from .ci_github_values import (
     GitHubValueError,
+)
+from .ci_github_values import (
     positive_id as _provider_positive_id,
+)
+from .ci_github_values import (
     repository as _provider_repository,
+)
+from .ci_github_values import (
     sha as _provider_sha,
+)
+from .ci_github_values import (
     workflow_reference as _provider_workflow_reference,
 )
+from .provider_read import ProviderReadAttempt
 
 
 @dataclass(frozen=True)

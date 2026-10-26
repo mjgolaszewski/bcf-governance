@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from contextlib import contextmanager
-import os
-from typing import Iterator
 
+from .bootstrap.contracts import ScopedExecutionEnvironment
+from .bootstrap.environment import (
+    scoped_execution_environment as _default_scoped_execution_environment,
+)
 
 PROVIDER_EVENT_EXPRESSION = "${{ github.event_name }}"
 PULL_REQUEST_BASE_EXPRESSION = "${{ github.event.pull_request.base.sha }}"
@@ -64,8 +67,14 @@ def direct_comparison_environment(*, explicit_call: bool = True) -> dict[str, st
 
 
 @contextmanager
-def local_push_environment(*, base_sha: str, head_sha: str) -> Iterator[None]:
+def local_push_environment(
+    *,
+    base_sha: str,
+    head_sha: str,
+    scoped_environment: ScopedExecutionEnvironment | None=None,
+) -> Iterator[None]:
     """Project the exact direct-push context used after protected merge."""
+    scoped_environment = _default_scoped_execution_environment() if scoped_environment is None else scoped_environment
 
     values: dict[str, str | None] = {
         "BCF_PROVIDER_EVENT": "push",
@@ -78,17 +87,5 @@ def local_push_environment(*, base_sha: str, head_sha: str) -> Iterator[None]:
         "GITHUB_EVENT_NAME": "push",
         "GITHUB_SHA": head_sha,
     }
-    previous = {key: os.environ.get(key) for key in values}
-    for key, value in values.items():
-        if value is None:
-            os.environ.pop(key, None)
-        else:
-            os.environ[key] = value
-    try:
+    with scoped_environment.comparison(values):
         yield
-    finally:
-        for key, value in previous.items():
-            if value is None:
-                os.environ.pop(key, None)
-            else:
-                os.environ[key] = value

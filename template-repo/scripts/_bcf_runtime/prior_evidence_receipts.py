@@ -5,16 +5,17 @@ This boundary verifies transported bytes; it never grants reuse or authority.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
-from pathlib import Path, PurePosixPath
 import re
 import tempfile
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
+from typing import Any
 
+import yaml
 from jsonschema import Draft202012Validator, RefResolver, ValidationError
-import yaml  # type: ignore[import-untyped]
 
 from .ci_github_bundle import canonical_json
 from .evidence_execution import EvidenceError

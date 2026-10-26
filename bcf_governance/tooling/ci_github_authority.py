@@ -12,6 +12,7 @@ from .ci_authority_contracts import (
     authority_role_workflow,
     validate_ci_contract,
 )
+from .ci_github import GithubRunIdentity
 from .ci_github_api import GitHubAPI
 from .ci_github_identity import (
     GitHubControllerError,
@@ -69,7 +70,7 @@ def authenticate_role_run(
     run_id: object,
     run_attempt: object,
     require_success: bool,
-):
+) -> GithubRunIdentity:
     """Authenticate one role against the single v1.1 workflow registry."""
 
     if authority.get("schema_version") != "1.1":
@@ -111,7 +112,7 @@ def authenticate_role_job_inventory(
     run_attempt: object,
     require_success: bool,
     require_terminal: bool,
-):
+) -> tuple[GithubRunIdentity, tuple[dict[str, object], ...]]:
     """Authenticate one role and its exact provider job inventory together."""
 
     identity = authenticate_role_run(
@@ -153,7 +154,7 @@ def authenticate_active_role_job_inventory(
     role: str,
     run_id: object,
     run_attempt: object,
-):
+) -> tuple[GithubRunIdentity, tuple[dict[str, object], ...]]:
     """Authenticate an exact workflow inventory while its sole collector is active."""
 
     identity, jobs = authenticate_role_job_inventory(

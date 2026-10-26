@@ -2,11 +2,10 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 import hashlib
 import json
-from pathlib import Path
-from pathlib import PurePosixPath
+from datetime import datetime
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from jsonschema import Draft202012Validator, ValidationError
@@ -15,8 +14,8 @@ from .ci_github_artifacts import resolve_role_artifact
 from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import GitHubControllerError, MainIdentity
 from .ci_prior_evidence_auth import authenticate_prior_transport
-from .evidence_reuse_attestations import compose_reuse_attestations, planned_reuse
 from .evidence_execution import EvidenceError
+from .evidence_reuse_attestations import compose_reuse_attestations, planned_reuse
 from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     load_evidence_session_schema,
@@ -80,7 +79,12 @@ def _same_admission_plan(
         }):
         raise GitHubControllerError("reuse session subject or producer is not exact")
     nodes = plan.get("execution_dag", {}).get("nodes", [])
-    producers = [node.get("producer") for node in nodes if isinstance(node, dict)]
+    producers: list[str] = []
+    for node in nodes:
+        producer = node.get("producer") if isinstance(node, dict) else None
+        if not isinstance(producer, str) or not producer:
+            raise GitHubControllerError("reuse session producer inventory is not exact")
+        producers.append(producer)
     if (len(producers) != len(nodes)
         or any(not isinstance(value, str) or not value for value in producers)
         or len(producers) != len(set(producers))
@@ -105,10 +109,12 @@ def verify_same_admission_reuse(
         raise GitHubControllerError("reuse attestation inventory is empty or invalid")
     if any(not isinstance(value, dict) for value in observed):
         raise GitHubControllerError("reuse attestation is not an object")
-    claims = [
-        value["claim"].get("claim_id") if isinstance(value.get("claim"), dict) else None
-        for value in observed
-    ]
+    claims: list[str] = []
+    for value in observed:
+        claim = value["claim"].get("claim_id") if isinstance(value.get("claim"), dict) else None
+        if not isinstance(claim, str) or not claim:
+            raise GitHubControllerError("reuse attestation claim inventory is ambiguous")
+        claims.append(claim)
     if (any(not isinstance(value, str) or not value for value in claims)
         or claims != sorted(set(claims))):
         raise GitHubControllerError("reuse attestation claim inventory is ambiguous")

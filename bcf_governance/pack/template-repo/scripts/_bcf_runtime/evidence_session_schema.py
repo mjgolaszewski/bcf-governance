@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 class EvidenceSessionSchemaError(ValueError):
@@ -56,7 +57,7 @@ def active_planned_session_version(root: Path) -> str:
 
 
 def evidence_session_schema_path(root: Path, version: object) -> Path:
-    names = {
+    names: dict[object, str] = {
         "1.0": "evidence-session.schema.json",
         "2.0": "evidence-session.schema.json",
         "3.0": "evidence-session-v3.schema.json",

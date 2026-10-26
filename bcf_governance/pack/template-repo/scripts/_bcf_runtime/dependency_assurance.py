@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
-from importlib import metadata
 import json
-from pathlib import Path
 import tomllib
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from importlib import metadata
+from pathlib import Path
 from typing import Any
 
 from packaging.requirements import Requirement
@@ -76,7 +76,7 @@ def collect_installed_inventory(repo_root: Path) -> InstalledDependencyInventory
     queue: list[tuple[str, set[str]]] = []
     roots: set[str] = set()
     for requirement in _declared_requirements(repo_root):
-        name = canonicalize_name(requirement.name)
+        name: str = canonicalize_name(requirement.name)
         roots.add(name)
         queue.append((name, set(requirement.extras)))
     selected: dict[str, metadata.Distribution] = {}
@@ -186,7 +186,7 @@ def audit_envelope(
         "schema_version": "1.0",
         "status": status,
         "scanner": {"name": "pip-audit", "version": scanner_version},
-        "advisory_source": {"service": service, "observed_at": datetime.now(timezone.utc).isoformat()},
+        "advisory_source": {"service": service, "observed_at": datetime.now(UTC).isoformat()},
         "inventory_sha256": inventory.sha256,
         "inventory_component_count": len(inventory.components),
         "raw_result_sha256": raw_digest,

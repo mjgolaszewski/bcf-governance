@@ -6,9 +6,8 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
-
 
 IGNORED_SHADOW_NAMES = {
     ".git",
