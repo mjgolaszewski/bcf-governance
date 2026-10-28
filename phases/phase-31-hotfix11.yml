@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-31-hotfix11
   version: 1.0.0
   generated_at_utc: '2026-10-28T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-31-hotfix11.yml
 hotfix:
   id: P31-HF11
@@ -15,7 +15,15 @@ hotfix:
 execution_evidence:
   planned_commands:
   - bcf ci submit --repo-root .
-  executed_commands: []
+  executed_commands:
+  - Native resolved CI operation passed12/0; all112 original affected validation/public/overlay
+    cases passed, zero skips/errors/failures. Evidence bdmcp-minimal-focused-1.
+  - 'Generated ordinary runtime strict mypy305files: candidate0, exact original2383missing-import
+    negative1, byte-exact restored candidate0. Evidence bdmcp-minimal-typing-1.'
+  - All7 new ordinary/missing/malformed capability controls passed; strict3sourcefiles
+    and full affected Ruff passed. Evidence reconcile-bdmcp-minimal-1.
+  - Native reconcile passed401.682s and created exact definition bf570eac46c9e68a463f7e3ef6bd27de5d1e5b0a/authority
+    e1897a66afa66a2cdb1b89ae2d4a54ed2078cf53 with clean tree. Evidence reconcile-bdmcp-minimal-2.
   notes:
   - 'Pre-edit contract: tooling validation query; runner and producer-only dispatcher.
     Preserve every producer schema/path/semantic check; absent or malformed required
@@ -27,6 +35,9 @@ execution_evidence:
   - Isolated native semantic CI operation passes12/0. All112 original affected validation/public/overlay
     cases pass with zero skips, failures or errors. Strict ordinary-runtime305file
     causal qualification is recorded separately; no selected proof is release acceptance.
+  - Completed means implementation done with required full same-candidate CI, official
+    publication and independent custody still pending. No authored verified/closed
+    claim and no BDMCP full Standard acceptance claim.
 closeout_requirements:
   claims:
     required_suites_green:
