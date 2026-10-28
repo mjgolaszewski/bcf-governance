@@ -20,6 +20,7 @@ memory_retention_policy:
   stale_entry_handling: [mark_deprecated_before_removal, preserve_replacement_reference_when_available]
 environment_facts:
   current_repo_state:
+  - "Operator2026-10-28 prioritizes BDMCP unblock. P31-HF11 isolates the producer-only import repair for ordinary consumer typing. Broader semantic and Racecar JIT work remains preserved outside this candidate for later maintenance or independent2.5; ordinary CI has no live Identity dependency. Qualification and official custody remain pending."
   - P31-HF10 removes duplicate authenticated exact-main chain resolution via existing local custody routing; preserves deadline and recovery exclusion. Original negative topology proof and native reconciliation passed; full candidate and actual hosted custody pending.
   - P31-HF09 reproduced native console relocation and genuine setuptools adoption blockers; focused56 cases, production/new-test strict typing and actual49-package cold/warm console custody pass locally. Native reconcile/installer/full release/adopter assurance remains open; audits/maintenance-managed-quality-contract.yml owns the current scope.
   - Maintained 2.3.7 attempt 19045 failed genuine same-candidate CI matrix preflight before full proof or provider submission; original 4e49 source and failed terminal remain retained. Matrix coverage correction is prepared; fresh canonical reconciliation and complete candidate/release qualification remain pending. See audits/maintenance-read-effect-contract.yml.

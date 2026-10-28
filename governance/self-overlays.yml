@@ -56,6 +56,7 @@ overlays:
   - scripts/_bcf_runtime/governance_validation/product_certification.py
   - scripts/_bcf_runtime/governance_validation/product_parity.py
   - scripts/_bcf_runtime/governance_validation/self_authority_overlays.py
+  - scripts/_bcf_runtime/governance_validation/self_authority_dispatch.py
   adopter_alternative: adopter_owned_repository_integrations
 non_leakage:
   pack_manifest: template-repo/.bcf-pack-manifest.json

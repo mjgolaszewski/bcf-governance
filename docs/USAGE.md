@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.8/bcf_governance-2.3.8-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.9/bcf_governance-2.3.9-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -581,9 +581,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.8 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.8
+gh release download v2.3.9 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.9
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.8 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.9 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
