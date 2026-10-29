@@ -24,21 +24,25 @@ def job_graph(workflow: dict[str, Any]) -> tuple[dict[str, dict[str, Any]], dict
     return by_id, dependencies
 
 
+def _visit_ancestor(current: str, dependencies: dict[str, set[str]],
+                    visited: set[str], active: set[str]) -> None:
+    if current in active:
+        raise CIGraphError(f"CI graph cycle includes job {current}")
+    if current in visited:
+        return
+    active.add(current)
+    for dependency in dependencies[current]:
+        _visit_ancestor(dependency, dependencies, visited, active)
+    active.remove(current)
+    visited.add(current)
+
+
+
 def ancestors(job_id: str, dependencies: dict[str, set[str]]) -> set[str]:
     visited: set[str] = set()
     active: set[str] = set()
 
-    def visit(current: str) -> None:
-        if current in active:
-            raise CIGraphError(f"CI graph cycle includes job {current}")
-        if current in visited:
-            return
-        active.add(current)
-        for dependency in dependencies[current]:
-            visit(dependency)
-        active.remove(current)
-        visited.add(current)
 
-    visit(job_id)
+    _visit_ancestor(job_id, dependencies, visited, active)
     visited.remove(job_id)
     return visited

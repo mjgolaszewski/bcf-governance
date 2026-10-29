@@ -105,6 +105,17 @@ class ExactMainEvaluation:
         return {"mode": self.mode, "target": self.target}
 
 
+def _exact_main_role(workflow: dict[str, Any], name: str) -> dict[str, Any]:
+    jobs = [
+        item for item in workflow["jobs"]
+        if item.get("semantic_role") == name
+    ]
+    if len(jobs) != 1:
+        raise CIGraphError(f"exact-main semantic role {name} is not unique")
+    selected_job: dict[str, object] = jobs[0]
+    return selected_job
+
+
 def exact_main_evaluation(
     workflows: tuple[dict[str, Any], ...],
 ) -> ExactMainEvaluation:
@@ -113,19 +124,10 @@ def exact_main_evaluation(
     selected = [item for item in workflows if item["id"] == "exact-main"]
     if len(selected) != 1:
         raise CIGraphError("canonical graph must contain one exact-main workflow")
-    def role(name: str) -> dict[str, Any]:
-        jobs = [
-            item for item in selected[0]["jobs"]
-            if item.get("semantic_role") == name
-        ]
-        if len(jobs) != 1:
-            raise CIGraphError(f"exact-main semantic role {name} is not unique")
-        selected_job: dict[str, object] = jobs[0]
-        return selected_job
 
     try:
-        admit = role("exact-main-admission")["executor"]
-        governance = role("exact-main-governance-producer")["executor"]
+        admit = _exact_main_role(selected[0], "exact-main-admission")["executor"]
+        governance = _exact_main_role(selected[0], "exact-main-governance-producer")["executor"]
         mode = str(admit["evaluation_mode"])
         target = admit["evaluation_target"] if "evaluation_target" in admit else None
         inputs = governance["inputs"]
@@ -148,9 +150,9 @@ def _strings(value: Any) -> tuple[str, ...]:
     if isinstance(value, str):
         return (value,)
     if isinstance(value, dict):
-        return tuple(item for nested in value.values() for item in _strings(nested))
+        return tuple([item for nested in value.values() for item in _strings(nested)])
     if isinstance(value, list):
-        return tuple(item for nested in value for item in _strings(nested))
+        return tuple([item for nested in value for item in _strings(nested)])
     return ()
 
 
@@ -158,11 +160,11 @@ def _command_ids(
     graph: dict[str, Any], executor: dict[str, Any]
 ) -> tuple[str, ...]:
     if executor["kind"] in _EXPLICIT_EXECUTORS:
-        return tuple(
+        return tuple([
             graph["step_components"][component_id]["command"]
             for component_id in executor["components"]
             if graph["step_components"][component_id]["kind"] == "command"
-        )
+        ])
     if executor["kind"] in {"command", "truth"}:
         return (executor["command"],)
     return ()
@@ -181,12 +183,18 @@ def controller_command_ids(
     )
     for command_id in _command_ids(graph, executor):
         argv = graph["commands"][command_id]["argv"]
-        if "{controller}" in argv or any(
-            isinstance(value, str)
-            and "runner.tool_cache" in value
-            and any(token in value for token in route_tokens)
-            for value in argv
-        ):
+        routed = "{controller}" in argv
+        if not routed:
+            for value in argv:
+                if not isinstance(value, str) or "runner.tool_cache" not in value:
+                    continue
+                for token in route_tokens:
+                    if token in value:
+                        routed = True
+                        break
+                if routed:
+                    break
+        if routed:
             selected.append(command_id)
     return tuple(selected)
 
@@ -210,12 +218,12 @@ def job_requires_full_history(
 ) -> bool:
     """Derive whether a job consumes an exact pull-request base commit."""
 
-    return any(
-        "BCF_PR_BASE_SHA" in graph["commands"][command_id].get("environment", {})
-        or "BCF_PR_BASE_SHA"
-        in graph["commands"][command_id].get("required_environment", [])
-        for command_id in _command_ids(graph, executor)
-    )
+    for command_id in _command_ids(graph, executor):
+        command = graph["commands"][command_id]
+        if ("BCF_PR_BASE_SHA" in command.get("environment", {})
+                or "BCF_PR_BASE_SHA" in command.get("required_environment", [])):
+            return True
+    return False
 
 
 def _release_controller_issues(
@@ -254,13 +262,17 @@ def _release_controller_issues(
                 issues.append(
                     f"release {operation} must require the current controller and invoke its provider-effective identity"
                 )
-        elif operation in _TRIGGER_RELEASE_OPERATIONS and (
-            argv[0] != "{ephemeral_controller}"
-            or not any(install_index < index for install_index in installed)
-        ):
-            issues.append(
-                f"release {operation} must invoke its previously installed exact triggering controller"
-            )
+        elif operation in _TRIGGER_RELEASE_OPERATIONS:
+            previously_installed = False
+            if argv[0] == "{ephemeral_controller}":
+                for install_index in installed:
+                    if install_index < index:
+                        previously_installed = True
+                        break
+            if not previously_installed:
+                issues.append(
+                    f"release {operation} must invoke its previously installed exact triggering controller"
+                )
     return tuple(issues)
 
 
@@ -333,7 +345,12 @@ def local_gate_job_environments(
 
     matches: dict[str, list[dict[str, str]]] = {producer: [] for producer in producers}
     for workflow in graph["workflows"]:
-        if not any(event.get("type") == "pull_request" for event in workflow["events"]):
+        has_pull_request = False
+        for event in workflow["events"]:
+            if event.get("type") == "pull_request":
+                has_pull_request = True
+                break
+        if not has_pull_request:
             continue
         inherited = workflow.get("environment", {})
         for job in workflow["jobs"]:
@@ -343,11 +360,11 @@ def local_gate_job_environments(
             environment = {**inherited, **job.get("environment", {})}
             for producer in set(executor.get("gates", ())).intersection(matches):
                 matches[producer].append(dict(sorted(environment.items())))
-    invalid = sorted(
+    invalid = sorted([
         producer
         for producer, values in matches.items()
         if len(values) != 1 and not (not values and producer in allowed_unmapped)
-    )
+    ])
     if invalid:
         raise CIGraphError(
             "local evidence gate does not have one exact pull-request producer job: "
@@ -465,22 +482,21 @@ def job_execution_issues(
             issues.append(
                 f"CI graph job {job['id']} consumes an exact PR base without checkout"
             )
-        elif explicit_checkouts and any(
-            component.get("with", {}).get("fetch-depth") != 0
-            for component in explicit_checkouts
-        ):
-            issues.append(
-                f"CI graph job {job['id']} consumes an exact PR base without full-history checkout"
-            )
+        elif explicit_checkouts:
+            for component in explicit_checkouts:
+                if component.get("with", {}).get("fetch-depth") != 0:
+                    issues.append(
+                        f"CI graph job {job['id']} consumes an exact PR base without full-history checkout"
+                    )
+                    break
     if executor.get("kind") in _EXPLICIT_EXECUTORS and job.get("checkout"):
-        if any(
-            graph["step_components"][component_id].get("kind") == "action"
-            and graph["step_components"][component_id].get("action") == "checkout"
-            for component_id in executor["components"]
-        ):
-            issues.append(
-                f"CI graph job {job['id']} has duplicate implicit and explicit checkout ownership"
-            )
+        for component_id in executor["components"]:
+            component = graph["step_components"][component_id]
+            if component.get("kind") == "action" and component.get("action") == "checkout":
+                issues.append(
+                    f"CI graph job {job['id']} has duplicate implicit and explicit checkout ownership"
+                )
+                break
     issues.extend(_release_controller_issues(graph, job, executor))
     if (
         workflow is not None
@@ -586,15 +602,15 @@ def job_execution_issues(
         and evaluator_source != "protected_base"
     ):
         execution_inputs: list[Any] = [job.get("environment", {})]
-        execution_inputs.extend(
+        execution_inputs.extend([
             graph["commands"][command_id]
             for command_id in _command_ids(graph, executor)
-        )
+        ])
         if executor["kind"] in _EXPLICIT_EXECUTORS:
-            execution_inputs.extend(
+            execution_inputs.extend([
                 graph["step_components"][component_id]
                 for component_id in executor["components"]
-            )
+            ])
         relative = sorted(
             {
                 value
@@ -615,11 +631,11 @@ def workflow_input_issues(
 ) -> tuple[str, ...]:
     """Reject raw workflow inputs that disappear under a workflow's direct events."""
 
-    direct_events = sorted(
+    direct_events = sorted([
         event["type"]
         for event in workflow["events"]
         if event["type"] not in {"workflow_call", "workflow_dispatch"}
-    )
+    ])
     if not direct_events:
         return ()
     declared_inputs = {

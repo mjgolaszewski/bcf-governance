@@ -13,6 +13,8 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_absolute_path, schema_error_location
+
 from .automation_contracts import (
     AutomationContractError,
     load_automation_registry,
@@ -66,11 +68,11 @@ def _validate_protection(value: object, *, schema_path: Path) -> dict[str, Any]:
         raise GitHubControllerError("GitHub protection declaration must be a mapping")
     errors = sorted(
         Draft202012Validator(schema).iter_errors(value),
-        key=lambda item: list(item.absolute_path),
+        key=schema_error_absolute_path,
     )
     if errors:
         error = errors[0]
-        location = ".".join(str(item) for item in error.absolute_path) or "<root>"
+        location = schema_error_location(error) or "<root>"
         raise GitHubControllerError(
             f"GitHub protection schema violation at {location}: {error.message}"
         )
@@ -182,22 +184,25 @@ def _normalized_provider(value: dict[str, Any]) -> dict[str, Any]:
             copied_parameters = dict(parameters)
             checks = copied_parameters.get("required_status_checks")
             if isinstance(checks, list):
-                copied_parameters["required_status_checks"] = sorted(
-                    checks,
-                    key=lambda check: (
-                        str(check.get("context", "")) if isinstance(check, dict) else "",
-                        str(check.get("integration_id", "")) if isinstance(check, dict) else "",
-                    ),
-                )
+                decorated_checks = [
+                    ((str(check.get("context", "")) if isinstance(check, dict) else "",
+                      str(check.get("integration_id", "")) if isinstance(check, dict) else ""),
+                     index, check)
+                    for index, check in enumerate(checks)
+                ]
+                copied_parameters["required_status_checks"] = [
+                    check for _, _, check in sorted(decorated_checks)
+                ]
             methods = copied_parameters.get("allowed_merge_methods")
             if isinstance(methods, list):
                 copied_parameters["allowed_merge_methods"] = sorted(methods)
             copied["parameters"] = copied_parameters
         normalized_rules.append(copied)
-    normalized["rules"] = sorted(
-        normalized_rules,
-        key=lambda item: str(item.get("type", "")) if isinstance(item, dict) else "",
-    )
+    decorated_rules = [
+        (str(item.get("type", "")) if isinstance(item, dict) else "", index, item)
+        for index, item in enumerate(normalized_rules)
+    ]
+    normalized["rules"] = [item for _, _, item in sorted(decorated_rules)]
     return normalized
 
 
@@ -331,7 +336,7 @@ def inspect_protection_declaration(
     actual = _normalized_provider(detail)
     desired = _normalized_provider(desired_ruleset(declaration))
     differences = tuple(
-        sorted(key for key in desired if actual.get(key) != desired.get(key))
+        sorted([key for key in desired if actual.get(key) != desired.get(key)])
     )
     return ProtectionResult(
         "clean" if not differences else "drift",

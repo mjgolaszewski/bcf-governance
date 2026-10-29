@@ -1,0 +1,84 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF14 Hotfix Log
+  id: bcf-governance-phase-31-hotfix14
+  version: 1.0.0
+  generated_at_utc: '2026-10-27T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix14.yml
+hotfix:
+  id: P31-HF14
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 14
+  summary: Prove source descriptor and definition-time effect ownership
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - command: Portable descriptor, definition, receiver, profile and regression controls
+    result: 322 cases pass; opaque injected get/json/strip, aliases and unsupported-flow callbacks refuse; source-resolved positive ports and original write-effect
+      oracle retained
+    scope: Private candidate portable qualification only; native self-hosted baseline remains unresolved in ci_commands.main
+    record: Owner-held finite qualification receipt; digest identifies the exact selected evidence, not release acceptance
+    record_sha256: 390bb84be2110e4992fab5455d00afe66ee55a4bf2fda2ef4d7d4bed6aaddc1c
+  - command: Source binding integration and original deferred, receiver and locked-project regressions
+    result: 201 cases pass in the private candidate; immediate receiver and field escape controls refuse
+    scope: Source-model qualification only; full self-governance and execution-owner acceptance remain open
+    record: Owner-held finite qualification receipt
+    record_sha256: 66204811e989fbc49134bc025708d9193bbd56b1409dca4ac961c8a714c23424
+  - command: CI graph query diagnostics, recursion and execution-input regressions
+    result: 159 cases pass after explicit eager and short-circuit query repairs; strict typing and F821 pass across 11 modules
+    scope: Private candidate only; public semantic closure, owner backend and release acceptance remain incomplete
+    record: Owner-held finite qualification receipt
+    record_sha256: 716e64bc235692894ed76dba8ca2a20ac672c98e7c4e388ed18c8ea494a908a4
+  - command: Composed CI diagnostics, rendering, routing and shell-projection regressions
+    result: 208 cases pass with original injection and permission guards retained; strict typing and F821 pass across 17 modules
+    scope: Private candidate only; 131 deferred-scope functions were identified before this batch, and full semantic closure and owner integration remain open
+    record: Owner-held finite qualification receipt
+    record_sha256: fc4aae789c6e403afd3b7a0cb123ff33165550813694d3a21eb163fef2fecb72
+  - command: Recursive value and reusable-permission, storage, post-merge and rotation query regressions
+    result: 208 cases pass after the final rotation batch; strict typing and F821 pass across 22 modules
+    scope: Private candidate only; public semantic check and complete execution-owner backend remain release blockers
+    record: Owner-held finite qualification receipt
+    record_sha256: ea8b5bf468c4308d11f01ea00879cb88dcc745d30c8dae993d806855396f9729
+  - command: Edge compilation and storage, automation, trusted-controller and protection query regressions
+    result: Edge suite 208 passes; storage and automation 123 passes; controller and GitHub 35 passes; protection inspection 24 passes; strict typing and F821 pass across 28 modules
+    scope: Private source query qualification only; remaining public semantic closure and complete owner backend block release acceptance
+    record: Owner-held finite qualification receipt
+    record_sha256: 0b493ffc018c1bd9e7dca75f13288efd8a3d8d693912d0da729db854547a36d5
+  - command: Candidate recovery and GitHub adoption query composition
+    result: Recovery 16 cases pass; adoption and composed CI 225 cases pass; strict typing and F821 pass across 34 modules
+    scope: Private candidate only; matrix suite retains the same self-authority failure before and after its query edit, with 15 other cases passing; native reconciliation and complete semantic/owner acceptance remain open
+    record: Owner-held finite qualification receipt
+    record_sha256: fd18a630c39344dd1f827026fc1f6949fa4c95489d85d72809de983defee6b01
+  - command: Public operation boundary and interpreter, trusted-run and capture query regressions
+    result: Public semantic test advanced past governance.cli.ci.v1; session schema and cleanup 23 passes; broader query and matrix suites 230 passes with two original Git custody requirements unresolved; strict typing and F821 pass across 38 modules
+    scope: Native mirror refresh cleared stale projection refusal; remaining failures require clean committed HEAD and native workflow-authority reconciliation. No release or complete public-operation acceptance is claimed.
+    record: Owner-held finite qualification receipt
+    record_sha256: a8e71c5bec5e40732abb2f1cdd307db22dd1e292eed3c107728562a0760e03cc
+  notes:
+  - 'Pre-edit scope: tooling layer, query/discovery or profile compilation; target paths: bcf_governance/tooling/semantic_python_descriptor_identity.py, bcf_governance/tooling/semantic_ownership_inventory.py,
+    bcf_governance/tooling/semantic_operation_effects.py.'
+  - 'Observed cause: function-only inventory omits definition-time paths; property access super and receiver chains lack supported source proof.'
+  - Preserve canonical public entrypoints, source-first ownership, original test populations, module limits, native projection and lock owners.
+  - No adopter runtime edits, workflow pin edits, hard-alias or external-effect waivers, production key/provider mutation, independent 2.5 branch changes, or publication
+    authority from selected proofs.
+  - This log is planned because implementation and complete same-candidate evidence remain incomplete; verified and closed are computed only by native truth.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

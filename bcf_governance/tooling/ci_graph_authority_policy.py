@@ -48,11 +48,11 @@ def validate_graph_authority_policy(repo_root: Path, graph: dict[str, Any]) -> N
         if job["permissions"].get("checks") == "write"
     ]
     owners = {str(item["semantic_role"]) for item in reserved}
-    unexpected = sorted(
+    unexpected = sorted([
         str(job["semantic_role"])
         for job in check_writers
         if job["semantic_role"] not in owners
-    )
+    ])
     if unexpected:
         raise CIGraphError(f"CI graph has unregistered check publishers: {unexpected}")
     protection_path = repo_root / "governance/github-protection.yml"

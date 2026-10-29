@@ -1,0 +1,72 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF15 Hotfix Log
+  id: bcf-governance-phase-31-hotfix15
+  version: 1.0.0
+  generated_at_utc: '2026-10-27T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix15.yml
+hotfix:
+  id: P31-HF15
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 15
+  summary: Bind trusted JIT owner custody to actual execution contexts
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - command: Actual runner required-owner admission and contract normalization controls
+    result: 23 cases pass; requires_execution_owner is a boolean requirement, not an owner selector; guard precedes interpreter probes and both execution-state branches
+    scope: Early admission only; native credential-backed backend is not installed
+    record: Owner-held finite qualification receipt; digest identifies the exact selected evidence, not release acceptance
+    record_sha256: 9cdd658f1fb6b818789975cddbfc87de4d4605a432209e70c9b13fc475970ad1
+  - command: Hash-bound private independent owner components and real process controls
+    result: 56 component cases and strict typing across10 production files pass; versioned API and out-of-scope fallback controls included
+    scope: Independent private components only; no live issuer/BFF or native JIT acceptance
+    record: Owner-held finite qualification receipt; digest identifies the exact selected evidence, not release acceptance
+    record_sha256: af9502521acadfcd0fe0d6770c7f3853222b0626fc4529ca0551fe7f630d500a
+  - command: Frozen runtime and owner-socket kernel qualification
+    result: 155 cases and strict typing across 19 production modules pass; actual held peer, source, runtime, network and pending-socket identities rechecked
+    scope: Private source components only; installed execution-owner backend and credential lifecycle remain incomplete
+    record: Owner-held finite qualification receipt
+    record_sha256: 383f234ec32c30b049abd6f4fcbab23523e34a8d36590de645b4f94b0be8f355
+  - command: Real fixed-origin TLS through frozen runtime and bounded outside relay
+    result: Ordinary trusted CA and hostname validation pass; actual original service generation rechecked; held process and relay close
+    scope: Nonsecret TLS connectivity only; no native JIT, SDK after-await or release acceptance
+    record: Owner-held finite qualification receipt
+    record_sha256: 01c33e526b3a56c1a80b3ffd61a32512262068591697061ea832c3b163fa1121
+  - command: Normal strong-admin provisioning through supported tenant and application APIs
+    result: Two isolated sandbox tenants and target-local Identity/Racecar capabilities verified; original default catalog and service generation preserved
+    scope: Persistent operator-owned qualification surface; no workload credential delivery or release acceptance
+    record: Owner-held finite qualification receipt
+    record_sha256: 3b8295dd24f8819f98642ce31206af781c7c5a7b167dd29f4f8fd5127888eb86
+  - command: Retire exact six public policy-probe files
+    result: Native exec terminal and independent daemon absence verified for all six markers; physical fence released
+    scope: Only journal-owned temporary public files removed; persistent service volumes and qualification tenants preserved
+    record: Owner-held finite qualification receipt
+    record_sha256: b0279413334d8bfc5256c363de4270d1c44a7b81e3c58809d7b73818b7036bb6
+  notes:
+  - 'Pre-edit scope: tooling execution orchestration with explicit trusted owner ports; exact owner/factory and actual-context binding contract precedes implementation.'
+  - 'Observed cause: current execution owner has no authenticated actual-context handoff and unconditional retirement cannot preserve uncertain external owner cleanup.'
+  - Preserve canonical public entrypoints, source-first ownership, original test populations, module limits, native projection and lock owners.
+  - No adopter runtime edits, workflow pin edits, hard-alias or external-effect waivers, production key/provider mutation, independent 2.5 branch changes, or publication
+    authority from selected proofs.
+  - This log is planned because implementation and complete same-candidate evidence remain incomplete; verified and closed are computed only by native truth.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

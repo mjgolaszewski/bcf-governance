@@ -11,6 +11,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_location, schema_error_relative_path
+
 from .ci_graph_contracts import CIGraphError
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path, render_yaml
 from .governance_install.transaction import apply_transaction
@@ -189,11 +191,11 @@ def inventory_github_workflows(repo_root: Path) -> dict[str, Any]:
         raise CIGraphError(f"cannot load workflow inventory schema: {exc}") from exc
     errors = sorted(
         Draft202012Validator(schema).iter_errors(inventory),
-        key=lambda item: list(item.path),
+        key=schema_error_relative_path,
     )
     if errors:
         error = errors[0]
-        location = ".".join(str(item) for item in error.absolute_path) or "<root>"
+        location = schema_error_location(error) or "<root>"
         raise CIGraphError(f"workflow inventory schema violation at {location}: {error.message}")
     return inventory
 

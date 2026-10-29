@@ -134,6 +134,18 @@ def resolve_local_project_python(
     )
 
 
+def _dependency_plan(repo_root: Path) -> InterpreterEnvironmentPlan:
+    try:
+        plan = derive_interpreter_environment(repo_root)
+        if plan is None:
+            raise InterpreterEnvironmentError(
+                "repository declares no interpreter dependency contract"
+            )
+        return plan
+    except InterpreterEnvironmentError as exc:
+        raise LocalExecutionAdmissionError(str(exc)) from exc
+
+
 def ensure_local_project_python(
     repo_root: Path,
     controller_python: Path,
@@ -142,22 +154,11 @@ def ensure_local_project_python(
 ) -> Path:
     """Derive the project interpreter without an operator setup procedure."""
 
-    def dependency_plan() -> InterpreterEnvironmentPlan:
-        try:
-            plan = derive_interpreter_environment(repo_root)
-            if plan is None:
-                raise InterpreterEnvironmentError(
-                    "repository declares no interpreter dependency contract"
-                )
-            return plan
-        except InterpreterEnvironmentError as exc:
-            raise LocalExecutionAdmissionError(str(exc)) from exc
-
     if requested is not None:
         project_python = resolve_local_project_python(
             repo_root, controller_python, requested=requested
         )
-        plan = dependency_plan()
+        plan = _dependency_plan(repo_root)
         try:
             probe_interpreter_environment(plan, project_python)
         except InterpreterEnvironmentError as exc:
@@ -167,12 +168,12 @@ def ensure_local_project_python(
     if local.exists() or local.is_symlink() or local.parent.parent.exists():
         try:
             project_python = resolve_local_project_python(repo_root, controller_python)
-            plan = dependency_plan()
+            plan = _dependency_plan(repo_root)
             probe_interpreter_environment(plan, project_python)
             return project_python
         except (InterpreterEnvironmentError, LocalExecutionAdmissionError):
             pass
-    plan = dependency_plan()
+    plan = _dependency_plan(repo_root)
     try:
         project_python = materialize_interpreter_environment(
             repo_root, controller_python

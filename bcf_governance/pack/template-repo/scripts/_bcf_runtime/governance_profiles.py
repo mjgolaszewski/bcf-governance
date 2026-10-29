@@ -18,6 +18,15 @@ from .interpreter_contract_projection import (
     InterpreterContractProjectionError,
     project_profile_interpreter_contract,
 )
+from .profile_builtin_contracts import (
+    _builtin_contracts as _builtin_contracts,
+)
+from .profile_builtin_contracts import (
+    _semantic_owner_control as _semantic_owner_control,
+)
+from .profile_builtin_contracts import (
+    _v2_builtin_contracts as _v2_builtin_contracts,
+)
 from .profile_surface_generation import (
     write_makefile as render_makefile,
 )
@@ -66,101 +75,10 @@ def _safe_relative(value: object, *, context: str) -> str:
     return path.as_posix()
 
 
-def _builtin_contracts() -> dict[str, dict[str, Any]]:
-    return {
-        "governance-validate": {
-            "invocation": {
-                "argv": ["python3", "scripts/validate_governance_yaml.py", "--repo-root", "."],
-                "cwd": ".",
-                "env": {},
-                "required_env": [],
-            },
-            "evidence": {"kind": "gate"},
-            "negative_controls": [
-                {
-                    "id": "authored-verified-state-is-rejected",
-                    "mutation": {
-                        "path": "@active_phase_log",
-                        "yaml_path": "document.status",
-                        "value": "verified",
-                    },
-                    "oracle": {
-                        "kind": "diagnostic",
-                        "exit_codes": [1],
-                        "stream": "stderr",
-                        "regex": "verified.*(?:not one of|computed)",
-                    },
-                }
-            ],
-        },
-        "governance-exposure-scan": {
-            "invocation": {
-                "argv": ["python3", "scripts/check_governance_exposure.py", "--repo-root", "."],
-                "cwd": ".",
-                "env": {},
-                "required_env": [],
-            },
-            "evidence": {"kind": "gate"},
-            "negative_controls": [
-                {
-                    "id": "local-workspace-path-is-rejected",
-                    "mutation": {
-                        "path": "MEMORY.yml",
-                        "yaml_path": "stable_decisions.canonical_governance_guide",
-                        "value_base64": "L1VzZXJzL2V4YW1wbGUvcHJpdmF0ZS9BR0VOVFMueW1s",
-                    },
-                    "oracle": {
-                        "kind": "diagnostic",
-                        "exit_codes": [1],
-                        "stream": "stdout",
-                        "regex": "local_workspace_path",
-                    },
-                }
-            ],
-        },
-    }
 
 
-def _semantic_owner_control(index: int) -> dict[str, Any]:
-    return {
-        "id": f"canonical-owner-{index + 1}-is-enforced",
-        "mutation": {
-            "path": "governance/canonical-representations.yml",
-            "yaml_path": f"representations.{index}.authorized_constructors_and_factories",
-            "value": ["scripts/_bcf_runtime/missing.py::owner"],
-        },
-        "oracle": {
-            "kind": "diagnostic",
-            "exit_codes": [1],
-            "stream": "stdout",
-            "regex": "owner must be an authorized constructor",
-        },
-    }
 
 
-def _v2_builtin_contracts() -> dict[str, dict[str, Any]]:
-    return {
-        "semantic-ownership": {
-            "invocation": {
-                "argv": ["python3", "scripts/semantic_ownership.py", "--repo-root", "."],
-                "cwd": ".",
-                "env": {},
-                "required_env": [],
-            },
-            "evidence": {
-                "kind": "gate",
-                "output_requirements": [
-                    {
-                        "path": ".artifacts/semantic-ownership/report.json",
-                        "media_type": "application/json",
-                    }
-                ],
-            },
-            "negative_controls": [
-                _semantic_owner_control(0),
-            ],
-        }
-    }
 
 
 def _validate_oracle(raw: object, *, context: str) -> dict[str, Any]:
@@ -228,6 +146,8 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
     invocation = raw.get("invocation")
     if not isinstance(invocation, dict):
         raise ProfileContractError(f"gate {target}.invocation must be a mapping")
+    if set(invocation) - {"argv", "cwd", "env", "required_env", "state", "timeout_seconds", "requires_execution_owner"}:
+        raise ProfileContractError(f"gate {target}.invocation has unsupported fields")
     argv = invocation.get("argv")
     if not isinstance(argv, list) or not argv or not all(
         isinstance(value, str) and value for value in argv
@@ -324,13 +244,40 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
                 "artifact_binding": "non_authoritative_until_captured",
             },
         }
+    normalized_invocation: dict[str, Any] = {
+        "argv": argv,
+        "cwd": cwd,
+        "env": dict(sorted(env.items())),
+        "required_env": sorted(set(required_env)),
+    }
+    if "requires_execution_owner" in invocation:
+        required_owner = invocation["requires_execution_owner"]
+        if type(required_owner) is not bool:
+            raise ProfileContractError(f"gate {target}.invocation.requires_execution_owner must be a boolean")
+        normalized_invocation["requires_execution_owner"] = required_owner
+    if "timeout_seconds" in invocation:
+        timeout = invocation["timeout_seconds"]
+        if type(timeout) is not int or not 1 <= timeout <= 21600:
+            raise ProfileContractError(
+                f"gate {target}.invocation.timeout_seconds must be an integer from 1 to 21600"
+            )
+        normalized_invocation["timeout_seconds"] = timeout
+    if "state" in invocation:
+        state = invocation["state"]
+        if not isinstance(state, dict) or set(state) - {"lifecycle", "namespace"}:
+            raise ProfileContractError(f"gate {target}.invocation.state is invalid")
+        lifecycle = state.get("lifecycle")
+        if lifecycle not in ("ephemeral", "persistent_shared"):
+            raise ProfileContractError(f"gate {target}.invocation.state.lifecycle is invalid")
+        if lifecycle == "ephemeral" and "namespace" in state:
+            raise ProfileContractError(f"gate {target} ephemeral state forbids namespace")
+        if lifecycle == "persistent_shared":
+            namespace = state.get("namespace")
+            if not isinstance(namespace, str) or re.fullmatch(r"[a-z0-9][a-z0-9-]{5,63}", namespace) is None:
+                raise ProfileContractError(f"gate {target} shared state requires a valid namespace")
+        normalized_invocation["state"] = dict(state)
     return {
-        "invocation": {
-            "argv": argv,
-            "cwd": cwd,
-            "env": dict(sorted(env.items())),
-            "required_env": sorted(set(required_env)),
-        },
+        "invocation": normalized_invocation,
         "evidence": evidence,
         "negative_controls": validated_controls,
     }

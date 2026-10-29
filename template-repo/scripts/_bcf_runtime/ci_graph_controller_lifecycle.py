@@ -14,6 +14,8 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_location, schema_error_relative_path
+
 from .ci_graph_errors import CIGraphError
 
 AUTHORIZATION_SCHEMA = Path("schemas/recovery-reentry-authorization.schema.json")
@@ -74,10 +76,10 @@ def _authorization(repo_root: Path, value: object) -> dict[str, Any]:
         raise CIGraphError("recovery re-entry authorization schema is unavailable") from exc
     errors = sorted(
         Draft202012Validator(schema).iter_errors(value),
-        key=lambda item: list(item.path),
+        key=schema_error_relative_path,
     )
     if errors:
-        location = ".".join(str(item) for item in errors[0].absolute_path) or "<root>"
+        location = schema_error_location(errors[0]) or "<root>"
         raise CIGraphError(
             f"recovery re-entry authorization schema violation at {location}: "
             f"{errors[0].message}"

@@ -21,12 +21,14 @@ def captured_receipt_succeeded(path: Path) -> bool:
     receipt = json.loads(path.read_text(encoding="utf-8"))
     observations = receipt.get("observations", {})
     probes = receipt.get("behavioral_probes", [])
-    invalid_probe = not probes or any(
-        not isinstance(probe, dict)
-        or probe.get("mutation_applied") is not True
-        or probe.get("oracle_observation", {}).get("satisfied") is not True
-        for probe in probes
-    )
+    invalid_probe = not probes
+    if not invalid_probe:
+        for probe in probes:
+            if (not isinstance(probe, dict)
+                    or probe.get("mutation_applied") is not True
+                    or probe.get("oracle_observation", {}).get("satisfied") is not True):
+                invalid_probe = True
+                break
     return (
         receipt.get("result") == "passed"
         and observations.get("exit_code") == 0

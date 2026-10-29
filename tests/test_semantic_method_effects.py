@@ -203,7 +203,7 @@ def test_same_instance_effects_preserve_pure_and_declared_port_boundaries(
     ) == (1, 0)
 
 
-def test_declared_component_port_is_reached_but_alias_cannot_conceal_source(
+def test_declared_port_does_not_admit_an_injected_component_or_alias(
     tmp_path: Path,
 ) -> None:
     component_inventory = _inventory(
@@ -215,11 +215,14 @@ def test_declared_component_port_is_reached_but_alias_cannot_conceal_source(
     component_port = (
         "backend/src/demo/service.py::self.store.save"
     )
-    assert _validate(
-        component_inventory,
-        "query",
-        _operation(allowed_mutation_ports=[component_port]),
-    ) == (1, 0)
+    # Declaring an effect boundary does not establish the injected receiver.
+    # The preceding test retains the source-resolved positive port boundary.
+    with pytest.raises(SemanticOperationEffectError, match="unresolved effect call path"):
+        _validate(
+            component_inventory,
+            "query",
+            _operation(allowed_mutation_ports=[component_port]),
+        )
 
     alias_inventory = _inventory(
         tmp_path / "alias",
@@ -465,4 +468,21 @@ def test_dynamic_method_ownership_fails_closed(tmp_path: Path, source: str) -> N
     inventory = _inventory(tmp_path, source)
 
     with pytest.raises(SemanticOperationEffectError, match="unresolved effect call path"):
+        _validate(inventory, "query")
+
+
+@pytest.mark.parametrize("store", [False, True], ids=["declaration-only", "actual-none-store"])
+def test_annotation_only_receiver_target_is_not_a_method_store(tmp_path: Path, store: bool) -> None:
+    declaration = "self._save: object" + (" = None" if store else "")
+    inventory = _inventory(tmp_path, "class Service:\n"
+        "    def query(self):\n        " + declaration + "\n        return self._save()\n"
+        "    def _save(self):\n        return 1\n")
+    query = next(row for row in inventory["functions"] if row["symbol"].endswith("::Service.query"))
+    call = next(row for row in query["calls"] if row["call_name"] == "_save")
+    assert ("_save" in query["receiver_attribute_mutations"]) is store
+    assert call["dispatch_resolution"] == ("unresolved" if store else "exact_same_instance")
+    if store:
+        with pytest.raises(SemanticOperationEffectError, match="unresolved"):
+            _validate(inventory, "query")
+    else:
         _validate(inventory, "query")

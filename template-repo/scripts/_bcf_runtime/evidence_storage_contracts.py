@@ -14,6 +14,8 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_location, schema_error_string_path
+
 CONTRACT_PATH = Path("governance/evidence-storage.yml")
 CONTRACT_SCHEMA = Path("schemas/evidence-storage.schema.json")
 MANIFEST_SCHEMA = Path("schemas/evidence-input-manifest.schema.json")
@@ -71,11 +73,11 @@ def _validate(
 ) -> None:
     errors = sorted(
         Draft202012Validator(schema).iter_errors(payload),
-        key=lambda item: tuple(str(part) for part in item.absolute_path),
+        key=schema_error_string_path,
     )
     if errors:
         error = errors[0]
-        location = ".".join(str(part) for part in error.absolute_path) or "<root>"
+        location = schema_error_location(error)
         raise EvidenceStorageError(
             f"{label} schema violation at {location}: {error.message}"
         )

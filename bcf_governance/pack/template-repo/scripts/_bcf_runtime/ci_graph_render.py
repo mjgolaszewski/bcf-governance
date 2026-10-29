@@ -31,6 +31,7 @@ from .ci_graph_shell_projection import (
     require_available_environment_names,
     require_available_generated_slots,
 )
+from .ci_graph_workflow_run import workflow_has_event
 from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
 from .repository_comparison_context import (
@@ -58,9 +59,7 @@ def scope_runner_temp_value(value: Any) -> Any:
 
     if isinstance(value, str):
         return RUNNER_TEMP_ROOT.sub(
-            lambda match: RUNNER_TEMP_PREFIX
-            + match.group("root")
-            + RUN_ATTEMPT_SUFFIX,
+            RUNNER_TEMP_PREFIX + r"\g<root>" + RUN_ATTEMPT_SUFFIX,
             value,
         )
     if isinstance(value, dict):
@@ -159,7 +158,7 @@ def _required_environment_step(
         "shell": "bash",
         "env": bindings,
         "run": "set -euo pipefail\n"
-        + "".join(f'test -n "${name}"\n' for name in sorted(bindings)),
+        + "".join([f'test -n "${name}"\n' for name in sorted(bindings)]),
     }
 
 
@@ -170,7 +169,7 @@ def _component_steps(
     for component_id in component_ids:
         component = compiled.graph["step_components"][component_id]
         if component["kind"] == "directory_setup":
-            paths = " ".join(shlex.quote(value) for value in component["paths"])
+            paths = " ".join([shlex.quote(value) for value in component["paths"]])
             steps.append(
                 {
                     "name": component["name"],
@@ -307,7 +306,7 @@ def _executor_steps(
     if executor["kind"] in {"command", "truth"}:
         return [_command_step(compiled, executor["command"], name=job["display_name"])]
     if executor["kind"] == "gate_group":
-        gates = " ".join(shlex.quote(value) for value in executor["gates"])
+        gates = " ".join([shlex.quote(value) for value in executor["gates"]])
         return [
             {
                 "name": "Capture each governed gate once",
@@ -542,9 +541,9 @@ def _job(
         if compiled.graph["artifacts"][artifact_id]["kind"] == "durable-reference"
     ]
     if durable_references:
-        result.setdefault("env", {})["BCF_EVIDENCE_INPUT_BINDINGS"] = ";".join(
+        result.setdefault("env", {})["BCF_EVIDENCE_INPUT_BINDINGS"] = ";".join([
             f"{reference}|{root}" for reference, root in durable_references
-        )
+        ])
     if "protected_environment" in job:
         result["environment"] = job["protected_environment"]
     steps: list[dict[str, Any]] = []
@@ -555,7 +554,7 @@ def _job(
         checkout_inputs: dict[str, Any] = {"persist-credentials": False}
         if job_requires_full_history(compiled.graph, executor):
             checkout_inputs["fetch-depth"] = 0
-        if any(event["type"] == "workflow_run" for event in workflow["events"]):
+        if workflow_has_event(workflow, "workflow_run"):
             checkout_inputs["ref"] = "${{ github.event.workflow_run.head_sha }}"
         steps.append(
             {
@@ -643,7 +642,7 @@ def _job(
 def _workflow(compiled: CompiledCIGraph, workflow: dict[str, Any]) -> bytes:
     workflow_environment = copy.deepcopy(workflow["environment"])
     require_available_environment_names(workflow_environment)
-    if any(event["type"] == "pull_request" for event in workflow["events"]):
+    if workflow_has_event(workflow, "pull_request"):
         event_types = {event["type"] for event in workflow["events"]}
         comparison_environment = (
             direct_comparison_environment()
@@ -673,17 +672,19 @@ def _workflow(compiled: CompiledCIGraph, workflow: dict[str, Any]) -> bytes:
     provenance = (
         f"{GENERATED_HEADER}\n"
         f"# graph-sha256: {compiled.graph_sha256}\n"
-        f"# extension-sha256: {','.join(digest for _, digest in compiled.extension_sha256) or 'none'}\n"
-        f"# input-sha256: {','.join(digest for _, digest in compiled.input_sha256) or 'none'}\n"
+        f"# extension-sha256: {','.join([digest for _, digest in compiled.extension_sha256]) or 'none'}\n"
+        f"# input-sha256: {','.join([digest for _, digest in compiled.input_sha256]) or 'none'}\n"
     )
     return provenance.encode("utf-8") + render_yaml(payload)
 
 
 def render_ci_graph(repo_root: Path) -> dict[str, bytes]:
     compiled = validate_ci_graph(repo_root)
+    # Compilation requires unique workflow paths before this projection.
+    workflows = {workflow["path"]: workflow for workflow in compiled.workflows}
     return {
-        workflow["path"]: _workflow(compiled, workflow)
-        for workflow in sorted(compiled.workflows, key=lambda item: item["path"])
+        path: _workflow(compiled, workflows[path])
+        for path in sorted(workflows)
     }
 
 

@@ -1,0 +1,60 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF11 Hotfix Log
+  id: bcf-governance-phase-31-hotfix11
+  version: 1.0.0
+  generated_at_utc: '2026-10-27T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix11.yml
+hotfix:
+  id: P31-HF11
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 11
+  summary: Consumer dispatch and exact resolver foundation
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - command: Selected ordinary consumer typing candidate-original-restored qualification
+    result: 305 files, identical namespace settings, exits 0/1/0; original fails exactly three omitted producer imports; prior 29 selected packaging tests and strict/Ruff
+      proofs retained.
+    scope: isolated maintained candidate, no adopter or release acceptance
+    record: AgentBus allocation20982 independent physical and source review
+    record_sha256: 859607e10e440a601ff913759082c0426ca047f7dbee2eadffedd585395b61fb
+  - command: Exhaustive old-resolver versus indexed-resolver comparison
+    result: 40,977 producer and 30,779 consumer queries equal, 16 exact cases, complete disjoint coverage and restored source.
+    scope: same source algorithm, no alias or effect classification changes
+    record: AgentBus allocation21343
+    record_sha256: c4ca242b783111f123f103cf10e21e003969103f4e55527f982e70ffb17f9b82
+  - command: Native projection and semantic lock generation/check; original semantic suites; Ruff and strict typing
+    result: 73 original parameterized cases across 51 functions, 219 phase reports, exact full collection/JUnit; four groups and both changed files pass; independent
+      physical closure.
+    scope: resolver qualification slice only
+    record: AgentBus allocation21574
+    record_sha256: a8de70806d03b6c1c0efdfbf8ad475d435b69228d38e3f1cc3cb0e527036252e
+  notes:
+  - 'Pre-edit scope: tooling layer, query/discovery or profile compilation; target paths: bcf_governance/tooling/governance_validation/runner.py, bcf_governance/tooling/governance_validation/self_authority_dispatch.py,
+    bcf_governance/tooling/semantic_operation_effects.py, governance/self-overlays.yml.'
+  - 'Observed cause: ordinary adopter typing imported producer-only modules; repeated linear resolver lookup made real source validation expensive.'
+  - Preserve canonical public entrypoints, source-first ownership, original test populations, module limits, native projection and lock owners.
+  - No adopter runtime edits, workflow pin edits, hard-alias or external-effect waivers, production key/provider mutation, independent 2.5 branch changes, or publication
+    authority from selected proofs.
+  - This log is planned because implementation and complete same-candidate evidence remain incomplete; verified and closed are computed only by native truth.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

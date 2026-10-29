@@ -12,6 +12,8 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_absolute_path, schema_error_location
+
 REGISTRY_PATH = Path("governance/automation-producers.yml")
 SCHEMA_PATH = Path("schemas/automation-producers.schema.json")
 SAFE_PATH = re.compile(r"^(?!/)(?!.*(?:^|/)\.\.(?:/|$))[A-Za-z0-9._/@+-]+$")
@@ -41,6 +43,13 @@ def _mapping(path: Path) -> dict[str, Any]:
     return value
 
 
+def _producer_owns_path(path: str, patterns: list[str]) -> bool:
+    for pattern in patterns:
+        if fnmatchcase(path, pattern):
+            return True
+    return False
+
+
 def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]:
     try:
         schema = json.loads(schema_path.read_text(encoding="utf-8"))
@@ -48,11 +57,11 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
         raise AutomationContractError(f"cannot load automation schema: {exc}") from exc
     errors = sorted(
         Draft202012Validator(schema).iter_errors(registry),
-        key=lambda item: list(item.absolute_path),
+        key=schema_error_absolute_path,
     )
     if errors:
         error = errors[0]
-        location = ".".join(str(item) for item in error.absolute_path) or "<root>"
+        location = schema_error_location(error)
         raise AutomationContractError(
             f"automation registry schema violation at {location}: {error.message}"
         )
@@ -70,15 +79,15 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
         outputs: list[str] = []
         for projection in projections:
             source = str(projection["source_path"])
-            if not any(fnmatchcase(source, pattern) for pattern in producer["allowed_paths"]):
+            if not _producer_owns_path(source, producer["allowed_paths"]):
                 raise AutomationContractError(
                     f"mechanical projection source is not producer-owned: {source}"
                 )
-            outputs.extend(str(path) for path in projection["exact_copy_targets"])
-            outputs.extend(
+            outputs.extend([str(path) for path in projection["exact_copy_targets"]])
+            outputs.extend([
                 str(item["manifest_path"])
                 for item in projection["sha256_manifest_entries"]
-            )
+            ])
         if len(outputs) != len(set(outputs)):
             raise AutomationContractError(
                 "mechanical projection output paths must be unique per producer"
@@ -87,14 +96,11 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
             raise AutomationContractError(
                 "mechanical projections exceed the bounded automation commit surface"
             )
-        if any(
-            fnmatchcase(output, pattern)
-            for output in outputs
-            for pattern in producer["allowed_paths"]
-        ):
-            raise AutomationContractError(
-                "mechanical projection outputs cannot also be dependency source paths"
-            )
+        for output in outputs:
+            if _producer_owns_path(output, producer["allowed_paths"]):
+                raise AutomationContractError(
+                    "mechanical projection outputs cannot also be dependency source paths"
+                )
         version_sources = producer.get("dependency_version_sources", [])
         version_paths = [str(item["path"]) for item in version_sources]
         if len(version_paths) != len(set(version_paths)):
@@ -105,13 +111,11 @@ def _validate_registry(registry: object, *, schema_path: Path) -> dict[str, Any]
             raise AutomationContractError(
                 "automation contract 1.1 requires dependency version sources"
             )
-        if any(
-            not any(fnmatchcase(path, pattern) for pattern in producer["allowed_paths"])
-            for path in version_paths
-        ):
-            raise AutomationContractError(
-                "dependency version sources must be producer-owned allowed paths"
-            )
+        for path in version_paths:
+            if not _producer_owns_path(path, producer["allowed_paths"]):
+                raise AutomationContractError(
+                    "dependency version sources must be producer-owned allowed paths"
+                )
     return registry
 
 

@@ -10,6 +10,8 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_absolute_path, schema_error_location
+
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 POLICY_PATH = "governance/trusted-controller-policy.yml"
@@ -60,10 +62,10 @@ def validate_installed_controller_policy(
         ) from exc
     errors = sorted(
         Draft202012Validator(schema).iter_errors(payload),
-        key=lambda item: list(item.absolute_path),
+        key=schema_error_absolute_path,
     )
     if errors:
-        location = ".".join(str(item) for item in errors[0].absolute_path) or "<root>"
+        location = schema_error_location(errors[0]) or "<root>"
         raise TrustedControllerPolicyError(
             f"trusted controller policy violation at {location}: {errors[0].message}"
         )

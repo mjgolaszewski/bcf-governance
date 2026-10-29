@@ -6,6 +6,7 @@ import hashlib
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import yaml
 from packaging.requirements import InvalidRequirement, Requirement
@@ -64,6 +65,70 @@ def close_installer_requirement(
     return [installer_requirement if item == authored[0] else item for item in requirements]
 
 
+def _visit_dependency_source(path: Path, *, dependency_root: Path,
+                             visited: set[Path], requirements: list[str],
+                             digest: Any) -> None:
+    try:
+        relative = path.resolve(strict=True).relative_to(dependency_root)
+    except (OSError, ValueError) as exc:
+        raise InterpreterDependencySourceError(
+            "interpreter dependency source escapes the repository"
+        ) from exc
+    if path.is_symlink() or not path.is_file():
+        raise InterpreterDependencySourceError(
+            "interpreter dependency source is missing or unsafe"
+        )
+    resolved = path.resolve()
+    if resolved in visited:
+        raise InterpreterDependencySourceError(
+            "interpreter dependency source contains an include cycle"
+        )
+    visited.add(resolved)
+    try:
+        source_bytes = path.read_bytes()
+        lines = source_bytes.decode("utf-8").splitlines()
+    except (OSError, UnicodeError) as exc:
+        raise InterpreterDependencySourceError(
+            "interpreter dependency source is unreadable"
+        ) from exc
+    digest.update(relative.as_posix().encode("utf-8"))
+    digest.update(b"\0")
+    digest.update(source_bytes)
+    digest.update(b"\0")
+    for raw in lines:
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        include: str | None = None
+        if line.startswith("-r "):
+            include = line[3:].strip()
+        elif line.startswith("--requirement "):
+            include = line[len("--requirement "):].strip()
+        if include is not None:
+            relative_include = Path(include)
+            if (
+                not include
+                or relative_include.is_absolute()
+                or ".." in relative_include.parts
+            ):
+                raise InterpreterDependencySourceError(
+                    "interpreter dependency include is unsafe"
+                )
+            _visit_dependency_source(
+            path.parent / relative_include, dependency_root=dependency_root,
+            visited=visited, requirements=requirements, digest=digest,
+        )
+            continue
+        if line.startswith("-"):
+            raise InterpreterDependencySourceError(
+                "interpreter dependency source contains an unsupported option"
+            )
+        _normalized_name(line)
+        requirements.append(line)
+    visited.remove(resolved)
+
+
+
 def compile_governed_dependency_source(
     repo_root: Path,
     value: object,
@@ -87,64 +152,11 @@ def compile_governed_dependency_source(
     requirements: list[str] = []
     digest = hashlib.sha256()
 
-    def visit(path: Path) -> None:
-        try:
-            relative = path.resolve(strict=True).relative_to(dependency_root)
-        except (OSError, ValueError) as exc:
-            raise InterpreterDependencySourceError(
-                "interpreter dependency source escapes the repository"
-            ) from exc
-        if path.is_symlink() or not path.is_file():
-            raise InterpreterDependencySourceError(
-                "interpreter dependency source is missing or unsafe"
-            )
-        resolved = path.resolve()
-        if resolved in visited:
-            raise InterpreterDependencySourceError(
-                "interpreter dependency source contains an include cycle"
-            )
-        visited.add(resolved)
-        try:
-            source_bytes = path.read_bytes()
-            lines = source_bytes.decode("utf-8").splitlines()
-        except (OSError, UnicodeError) as exc:
-            raise InterpreterDependencySourceError(
-                "interpreter dependency source is unreadable"
-            ) from exc
-        digest.update(relative.as_posix().encode("utf-8"))
-        digest.update(b"\0")
-        digest.update(source_bytes)
-        digest.update(b"\0")
-        for raw in lines:
-            line = raw.strip()
-            if not line or line.startswith("#"):
-                continue
-            include: str | None = None
-            if line.startswith("-r "):
-                include = line[3:].strip()
-            elif line.startswith("--requirement "):
-                include = line[len("--requirement "):].strip()
-            if include is not None:
-                relative_include = Path(include)
-                if (
-                    not include
-                    or relative_include.is_absolute()
-                    or ".." in relative_include.parts
-                ):
-                    raise InterpreterDependencySourceError(
-                        "interpreter dependency include is unsafe"
-                    )
-                visit(path.parent / relative_include)
-                continue
-            if line.startswith("-"):
-                raise InterpreterDependencySourceError(
-                    "interpreter dependency source contains an unsupported option"
-                )
-            _normalized_name(line)
-            requirements.append(line)
-        visited.remove(resolved)
 
-    visit(source)
+    _visit_dependency_source(
+        source, dependency_root=dependency_root, visited=visited,
+        requirements=requirements, digest=digest,
+    )
     if not requirements:
         raise InterpreterDependencySourceError(
             "interpreter dependency source is empty"
@@ -172,13 +184,15 @@ def compile_governed_dependency_source(
         raise InterpreterDependencySourceError(
             "interpreter graph runtime contract is unavailable"
         ) from exc
-    if len(python_minors) != 1 or any(
-        re.fullmatch(r"3\.[0-9]+", value) is None for value in python_minors
-    ):
+    if len(python_minors) != 1:
         raise InterpreterDependencySourceError(
             "interpreter graph must declare one Python minor"
         )
     python_minor = next(iter(python_minors))
+    if re.fullmatch(r"3\.[0-9]+", python_minor) is None:
+        raise InterpreterDependencySourceError(
+            "interpreter graph must declare one Python minor"
+        )
     return GovernedDependencySource(
         requirements=tuple(requirements),
         requires_python=f"=={python_minor}.*",

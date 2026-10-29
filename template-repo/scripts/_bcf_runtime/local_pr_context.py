@@ -132,9 +132,11 @@ def _checked_remote_read(runner: Runner, command: list[str], *, cwd: Path) -> st
         if result.returncode == 0:
             return result.stdout.strip()
         detail = result.stderr.strip() or result.stdout.strip() or "command failed"
-        transient = any(
-            marker in detail.lower() for marker in _TRANSIENT_REMOTE_READ_MARKERS
-        )
+        transient = False
+        for marker in _TRANSIENT_REMOTE_READ_MARKERS:
+            if marker in detail.lower():
+                transient = True
+                break
         if not transient or attempt + 1 == _REMOTE_READ_ATTEMPTS:
             raise LocalPRError(f"{' '.join(command)}: {detail}")
         time.sleep(1.0)

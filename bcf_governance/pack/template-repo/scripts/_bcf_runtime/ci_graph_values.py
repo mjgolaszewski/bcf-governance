@@ -66,6 +66,36 @@ def _lookup(payload: dict[str, Any], selector: str) -> str | int | bool:
     return value
 
 
+def _resolve_graph_value(value: Any, loaded: dict[str, dict[str, Any]]) -> Any:
+    if isinstance(value, dict):
+        return {key: _resolve_graph_value(item, loaded) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_resolve_graph_value(item, loaded) for item in value]
+    if not isinstance(value, str):
+        return value
+    exact = SOURCE_PATTERN.fullmatch(value)
+    if exact is not None:
+        source_id, selector = exact.groups()
+        if source_id not in loaded:
+            raise CIGraphValueError(f"CI graph references unknown value source: {source_id}")
+        return _lookup(loaded[source_id], selector)
+
+    fragments: list[str] = []
+    end = 0
+    for match in SOURCE_PATTERN.finditer(value):
+        fragments.append(value[end:match.start()])
+        source_id, selector = match.groups()
+        if source_id not in loaded:
+            raise CIGraphValueError(f"CI graph references unknown value source: {source_id}")
+        fragments.append(str(_lookup(loaded[source_id], selector)))
+        end = match.end()
+    fragments.append(value[end:])
+    rendered = "".join(fragments)
+    if "{source:" in rendered:
+        raise CIGraphValueError(f"CI graph contains malformed value source: {value}")
+    return rendered
+
+
 def resolve_graph_values(
     repo_root: Path, graph: dict[str, Any]
 ) -> tuple[dict[str, Any], tuple[tuple[str, str], ...]]:
@@ -87,29 +117,5 @@ def resolve_graph_values(
             raise CIGraphValueError(str(exc)) from exc
         inputs.append((relative, digest))
 
-    def resolve(value: Any) -> Any:
-        if isinstance(value, dict):
-            return {key: resolve(item) for key, item in value.items()}
-        if isinstance(value, list):
-            return [resolve(item) for item in value]
-        if not isinstance(value, str):
-            return value
-        exact = SOURCE_PATTERN.fullmatch(value)
-        if exact is not None:
-            source_id, selector = exact.groups()
-            if source_id not in loaded:
-                raise CIGraphValueError(f"CI graph references unknown value source: {source_id}")
-            return _lookup(loaded[source_id], selector)
 
-        def replace(match: re.Match[str]) -> str:
-            source_id, selector = match.groups()
-            if source_id not in loaded:
-                raise CIGraphValueError(f"CI graph references unknown value source: {source_id}")
-            return str(_lookup(loaded[source_id], selector))
-
-        rendered = SOURCE_PATTERN.sub(replace, value)
-        if "{source:" in rendered:
-            raise CIGraphValueError(f"CI graph contains malformed value source: {value}")
-        return rendered
-
-    return resolve(graph), tuple(sorted(inputs))
+    return _resolve_graph_value(graph, loaded), tuple(sorted(inputs))

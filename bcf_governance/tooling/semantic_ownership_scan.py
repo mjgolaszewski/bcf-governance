@@ -268,7 +268,7 @@ def evaluate_discovery(
     unresolved = [
         value
         for source in inventories
-        for value in source.get("unresolved", [])
+        for value in [*source.get("unresolved", []), *source.get("definition_time_obligations", [])]
         if _authoritative(str(value.get("symbol", "")), registry, project_files)
     ]
     if registry.unresolved_dynamic_policy == "fail_closed":

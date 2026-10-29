@@ -124,9 +124,11 @@ def _transient_terminal_upload(
     if (
         len(workflow_jobs) != len(expected_jobs)
         or {str(job.get("name")) for job in workflow_jobs} != set(expected_jobs)
-        or any(str(job.get("status")) != "completed" for job in workflow_jobs)
     ):
         return False
+    for job in workflow_jobs:
+        if str(job.get("status")) != "completed":
+            return False
     failures = [job for job in workflow_jobs if job.get("conclusion") != "success"]
     if len(failures) != 1 or failures[0].get("name") != terminal_job_name:
         return False
@@ -147,13 +149,11 @@ def _transient_terminal_upload(
     if len(failed_steps) != 1 or failed_steps[0].get("name") != terminal_upload_step:
         return False
     upload_number = _positive(failed_steps[0].get("number"), field="upload step number")
-    if any(
-        isinstance(step, Mapping)
-        and _positive(step.get("number"), field="terminal step number") < upload_number
-        and step.get("conclusion") not in {"success", "skipped"}
-        for step in steps
-    ):
-        return False
+    for step in steps:
+        if (isinstance(step, Mapping)
+                and _positive(step.get("number"), field="terminal step number") < upload_number
+                and step.get("conclusion") not in {"success", "skipped"}):
+            return False
     annotations = api.check_run_annotations(
         repository, _positive(terminal.get("id"), field="terminal job ID")
     )
@@ -164,12 +164,16 @@ def _transient_terminal_upload(
     if len(failures) != 1:
         return False
     message = str(failures[0].get("message", ""))
-    if not (
-        message.startswith("Failed to CreateArtifact: Unable to make request:")
-        and any(marker in message for marker in _TRANSIENT_UPLOAD_MARKERS)
-    ):
+    if not message.startswith("Failed to CreateArtifact: Unable to make request:"):
         return False
-    shard_count = sum(name.startswith("Evidence / ") for name in expected_jobs)
+    transient = False
+    for marker in _TRANSIENT_UPLOAD_MARKERS:
+        if marker in message:
+            transient = True
+            break
+    if not transient:
+        return False
+    shard_count = sum([name.startswith("Evidence / ") for name in expected_jobs])
     expected_artifacts = {
         f"bcf-session-{run_id}-{attempt}",
         *{
@@ -233,13 +237,15 @@ def resolve_candidate_provider_recovery(
             },
             state="not_started",
         )
-    selected = max(
-        exact,
-        key=lambda value: (
+    selected = exact[0]
+    selected_key: tuple[int, int] | None = None
+    for value in exact:
+        key = (
             _positive(value.get("id"), field="workflow run ID"),
             _positive(value.get("run_attempt"), field="workflow run attempt"),
-        ),
-    )
+        )
+        if selected_key is None or key > selected_key:
+            selected, selected_key = value, key
     run_id = _positive(selected.get("id"), field="workflow run ID")
     attempt = _positive(selected.get("run_attempt"), field="workflow run attempt")
     workflow_id = _positive(selected.get("workflow_id"), field="workflow ID")
@@ -285,17 +291,17 @@ def resolve_candidate_provider_recovery(
         completed = [
             job for job in jobs if str(job.get("name")) in expected_jobs
         ]
-        state = (
-            "succeeded"
-            if len(completed) == len(expected_jobs)
+        succeeded = (
+            len(completed) == len(expected_jobs)
             and {str(job.get("name")) for job in completed} == set(expected_jobs)
-            and all(
-                job.get("status") == "completed"
-                and job.get("conclusion") == "success"
-                for job in completed
-            )
-            else "terminal_failure"
         )
+        if succeeded:
+            for job in completed:
+                if not (job.get("status") == "completed"
+                        and job.get("conclusion") == "success"):
+                    succeeded = False
+                    break
+        state = "succeeded" if succeeded else "terminal_failure"
         return candidate_provider_frontier(identity=identity, state=state)
     failed_expected = [
         job for job in jobs

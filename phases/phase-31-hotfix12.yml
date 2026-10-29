@@ -1,0 +1,49 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF12 Hotfix Log
+  id: bcf-governance-phase-31-hotfix12
+  version: 1.0.0
+  generated_at_utc: '2026-10-27T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix12.yml
+hotfix:
+  id: P31-HF12
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 12
+  summary: Characterize and deconstruct the Python source inventory
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - command: Baseline split restored inventory API characterization; Ruff and strict typing
+    result: 20 AST definitions/constants, four public identities, signatures and actual fixed source facts equal; both files pass strict/Ruff; native mapping/full-suite
+      acceptance remains open.
+    scope: mechanical decomposition only; no descriptor or definition feature
+    record: AgentBus allocation21593
+    record_sha256: d209922a0908db8dc9eac26172343883398ea91144039ea9623ef8c3f692b344
+  notes:
+  - 'Pre-edit scope: tooling layer, query/discovery or profile compilation; target paths: bcf_governance/tooling/semantic_ownership_inventory.py, bcf_governance/tooling/semantic_python_inventory_ast.py,
+    governance/self-governance-policy.yml, governance/canonical-representations.yml.'
+  - 'Observed cause: inventory module reached its 800-line budget before source completeness and descriptor feature work.'
+  - Preserve canonical public entrypoints, source-first ownership, original test populations, module limits, native projection and lock owners.
+  - No adopter runtime edits, workflow pin edits, hard-alias or external-effect waivers, production key/provider mutation, independent 2.5 branch changes, or publication
+    authority from selected proofs.
+  - This log is planned because implementation and complete same-candidate evidence remain incomplete; verified and closed are computed only by native truth.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

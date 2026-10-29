@@ -31,13 +31,19 @@ def normalize_locked_project_contract(value: object) -> dict[str, Any]:
     if set(contract) != {"lockfile", "dependency_groups", "optional_extras", "marker_environment", "runtime_platform"} or contract["lockfile"] != "uv.lock":
         _fail("contract fields are invalid")
     environment = _mapping(contract["marker_environment"])
-    if set(environment) != MARKER_KEYS or any(not isinstance(v, str) or not v for v in environment.values()):
+    if set(environment) != MARKER_KEYS:
         _fail("requires a complete explicit marker environment")
+    for value in environment.values():
+        if not isinstance(value, str) or not value:
+            _fail("requires a complete explicit marker environment")
     result: dict[str, Any] = {"lockfile": "uv.lock", "marker_environment": dict(sorted(environment.items()))}
     runtime_platform = _mapping(contract["runtime_platform"])
-    if set(runtime_platform) != {"sysconfig_platform", "libc_name", "libc_version"} or any(
-        not isinstance(value, str) for value in runtime_platform.values()
-    ) or not runtime_platform["sysconfig_platform"]:
+    if set(runtime_platform) != {"sysconfig_platform", "libc_name", "libc_version"}:
+        _fail("runtime platform bindings are incomplete")
+    for value in runtime_platform.values():
+        if not isinstance(value, str):
+            _fail("runtime platform bindings are incomplete")
+    if not runtime_platform["sysconfig_platform"]:
         _fail("runtime platform bindings are incomplete")
     result["runtime_platform"] = dict(sorted(runtime_platform.items()))
     for field in ("dependency_groups", "optional_extras"):
@@ -106,7 +112,7 @@ def _metadata_requirement(value: object) -> Requirement:
     if set(row) - {"name", "specifier", "extras", "marker"}:
         _fail("requirement metadata contains unsupported fields")
     name = _name(row.get("name"))
-    extras = sorted(_name(item) for item in _rows(row.get("extras", [])))
+    extras = sorted([_name(item) for item in _rows(row.get("extras", []))])
     if len(set(extras)) != len(extras) or ("marker" in row and not isinstance(row["marker"], str)):
         _fail("requirement metadata is ambiguous or invalid")
     suffix = "[" + ",".join(extras) + "]" if extras else ""
@@ -114,12 +120,14 @@ def _metadata_requirement(value: object) -> Requirement:
     return _requirement(name + suffix + str(row.get("specifier", "")) + marker)
 
 
+def _requirement_metadata_key(req: Requirement) -> tuple[str, tuple[str, ...], str, str]:
+    return (_name(req.name), tuple(sorted([_name(x) for x in req.extras])),
+            str(req.specifier), str(req.marker) if req.marker else "")
+
+
 def _same_requirements(authored: list[str], metadata: object) -> None:
-    def key(req: Requirement) -> tuple[str, tuple[str, ...], str, str]:
-        return (_name(req.name), tuple(sorted(_name(x) for x in req.extras)),
-                str(req.specifier), str(req.marker) if req.marker else "")
-    expected = sorted(key(_requirement(value)) for value in authored)
-    actual = sorted(key(_metadata_requirement(value)) for value in _rows(metadata))
+    expected = sorted([_requirement_metadata_key(_requirement(value)) for value in authored])
+    actual = sorted([_requirement_metadata_key(_metadata_requirement(value)) for value in _rows(metadata)])
     if expected != actual:
         _fail("lock metadata differs from authored requirements")
 
@@ -146,10 +154,11 @@ def _read_sources(root: Path) -> tuple[dict[str, Any], dict[str, Any], dict[str,
     try:
         for relative in ("pyproject.toml", "uv.lock", "governance/gate-contracts.yml"):
             path = root / relative
-            if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root) or any(
-                parent.is_symlink() for parent in path.parents if parent != root and parent.is_relative_to(root)
-            ):
+            if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root):
                 _fail("source is missing or unsafe")
+            for parent in path.parents:
+                if parent != root and parent.is_relative_to(root) and parent.is_symlink():
+                    _fail("source is missing or unsafe")
             if path.stat().st_size > 16 * 1024**2:
                 _fail("source exceeds bounded size")
             raw = path.read_bytes()
@@ -186,8 +195,11 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
         _fail("contract is ambiguous or changed")
     contract = normalize_locked_project_contract(contract)
     environment = _mapping(contract["marker_environment"])
-    if set(environment) != MARKER_KEYS or any(not isinstance(v, str) or not v for v in environment.values()):
+    if set(environment) != MARKER_KEYS:
         _fail("requires a complete explicit marker environment")
+    for value in environment.values():
+        if not isinstance(value, str) or not value:
+            _fail("requires a complete explicit marker environment")
     try:
         version = Version(environment["python_full_version"])
         if environment["python_version"] != ".".join(str(version).split(".")[:2]):
@@ -195,13 +207,13 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
         if type(lock.get("version")) is not int or lock.get("version") != 1 or lock.get("revision") != 5:
             _fail("lock format is unsupported")
         metadata = _mapping(project.get("project"))
-        if not all(SpecifierSet(str(spec)).contains(version, prereleases=True)
-                   for spec in (metadata.get("requires-python"), lock.get("requires-python"))):
-            _fail("selected Python violates declared sources")
+        for spec in (metadata.get("requires-python"), lock.get("requires-python")):
+            if not SpecifierSet(str(spec)).contains(version, prereleases=True):
+                _fail("selected Python violates declared sources")
     except (InvalidVersion, InvalidSpecifier) as exc:
         raise InterpreterEnvironmentError("locked project Python contract is invalid") from exc
     forks = _rows(lock.get("resolution-markers", []))
-    if forks and sum(_active(marker, environment) for marker in forks) != 1:
+    if forks and sum([_active(marker, environment) for marker in forks]) != 1:
         _fail("selected lock fork is missing or ambiguous")
     records = [_mapping(item) for item in _rows(lock.get("package"))]
     if len(records) > 10000:
@@ -247,8 +259,8 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
                            and _active(str(req.marker) if req.marker else None, environment)]
     active_edges = [_mapping(edge) for edge in edges
                     if _active(_mapping(edge).get("marker"), environment)]
-    expected_edges = {(_name(req.name), tuple(sorted(_name(x) for x in req.extras))) for req in active_requirements}
-    observed_edges = {(_name(edge.get("name")), tuple(sorted(_name(x) for x in _rows(edge.get("extra", []))))) for edge in active_edges}
+    expected_edges = {(_name(req.name), tuple(sorted([_name(x) for x in req.extras]))) for req in active_requirements}
+    observed_edges = {(_name(edge.get("name")), tuple(sorted([_name(x) for x in _rows(edge.get("extra", []))]))) for edge in active_edges}
     if expected_edges != observed_edges:
         _fail("root locked edges differ from selected authored requirements")
     index: dict[str, list[dict[str, Any]]] = {}
@@ -268,11 +280,20 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
         if not _active(edge.get("marker"), environment, extra_context):
             continue
         name = _name(edge.get("name"))
-        candidates = [row for row in index.get(name, [])
-                      if ("version" not in edge or row.get("version") == edge["version"])
-                      and ("source" not in edge or row.get("source") == edge["source"])
-                      and (not row.get("resolution-markers") or any(
-                          _active(marker, environment) for marker in _rows(row["resolution-markers"])))]
+        candidates = []
+        for candidate in index.get(name, []):
+            if not ("version" not in edge or candidate.get("version") == edge["version"]):
+                continue
+            if not ("source" not in edge or candidate.get("source") == edge["source"]):
+                continue
+            matches = not candidate.get("resolution-markers")
+            if not matches:
+                for marker in _rows(candidate["resolution-markers"]):
+                    if _active(marker, environment):
+                        matches = True
+                        break
+            if matches:
+                candidates.append(candidate)
         if len(candidates) != 1:
             _fail("selected dependency node is missing or ambiguous: " + name)
         row = candidates[0]
@@ -287,14 +308,14 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
         if name not in selected:
             selected[name] = row
             expanded[name] = set()
-            queue.extend((_mapping(dep), "") for dep in _rows(row.get("dependencies", [])))
+            queue.extend([(_mapping(dep), "") for dep in _rows(row.get("dependencies", []))])
         extras = {_name(item) for item in _rows(edge.get("extra", []))}
         optional = _named_mapping(row.get("optional-dependencies", {}))
         if extras - optional.keys():
             _fail("requested dependency extra is absent from lock")
         for extra in extras - expanded[name]:
             expanded[name].add(extra)
-            queue.extend((_mapping(dep), extra) for dep in _rows(optional[extra]))
+            queue.extend([(_mapping(dep), extra) for dep in _rows(optional[extra])])
         for requirement in active_requirements:
             if _name(requirement.name) == name and not requirement.specifier.contains(selected_version, prereleases=True):
                 _fail("selected version violates authored requirement: " + name)
@@ -307,7 +328,7 @@ def compile_locked_project(root: Path, declared: object, installer: str) -> Inte
     pinned_requirements = {name: name + "==" + str(row["version"]) for name, row in selected.items()}
     pinned_requirements["pip"] = installer
     return InterpreterEnvironmentPlan(
-        requirements=tuple(pinned_requirements[name] for name in sorted(pinned_requirements)),
+        requirements=tuple([pinned_requirements[name] for name in sorted(pinned_requirements)]),
         requires_python="==" + str(version), projection_path=None,
         source_kind="locked_project", source_path=root / "uv.lock", source_sha256=digest,
     )
@@ -366,10 +387,10 @@ def verify_locked_installed_closure(plan: InterpreterEnvironmentPlan, python: Pa
         observed = json.loads(result.stdout) if result.returncode == 0 else None
         expected = {_name(req.name): Version(next(iter(req.specifier)).version)
                     for raw in plan.requirements if (req := _requirement(raw))}
-        if not isinstance(observed, dict) or set(observed) != set(expected) or any(
-            not isinstance(value, str) or Version(value) != expected[name]
-            for name, value in observed.items()
-        ):
+        if not isinstance(observed, dict) or set(observed) != set(expected):
             _fail("installed inventory differs from exact selected lock closure")
+        for name, value in observed.items():
+            if not isinstance(value, str) or Version(value) != expected[name]:
+                _fail("installed inventory differs from exact selected lock closure")
     except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, InvalidVersion) as exc:
         raise InterpreterEnvironmentError("locked project installed closure probe failed") from exc

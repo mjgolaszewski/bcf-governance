@@ -1,0 +1,350 @@
+{
+  "cases": [
+    {
+      "id": "explicit-ephemeral-900",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "ephemeral"
+        },
+        "timeout_seconds": 900
+      },
+      "expected": "compile-and-preserve",
+      "expected_example_invocation": {
+        "argv": [
+          "make",
+          "runtime-smoke",
+          "PYTHON=python3"
+        ],
+        "cwd": ".",
+        "env": {},
+        "required_env": [],
+        "state": {
+          "lifecycle": "ephemeral"
+        },
+        "timeout_seconds": 900
+      }
+    },
+    {
+      "id": "explicit-shared-300",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": "sdk-fixture-shared"
+        },
+        "timeout_seconds": 300
+      },
+      "expected": "compile-and-preserve",
+      "expected_example_invocation": {
+        "argv": [
+          "make",
+          "runtime-smoke",
+          "PYTHON=python3"
+        ],
+        "cwd": ".",
+        "env": {},
+        "required_env": [],
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": "sdk-fixture-shared"
+        },
+        "timeout_seconds": 300
+      }
+    },
+    {
+      "id": "minimum-timeout",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "ephemeral"
+        },
+        "timeout_seconds": 1
+      },
+      "expected": "compile-and-preserve",
+      "expected_example_invocation": {
+        "argv": [
+          "make",
+          "runtime-smoke",
+          "PYTHON=python3"
+        ],
+        "cwd": ".",
+        "env": {},
+        "required_env": [],
+        "state": {
+          "lifecycle": "ephemeral"
+        },
+        "timeout_seconds": 1
+      }
+    },
+    {
+      "id": "maximum-timeout",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "ephemeral"
+        },
+        "timeout_seconds": 21600
+      },
+      "expected": "compile-and-preserve",
+      "expected_example_invocation": {
+        "argv": [
+          "make",
+          "runtime-smoke",
+          "PYTHON=python3"
+        ],
+        "cwd": ".",
+        "env": {},
+        "required_env": [],
+        "state": {
+          "lifecycle": "ephemeral"
+        },
+        "timeout_seconds": 21600
+      }
+    },
+    {
+      "id": "absent-fields-retain-owner-defaults",
+      "invocation_patch": {},
+      "expected": "compile-and-preserve",
+      "expected_example_invocation": {
+        "argv": [
+          "make",
+          "runtime-smoke",
+          "PYTHON=python3"
+        ],
+        "cwd": ".",
+        "env": {},
+        "required_env": []
+      }
+    },
+    {
+      "id": "invalid-timeout-zero",
+      "invocation_patch": {
+        "timeout_seconds": 0
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-negative",
+      "invocation_patch": {
+        "timeout_seconds": -1
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-over-schema-maximum",
+      "invocation_patch": {
+        "timeout_seconds": 21601
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-boolean-false",
+      "invocation_patch": {
+        "timeout_seconds": false
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-boolean-true",
+      "invocation_patch": {
+        "timeout_seconds": true
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-fractional",
+      "invocation_patch": {
+        "timeout_seconds": 900.5
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-string",
+      "invocation_patch": {
+        "timeout_seconds": "900"
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-timeout-null",
+      "invocation_patch": {
+        "timeout_seconds": null
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-null",
+      "invocation_patch": {
+        "state": null
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-empty",
+      "invocation_patch": {
+        "state": {}
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-scalar",
+      "invocation_patch": {
+        "state": "ephemeral"
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-unknown-lifecycle",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "unknown"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-ephemeral-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "ephemeral",
+          "namespace": "sdk-fixture-shared"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-shared-no-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-shared-empty-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": ""
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-shared-path-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": "../outside"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-shared-short-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": "short"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-shared-uppercase-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": "SDK-FIXTURE"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-shared-long-namespace",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "persistent_shared",
+          "namespace": "sssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "invalid-state-unknown-member",
+      "invocation_patch": {
+        "state": {
+          "lifecycle": "ephemeral",
+          "unexpected": true
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "owner-required",
+      "invocation_patch": {
+        "requires_execution_owner": true
+      },
+      "expected": "compile-and-preserve"
+    },
+    {
+      "id": "owner-optional",
+      "invocation_patch": {
+        "requires_execution_owner": false
+      },
+      "expected": "compile-and-preserve"
+    },
+    {
+      "id": "owner-string-refuses",
+      "invocation_patch": {
+        "requires_execution_owner": "true"
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "owner-integer-refuses",
+      "invocation_patch": {
+        "requires_execution_owner": 1
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "owner-null-refuses",
+      "invocation_patch": {
+        "requires_execution_owner": null
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "owner-endpoint-object-refuses",
+      "invocation_patch": {
+        "requires_execution_owner": {
+          "endpoint": "candidate-selected"
+        }
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "owner-endpoint-field-refuses",
+      "invocation_patch": {
+        "owner_endpoint": "candidate-selected"
+      },
+      "expected": "schema-or-contract-refusal"
+    },
+    {
+      "id": "owner-pid-field-refuses",
+      "invocation_patch": {
+        "owner_pid": 123
+      },
+      "expected": "schema-or-contract-refusal"
+    }
+  ],
+  "example_baseline_invocation": {
+    "argv": [
+      "make",
+      "runtime-smoke",
+      "PYTHON=python3"
+    ],
+    "cwd": ".",
+    "env": {},
+    "required_env": []
+  }
+}

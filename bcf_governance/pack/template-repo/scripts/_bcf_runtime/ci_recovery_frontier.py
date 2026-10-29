@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 
@@ -78,11 +78,26 @@ def _canonical(value: Mapping[str, Any]) -> bytes:
 
 def _strings(values: Sequence[object], *, field: str) -> list[str]:
     result = [str(value) for value in values]
-    if any(not value or "\0" in value or "\n" in value for value in result):
-        raise RecoveryFrontierError(f"{field} contains an invalid identity")
+    for value in result:
+        if not value or "\0" in value or "\n" in value:
+            raise RecoveryFrontierError(f"{field} contains an invalid identity")
     if len(result) != len(set(result)):
         raise RecoveryFrontierError(f"{field} must be unique")
     return sorted(result)
+
+
+def _valid_sha_fields(identity: Mapping[str, Any], names: Iterable[str]) -> bool:
+    for name in names:
+        if _SHA.fullmatch(str(identity[name])) is None:
+            return False
+    return True
+
+
+def _valid_numeric_fields(identity: Mapping[str, Any], names: Iterable[str]) -> bool:
+    for name in names:
+        if not str(identity[name]).isdigit() or int(str(identity[name])) < 1:
+            return False
+    return True
 
 
 def compile_recovery_frontier(
@@ -117,10 +132,7 @@ def compile_recovery_frontier(
             raise RecoveryFrontierError("provider read identity is not exact")
     if operation == "candidate_submission":
         required = {"repository", "base_sha", "head_sha", "tree_sha"}
-        if set(identity) != required or any(
-            _SHA.fullmatch(str(identity[name])) is None
-            for name in required - {"repository"}
-        ) or not str(identity["repository"]):
+        if set(identity) != required or not _valid_sha_fields(identity, required - {'repository'}) or not str(identity["repository"]):
             raise RecoveryFrontierError("candidate recovery identity is not exact")
     if operation == "candidate_provider":
         common = {
@@ -131,10 +143,7 @@ def compile_recovery_frontier(
         expected = common if state == "not_started" else common | run_fields
         if state in {"retryable_terminal_transport", "retry_exhausted"}:
             expected |= {"terminal_job_id"}
-        if set(identity) != expected or any(
-            _SHA.fullmatch(str(identity[name])) is None
-            for name in {"base_sha", "head_sha", "tree_sha"}
-        ):
+        if set(identity) != expected or not _valid_sha_fields(identity, {'base_sha', 'head_sha', 'tree_sha'}):
             raise RecoveryFrontierError(
                 "candidate provider recovery identity is not exact"
             )
@@ -146,10 +155,7 @@ def compile_recovery_frontier(
         if (
             not str(identity["repository"])
             or str(identity["workflow_path"]) != ".github/workflows/governance.yml"
-            or any(
-                not str(identity[name]).isdigit() or int(str(identity[name])) < 1
-                for name in numeric
-            )
+            or not _valid_numeric_fields(identity, numeric)
         ):
             raise RecoveryFrontierError(
                 "candidate provider recovery identity is invalid"
@@ -159,24 +165,16 @@ def compile_recovery_frontier(
             "repository", "repository_id", "pull_request", "base_sha",
             "head_sha", "tree_sha", "protection_sha256",
         }
-        if set(identity) != required or any(
-            _SHA.fullmatch(str(identity[name])) is None
-            for name in {"base_sha", "head_sha", "tree_sha"}
-        ) or _DIGEST.fullmatch(str(identity["protection_sha256"])) is None:
+        if set(identity) != required or not _valid_sha_fields(identity, {'base_sha', 'head_sha', 'tree_sha'}) or _DIGEST.fullmatch(str(identity["protection_sha256"])) is None:
             raise RecoveryFrontierError("protected merge identity is not exact")
         if (
             not str(identity["repository"])
-            or not str(identity["repository_id"]).isdigit()
-            or int(str(identity["repository_id"])) < 1
-            or not str(identity["pull_request"]).isdigit()
-            or int(str(identity["pull_request"])) < 1
+            or not _valid_numeric_fields(identity, ("repository_id", "pull_request"))
         ):
             raise RecoveryFrontierError("protected merge provider identity is invalid")
     if operation == "controller_transition":
         required = {"subject_commit", "subject_tree", "installed_controller", "target_controller"}
-        if set(identity) != required or any(
-            _SHA.fullmatch(str(identity[name])) is None for name in required
-        ):
+        if set(identity) != required or not _valid_sha_fields(identity, required):
             raise RecoveryFrontierError("controller recovery identity is not exact")
         if state == "controller_current" and (
             identity["installed_controller"] != identity["target_controller"]

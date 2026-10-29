@@ -293,13 +293,15 @@ def resolve_trusted_run(
     ]
     if not exact:
         raise GitHubControllerError("no exact-main trusted workflow run exists")
-    selected = max(
-        exact,
-        key=lambda value: (
+    selected = exact[0]
+    selected_key: tuple[int, int] | None = None
+    for value in exact:
+        key = (
             positive_int(value.get("id"), field="trusted run ID"),
             positive_int(value.get("run_attempt"), field="trusted run attempt"),
-        ),
-    )
+        )
+        if selected_key is None or key > selected_key:
+            selected, selected_key = value, key
     return authenticate_trusted_run(
         api,
         repository=repository,

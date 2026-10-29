@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
+from importlib import import_module
+from typing import cast
 
 from ..ci_graph_contracts import CIGraphError, validate_ci_graph
 from ..ci_graph_render import check_ci_graph
@@ -186,65 +189,33 @@ def validate_repo_root(
 
     _validate_agents(repo_root, agents)
     validate_tooling_context_membership(repo_root)
-    overlay_path = repo_root / "governance/self-overlays.yml"
-    if overlay_path.is_file():
-        from .self_authority_overlays import (
-            SelfAuthorityOverlayError,
-            validate_self_authority_overlays,
+    if any(
+        (repo_root / "governance" / name).is_file()
+        for name in (
+            "self-overlays.yml",
+            "product-parity.yml",
+            "product-certification.yml",
         )
-
-        overlays = _load_yaml(overlay_path)
-        _validate_schema(
-            repo_root,
-            schema_cache,
-            overlays,
-            schema_name="self-authority-overlays.schema.json",
-            context=str(overlay_path),
-        )
-        _validate_document_path(repo_root, overlays, overlay_path, context=str(overlay_path))
+    ):
         try:
-            validate_self_authority_overlays(repo_root)
-        except SelfAuthorityOverlayError as exc:
-            raise GovernanceValidationError(str(exc)) from exc
-    parity_path = repo_root / "governance/product-parity.yml"
-    if parity_path.is_file():
-        from .product_parity import ProductParityError, validate_product_parity
-
-        parity = _load_yaml(parity_path)
-        _validate_schema(
-            repo_root,
-            schema_cache,
-            parity,
-            schema_name="product-parity.schema.json",
-            context=str(parity_path),
+            producer_dispatch = import_module(
+                ".self_authority_dispatch", package=__package__
+            )
+        except ImportError as exc:
+            raise GovernanceValidationError(
+                "producer-only governance documents require the self-authority runtime"
+            ) from exc
+        raw_validator = getattr(
+            producer_dispatch, "validate_self_authority_documents", None
         )
-        _validate_document_path(repo_root, parity, parity_path, context=str(parity_path))
-        try:
-            validate_product_parity(repo_root, parity)
-        except ProductParityError as exc:
-            raise GovernanceValidationError(str(exc)) from exc
-    certification_path = repo_root / "governance/product-certification.yml"
-    if certification_path.is_file():
-        from .product_certification import (
-            ProductCertificationError,
-            validate_product_certification,
+        if not callable(raw_validator):
+            raise GovernanceValidationError(
+                "self-authority runtime document validator is unavailable"
+            )
+        producer_validator = cast(
+            Callable[[Path, dict[str, dict[str, Any]]], None], raw_validator
         )
-
-        certification = _load_yaml(certification_path)
-        _validate_schema(
-            repo_root,
-            schema_cache,
-            certification,
-            schema_name="product-certification.schema.json",
-            context=str(certification_path),
-        )
-        _validate_document_path(
-            repo_root, certification, certification_path, context=str(certification_path)
-        )
-        try:
-            validate_product_certification(repo_root, certification)
-        except ProductCertificationError as exc:
-            raise GovernanceValidationError(str(exc)) from exc
+        producer_validator(repo_root, schema_cache)
     required_artifact_paths = _validate_artifact_manifest(repo_root, artifact_manifest, agents)
     observability_contract_paths = _validate_observability_contracts(repo_root, schema_cache)
     declared_phase_paths = _validate_declared_phase_catalog(

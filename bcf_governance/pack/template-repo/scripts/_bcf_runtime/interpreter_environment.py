@@ -169,8 +169,11 @@ def _mapping(value: object, message: str) -> dict[str, Any]:
 
 
 def _requirements(value: object, message: str) -> list[str]:
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+    if not isinstance(value, list):
         raise InterpreterEnvironmentError(message)
+    for item in value:
+        if not isinstance(item, str):
+            raise InterpreterEnvironmentError(message)
     return list(value)
 
 
@@ -258,13 +261,15 @@ def _legacy_interpreter_environment(
             raise InterpreterEnvironmentError(
                 "legacy interpreter graph contract is unavailable"
             ) from exc
-        if len(python_minors) != 1 or any(
-            re.fullmatch(r"3\.[0-9]+", value) is None for value in python_minors
-        ):
+        if len(python_minors) != 1:
             raise InterpreterEnvironmentError(
                 "legacy interpreter graph must declare one Python minor"
             )
         python_minor = next(iter(python_minors))
+        if re.fullmatch(r"3\.[0-9]+", python_minor) is None:
+            raise InterpreterEnvironmentError(
+                "legacy interpreter graph must declare one Python minor"
+            )
     return InterpreterEnvironmentPlan(
         requirements=tuple(requirements),
         requires_python=f"=={python_minor}.*" if python_minor is not None else None,
@@ -349,10 +354,15 @@ def derive_interpreter_environment(
         "interpreter optional dependency contract is invalid",
     )
     groups = contract.get("optional_dependency_groups")
-    if not isinstance(groups, list) or not all(isinstance(group, str) for group in groups):
+    if not isinstance(groups, list):
         raise InterpreterEnvironmentError(
             "interpreter optional dependency contract is invalid"
         )
+    for group in groups:
+        if not isinstance(group, str):
+            raise InterpreterEnvironmentError(
+                "interpreter optional dependency contract is invalid"
+            )
     for group in groups:
         requirements.extend(
             _requirements(
@@ -385,13 +395,9 @@ def derive_interpreter_environment(
     requires_python = metadata.get("requires-python")
     if not isinstance(requires_python, str) or not requires_python:
         raise InterpreterEnvironmentError("project requires-python contract is missing")
+    requirements_by_name = dict(zip(normalized, requirements, strict=True))
     return InterpreterEnvironmentPlan(
-        requirements=tuple(
-            value
-            for _, value in sorted(
-                zip(normalized, requirements, strict=True), key=lambda item: item[0]
-            )
-        ),
+        requirements=tuple([requirements_by_name[name] for name in sorted(requirements_by_name)]),
         requires_python=requires_python,
         projection_path=_safe_projection(root, contract.get("requirements_projection")),
         source_path=root / "pyproject.toml",
@@ -410,8 +416,9 @@ def verify_interpreter_environment_projection(
     if plan.source_kind == "project_metadata_projection" and plan.source_path is not None:
         try:
             registry = plan.source_path.parent / "governance/gate-contracts.yml"
-            if any(path.is_symlink() or not path.is_file() for path in (plan.source_path, registry)):
-                raise OSError("unsafe interpreter contract source")
+            for source_path in (plan.source_path, registry):
+                if source_path.is_symlink() or not source_path.is_file():
+                    raise OSError("unsafe interpreter contract source")
             observed = hashlib.sha256(plan.source_path.read_bytes() + b"\0" + registry.read_bytes()).hexdigest()
         except OSError as exc:
             raise InterpreterEnvironmentError("interpreter dependency source is missing or unsafe") from exc

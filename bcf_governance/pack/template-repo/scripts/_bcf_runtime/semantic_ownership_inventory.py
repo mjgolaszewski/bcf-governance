@@ -16,43 +16,83 @@ from .semantic_python_annotation_identity import (
     external_import_identity,
     resolve_annotation_identities,
 )
+from .semantic_python_definition_inventory import (
+    _InvocationVisitor,
+    definition_time_facts,
+    retain_invocation_facts,
+)
+from .semantic_python_descriptor_identity import (
+    descriptor_source_facts,
+    resolve_descriptor_dispatch,
+)
+from .semantic_python_inventory_ast import (
+    DYNAMIC_CALLS as DYNAMIC_CALLS,
+)
+from .semantic_python_inventory_ast import (
+    NORMALIZERS as NORMALIZERS,
+)
+from .semantic_python_inventory_ast import (
+    PRIMITIVES as PRIMITIVES,
+)
+from .semantic_python_inventory_ast import (
+    _annotation as _annotation,
+)
+from .semantic_python_inventory_ast import (
+    _call_name as _call_name,
+)
+from .semantic_python_inventory_ast import (
+    _call_reference as _call_reference,
+)
+from .semantic_python_inventory_ast import (
+    _endpoint_facts as _endpoint_facts,
+)
+from .semantic_python_inventory_ast import (
+    _FunctionVisitor as _FunctionVisitor,
+)
+from .semantic_python_inventory_ast import (
+    _import_bindings as _import_bindings,
+)
+from .semantic_python_inventory_ast import (
+    _imports as _imports,
+)
+from .semantic_python_inventory_ast import (
+    _normalized_return_fingerprint as _normalized_return_fingerprint,
+)
+from .semantic_python_inventory_ast import (
+    _root_name as _root_name,
+)
+from .semantic_python_inventory_ast import (
+    _router_prefixes as _router_prefixes,
+)
 from .semantic_python_method_identity import (
-    bound_method_origins,
+    bound_method_origins as bound_method_origins,
+)
+from .semantic_python_method_identity import (
     discover_class_facts,
-    method_binding,
-    method_dispatch_reference,
     resolve_method_dispatch,
     runtime_function_scopes,
-    source_symbol,
 )
 from .semantic_python_method_identity import (
-    call_name as _call_name,
+    method_binding as method_binding,
 )
 from .semantic_python_method_identity import (
-    call_reference as _call_reference,
+    method_dispatch_reference as method_dispatch_reference,
 )
 from .semantic_python_method_identity import (
-    root_name as _root_name,
+    source_symbol as source_symbol,
 )
+from .semantic_python_result_identity import resolve_result_receivers
+from .semantic_python_binding_dependencies import discover_binding_dependencies
+from .semantic_python_namespace_value_contracts import (
+    NamespaceValueSourceError,
+    qualify_namespace_value_contracts,
+)
+from .semantic_python_constructor_context import (
+    ConstructorContextSourceError,
+    retain_constructor_contexts,
+)
+from .semantic_python_return_facts import discover_return_facts
 from .semantic_source_paths import candidate_source_files
-
-NORMALIZERS = {
-    "casefold",
-    "decode",
-    "filter",
-    "get",
-    "join",
-    "lower",
-    "lstrip",
-    "parse",
-    "replace",
-    "rstrip",
-    "split",
-    "strip",
-    "upper",
-}
-DYNAMIC_CALLS = {"__import__", "eval", "exec"}
-PRIMITIVES = {"bool", "bytes", "float", "int", "None", "str"}
 
 
 class SemanticInventoryError(ValueError):
@@ -74,355 +114,10 @@ def tracked_python_files(repo_root: Path, *, allow_empty: bool = False) -> list[
     )
 
 
-def _annotation(node: ast.expr | None) -> str:
-    if node is None:
-        return "untyped"
-    try:
-        return ast.unparse(node)
-    except (AttributeError, ValueError):
-        return "unresolved"
-
-
-def _imports(
-    tree: ast.Module, module_index: dict[str, str], current_module: str
-) -> dict[str, str]:
-    resolved: dict[str, str] = {}
-    for node in tree.body:
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                local = alias.asname or alias.name.split(".", 1)[0]
-                resolved[local] = f"{module_index.get(alias.name, alias.name)}::module"
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            import_module = node.module
-            if node.level:
-                package = current_module.split(".")[:-1]
-                retained = len(package) - node.level + 1
-                import_module = ".".join(
-                    [*package[:retained], *node.module.split(".")]
-                )
-            module = module_index.get(import_module, import_module)
-            for alias in node.names:
-                resolved[alias.asname or alias.name] = f"{module}::{alias.name}"
-    return resolved
-
-
-def _import_bindings(
-    tree: ast.Module | ast.FunctionDef | ast.AsyncFunctionDef,
-    *,
-    recursive: bool = False,
-) -> list[dict[str, Any]]:
-    """Retain neutral import syntax for source-root resolution after discovery."""
-    bindings: list[dict[str, Any]] = []
-    nodes = ast.walk(tree) if recursive else tree.body
-    for node in nodes:
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                bindings.append(
-                    {
-                        "kind": "import",
-                        "local": alias.asname or alias.name.split(".", 1)[0],
-                        "module": (
-                            alias.name
-                            if alias.asname is not None
-                            else alias.name.split(".", 1)[0]
-                        ),
-                        "aliased": alias.asname is not None,
-                        "line": node.lineno,
-                    }
-                )
-        elif isinstance(node, ast.ImportFrom):
-            for alias in node.names:
-                if alias.name == "*":
-                    continue
-                bindings.append(
-                    {
-                        "kind": "from",
-                        "local": alias.asname or alias.name,
-                        "module": node.module or "",
-                        "member": alias.name,
-                        "level": node.level,
-                        "line": node.lineno,
-                    }
-                )
-    return bindings
-
-
 def _module_name(repo_root: Path, path: Path) -> str:
     return _relative(repo_root, path).removesuffix("/__init__.py").removesuffix(
         ".py"
     ).replace("/", ".")
-
-
-def _router_prefixes(tree: ast.Module) -> dict[str, list[tuple[int, str]]]:
-    prefixes: dict[str, list[tuple[int, str]]] = {}
-    for member in ast.walk(tree):
-        if not isinstance(member, (ast.Assign, ast.AnnAssign)):
-            continue
-        value = member.value
-        if not isinstance(value, ast.Call) or _call_name(value) != "APIRouter":
-            continue
-        targets = member.targets if isinstance(member, ast.Assign) else [member.target]
-        if len(targets) != 1 or not isinstance(targets[0], ast.Name):
-            continue
-        prefix = next(
-            (
-                keyword.value.value
-                for keyword in value.keywords
-                if keyword.arg == "prefix"
-                and isinstance(keyword.value, ast.Constant)
-                and isinstance(keyword.value.value, str)
-            ),
-            "",
-        )
-        prefixes.setdefault(targets[0].id, []).append((member.lineno, prefix))
-    return prefixes
-
-
-def _endpoint_facts(tree: ast.Module, path: str) -> list[dict[str, Any]]:
-    endpoints: list[dict[str, Any]] = []
-    prefixes = _router_prefixes(tree)
-    for member in ast.walk(tree):
-        if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            continue
-        for decorator in member.decorator_list:
-            if not isinstance(decorator, ast.Call) or not decorator.args:
-                continue
-            method = _call_name(decorator).lower()
-            route = decorator.args[0]
-            if (
-                method not in {"delete", "get", "patch", "post", "put"}
-                or not isinstance(route, ast.Constant)
-                or not isinstance(route.value, str)
-            ):
-                continue
-            response_model = next(
-                (
-                    ast.unparse(keyword.value)
-                    for keyword in decorator.keywords
-                    if keyword.arg == "response_model"
-                ),
-                _annotation(member.returns),
-            )
-            router_name = _root_name(decorator.func)
-            candidates = [
-                value
-                for value in prefixes.get(router_name or "", [])
-                if value[0] < member.lineno
-            ]
-            prefix = max(candidates, default=(0, ""))[1]
-            full_path = route.value
-            if prefix and not full_path.startswith(prefix):
-                full_path = f"{prefix.rstrip('/')}/{full_path.lstrip('/')}"
-            endpoints.append(
-                {
-                    "path": full_path,
-                    "method": method.upper(),
-                    "response_model": response_model,
-                    "symbol": f"{path}::{member.name}",
-                    "line": member.lineno,
-                }
-            )
-    return endpoints
-
-
-def _normalized_return_fingerprint(
-    expression: ast.expr, parameters: set[str]
-) -> str:
-    class Normalize(ast.NodeTransformer):
-        def visit_Name(self, node: ast.Name) -> ast.AST:  # noqa: N802
-            if node.id in parameters:
-                return ast.copy_location(ast.Name(id="$parameter", ctx=node.ctx), node)
-            return node
-
-    reparsed = ast.parse(ast.unparse(expression), mode="eval").body
-    normalized = Normalize().visit(ast.fix_missing_locations(reparsed))
-    return hashlib.sha256(
-        ast.dump(normalized, annotate_fields=False, include_attributes=False).encode()
-    ).hexdigest()
-
-
-class _FunctionVisitor(ast.NodeVisitor):
-    def __init__(
-        self,
-        *,
-        path: str,
-        imports: dict[str, str],
-        import_bindings: dict[str, dict[str, Any]],
-        local_types: set[str],
-        class_name: str | None,
-        function: ast.FunctionDef | ast.AsyncFunctionDef,
-    ) -> None:
-        self.path = path
-        self.imports = imports
-        self.import_bindings = import_bindings
-        self.local_types = local_types
-        self.class_symbol = f"{path}::{class_name}" if class_name else None
-        self.method_binding_kind, self.receiver = method_binding(function)
-        self.decorators = sorted(ast.unparse(value) for value in function.decorator_list)
-        suffix = f"{class_name}.{function.name}" if class_name else function.name
-        self.symbol = f"{path}::{suffix}"
-        arguments = [
-            *function.args.posonlyargs,
-            *function.args.args,
-            *function.args.kwonlyargs,
-        ]
-        self.parameters = {
-            argument.arg: _annotation(argument.annotation) for argument in arguments
-        }
-        self.assignments = {
-            name: {f"parameter:{name}"} for name in self.parameters
-        }
-        self.calls: list[dict[str, Any]] = []
-        self.constructors: list[dict[str, Any]] = []
-        self.normalizations: list[dict[str, Any]] = []
-        self.unresolved: list[dict[str, Any]] = []
-        self.return_fingerprints: list[str] = []
-        self.return_annotation = _annotation(function.returns)
-        self.receiver_attribute_mutations: set[str] = set()
-
-    def _record_receiver_attribute_target(self, target: ast.AST) -> None:
-        if (
-            self.receiver is not None
-            and isinstance(target, ast.Attribute)
-            and isinstance(target.value, ast.Name)
-            and target.value.id == self.receiver
-        ):
-            self.receiver_attribute_mutations.add(target.attr)
-
-    def _resolved_symbol(self, call: ast.Call) -> str:
-        return source_symbol(call.func, self.path, self.imports)
-
-    def _origins(self, node: ast.AST) -> set[str]:
-        origins: set[str] = set()
-        for child in ast.walk(node):
-            if isinstance(child, ast.Name):
-                origins.update(self.assignments.get(child.id, {f"local:{child.id}"}))
-        return origins
-
-    def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
-        origins = bound_method_origins(
-            node.value,
-            class_symbol=self.class_symbol,
-            receiver=self.receiver,
-            assignments=self.assignments,
-        ) or self._origins(node.value)
-        for target in node.targets:
-            self._record_receiver_attribute_target(target)
-            if isinstance(target, ast.Name):
-                self.assignments[target.id] = self.assignments.get(target.id, set()) | origins
-        self.generic_visit(node)
-
-    def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
-        self._record_receiver_attribute_target(node.target)
-        if isinstance(node.target, ast.Name) and node.value is not None:
-            origins = bound_method_origins(
-                node.value,
-                class_symbol=self.class_symbol,
-                receiver=self.receiver,
-                assignments=self.assignments,
-            ) or self._origins(node.value)
-            self.assignments[node.target.id] = (
-                self.assignments.get(node.target.id, set()) | origins
-            )
-        self.generic_visit(node)
-
-    def visit_AugAssign(self, node: ast.AugAssign) -> None:  # noqa: N802
-        self._record_receiver_attribute_target(node.target)
-        self.generic_visit(node)
-
-    def visit_Delete(self, node: ast.Delete) -> None:  # noqa: N802
-        for target in node.targets:
-            self._record_receiver_attribute_target(target)
-        self.generic_visit(node)
-
-    def visit_Return(self, node: ast.Return) -> None:  # noqa: N802
-        if node.value is not None:
-            self.return_fingerprints.append(
-                _normalized_return_fingerprint(node.value, set(self.parameters))
-            )
-        self.generic_visit(node)
-
-    def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
-        name = _call_name(node)
-        if (
-            name in {"delattr", "setattr"}
-            and self.receiver is not None
-            and node.args
-            and isinstance(node.args[0], ast.Name)
-            and node.args[0].id == self.receiver
-        ):
-            attribute = node.args[1] if len(node.args) > 1 else None
-            self.receiver_attribute_mutations.add(
-                attribute.value
-                if isinstance(attribute, ast.Constant)
-                and isinstance(attribute.value, str)
-                else "*"
-            )
-        symbol = self._resolved_symbol(node)
-        fact = {
-            "caller": self.symbol,
-            "called_symbol": symbol,
-            "call_name": name,
-            "line": node.lineno,
-            "argument_origins": sorted(self._origins(node)),
-        }
-        reference = _call_reference(node.func, self.import_bindings)
-        if reference is not None:
-            fact["import_reference"] = reference
-        dispatch = method_dispatch_reference(
-            node.func,
-            class_symbol=self.class_symbol,
-            method_binding_kind=self.method_binding_kind,
-            receiver=self.receiver,
-            assignments=self.assignments,
-        )
-        if dispatch is not None:
-            fact["method_dispatch"] = dispatch
-        self.calls.append(fact)
-        if name in self.local_types or (name[:1].isupper() and name not in PRIMITIVES):
-            constructed = (
-                f"{self.path}::{name}" if name in self.local_types else symbol
-            )
-            self.constructors.append({**fact, "constructed_symbol": constructed})
-        if isinstance(node.func, ast.Attribute) and name in NORMALIZERS:
-            root = _root_name(node.func.value)
-            origins = self._origins(node.func.value)
-            parameter_origins = sorted(
-                origin for origin in origins if origin.startswith("parameter:")
-            )
-            self.normalizations.append(
-                {
-                    **fact,
-                    "receiver_root": root,
-                    "receiver_annotation": self.parameters.get(root or ""),
-                    "parameter_origins": parameter_origins,
-                }
-            )
-        if name in DYNAMIC_CALLS:
-            self.unresolved.append(
-                {
-                    "kind": "dynamic_call",
-                    "symbol": self.symbol,
-                    "called_symbol": symbol,
-                    "line": node.lineno,
-                }
-            )
-        self.generic_visit(node)
-
-    def facts(self) -> dict[str, Any]:
-        return {
-            "symbol": self.symbol,
-            "parameters": self.parameters,
-            "return_annotation": self.return_annotation,
-            "return_fingerprints": sorted(set(self.return_fingerprints)),
-            "calls": self.calls,
-            "constructors": self.constructors,
-            "normalizations": self.normalizations,
-            "unresolved": self.unresolved,
-            "class_symbol": self.class_symbol,
-            "decorators": self.decorators,
-            "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
-        }
 
 
 def discover_python_source(
@@ -431,6 +126,7 @@ def discover_python_source(
     """Parse the tracked population without consulting semantic declarations."""
     repo_root = repo_root.resolve()
     paths = files if files is not None else tracked_python_files(repo_root)
+    source_paths = tuple(_relative(repo_root, value) for value in paths)
     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
     file_rows: list[dict[str, str]] = []
     functions: list[dict[str, Any]] = []
@@ -438,6 +134,9 @@ def discover_python_source(
     endpoints: list[dict[str, Any]] = []
     import_rows: list[dict[str, Any]] = []
     class_rows: list[dict[str, Any]] = []
+    descriptor_syntax: list[dict[str, Any]] = []
+    return_facts: list[dict[str, Any]] = []
+    binding_dependencies: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -448,6 +147,12 @@ def discover_python_source(
                 f"tracked Python source cannot be parsed: {relative}: {exc}"
             ) from exc
         file_rows.append({"path": relative, "sha256": hashlib.sha256(raw).hexdigest()})
+        descriptor_row = descriptor_source_facts(tree, path=relative)
+        descriptor_syntax.append(descriptor_row)
+        module_returns = discover_return_facts(tree, path=relative)
+        return_facts.extend(module_returns)
+        binding_dependencies.append(discover_binding_dependencies(
+            tree, path=relative, return_facts=module_returns))
         local_types = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
         types.extend(f"{relative}::{name}" for name in sorted(local_types))
         endpoints.extend(_endpoint_facts(tree, relative))
@@ -463,6 +168,13 @@ def discover_python_source(
                 import_bindings=bindings_by_local,
             )
         )
+        definition_rows, definition_spans = definition_time_facts(
+            tree, path=relative, imports=imports,
+            bindings=bindings_by_local, local_types=local_types,
+            source_paths=source_paths,
+            namespace_mutations=descriptor_row["namespace_mutations"],
+        )
+        functions.extend(definition_rows)
         scopes, missing = runtime_function_scopes(
             tree, path=relative, imports=imports
         )
@@ -477,7 +189,7 @@ def discover_python_source(
                     str(value["local"]): value
                     for value in _import_bindings(member, recursive=True)
                 }
-                visitor = _FunctionVisitor(
+                visitor = _InvocationVisitor(
                     path=relative,
                     imports=imports,
                     import_bindings={**bindings_by_local, **local_bindings},
@@ -486,9 +198,12 @@ def discover_python_source(
                     function=member,
                 )
                 visitor.visit(member)
-                functions.append(visitor.facts())
+                functions.append(retain_invocation_facts(visitor.facts(), definition_spans))
     return {
         "language": "python",
+        "descriptor_syntax": descriptor_syntax,
+        "return_facts": return_facts,
+        "binding_dependencies": binding_dependencies,
         "files": file_rows,
         "imports": import_rows,
         "classes": class_rows,
@@ -501,6 +216,10 @@ def discover_python_source(
             fact for function in functions for fact in function["normalizations"]
         ],
         "unresolved": [fact for function in functions for fact in function["unresolved"]],
+        "definition_time_obligations": [
+            fact for function in functions
+            for fact in function.get("definition_time_obligations", [])
+        ],
         "endpoints": sorted(
             endpoints,
             key=lambda value: (value["path"], value["method"], value["symbol"]),
@@ -791,7 +510,95 @@ def resolve_python_imports(
             target = binding_target(path, binding, [str(value) for value in attributes])
             if target is not None:
                 fact["called_symbol"] = target
+    source_bindings = {str(row["path"]): row["bindings"]
+                       for row in resolved.get("descriptor_syntax", [])}
+
+    result_writes = {name for source in resolved.get("descriptor_syntax", [])
+                     for name in source["attribute_writes"]}
+
+    def result_export(module: str, members: list[str], seen: frozenset[tuple[str, str]]) -> str | None:
+        path = module_index.get(module)
+        if path is None or not members:
+            return None
+        local = members[0]
+        marker = (path, local)
+        if (marker in seen or local in result_writes
+                or source_bindings.get(path, {}).get(local) != 1):
+            return None
+        target = path + "::" + ".".join(members)
+        if target in known_symbols:
+            return target
+        binding = bindings_by_path.get(path, {}).get(local)
+        return result_binding(path, binding, members[1:], seen | {marker}) if binding else None
+
+    def result_member(module: str, parts: list[str], seen: frozenset[tuple[str, str]]) -> str | None:
+        if any(part in result_writes for part in parts):
+            return None
+        for retained in range(len(parts), -1, -1):
+            candidate = ".".join(filter(None, [module, *parts[:retained]]))
+            if candidate in module_index:
+                cursor = module
+                for part in parts[:retained]:
+                    parent = module_index.get(cursor)
+                    if parent is not None and source_bindings.get(parent, {}).get(part):
+                        return None  # An explicit package attribute may replace a submodule.
+                    cursor = ".".join(filter(None, (cursor, part)))
+                remaining = parts[retained:]
+                return result_export(candidate, remaining, seen) if remaining else None
+        return None
+
+    def result_binding(path: str, binding: dict[str, Any], attributes: list[str],
+                       seen: frozenset[tuple[str, str]]) -> str | None:
+        current = module_by_path.get(path)
+        if current is None:
+            return None
+        module = _absolute_module(binding, current,
+                                  is_package=path.endswith("/__init__.py") or path == "__init__.py")
+        if module is None:
+            return None
+        if binding["kind"] == "from":
+            member = str(binding["member"])
+            target = result_export(module, [member, *attributes], seen)
+            if target is not None:
+                return target
+            parent = module_index.get(module)
+            if parent is not None and source_bindings.get(parent, {}).get(member):
+                return None
+            submodule = ".".join(filter(None, (module, member)))
+            if submodule in module_index:
+                return result_member(submodule, attributes, seen)
+            return None
+        return result_member(str(binding["module"]), attributes, seen)
+
+    def result_reference(path: str, expression: str) -> str | None:
+        if path not in module_by_path:
+            return None
+        node = ast.parse(expression, mode="eval").body
+        attributes: list[str] = []
+        while isinstance(node, ast.Attribute):
+            attributes.insert(0, node.attr)
+            node = node.value
+        if not isinstance(node, ast.Name) or source_bindings.get(path, {}).get(node.id) != 1:
+            return None
+        binding = bindings_by_path.get(path, {}).get(node.id)
+        if binding is not None:
+            return result_binding(path, binding, attributes, frozenset({(path, node.id)}))
+        if node.id in result_writes or any(name in result_writes for name in attributes):
+            return None
+        target = path + "::" + ".".join([node.id, *attributes])
+        return target if target in known_symbols else None
+
+    try:
+        qualify_namespace_value_contracts(repo_root, resolved, module_index=module_index)
+    except NamespaceValueSourceError as exc:
+        raise SemanticInventoryError(str(exc)) from exc
     resolve_method_dispatch(resolved)
+    resolve_descriptor_dispatch(resolved, module_index=module_index)
+    resolve_result_receivers(resolved, reference=result_reference)
+    try:
+        retain_constructor_contexts(repo_root, resolved, reference=result_reference)
+    except ConstructorContextSourceError as exc:
+        raise SemanticInventoryError(str(exc)) from exc
     resolved["constructors"] = [
         fact
         for function in resolved.get("functions", [])

@@ -110,15 +110,15 @@ def _adopt_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentParser
         help="compile the ordinary-adopter protection proposal from exact provider state",
     )
     mode = github.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--check", action="store_true")
-    mode.add_argument("--apply", action="store_true")
+    mode.add_argument("--check", dest="check_requested", action="store_true")
+    mode.add_argument("--apply", dest="apply_requested", action="store_true")
     github.add_argument("--format", choices=("text", "json"), default="text")
     controller = providers.add_parser("trusted-controller")
     controller.add_argument("--repo-root", type=Path, default=Path.cwd())
     controller.add_argument("--config", type=Path, required=True)
     controller_mode = controller.add_mutually_exclusive_group(required=True)
-    controller_mode.add_argument("--check", action="store_true")
-    controller_mode.add_argument("--apply", action="store_true")
+    controller_mode.add_argument("--check", dest="check_requested", action="store_true")
+    controller_mode.add_argument("--apply", dest="apply_requested", action="store_true")
     controller.add_argument("--format", choices=("text", "json"), default="text")
 
 
@@ -135,8 +135,8 @@ def _automation_parser(subparsers: argparse._SubParsersAction[argparse.ArgumentP
     github.add_argument("--repository", required=True)
     github.add_argument("--repo-root", type=Path, default=Path.cwd())
     mode = github.add_mutually_exclusive_group(required=True)
-    mode.add_argument("--check", action="store_true")
-    mode.add_argument("--apply", action="store_true")
+    mode.add_argument("--check", dest="check_requested", action="store_true")
+    mode.add_argument("--apply", dest="apply_requested", action="store_true")
     github.add_argument("--format", choices=("text", "json"), default="text")
 
 
@@ -252,8 +252,8 @@ def _parser() -> argparse.ArgumentParser:
         help="Registry reference to pin; omit to derive every registered workflow.",
     )
     pin_mode = pin.add_mutually_exclusive_group(required=True)
-    pin_mode.add_argument("--check", action="store_true")
-    pin_mode.add_argument("--apply", action="store_true")
+    pin_mode.add_argument("--check", dest="check_requested", action="store_true")
+    pin_mode.add_argument("--apply", dest="apply_requested", action="store_true")
     pin.add_argument("--format", choices=("text", "json"), default="text")
     sync = subparsers.add_parser(
         "sync-self-controller",
@@ -267,8 +267,8 @@ def _parser() -> argparse.ArgumentParser:
         help="Provider-compiled installation proof; omit while rotation is pending.",
     )
     sync_mode = sync.add_mutually_exclusive_group(required=True)
-    sync_mode.add_argument("--check", action="store_true")
-    sync_mode.add_argument("--apply", action="store_true")
+    sync_mode.add_argument("--check", dest="check_requested", action="store_true")
+    sync_mode.add_argument("--apply", dest="apply_requested", action="store_true")
     sync.add_argument("--format", choices=("text", "json"), default="text")
     return parser
 
@@ -279,6 +279,10 @@ def _print(payload: Mapping[str, object], output_format: str) -> None:
     else:
         for key, value in payload.items():
             print(f"{key}: {value}")
+
+
+def _print_progress(event: Mapping[str, object]) -> None:
+    print(json.dumps(event, sort_keys=True), file=sys.stderr, flush=True)
 
 
 def main(
@@ -299,10 +303,10 @@ def main(
                     {
                         "status": "valid",
                         "repository": registry["repository"]["full_name"],
-                        "active_producers": sum(
-                            item["activation_state"] == "active"
-                            for item in registry["producers"]
-                        ),
+                        "active_producers": len([
+                            item for item in registry["producers"]
+                            if item["activation_state"] == "active"
+                        ]),
                     },
                     args.format,
                 )
@@ -312,19 +316,19 @@ def main(
                 GitHubAPI(token=token),
                 repo_root=args.repo_root,
                 repository=args.repository,
-                apply=args.apply,
+                apply=args.apply_requested,
             )
             _print(dependabot_result.as_dict(), args.format)
-            if args.check and dependabot_result.status != "clean":
+            if args.check_requested and dependabot_result.status != "clean":
                 raise SystemExit(1)
             return
         if args.operation == "adopt":
             if args.provider == "trusted-controller":
                 controller_adoption_result = adopt_trusted_controller(
-                    args.repo_root, config=args.config, apply=args.apply
+                    args.repo_root, config=args.config, apply=args.apply_requested
                 )
                 _print(controller_adoption_result.as_dict(), args.format)
-                if args.check and controller_adoption_result.status != "clean":
+                if args.check_requested and controller_adoption_result.status != "clean":
                     raise SystemExit(1)
                 return
             graph_path = args.repo_root / "governance/ci-graph.yml"
@@ -338,8 +342,8 @@ def main(
                         repository=args.repository,
                         apply=False,
                     )
-                graph_result = apply_ci_graph(args.repo_root) if args.apply else check_ci_graph(args.repo_root)
-                if args.apply and protection is not None:
+                graph_result = apply_ci_graph(args.repo_root) if args.apply_requested else check_ci_graph(args.repo_root)
+                if args.apply_requested and protection is not None:
                     protection = apply_ordinary_protection_projection(
                         repo_root=args.repo_root,
                         projection=protection,
@@ -351,13 +355,13 @@ def main(
                     "clean"
                     if graph_result.status == "clean"
                     and (protection is None or protection.status == "clean")
-                    else ("changed" if args.apply else "actionable")
+                    else ("changed" if args.apply_requested else "actionable")
                 )
                 _print(
                     {"status": status, "changed_paths": sorted(changed_paths)},
                     args.format,
                 )
-                if args.check and status != "clean":
+                if args.check_requested and status != "clean":
                     raise SystemExit(1)
                 return
             if not all(legacy_values):
@@ -372,7 +376,7 @@ def main(
             )
             github_adoption_result = (
                 apply_github_adoption(args.repo_root.resolve(), desired=desired)
-                if args.apply
+                if args.apply_requested
                 else plan_github_adoption(args.repo_root.resolve(), desired=desired)
             )
             _print(
@@ -431,9 +435,7 @@ def main(
                 python_executable=project_python,
                 repository=args.repository,
                 provider_api=provider_api,
-                progress_sink=lambda event: print(
-                    json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
-                ),
+                progress_sink=_print_progress,
             )
             _print(train_result, args.format)
             return
@@ -519,10 +521,10 @@ def main(
                 references=tuple(args.workflow or ()),
                 workflow_paths=workflow_paths,
                 workflow_ids=workflow_ids,
-                apply=args.apply,
+                apply=args.apply_requested,
             )
             _print(authority_result.as_dict(), args.format)
-            if args.check and authority_result.status != "clean":
+            if args.check_requested and authority_result.status != "clean":
                 raise SystemExit(1)
             return
         if args.operation == "sync-self-controller":
@@ -540,10 +542,10 @@ def main(
                 args.repo_root,
                 pin=value,
                 confirmation=confirmation,
-                apply=args.apply,
+                apply=args.apply_requested,
             )
             _print(controller_pin_result.as_dict(), args.format)
-            if args.check and controller_pin_result.status != "clean":
+            if args.check_requested and controller_pin_result.status != "clean":
                 raise SystemExit(1)
             return
         explicit_command = bool(args.command)

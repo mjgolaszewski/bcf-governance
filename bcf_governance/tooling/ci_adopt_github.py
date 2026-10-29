@@ -12,6 +12,7 @@ import yaml
 
 from .ci_github import DISPATCH_EVENTS, topology_document
 from .ci_github_actions import action_pin
+from .ci_graph_yaml import render_yaml
 from .governance_install.transaction import apply_transaction
 
 MANAGED_PATHS = (
@@ -37,21 +38,17 @@ def _labels(values: tuple[str, ...]) -> str | list[str]:
     return values[0] if len(values) == 1 else list(values)
 
 
+def _valid_default_branch(branch: str) -> bool:
+    if not branch:
+        return False
+    for token in ('..', ' ', '\\'):
+        if token in branch:
+            return False
+    return True
+
+
 def _workflow(payload: dict[str, Any]) -> bytes:
-    class WorkflowDumper(yaml.SafeDumper):
-        pass
-
-    def represent_string(dumper: yaml.SafeDumper, value: str) -> yaml.ScalarNode:
-        style = "|" if "\n" in value else None
-        return dumper.represent_scalar("tag:yaml.org,2002:str", value, style=style)
-
-    WorkflowDumper.add_representer(str, represent_string)
-    return yaml.dump(
-        payload,
-        Dumper=WorkflowDumper,
-        sort_keys=False,
-        width=1000,
-    ).encode("utf-8")
+    return render_yaml(payload, default_flow_style=False)
 
 
 ACTIVATION_EXPRESSION = "${{ vars.BCF_CI_AUTHORITY_ENABLED == 'true' }}"
@@ -130,21 +127,26 @@ def render_github_control_plane(
 ) -> dict[str, bytes]:
     """Render acyclic admission, callback, and publication workflows."""
 
-    if not default_branch or any(value in default_branch for value in ("..", " ", "\\")):
+    if not _valid_default_branch(default_branch):
         raise GithubAdoptionError("default branch is unsafe")
     if (
         not producer_workflow_names
         or len(set(producer_workflow_names)) != len(producer_workflow_names)
-        or any(not value or "\n" in value or "\r" in value for value in producer_workflow_names)
     ):
         raise GithubAdoptionError("producer workflow names must be unique and non-empty")
+    for value in producer_workflow_names:
+        if not value or "\n" in value or "\r" in value:
+            raise GithubAdoptionError("producer workflow names must be unique and non-empty")
     topology = topology_document(
         candidate_labels=candidate_labels, trusted_labels=trusted_labels
     )
     if not dispatch_exact_ref:
-        kickoff_role = next(
-            role for role in topology["roles"] if role["id"] == "exact-main-kickoff"
-        )
+        for role in topology["roles"]:
+            if role["id"] == "exact-main-kickoff":
+                kickoff_role = role
+                break
+        else:
+            raise StopIteration
         kickoff_role["permissions"] = ["actions:read", "contents:read"]
     topology["default_branch"] = default_branch
     topology["producer_workflows"] = list(producer_workflow_names)
@@ -299,7 +301,7 @@ def render_github_v11_control_plane(
 ) -> dict[str, bytes]:
     """Render the same-run authority-v1.1 control plane used by BCF itself."""
 
-    if not default_branch or any(value in default_branch for value in ("..", " ", "\\")):
+    if not _valid_default_branch(default_branch):
         raise GithubAdoptionError("default branch is unsafe")
     if not re.fullmatch(r"[a-f0-9]{40}", controller_commit):
         raise GithubAdoptionError("controller commit must be an exact Git SHA")
@@ -508,10 +510,13 @@ def render_github_adoption(
 ) -> dict[str, bytes]:
     """Render the closed reference topology without reading a target repository."""
 
-    if not default_branch or any(value in default_branch for value in ("..", " ", "\\")):
+    if not _valid_default_branch(default_branch):
         raise GithubAdoptionError("default branch is unsafe")
-    if not producer_argv or any(not value for value in producer_argv):
+    if not producer_argv:
         raise GithubAdoptionError("producer argv must be exact and non-empty")
+    for value in producer_argv:
+        if not value:
+            raise GithubAdoptionError("producer argv must be exact and non-empty")
     rendered = render_github_control_plane(
         default_branch=default_branch,
         candidate_labels=candidate_labels,

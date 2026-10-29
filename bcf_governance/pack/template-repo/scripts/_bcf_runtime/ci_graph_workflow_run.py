@@ -9,6 +9,21 @@ class WorkflowRunTopologyError(ValueError):
     """Raised when a workflow-run topology cannot execute on GitHub."""
 
 
+def _workflow_run_depth(workflow_id: str, parents: dict[str, set[str]],
+                        visiting: set[str], depths: dict[str, int]) -> int:
+    if workflow_id in depths:
+        return depths[workflow_id]
+    if workflow_id in visiting:
+        raise WorkflowRunTopologyError("CI graph workflow_run topology is cyclic")
+    visiting.add(workflow_id)
+    value = max([_workflow_run_depth(parent, parents, visiting, depths) + 1
+                 for parent in parents[workflow_id]], default=0)
+    visiting.remove(workflow_id)
+    depths[workflow_id] = value
+    return value
+
+
+
 def validate_workflow_run_depth(workflows: list[dict[str, Any]]) -> None:
     """Reject cycles and chains beyond GitHub's three-level workflow_run cap."""
 
@@ -19,26 +34,24 @@ def validate_workflow_run_depth(workflows: list[dict[str, Any]]) -> None:
         for event in workflow["events"]:
             if event["type"] != "workflow_run":
                 continue
-            parents[target].update(
+            parents[target].update([
                 by_name[name] for name in event["workflows"] if name in by_name
-            )
+            ])
 
     visiting: set[str] = set()
     depths: dict[str, int] = {}
 
-    def depth(workflow_id: str) -> int:
-        if workflow_id in depths:
-            return depths[workflow_id]
-        if workflow_id in visiting:
-            raise WorkflowRunTopologyError("CI graph workflow_run topology is cyclic")
-        visiting.add(workflow_id)
-        value = max((depth(parent) + 1 for parent in parents[workflow_id]), default=0)
-        visiting.remove(workflow_id)
-        depths[workflow_id] = value
-        return value
 
     for workflow_id in parents:
-        if depth(workflow_id) > 3:
+        if _workflow_run_depth(workflow_id, parents, visiting, depths) > 3:
             raise WorkflowRunTopologyError(
                 "CI graph workflow_run chain exceeds GitHub's three-level limit"
             )
+
+
+def workflow_has_event(workflow: dict[str, Any], kind: str) -> bool:
+    """Retain authored event order and stop at the first matching event."""
+    for event in workflow["events"]:
+        if event["type"] == kind:
+            return True
+    return False

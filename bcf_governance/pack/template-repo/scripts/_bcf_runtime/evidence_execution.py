@@ -15,6 +15,8 @@ from typing import Any
 
 from .bootstrap.contracts import ChildProcessEnvironment
 from .bootstrap.environment import child_process_environment as _default_child_process_environment
+from .evidence_execution_owner import OwnerAdmissionError
+from .evidence_owner_registration import ActualInvocationIdentity, reserve_owner_invocation
 from .runtime_capacity import (
     EXECUTION_STATE_ENVIRONMENT,
     allocate_execution_state,
@@ -228,6 +230,7 @@ def _run_with_execution_state(
     session_id: str,
     execution_id: str,
     require_state: bool,
+    require_execution_owner: bool = False,
     job_environment: dict[str, str] | None = None,
 ) -> tuple[
     subprocess.CompletedProcess[str],
@@ -236,6 +239,28 @@ def _run_with_execution_state(
     dict[str, object] | None,
 ]:
     """Run once with exact execution-state allocation and terminal retirement."""
+
+    # Registration is selected only by an installed trusted launcher. Contract
+    # data may require ownership but cannot nominate an owner or grant authority.
+    # Do this before both branches and before _execution_env runs project Python.
+    invocation = contract.get("invocation", {})
+    contract_requirement = invocation.get("requires_execution_owner", False) if isinstance(invocation, dict) else False
+    if type(contract_requirement) is not bool:
+        raise EvidenceError("gate execution-owner requirement must be a boolean")
+    required_owner = require_execution_owner or contract_requirement
+    configured = invocation.get("env", {}) if isinstance(invocation, dict) else {}
+    profile = configured.get("BCF_EXECUTION_PROFILE", "unspecified") if isinstance(configured, dict) else "unspecified"
+    actual = ActualInvocationIdentity(repo_root.resolve(), str(contract.get("target", "")),
+                                      str(profile), execution_id)
+    try:
+        reserved = reserve_owner_invocation(actual, required=required_owner,
+            timeout_seconds=contract["execution_timeout_seconds"])
+    except OwnerAdmissionError as error:
+        raise EvidenceError(str(error)) from error
+    if reserved is not None:
+        # Positive JIT execution must remain unavailable until the concrete
+        # external backend can retain original custody through owner cleanup.
+        raise EvidenceError("native execution-owner backend is not installed")
 
     if not require_state:
         env, metadata = _execution_env(

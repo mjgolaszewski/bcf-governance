@@ -1,0 +1,75 @@
+document:
+  kind: maintenance_contract
+  name: Full 2.3.9 consumer compatibility and actual-context custody contract
+  id: maintenance-consumer-compatibility-contract
+  version: 1.0.0
+  generated_at_utc: '2026-10-27T00:00:00Z'
+  status: active
+  path: audits/maintenance-consumer-compatibility-contract.yml
+scope:
+  release: 2.3.9
+  baseline: v2.3.8 commit32586243aebc67c1dc2ace05631b55798f28e2ba
+  hotfix_slices:
+  - P31-HF11
+  - P31-HF12
+  - P31-HF13
+  - P31-HF14
+  - P31-HF15
+  source_owner: bcf_governance/tooling
+  projections:
+  - template-repo/scripts/_bcf_runtime
+  - bcf_governance/pack/template-repo/scripts/_bcf_runtime
+  completeness: all known cross-project BCF requirements, not packaging-only or independently deferred JIT
+pre_edit_contract:
+  layer: tooling
+  bounded_contexts:
+  - validation
+  - semantic_ownership
+  - profile compilation
+  - execution custody
+  command_or_query: queries preserve exact source facts; commands own native projection lock and execution custody mutations through supported owners
+  forbidden_surfaces:
+  - manual adopter runtime
+  - hand-authored workflow or authority pins
+  - independent 2.5 branch
+  - production keys and external provider effects without their own current authority
+  deconstruction_order: P31-HF12 characterizes only inventory; P31-HF13 characterizes only profile; no feature behavior added to either 800-line module before its
+    own decomposition proof
+requirements:
+- id: SDK-BCF-01
+  requirement: Ordinary consumer validation omits producer-only optional authorities while producer schema/path/semantic checks remain unchanged.
+  status: selected_qualification_pass_integration_open
+- id: SDK-BCF-02
+  requirement: Exact source-proven property definitions and access edges preserve hidden effects and reject unsupported dynamic caller or namespace bindings.
+  status: source_draft_native_qualification_open
+- id: SDK-BCF-03
+  requirement: Bounded exact builtin Exception super constructors preserve argument effects and genuine source identity; dynamic MRO and shadow alternatives fail
+    closed.
+  status: source_draft_native_qualification_open
+- id: SDK-BCF-04
+  requirement: Receiver and return aliases prove exact dispatch and effect ownership across actual source chains; annotations and names alone grant no purity.
+  status: implementation_open
+- id: SDK-BCF-05
+  requirement: External HTTP/JWKS clients include actual default observed subclass hooks streams deferred close cancellation telemetry and all injection alternatives
+    under a genuinely enforced supported contract.
+  status: implementation_open
+- id: SDK-BCF-06
+  requirement: Valid explicit invocation lifecycle and timeout survive profile normalization; malformed values refuse and absent owner defaults persist.
+  status: private_source_draft_qualification_open
+- id: MAIN-BCF-01
+  requirement: Module/class/default/decorator-time constructors and effects retain true owning contexts including actual module-to-factory-to-constructor chains,
+    or unsupported shapes refuse explicitly.
+  status: private_source_draft_qualification_open
+- id: RC-BCF-01..05
+  requirement: Trusted registration and actual coherent frozen postmutation execution view bind held real kernel peer identity and excluded control FDs; one-shot
+    staged capability delivery has durable independent issuer/BFF journals and cleanup/HOLD through real process lifetime, preserving workload v2 and actual owner
+    receipts.
+  status: contract_only_implementation_and_real_process_qualification_open
+evidence_rules:
+- Selected diagnostics and source AST checks never become full release or Standard acceptance.
+- Preserve every original negative and exact collected/executed/phase/JUnit population; qualified proof reuse binds exact candidate bytes.
+- Portable canonical tests must not require private corpus environment variables or consumer checkout paths.
+- Native generator and semantic lock commands derive mirrors/manifests/locks; no hand hashes or freshness exclusions.
+- Native ci submit and reconcile own candidate lifecycle workflow and authority commit pairing.
+- Official immutable publication and independent exact-asset custody are separate final requirements; keep release machinery and independent 2.5 development intact.
+release_status: not_released_not_in_custody

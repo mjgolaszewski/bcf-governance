@@ -228,8 +228,9 @@ def validate_reference_topology(payload: dict[str, Any]) -> None:
         if candidate_labels & set(role.get("runner_labels", ())):
             raise GithubReferenceError("candidate and trusted runner labels overlap")
     coordination = payload.get("coordination", {})
-    if any(coordination.get(key) for key in ("polling", "sleeping", "idle_waiter")):
-        raise GithubReferenceError("GitHub reference topology may not idle or poll")
+    for key in ("polling", "sleeping", "idle_waiter"):
+        if coordination.get(key):
+            raise GithubReferenceError("GitHub reference topology may not idle or poll")
     if coordination.get("callback_payload_authoritative") is not False:
         raise GithubReferenceError("callback payload cannot be authority")
     if coordination.get("provider_api_reconstruction") is not True:

@@ -9,6 +9,8 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_relative_path
+
 
 class ProspectiveTelemetryError(ValueError):
     """The prospective train emitted incomplete or ambiguous telemetry."""
@@ -39,7 +41,7 @@ def validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> None
     schema = json.loads(
         (repo_root / "schemas/prospective-train-telemetry.schema.json").read_text(encoding="utf-8")
     )
-    errors = sorted(Draft202012Validator(schema).iter_errors(telemetry), key=lambda item: list(item.path))
+    errors = sorted(Draft202012Validator(schema).iter_errors(telemetry), key=schema_error_relative_path)
     if errors:
         raise ProspectiveTelemetryError(
             "prospective train telemetry is invalid: " + errors[0].message

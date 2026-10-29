@@ -162,25 +162,6 @@ def compile_edge_contracts(graph: dict[str, Any]) -> tuple[EdgeContract, ...]:
         for job in workflow["jobs"]
     }
 
-    def reusable_bridge(
-        producer_workflow: dict[str, Any],
-        producer_job: dict[str, Any],
-        consumer_workflow: dict[str, Any],
-        artifacts: tuple[str, ...],
-    ) -> bool:
-        if not artifacts:
-            return False
-        for caller_workflow in workflows:
-            for caller_job in caller_workflow["jobs"]:
-                if reusable_targets[_node(caller_workflow, caller_job)] != consumer_workflow["id"]:
-                    continue
-                if caller_workflow["id"] != producer_workflow["id"]:
-                    continue
-                if producer_job["id"] not in dependencies[caller_workflow["id"]][caller_job["id"]]:
-                    continue
-                if set(artifacts).issubset(set(caller_job["consumes"])):
-                    return True
-        return False
     contracts: list[EdgeContract] = []
     for producer_workflow in workflows:
         for producer_job in producer_workflow["jobs"]:
@@ -198,13 +179,20 @@ def compile_edge_contracts(graph: dict[str, Any]) -> tuple[EdgeContract, ...]:
                         mechanism = "reusable_workflow"
                     produced = set(producer_job["produces"])
                     artifacts = tuple(sorted(produced & set(consumer_job["consumes"])))
-                    if mechanism is None and reusable_bridge(
-                        producer_workflow,
-                        producer_job,
-                        consumer_workflow,
-                        artifacts,
-                    ):
-                        mechanism = "reusable_artifact_bridge"
+                    if mechanism is None and artifacts:
+                        for caller_workflow in workflows:
+                            for caller_job in caller_workflow["jobs"]:
+                                if reusable_targets[_node(caller_workflow, caller_job)] != consumer_workflow["id"]:
+                                    continue
+                                if caller_workflow["id"] != producer_workflow["id"]:
+                                    continue
+                                if producer_job["id"] not in dependencies[caller_workflow["id"]][caller_job["id"]]:
+                                    continue
+                                if set(artifacts).issubset(set(caller_job["consumes"])):
+                                    mechanism = "reusable_artifact_bridge"
+                                    break
+                            if mechanism is not None:
+                                break
                     if mechanism is not None:
                         contracts.append(
                             _reachable_contract(
@@ -258,10 +246,12 @@ def compile_edge_contracts(graph: dict[str, Any]) -> tuple[EdgeContract, ...]:
             contract.authority,
             contract.failure_semantics,
         )
-        if contract.reachable and any(value is None for value in populated):
-            raise CIGraphError(
-                f"reachable CI graph edge {contract.producer} -> {contract.consumer} is incomplete"
-            )
+        if contract.reachable:
+            for value in populated:
+                if value is None:
+                    raise CIGraphError(
+                        f"reachable CI graph edge {contract.producer} -> {contract.consumer} is incomplete"
+                    )
         if not contract.reachable and contract.exclusion_reason is None:
             raise CIGraphError(
                 f"unreachable CI graph edge {contract.producer} -> {contract.consumer} lacks an exclusion"

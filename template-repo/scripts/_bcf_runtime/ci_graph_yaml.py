@@ -78,11 +78,11 @@ def load_yaml_path(path: Path) -> dict[str, Any]:
     return load_yaml_bytes(path.read_bytes(), source=path.as_posix())
 
 
-def render_yaml(payload: dict[str, Any]) -> bytes:
+def render_yaml(payload: dict[str, Any], *, default_flow_style: bool | None = None) -> bytes:
     return yaml.dump(
         payload,
         Dumper=_GraphDumper,
         sort_keys=False,
         width=1000,
-        default_flow_style=None,
+        default_flow_style=default_flow_style,
     ).encode("utf-8")

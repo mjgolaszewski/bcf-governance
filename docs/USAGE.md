@@ -847,6 +847,29 @@ Older SDKs reject the new field, so adopt it only with a qualified supporting
 maintenance release. This candidate does not resolve returned-model dispatch;
 Protocol annotations and read declarations do not prove projection purity.
 
+The 2.3.9 candidate also requires receiver binding independently of declared
+ports. An injected parameter, component field or escaped callback cannot become
+a supported implementation merely by declaring its call name as a read,
+mutation, authority or output port. Source-resolved port bodies remain supported;
+unknown binding paths refuse. Existing users of injected component ports must
+provide a supported binding proof; annotations alone do not supply that proof.
+This tightens earlier acceptance of unproven component dispatch.
+
+For credential-backed gate execution, the candidate accepts the optional boolean
+`invocation.requires_execution_owner`. Setting it to `true` requires a trusted
+execution-owner registration before interpreter probes or either execution-state
+branch. The field cannot select an owner, endpoint or process. An installed
+trusted scope remains mandatory when the field is absent or `false`; changing
+producer or repository labels cannot fall back to ordinary execution. Required
+but unconfigured owners refuse. The trusted launcher must declare an immutable
+ordered list of exact producer/profile/control tuples; membership sets alone do
+not authorize their Cartesian combinations. Each reservation consumes only the
+next declared ordinal and carries the canonical allocation digest. Changed
+route, ordinal, digest or allocation budget refuses before owner connections.
+This metadata does not grant provider or runtime authority. The current candidate
+implements admission checks; its complete credential-backed backend remains unfinished and is not
+release-qualified.
+
 - `bcf validate`: schema and cross-file semantics.
 - `bcf semantic-ownership scan`: source-first evaluation of adopted semantic
   families, application operations, and representation provenance. The legacy

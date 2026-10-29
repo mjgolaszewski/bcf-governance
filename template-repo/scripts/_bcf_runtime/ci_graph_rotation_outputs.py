@@ -17,7 +17,7 @@ def validate_rotation_output_directories(
     for component_index, component_id in enumerate(executor["components"]):
         component = graph["step_components"][component_id]
         if component["kind"] == "directory_setup":
-            prepared.update(str(path).rstrip("/") for path in component["paths"])
+            prepared.update([str(path).rstrip("/") for path in component["paths"]])
             continue
         if component["kind"] != "command":
             continue
@@ -27,10 +27,13 @@ def validate_rotation_output_directories(
         operations.append((component_id, str(argv[3])))
         if argv[3] == "advance":
             preceding = executor["components"][:component_index]
-            if argv[0] != "{ephemeral_controller}" or not any(
-                graph["step_components"][item]["kind"] == "controller_install"
-                for item in preceding
-            ):
+            installed = False
+            if argv[0] == "{ephemeral_controller}":
+                for item in preceding:
+                    if graph["step_components"][item]["kind"] == "controller_install":
+                        installed = True
+                        break
+            if not installed:
                 raise CIGraphError(
                     f"CI graph job {job['id']} must advance custody through the "
                     "exact staged target controller"
@@ -51,7 +54,12 @@ def validate_rotation_output_directories(
                 f"CI graph job {job['id']} routine transition output parent "
                 "must be allocated before execution"
             )
-    if not any(operation == "authorize" for _, operation in operations):
+    has_authorization = False
+    for _, operation in operations:
+        if operation == "authorize":
+            has_authorization = True
+            break
+    if not has_authorization:
         return
     materializers = [
         component_id for component_id, operation in operations

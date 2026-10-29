@@ -19,7 +19,7 @@ def repository(value: object) -> str:
     if (
         not REPOSITORY_PATTERN.fullmatch(text)
         or len(parts) != 2
-        or any(part in {".", ".."} for part in parts)
+        or parts[0] in {".", ".."} or parts[1] in {".", ".."}
     ):
         raise GitHubValueError("repository must be exact owner/name identity")
     return text

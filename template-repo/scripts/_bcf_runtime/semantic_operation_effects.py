@@ -27,6 +27,37 @@ class SemanticOperationEffectError(ValueError):
     """Raised when an operation bypasses its declared effect boundary."""
 
 
+class _FunctionLookup:
+    """Exact literal suffix index owned by one immutable validation inventory."""
+
+    def __init__(self, functions: dict[str, dict[str, Any]]) -> None:
+        self._direct = frozenset(functions)
+        self._suffixes: dict[tuple[str, str], str | None] = {}
+        for candidate in self._direct:
+            # The old oracle matches literal suffixes anywhere after '/'. Do
+            # not assume a normalized source grammar: even slashes or extra
+            # '::' inside a qualified name must preserve its exact behavior.
+            starts = [0, *(index + 1 for index, value in enumerate(candidate) if value == "/")]
+            for start in starts:
+                module, separator, function = candidate[start:].partition("::")
+                if not separator or not module.endswith(".py") or "/" in module:
+                    continue
+                key = (module.removesuffix(".py"), function)
+                if key not in self._suffixes:
+                    self._suffixes[key] = candidate
+                elif self._suffixes[key] != candidate:
+                    self._suffixes[key] = None
+
+    def resolve(self, symbol: str) -> str | None:
+        if symbol in self._direct:
+            return symbol
+        module, separator, function = symbol.partition("::")
+        if not separator or not module.endswith(".py"):
+            return None
+        module_name = module.removesuffix(".py").rsplit("/", 1)[-1]
+        return self._suffixes.get((module_name, function))
+
+
 def _resolve_function(
     symbol: str, functions: dict[str, dict[str, Any]]
 ) -> str | None:
@@ -48,9 +79,11 @@ def _resolve_function(
 
 
 def _port_identity(
-    value: str, functions: dict[str, dict[str, Any]]
+    value: str, functions: dict[str, dict[str, Any]],
+    *, lookup: _FunctionLookup | None = None,
 ) -> tuple[str, str]:
-    resolved = _resolve_function(value, functions)
+    resolved = (_resolve_function(value, functions) if lookup is None
+                else lookup.resolve(value))
     return ("function", resolved) if resolved is not None else ("call", value)
 
 
@@ -64,25 +97,26 @@ def validate_operation_effects(
     functions = {
         str(row["symbol"]): row for row in inventory.get("functions", [])
     }
-    entrypoint = _resolve_function(entrypoint_symbol, functions)
+    lookup = _FunctionLookup(functions)
+    entrypoint = lookup.resolve(entrypoint_symbol)
     if entrypoint is None:
         raise SemanticOperationEffectError(
             f"operation {operation['id']} entrypoint is absent from the shared source inventory"
         )
     mutation_ports = {
-        _port_identity(str(value), functions)
+        _port_identity(str(value), functions, lookup=lookup)
         for value in operation["allowed_mutation_ports"]
     }
     authority_ports = {
-        _port_identity(str(value), functions)
+        _port_identity(str(value), functions, lookup=lookup)
         for value in operation["allowed_authority_ports"]
     }
     non_authoritative_ports = {
-        _port_identity(str(value), functions)
+        _port_identity(str(value), functions, lookup=lookup)
         for value in operation["non_authoritative_output_effects"]
     }
     read_ports = {
-        _port_identity(str(value), functions)
+        _port_identity(str(value), functions, lookup=lookup)
         for value in operation.get("allowed_read_ports", [])
     }
     if read_ports and operation.get("authoritative_read") is not True:
@@ -105,6 +139,24 @@ def validate_operation_effects(
             continue
         visited.add(symbol)
         function = functions[symbol]
+        if function.get("constructor_context_budget_unresolved"):
+            raise SemanticOperationEffectError(
+                f"operation {operation['id']} contains unresolved constructor context budget at {symbol}"
+            )
+        for context in function.get("constructor_context_obligations", []):
+            if context.get("local_ownership_resolution") == "closed_source_caller_frame":
+                continue
+            # The side summary is never an identity or purity grant. A declared
+            # read/mutation port cannot erase an unknown caller context, and
+            # receiver-state stores still need an ownership/effect proof.
+            if (context.get("status") != "candidate"
+                    or context.get("guards")
+                    or context.get("body_effects", {}).get("writes")
+                    or context.get("body_effects", {}).get("calls")
+                    or context.get("body_effects", {}).get("unsupported")):
+                raise SemanticOperationEffectError(
+                    f"operation {operation['id']} contains unresolved constructor caller/effect obligations at {symbol}:{context.get('line')}"
+                )
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
@@ -117,6 +169,10 @@ def validate_operation_effects(
                     authority.add(target)
                 else:
                     raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+        if function.get("definition_time_obligations"):
+            raise SemanticOperationEffectError(
+                f"operation {operation['id']} contains unresolved definition-time effects at {symbol}"
+            )
         if function.get("unresolved"):
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
@@ -130,16 +186,12 @@ def validate_operation_effects(
             )
         for call in function.get("calls", []):
             raw = str(call.get("called_symbol", ""))
-            callee = _resolve_function(raw, functions)
+            callee = lookup.resolve(raw)
             identity = ("function", callee) if callee is not None else ("call", raw)
             hard_dispatch_failure = (
                 call.get("dispatch_resolution") == "unresolved"
                 and call.get("dispatch_port_eligible") is not True
             )
-            if hard_dispatch_failure:
-                raise SemanticOperationEffectError(
-                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-                )
             name = str(call.get("call_name", ""))
             receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
             file_replace = name == "replace" and (
@@ -158,6 +210,20 @@ def validate_operation_effects(
                 name.lower().startswith(AUTHORITY_CALL_PREFIXES)
                 or call.get("authority_effect") is True
             )
+            if hard_dispatch_failure:
+                if identity in read_ports and (known_write or known_authority):
+                    raise SemanticOperationEffectError(
+                        f"operation {operation['id']} read port has a write or authority effect: {raw}"
+                    )
+                if identity not in declared_ports and (known_write or known_authority):
+                    if known_write:
+                        writes.add(raw)
+                    if known_authority:
+                        authority.add(raw)
+                    continue
+                raise SemanticOperationEffectError(
+                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+                )
             if identity in read_ports:
                 reached.add(identity)
                 if known_write or known_authority:
@@ -171,6 +237,20 @@ def validate_operation_effects(
                 continue
             if identity in declared_ports:
                 reached.add(identity)
+                continue
+            if (call.get("dispatch_resolution") == "exact_source_literal_default_call"
+                    and call.get("literal_default_admission") is True
+                    and call.get("literal_default_call_model", {}).get("local_effects_complete") is True):
+                # Entire selected body modeled with literal bindings and only
+                # fresh container allocations/stores. Result provenance and
+                # opaque flags remain on the edge; no generic receiver grant.
+                continue
+            if (call.get("dispatch_resolution") == "exact_source_fresh_local_context"
+                    and call.get("fresh_local_receiver_effects", {}).get("scope") == "closed_source_caller_frame"):
+                # The maintained source resolver has summarized the complete
+                # literal-store body for THIS fresh caller allocation. Keep
+                # its stores as local effects on the edge, not a global purity
+                # classification for this callee or a blanket write waiver.
                 continue
             if call.get("dispatch_resolution") == "unresolved":
                 raise SemanticOperationEffectError(

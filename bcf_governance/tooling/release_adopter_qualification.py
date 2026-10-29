@@ -373,17 +373,31 @@ def _isolated_project_python(
     shutil.copytree(environment_root, projected_root, symlinks=True)
     projected_python = projected_root / "bin/python"
     source_text = str(source_root.resolve())
-    destination_text = str(destination_root.resolve())
     for path in projected_root.rglob("*.pth"):
         if path.is_symlink() or not path.is_file():
             raise ReleaseQualificationError("adopter environment contains unsafe path hooks")
         text = path.read_text(encoding="utf-8")
-        if source_text in text:
-            path.write_text(text.replace(source_text, destination_text), encoding="utf-8")
-        if re.search(r"/(?:docker|home)/", path.read_text(encoding="utf-8")):
-            raise ReleaseQualificationError(
-                "adopter environment retains an unrelated workspace path hook"
-            )
+        rewritten: list[str] = []
+        for line in text.splitlines(keepends=True):
+            value = line.rstrip("\r\n")
+            related = False
+            if value and not value.startswith(("#", "import ", "import\t")):
+                candidate = Path(value)
+                if candidate.is_absolute():
+                    try:
+                        relative_path = candidate.resolve().relative_to(source_root.resolve())
+                    except ValueError:
+                        pass
+                    else:
+                        value = str(destination_root.resolve() / relative_path)
+                        related = True
+            if not related and re.search(r"/(?:docker|home)/", value):
+                raise ReleaseQualificationError(
+                    "adopter environment retains an unrelated workspace path hook"
+                )
+            ending = "\r\n" if line.endswith("\r\n") else "\n" if line.endswith("\n") else ""
+            rewritten.append(value + ending)
+        path.write_text("".join(rewritten), encoding="utf-8")
     probe = subprocess.run(
         [str(projected_python), "-c", "import json,sys; print(json.dumps(sys.path))"],
         cwd=destination_root, capture_output=True, text=True, check=False,

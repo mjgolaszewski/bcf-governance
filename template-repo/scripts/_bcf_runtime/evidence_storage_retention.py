@@ -11,6 +11,8 @@ from typing import Any, cast
 
 from jsonschema import Draft202012Validator
 
+from .schema_diagnostics import schema_error_location, schema_error_string_path
+
 from .evidence_storage_contracts import (
     EvidenceStorageError,
     load_input_reference,
@@ -42,11 +44,11 @@ def _load_snapshot(repo_root: Path, path: Path) -> dict[str, Any]:
         raise EvidenceStorageError(f"cannot decode evidence retention snapshot: {exc}") from exc
     errors = sorted(
         Draft202012Validator(schema).iter_errors(payload),
-        key=lambda item: tuple(str(part) for part in item.absolute_path),
+        key=schema_error_string_path,
     )
     if errors:
         error = errors[0]
-        location = ".".join(str(part) for part in error.absolute_path) or "<root>"
+        location = schema_error_location(error)
         raise EvidenceStorageError(
             f"evidence retention snapshot schema violation at {location}: {error.message}"
         )

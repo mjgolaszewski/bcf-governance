@@ -414,12 +414,12 @@ def load_session(manifest_path: Path) -> EvidenceSession:
     if not isinstance(payload, dict) or payload.get("schema_version") not in {"1.0", "2.0", "3.0"}:
         raise EvidenceError("evidence session manifest schema_version must be 1.0, 2.0, or 3.0")
     session_id = payload.get("session_id")
-    if (
-        not isinstance(session_id, str)
-        or len(session_id) < 32
-        or any(value not in "0123456789abcdef" for value in session_id)
-        or root.name != session_id
-    ):
+    if not isinstance(session_id, str) or len(session_id) < 32:
+        raise EvidenceError("evidence session identity is invalid")
+    for value in session_id:
+        if value not in "0123456789abcdef":
+            raise EvidenceError("evidence session identity is invalid")
+    if root.name != session_id:
         raise EvidenceError("evidence session identity is invalid")
     return EvidenceSession(
         root=root,

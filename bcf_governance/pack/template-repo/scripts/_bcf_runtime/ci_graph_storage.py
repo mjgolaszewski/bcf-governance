@@ -57,12 +57,10 @@ def _validate_artifacts(graph: dict[str, Any], contract: dict[str, Any]) -> None
         object_targets = [item["target_path"] for item in declaration["objects"]]
         if len(set(object_ids)) != len(object_ids):
             raise CIGraphError(f"durable evidence source {artifact_id} duplicates object IDs")
-        if any(
-            _overlaps(left, right)
-            for index, left in enumerate(object_targets)
-            for right in object_targets[index + 1 :]
-        ):
-            raise CIGraphError(f"durable evidence source {artifact_id} overlaps targets")
+        for index, left in enumerate(object_targets):
+            for right in object_targets[index + 1:]:
+                if _overlaps(left, right):
+                    raise CIGraphError(f"durable evidence source {artifact_id} overlaps targets")
         unknown = sorted(
             {item["freshness_class"] for item in declaration["objects"]} - freshness
         )
@@ -86,9 +84,17 @@ def _validate_artifacts(graph: dict[str, Any], contract: dict[str, Any]) -> None
             raise CIGraphError(
                 f"durable evidence reference {artifact_id} must materialize under .artifacts/"
             )
-        if any(_overlaps(root, existing) for existing in [*targets, *artifact_paths]):
-            raise CIGraphError("durable evidence materialization roots overlap")
+        for existing in [*targets, *artifact_paths]:
+            if _overlaps(root, existing):
+                raise CIGraphError("durable evidence materialization roots overlap")
         targets.append(root)
+
+
+def _complete_read_permissions(job: dict[str, Any]) -> bool:
+    for permission in ("actions", "attestations", "contents"):
+        if job["permissions"].get(permission) != "read":
+            return False
+    return True
 
 
 def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> None:
@@ -100,11 +106,12 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
         executor = job["executor"]
         source = executor["source"]
         reference = executor["reference"]
-        publisher_owners = [
-            workflow
-            for workflow in graph["workflows"]
-            if any(candidate is job for candidate in workflow["jobs"])
-        ]
+        publisher_owners = []
+        for workflow in graph["workflows"]:
+            for candidate in workflow["jobs"]:
+                if candidate is job:
+                    publisher_owners.append(workflow)
+                    break
         source_producers = [
             (workflow, producer)
             for workflow in graph["workflows"]
@@ -142,9 +149,13 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
             raise CIGraphError(
                 f"durable publisher {job['id']} must be trusted control"
             )
-        if job["checkout"] is not False or any(
-            component != "python" for component in job["components"]
-        ):
+        invalid_components = job["checkout"] is not False
+        if not invalid_components:
+            for component in job["components"]:
+                if component != "python":
+                    invalid_components = True
+                    break
+        if invalid_components:
             raise CIGraphError(
                 f"durable publisher {job['id']} may provision only selected Python and must not execute candidate code"
             )
@@ -167,14 +178,12 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
             raise CIGraphError(
                 f"durable publisher {job['id']} must use the declared protected environment"
             )
-        if any(value == "write" for value in job["permissions"].values()):
-            raise CIGraphError(
-                f"durable publisher {job['id']} workflow token must remain read-only"
-            )
-        if any(
-            job["permissions"].get(permission) != "read"
-            for permission in ("actions", "attestations", "contents")
-        ):
+        for value in job["permissions"].values():
+            if value == "write":
+                raise CIGraphError(
+                    f"durable publisher {job['id']} workflow token must remain read-only"
+                )
+        if not _complete_read_permissions(job):
             raise CIGraphError(
                 f"durable publisher {job['id']} lacks complete read authority"
             )
@@ -193,10 +202,7 @@ def _validate_publishers(graph: dict[str, Any], contract: dict[str, Any]) -> Non
     for workflow in graph["workflows"]:
         for job in workflow["jobs"]:
             consumed_references = set(job["consumes"]) & references
-            if consumed_references and any(
-                job["permissions"].get(permission) != "read"
-                for permission in ("actions", "attestations", "contents")
-            ):
+            if consumed_references and not _complete_read_permissions(job):
                 raise CIGraphError(
                     f"job {job['id']} lacks read authority for durable evidence resolution"
                 )
@@ -240,10 +246,11 @@ def validate_evidence_storage(
     """Validate graph storage semantics and return mechanically bound input hashes."""
 
     reference = graph.get("evidence_storage")
-    durable = any(
-        artifact["kind"] in {"durable-source", "durable-reference"}
-        for artifact in graph["artifacts"].values()
-    )
+    durable = False
+    for artifact in graph["artifacts"].values():
+        if artifact["kind"] in {"durable-source", "durable-reference"}:
+            durable = True
+            break
     if reference is None:
         if durable or _publisher_jobs(graph):
             raise CIGraphError("durable evidence topology lacks a storage contract")

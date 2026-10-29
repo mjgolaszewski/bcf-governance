@@ -1,0 +1,1375 @@
+{
+  "schema_version": "1.0",
+  "target_profile": "standard",
+  "provenance": {},
+  "profile_contract_version": "3.0",
+  "application_assurance": {
+    "version": "1.0",
+    "dependency_sets": {
+      "whole": [
+        "**"
+      ]
+    },
+    "non_proof_dependencies": [],
+    "groups": {
+      "architecture-context-membership": {
+        "producer": "architecture-context-membership",
+        "claims": {
+          "architecture-context-membership": {
+            "truth": "architecture-context-membership passes on the exact subject",
+            "legacy_gate": "architecture-context-membership",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-context-membership"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-context-membership.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-context-membership.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-context-membership]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-context-membership-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-context-membership]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-cqrs-side": {
+        "producer": "architecture-cqrs-side",
+        "claims": {
+          "architecture-cqrs-side": {
+            "truth": "architecture-cqrs-side passes on the exact subject",
+            "legacy_gate": "architecture-cqrs-side",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-cqrs-side"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-cqrs-side.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-cqrs-side.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-cqrs-side]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-cqrs-side-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-cqrs-side]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-duplication": {
+        "producer": "architecture-duplication",
+        "claims": {
+          "architecture-duplication": {
+            "truth": "architecture-duplication passes on the exact subject",
+            "legacy_gate": "architecture-duplication",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-duplication"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-duplication.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-duplication.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-duplication]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-duplication-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-duplication]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-import-boundaries": {
+        "producer": "architecture-import-boundaries",
+        "claims": {
+          "architecture-import-boundaries": {
+            "truth": "architecture-import-boundaries passes on the exact subject",
+            "legacy_gate": "architecture-import-boundaries",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-import-boundaries"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-import-boundaries.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-import-boundaries.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-import-boundaries]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-import-boundaries-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-import-boundaries]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-layer-membership": {
+        "producer": "architecture-layer-membership",
+        "claims": {
+          "architecture-layer-membership": {
+            "truth": "architecture-layer-membership passes on the exact subject",
+            "legacy_gate": "architecture-layer-membership",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-layer-membership"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-layer-membership.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-layer-membership.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-layer-membership]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-layer-membership-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-layer-membership]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-module-size": {
+        "producer": "architecture-module-size",
+        "claims": {
+          "architecture-module-size": {
+            "truth": "architecture-module-size passes on the exact subject",
+            "legacy_gate": "architecture-module-size",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-module-size"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-module-size.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-module-size.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-module-size]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-module-size-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-module-size]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-router-thinness": {
+        "producer": "architecture-router-thinness",
+        "claims": {
+          "architecture-router-thinness": {
+            "truth": "architecture-router-thinness passes on the exact subject",
+            "legacy_gate": "architecture-router-thinness",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-router-thinness"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-router-thinness.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-router-thinness.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-router-thinness]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-router-thinness-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-router-thinness]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "architecture-test": {
+        "producer": "architecture-test",
+        "claims": {
+          "architecture-test": {
+            "truth": "architecture-test passes on the exact subject",
+            "legacy_gate": "architecture-test",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "architecture-test"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/architecture-test.xml",
+              "expected_node_manifest": "governance/test-manifests/architecture-test.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[architecture-test]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "architecture-test-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[architecture-test]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "contract-test": {
+        "producer": "contract-test",
+        "claims": {
+          "contract-test": {
+            "truth": "contract-test passes on the exact subject",
+            "legacy_gate": "contract-test",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "contract-test"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/contract-test.xml",
+              "expected_node_manifest": "governance/test-manifests/contract-test.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[contract-test]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "contract-test-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[contract-test]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "runtime-smoke": {
+        "producer": "runtime-smoke",
+        "claims": {
+          "runtime-smoke": {
+            "truth": "runtime-smoke passes on the exact subject",
+            "legacy_gate": "runtime-smoke",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "runtime-smoke"
+            ],
+            "cwd": ".",
+            "env": {
+              "BCF_EXECUTION_PROFILE": "production"
+            },
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "runtime_health",
+            "environment_assertions": [
+              {
+                "name": "BCF_EXECUTION_PROFILE",
+                "operator": "equals",
+                "value": "production"
+              }
+            ],
+            "output_requirements": [
+              {
+                "path": ".artifacts/runtime-smoke.json",
+                "media_type": "application/json"
+              }
+            ]
+          },
+          "negative_controls": [
+            {
+              "id": "runtime-smoke-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate runtime-smoke"
+              }
+            }
+          ]
+        }
+      },
+      "security-dependency-audit": {
+        "producer": "security-dependency-audit",
+        "claims": {
+          "security-dependency-audit": {
+            "truth": "security-dependency-audit passes on the exact subject",
+            "legacy_gate": "security-dependency-audit",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "security-dependency-audit"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {},
+          "negative_controls": [
+            {
+              "id": "security-dependency-audit-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate security-dependency-audit"
+              }
+            }
+          ]
+        }
+      },
+      "security-sbom": {
+        "producer": "security-sbom",
+        "claims": {
+          "security-sbom": {
+            "truth": "security-sbom passes on the exact subject",
+            "legacy_gate": "security-sbom",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "security-sbom"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "output_requirements": [
+              {
+                "path": ".artifacts/sbom.json",
+                "media_type": "application/json"
+              }
+            ]
+          },
+          "negative_controls": [
+            {
+              "id": "security-sbom-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate security-sbom"
+              }
+            }
+          ]
+        }
+      },
+      "security-secret-scan": {
+        "producer": "security-secret-scan",
+        "claims": {
+          "security-secret-scan": {
+            "truth": "security-secret-scan passes on the exact subject",
+            "legacy_gate": "security-secret-scan",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "security-secret-scan"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {},
+          "negative_controls": [
+            {
+              "id": "security-secret-scan-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate security-secret-scan"
+              }
+            }
+          ]
+        }
+      },
+      "security-vulnerability-scan": {
+        "producer": "security-vulnerability-scan",
+        "claims": {
+          "security-vulnerability-scan": {
+            "truth": "security-vulnerability-scan passes on the exact subject",
+            "legacy_gate": "security-vulnerability-scan",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "security-vulnerability-scan"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "output_requirements": [
+              {
+                "path": ".artifacts/vulnerability-scan.json",
+                "media_type": "application/json"
+              }
+            ]
+          },
+          "negative_controls": [
+            {
+              "id": "security-vulnerability-scan-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate security-vulnerability-scan"
+              }
+            }
+          ]
+        }
+      },
+      "test": {
+        "producer": "test",
+        "claims": {
+          "test": {
+            "truth": "test passes on the exact subject",
+            "legacy_gate": "test",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "test"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "test_suite",
+            "test_contract": {
+              "junit_xml": ".artifacts/junit/test.xml",
+              "expected_node_manifest": "governance/test-manifests/test.txt",
+              "expected_nodes_mode": "exact",
+              "min_collected": 1,
+              "min_executed": 1,
+              "max_skipped": 0,
+              "selectors": [
+                "backend/tests/gates.py::test_gate[test]"
+              ]
+            }
+          },
+          "negative_controls": [
+            {
+              "id": "test-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "test_node_failure",
+                "node_ids": [
+                  "backend.tests.gates::test_gate[test]"
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "typecheck": {
+        "producer": "typecheck",
+        "claims": {
+          "typecheck": {
+            "truth": "typecheck passes on the exact subject",
+            "legacy_gate": "typecheck",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "typecheck"
+            ],
+            "cwd": ".",
+            "env": {},
+            "required_env": []
+          },
+          "evidence": {},
+          "negative_controls": [
+            {
+              "id": "typecheck-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate typecheck"
+              }
+            }
+          ]
+        }
+      },
+      "security-review": {
+        "producer": "security-review",
+        "claims": {
+          "security-review": {
+            "truth": "runtime-smoke passes on the exact subject",
+            "legacy_gate": "security-review",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [
+                "whole"
+              ],
+              "test_population": [
+                "whole"
+              ],
+              "toolchain": [
+                "whole"
+              ],
+              "trust": [
+                "whole"
+              ]
+            },
+            "qualification_scope": "subject",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        },
+        "depends_on": [],
+        "gate": {
+          "invocation": {
+            "argv": [
+              "python3",
+              "gate.py",
+              "security-review"
+            ],
+            "cwd": ".",
+            "env": {
+              "BCF_EXECUTION_PROFILE": "production"
+            },
+            "required_env": []
+          },
+          "evidence": {
+            "kind": "security_review",
+            "environment_assertions": [
+              {
+                "name": "BCF_EXECUTION_PROFILE",
+                "operator": "equals",
+                "value": "production"
+              }
+            ],
+            "output_requirements": [
+              {
+                "path": "governance/findings.yml",
+                "media_type": "application/yaml"
+              }
+            ]
+          },
+          "negative_controls": [
+            {
+              "id": "security-review-must-detect-mutation",
+              "mutation": {
+                "path": "gate.py",
+                "search": "BROKEN = False",
+                "replace": "BROKEN = True"
+              },
+              "oracle": {
+                "kind": "diagnostic",
+                "exit_codes": [
+                  1
+                ],
+                "stream": "stderr",
+                "regex": "mutated gate security-review"
+              }
+            }
+          ]
+        },
+        "command_policy": "security_review",
+        "rationale": "adopter-owned release behavior remains executable"
+      },
+      "governance-validate": {
+        "producer": "governance-validate",
+        "captured_by_preflight": true,
+        "claims": {
+          "governance-contracts-valid": {
+            "truth": "governance-contracts-valid passes on the exact subject",
+            "legacy_gate": "governance-validate",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [],
+              "test_population": [],
+              "toolchain": [],
+              "trust": []
+            },
+            "qualification_scope": "none",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        }
+      },
+      "governance-exposure-scan": {
+        "producer": "governance-exposure-scan",
+        "captured_by_preflight": true,
+        "claims": {
+          "governance-exposure-clean": {
+            "truth": "governance-exposure-clean passes on the exact subject",
+            "legacy_gate": "governance-exposure-scan",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [],
+              "test_population": [],
+              "toolchain": [],
+              "trust": []
+            },
+            "qualification_scope": "none",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        }
+      },
+      "lint": {
+        "producer": "lint",
+        "captured_by_preflight": true,
+        "claims": {
+          "source-syntax-format": {
+            "truth": "source-syntax-format passes on the exact subject",
+            "legacy_gate": "lint",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [],
+              "test_population": [],
+              "toolchain": [],
+              "trust": []
+            },
+            "qualification_scope": "none",
+            "profiles": [
+              "normal",
+              "regulated"
+            ],
+            "gate": {
+              "invocation": {
+                "argv": [
+                  "python3",
+                  "gate.py",
+                  "lint"
+                ],
+                "cwd": ".",
+                "env": {},
+                "required_env": []
+              },
+              "evidence": {},
+              "negative_controls": [
+                {
+                  "id": "lint-must-detect-mutation",
+                  "mutation": {
+                    "path": "gate.py",
+                    "search": "BROKEN = False",
+                    "replace": "BROKEN = True"
+                  },
+                  "oracle": {
+                    "kind": "diagnostic",
+                    "exit_codes": [
+                      1
+                    ],
+                    "stream": "stderr",
+                    "regex": "mutated gate lint"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "semantic-ownership": {
+        "producer": "semantic-ownership",
+        "captured_by_preflight": true,
+        "claims": {
+          "semantic-ownership-valid": {
+            "truth": "semantic-ownership-valid passes on the exact subject",
+            "legacy_gate": "semantic-ownership",
+            "dependencies": {
+              "subject": [
+                "whole"
+              ],
+              "detector": [],
+              "test_population": [],
+              "toolchain": [],
+              "trust": []
+            },
+            "qualification_scope": "none",
+            "profiles": [
+              "normal",
+              "regulated"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

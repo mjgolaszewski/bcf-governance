@@ -58,7 +58,7 @@ def validate_gate_job_timeouts(repo_root: Path, graph: dict[str, Any]) -> None:
             executor = job["executor"]
             if executor["kind"] not in {"gate_group", "gate_shard"}:
                 continue
-            maximum = max(overrides.get(str(gate), default) for gate in executor["gates"])
+            maximum = max([overrides.get(str(gate), default) for gate in executor["gates"]])
             available = int(job["timeout_minutes"]) * 60
             required = maximum + headroom
             if available < required:

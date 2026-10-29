@@ -152,7 +152,8 @@ def _imported_modules(path: PurePosixPath, tree: ast.Module) -> Iterable[str]:
     package = list(path.with_suffix("").parts[:-1])
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
-            yield from (alias.name for alias in node.names)
+            for alias in node.names:
+                yield alias.name
             continue
         if not isinstance(node, ast.ImportFrom):
             continue
@@ -302,7 +303,7 @@ def trusted_runtime_source_files(
         target_schemas = _required_packaged_schemas(root, ref=target_commit)
         _require_packaged_schemas(root, target_schemas, ref=target_commit)
         observed.update(target_schemas)
-    return tuple(sorted(path.as_posix() for path in observed))
+    return tuple(sorted([path.as_posix() for path in observed]))
 
 
 def _version_metadata_only(
@@ -442,18 +443,18 @@ def _candidate_pending_topology(
         if role == "producer"
     ]
     provider_jobs = [
-        *(
+        *[
             {"name": str(value["job_id"]), "status": "completed", "conclusion": "success"}
             for value in authority.get("controller_builder_jobs", [])
-        ),
-        *(
+        ],
+        *[
             {"name": str(value["job_id"]), "status": "completed", "conclusion": "skipped"}
             for value in authority["admission_jobs"]
-        ),
-        *(
+        ],
+        *[
             {"name": str(name), "status": "completed", "conclusion": "skipped"}
             for name in facades
-        ),
+        ],
     ]
     return authority, provider_jobs, facades
 
@@ -574,7 +575,7 @@ def verify_pr_bootstrap_compatibility(
         target_commit,
         "HEAD",
         "--",
-        *(path.as_posix() for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES),
+        *[path.as_posix() for path in PR_EVIDENCE_INVENTORY_CAPABILITY_FILES],
     ).splitlines()
     bootstrap_incompatible = sorted(set(unavailable + changed))
     if bootstrap_incompatible:

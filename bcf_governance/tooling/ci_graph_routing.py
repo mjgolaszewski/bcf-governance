@@ -41,15 +41,18 @@ def _trusted_labels(graph: dict[str, Any]) -> set[str]:
                 matrix = job.get("strategy", {}).get("matrix", job.get("matrix", {}))
                 values = matrix.get(axis[1], [])
                 includes = matrix.get("include", [])
-                if not isinstance(values, list) or not isinstance(includes, list) or any(
-                    not isinstance(row, dict) for row in includes
-                ):
+                if not isinstance(values, list) or not isinstance(includes, list):
                     raise CIGraphError("candidate routing requires a resolved trusted selector matrix")
-                values = [*values, *(row[axis[1]] for row in includes if axis[1] in row)]
-                if not values or any(not isinstance(value, str) or not _LITERAL_LABEL.fullmatch(value)
-                                     for value in values):
+                for row in includes:
+                    if not isinstance(row, dict):
+                        raise CIGraphError("candidate routing requires a resolved trusted selector matrix")
+                values = [*values, *[row[axis[1]] for row in includes if axis[1] in row]]
+                if not values:
                     raise CIGraphError("candidate routing requires literal, resolved trusted matrix labels")
-                result.update(value.lower() for value in values)
+                for value in values:
+                    if not isinstance(value, str) or not _LITERAL_LABEL.fullmatch(value):
+                        raise CIGraphError("candidate routing requires literal, resolved trusted matrix labels")
+                result.update([value.lower() for value in values])
     return result
 
 
@@ -79,12 +82,20 @@ def validate_candidate_routing(
             raise CIGraphError(f"routed resource {resource_id} duplicates case-insensitive local labels")
         if labels & HOSTED_RUNNERS:
             raise CIGraphError(f"routed resource {resource_id} mixes hosted and local runner labels")
-        if any(case != "same_repository_pull_request" for case in policy["local_cases"]) and not policy["allowed_refs"]:
-            raise CIGraphError(f"routed resource {resource_id} requires explicit protected branch refs")
-        if any(ref.endswith(("/", ".")) or ".." in ref or "//" in ref
-               or any(part.startswith(".") or part.endswith(".lock") for part in ref.split("/"))
-               for ref in policy["allowed_refs"]):
-            raise CIGraphError(f"routed resource {resource_id} has an invalid literal branch ref")
+        for case in policy["local_cases"]:
+            if case != "same_repository_pull_request":
+                if not policy["allowed_refs"]:
+                    raise CIGraphError(f"routed resource {resource_id} requires explicit protected branch refs")
+                break
+        for ref in policy["allowed_refs"]:
+            invalid = ref.endswith(("/", ".")) or ".." in ref or "//" in ref
+            if not invalid:
+                for part in ref.split("/"):
+                    if part.startswith(".") or part.endswith(".lock"):
+                        invalid = True
+                        break
+            if invalid:
+                raise CIGraphError(f"routed resource {resource_id} has an invalid literal branch ref")
 
 
 def _literal(value: str) -> str:
@@ -99,7 +110,7 @@ def _eligibility(policy: dict[str, Any]) -> str:
         f"github.event.repository.id == {identity} && "
         "github.event.repository.private == true"
     )
-    branches = " || ".join(f"github.ref == {_literal(ref)}" for ref in sorted(policy["allowed_refs"]))
+    branches = " || ".join([f"github.ref == {_literal(ref)}" for ref in sorted(policy["allowed_refs"])])
     protected = f"github.ref_type == 'branch' && github.ref_protected == true && ({branches})"
     cases = {
         "same_repository_pull_request": (
@@ -111,7 +122,7 @@ def _eligibility(policy: dict[str, Any]) -> str:
         "protected_schedule": f"github.event_name == 'schedule' && {protected}",
         "protected_dispatch": f"github.event_name == 'workflow_dispatch' && {protected}",
     }
-    selected = " || ".join(f"({cases[case]})" for case in LOCAL_CASES if case in policy["local_cases"])
+    selected = " || ".join([f"({cases[case]})" for case in LOCAL_CASES if case in policy["local_cases"]])
     return f"{common} && ({selected})"
 
 

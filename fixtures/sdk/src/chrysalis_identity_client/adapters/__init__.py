@@ -1,0 +1,1 @@
+"""Application-specific client adapters."""

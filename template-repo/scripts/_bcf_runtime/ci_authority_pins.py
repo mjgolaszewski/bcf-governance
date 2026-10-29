@@ -152,35 +152,54 @@ def _matrix_combinations(matrix: dict[str, Any]) -> list[dict[str, Any]]:
             continue
         if not isinstance(key, str) or not isinstance(values, list) or not values:
             raise CIAuthorityPinError("workflow matrix axes must be nonempty lists")
-        if any(not isinstance(item, (str, int, float, bool)) for item in values):
-            raise CIAuthorityPinError("workflow matrix values must be scalar")
+        for item in values:
+            if not isinstance(item, (str, int, float, bool)):
+                raise CIAuthorityPinError("workflow matrix values must be scalar")
         axes.append((key, values))
     combinations = [
-        dict(zip((key for key, _ in axes), values, strict=True))
-        for values in (product(*(items for _, items in axes)) if axes else [()])
+        dict(zip([key for key, _ in axes], values, strict=True))
+        for values in (product(*[items for _, items in axes]) if axes else [()])
     ]
     excludes = matrix.get("exclude", [])
     includes = matrix.get("include", [])
-    if not isinstance(excludes, list) or any(not isinstance(item, dict) for item in excludes):
+    if not isinstance(excludes, list):
         raise CIAuthorityPinError("workflow matrix exclude must be a mapping list")
-    if not isinstance(includes, list) or any(not isinstance(item, dict) for item in includes):
+    for item in excludes:
+        if not isinstance(item, dict):
+            raise CIAuthorityPinError("workflow matrix exclude must be a mapping list")
+    if not isinstance(includes, list):
         raise CIAuthorityPinError("workflow matrix include must be a mapping list")
-    combinations = [
-        combination
-        for combination in combinations
-        if not any(
-            all(combination.get(key) == value for key, value in excluded.items())
-            for excluded in excludes
-        )
-    ]
+    for item in includes:
+        if not isinstance(item, dict):
+            raise CIAuthorityPinError("workflow matrix include must be a mapping list")
+    retained: list[dict[str, Any]] = []
+    for combination in combinations:
+        excluded_match = False
+        for excluded in excludes:
+            matches = True
+            for key, value in excluded.items():
+                if not (combination.get(key) == value):
+                    matches = False
+                    break
+            if matches:
+                excluded_match = True
+                break
+        if not excluded_match:
+            retained.append(combination)
+    combinations = retained
     for included in includes:
-        if any(not isinstance(value, (str, int, float, bool)) for value in included.values()):
-            raise CIAuthorityPinError("workflow matrix include values must be scalar")
-        compatible = [
-            combination
-            for combination in combinations
-            if all(key not in combination or combination[key] == value for key, value in included.items())
-        ]
+        for value in included.values():
+            if not isinstance(value, (str, int, float, bool)):
+                raise CIAuthorityPinError("workflow matrix include values must be scalar")
+        compatible = []
+        for combination in combinations:
+            matches = True
+            for key, value in included.items():
+                if not (key not in combination or combination[key] == value):
+                    matches = False
+                    break
+            if matches:
+                compatible.append(combination)
         if len(compatible) > 1:
             raise CIAuthorityPinError("workflow matrix include is ambiguous")
         if compatible:
@@ -244,10 +263,10 @@ def compiled_workflow_jobs(
 def compiled_workflow_job_names(raw: bytes) -> tuple[str, ...]:
     """Compile the exact provider-visible job inventory from workflow bytes."""
 
-    return tuple(
+    return tuple([
         str(value["job_id"])
         for _, value in compiled_workflow_jobs(raw, roles=None)
-    )
+    ])
 
 
 def compiled_workflow_events(raw: bytes) -> tuple[str, ...]:

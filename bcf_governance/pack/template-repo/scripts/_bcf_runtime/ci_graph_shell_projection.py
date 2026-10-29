@@ -39,7 +39,7 @@ def require_available_generated_slots(
 ) -> None:
     """Reject authored ownership of renderer-reserved environment slots."""
 
-    collisions = sorted(name for name in environment if name.startswith(prefix))
+    collisions = sorted([name for name in environment if name.startswith(prefix)])
     if collisions:
         raise AssertionError(
             f"governed environment claims reserved {prefix} slots: {collisions}"
@@ -75,26 +75,24 @@ def hoist_run_expressions(steps: list[dict[str, Any]]) -> None:
                 "workflow expression cannot enter an interpreter source sink"
             )
         expressions: dict[str, str] = {}
-        run_source = source
-
-        def replace(
-            match: re.Match[str],
-            *,
-            expressions: dict[str, str] = expressions,
-            source: str = run_source,
-        ) -> str:
+        fragments: list[str] = []
+        end = 0
+        for match in _WORKFLOW_EXPRESSION.finditer(source):
+            fragments.append(source[end:match.start()])
             expression = match.group(0)
             if expression not in expressions:
                 expressions[expression] = f"BCF_RUN_EXPRESSION_{len(expressions)}"
             variable = f"${{{expressions[expression]}}}"
             state = _quote_state(source, match.start())
             if state == '"':
-                return variable
-            if state == "'":
-                return f"'\"{variable}\"'"
-            return f'"{variable}"'
-
-        step["run"] = _WORKFLOW_EXPRESSION.sub(replace, source)
+                fragments.append(variable)
+            elif state == "'":
+                fragments.append(f"'\"{variable}\"'")
+            else:
+                fragments.append(f'"{variable}"')
+            end = match.end()
+        fragments.append(source[end:])
+        step["run"] = "".join(fragments)
         for expression, name in expressions.items():
             if name in environment and environment[name] != expression:
                 raise AssertionError("governed expression environment slot collides")

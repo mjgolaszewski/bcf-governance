@@ -10,6 +10,34 @@ from .ci_graph_errors import CIGraphError
 _PERMISSION_LEVEL = {"none": 0, "read": 1, "write": 2}
 
 
+def _required_workflow_permissions(path: str, workflows: dict[str, dict[str, Any]],
+                                   visiting: set[str], resolved: dict[str, dict[str, str]]) -> dict[str, str]:
+    if path in resolved:
+        return resolved[path]
+    if path in visiting or path not in workflows:
+        raise CIGraphError("CI graph reusable workflow call topology is invalid")
+    visiting.add(path)
+    result: dict[str, str] = {}
+    workflow = workflows[path]
+    for job in workflow["jobs"]:
+        executor = job["executor"]
+        permissions = (
+            _required_workflow_permissions(executor["path"], workflows, visiting, resolved)
+            if executor["kind"] == "reusable_workflow"
+            else job["permissions"] or workflow["permissions"]
+        )
+        for name, level in permissions.items():
+            if level not in _PERMISSION_LEVEL:
+                raise CIGraphError("CI graph permission level is invalid")
+            if _PERMISSION_LEVEL[level] > _PERMISSION_LEVEL.get(result.get(name, "none"), 0):
+                result[name] = level
+        if executor["kind"] == "reusable_workflow":
+            job["permissions"] = dict(sorted(permissions.items()))
+    visiting.remove(path)
+    resolved[path] = dict(sorted(result.items()))
+    return resolved[path]
+
+
 def project_reusable_workflow_permissions(graph: dict[str, Any]) -> None:
     """Derive each local reusable caller's least permission upper bound."""
 
@@ -19,34 +47,9 @@ def project_reusable_workflow_permissions(graph: dict[str, Any]) -> None:
     visiting: set[str] = set()
     resolved: dict[str, dict[str, str]] = {}
 
-    def required(path: str) -> dict[str, str]:
-        if path in resolved:
-            return resolved[path]
-        if path in visiting or path not in workflows:
-            raise CIGraphError("CI graph reusable workflow call topology is invalid")
-        visiting.add(path)
-        result: dict[str, str] = {}
-        workflow = workflows[path]
-        for job in workflow["jobs"]:
-            executor = job["executor"]
-            permissions = (
-                required(executor["path"])
-                if executor["kind"] == "reusable_workflow"
-                else job["permissions"] or workflow["permissions"]
-            )
-            for name, level in permissions.items():
-                if level not in _PERMISSION_LEVEL:
-                    raise CIGraphError("CI graph permission level is invalid")
-                if _PERMISSION_LEVEL[level] > _PERMISSION_LEVEL.get(result.get(name, "none"), 0):
-                    result[name] = level
-            if executor["kind"] == "reusable_workflow":
-                job["permissions"] = dict(sorted(permissions.items()))
-        visiting.remove(path)
-        resolved[path] = dict(sorted(result.items()))
-        return resolved[path]
 
     for workflow in graph["workflows"]:
-        required(workflow["path"])
+        _required_workflow_permissions(workflow["path"], workflows, visiting, resolved)
 
 
 def reusable_artifact_binding(
@@ -97,7 +100,7 @@ def reusable_artifact_binding(
             raise CIGraphError(
                 f"CI graph reusable artifact {artifact} input and binding disagree"
             )
-    return input_name, tuple((workflow, job) for workflow, job, _ in bound)
+    return input_name, tuple([(workflow, job) for workflow, job, _ in bound])
 
 
 def validate_reusable_binding_declarations(
@@ -117,10 +120,13 @@ def validate_reusable_binding_declarations(
     if len(called) != 1:
         raise CIGraphError("CI graph reusable artifact caller has no exact workflow")
     for artifact in bindings:
-        if (
-            artifact not in caller_job["consumes"]
-            or not any(artifact in job["consumes"] for job in called[0]["jobs"])
-        ):
+        consumed = False
+        if artifact in caller_job["consumes"]:
+            for job in called[0]["jobs"]:
+                if artifact in job["consumes"]:
+                    consumed = True
+                    break
+        if not consumed:
             raise CIGraphError(
                 f"CI graph reusable artifact {artifact} lacks exact called-job consumption"
             )

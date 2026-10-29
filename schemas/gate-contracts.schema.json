@@ -134,6 +134,7 @@
             "cwd": {"type": "string", "minLength": 1},
             "env": {"type": "object", "additionalProperties": {"type": "string"}},
             "required_env": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+            "requires_execution_owner": {"type": "boolean"},
             "state": {
               "type": "object",
               "additionalProperties": false,

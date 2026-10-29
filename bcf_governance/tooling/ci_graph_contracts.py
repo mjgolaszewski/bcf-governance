@@ -10,7 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from jsonschema import Draft202012Validator
+from .ci_graph_schema import validate_schema as _validate_schema
 
 from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_authority_policy import validate_graph_authority_policy
@@ -40,7 +40,7 @@ from .ci_graph_routing import validate_candidate_routing
 from .ci_graph_storage import validate_evidence_storage
 from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_job_timeouts
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
-from .ci_graph_workflow_run import WorkflowRunTopologyError, validate_workflow_run_depth
+from .ci_graph_workflow_run import WorkflowRunTopologyError, validate_workflow_run_depth, workflow_has_event
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
@@ -76,12 +76,6 @@ def _schema(repo_root: Path, relative: Path) -> dict[str, Any]:
     return payload
 
 
-def _validate_schema(payload: dict[str, Any], schema: dict[str, Any], source: str) -> None:
-    errors = sorted(Draft202012Validator(schema).iter_errors(payload), key=lambda item: list(item.path))
-    if errors:
-        error = errors[0]
-        location = ".".join(str(item) for item in error.absolute_path) or "<root>"
-        raise CIGraphError(f"{source} schema violation at {location}: {error.message}")
 
 
 def _extension_files(repo_root: Path) -> set[str]:
@@ -176,11 +170,11 @@ def _compose(graph: dict[str, Any], extensions: list[dict[str, Any]]) -> dict[st
             for workflow in extension["workflows"]
             if isinstance(workflow, dict) and workflow.get("id")
         }
-        contributed_workflow_ids.update(
+        contributed_workflow_ids.update([
             str(job.get("workflow"))
             for job in extension["jobs"]
             if isinstance(job, dict) and job.get("workflow")
-        )
+        ])
         for artifact_id, artifact in extension["artifacts"].items():
             if artifact_id in composed["artifacts"]:
                 raise CIGraphError(f"CI graph artifact has multiple contract owners: {artifact_id}")
@@ -429,7 +423,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
     if len(set(workflow_ids)) != len(workflow_ids) or len(set(paths)) != len(paths):
         raise CIGraphError("CI graph workflow IDs and paths must each be unique")
     push_workflows = [
-        item for item in workflows if any(event["type"] == "push" for event in item["events"])
+        item for item in workflows if workflow_has_event(item, "push")
     ]
     if len(push_workflows) != 1 or push_workflows[0]["role"] != "exact-main":
         raise CIGraphError(
@@ -475,15 +469,14 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                 )
             if job["trust"] == "trusted" and (job["checkout"] or "checkout" in job["components"]):
                 raise CIGraphError(f"trusted CI graph job {job['id']} may not check out candidate code")
-            if job["trust"] == "candidate" and any(
-                value == "write" and key in {"actions", "checks", "contents", "packages", "pull-requests", "statuses"}
-                for key, value in job["permissions"].items()
-            ):
-                raise CIGraphError(
-                    f"candidate CI graph job {job['id']} has privileged write authority",
-                    kind="permission",
-                    identifier=job["id"],
-                )
+            if job["trust"] == "candidate":
+                for key, value in job["permissions"].items():
+                    if value == "write" and key in {"actions", "checks", "contents", "packages", "pull-requests", "statuses"}:
+                        raise CIGraphError(
+                            f"candidate CI graph job {job['id']} has privileged write authority",
+                            kind="permission",
+                            identifier=job["id"],
+                        )
             executor = job["executor"]
             validate_reusable_binding_declarations(graph, job)
             condition = job["condition"]
@@ -587,11 +580,11 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                         graph["step_components"][component_id]["command"]
                     ]["argv"]
                 ]
-                installs_ephemeral = any(
-                    graph["step_components"][component_id]["kind"]
-                    == "controller_install"
-                    for component_id in executor["components"]
-                )
+                installs_ephemeral = False
+                for component_id in executor["components"]:
+                    if graph["step_components"][component_id]["kind"] == "controller_install":
+                        installs_ephemeral = True
+                        break
                 if ephemeral_commands and not installs_ephemeral:
                     raise CIGraphError(
                         f"CI graph job {job['id']} invokes an unprovisioned ephemeral controller"
@@ -701,7 +694,7 @@ def _validate_required_gate_ownership(repo_root: Path, graph: dict[str, Any]) ->
     pull_request_workflows = [
         workflow
         for workflow in graph["workflows"]
-        if any(event["type"] == "pull_request" for event in workflow["events"])
+        if workflow_has_event(workflow, "pull_request")
     ]
     if not pull_request_workflows:
         raise CIGraphError("CI graph has no pull-request workflow owning required gates")
