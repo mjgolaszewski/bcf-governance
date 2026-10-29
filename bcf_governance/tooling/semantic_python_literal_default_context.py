@@ -6,7 +6,9 @@ import copy
 from collections.abc import Callable, Iterator
 from typing import Any
 
-from .semantic_python_literal_call_model import UnsupportedLiteralCall, model_literal_call
+from .semantic_python_literal_call_model import (
+    UnsupportedLiteralCall, literal_context_applicable, model_literal_call,
+)
 from .semantic_python_result_identity import _Results
 
 
@@ -67,6 +69,11 @@ def retain_literal_default_contexts(
                             edge['dispatch_port_eligible'] = False
                         continue
                     edge = matches[0]
+                    if target in guarded.ordinary and not literal_context_applicable(callee):
+                        # Keep base dispatch, receiver refusals and the normal body
+                        # traversal. A failed optional specialization is no effect grant.
+                        edge['literal_default_applicability'] = 'outside_literal_subset'
+                        continue
                     try:
                         model = model_literal_call(callee, syntax)
                         edge['literal_default_call_model'] = model

@@ -1,6 +1,6 @@
 document:
   kind: maintenance_contract
-  name: Full 2.3.9 consumer compatibility and actual-context custody contract
+  name: 2.3.9 SDK and BDMCP consumer compatibility contract
   id: maintenance-consumer-compatibility-contract
   version: 1.0.0
   generated_at_utc: '2026-10-27T00:00:00Z'
@@ -14,12 +14,11 @@ scope:
   - P31-HF12
   - P31-HF13
   - P31-HF14
-  - P31-HF15
   source_owner: bcf_governance/tooling
   projections:
   - template-repo/scripts/_bcf_runtime
   - bcf_governance/pack/template-repo/scripts/_bcf_runtime
-  completeness: all known cross-project BCF requirements, not packaging-only or independently deferred JIT
+  completeness: SDK and BDMCP maintenance compatibility; Racecar new JIT backend explicitly deferred by operator2026-10-28; ordinary CI has no live Identity dependency
 pre_edit_contract:
   layer: tooling
   bounded_contexts:
@@ -64,7 +63,7 @@ requirements:
   requirement: Trusted registration and actual coherent frozen postmutation execution view bind held real kernel peer identity and excluded control FDs; one-shot
     staged capability delivery has durable independent issuer/BFF journals and cleanup/HOLD through real process lifetime, preserving workload v2 and actual owner
     receipts.
-  status: contract_only_implementation_and_real_process_qualification_open
+  status: deferred_outside_2_3_9_per_operator_work_preserved
 evidence_rules:
 - Selected diagnostics and source AST checks never become full release or Standard acceptance.
 - Preserve every original negative and exact collected/executed/phase/JUnit population; qualified proof reuse binds exact candidate bytes.

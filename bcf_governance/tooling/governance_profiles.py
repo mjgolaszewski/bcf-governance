@@ -146,7 +146,7 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
     invocation = raw.get("invocation")
     if not isinstance(invocation, dict):
         raise ProfileContractError(f"gate {target}.invocation must be a mapping")
-    if set(invocation) - {"argv", "cwd", "env", "required_env", "state", "timeout_seconds", "requires_execution_owner"}:
+    if set(invocation) - {"argv", "cwd", "env", "required_env", "state", "timeout_seconds"}:
         raise ProfileContractError(f"gate {target}.invocation has unsupported fields")
     argv = invocation.get("argv")
     if not isinstance(argv, list) or not argv or not all(
@@ -250,11 +250,6 @@ def _validate_gate(target: str, raw: object, *, command_policy: str) -> dict[str
         "env": dict(sorted(env.items())),
         "required_env": sorted(set(required_env)),
     }
-    if "requires_execution_owner" in invocation:
-        required_owner = invocation["requires_execution_owner"]
-        if type(required_owner) is not bool:
-            raise ProfileContractError(f"gate {target}.invocation.requires_execution_owner must be a boolean")
-        normalized_invocation["requires_execution_owner"] = required_owner
     if "timeout_seconds" in invocation:
         timeout = invocation["timeout_seconds"]
         if type(timeout) is not int or not 1 <= timeout <= 21600:

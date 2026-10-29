@@ -46,7 +46,33 @@ execution_evidence:
     scope: Only journal-owned temporary public files removed; persistent service volumes and qualification tenants preserved
     record: Owner-held finite qualification receipt
     record_sha256: b0279413334d8bfc5256c363de4270d1c44a7b81e3c58809d7b73818b7036bb6
+  - command: Actual original Root invocation registry and authenticated owner lookups
+    result: Two real-process scenarios pass; strict typing across 22 production modules passes
+    scope: Private original metadata and actual keeper Q only; no provider cleanup or backend installation
+    record: Owner-held finite qualification receipt
+    record_sha256: 8dd7be3d8422586e39a7c21433aeeb3ec001bf762fb980a32d34776954db3216
+  - command: Real Cocoon admission adapter over original authenticated Root channel
+    result: Two real-process scenarios pass with actual Cocoon Admission values
+    scope: Private adapter composition; no provider mutations or native JIT acceptance
+    record: Owner-held finite qualification receipt
+    record_sha256: e6fa2f4b3b12ac91636266bf79c78eab9d685854d8d146d911f0199a711c5f8b
+  - command: Original delivery and serial Root dispatch on Python 3.14
+    result: Two scenarios pass: actual held peer delivery and wrong-process refusal without R; original paths survive cleanup
+    scope: No-secret transport composition only; issuer provider factory, BFF lifecycle and native backend remain incomplete
+    record: Owner-held finite qualification receipt
+    record_sha256: b9800f7a61c34ea0b5f3a125dba2ccb8d51e307d80dd1dd73d0e16918ab08805
+  - command: Real issuer policy probe under outside-parent native exec and marker custody
+    result: Real canonical policy observed; two native Docker execs terminal and one marker absent; strict nine new modules and original 13051 dependency bytes pass
+    scope: No provider business mutations, credential delivery, backend installation or release acceptance
+    record: Owner-held finite qualification receipt with independent actual Docker closure before original FD release
+    record_sha256: bbd6bef775aa8afbdacab65723e92912ae284440d6adf6f28ad649169fff6051
+  - command: Genuine normal-session issuer factory read-only preflight
+    result: Normal admin refresh, private FIFO transfer, actual JWT and current sandbox admin context, concrete factory graph and empty workload journal pass; eleven new modules strict and 13051 dependency bytes unchanged
+    scope: Factory construction only; no workload staging, complete native backend, BFF cleanup or release acceptance
+    record: Owner-held finite qualification receipt
+    record_sha256: 49a1241a1603dbb6d5055ff6511daf503a0d18410a501ff379e8ec12b09226be
   notes:
+  - "Operator2026-10-28 defers this Racecar JIT backend from2.3.9. Preserve prototype and source/evidence for later maintenance or independent2.5 review. This planned log is not a current release completion requirement or an implementation acceptance claim."
   - 'Pre-edit scope: tooling execution orchestration with explicit trusted owner ports; exact owner/factory and actual-context binding contract precedes implementation.'
   - 'Observed cause: current execution owner has no authenticated actual-context handoff and unconditional retirement cannot preserve uncertain external owner cleanup.'
   - Preserve canonical public entrypoints, source-first ownership, original test populations, module limits, native projection and lock owners.

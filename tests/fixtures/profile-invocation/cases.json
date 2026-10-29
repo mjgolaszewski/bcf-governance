@@ -283,14 +283,14 @@
       "invocation_patch": {
         "requires_execution_owner": true
       },
-      "expected": "compile-and-preserve"
+      "expected": "schema-or-contract-refusal"
     },
     {
       "id": "owner-optional",
       "invocation_patch": {
         "requires_execution_owner": false
       },
-      "expected": "compile-and-preserve"
+      "expected": "schema-or-contract-refusal"
     },
     {
       "id": "owner-string-refuses",

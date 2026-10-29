@@ -1,0 +1,1361 @@
+{
+  "status": "DEFERRED_UNQUALIFIED_NOT_FOR_RELEASE",
+  "base_commit": "32586243aebc67c1dc2ace05631b55798f28e2ba",
+  "staged_parent_commit": "2859d3dd41251fd0cc73bd85080e21fd145eefda",
+  "index_sha256": "934ce0e2e7c6c211447217d116501d2e41d6ae2d484a5bcabc66b871bbaa9ee7",
+  "staged_patch_sha256": "bda89b3ece46422d6536f97fa6880408123d00fe2f71858aa35633bbd88caab4",
+  "working_patch_sha256": "ac43b8e8a65d8bdcf16aac49b159c703316e0d71b3415207967bbe6129647313",
+  "prototypes": [
+    {
+      "original": "runtime-draft/conftest.py",
+      "sha256": "75fd4df118ee303716021c74cdd0172684f7fb7916896b48a7f9fe1d1adc777d",
+      "bytes": 518
+    },
+    {
+      "original": "runtime-draft/evidence_controller_channel.py",
+      "sha256": "919cf9635888411fb3bfb6e5c4059807b8ce6820d36cefce8aed628893cbf438",
+      "bytes": 5983
+    },
+    {
+      "original": "runtime-draft/evidence_coordinator_client.py",
+      "sha256": "015df14a20c60e665af9cfd362f3b804ed02966e6aa98bb2f73c6689ec451179",
+      "bytes": 11395
+    },
+    {
+      "original": "runtime-draft/evidence_execution_owner.py",
+      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d",
+      "bytes": 8577
+    },
+    {
+      "original": "runtime-draft/evidence_execution_view.py",
+      "sha256": "8c75b75cf63c2445e4da9e3d47f36a30b7494407d974a1a033900621e2c21d64",
+      "bytes": 6433
+    },
+    {
+      "original": "runtime-draft/evidence_external_custody.py",
+      "sha256": "f2e7f04d3bed017899db4bf843dc895eaf0dd34dc38a6edea668a4995c86f35c",
+      "bytes": 2716
+    },
+    {
+      "original": "runtime-draft/evidence_held_invocation.py",
+      "sha256": "f55a7fb148911cb0a4961032298540bb17bc69b4e3561b04b4a35c1f76caae22",
+      "bytes": 7461
+    },
+    {
+      "original": "runtime-draft/evidence_held_peer.py",
+      "sha256": "1ddedbcc5d91aecb668f4c302b37b13662483d5b6d7ce7a66ba42912f472c2d0",
+      "bytes": 9017
+    },
+    {
+      "original": "runtime-draft/evidence_immutable_source.py",
+      "sha256": "747ef1037af097387590898d8725cc843b1f430b7eee522d5735f1736dfa0cd6",
+      "bytes": 10083
+    },
+    {
+      "original": "runtime-draft/evidence_lease_keeper.py",
+      "sha256": "262a9b10ed7ae500914a32c0e074921a4e7ec0aa10a3805ad23cb07f8107ecca",
+      "bytes": 17406
+    },
+    {
+      "original": "runtime-draft/evidence_owner_control.py",
+      "sha256": "ed98908ce59de02fc35c1f207c7e9c32e84c99e5fd8e24477bcfa837474df4c6",
+      "bytes": 11444
+    },
+    {
+      "original": "runtime-draft/evidence_owner_registration.py",
+      "sha256": "227a862915dd4ac6064e8417e20f2957d27806ee1ce063d8d7d73a3974bf4a85",
+      "bytes": 10992
+    },
+    {
+      "original": "runtime-draft/evidence_packet_channel.py",
+      "sha256": "30a6b24356bd28c0ec447ec0ca8e0f233e901ba2896ba3d0d9dada55cd953969",
+      "bytes": 2751
+    },
+    {
+      "original": "runtime-draft/evidence_process_supervisor.py",
+      "sha256": "61eccdd39a1b9ab2ba09d94ed7cb62932d6a19217cf30eabc2b338d9db9d49df",
+      "bytes": 19599
+    },
+    {
+      "original": "runtime-draft/prepare_guardian_cancel.py",
+      "sha256": "68d80f6e763f9a6d3bd1f3155e78f6ed54328f30269cf31424966ad9ac96617b",
+      "bytes": 3478
+    },
+    {
+      "original": "runtime-draft/prepare_guardian_core.py",
+      "sha256": "bfcf9ae1e9a01ee522dc3658c830923070a474b2bb44a2ba17c6f3610baeaff9",
+      "bytes": 6510
+    },
+    {
+      "original": "runtime-draft/test_controller_channel.py",
+      "sha256": "d1e400bbea8a0309ebb5d60068a2f8a67b4d24199e211e53a2eb0f19b7bbe878",
+      "bytes": 5990
+    },
+    {
+      "original": "runtime-draft/test_coordinator_client.py",
+      "sha256": "a0dd0d43dba38d7b520b8da23013b8f2b6d8520cb4f856b4a4699c490a7c1eb3",
+      "bytes": 6723
+    },
+    {
+      "original": "runtime-draft/test_execution_owner.py",
+      "sha256": "060916f1f7d869d5d44db27906be904744fc6a4967508c6da73d49bff352290c",
+      "bytes": 3730
+    },
+    {
+      "original": "runtime-draft/test_execution_view.py",
+      "sha256": "e7eb914552ccd388abd2b7b19d3069ecf1d34554a7c40fc839d211c91f4971ab",
+      "bytes": 7995
+    },
+    {
+      "original": "runtime-draft/test_external_custody.py",
+      "sha256": "3684aa11ac368db6c48669ab1ab18f14476b1fa564e8dd231fb14a4c720cac04",
+      "bytes": 2994
+    },
+    {
+      "original": "runtime-draft/test_guardian_core.py",
+      "sha256": "09dfc9911209af1cfa843671c19870cf02c0fa5561e1793f21b931001da35228",
+      "bytes": 4790
+    },
+    {
+      "original": "runtime-draft/test_guardian_held_plan.py",
+      "sha256": "0356fdef9f243d27ea3d274f74c38cac1459e0b9e5142d47c41761f24ae38993",
+      "bytes": 5966
+    },
+    {
+      "original": "runtime-draft/test_immutable_held_composition.py",
+      "sha256": "fa8b922184940fbb562094d1af35b4d72fef428789cfb2fd482037e7a0170c6e",
+      "bytes": 4855
+    },
+    {
+      "original": "runtime-draft/test_immutable_source.py",
+      "sha256": "466cd746965f9c00e1535ab393bd79b40b68172c649dd58be103293458133bb1",
+      "bytes": 4561
+    },
+    {
+      "original": "runtime-draft/test_keeper_owner_composition.py",
+      "sha256": "c6d1f8e97726ae60c96ce847e1d8178a872507cfefec370a0f14c359372abb6c",
+      "bytes": 6573
+    },
+    {
+      "original": "runtime-draft/test_keeper_startup_custody.py",
+      "sha256": "70bcba5b38addd71e778827240ffcb3ee00854a0e22a46b7cf717a2bfc178c64",
+      "bytes": 2402
+    },
+    {
+      "original": "runtime-draft/test_owner_cleanup.py",
+      "sha256": "fbff06875e549c21f647405acc549b275905d9f4f358690148ff4559097f035c",
+      "bytes": 7576
+    },
+    {
+      "original": "runtime-draft/test_owner_registration.py",
+      "sha256": "e0c83026b2e7ff24e44db6a16eb44e30cb86c701695fe46bfdfd48d3bef08cf9",
+      "bytes": 11435
+    },
+    {
+      "original": "runtime-draft/test_owner_response_window.py",
+      "sha256": "44087442fdc98b0e0853b8c0515ce6aeac7c3653e66aa6ef918a33441391454a",
+      "bytes": 2932
+    },
+    {
+      "original": "runtime-closure-v1/conftest.py",
+      "sha256": "75fd4df118ee303716021c74cdd0172684f7fb7916896b48a7f9fe1d1adc777d",
+      "bytes": 518
+    },
+    {
+      "original": "runtime-closure-v1/evidence_closed_held.py",
+      "sha256": "2203bfe02adfeb9e0e791267f910f7dad875885273a18e1a19056cc0c850e465",
+      "bytes": 10247
+    },
+    {
+      "original": "runtime-closure-v1/evidence_closed_runtime_image.py",
+      "sha256": "a0913266c3b70d17aec2a01a5528e606c0969410404cfe5479e8a0cd058a8d01",
+      "bytes": 6691
+    },
+    {
+      "original": "runtime-closure-v1/evidence_controller_channel.py",
+      "sha256": "919cf9635888411fb3bfb6e5c4059807b8ce6820d36cefce8aed628893cbf438",
+      "bytes": 5983
+    },
+    {
+      "original": "runtime-closure-v1/evidence_coordinator_client.py",
+      "sha256": "015df14a20c60e665af9cfd362f3b804ed02966e6aa98bb2f73c6689ec451179",
+      "bytes": 11395
+    },
+    {
+      "original": "runtime-closure-v1/evidence_execution_owner.py",
+      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d",
+      "bytes": 8577
+    },
+    {
+      "original": "runtime-closure-v1/evidence_execution_view.py",
+      "sha256": "8c75b75cf63c2445e4da9e3d47f36a30b7494407d974a1a033900621e2c21d64",
+      "bytes": 6433
+    },
+    {
+      "original": "runtime-closure-v1/evidence_external_custody.py",
+      "sha256": "f2e7f04d3bed017899db4bf843dc895eaf0dd34dc38a6edea668a4995c86f35c",
+      "bytes": 2716
+    },
+    {
+      "original": "runtime-closure-v1/evidence_held_invocation.py",
+      "sha256": "107f4999670812738e86dea38be39f997d4409216d68023e73916882a17a82de",
+      "bytes": 7381
+    },
+    {
+      "original": "runtime-closure-v1/evidence_held_peer.py",
+      "sha256": "1ddedbcc5d91aecb668f4c302b37b13662483d5b6d7ce7a66ba42912f472c2d0",
+      "bytes": 9017
+    },
+    {
+      "original": "runtime-closure-v1/evidence_immutable_source.py",
+      "sha256": "a01159e82ab62a467ab885bc57e5c94861b58a7aae369c4c51c8140e49a1366b",
+      "bytes": 20430
+    },
+    {
+      "original": "runtime-closure-v1/evidence_lease_keeper.py",
+      "sha256": "117e79f60d74e4b6814d6d0957920edf0f1aac59b3b80021c006648f77aa89e8",
+      "bytes": 18975
+    },
+    {
+      "original": "runtime-closure-v1/evidence_namespace_bootstrap.py",
+      "sha256": "bd0c786a4ab01a68ef02a14dcb6efbeb6d661b82d176ca5de9c490a9e8b33eab",
+      "bytes": 521
+    },
+    {
+      "original": "runtime-closure-v1/evidence_owner_control.py",
+      "sha256": "ed98908ce59de02fc35c1f207c7e9c32e84c99e5fd8e24477bcfa837474df4c6",
+      "bytes": 11444
+    },
+    {
+      "original": "runtime-closure-v1/evidence_owner_registration.py",
+      "sha256": "227a862915dd4ac6064e8417e20f2957d27806ee1ce063d8d7d73a3974bf4a85",
+      "bytes": 10992
+    },
+    {
+      "original": "runtime-closure-v1/evidence_packet_channel.py",
+      "sha256": "30a6b24356bd28c0ec447ec0ca8e0f233e901ba2896ba3d0d9dada55cd953969",
+      "bytes": 2751
+    },
+    {
+      "original": "runtime-closure-v1/evidence_process_supervisor.py",
+      "sha256": "cec6c4cf0ab633d794ee6a91b1e9cdb176a6d38eb689a0078f208a2890bc3928",
+      "bytes": 20565
+    },
+    {
+      "original": "runtime-closure-v1/prepare_guardian_cancel.py",
+      "sha256": "68d80f6e763f9a6d3bd1f3155e78f6ed54328f30269cf31424966ad9ac96617b",
+      "bytes": 3478
+    },
+    {
+      "original": "runtime-closure-v1/prepare_guardian_core.py",
+      "sha256": "bfcf9ae1e9a01ee522dc3658c830923070a474b2bb44a2ba17c6f3610baeaff9",
+      "bytes": 6510
+    },
+    {
+      "original": "runtime-closure-v1/test_absolute_native_window.py",
+      "sha256": "ef637e43d67a30d9bfe0d62bc0a1ce40513fa6181cc89360bbfdd9a9dc95cfc2",
+      "bytes": 2792
+    },
+    {
+      "original": "runtime-closure-v1/test_closed_runtime_held.py",
+      "sha256": "dae6e05183357fca320fc95cec150ba6683d3a69bf846ba5d4b06225d6916cb1",
+      "bytes": 6385
+    },
+    {
+      "original": "runtime-closure-v1/test_closed_runtime_image.py",
+      "sha256": "4d7e800d25a72e33488f66c73f4fea6cf4b5b9bfff5a9d5f438fa4b5e2c97bc7",
+      "bytes": 5813
+    },
+    {
+      "original": "runtime-closure-v1/test_controller_channel.py",
+      "sha256": "d1e400bbea8a0309ebb5d60068a2f8a67b4d24199e211e53a2eb0f19b7bbe878",
+      "bytes": 5990
+    },
+    {
+      "original": "runtime-closure-v1/test_coordinator_client.py",
+      "sha256": "a0dd0d43dba38d7b520b8da23013b8f2b6d8520cb4f856b4a4699c490a7c1eb3",
+      "bytes": 6723
+    },
+    {
+      "original": "runtime-closure-v1/test_execution_owner.py",
+      "sha256": "060916f1f7d869d5d44db27906be904744fc6a4967508c6da73d49bff352290c",
+      "bytes": 3730
+    },
+    {
+      "original": "runtime-closure-v1/test_execution_view.py",
+      "sha256": "e7eb914552ccd388abd2b7b19d3069ecf1d34554a7c40fc839d211c91f4971ab",
+      "bytes": 7995
+    },
+    {
+      "original": "runtime-closure-v1/test_external_custody.py",
+      "sha256": "3684aa11ac368db6c48669ab1ab18f14476b1fa564e8dd231fb14a4c720cac04",
+      "bytes": 2994
+    },
+    {
+      "original": "runtime-closure-v1/test_guardian_core.py",
+      "sha256": "09dfc9911209af1cfa843671c19870cf02c0fa5561e1793f21b931001da35228",
+      "bytes": 4790
+    },
+    {
+      "original": "runtime-closure-v1/test_guardian_held_plan.py",
+      "sha256": "0356fdef9f243d27ea3d274f74c38cac1459e0b9e5142d47c41761f24ae38993",
+      "bytes": 5966
+    },
+    {
+      "original": "runtime-closure-v1/test_immutable_held_composition.py",
+      "sha256": "fa8b922184940fbb562094d1af35b4d72fef428789cfb2fd482037e7a0170c6e",
+      "bytes": 4855
+    },
+    {
+      "original": "runtime-closure-v1/test_immutable_source.py",
+      "sha256": "466cd746965f9c00e1535ab393bd79b40b68172c649dd58be103293458133bb1",
+      "bytes": 4561
+    },
+    {
+      "original": "runtime-closure-v1/test_keeper_owner_composition.py",
+      "sha256": "c6d1f8e97726ae60c96ce847e1d8178a872507cfefec370a0f14c359372abb6c",
+      "bytes": 6573
+    },
+    {
+      "original": "runtime-closure-v1/test_keeper_startup_custody.py",
+      "sha256": "70bcba5b38addd71e778827240ffcb3ee00854a0e22a46b7cf717a2bfc178c64",
+      "bytes": 2402
+    },
+    {
+      "original": "runtime-closure-v1/test_owner_cleanup.py",
+      "sha256": "fbff06875e549c21f647405acc549b275905d9f4f358690148ff4559097f035c",
+      "bytes": 7576
+    },
+    {
+      "original": "runtime-closure-v1/test_owner_registration.py",
+      "sha256": "e0c83026b2e7ff24e44db6a16eb44e30cb86c701695fe46bfdfd48d3bef08cf9",
+      "bytes": 11435
+    },
+    {
+      "original": "runtime-closure-v1/test_owner_response_window.py",
+      "sha256": "44087442fdc98b0e0853b8c0515ce6aeac7c3653e66aa6ef918a33441391454a",
+      "bytes": 2932
+    },
+    {
+      "original": "runtime-network-v1/conftest.py",
+      "sha256": "75fd4df118ee303716021c74cdd0172684f7fb7916896b48a7f9fe1d1adc777d",
+      "bytes": 518
+    },
+    {
+      "original": "runtime-network-v1/evidence_closed_held.py",
+      "sha256": "1eaa26ad51ae471f7c2412cb1d1de1abaaaacda01bfd54a4742b10c757d1cc09",
+      "bytes": 11505
+    },
+    {
+      "original": "runtime-network-v1/evidence_closed_runtime_image.py",
+      "sha256": "a0913266c3b70d17aec2a01a5528e606c0969410404cfe5479e8a0cd058a8d01",
+      "bytes": 6691
+    },
+    {
+      "original": "runtime-network-v1/evidence_controller_channel.py",
+      "sha256": "919cf9635888411fb3bfb6e5c4059807b8ce6820d36cefce8aed628893cbf438",
+      "bytes": 5983
+    },
+    {
+      "original": "runtime-network-v1/evidence_coordinator_client.py",
+      "sha256": "015df14a20c60e665af9cfd362f3b804ed02966e6aa98bb2f73c6689ec451179",
+      "bytes": 11395
+    },
+    {
+      "original": "runtime-network-v1/evidence_execution_owner.py",
+      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d",
+      "bytes": 8577
+    },
+    {
+      "original": "runtime-network-v1/evidence_execution_view.py",
+      "sha256": "8c75b75cf63c2445e4da9e3d47f36a30b7494407d974a1a033900621e2c21d64",
+      "bytes": 6433
+    },
+    {
+      "original": "runtime-network-v1/evidence_external_custody.py",
+      "sha256": "f2e7f04d3bed017899db4bf843dc895eaf0dd34dc38a6edea668a4995c86f35c",
+      "bytes": 2716
+    },
+    {
+      "original": "runtime-network-v1/evidence_fixed_relay.py",
+      "sha256": "c5acecc6f4653d5e4f623c9028c7392c5b0f3531653243a2c2595ff5ae92146c",
+      "bytes": 7553
+    },
+    {
+      "original": "runtime-network-v1/evidence_held_invocation.py",
+      "sha256": "65b6ce6992cc39fd8dffe7f6847d923f3b5f33f4f91429c3657a874fa8281b55",
+      "bytes": 7409
+    },
+    {
+      "original": "runtime-network-v1/evidence_held_peer.py",
+      "sha256": "9617f8b2bafa1290f5efdf4f97abe83fc33ef86a1175d36b69697f74d48a201d",
+      "bytes": 10129
+    },
+    {
+      "original": "runtime-network-v1/evidence_immutable_source.py",
+      "sha256": "d4f9bbbcae97872cc1606704fc134622ec9605dfcb2d95f0507472308a0865ce",
+      "bytes": 23582
+    },
+    {
+      "original": "runtime-network-v1/evidence_invocation_registry.py",
+      "sha256": "db8b8505483fdf86faffe7b668650e46d455854ef570e294b8bbf61844878f46",
+      "bytes": 19056
+    },
+    {
+      "original": "runtime-network-v1/evidence_lease_keeper.py",
+      "sha256": "117e79f60d74e4b6814d6d0957920edf0f1aac59b3b80021c006648f77aa89e8",
+      "bytes": 18975
+    },
+    {
+      "original": "runtime-network-v1/evidence_loopback_listener.py",
+      "sha256": "ec22baf2b640e35624c8783b2cf5b108163420410fd5d5666225fb5b62c119ea",
+      "bytes": 5344
+    },
+    {
+      "original": "runtime-network-v1/evidence_namespace_bootstrap.py",
+      "sha256": "2e9b39ba83bb137ce7e4bf580192df9a00cc658691f24216cd00b02006f6b518",
+      "bytes": 1012
+    },
+    {
+      "original": "runtime-network-v1/evidence_owner_control.py",
+      "sha256": "ed98908ce59de02fc35c1f207c7e9c32e84c99e5fd8e24477bcfa837474df4c6",
+      "bytes": 11444
+    },
+    {
+      "original": "runtime-network-v1/evidence_owner_peer_bridge.py",
+      "sha256": "989357868b62bb7cf834d5f6b60e3becd2f0d00ea245317e7da58665f0ba849c",
+      "bytes": 12270
+    },
+    {
+      "original": "runtime-network-v1/evidence_owner_registration.py",
+      "sha256": "227a862915dd4ac6064e8417e20f2957d27806ee1ce063d8d7d73a3974bf4a85",
+      "bytes": 10992
+    },
+    {
+      "original": "runtime-network-v1/evidence_packet_channel.py",
+      "sha256": "30a6b24356bd28c0ec447ec0ca8e0f233e901ba2896ba3d0d9dada55cd953969",
+      "bytes": 2751
+    },
+    {
+      "original": "runtime-network-v1/evidence_process_supervisor.py",
+      "sha256": "cec6c4cf0ab633d794ee6a91b1e9cdb176a6d38eb689a0078f208a2890bc3928",
+      "bytes": 20565
+    },
+    {
+      "original": "runtime-network-v1/evidence_registry_channel.py",
+      "sha256": "44f21f4da867e6fc49d5f544272894dcaf21a94d4239665d025368e26354e3ee",
+      "bytes": 11412
+    },
+    {
+      "original": "runtime-network-v1/prepare_guardian_cancel.py",
+      "sha256": "68d80f6e763f9a6d3bd1f3155e78f6ed54328f30269cf31424966ad9ac96617b",
+      "bytes": 3478
+    },
+    {
+      "original": "runtime-network-v1/prepare_guardian_core.py",
+      "sha256": "bfcf9ae1e9a01ee522dc3658c830923070a474b2bb44a2ba17c6f3610baeaff9",
+      "bytes": 6510
+    },
+    {
+      "original": "runtime-network-v1/test_absolute_native_window.py",
+      "sha256": "ef637e43d67a30d9bfe0d62bc0a1ce40513fa6181cc89360bbfdd9a9dc95cfc2",
+      "bytes": 2792
+    },
+    {
+      "original": "runtime-network-v1/test_closed_runtime_held.py",
+      "sha256": "a76f6da7d8cf9f57f378aa7250effe76f080f2264d71b432cc0f14415ebc6067",
+      "bytes": 7465
+    },
+    {
+      "original": "runtime-network-v1/test_closed_runtime_image.py",
+      "sha256": "4d7e800d25a72e33488f66c73f4fea6cf4b5b9bfff5a9d5f438fa4b5e2c97bc7",
+      "bytes": 5813
+    },
+    {
+      "original": "runtime-network-v1/test_controller_channel.py",
+      "sha256": "d1e400bbea8a0309ebb5d60068a2f8a67b4d24199e211e53a2eb0f19b7bbe878",
+      "bytes": 5990
+    },
+    {
+      "original": "runtime-network-v1/test_coordinator_client.py",
+      "sha256": "a0dd0d43dba38d7b520b8da23013b8f2b6d8520cb4f856b4a4699c490a7c1eb3",
+      "bytes": 6723
+    },
+    {
+      "original": "runtime-network-v1/test_execution_owner.py",
+      "sha256": "060916f1f7d869d5d44db27906be904744fc6a4967508c6da73d49bff352290c",
+      "bytes": 3730
+    },
+    {
+      "original": "runtime-network-v1/test_execution_view.py",
+      "sha256": "e7eb914552ccd388abd2b7b19d3069ecf1d34554a7c40fc839d211c91f4971ab",
+      "bytes": 7995
+    },
+    {
+      "original": "runtime-network-v1/test_external_custody.py",
+      "sha256": "3684aa11ac368db6c48669ab1ab18f14476b1fa564e8dd231fb14a4c720cac04",
+      "bytes": 2994
+    },
+    {
+      "original": "runtime-network-v1/test_fixed_loopback_listener.py",
+      "sha256": "389d45f121ec3e6f80239bb1bb14088975efd2160e3655ba6a7824eb04985657",
+      "bytes": 9720
+    },
+    {
+      "original": "runtime-network-v1/test_guardian_core.py",
+      "sha256": "09dfc9911209af1cfa843671c19870cf02c0fa5561e1793f21b931001da35228",
+      "bytes": 4790
+    },
+    {
+      "original": "runtime-network-v1/test_guardian_held_plan.py",
+      "sha256": "0356fdef9f243d27ea3d274f74c38cac1459e0b9e5142d47c41761f24ae38993",
+      "bytes": 5966
+    },
+    {
+      "original": "runtime-network-v1/test_immutable_held_composition.py",
+      "sha256": "fa8b922184940fbb562094d1af35b4d72fef428789cfb2fd482037e7a0170c6e",
+      "bytes": 4855
+    },
+    {
+      "original": "runtime-network-v1/test_immutable_source.py",
+      "sha256": "466cd746965f9c00e1535ab393bd79b40b68172c649dd58be103293458133bb1",
+      "bytes": 4561
+    },
+    {
+      "original": "runtime-network-v1/test_keeper_owner_composition.py",
+      "sha256": "c6d1f8e97726ae60c96ce847e1d8178a872507cfefec370a0f14c359372abb6c",
+      "bytes": 6573
+    },
+    {
+      "original": "runtime-network-v1/test_keeper_startup_custody.py",
+      "sha256": "70bcba5b38addd71e778827240ffcb3ee00854a0e22a46b7cf717a2bfc178c64",
+      "bytes": 2402
+    },
+    {
+      "original": "runtime-network-v1/test_original_invocation_registry.py",
+      "sha256": "fde09fe94a1a8a3223e75d0df9a57a4b88d457d34035386e07411c048a275f29",
+      "bytes": 14221
+    },
+    {
+      "original": "runtime-network-v1/test_owner_cleanup.py",
+      "sha256": "fbff06875e549c21f647405acc549b275905d9f4f358690148ff4559097f035c",
+      "bytes": 7576
+    },
+    {
+      "original": "runtime-network-v1/test_owner_peer_bridge_controls.py",
+      "sha256": "03c90473302b95ec6cfa55050407876b27881cf604453f03a9468194d82cdafb",
+      "bytes": 6044
+    },
+    {
+      "original": "runtime-network-v1/test_owner_registration.py",
+      "sha256": "e0c83026b2e7ff24e44db6a16eb44e30cb86c701695fe46bfdfd48d3bef08cf9",
+      "bytes": 11435
+    },
+    {
+      "original": "runtime-network-v1/test_owner_response_window.py",
+      "sha256": "44087442fdc98b0e0853b8c0515ce6aeac7c3653e66aa6ef918a33441391454a",
+      "bytes": 2932
+    },
+    {
+      "original": "runtime-network-v1/test_pending_owner_sockets.py",
+      "sha256": "5751425178fc3ec0dc76bad13349944d9344996ab042fc24904018132dc63092",
+      "bytes": 1441
+    },
+    {
+      "original": "runtime-network-v2/conftest.py",
+      "sha256": "75fd4df118ee303716021c74cdd0172684f7fb7916896b48a7f9fe1d1adc777d",
+      "bytes": 518
+    },
+    {
+      "original": "runtime-network-v2/evidence_closed_held.py",
+      "sha256": "1eaa26ad51ae471f7c2412cb1d1de1abaaaacda01bfd54a4742b10c757d1cc09",
+      "bytes": 11505
+    },
+    {
+      "original": "runtime-network-v2/evidence_closed_runtime_image.py",
+      "sha256": "a0913266c3b70d17aec2a01a5528e606c0969410404cfe5479e8a0cd058a8d01",
+      "bytes": 6691
+    },
+    {
+      "original": "runtime-network-v2/evidence_controller_channel.py",
+      "sha256": "919cf9635888411fb3bfb6e5c4059807b8ce6820d36cefce8aed628893cbf438",
+      "bytes": 5983
+    },
+    {
+      "original": "runtime-network-v2/evidence_coordinator_client.py",
+      "sha256": "015df14a20c60e665af9cfd362f3b804ed02966e6aa98bb2f73c6689ec451179",
+      "bytes": 11395
+    },
+    {
+      "original": "runtime-network-v2/evidence_execution_owner.py",
+      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d",
+      "bytes": 8577
+    },
+    {
+      "original": "runtime-network-v2/evidence_execution_view.py",
+      "sha256": "8c75b75cf63c2445e4da9e3d47f36a30b7494407d974a1a033900621e2c21d64",
+      "bytes": 6433
+    },
+    {
+      "original": "runtime-network-v2/evidence_external_custody.py",
+      "sha256": "f2e7f04d3bed017899db4bf843dc895eaf0dd34dc38a6edea668a4995c86f35c",
+      "bytes": 2716
+    },
+    {
+      "original": "runtime-network-v2/evidence_fixed_relay.py",
+      "sha256": "c5acecc6f4653d5e4f623c9028c7392c5b0f3531653243a2c2595ff5ae92146c",
+      "bytes": 7553
+    },
+    {
+      "original": "runtime-network-v2/evidence_held_invocation.py",
+      "sha256": "65b6ce6992cc39fd8dffe7f6847d923f3b5f33f4f91429c3657a874fa8281b55",
+      "bytes": 7409
+    },
+    {
+      "original": "runtime-network-v2/evidence_held_peer.py",
+      "sha256": "9617f8b2bafa1290f5efdf4f97abe83fc33ef86a1175d36b69697f74d48a201d",
+      "bytes": 10129
+    },
+    {
+      "original": "runtime-network-v2/evidence_immutable_source.py",
+      "sha256": "d4f9bbbcae97872cc1606704fc134622ec9605dfcb2d95f0507472308a0865ce",
+      "bytes": 23582
+    },
+    {
+      "original": "runtime-network-v2/evidence_invocation_registry.py",
+      "sha256": "db8b8505483fdf86faffe7b668650e46d455854ef570e294b8bbf61844878f46",
+      "bytes": 19056
+    },
+    {
+      "original": "runtime-network-v2/evidence_lease_keeper.py",
+      "sha256": "117e79f60d74e4b6814d6d0957920edf0f1aac59b3b80021c006648f77aa89e8",
+      "bytes": 18975
+    },
+    {
+      "original": "runtime-network-v2/evidence_loopback_listener.py",
+      "sha256": "ec22baf2b640e35624c8783b2cf5b108163420410fd5d5666225fb5b62c119ea",
+      "bytes": 5344
+    },
+    {
+      "original": "runtime-network-v2/evidence_namespace_bootstrap.py",
+      "sha256": "2e9b39ba83bb137ce7e4bf580192df9a00cc658691f24216cd00b02006f6b518",
+      "bytes": 1012
+    },
+    {
+      "original": "runtime-network-v2/evidence_owner_control.py",
+      "sha256": "ed98908ce59de02fc35c1f207c7e9c32e84c99e5fd8e24477bcfa837474df4c6",
+      "bytes": 11444
+    },
+    {
+      "original": "runtime-network-v2/evidence_owner_peer_bridge.py",
+      "sha256": "989357868b62bb7cf834d5f6b60e3becd2f0d00ea245317e7da58665f0ba849c",
+      "bytes": 12270
+    },
+    {
+      "original": "runtime-network-v2/evidence_owner_registration.py",
+      "sha256": "227a862915dd4ac6064e8417e20f2957d27806ee1ce063d8d7d73a3974bf4a85",
+      "bytes": 10992
+    },
+    {
+      "original": "runtime-network-v2/evidence_packet_channel.py",
+      "sha256": "30a6b24356bd28c0ec447ec0ca8e0f233e901ba2896ba3d0d9dada55cd953969",
+      "bytes": 2751
+    },
+    {
+      "original": "runtime-network-v2/evidence_process_supervisor.py",
+      "sha256": "cec6c4cf0ab633d794ee6a91b1e9cdb176a6d38eb689a0078f208a2890bc3928",
+      "bytes": 20565
+    },
+    {
+      "original": "runtime-network-v2/evidence_registry_channel.py",
+      "sha256": "3224f8f889ff3b7517f543e5669951b37a8b582c0d6b8fce1cf55198e7ebcf19",
+      "bytes": 11608
+    },
+    {
+      "original": "runtime-network-v2/prepare_guardian_cancel.py",
+      "sha256": "68d80f6e763f9a6d3bd1f3155e78f6ed54328f30269cf31424966ad9ac96617b",
+      "bytes": 3478
+    },
+    {
+      "original": "runtime-network-v2/prepare_guardian_core.py",
+      "sha256": "bfcf9ae1e9a01ee522dc3658c830923070a474b2bb44a2ba17c6f3610baeaff9",
+      "bytes": 6510
+    },
+    {
+      "original": "runtime-network-v2/test_absolute_native_window.py",
+      "sha256": "ef637e43d67a30d9bfe0d62bc0a1ce40513fa6181cc89360bbfdd9a9dc95cfc2",
+      "bytes": 2792
+    },
+    {
+      "original": "runtime-network-v2/test_closed_runtime_held.py",
+      "sha256": "a76f6da7d8cf9f57f378aa7250effe76f080f2264d71b432cc0f14415ebc6067",
+      "bytes": 7465
+    },
+    {
+      "original": "runtime-network-v2/test_closed_runtime_image.py",
+      "sha256": "4d7e800d25a72e33488f66c73f4fea6cf4b5b9bfff5a9d5f438fa4b5e2c97bc7",
+      "bytes": 5813
+    },
+    {
+      "original": "runtime-network-v2/test_controller_channel.py",
+      "sha256": "d1e400bbea8a0309ebb5d60068a2f8a67b4d24199e211e53a2eb0f19b7bbe878",
+      "bytes": 5990
+    },
+    {
+      "original": "runtime-network-v2/test_coordinator_client.py",
+      "sha256": "a0dd0d43dba38d7b520b8da23013b8f2b6d8520cb4f856b4a4699c490a7c1eb3",
+      "bytes": 6723
+    },
+    {
+      "original": "runtime-network-v2/test_execution_owner.py",
+      "sha256": "060916f1f7d869d5d44db27906be904744fc6a4967508c6da73d49bff352290c",
+      "bytes": 3730
+    },
+    {
+      "original": "runtime-network-v2/test_execution_view.py",
+      "sha256": "e7eb914552ccd388abd2b7b19d3069ecf1d34554a7c40fc839d211c91f4971ab",
+      "bytes": 7995
+    },
+    {
+      "original": "runtime-network-v2/test_external_custody.py",
+      "sha256": "3684aa11ac368db6c48669ab1ab18f14476b1fa564e8dd231fb14a4c720cac04",
+      "bytes": 2994
+    },
+    {
+      "original": "runtime-network-v2/test_fixed_loopback_listener.py",
+      "sha256": "389d45f121ec3e6f80239bb1bb14088975efd2160e3655ba6a7824eb04985657",
+      "bytes": 9720
+    },
+    {
+      "original": "runtime-network-v2/test_guardian_core.py",
+      "sha256": "09dfc9911209af1cfa843671c19870cf02c0fa5561e1793f21b931001da35228",
+      "bytes": 4790
+    },
+    {
+      "original": "runtime-network-v2/test_guardian_held_plan.py",
+      "sha256": "0356fdef9f243d27ea3d274f74c38cac1459e0b9e5142d47c41761f24ae38993",
+      "bytes": 5966
+    },
+    {
+      "original": "runtime-network-v2/test_immutable_held_composition.py",
+      "sha256": "fa8b922184940fbb562094d1af35b4d72fef428789cfb2fd482037e7a0170c6e",
+      "bytes": 4855
+    },
+    {
+      "original": "runtime-network-v2/test_immutable_source.py",
+      "sha256": "466cd746965f9c00e1535ab393bd79b40b68172c649dd58be103293458133bb1",
+      "bytes": 4561
+    },
+    {
+      "original": "runtime-network-v2/test_keeper_owner_composition.py",
+      "sha256": "c6d1f8e97726ae60c96ce847e1d8178a872507cfefec370a0f14c359372abb6c",
+      "bytes": 6573
+    },
+    {
+      "original": "runtime-network-v2/test_keeper_startup_custody.py",
+      "sha256": "70bcba5b38addd71e778827240ffcb3ee00854a0e22a46b7cf717a2bfc178c64",
+      "bytes": 2402
+    },
+    {
+      "original": "runtime-network-v2/test_original_invocation_registry.py",
+      "sha256": "4d40cc2d5739b77004e313d3050fe949347651c2685f331896177d4552b514ca",
+      "bytes": 15210
+    },
+    {
+      "original": "runtime-network-v2/test_owner_cleanup.py",
+      "sha256": "fbff06875e549c21f647405acc549b275905d9f4f358690148ff4559097f035c",
+      "bytes": 7576
+    },
+    {
+      "original": "runtime-network-v2/test_owner_peer_bridge_controls.py",
+      "sha256": "03c90473302b95ec6cfa55050407876b27881cf604453f03a9468194d82cdafb",
+      "bytes": 6044
+    },
+    {
+      "original": "runtime-network-v2/test_owner_registration.py",
+      "sha256": "e0c83026b2e7ff24e44db6a16eb44e30cb86c701695fe46bfdfd48d3bef08cf9",
+      "bytes": 11435
+    },
+    {
+      "original": "runtime-network-v2/test_owner_response_window.py",
+      "sha256": "44087442fdc98b0e0853b8c0515ce6aeac7c3653e66aa6ef918a33441391454a",
+      "bytes": 2932
+    },
+    {
+      "original": "runtime-network-v2/test_pending_owner_sockets.py",
+      "sha256": "5751425178fc3ec0dc76bad13349944d9344996ab042fc24904018132dc63092",
+      "bytes": 1441
+    },
+    {
+      "original": "runtime-network-v3/conftest.py",
+      "sha256": "75fd4df118ee303716021c74cdd0172684f7fb7916896b48a7f9fe1d1adc777d",
+      "bytes": 518
+    },
+    {
+      "original": "runtime-network-v3/evidence_closed_held.py",
+      "sha256": "1eaa26ad51ae471f7c2412cb1d1de1abaaaacda01bfd54a4742b10c757d1cc09",
+      "bytes": 11505
+    },
+    {
+      "original": "runtime-network-v3/evidence_closed_runtime_image.py",
+      "sha256": "a0913266c3b70d17aec2a01a5528e606c0969410404cfe5479e8a0cd058a8d01",
+      "bytes": 6691
+    },
+    {
+      "original": "runtime-network-v3/evidence_controller_channel.py",
+      "sha256": "919cf9635888411fb3bfb6e5c4059807b8ce6820d36cefce8aed628893cbf438",
+      "bytes": 5983
+    },
+    {
+      "original": "runtime-network-v3/evidence_coordinator_client.py",
+      "sha256": "015df14a20c60e665af9cfd362f3b804ed02966e6aa98bb2f73c6689ec451179",
+      "bytes": 11395
+    },
+    {
+      "original": "runtime-network-v3/evidence_execution_owner.py",
+      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d",
+      "bytes": 8577
+    },
+    {
+      "original": "runtime-network-v3/evidence_execution_view.py",
+      "sha256": "8c75b75cf63c2445e4da9e3d47f36a30b7494407d974a1a033900621e2c21d64",
+      "bytes": 6433
+    },
+    {
+      "original": "runtime-network-v3/evidence_external_custody.py",
+      "sha256": "f2e7f04d3bed017899db4bf843dc895eaf0dd34dc38a6edea668a4995c86f35c",
+      "bytes": 2716
+    },
+    {
+      "original": "runtime-network-v3/evidence_fixed_relay.py",
+      "sha256": "c5acecc6f4653d5e4f623c9028c7392c5b0f3531653243a2c2595ff5ae92146c",
+      "bytes": 7553
+    },
+    {
+      "original": "runtime-network-v3/evidence_held_invocation.py",
+      "sha256": "65b6ce6992cc39fd8dffe7f6847d923f3b5f33f4f91429c3657a874fa8281b55",
+      "bytes": 7409
+    },
+    {
+      "original": "runtime-network-v3/evidence_held_peer.py",
+      "sha256": "9617f8b2bafa1290f5efdf4f97abe83fc33ef86a1175d36b69697f74d48a201d",
+      "bytes": 10129
+    },
+    {
+      "original": "runtime-network-v3/evidence_immutable_source.py",
+      "sha256": "d4f9bbbcae97872cc1606704fc134622ec9605dfcb2d95f0507472308a0865ce",
+      "bytes": 23582
+    },
+    {
+      "original": "runtime-network-v3/evidence_invocation_registry.py",
+      "sha256": "db8b8505483fdf86faffe7b668650e46d455854ef570e294b8bbf61844878f46",
+      "bytes": 19056
+    },
+    {
+      "original": "runtime-network-v3/evidence_lease_keeper.py",
+      "sha256": "117e79f60d74e4b6814d6d0957920edf0f1aac59b3b80021c006648f77aa89e8",
+      "bytes": 18975
+    },
+    {
+      "original": "runtime-network-v3/evidence_loopback_listener.py",
+      "sha256": "ec22baf2b640e35624c8783b2cf5b108163420410fd5d5666225fb5b62c119ea",
+      "bytes": 5344
+    },
+    {
+      "original": "runtime-network-v3/evidence_namespace_bootstrap.py",
+      "sha256": "01d740240f010d8c33e2d6cca40199b4510b119d498c17f7ff1749b221ba8725",
+      "bytes": 2185
+    },
+    {
+      "original": "runtime-network-v3/evidence_owner_control.py",
+      "sha256": "ed98908ce59de02fc35c1f207c7e9c32e84c99e5fd8e24477bcfa837474df4c6",
+      "bytes": 11444
+    },
+    {
+      "original": "runtime-network-v3/evidence_owner_peer_bridge.py",
+      "sha256": "989357868b62bb7cf834d5f6b60e3becd2f0d00ea245317e7da58665f0ba849c",
+      "bytes": 12270
+    },
+    {
+      "original": "runtime-network-v3/evidence_owner_registration.py",
+      "sha256": "227a862915dd4ac6064e8417e20f2957d27806ee1ce063d8d7d73a3974bf4a85",
+      "bytes": 10992
+    },
+    {
+      "original": "runtime-network-v3/evidence_packet_channel.py",
+      "sha256": "30a6b24356bd28c0ec447ec0ca8e0f233e901ba2896ba3d0d9dada55cd953969",
+      "bytes": 2751
+    },
+    {
+      "original": "runtime-network-v3/evidence_process_supervisor.py",
+      "sha256": "cec6c4cf0ab633d794ee6a91b1e9cdb176a6d38eb689a0078f208a2890bc3928",
+      "bytes": 20565
+    },
+    {
+      "original": "runtime-network-v3/evidence_registry_channel.py",
+      "sha256": "3224f8f889ff3b7517f543e5669951b37a8b582c0d6b8fce1cf55198e7ebcf19",
+      "bytes": 11608
+    },
+    {
+      "original": "runtime-network-v3/prepare_guardian_cancel.py",
+      "sha256": "68d80f6e763f9a6d3bd1f3155e78f6ed54328f30269cf31424966ad9ac96617b",
+      "bytes": 3478
+    },
+    {
+      "original": "runtime-network-v3/prepare_guardian_core.py",
+      "sha256": "bfcf9ae1e9a01ee522dc3658c830923070a474b2bb44a2ba17c6f3610baeaff9",
+      "bytes": 6510
+    },
+    {
+      "original": "runtime-network-v3/test_absolute_native_window.py",
+      "sha256": "ef637e43d67a30d9bfe0d62bc0a1ce40513fa6181cc89360bbfdd9a9dc95cfc2",
+      "bytes": 2792
+    },
+    {
+      "original": "runtime-network-v3/test_closed_runtime_held.py",
+      "sha256": "a76f6da7d8cf9f57f378aa7250effe76f080f2264d71b432cc0f14415ebc6067",
+      "bytes": 7465
+    },
+    {
+      "original": "runtime-network-v3/test_closed_runtime_image.py",
+      "sha256": "4d7e800d25a72e33488f66c73f4fea6cf4b5b9bfff5a9d5f438fa4b5e2c97bc7",
+      "bytes": 5813
+    },
+    {
+      "original": "runtime-network-v3/test_controller_channel.py",
+      "sha256": "d1e400bbea8a0309ebb5d60068a2f8a67b4d24199e211e53a2eb0f19b7bbe878",
+      "bytes": 5990
+    },
+    {
+      "original": "runtime-network-v3/test_coordinator_client.py",
+      "sha256": "a0dd0d43dba38d7b520b8da23013b8f2b6d8520cb4f856b4a4699c490a7c1eb3",
+      "bytes": 6723
+    },
+    {
+      "original": "runtime-network-v3/test_execution_owner.py",
+      "sha256": "060916f1f7d869d5d44db27906be904744fc6a4967508c6da73d49bff352290c",
+      "bytes": 3730
+    },
+    {
+      "original": "runtime-network-v3/test_execution_view.py",
+      "sha256": "e7eb914552ccd388abd2b7b19d3069ecf1d34554a7c40fc839d211c91f4971ab",
+      "bytes": 7995
+    },
+    {
+      "original": "runtime-network-v3/test_external_custody.py",
+      "sha256": "3684aa11ac368db6c48669ab1ab18f14476b1fa564e8dd231fb14a4c720cac04",
+      "bytes": 2994
+    },
+    {
+      "original": "runtime-network-v3/test_fixed_loopback_listener.py",
+      "sha256": "389d45f121ec3e6f80239bb1bb14088975efd2160e3655ba6a7824eb04985657",
+      "bytes": 9720
+    },
+    {
+      "original": "runtime-network-v3/test_guardian_core.py",
+      "sha256": "09dfc9911209af1cfa843671c19870cf02c0fa5561e1793f21b931001da35228",
+      "bytes": 4790
+    },
+    {
+      "original": "runtime-network-v3/test_guardian_held_plan.py",
+      "sha256": "0356fdef9f243d27ea3d274f74c38cac1459e0b9e5142d47c41761f24ae38993",
+      "bytes": 5966
+    },
+    {
+      "original": "runtime-network-v3/test_immutable_held_composition.py",
+      "sha256": "fa8b922184940fbb562094d1af35b4d72fef428789cfb2fd482037e7a0170c6e",
+      "bytes": 4855
+    },
+    {
+      "original": "runtime-network-v3/test_immutable_source.py",
+      "sha256": "466cd746965f9c00e1535ab393bd79b40b68172c649dd58be103293458133bb1",
+      "bytes": 4561
+    },
+    {
+      "original": "runtime-network-v3/test_keeper_owner_composition.py",
+      "sha256": "c6d1f8e97726ae60c96ce847e1d8178a872507cfefec370a0f14c359372abb6c",
+      "bytes": 6573
+    },
+    {
+      "original": "runtime-network-v3/test_keeper_startup_custody.py",
+      "sha256": "70bcba5b38addd71e778827240ffcb3ee00854a0e22a46b7cf717a2bfc178c64",
+      "bytes": 2402
+    },
+    {
+      "original": "runtime-network-v3/test_namespace_helper_reaping.py",
+      "sha256": "42a8f5a71add935059da2a1e9592b87a6734dd1806bcdeee71d2914622344d33",
+      "bytes": 2365
+    },
+    {
+      "original": "runtime-network-v3/test_original_invocation_registry.py",
+      "sha256": "4d40cc2d5739b77004e313d3050fe949347651c2685f331896177d4552b514ca",
+      "bytes": 15210
+    },
+    {
+      "original": "runtime-network-v3/test_owner_cleanup.py",
+      "sha256": "fbff06875e549c21f647405acc549b275905d9f4f358690148ff4559097f035c",
+      "bytes": 7576
+    },
+    {
+      "original": "runtime-network-v3/test_owner_peer_bridge_controls.py",
+      "sha256": "03c90473302b95ec6cfa55050407876b27881cf604453f03a9468194d82cdafb",
+      "bytes": 6044
+    },
+    {
+      "original": "runtime-network-v3/test_owner_registration.py",
+      "sha256": "e0c83026b2e7ff24e44db6a16eb44e30cb86c701695fe46bfdfd48d3bef08cf9",
+      "bytes": 11435
+    },
+    {
+      "original": "runtime-network-v3/test_owner_response_window.py",
+      "sha256": "44087442fdc98b0e0853b8c0515ce6aeac7c3653e66aa6ef918a33441391454a",
+      "bytes": 2932
+    },
+    {
+      "original": "runtime-network-v3/test_pending_owner_sockets.py",
+      "sha256": "5751425178fc3ec0dc76bad13349944d9344996ab042fc24904018132dc63092",
+      "bytes": 1441
+    },
+    {
+      "original": "issuer-owner-integration-v1/delivery_actor.py",
+      "sha256": "43edc56c13ce29c272ee030cb3c0f450bdaafa6f53d4ef4292601da8bbd3fbd2",
+      "bytes": 10286
+    },
+    {
+      "original": "issuer-owner-integration-v1/factory_fixture.py",
+      "sha256": "802cbb3f0bd6eb4ef8f1fbe3b5d518ef04e0dc50230d42d31ee9bf143a9a6c1f",
+      "bytes": 1700
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/__init__.py",
+      "sha256": "c9529c97da31280d9c31e0ff338777911756987f3a1c5fc873e9a99ee839bfa8",
+      "bytes": 66
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/canonical_inputs.py",
+      "sha256": "2b6735d8feacd887611b4f6a974ebf757841415cf9097fbc325dff9cd2f3abff",
+      "bytes": 1910
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/composition.py",
+      "sha256": "851ff5325b2598082abcc52d5825574ed8d97e5c5f5e2099c324dc5ccd597e59",
+      "bytes": 10227
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/coordinator.py",
+      "sha256": "adf537c5278be8fe5f67dacb94a197c372ec780eb728d2f2ce706a4078e1cb14",
+      "bytes": 3556
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/current_session.py",
+      "sha256": "6c38ab10167f01561a9f6526db5222efbc80d679872e24f331734ca430a87495",
+      "bytes": 1961
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/delivery.py",
+      "sha256": "e1e3745b8c93d84268351b31b83d823ff635f989ed89f31ecd25f510c6e57714",
+      "bytes": 6925
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/docker_native.py",
+      "sha256": "52ddc35536c1c15c9cd19e18ac330352110ac821437eb442809c32414830880b",
+      "bytes": 6820
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/__init__.py",
+      "sha256": "12112da4495c6f06ce20bcc8d9d964180f92556779bacf505c96564109433e40",
+      "bytes": 80
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/account_evidence.py",
+      "sha256": "3434deec33802cef17942b3718865b6eaaa678973eee60b44d195bc5e2d38e8d",
+      "bytes": 2744
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/admin_authority.py",
+      "sha256": "884aa6951374d6175b175a450f59a4126ed0b465f8146625821cb150f1f76ab2",
+      "bytes": 4380
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/canonical_verifier.py",
+      "sha256": "c41762f977046e4c3082a763da992199849880621ca0fe85385edf7691485454",
+      "bytes": 2725
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/context_evidence.py",
+      "sha256": "4aea3a501f1367271f331f5a57514f8488f2b46e1a1880c1ff936f6a94519c52",
+      "bytes": 3233
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/contracts.py",
+      "sha256": "e60497cb25fff7ac95e1993fc4d50c92e6e61d43398a5f275b558a72e0cd63b0",
+      "bytes": 4618
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/current_admin.py",
+      "sha256": "b2e58f3b67cee9c997d52f83859cf102e137330a005e580481f8ec60dac4853a",
+      "bytes": 4498
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/factory.py",
+      "sha256": "6b3ff2f086bed30bb4c536822ce2f5f11acdce85c22906cead769ef3dfbceacb",
+      "bytes": 7120
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/gateway.py",
+      "sha256": "8fb25c4727f8bbac3032f0f2d0d7d418a3d4d1a260daa985978646d0b2beac0f",
+      "bytes": 2874
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/http_exchange.py",
+      "sha256": "dadb08c4364d5054740d39412856c846172e84db708dba54372b22526e5f20d1",
+      "bytes": 9642
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/issuer_provider_v4.py",
+      "sha256": "45f0f529356b5ac613ddf895aee4984153fcadf1d715d8c5e02f057a26ee0716",
+      "bytes": 13955
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/journal.py",
+      "sha256": "76318b58dda0df81f46842dff47b541fef8fc3f460e68e8fc6a948344f8a636c",
+      "bytes": 5621
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/lifecycle.py",
+      "sha256": "60b2d6b05d911eabbcf016c8d970c9c89c70bc4ccc709d0f7dfe8ca486bb2948",
+      "bytes": 7069
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/normal_policy.py",
+      "sha256": "1a51683eacb92a30481f0f81e80233e71d94338797a2248e4bdf5ec4fb75f2a8",
+      "bytes": 5232
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/policy_probe.py",
+      "sha256": "e86a632d8232ef1cfe30fd22357c3d525378de35e86ba6c596e1df7429fbadaf",
+      "bytes": 1503
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/server.py",
+      "sha256": "0acb638727962a194e4b74600e76b32e3bccf1a10fb27f6dee5a58e0fa1cee44",
+      "bytes": 5327
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_account_evidence.py",
+      "sha256": "955e7804eecaa60f8b765e32ccbb1124996395b802df7f9ea0ab90e9e05fc3a7",
+      "bytes": 10490
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_boundary_regressions.py",
+      "sha256": "50cf9ddafd6ad5e62862e226624670c3194c3992e6f9c3c8c0f3a5c251bfea7e",
+      "bytes": 2198
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_context_evidence.py",
+      "sha256": "40893704db7c2089d3f7b19ef439cb9dad4201683a191d1c0197d0180743be49",
+      "bytes": 6763
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_control_windows.py",
+      "sha256": "bbcb84960cb0c4eaebe5170ac43831f8924d3713e9ee8f0b00d2b18cb8a349d8",
+      "bytes": 4680
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_http_exchange.py",
+      "sha256": "2988917a9270ff41617b51186727b37eb17e2a76060bfbb0e4b420a06bdd35d2",
+      "bytes": 4547
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_issuer_provider_compat.py",
+      "sha256": "746c18a54913b93778d9b2f1506bb77f1186ea55aefb3a7cc260b86dad542167",
+      "bytes": 13644
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_lifecycle.py",
+      "sha256": "bdb6144184f4877a2d4985d7c512c25e30a6eff4046b55d2d0ba5050322035ba",
+      "bytes": 8471
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_normal_policy.py",
+      "sha256": "2daab7eb199ad4bf3be81a59f5cec110b33e08d28cf6733488fdb2d9f2ea00d3",
+      "bytes": 6187
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_strict_home.py",
+      "sha256": "a8d3ee02103c2f6e9a6ed0130aabb8ed1d3db6e918d35db16f1ad7bf2ab32ab2",
+      "bytes": 5976
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_workload.py",
+      "sha256": "9226b856e6651864c8e86bd90c298f8468ebcd03525b69047211843156ccca6d",
+      "bytes": 6241
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/test_workload_windows.py",
+      "sha256": "9ded907175d356b2132640c0b27b97b6a538ae85e039266f5a2b20597ca10f0e",
+      "bytes": 4655
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/workload.py",
+      "sha256": "069aaabdec72060454b937654edef7b05c81074a5f8454e128919e57409dfea4",
+      "bytes": 12256
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/workload_cleanup.py",
+      "sha256": "08bde77ca2fb668d9dd7a14a948bf5a2ad4bd01addc482259c23400b5265a046",
+      "bytes": 5973
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/issuer/workload_delivery.py",
+      "sha256": "ab4952f4cf60fcd258839672165268673f97ddf027725499ab8fffcd6947fa65",
+      "bytes": 6201
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/owned_readback.py",
+      "sha256": "07bfb281b760526d15e63eb617b1a1a243044c5f0b79907ea6fe769e52f4e180",
+      "bytes": 6171
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/policy_observer.py",
+      "sha256": "739130e8c5a53018b60649212b21e000593cd756167565d086e8629f278a54d4",
+      "bytes": 9650
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_closed_held.py",
+      "sha256": "1eaa26ad51ae471f7c2412cb1d1de1abaaaacda01bfd54a4742b10c757d1cc09",
+      "bytes": 11505
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_closed_runtime_image.py",
+      "sha256": "a0913266c3b70d17aec2a01a5528e606c0969410404cfe5479e8a0cd058a8d01",
+      "bytes": 6691
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_controller_channel.py",
+      "sha256": "919cf9635888411fb3bfb6e5c4059807b8ce6820d36cefce8aed628893cbf438",
+      "bytes": 5983
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_coordinator_client.py",
+      "sha256": "015df14a20c60e665af9cfd362f3b804ed02966e6aa98bb2f73c6689ec451179",
+      "bytes": 11395
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_execution_owner.py",
+      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d",
+      "bytes": 8577
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_execution_view.py",
+      "sha256": "8c75b75cf63c2445e4da9e3d47f36a30b7494407d974a1a033900621e2c21d64",
+      "bytes": 6433
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_external_custody.py",
+      "sha256": "f2e7f04d3bed017899db4bf843dc895eaf0dd34dc38a6edea668a4995c86f35c",
+      "bytes": 2716
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_fixed_relay.py",
+      "sha256": "c5acecc6f4653d5e4f623c9028c7392c5b0f3531653243a2c2595ff5ae92146c",
+      "bytes": 7553
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_held_invocation.py",
+      "sha256": "65b6ce6992cc39fd8dffe7f6847d923f3b5f33f4f91429c3657a874fa8281b55",
+      "bytes": 7409
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_held_peer.py",
+      "sha256": "9617f8b2bafa1290f5efdf4f97abe83fc33ef86a1175d36b69697f74d48a201d",
+      "bytes": 10129
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_immutable_source.py",
+      "sha256": "d4f9bbbcae97872cc1606704fc134622ec9605dfcb2d95f0507472308a0865ce",
+      "bytes": 23582
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_invocation_driver.py",
+      "sha256": "2ce2154d13946aba33d01a652cc0ac136be516dde9284ab9ce8e74f868d96b7d",
+      "bytes": 8340
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_invocation_registry.py",
+      "sha256": "db8b8505483fdf86faffe7b668650e46d455854ef570e294b8bbf61844878f46",
+      "bytes": 19056
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_lease_keeper.py",
+      "sha256": "117e79f60d74e4b6814d6d0957920edf0f1aac59b3b80021c006648f77aa89e8",
+      "bytes": 18975
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_loopback_listener.py",
+      "sha256": "ec22baf2b640e35624c8783b2cf5b108163420410fd5d5666225fb5b62c119ea",
+      "bytes": 5344
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_namespace_bootstrap.py",
+      "sha256": "2e9b39ba83bb137ce7e4bf580192df9a00cc658691f24216cd00b02006f6b518",
+      "bytes": 1012
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_owner_control.py",
+      "sha256": "ed98908ce59de02fc35c1f207c7e9c32e84c99e5fd8e24477bcfa837474df4c6",
+      "bytes": 11444
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_owner_peer_bridge.py",
+      "sha256": "989357868b62bb7cf834d5f6b60e3becd2f0d00ea245317e7da58665f0ba849c",
+      "bytes": 12270
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_owner_registration.py",
+      "sha256": "227a862915dd4ac6064e8417e20f2957d27806ee1ce063d8d7d73a3974bf4a85",
+      "bytes": 10992
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_packet_channel.py",
+      "sha256": "30a6b24356bd28c0ec447ec0ca8e0f233e901ba2896ba3d0d9dada55cd953969",
+      "bytes": 2751
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_process_supervisor.py",
+      "sha256": "cec6c4cf0ab633d794ee6a91b1e9cdb176a6d38eb689a0078f208a2890bc3928",
+      "bytes": 20565
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_registry_channel.py",
+      "sha256": "3224f8f889ff3b7517f543e5669951b37a8b582c0d6b8fce1cf55198e7ebcf19",
+      "bytes": 11608
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime/evidence_serial_dispatch.py",
+      "sha256": "3d611325147702f110ab4bcf78bdf273a622aabc9e5aa93f8a57db04dd1a3196",
+      "bytes": 3928
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/runtime_guard.py",
+      "sha256": "e0b44c008a97e56ccd44c21937c97da4ecd9c411106b8612e5fb31da053c2d09",
+      "bytes": 3778
+    },
+    {
+      "original": "issuer-owner-integration-v1/qualified_issuer/sandbox_profile.py",
+      "sha256": "8808186af9d8f3402add07aabe867ba3062cb6779cd0c5fe443bcfce456f97bf",
+      "bytes": 3515
+    },
+    {
+      "original": "issuer-owner-integration-v1/test_delivery_integration.py",
+      "sha256": "de46786e60bfddbf8184a5764b265ff8723d6c63b19ed10f1f7ffa13b4942d64",
+      "bytes": 14594
+    }
+  ],
+  "preservation": "Original index/working tree and all local evidence/envs remain untouched. Parent preserves staged-only bytes; tip preserves working tree/untracked source and Python prototype copies. No credentials, environments, databases, live fixtures or raw execution evidence included. Historical evidence and restoration archives remain protected locally. This archive branch is not main, an RC, a certified candidate or a claim that deferred work passes gates."
+}

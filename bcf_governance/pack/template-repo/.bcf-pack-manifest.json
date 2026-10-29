@@ -306,7 +306,7 @@
     },
     "schemas/gate-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "448f0d5de8b79b587df13c15bbe6da7f5098149c923aa8bd7df70b103404723c"
+      "sha256": "6aeb8b72b96c077853756a07e6c42eb87badd004dde51e4db35f017bb4142042"
     },
     "schemas/github-ci-topology.schema.json": {
       "operation": "copy",
@@ -896,11 +896,7 @@
     },
     "scripts/_bcf_runtime/evidence_execution.py": {
       "operation": "copy",
-      "sha256": "760c91049d553a74eeb26bdb15df416c221fc32118be14deaa3e3a97db0322c4"
-    },
-    "scripts/_bcf_runtime/evidence_execution_owner.py": {
-      "operation": "copy",
-      "sha256": "9774fb806f95517d169a4932d35d92832adead4baa99e1ce28ec67f343e2303d"
+      "sha256": "f3b1fb7981e8d58066cd28c348be4658d88688f22c304eb3c8c8864acd48d9c2"
     },
     "scripts/_bcf_runtime/evidence_gate_contracts.py": {
       "operation": "copy",
@@ -913,10 +909,6 @@
     "scripts/_bcf_runtime/evidence_output_artifacts.py": {
       "operation": "copy",
       "sha256": "e85c216445a1ce2563500c1f1217a6a163653a4e05aa8710a98741d530b48eda"
-    },
-    "scripts/_bcf_runtime/evidence_owner_registration.py": {
-      "operation": "copy",
-      "sha256": "847d31b3404463eac92f74736d7541ff34e43a81c39940930262d0271763373b"
     },
     "scripts/_bcf_runtime/evidence_plan_scope.py": {
       "operation": "copy",
@@ -1116,7 +1108,7 @@
     },
     "scripts/_bcf_runtime/governance_profiles.py": {
       "operation": "copy",
-      "sha256": "c12a6183bf915e86ccb35891d1df778209baf183848aabc00662e90af85a1f9f"
+      "sha256": "f854ed0604ba2b4460cba45422d0a38e3d559789ad80fa7684c941c01b82be50"
     },
     "scripts/_bcf_runtime/governance_truth.py": {
       "operation": "copy",
@@ -1624,11 +1616,11 @@
     },
     "scripts/_bcf_runtime/semantic_python_literal_call_model.py": {
       "operation": "copy",
-      "sha256": "66a6b35c35231a1829d06a3618bc0384fc63e43ceb150ff5b010591b240d244b"
+      "sha256": "1b3a024eb07b602d694165a17a74801cefb6295022ac6e9b5953938c9aa9a1a8"
     },
     "scripts/_bcf_runtime/semantic_python_literal_default_context.py": {
       "operation": "copy",
-      "sha256": "6bce2b124bb81a26677ad1fee4135d67cf22508b18af1f634af6f048e86cb3bf"
+      "sha256": "e19be8c9b5c55043d589bd2b2f20ce6f2c7b642d27200836fffb57597d3bf80e"
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",

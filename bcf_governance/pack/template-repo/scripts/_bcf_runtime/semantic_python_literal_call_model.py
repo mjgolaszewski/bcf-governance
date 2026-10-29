@@ -137,7 +137,45 @@ class _Model:
         return None
 
 
+def literal_context_applicable(function: ast.FunctionDef) -> bool:
+    """Select the literal subset without erasing any source-store obligation.
+
+    This is analysis applicability, never a call or effect grant. Unsupported
+    ordinary bodies retain their original resolver facts and transitive walk.
+    Unsafe stores, definition defaults, suspensions and exhausted scope remain
+    candidates so their existing hard refusal cannot be bypassed.
+    """
+    defaults = [*function.args.defaults,
+                *[value for value in function.args.kw_defaults if value is not None]]
+    for value in defaults:
+        if not isinstance(value, ast.Constant) or type(value.value) not in {type(None), bool, int, float, str}:
+            return True
+    supported = (ast.Expr, ast.Constant, ast.Name, ast.Load, ast.Store, ast.Dict,
+                 ast.List, ast.Assign, ast.AnnAssign, ast.Subscript, ast.If, ast.Return)
+    ordinary_body = False
+    count = 0
+    for statement in function.body:
+        for node in ast.walk(statement):
+            count += 1
+            if count > 4096:
+                return True
+            if isinstance(node, (ast.Global, ast.Nonlocal, ast.Yield, ast.YieldFrom,
+                                 ast.Await, ast.Lambda, ast.ClassDef, ast.FunctionDef,
+                                 ast.AsyncFunctionDef, ast.AugAssign, ast.Delete)):
+                return True
+            if isinstance(node, (ast.Assign, ast.AnnAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                for target in targets:
+                    if not isinstance(target, ast.Name):
+                        return True
+            if not isinstance(node, supported):
+                ordinary_body = True
+    return not ordinary_body
+
+
 def model_literal_call(function: ast.FunctionDef, call: ast.Call) -> dict[str, Any]:
+    if not literal_context_applicable(function):
+        raise UnsupportedLiteralCall('callee_outside_literal_subset')
     if sum(1 for _ in ast.walk(function)) > 256:
         raise UnsupportedLiteralCall('function_node_budget')
     if any(isinstance(n, (ast.Global, ast.Nonlocal, ast.Yield, ast.YieldFrom, ast.Await,
