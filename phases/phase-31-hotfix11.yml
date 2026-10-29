@@ -24,6 +24,14 @@ execution_evidence:
     and full affected Ruff passed. Evidence reconcile-bdmcp-minimal-1.
   - Native reconcile passed401.682s and created exact definition bf570eac46c9e68a463f7e3ef6bd27de5d1e5b0a/authority
     e1897a66afa66a2cdb1b89ae2d4a54ed2078cf53 with clean tree. Evidence reconcile-bdmcp-minimal-2.
+  - Actual isolated BDMCP native upgrade, full strict mypy1310files, Ruff, governance,
+    exposure and reconcileCHECK all passed18 stages. Original outer cache-population
+    refusal retained; independent audit2 passed284 source-correspondent bytecode caches
+    and full original tool/appenv protection, native namespace absence and physical
+    handback. No test replay or full Standard claim.
+  - Native ci submit3 refused before the producer train on missing same-candidate
+    state matrix coverage, exit1/571.622s. Updated the source matrix with actual ordinary/producer/capability/candidate-lock/release
+    permutations; no gate bypass or production behavior change.
   notes:
   - 'Pre-edit contract: tooling validation query; runner and producer-only dispatcher.
     Preserve every producer schema/path/semantic check; absent or malformed required

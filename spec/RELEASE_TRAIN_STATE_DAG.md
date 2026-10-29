@@ -2584,3 +2584,29 @@ budget and downstream trusted capsule reauthentication remain unchanged.
 | Authenticated recovery reentry | Preserve recovery route producer and classify its authenticated output before upload. | Ordinary provider resolution or custody projection in the recovery exclusion lane rejects. |
 | Repeated lifecycle projection | Rebuild both component order and classification source for the selected lane. | A stale ordinary or recovery target cannot survive reprojection. |
 | Exact main after protected merge | Hosted builder must finish inside the unchanged deadline; existing rotation/finalizer/status and release owners authenticate actual artifacts. | Local tests and prior PR434 proof cannot establish fixed-main certification or immutable release custody. |
+
+
+### Maintenance 2.3.9 ordinary-consumer producer dispatch
+
+This bounded repair separates optional producer validation from the ordinary
+installed runtime's static imports. Canonical reconciliation changes the graph's
+source bindings and generated workflows, so the same candidate carries this
+matrix. Existing events, permissions, producers, controller and publication roles,
+gate requirements and deadlines retain their existing semantics.
+
+| Reached state or permutation | Required producer/consumer transition | Rejection and authority boundary |
+| --- | --- | --- |
+| Ordinary consumer without self-authority documents | Install only ordinary pack surfaces; the runner never imports the optional producer dispatcher. Full strict typing includes every installed runtime file. | Producer-only overlay, parity, certification and dispatch modules remain absent. Do not install producer authority or suppress missing-import errors to obtain a pass. |
+| Producer document present and supported dispatcher available | The dispatcher preserves the existing schema, document-path and semantic checks independently for overlays, parity and certification. | Invalid producer documents retain their original validation failures; dispatch changes do not waive producer contracts. |
+| Producer document present but dispatcher missing or malformed | The runner refuses the missing capability or noncallable validator explicitly. | Every document family has missing and malformed capability controls in tests/test_consumer_optional_dispatch.py; no silent skip or blanket validation exemption. |
+| Exact isolated adopter source qualification | The native installer replaces the predecessor official runtime lock with its explicit non-authoritative candidate marker, binding candidate/adopter commits and trees, pack manifest and predecessor digest. The copied app interpreter resolves the clone. | Only that exact native lock replacement is admitted; all other source deletions and unexpected source changes reject. This marker is not an official release, immutable custody or full application assurance claim. |
+| Changed source and regenerated CI workflow bindings | Native reconciliation owns any required definition/authority pair; same-candidate preflight validates this matrix before executing the full prospective producer DAG. | Retain submit3's pre-gate CIStateMatrixError as negative evidence. Focused119 cases and actual consumer typing do not substitute for full CI, protected merge or exact-main certification. |
+| Complete native train, protected merge and exact main | Existing admission, comparison transport, producer and controller owners prove the exact candidate and main subject before release authorization. | Source diagnostics, local qualification and authored completed implementation status grant no certification or publication authority. |
+| Terminal release and official consumer upgrade | Existing build, runtime verification, independent provider authentication, collector and publisher owners bind exact2.3.9 assets and immutable custody. Consumers then adopt official assets through the supported installer. | No manual workflow pins, manufactured receipt, conflicting tag, unverified assets or stale source may substitute. BDMCP's remaining Standard requirements stay in its application remit. |
+
+The outward construction remains source/pack ownership -> native graph and
+workflow projection -> same-candidate matrix -> full prospective proof ->
+protected merge -> exact-main/controller closure -> ordinary immutable release
+and independent custody -> official consumer adoption. The new Racecar
+credential-backed JIT backend and broader analyzer proposals remain preserved
+outside this release; ordinary BCF CI introduces no live Identity dependency.
