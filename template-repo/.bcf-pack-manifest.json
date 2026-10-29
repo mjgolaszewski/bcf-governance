@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "378b02d5bef6f3731b12a2d5728bdc83cfefae111b4e44261acc75571778dac8"
+      "sha256": "0f31f4a23bcbb531dd4811c971250b0c8f9fd6979761dbe21b78a76f4a25537c"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -1222,11 +1222,16 @@
     },
     "scripts/_bcf_runtime/governance_validation/runner.py": {
       "operation": "copy",
-      "sha256": "c184207cd3894f83d4a65cab3fd88d72b3e4b6ac46997d4ba269436873fbf815"
+      "sha256": "b3cf3d632ceba5339b74c6f141c3bb8fe027355f4aeada0fbcede2fa8a56392b"
     },
     "scripts/_bcf_runtime/governance_validation/runtime_custody.py": {
       "operation": "copy",
       "sha256": "93e920f0940afd4542685030527c9468e342822536a3ee9877808aa09628e762"
+    },
+    "scripts/_bcf_runtime/governance_validation/self_authority_dispatch.py": {
+      "installation_scope": "self_authority",
+      "operation": "copy",
+      "sha256": "8976cebe52689edda44710ec693b0374712b1bcc524b374a3bdadc24b16b39ce"
     },
     "scripts/_bcf_runtime/governance_validation/self_authority_overlays.py": {
       "installation_scope": "self_authority",
