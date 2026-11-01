@@ -9,6 +9,6 @@ PyYAML>=6.0,<7
 ruff==0.15.7
 setuptools>=69
 types-jsonschema==4.26.0.20261006
-types-PyYAML==6.0.12.20250915
+types-PyYAML==6.0.12.20260906
 urllib3>=2.8.0,<3
 wheel
