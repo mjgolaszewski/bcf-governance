@@ -6,6 +6,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+<!-- bcf-automation-changelog:1207503211:dependabot:437:cb70ee88cce5ae7fc4b755e352dfe6a2228896d1f4edb889c324fb6962327319 -->
+- Automated dependency update `dependabot` from PR #437: `pytest` from `==9.0.3` to `==9.2.0` (`pyproject.toml`, `requirements-governance.txt`, `template-repo/requirements-governance.txt`).
+
 Release target: `2.3.9`
 
 ### Fixed
