@@ -11,41 +11,16 @@ from .common import (
     Any,
     GovernanceValidationError,
     Path,
+    _document_status,
     _load_yaml,
-    _repo_relative_path,
     _require_mapping,
     _require_path,
     _require_sequence,
     _require_string,
     _require_string_sequence,
-    _validate_portable_relative_path,
+    _validate_document_path,
     _validate_schema,
 )
-
-
-def _document_status(payload: dict[str, Any], *, context: str) -> str:
-    document = _require_mapping(payload.get("document"), context=f"{context}.document")
-    status = document.get("status")
-    if not isinstance(status, str):
-        raise GovernanceValidationError(f"{context}.document.status must be a string")
-    return status
-
-
-def _validate_document_path(
-    repo_root: Path,
-    payload: dict[str, Any],
-    actual_path: Path,
-    *,
-    context: str,
-) -> None:
-    document = _require_mapping(payload.get("document"), context=f"{context}.document")
-    document_path = _require_string(document.get("path"), context=f"{context}.document.path")
-    _validate_portable_relative_path(document_path, context=f"{context}.document.path")
-    expected_path = _repo_relative_path(repo_root, actual_path)
-    if document_path != expected_path:
-        raise GovernanceValidationError(
-            f"{context}.document.path must be {expected_path!r}, got {document_path!r}"
-        )
 
 
 def _phase_number(phase_id: str) -> int:

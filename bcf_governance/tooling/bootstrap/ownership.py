@@ -54,7 +54,9 @@ LEGACY_CLI_MODULES = frozenset({
 })
 
 
-SETTING_READS: dict[str, tuple[str, str]] = {'_ComparisonSettings.base_sha': ('BCF_COMPARISON_BASE_SHA', '""'),
+SETTING_READS: dict[str, tuple[str, str]] = {
+ "_ComparisonSettings.release_membership_inputs": ("BCF_RELEASE_MEMBERSHIP_INPUTS", '""'),
+ "_ComparisonSettings.candidate_membership_inputs": ("BCF_CANDIDATE_MEMBERSHIP_INPUTS", '""'),'_ComparisonSettings.base_sha': ('BCF_COMPARISON_BASE_SHA', '""'),
  '_ComparisonSettings.caller_base_sha': ('BCF_CALLER_COMPARISON_BASE_SHA', '""'),
  '_ComparisonSettings.enforce_pr_changelog': ('BCF_ENFORCE_PR_CHANGELOG', '""'),
  '_ComparisonSettings.event_name': ('GITHUB_EVENT_NAME', '""'),
@@ -88,6 +90,8 @@ SETTING_READS: dict[str, tuple[str, str]] = {'_ComparisonSettings.base_sha': ('B
  '_WorkflowSettings.workflow_ref': ('GITHUB_WORKFLOW_REF', 'default')}
 
 COMPARISON_MUTATION_KEYS = frozenset({
+    "BCF_RELEASE_MEMBERSHIP_INPUTS",
+    "BCF_CANDIDATE_MEMBERSHIP_INPUTS",
     "BCF_PROVIDER_EVENT", "BCF_INVOCATION_KIND", "BCF_CALLER_COMPARISON_BASE_SHA",
     "BCF_ORIGIN_COMPARISON_BASE_SHA", "BCF_COMPARISON_BASE_SHA",
     "BCF_ENFORCE_PR_CHANGELOG", "BCF_PR_BASE_SHA", "BCF_VALIDATION_LANE",

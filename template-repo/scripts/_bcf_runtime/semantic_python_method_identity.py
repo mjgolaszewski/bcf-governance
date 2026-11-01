@@ -447,3 +447,23 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
                 }
             )
         function["effect_unresolved"] = failures
+
+
+def receiver_attribute_targets(target: ast.AST, receiver: str | None) -> set[str]:
+    """Retain every receiver attribute written by an assignment target."""
+    if isinstance(target, (ast.Tuple, ast.List)):
+        return {
+            name
+            for element in target.elts
+            for name in receiver_attribute_targets(element, receiver)
+        }
+    if isinstance(target, ast.Starred):
+        return receiver_attribute_targets(target.value, receiver)
+    if (
+        receiver is not None
+        and isinstance(target, ast.Attribute)
+        and isinstance(target.value, ast.Name)
+        and target.value.id == receiver
+    ):
+        return {target.attr}
+    return set()

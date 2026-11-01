@@ -16,7 +16,10 @@ import yaml
 
 from .bootstrap.contracts import ChildProcessEnvironment
 from .bootstrap.environment import child_process_environment as _default_child_process_environment
-from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
+from .check_governance_exposure import (
+    PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS,
+    _validate_portable_governed_commands,
+)
 from .reconcile_contracts import Action as Action
 from .reconcile_contracts import ReconcileStep as ReconcileStep
 from .reconcile_stage_ledger import (
@@ -68,20 +71,10 @@ from .test_manifests import declared_test_gates
 
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
-    """Reject machine-local command records before any artifact is written."""
-
-    for command in commands:
-        matched = sorted(
-            name
-            for name, pattern in GOVERNANCE_EXPOSURE_PATTERNS.items()
-            if pattern.search(command)
-        )
-        if matched:
-            raise ValueError(
-                "governed validation command exposes nonportable infrastructure: "
-                + ", ".join(matched)
-            )
-    return commands
+    'Reject machine-local command records before any artifact is written.'
+    return _validate_portable_governed_commands(
+        commands, patterns=GOVERNANCE_EXPOSURE_PATTERNS
+    )
 
 
 def _phase_number(phase_id: str) -> int:

@@ -93,6 +93,12 @@ class _WorkflowSettings(_ReadEnvironment):
 
 
 class _ComparisonSettings(_ReadEnvironment):
+    def release_membership_inputs(self) -> str:
+        return self._source.get("BCF_RELEASE_MEMBERSHIP_INPUTS", "")
+
+    def candidate_membership_inputs(self) -> str:
+        return self._source.get("BCF_CANDIDATE_MEMBERSHIP_INPUTS", "")
+
     def declared_bases(self) -> dict[str, str]:
         return {
             "BCF_COMPARISON_BASE_SHA": self.base_sha(),

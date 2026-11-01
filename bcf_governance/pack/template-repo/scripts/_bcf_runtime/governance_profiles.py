@@ -13,6 +13,7 @@ from .application_assurance_graph import (
     compile_application_assurance_graph,
     compile_legacy_gate_catalog,
 )
+from .evidence_gate_contracts import _TEST_POLICY_NAMES
 from .evidence_planning import parse_claim_model, receipt_producing_legacy_gates
 from .interpreter_contract_projection import (
     InterpreterContractProjectionError,
@@ -31,18 +32,7 @@ from .yaml_mutations import YAMLMutationPathError, mutation_mode
 
 BUILTIN_TARGETS = {"governance-validate", "governance-exposure-scan"}
 PROFILE_ORDER = {"lite": 0, "standard": 1, "regulated": 2}
-TEST_POLICIES = {
-    "automated_tests",
-    "contract_tests",
-    "architecture_tests",
-    "architecture_module_size",
-    "architecture_layer_membership",
-    "architecture_context_membership",
-    "architecture_import_boundaries",
-    "architecture_cqrs_side",
-    "architecture_router_thinness",
-    "architecture_duplication",
-}
+TEST_POLICIES = set(_TEST_POLICY_NAMES)
 DIRECT_CLAIMS = ("workitems_closed", "required_suites_green", "architecture_gates_green", "health_checks_green", "security_review_complete", "findings_resolved")
 
 

@@ -9,7 +9,7 @@ import yaml
 
 from .evidence_execution import EvidenceError
 
-TEST_POLICIES = {
+_TEST_POLICY_NAMES = frozenset({
     "automated_tests",
     "contract_tests",
     "architecture_tests",
@@ -20,7 +20,8 @@ TEST_POLICIES = {
     "architecture_cqrs_side",
     "architecture_router_thinness",
     "architecture_duplication",
-}
+})
+TEST_POLICIES = set(_TEST_POLICY_NAMES)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
