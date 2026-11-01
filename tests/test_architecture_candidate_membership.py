@@ -107,30 +107,32 @@ def test_candidate_claims_do_not_replace_fresh_owner_joins(installed_candidate, 
     originals = {marker_path: marker_path.read_bytes(), inputs.build_manifest: inputs.build_manifest.read_bytes()}
     marker = json.loads(originals[marker_path])
     build = json.loads(originals[inputs.build_manifest])
-    if mutation == "foreign-candidate": marker["candidate"]["commit_sha"] = "0" * 40
-    elif mutation == "foreign-adopter": marker["adopter"]["commit_sha"] = "0" * 40
-    elif mutation == "false-domain": marker["non_authoritative"] = False
-    elif mutation == "wrong-version": marker["runtime_version"] = "0.0.0"
-    elif mutation == "build-assets": build["assets"][next(iter(build["assets"]))] = "0" * 64
-    elif mutation == "build-subject": build["subject"]["commit_sha"] = "0" * 40
-    elif mutation == "omitted-member": marker["files"].pop(next(iter(marker["files"])))
-    elif mutation == "edited-and-rehashed":
-        relative = "scripts/_bcf_runtime/__init__.py"
-        path = target / relative
-        originals[path] = path.read_bytes()
-        path.write_bytes(originals[path] + b"UNQUALIFIED = True\n")
-        marker["files"][relative] = _sha(path.read_bytes())
-    elif mutation == "preservation":
-        relative = next(iter(marker["files"]))
-        marker["preserved_consumer_files"][relative] = marker["files"].pop(relative)
-    marker_path.write_text(json.dumps(marker))
-    inputs.build_manifest.write_text(json.dumps(build))
-    commit(target)
     try:
+        if mutation == "foreign-candidate": marker["candidate"]["commit_sha"] = "0" * 40
+        elif mutation == "foreign-adopter": marker["adopter"]["commit_sha"] = "0" * 40
+        elif mutation == "false-domain": marker["non_authoritative"] = False
+        elif mutation == "wrong-version": marker["runtime_version"] = "0.0.0"
+        elif mutation == "build-assets": build["assets"][next(iter(build["assets"]))] = "0" * 64
+        elif mutation == "build-subject": build["subject"]["commit_sha"] = "0" * 40
+        elif mutation == "omitted-member": marker["files"].pop(next(iter(marker["files"])))
+        elif mutation == "edited-and-rehashed":
+            relative = "scripts/_bcf_runtime/__init__.py"
+            path = target / relative
+            originals[path] = path.read_bytes()
+            path.write_bytes(originals[path] + b"UNQUALIFIED = True\n")
+            marker["files"][relative] = _sha(path.read_bytes())
+        elif mutation == "preservation":
+            relative = next(iter(marker["files"]))
+            marker["preserved_consumer_files"][relative] = marker["files"].pop(relative)
+        marker_path.write_text(json.dumps(marker))
+        inputs.build_manifest.write_text(json.dumps(build))
+        if mutation not in {"build-assets", "build-subject"}:
+            commit(target)
         with pytest.raises(SourceComponentError, match=diagnostic) as failure:
             owner.qualify_candidate_membership(target, inputs)
         assert any(entry.name == "qualify_candidate_membership" for entry in failure.traceback)
     finally:
         for path, raw in originals.items(): path.write_bytes(raw)
-        commit(target)
+        if mutation not in {"build-assets", "build-subject"}:
+            commit(target)
     assert owner.qualify_candidate_membership(target, inputs).authority is False
