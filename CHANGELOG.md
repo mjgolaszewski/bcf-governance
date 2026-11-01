@@ -6,6 +6,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+<!-- bcf-automation-changelog:1207503211:dependabot:440:5ed76287edd3b49224e2aebe1cb8e5ad7b83ccf6076dbc1664022f6a34af5c53 -->
+- Automated dependency update `dependabot` from PR #440: `ruff` from `==0.15.7` to `==0.17.3` (`pyproject.toml`, `requirements-governance.txt`).
+
 Release target: `2.3.9`
 
 ### Fixed
