@@ -72,10 +72,12 @@ def test_real_native_PRESENT_admission_cannot_be_downgraded_for_body(installed_c
         for mode in modes:
             if mode == "downgrade-invalid":
                 component["members"][member] = "0" * 64
-                config.write_text(yaml.safe_dump(document))
+                next_raw = yaml.safe_dump(document).encode()
             else:
-                config.write_bytes(valid_raw)
-            commit(root)
+                next_raw = valid_raw
+            if config.read_bytes() != next_raw:
+                config.write_bytes(next_raw)
+                commit(root)
             state = tmp_path / (mode + ".json")
             junit = tmp_path / (mode + ".xml")
             result = subprocess.run([sys.executable,"-I","-B","-c",_CHILD,str(root),mode,

@@ -61,6 +61,11 @@ def canonical_preserved_candidate(installed_release, tmp_path_factory):
     path = target / "src/domain/orders/rules.py"
     path.parent.mkdir(parents=True)
     path.write_text("VALUE = 1\n")
+    # The original full native gate requires genuine files in each required layer.
+    for layer, filename in [("use_cases", "handler.py"), ("ports", "port.py"), ("routers", "router.py")]:
+        member = target / "src" / "contexts" / "orders" / layer / filename
+        member.parent.mkdir(parents=True)
+        member.write_text("VALUE = 1\n")
     commit(target)
     prepared = release_custody.prepare_upgrade_release_custody(target, None, True, template,
         candidate_qualification_source=source, manifest_entries=manifest.files,
