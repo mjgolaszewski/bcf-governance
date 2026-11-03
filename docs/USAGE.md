@@ -1064,3 +1064,12 @@ To preserve an original singleton scalar YAML dependency, declare job
 `needs_style: singleton-scalar` with exactly one `needs` array member. The graph
 keeps its typed array; rendering emits the single scalar. Zero or multiple needs
 are refused for this opt-in. Absent this field, existing list rendering remains.
+
+A reusable workflow caller may preserve an original uses-only YAML shape with
+`permissions_style: inherit-workflow`. Native permission derivation still stores
+the exact callee bound in the graph. The opt-in is accepted only for a reusable
+caller whose derived bound exactly equals its containing workflow permissions;
+only the redundant YAML job permissions are omitted. A wider or narrower bound
+is refused rather than silently granting inherited permissions. Existing callers
+without this declaration retain explicit permission rendering. Combine with
+`omit_name: true` only when the original caller contract requires uses-only.

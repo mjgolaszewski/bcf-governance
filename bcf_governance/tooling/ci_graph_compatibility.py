@@ -28,6 +28,12 @@ def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
                 raise CIGraphError(f"CI graph command {command_id} shell-body contains NUL")
     for workflow in graph["workflows"]:
         for job in workflow.get("jobs", []):
+            if "permissions_style" in job and (
+                job["permissions_style"] != "inherit-workflow"
+                or job["executor"]["kind"] != "reusable_workflow"
+                or job["permissions"] != workflow["permissions"]
+            ):
+                raise CIGraphError("inherited permissions require a reusable caller with the exact workflow permission bound")
             if "needs_style" in job and (
                 job["needs_style"] != "singleton-scalar" or len(job["needs"]) != 1
             ):

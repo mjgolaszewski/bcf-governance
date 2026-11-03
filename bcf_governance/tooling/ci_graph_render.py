@@ -519,7 +519,7 @@ def _job(
         condition = f"${{{{ ({base}) && ({guard}) }}}}"
     if condition is not None:
         result["if"] = condition
-    if job["permissions"]:
+    if job["permissions"] and job.get("permissions_style") != "inherit-workflow":
         result["permissions"] = copy.deepcopy(job["permissions"])
     if job["outputs"]:
         result["outputs"] = copy.deepcopy(job["outputs"])

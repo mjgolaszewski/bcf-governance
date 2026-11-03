@@ -1604,6 +1604,9 @@
         },
         "needs_style": {
           "const": "singleton-scalar"
+        },
+        "permissions_style": {
+          "const": "inherit-workflow"
         }
       }
     },
