@@ -218,7 +218,8 @@
         "argv": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "cwd": {"$ref": "#/$defs/safePath"},
         "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
-        "required_environment": {"type": "array", "uniqueItems": true, "items": {"pattern": "^[A-Z_][A-Z0-9_]*$"}}
+        "required_environment": {"type": "array", "uniqueItems": true, "items": {"pattern": "^[A-Z_][A-Z0-9_]*$"}},
+        "render_mode": {"enum": ["argv", "shell-body"]}
       }
     },
     "conditionExpression": {
@@ -239,7 +240,9 @@
             "id": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "condition": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "minimum_job_timeout_minutes": {"type": "integer", "minimum": 1},
-            "action": {"enum": ["checkout", "setup-python", "setup-node", "upload-artifact", "download-artifact", "attest-build-provenance", "create-github-app-token"]},
+            "source_pin": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}$"},
+            "condition_style": {"enum": ["expression", "bare"]},
+            "action": {"enum": ["checkout", "setup-python", "setup-uv", "setup-node", "upload-artifact", "download-artifact", "attest-build-provenance", "create-github-app-token"]},
             "precedes_exactly_one_of": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "with": {"type": "object", "additionalProperties": {"$ref": "#/$defs/scalar"}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
@@ -259,6 +262,7 @@
             "condition": {"oneOf": [{"$ref": "#/$defs/identifier"}, {"type": "null"}]},
             "minimum_job_timeout_minutes": {"type": "integer", "minimum": 1},
             "command": {"$ref": "#/$defs/identifier"},
+            "condition_style": {"enum": ["expression", "bare"]},
             "restores_private_artifacts": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
             "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},
             "required_permissions": {"$ref": "#/$defs/permissionMap"},
@@ -308,6 +312,7 @@
       "additionalProperties": false,
       "required": ["type"],
       "properties": {
+        "empty_configuration": {"const": "null"},
         "type": {"enum": ["pull_request", "pull_request_target", "push", "workflow_call", "workflow_dispatch", "workflow_run", "schedule", "repository_dispatch"]},
         "branches": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/identifier"}},
         "cron": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
@@ -358,6 +363,7 @@
       "required": ["id", "display_name", "semantic_role", "resource_class", "trust", "needs", "condition", "timeout_minutes", "permissions", "checkout", "components", "executor", "produces", "consumes", "required"],
       "properties": {
         "id": {"$ref": "#/$defs/identifier"},
+        "omit_name": {"const": true},
         "display_name": {"type": "string", "minLength": 1},
         "semantic_role": {"$ref": "#/$defs/identifier"},
         "resource_class": {"$ref": "#/$defs/identifier"},
@@ -397,7 +403,7 @@
         "id": {"$ref": "#/$defs/identifier"},
         "path": {"type": "string", "pattern": "^\\.github/workflows/[A-Za-z0-9._-]+\\.ya?ml$"},
         "display_name": {"type": "string", "minLength": 1},
-        "role": {"enum": ["pull-request", "exact-main", "scheduled", "release", "trusted-control", "custom"]},
+        "role": {"enum": ["pull-request", "exact-main", "push-consumer", "scheduled", "release", "trusted-control", "custom"]},
         "events": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/event"}},
         "permissions": {"$ref": "#/$defs/permissionMap"},
         "environment": {"type": "object", "propertyNames": {"pattern": "^[A-Z_][A-Z0-9_]*$"}, "additionalProperties": {"type": "string"}},

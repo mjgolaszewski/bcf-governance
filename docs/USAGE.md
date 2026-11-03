@@ -967,3 +967,40 @@ CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
 or performs global Docker/build-cache pruning; it revalidates the exact ID and
 label immediately before deletion and removes container anonymous volumes.
+
+
+### Preserving an existing split CI graph
+
+An existing split workflow topology may keep its original paths, triggers, jobs,
+and security hooks while adding declared governance evidence and terminal-truth
+jobs inside an existing workflow. Change the canonical graph and registered
+extensions, then use native reconciliation as the workflow and authority writer.
+
+The following graph fields are opt-in compatibility projections. Existing
+renderer defaults remain unchanged.
+
+- A command with `render_mode: shell-body` must declare exactly
+  `argv: [bash, -c, BODY]`. The renderer emits BODY without its usual strict-argv
+  prefix. The existing provider-expression hoisting and interpreter-source-sink
+  refusal still apply. This does not accept arbitrary workflow objects.
+- An action component may declare `source_pin` only from the maintained closed
+  per-action immutable registry. Omission keeps the default framework pin.
+  `setup-uv` is a supported registered action.
+- An action or command component may request `condition_style: bare` only with
+  `always`, `failure`, or `cancelled`. Otherwise condition rendering is unchanged.
+- An empty `workflow_call` event may declare `empty_configuration: 'null'`.
+  No other event configuration may accompany this projection.
+- A reusable-workflow caller may request `omit_name: true` to retain a uses-only
+  caller declaration. Other executor kinds cannot omit their names.
+- Exactly one `exact-main` workflow retains the push authority. Additional push
+  workflows require `role: push-consumer` and may use only push/manual events.
+  These workflows and transitive reusable callees must be candidate/read-only,
+  cannot execute authority or terminal-truth operations, produce control or
+  terminal artifacts, install controllers, or mint credentials. Put the declared
+  governance/truth owners in the exact-main workflow. Existing gate ownership,
+  evidence fan-in, authority policy, and failed-preflight checks still apply.
+
+After maintained tooling or schema changes, run the native pack-manifest builder
+and its check mode before packaging. This projects tooling and schemas into both
+standalone and packaged templates. Qualify an installed adopter from those actual
+artifacts; source-only renderer checks do not prove installed compatibility.

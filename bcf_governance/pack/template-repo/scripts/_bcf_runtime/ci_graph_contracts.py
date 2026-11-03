@@ -12,8 +12,10 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from .ci_graph_compatibility import validate_compatibility_declarations
 from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_authority_policy import validate_graph_authority_policy
+from .ci_graph_push_authority import validate_push_authority
 from .ci_graph_controller_lifecycle import (
     ControllerLifecycle,
     ControllerLifecycleState,
@@ -276,11 +278,12 @@ def _validate_step_components(graph: dict[str, Any]) -> None:
     artifacts = set(graph["artifacts"])
     commands = set(graph["commands"])
     conditions = set(graph["conditions"])
+    validate_compatibility_declarations(graph)
     for component_id, component in graph["step_components"].items():
         if component["kind"] == "directory_setup":
             continue
         condition = component["condition"]
-        if condition is not None and condition not in conditions:
+        if condition is not None and condition not in {"success", "always", "failure", "cancelled"} and condition not in conditions:
             raise CIGraphError(
                 f"CI graph step component {component_id} references unknown condition"
             )
@@ -428,15 +431,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
     paths = [item["path"] for item in workflows]
     if len(set(workflow_ids)) != len(workflow_ids) or len(set(paths)) != len(paths):
         raise CIGraphError("CI graph workflow IDs and paths must each be unique")
-    push_workflows = [
-        item for item in workflows if any(event["type"] == "push" for event in item["events"])
-    ]
-    if len(push_workflows) != 1 or push_workflows[0]["role"] != "exact-main":
-        raise CIGraphError(
-            "CI graph must have one exact-main push authority",
-            kind="event",
-            identifier="push",
-        )
+    validate_push_authority(graph)
     semantic_roles: set[str] = set()
     artifact_producers: dict[str, tuple[str, str]] = {}
     graph_resources = graph["resource_classes"]
@@ -485,6 +480,8 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     identifier=job["id"],
                 )
             executor = job["executor"]
+            if job.get("omit_name") and executor["kind"] != "reusable_workflow":
+                raise CIGraphError("omit_name is limited to reusable workflow callers")
             validate_reusable_binding_declarations(graph, job)
             condition = job["condition"]
             if condition not in {"success", "always", "failure", "cancelled"} and condition not in graph["conditions"]:

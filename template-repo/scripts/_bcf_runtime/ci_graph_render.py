@@ -81,7 +81,9 @@ def _events(events: list[dict[str, Any]]) -> dict[str, Any]:
         for key in ("branches", "workflows", "types", "inputs"):
             if key in event:
                 config[key] = event[key]
-        result[kind] = config
+        result[kind] = (
+            None if event.get("empty_configuration") == "null" else config
+        )
     return result
 
 
@@ -110,7 +112,8 @@ def _command_step(
         **command["environment"],
     }
     require_available_generated_slots(environment, "BCF_COMMAND_ARG_")
-    for index, value in enumerate(command["argv"]):
+    rendered_argv = [] if command.get("render_mode") == "shell-body" else command["argv"]
+    for index, value in enumerate(rendered_argv):
         if value == "{python}":
             argv.append('"$BCF_PYTHON"')
         elif value == "{controller}":
@@ -136,8 +139,9 @@ def _command_step(
         "working-directory": command["cwd"],
         "env": environment,
         "run": (
-            "set -euo pipefail\n"
-            + " ".join(argv)
+            command["argv"][2]
+            if command.get("render_mode") == "shell-body"
+            else "set -euo pipefail\n" + " ".join(argv)
         ),
     }
 
@@ -190,7 +194,7 @@ def _component_steps(
         if component["kind"] == "action":
             step: dict[str, Any] = {
                 "name": component["name"],
-                "uses": action_pin(component["action"]),
+                "uses": action_pin(component["action"], component.get("source_pin")),
             }
             if component["with"]:
                 step["with"] = copy.deepcopy(component["with"])
@@ -207,7 +211,11 @@ def _component_steps(
         if component["id"] is not None:
             step["id"] = component["id"]
         if component["condition"] is not None:
-            step["if"] = _condition(compiled, component["condition"])
+            step["if"] = (
+                component["condition"] + "()"
+                if component.get("condition_style") == "bare"
+                else _condition(compiled, component["condition"])
+            )
         if component["kind"] == "action" and component["environment"]:
             require_available_environment_names(component["environment"])
             require_available_generated_slots(
@@ -487,7 +495,9 @@ def _job(
     compiled: CompiledCIGraph, workflow: dict[str, Any], job: dict[str, Any]
 ) -> dict[str, Any]:
     executor = job["executor"]
-    result: dict[str, Any] = {"name": job["display_name"]}
+    result: dict[str, Any] = (
+        {} if job.get("omit_name") else {"name": job["display_name"]}
+    )
     if job["needs"]:
         result["needs"] = job["needs"]
     condition = _condition(compiled, job["condition"])
