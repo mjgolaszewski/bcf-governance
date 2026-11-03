@@ -1,6 +1,6 @@
 """Keep required credentials checked after safe preparation and before work."""
 from copy import deepcopy
-from types import SimpleNamespace
+from ci_graph_render_fixture_support import compiled_fixture as SimpleNamespace
 
 import pytest
 

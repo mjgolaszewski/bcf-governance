@@ -1,5 +1,5 @@
 """Opt-in authored CI compatibility, with existing renderer defaults retained."""
-from types import SimpleNamespace
+from ci_graph_render_fixture_support import compiled_fixture as SimpleNamespace
 
 import pytest
 

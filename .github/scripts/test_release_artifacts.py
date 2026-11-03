@@ -107,6 +107,8 @@ def venv_environment(root: Path) -> tuple[Path, dict[str, str]]:
     env = dict(os.environ)
     env["PATH"] = str(bindir) + os.pathsep + env.get("PATH", "")
     env["VIRTUAL_ENV"] = str(root)
+    backend = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))["build-system"]["requires"]
+    run(str(python), "-m", "pip", "install", *backend, env=env)
     return python, env
 
 

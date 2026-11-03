@@ -193,7 +193,7 @@ MUTANTS = (
         search="    if document_path != expected_path:\n",
         replace="    if False and document_path != expected_path:\n",
         profiles=("high-value", "full"),
-        target_path="scripts/governance_validation/phase_artifacts.py",
+        target_path="scripts/governance_validation/common.py",
     ),
     Mutant(
         mutant_id="release-gate-placeholder-marker",

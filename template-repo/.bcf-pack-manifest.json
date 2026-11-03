@@ -538,7 +538,7 @@
     },
     "scripts/_bcf_runtime/bootstrap/ownership.py": {
       "operation": "copy",
-      "sha256": "e00712084e4954bb0ea6f00f6bf74b70bc2ef9cbec8e4fee5560db4c662b03d0"
+      "sha256": "9d2210f73792aaf1a952255a63662f1da44e77148d110f1bfb5df9d716d1e22f"
     },
     "scripts/_bcf_runtime/break_glass_recovery.py": {
       "installation_scope": "self_authority",
@@ -640,7 +640,7 @@
     },
     "scripts/_bcf_runtime/ci_github_actions.py": {
       "operation": "copy",
-      "sha256": "d471f951a04ca49f4bc011fee3f429a1774d10db03358b8cf55c88f8d1c72377"
+      "sha256": "800d80dae603891c40b7bbe8586dbb957f909573722c2fadf87e153364474ede"
     },
     "scripts/_bcf_runtime/ci_github_api.py": {
       "operation": "copy",
@@ -780,7 +780,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_compatibility.py": {
       "operation": "copy",
-      "sha256": "ce777f9749a86577c636834f70c221ed5ab35562450c3861bca4812959b09f89"
+      "sha256": "9c2d2b945d0628959f95930672c93a488467b6b5f47e3b27f62a75f0400aee8a"
+    },
+    "scripts/_bcf_runtime/ci_graph_compile_options.py": {
+      "operation": "copy",
+      "sha256": "9bf8127a79fcfb99c62eecf42aa35e03d759d4a18f07af4f556249669d847a40"
     },
     "scripts/_bcf_runtime/ci_graph_conditions.py": {
       "operation": "copy",
@@ -788,7 +792,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
-      "sha256": "4499faf04d6c4c8573aae825d157ae8290ae2bd7273563677dcc142f69a48cf2"
+      "sha256": "9728fb55d9c4f3afa0062ba56fea71aa0b748db40430010787573ac65f27c8f3"
     },
     "scripts/_bcf_runtime/ci_graph_controller_install.py": {
       "operation": "copy",
@@ -860,7 +864,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "dd3a9422473bed6128ed29565ed9d0d715162c0742de0dc0282f5ee1f4778e8f"
+      "sha256": "a6d2fe6cae0d11bceab6328080179de8cc5c2235e8e7e4b1c139bd38e634c101"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
@@ -1232,7 +1236,7 @@
     },
     "scripts/_bcf_runtime/governance_validation/environment_boundaries.py": {
       "operation": "copy",
-      "sha256": "7e1f3d102a92cd1e7dc3df89ca43c70d36af0a9dd32a69eb7f7b4776f231f3a1"
+      "sha256": "0d717611efc102e5a059c89dc87286c4a1bfc28bb8dafc4f24db269cf25320c5"
     },
     "scripts/_bcf_runtime/governance_validation/evidence_contracts.py": {
       "operation": "copy",
@@ -1484,7 +1488,7 @@
     },
     "scripts/_bcf_runtime/release_adopter_qualification.py": {
       "operation": "copy",
-      "sha256": "c9c3c52895fa48e9a57ae230a339356e8b3eba73d8240606bc9f69d821750513"
+      "sha256": "f086b8a5747da3a69ef2ed992531d3507c591b4a5e5db3c240f2e9e5252ec64f"
     },
     "scripts/_bcf_runtime/release_adopter_sources.py": {
       "operation": "copy",

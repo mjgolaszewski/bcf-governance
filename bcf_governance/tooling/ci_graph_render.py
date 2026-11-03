@@ -109,11 +109,11 @@ def _command_step(
     argv: list[str] = []
     environment = (
         dict(command["environment"])
-        if command.get("render_mode") == "shell-body"
+        if compiled.command_render_modes[command_id] == "shell-body"
         else {"BCF_PYTHON": SELECTED_PYTHON, **command["environment"]}
     )
     require_available_generated_slots(environment, "BCF_COMMAND_ARG_")
-    rendered_argv = [] if command.get("render_mode") == "shell-body" else command["argv"]
+    rendered_argv = [] if compiled.command_render_modes[command_id] == "shell-body" else command["argv"]
     for index, value in enumerate(rendered_argv):
         if value == "{python}":
             argv.append('"$BCF_PYTHON"')
@@ -123,8 +123,6 @@ def _command_step(
             argv.append('"${{ runner.temp }}/bcf-controller/bin/bcf"')
         elif value.startswith("{env:") and value.endswith("}"):
             env_name = value[5:-1]
-            if not env_name.replace("_", "A").isalnum() or env_name.upper() != env_name:
-                raise AssertionError(f"invalid governed environment placeholder {value}")
             argv.append(f'"${env_name}"')
         elif "${{" in value and "}}" in value:
             env_name = f"BCF_COMMAND_ARG_{index}"
@@ -141,7 +139,7 @@ def _command_step(
         "env": environment,
         "run": (
             command["argv"][2]
-            if command.get("render_mode") == "shell-body"
+            if compiled.command_render_modes[command_id] == "shell-body"
             else "set -euo pipefail\n" + " ".join(argv)
         ),
     }
@@ -174,6 +172,7 @@ def _component_steps(
     steps: list[dict[str, Any]] = []
     for component_id in component_ids:
         component = compiled.graph["step_components"][component_id]
+        options = compiled.component_render_options[component_id]
         if component["kind"] == "directory_setup":
             paths = " ".join(shlex.quote(value) for value in component["paths"])
             steps.append(
@@ -195,7 +194,7 @@ def _component_steps(
         if component["kind"] == "action":
             step: dict[str, Any] = {
                 "name": component["name"],
-                "uses": action_pin(component["action"], component.get("source_pin")),
+                "uses": options.action_uses,
             }
             if component["with"]:
                 step["with"] = copy.deepcopy(component["with"])
@@ -216,9 +215,9 @@ def _component_steps(
         if component["condition"] is not None:
             step["if"] = (
                 component["condition"] + "()"
-                if component.get("condition_style") == "bare"
+                if options.condition_style == "bare"
                 else compiled.graph["conditions"][component["condition"]]
-                if component.get("condition_style") == "named"
+                if options.condition_style == "named"
                 else _condition(compiled, component["condition"])
             )
         if component["kind"] == "action" and component["environment"]:
@@ -500,12 +499,13 @@ def _job(
     compiled: CompiledCIGraph, workflow: dict[str, Any], job: dict[str, Any]
 ) -> dict[str, Any]:
     executor = job["executor"]
+    options = compiled.job_render_options[(workflow["id"], job["id"])]
     result: dict[str, Any] = (
-        {} if job.get("omit_name") else {"name": job["display_name"]}
+        {} if options.omit_name else {"name": job["display_name"]}
     )
     if job["needs"]:
         result["needs"] = (
-            job["needs"][0] if job.get("needs_style") == "singleton-scalar" else job["needs"]
+            job["needs"][0] if options.singleton_needs else job["needs"]
         )
     condition = _condition(compiled, job["condition"])
     controller_condition = controller_requirement_condition(
@@ -519,7 +519,7 @@ def _job(
         condition = f"${{{{ ({base}) && ({guard}) }}}}"
     if condition is not None:
         result["if"] = condition
-    if job["permissions"] and job.get("permissions_style") not in {"inherit-workflow", "inherit-callee-bound"}:
+    if job["permissions"] and options.emit_permissions:
         result["permissions"] = copy.deepcopy(job["permissions"])
     if job["outputs"]:
         result["outputs"] = copy.deepcopy(job["outputs"])
@@ -571,7 +571,7 @@ def _job(
         }
     steps: list[dict[str, Any]] = []
     required_environment = _required_environment_step(compiled, workflow, job)
-    deferred_environment = job.get("required_environment_position") == "after-repo-preparation"
+    deferred_environment = options.deferred_environment
     if required_environment is not None and not deferred_environment:
         steps.append(required_environment)
     if job["checkout"]:

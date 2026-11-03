@@ -5,7 +5,11 @@ owner, typed port, aliases, adapter keys and the CLI-only compatibility route.
 """
 from __future__ import annotations
 
-CONSUMER_CAPABILITIES: dict[str, tuple[str, ...]] = {'break_glass_recovery._required': ('cli',),
+CONSUMER_CAPABILITIES: dict[str, tuple[str, ...]] = {'architecture_native_gate.compile_gate_ownership': ('comparison',),
+ 'architecture_release_context.decode_release_inputs': ('provider',),
+ 'architecture_release_context.released_native_membership': ('provider', 'scoped'),
+ 'release_adopter_qualification.run_candidate_qualification_train': ('scoped',),
+ 'break_glass_recovery._required': ('cli',),
  'ci_authority_preflight.verify_workflow_authority_preflight': ('provider', 'workflow'),
  'ci_commands.main': ('provider',),
  'ci_controller_builder.build': ('process',),

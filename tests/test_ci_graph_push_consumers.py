@@ -1,6 +1,6 @@
 """Ordinary split push CI cannot acquire exact-main authority."""
 import copy
-from types import SimpleNamespace
+from ci_graph_render_fixture_support import compiled_fixture as SimpleNamespace
 
 import pytest
 
@@ -71,7 +71,9 @@ def test_original_uses_only_preflight_is_an_explicit_projection(monkeypatch):
            "condition": "success", "controller_requirement": None, "permissions": {},
            "outputs": {}, "executor": {"kind": "reusable_workflow",
                                         "path": ".github/workflows/ci-preflight.yml", "inputs": {}}}
-    compiled = SimpleNamespace(trusted_controller_lifecycle=None)
-    assert _job(compiled, {}, job) == {"uses": "./.github/workflows/ci-preflight.yml"}
+    workflow = {"id": "fixture", "jobs": [job]}
+    compiled = SimpleNamespace(graph={"workflows": [workflow]}, trusted_controller_lifecycle=None)
+    assert _job(compiled, workflow, job) == {"uses": "./.github/workflows/ci-preflight.yml"}
     job.pop("omit_name")
-    assert _job(compiled, {}, job)["name"] == "unique-preflight-name"
+    compiled = SimpleNamespace(graph={"workflows": [workflow]}, trusted_controller_lifecycle=None)
+    assert _job(compiled, workflow, job)["name"] == "unique-preflight-name"

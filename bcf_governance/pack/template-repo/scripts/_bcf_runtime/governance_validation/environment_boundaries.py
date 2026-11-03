@@ -23,7 +23,7 @@ _PROTOCOL_PORTS = {
 _PORT_METHODS = {
     "provider": {"token", "api_url"},
     "workflow": {"actions", "repository", "repository_id", "run_id", "run_attempt", "job", "workflow_ref", "head_sha"},
-    "comparison": {"declared_bases", "provider_event", "event_name", "optional_event_name", "invocation_kind", "base_sha", "origin_base_sha", "caller_base_sha", "pr_base_sha", "optional_pr_base_sha", "validation_lane", "enforce_pr_changelog"},
+    "comparison": {"declared_bases", "provider_event", "event_name", "optional_event_name", "invocation_kind", "base_sha", "origin_base_sha", "caller_base_sha", "pr_base_sha", "optional_pr_base_sha", "validation_lane", "enforce_pr_changelog", "candidate_membership_inputs", "release_membership_inputs"},
     "evidence": {"actions", "producer_kind", "producer_id", "actor", "user", "durable_input_bindings"},
     "runtime": {"virtual_env", "portable_sdist_test"},
     "custody": {"controller_execution_required", "protection_inspect_required", "controller_custody_path", "execution_inputs"},

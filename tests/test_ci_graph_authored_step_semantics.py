@@ -4,7 +4,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
-from types import SimpleNamespace
+from ci_graph_render_fixture_support import compiled_fixture as SimpleNamespace
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -127,6 +127,7 @@ def test_shell_body_preserves_exact_authored_environment_and_argv_default():
     compiled = SimpleNamespace(commands={"scan": cmd})
     assert _command_step(compiled, "scan", name="Scan")["env"] == cmd["environment"]
     cmd.pop("render_mode")
+    compiled = SimpleNamespace(commands={"scan": cmd})
     assert "BCF_PYTHON" in _command_step(compiled, "scan", name="Scan")["env"]
 
 

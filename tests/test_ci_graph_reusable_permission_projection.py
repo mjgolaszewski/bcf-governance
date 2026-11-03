@@ -1,5 +1,5 @@
 """Omit redundant reusable permissions only when exact inheritance is safe."""
-from types import SimpleNamespace
+from ci_graph_render_fixture_support import compiled_fixture as SimpleNamespace
 
 import pytest
 

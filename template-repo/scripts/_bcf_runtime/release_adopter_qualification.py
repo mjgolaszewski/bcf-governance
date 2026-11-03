@@ -420,7 +420,17 @@ def _isolated_project_python(
         text = path.read_text(encoding="utf-8")
         if source_text in text:
             path.write_text(text.replace(source_text, destination_text), encoding="utf-8")
-        if re.search(r"/(?:docker|home)/", path.read_text(encoding="utf-8")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not re.search(r"/(?:docker|home)/", line):
+                continue
+            entry = Path(line)
+            if (
+                line == line.strip()
+                and entry.is_absolute()
+                and entry.resolve().is_relative_to(destination_root.resolve())
+                and entry.as_posix().startswith(destination_text + "/")
+            ):
+                continue
             raise ReleaseQualificationError(
                 "adopter environment retains an unrelated workspace path hook"
             )

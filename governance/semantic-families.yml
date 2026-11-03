@@ -28,9 +28,9 @@ families:
 - id: ci_graph_compilation
   significance: authoritative
   ownership_required: true
-  canonical_semantic_ids: [governance.ci-graph-compilation.v1]
-  material_selectors: {source_paths: [bcf_governance/tooling/ci_graph_contracts.py], symbols: [bcf_governance/tooling/ci_graph_contracts.py::CompiledCIGraph]}
-  responsibilities: {construction: [validate_ci_graph], decoding: [load_graph], transition: [], projection: [render_ci_graph]}
+  canonical_semantic_ids: [governance.ci-graph-compilation.v1, governance.ci-component-render-options.v1, governance.ci-job-render-options.v1]
+  material_selectors: {source_paths: [bcf_governance/tooling/ci_graph_contracts.py, bcf_governance/tooling/ci_graph_compile_options.py], symbols: [bcf_governance/tooling/ci_graph_contracts.py::CompiledCIGraph, bcf_governance/tooling/ci_graph_compile_options.py::CIComponentRenderOptions, bcf_governance/tooling/ci_graph_compile_options.py::CIJobRenderOptions]}
+  responsibilities: {construction: [validate_ci_graph, _compile_render_options], decoding: [load_graph], transition: [], projection: [render_ci_graph]}
 - id: public_contract_inventory
   significance: authoritative
   ownership_required: true

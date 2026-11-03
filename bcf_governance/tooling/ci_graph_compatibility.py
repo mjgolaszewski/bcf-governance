@@ -20,6 +20,12 @@ def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
     validate_deferred_step_failures(graph)
     validate_environment_output_bindings(graph)
     for command_id, command in graph["commands"].items():
+        if command.get("render_mode") != "shell-body":
+            for value in command["argv"]:
+                if value.startswith("{env:") and value.endswith("}"):
+                    env_name = value[5:-1]
+                    if not env_name.replace("_", "A").isalnum() or env_name.upper() != env_name:
+                        raise CIGraphError(f"invalid governed environment placeholder {value}")
         if command.get("render_mode") == "shell-body":
             argv = command["argv"]
             if len(argv) != 3 or argv[:2] != ["bash", "-c"]:
