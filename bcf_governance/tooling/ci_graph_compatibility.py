@@ -7,12 +7,14 @@ from .ci_github_actions import action_pin
 from .ci_graph_conditions import validate_authored_conditions
 from .ci_graph_environment_bindings import validate_environment_output_bindings
 from .ci_graph_environment_placement import validate_environment_placement
+from .ci_graph_permission_projection import validate_permission_projection
 from .ci_graph_errors import CIGraphError
 from .ci_graph_step_outcomes import validate_deferred_step_failures
 
 
 def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
     """Keep exact-shell, null-event and immutable-source projections bounded."""
+    validate_permission_projection(graph)
     validate_environment_placement(graph)
     validate_authored_conditions(graph)
     validate_deferred_step_failures(graph)
@@ -28,12 +30,6 @@ def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
                 raise CIGraphError(f"CI graph command {command_id} shell-body contains NUL")
     for workflow in graph["workflows"]:
         for job in workflow.get("jobs", []):
-            if "permissions_style" in job and (
-                job["permissions_style"] != "inherit-workflow"
-                or job["executor"]["kind"] != "reusable_workflow"
-                or job["permissions"] != workflow["permissions"]
-            ):
-                raise CIGraphError("inherited permissions require a reusable caller with the exact workflow permission bound")
             if "needs_style" in job and (
                 job["needs_style"] != "singleton-scalar" or len(job["needs"]) != 1
             ):

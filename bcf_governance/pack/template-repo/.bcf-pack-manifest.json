@@ -246,7 +246,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "40d0505342887372454ba06fd830a192eb59acaca9e3247d6f860b943438540f"
+      "sha256": "a2a89a3c642a525d4231f6087ae65acba21cf93318d5a689eda9cc7bc7eebe00"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -780,7 +780,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_compatibility.py": {
       "operation": "copy",
-      "sha256": "75d43b55f78f1db6226352c3e1de8dcaf888c80f1b85105ce5e58e8bcf5feb2c"
+      "sha256": "ce777f9749a86577c636834f70c221ed5ab35562450c3861bca4812959b09f89"
     },
     "scripts/_bcf_runtime/ci_graph_conditions.py": {
       "operation": "copy",
@@ -838,6 +838,10 @@
       "operation": "copy",
       "sha256": "6471beeed45211a28a4f1d82dcfad4e292036627847a73850b14dec912acabab"
     },
+    "scripts/_bcf_runtime/ci_graph_permission_projection.py": {
+      "operation": "copy",
+      "sha256": "47a262b34c82cc03f79465bc4f1b9d13319151d1326f7f23b61b684ac787b6e3"
+    },
     "scripts/_bcf_runtime/ci_graph_post_merge.py": {
       "operation": "copy",
       "sha256": "591a022a0c8199bf1b62b6d3df0e563cf32c4d41a18b2dc23f8de9712f7c2d3c"
@@ -856,7 +860,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "722e9d3ee17b85784481bb996d6c5f72d8f8ff04462557b50ff75ecb4f2165f8"
+      "sha256": "dd3a9422473bed6128ed29565ed9d0d715162c0742de0dc0282f5ee1f4778e8f"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",

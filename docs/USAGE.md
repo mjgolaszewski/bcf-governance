@@ -1073,3 +1073,15 @@ only the redundant YAML job permissions are omitted. A wider or narrower bound
 is refused rather than silently granting inherited permissions. Existing callers
 without this declaration retain explicit permission rendering. Combine with
 `omit_name: true` only when the original caller contract requires uses-only.
+
+For a read-only caller whose original workflow requires a wider read permission
+map, `permissions_style: inherit-callee-bound` is a separate opt-in. The caller
+must cover the nonempty native derived read-only bound; the called workflow
+must explicitly declare exactly that bound and contain only direct jobs whose
+permission map is empty (inherits the explicit callee map) or exactly that bound.
+Writes, implicit/empty callee bounds, nested reuse and different job bounds are
+refused. Strict `inherit-workflow` equality and default rendering stay unchanged.
+The graph keeps the derived execution bound and the containing workflow keeps
+its declared caller permissions. This reflects GitHub's supported downgrade-only
+reusable workflow permission semantics, not an authority bypass.
+Reference: https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations

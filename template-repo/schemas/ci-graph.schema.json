@@ -1606,7 +1606,10 @@
           "const": "singleton-scalar"
         },
         "permissions_style": {
-          "const": "inherit-workflow"
+          "enum": [
+            "inherit-workflow",
+            "inherit-callee-bound"
+          ]
         }
       }
     },

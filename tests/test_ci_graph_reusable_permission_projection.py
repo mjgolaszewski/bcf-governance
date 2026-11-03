@@ -71,3 +71,42 @@ def test_nonreusable_job_cannot_omit_permissions():
     caller["executor"] = {"kind": "component_sequence", "components": []}
     with pytest.raises(CIGraphError):
         validate_compatibility_declarations(graph)
+
+
+@pytest.mark.parametrize("filename", ["gitleaks-secret-scan.yml", "sbom-vuln-scan.yml"])
+def test_original_readonly_caller_superset_keeps_explicit_callee_bound(monkeypatch, filename):
+    graph = graph_fixture()
+    graph["workflows"][0]["path"] = ".github/workflows/" + filename
+    graph["workflows"][0]["permissions"] = {"contents": "read", "actions": "read"}
+    graph["workflows"][0]["jobs"][0]["permissions_style"] = "inherit-callee-bound"
+    project_reusable_workflow_permissions(graph)
+    validate_compatibility_declarations(graph)
+    assert rendered(graph, monkeypatch) == {"uses": "./.github/workflows/ci-preflight.yml"}
+    assert graph["workflows"][0]["jobs"][0]["permissions"] == {"contents": "read"}
+    assert graph["workflows"][0]["permissions"] == {"contents": "read", "actions": "read"}
+    assert graph["workflows"][1]["permissions"] == {"contents": "read"}
+
+
+@pytest.mark.parametrize("mutation", [
+    lambda g: g["workflows"][0]["permissions"].update(actions="write"),
+    lambda g: g["workflows"][0]["permissions"].update(contents="none"),
+    lambda g: g["workflows"][1].update(permissions={}),
+    lambda g: g["workflows"][1]["jobs"][0].update(permissions={"contents": "write"}),
+    lambda g: g["workflows"][1]["jobs"][0].update(permissions={"contents": "read", "actions": "read"}),
+    lambda g: g["workflows"][1]["jobs"][0].update(executor={"kind": "reusable_workflow", "path": ".github/workflows/ci-preflight.yml"}),
+    lambda g: g["workflows"][1].update(jobs=[]),
+    lambda g: g["workflows"][0]["jobs"][0].update(permissions={}),
+])
+def test_callee_bound_cannot_hide_writes_missing_limits_or_nested_dispatch(mutation):
+    graph = graph_fixture()
+    graph["workflows"][0]["permissions"] = {"contents": "read", "actions": "read"}
+    graph["workflows"][0]["jobs"][0]["permissions_style"] = "inherit-callee-bound"
+    project_reusable_workflow_permissions(graph)
+    mutation(graph)
+    with pytest.raises(CIGraphError):
+        validate_compatibility_declarations(graph)
+
+
+def test_absent_opt_in_does_not_require_unrelated_workflow_path():
+    from bcf_governance.tooling.ci_graph_permission_projection import validate_permission_projection
+    validate_permission_projection({"workflows": [{"jobs": []}]})
