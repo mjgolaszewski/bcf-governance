@@ -6,12 +6,14 @@ from typing import Any
 from .ci_github_actions import action_pin
 from .ci_graph_conditions import validate_authored_conditions
 from .ci_graph_environment_bindings import validate_environment_output_bindings
+from .ci_graph_environment_placement import validate_environment_placement
 from .ci_graph_errors import CIGraphError
 from .ci_graph_step_outcomes import validate_deferred_step_failures
 
 
 def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
     """Keep exact-shell, null-event and immutable-source projections bounded."""
+    validate_environment_placement(graph)
     validate_authored_conditions(graph)
     validate_deferred_step_failures(graph)
     validate_environment_output_bindings(graph)
@@ -25,6 +27,11 @@ def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
             if "\x00" in argv[2]:
                 raise CIGraphError(f"CI graph command {command_id} shell-body contains NUL")
     for workflow in graph["workflows"]:
+        for job in workflow.get("jobs", []):
+            if "needs_style" in job and (
+                job["needs_style"] != "singleton-scalar" or len(job["needs"]) != 1
+            ):
+                raise CIGraphError("singleton-scalar needs style requires exactly one declared need")
         for event in workflow["events"]:
             if "empty_configuration" in event and (
                 event["type"] != "workflow_call"

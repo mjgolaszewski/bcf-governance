@@ -1043,3 +1043,24 @@ and pack controls, new outcome/environment refusals, and the unchanged adopter
 workflow contract suite before private artifact and installed-adopter acceptance.
 
 Deferred command guards accept only their exact outcome comparison, optionally prefixed by always(), or the original nightly/weekly mutation missing-summary comparison with its matching literal summary path. Arbitrary masking conjunctions and reserved condition-name shadowing are refused. Guard styles must preserve the declared expression.
+
+For an explicit job requiring the repository's original cleanup ordering, opt in
+to `required_environment_position: after-repo-preparation`. The first three
+components must be unconditional credential-free checkout in the repository
+root, exact `bash scripts/tools/ci_cleanup.sh start`, then exact
+`mkdir -p .artifacts/tmp`; no inherited generated checkout/components or consumed
+artifacts are allowed. Validation remains before every subsequent work component.
+Without this declaration the existing environment-first default is unchanged.
+For the BDMCP adopter retain all artifact declarations and upload component
+retentions at 14 days or less, including framework and governance evidence.
+Use declared gate_shard/canonical capture and terminal_truth ownership for
+explicit cleanup envelopes; preserve gate-once, fan-in and terminal truth rules.
+
+The preparation checkout permits only `persist-credentials: false`, optional
+`ref: '${{ github.sha }}'`, and optional integer `fetch-depth: 0`. Explicit
+repository, token, SSH, submodule, path or other checkout inputs are refused.
+
+To preserve an original singleton scalar YAML dependency, declare job
+`needs_style: singleton-scalar` with exactly one `needs` array member. The graph
+keeps its typed array; rendering emits the single scalar. Zero or multiple needs
+are refused for this opt-in. Absent this field, existing list rendering remains.

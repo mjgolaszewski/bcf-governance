@@ -504,7 +504,9 @@ def _job(
         {} if job.get("omit_name") else {"name": job["display_name"]}
     )
     if job["needs"]:
-        result["needs"] = job["needs"]
+        result["needs"] = (
+            job["needs"][0] if job.get("needs_style") == "singleton-scalar" else job["needs"]
+        )
     condition = _condition(compiled, job["condition"])
     controller_condition = controller_requirement_condition(
         compiled.trusted_controller_lifecycle, job["controller_requirement"]
@@ -569,7 +571,8 @@ def _job(
         }
     steps: list[dict[str, Any]] = []
     required_environment = _required_environment_step(compiled, workflow, job)
-    if required_environment is not None:
+    deferred_environment = job.get("required_environment_position") == "after-repo-preparation"
+    if required_environment is not None and not deferred_environment:
         steps.append(required_environment)
     if job["checkout"]:
         checkout_inputs: dict[str, Any] = {"persist-credentials": False}
@@ -640,6 +643,8 @@ def _job(
         ]
         insertion = checkout_positions[-1] + 1 if checkout_positions else 0
         executor_steps[insertion:insertion] = bound_downloads
+    if required_environment is not None and deferred_environment:
+        executor_steps.insert(3, required_environment)
     steps.extend(executor_steps)
     if not explicit_components:
         steps.extend(_prepare_durable_steps(compiled, job))
