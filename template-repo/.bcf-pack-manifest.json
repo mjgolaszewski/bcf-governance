@@ -246,7 +246,7 @@
     },
     "schemas/ci-graph.schema.json": {
       "operation": "copy",
-      "sha256": "991d88c8810fa7d5649f121af3f76a541db7193893367bf116385c1b40ea11c5"
+      "sha256": "8d96c886b83aa5c17e2469d78759b3c5288930c1ef427b3f025bcc43df9b9e4f"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -780,7 +780,11 @@
     },
     "scripts/_bcf_runtime/ci_graph_compatibility.py": {
       "operation": "copy",
-      "sha256": "dfae2af9ae05ece1c05dd54f3dae5282f03cd34af1e9f8fa3f39524c4d8f4c66"
+      "sha256": "d853d819e14195e03b0ce9313d45f4c99842c498bd5ae281d20c73831c0e7e7d"
+    },
+    "scripts/_bcf_runtime/ci_graph_conditions.py": {
+      "operation": "copy",
+      "sha256": "2ec3078e2b9a4fa965b14c9c1852844fe3d2b5973f257073d5ee41ed94f2ea77"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
@@ -809,6 +813,10 @@
     "scripts/_bcf_runtime/ci_graph_edges.py": {
       "operation": "copy",
       "sha256": "42a09391105f8f09785f9dbbe46bc8339b53464ace244070172a84b8b67e6d95"
+    },
+    "scripts/_bcf_runtime/ci_graph_environment_bindings.py": {
+      "operation": "copy",
+      "sha256": "da766beb478d224a2d8e24051e33f11becdf1b582bf6537d0adad027c4cb873e"
     },
     "scripts/_bcf_runtime/ci_graph_errors.py": {
       "operation": "copy",
@@ -844,7 +852,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_render.py": {
       "operation": "copy",
-      "sha256": "b48643015df607d9e8db370db0a15ed10fa80cca21ec163cadba64b8ce5d1909"
+      "sha256": "ab543b666f2f74f99d896f1dccc087bdd7cd4f67746be99667bb4723584369db"
     },
     "scripts/_bcf_runtime/ci_graph_reusable_artifacts.py": {
       "operation": "copy",
@@ -861,6 +869,10 @@
     "scripts/_bcf_runtime/ci_graph_shell_projection.py": {
       "operation": "copy",
       "sha256": "4014a0bc9cb16cadb141d77bcbc3c4a7cbab92fcd8e2f587bbbbc4eabaa05c1a"
+    },
+    "scripts/_bcf_runtime/ci_graph_step_outcomes.py": {
+      "operation": "copy",
+      "sha256": "5eab3b4730aa3bc108771c508a56227d119fa80a2cfe5cbb8679f74d70621ba3"
     },
     "scripts/_bcf_runtime/ci_graph_storage.py": {
       "operation": "copy",

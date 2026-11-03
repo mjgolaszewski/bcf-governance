@@ -4,11 +4,17 @@ from __future__ import annotations
 from typing import Any
 
 from .ci_github_actions import action_pin
+from .ci_graph_conditions import validate_authored_conditions
+from .ci_graph_environment_bindings import validate_environment_output_bindings
 from .ci_graph_errors import CIGraphError
+from .ci_graph_step_outcomes import validate_deferred_step_failures
 
 
 def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
     """Keep exact-shell, null-event and immutable-source projections bounded."""
+    validate_authored_conditions(graph)
+    validate_deferred_step_failures(graph)
+    validate_environment_output_bindings(graph)
     for command_id, command in graph["commands"].items():
         if command.get("render_mode") == "shell-body":
             argv = command["argv"]
@@ -31,6 +37,11 @@ def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
             "always", "failure", "cancelled"
         }:
             raise CIGraphError("bare condition style requires a built-in status condition")
+        if component.get("condition_style") == "named" and (
+            condition not in graph["conditions"]
+            or condition in {"success", "always", "failure", "cancelled"}
+        ):
+            raise CIGraphError("named condition style requires a declared graph condition")
         if component["kind"] == "action":
             try:
                 action_pin(component["action"], component.get("source_pin"))

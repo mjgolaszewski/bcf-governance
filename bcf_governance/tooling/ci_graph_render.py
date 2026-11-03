@@ -107,10 +107,11 @@ def _command_step(
 ) -> dict[str, Any]:
     command = compiled.commands[command_id]
     argv: list[str] = []
-    environment = {
-        "BCF_PYTHON": SELECTED_PYTHON,
-        **command["environment"],
-    }
+    environment = (
+        dict(command["environment"])
+        if command.get("render_mode") == "shell-body"
+        else {"BCF_PYTHON": SELECTED_PYTHON, **command["environment"]}
+    )
     require_available_generated_slots(environment, "BCF_COMMAND_ARG_")
     rendered_argv = [] if command.get("render_mode") == "shell-body" else command["argv"]
     for index, value in enumerate(rendered_argv):
@@ -210,10 +211,14 @@ def _component_steps(
                 step["env"].update(component["environment"])
         if component["id"] is not None:
             step["id"] = component["id"]
+        if "continue_on_error" in component:
+            step["continue-on-error"] = component["continue_on_error"]
         if component["condition"] is not None:
             step["if"] = (
                 component["condition"] + "()"
                 if component.get("condition_style") == "bare"
+                else compiled.graph["conditions"][component["condition"]]
+                if component.get("condition_style") == "named"
                 else _condition(compiled, component["condition"])
             )
         if component["kind"] == "action" and component["environment"]:
@@ -557,6 +562,11 @@ def _job(
         )
     if "protected_environment" in job:
         result["environment"] = job["protected_environment"]
+    if "protected_environment_from" in job:
+        binding = job["protected_environment_from"]
+        result["environment"] = {
+            "name": "${{ needs." + binding["job"] + ".outputs." + binding["output"] + " }}"
+        }
     steps: list[dict[str, Any]] = []
     required_environment = _required_environment_step(compiled, workflow, job)
     if required_environment is not None:

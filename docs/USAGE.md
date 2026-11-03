@@ -1004,3 +1004,42 @@ After maintained tooling or schema changes, run the native pack-manifest builder
 and its check mode before packaging. This projects tooling and schemas into both
 standalone and packaged templates. Qualify an installed adopter from those actual
 artifacts; source-only renderer checks do not prove installed compatibility.
+
+
+### Authored scan outcomes and verified environment names
+
+A command component may opt into `continue_on_error: true` to retain native
+GitHub step outcome semantics while publishing scan reports. It must have a
+step ID and name a later `failure_guard` component in the same job. The guard is
+a noncontinued command that exits 1 and checks that exact step outcome. This
+projection is unavailable to declared governance, authority, receipt and truth
+execution. Existing scheduled mutation summary checks remain separate authored
+commands; an infrastructure-summary policy is not replaced with unconditional
+failure. A false flag is literal false; omission preserves the old default.
+
+For original literal conditions, `condition_style: named` emits the value of an
+already declared `conditions` entry without expression delimiters. It does not
+accept inline expressions. The closed grammar includes literal repository-local
+`hashFiles('path-or-glob') == ''` and `!= ''`, status functions and existing simple
+comparisons. Absolute/traversing paths, dynamic function arguments and arbitrary
+functions are rejected. Referenced step outcomes/outputs must belong to earlier
+steps in the same job. Shell-body commands preserve their authored environment
+without an unused automatic BCF_PYTHON variable; ordinary argv rendering keeps
+its prior environment and strict prefix.
+
+A candidate job may use `protected_environment_from: {job: verifier, output: environment}`
+to emit `environment: {name: '${{ needs.verifier.outputs.environment }}'}`. The
+verifier must be a direct successful dependency with a declared output from an
+unskipped, noncontinued command step. Both jobs remain candidate/read-only; a
+static protected environment cannot be combined with this binding. This is a
+closed output reference, not an arbitrary environment expression or a claim of
+remote environment existence. Preserve and qualify the actual verifier command,
+its existing metadata-only authorization and fail-closed behavior.
+
+Apply these maintained changes to a fresh clone of the accepted source candidate,
+then use the same native pack projection/check owner to regenerate both runtime
+mirrors, all schema copies and pack manifests. Re-run the original graph/authority
+and pack controls, new outcome/environment refusals, and the unchanged adopter
+workflow contract suite before private artifact and installed-adopter acceptance.
+
+Deferred command guards accept only their exact outcome comparison, optionally prefixed by always(), or the original nightly/weekly mutation missing-summary comparison with its matching literal summary path. Arbitrary masking conjunctions and reserved condition-name shadowing are refused. Guard styles must preserve the declared expression.
