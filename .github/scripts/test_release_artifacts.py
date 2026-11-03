@@ -29,6 +29,7 @@ from bcf_governance.tooling.release_runtime_verification import (
 )
 from bcf_governance.tooling.ci_github_bootstrap import verify_controller_inventory
 from release_source_inventory import tracked_source_inventory, validate_sdist_source_inventory
+from historical_source_fixture import restore as restore_historical_source_fixture
 
 
 REQUIRED_SDIST_PATHS = (
@@ -362,6 +363,7 @@ def verify_sdist(sdist: Path, temporary: Path) -> None:
         raise RuntimeError("sdist must contain exactly one source root")
     validate_sdist_payload(roots[0])
     initialize_source_custody(roots[0])
+    restore_historical_source_fixture(roots[0], temporary / "historical-source-fixture-validation")
     python, env = venv_environment(temporary / "sdist-venv")
     env[SDIST_PORTABLE_TEST_ENV] = "1"
     run(str(python), "-m", "pip", "install", f"{roots[0]}[dev]", env=env)

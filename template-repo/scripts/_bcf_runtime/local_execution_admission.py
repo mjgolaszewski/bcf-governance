@@ -6,6 +6,7 @@ import fcntl
 import json
 import os
 import re
+import stat
 import subprocess
 import sys
 from collections.abc import Iterator, Mapping
@@ -322,15 +323,21 @@ def selected_toolchain_environment(
         yield
 
 
+def _gate_leaf_identity(value: os.stat_result) -> tuple[int, int]:
+    if (not stat.S_ISREG(value.st_mode) or value.st_uid != os.getuid()
+            or value.st_nlink != 1 or value.st_size > 4096):
+        raise LocalExecutionAdmissionError("local gate lock leaf is unsafe")
+    return value.st_dev, value.st_ino
+
+
 @contextmanager
 def local_gate_lease(
     execution_id: str,
     *,
     custody_settings: CustodySettings | None=None,
 ) -> Iterator[None]:
-    """Own one host-local expensive gate slot or return typed busy/deferred."""
+    """Own one safe host-local gate inode or return typed busy/deferred."""
     custody_settings = _default_custody_settings() if custody_settings is None else custody_settings
-
     if re.fullmatch(r"[a-f0-9]{40}", execution_id) is None:
         raise LocalExecutionAdmissionError("local gate execution identity is invalid")
     try:
@@ -339,16 +346,49 @@ def local_gate_lease(
         raise LocalExecutionAdmissionError(str(exc)) from exc
     suffix = f"-{namespace}" if namespace is not None else ""
     path = Path(f"/tmp/bcf-local-gate-{os.getuid()}{suffix}.lock")
-    descriptor = path.open("a+", encoding="utf-8")
+    try:
+        try:
+            before = _gate_leaf_identity(path.lstat())
+        except FileNotFoundError:
+            before = None
+        flags = os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK
+        if before is None:
+            flags |= os.O_CREAT | os.O_EXCL
+        raw = os.open(path, flags, 0o600)
+    except OSError as exc:
+        raise LocalExecutionAdmissionError("local gate lock leaf is unsafe") from exc
+    try:
+        opened = _gate_leaf_identity(os.fstat(raw))
+        if (before is not None and opened != before) or _gate_leaf_identity(path.lstat()) != opened:
+            raise LocalExecutionAdmissionError("local gate lock inode changed before admission")
+        descriptor = os.fdopen(raw, "r+", encoding="utf-8")
+    except OSError as exc:
+        os.close(raw)
+        raise LocalExecutionAdmissionError("local gate lock inode changed before admission") from exc
+    except BaseException:
+        os.close(raw)
+        raise
+    acquired = False
     try:
         try:
             fcntl.flock(descriptor.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            acquired = True
         except BlockingIOError as exc:
             descriptor.seek(0)
-            owner = descriptor.read().strip() or "unknown"
+            try:
+                owner = descriptor.read(4096).strip() or "unknown"
+            except UnicodeError:
+                owner = "unreadable"
             raise LocalExecutionAdmissionError(
                 f"local_execution_busy_deferred: active={owner}"
             ) from exc
+        try:
+            unchanged = (_gate_leaf_identity(os.fstat(descriptor.fileno())) == opened
+                         and _gate_leaf_identity(path.lstat()) == opened)
+        except OSError as exc:
+            raise LocalExecutionAdmissionError("local gate lock inode changed before write") from exc
+        if not unchanged:
+            raise LocalExecutionAdmissionError("local gate lock inode changed before write")
         descriptor.seek(0)
         descriptor.truncate()
         descriptor.write(execution_id + "\n")
@@ -356,6 +396,7 @@ def local_gate_lease(
         yield
     finally:
         try:
-            fcntl.flock(descriptor.fileno(), fcntl.LOCK_UN)
+            if acquired:
+                fcntl.flock(descriptor.fileno(), fcntl.LOCK_UN)
         finally:
             descriptor.close()

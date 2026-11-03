@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "0f31f4a23bcbb531dd4811c971250b0c8f9fd6979761dbe21b78a76f4a25537c"
+      "sha256": "8a42e626b39aa791d02c4ec3de48ecc86f1783b048ab3e831a7a9af0b18b86f5"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -1368,7 +1368,7 @@
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "dbf73146b75c37ec64926b1ac86dabe1ebb2eb36e0b6d5f3d8c69d8eb2ff2f5b"
+      "sha256": "50fde0b068483c068be6b96d1db69d59c722f749e72fa7bd5b49336bb4cb1487"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
