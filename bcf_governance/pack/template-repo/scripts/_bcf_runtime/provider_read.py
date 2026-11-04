@@ -92,6 +92,15 @@ def open_provider_get(
         try:
             response = opener(request, timeout=timeout)
         except HTTPError as exc:
+            # The opener transferred a response-bearing exception, not a
+            # successful response context. Retain status/headers for the
+            # existing decision, but retire its body before any continuation.
+            try:
+                exc.close()
+            except Exception as cleanup_error:
+                failure = ProviderReadError("provider GET error response cleanup failed")
+                failure.add_note(f"cleanup cause: {type(cleanup_error).__name__}")
+                raise failure from exc
             if exc.code not in RETRYABLE_HTTP:
                 if action("terminal") != "stop":
                     raise AssertionError("terminal provider read selected continuation")
