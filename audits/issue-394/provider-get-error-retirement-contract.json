@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "issue": 394,
+  "phase": "P32",
+  "workitem": "P32-P0-05",
+  "status": "authored_contract_pending_commit",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "query",
+  "canonical_owner": "bcf_governance/tooling/provider_read.py::open_provider_get",
+  "targets": [
+    "bcf_governance/tooling/provider_read.py",
+    "tests/test_provider_read.py",
+    "tests/test_provider_response_deadline.py"
+  ],
+  "problem": "An opener-raised HTTPError owns a response outside the successful response context; the current retry owner does not explicitly retire it before continuation. Source observation alone does not certify a runtime leak.",
+  "required_behavior": [
+    "Close opener-raised HTTPError before decision, Retry-After parsing, sleep, redispatch or terminal return/raise.",
+    "Preserve unchanged request object, GET-only admission, retry taxonomy and existing response status/headers.",
+    "Successful responses remain caller-owned and are returned without premature close.",
+    "Cleanup failure raises typed ProviderReadError, chains the original HTTPError and records the secondary cleanup exception type; no sleep or redispatch.",
+    "Cancellation during cleanup or backoff propagates unchanged and never permits another dispatch; interrupted cleanup is not successful retirement.",
+    "Do not read discarded error bodies, retry mutations, change public CLI/status identity or infer authority from observations."
+  ],
+  "cause_specific_controls": [
+    "429 and503: actual response body closes before sleeper and same-object second dispatch.",
+    "401 and404: original HTTPError object/status preserved after body close.",
+    "Invalid Retry-After: body closes before typed parsing rejection; zero continuation.",
+    "Exhaustion: all three actual error bodies close; exact final HTTPError remains chained cause.",
+    "Close OSError: one dispatch, no sleep, typed cleanup block with original HTTPError and secondary type.",
+    "Interrupted backoff: body already closed, same cancellation propagated, one dispatch.",
+    "Interrupted close: same cancellation propagated with HTTPError context, one dispatch; no successful cleanup claim.",
+    "Actual urllib HTTPError.fp is closed before sleep and second same-object request, for429/503 overHTTP and verifiedTLS using existing fixture; four authored cases."
+  ],
+  "implementation_sequence": [
+    "Commit this bounded contract and failing behavioral controls before production delta.",
+    "Apply retirement only in existing GET owner.",
+    "Execute affected positive/cause-specific controls and required governance/architecture/semantic/package checks under allocated original workspace fence.",
+    "Qualify affected installed and template consumers before integration; do not promote authored completion into computed closure."
+  ],
+  "not_qualified_by_this_slice": [
+    "Total close duration and DNS/TLS/header/setup or aggregate operation deadline.",
+    "Direct POST/PATCH/DELETE or protection-inspection error-response ownership.",
+    "Independent transitive/dynamic consumer population completeness.",
+    "Real transport, source/wheel/sdist/template/installed-runtime parity.",
+    "Matched performance targets, P32 closure or later phase activation."
+  ],
+  "forbidden_surfaces": [
+    "Maintained/default main machinery or predecessor bytes.",
+    "Other project working trees or maintained adopter installations.",
+    "Provider writes, submission, release custody or status authority.",
+    "New transport broker, evaluator, registry or receipt family."
+  ],
+  "runtime_execution_count": 0,
+  "acceptance_advance": false
+}

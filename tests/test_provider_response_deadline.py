@@ -20,7 +20,8 @@ def _deadline(response, timeout):
 
 
 @contextmanager
-def _server(mode, accepted=None, tls_context=None):
+def _server(mode, accepted=None, tls_context=None, response_codes=None):
+    codes = iter(response_codes) if response_codes is not None else None
     class Handler(BaseHTTPRequestHandler):
         def log_message(self, *_args):
             pass
@@ -30,7 +31,10 @@ def _server(mode, accepted=None, tls_context=None):
             self.do_GET()
 
         def do_GET(self):
-            self.send_response(200)
+            code = next(codes) if codes is not None else 200
+            self.send_response(code)
+            if code in {429, 503}:
+                self.send_header("Retry-After", "0")
             if mode in {"chunk_header", "chunk_trailer"}:
                 self.send_header("Transfer-Encoding", "chunked")
             else:
@@ -243,3 +247,40 @@ def test_all_original_response_consumers_have_deadline_scopes():
                     observed[path.relative_to(root).as_posix()] += len(reads)
     assert observed == expected
     assert sum(observed.values()) == 7
+
+
+@pytest.mark.parametrize("code", [429, 503])
+@pytest.mark.parametrize("tls", [False, True])
+def test_real_error_response_is_closed_before_retry_dispatch(code, tls, verified_tls_contexts):
+    from urllib.error import HTTPError
+    from urllib.request import Request
+
+    server_context, client_context = verified_tls_contexts
+    errors = []
+    requests = []
+    delays = []
+
+    def opener(request, *, timeout):
+        if errors:
+            assert errors[-1].fp.closed
+        requests.append(request)
+        try:
+            return urlopen(request, timeout=timeout,
+                           context=client_context if tls else None)
+        except HTTPError as failure:
+            errors.append(failure)
+            raise
+
+    def sleeper(delay):
+        assert errors[-1].fp.closed
+        delays.append(delay)
+
+    with _server("body", tls_context=server_context if tls else None,
+                 response_codes=[code, 200]) as url:
+        request = Request(url, method="GET")
+        with provider_read.open_provider_get(request, timeout=1, opener=opener,
+                                             sleeper=sleeper) as response:
+            assert response.read() == b"a" * 40
+    assert len(errors) == 1 and errors[0].fp.closed
+    assert requests == [request, request] and requests[0] is requests[1]
+    assert delays == [0.0]
