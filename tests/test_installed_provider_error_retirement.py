@@ -2,9 +2,11 @@
 import json
 import subprocess
 
-from test_installed_evidence_storage import (
-    _environment, _record, installed_consumer, isolated_python,
-)
+import test_installed_evidence_storage as _fixture_owner
+from test_installed_evidence_storage import _environment, _record
+
+installed_consumer = _fixture_owner.installed_consumer
+isolated_python = _fixture_owner.isolated_python
 
 
 PROBE = r'''import importlib.util, json, sys, threading
