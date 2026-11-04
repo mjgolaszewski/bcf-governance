@@ -395,6 +395,7 @@ workitems:
     - tests/test_installed_provider_response.py
     - audits/issue-394/native-lease-custody-contract.yml
     - audits/issue-394/native-lease-custody-characterization.json
+    - "audits/issue-394/provider-error-retirement-baseline.yml"
   foundation.baseline:
     summary: Inventory derivable decisions and matched pipeline observations then freeze reviewed targets and budgets
     status: IN_PROGRESS

@@ -1,0 +1,77 @@
+document:
+  kind: audit_report
+  path: audits/issue-394/provider-error-retirement-baseline.yml
+  status: observed_negative_baseline
+  generated_at_utc: '2026-11-04T01:18:08.845861+00:00'
+authority: false
+workitem: P32-P0-05
+subject:
+  authority: false
+  exact_three_path_change: true
+  head: f63431a2f91281f0df5275b2b1dc731949b30159
+  new_reachable_object_ids:
+  - f63431a2f91281f0df5275b2b1dc731949b30159
+  - 108b0543ea7ebff6f9ecc869ab9fe4a1b563d5d5
+  - e0689e8c950684afe4a8a2eb8590943f45386a15
+  - ca11c7179a8548bb183015470f56ec7f9c457185
+  - f788a71d28eb045e91dd40c346781e0d222881a3
+  - 6ec0facfbaf41e25ba8f78eef7dee5fc9a00964e
+  - 3690780eda8642948bdd20ac1c3f2d3dea011715
+  - 33a5ce86fac8be5fb66656bfae96e009b4dcb12e
+  parent: 4a70b41c9ba190d853d3cc46c6ef2db7ef486431
+  production_unchanged: true
+  tree: 108b0543ea7ebff6f9ecc869ab9fe4a1b563d5d5
+scope: Contract/tests-only negative GET error-response retirement baseline; production unchanged
+native_pytest:
+  returncode: 1
+  cases: 13
+  failures: 13
+  errors: 0
+  skips: 0
+  exact_typed_parameter_inventory_junit_join: true
+native_capture:
+  expected_negative_wrapper_returncode: 0
+  resource_and_source_git_preservation_accepted: true
+evidence_sha256:
+  collected-cases.json: 797ab6d1bc656fdcbedc8671280c43564eedff1f47e40c4f36009ff750d07671
+  baseline.xml: 09e3f45521292a19ad9690c1431a7cc41a0c1ee6c3dde2dfe04d1a27bc9f1a47
+  baseline-command.json: 44f6b3ae521f3fa47a885ffcee8dde0a32306a0e0eae43a11aa3c4d5b5324184
+  source-origins.json: 8f34b25784bdecfd67a28b4b0aa749abd30f5b2399298a83d95e8a53ec4d0fdc
+  committed-subject.json: d2c9efc5b41ddd384c1af1f54d8c2305e84e2bf736fb8fe11f7f5880a3d42e8f
+independent_cause_review_sha256: 449aa235bbd64627f2dc41fde666509869419971e878e350938456badce5b473
+observations:
+- test: tests.test_provider_read::test_provider_error_body_closes_before_retry_sleep_and_dispatch[429]
+  cause: Owned error body remains open at the declared continuation or terminal boundary
+- test: tests.test_provider_read::test_provider_error_body_closes_before_retry_sleep_and_dispatch[503]
+  cause: Owned error body remains open at the declared continuation or terminal boundary
+- test: tests.test_provider_read::test_provider_terminal_error_body_closed_with_original_status_and_headers[401]
+  cause: Owned error body remains open at the declared continuation or terminal boundary
+- test: tests.test_provider_read::test_provider_terminal_error_body_closed_with_original_status_and_headers[404]
+  cause: Owned error body remains open at the declared continuation or terminal boundary
+- test: tests.test_provider_read::test_provider_invalid_retry_after_closes_body_without_continuation
+  cause: Owned error body remains open at the declared continuation or terminal boundary
+- test: tests.test_provider_read::test_provider_exhausted_errors_close_each_body_before_terminal
+  cause: Earlier error body remains open at attempted next dispatch; final exhaustion path not yet reached
+- test: tests.test_provider_read::test_provider_error_close_failure_blocks_retry_and_preserves_first_cause
+  cause: 'Cleanup was never invoked; unsafe retry sleeper reached: failed cleanup slept'
+- test: tests.test_provider_read::test_provider_retry_sleep_interruption_retains_retired_error_response
+  cause: Error body remains open at sleeper entry; cancellation assertion not yet reached
+- test: tests.test_provider_read::test_provider_error_response_close_interruption_never_continues
+  cause: 'Cleanup cancellation was never invoked; unsafe retry sleeper reached: cancelled close slept'
+- test: tests.test_provider_response_deadline::test_real_error_response_is_closed_before_retry_dispatch[False-429]
+  cause: Real HTTP/TLS HTTPError.fp remains open at retry sleeper before subsequent dispatch
+- test: tests.test_provider_response_deadline::test_real_error_response_is_closed_before_retry_dispatch[False-503]
+  cause: Real HTTP/TLS HTTPError.fp remains open at retry sleeper before subsequent dispatch
+- test: tests.test_provider_response_deadline::test_real_error_response_is_closed_before_retry_dispatch[True-429]
+  cause: Real HTTP/TLS HTTPError.fp remains open at retry sleeper before subsequent dispatch
+- test: tests.test_provider_response_deadline::test_real_error_response_is_closed_before_retry_dispatch[True-503]
+  cause: Real HTTP/TLS HTTPError.fp remains open at retry sleeper before subsequent dispatch
+limitations:
+- Exhaustion and sleeper-interruption controls stop at an earlier unclosed-body invariant; later terminal/cancellation
+  assertions were not reached.
+- No production correction, installed2.5, matched performance, phase/whole requirement or release custody
+  credit.
+- Machine-local raw execution/custody details remain outside distributable governed artifacts.
+next_action: Separately scoped production correction with canonical/private/template runtime parity, full
+  affected positives and installed error-retirement checks.
+acceptance_advance: false
