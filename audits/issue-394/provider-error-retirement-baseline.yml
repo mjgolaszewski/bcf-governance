@@ -72,9 +72,8 @@ limitations:
 - No production correction, installed2.5, matched performance, phase/whole requirement or release custody
   credit.
 - Machine-local raw execution/custody details remain outside distributable governed artifacts.
-next_action: Repair compact summaries within unchanged budgets; qualify exact current Source through a
-  separate finite continuation and commit already-tested production postimages. Retain P32active/all82whole
-  open/38slices and unapproved performance targets.
+next_action: Record this bounded accepted continuation in canonical ledgers, then finish P32 lifecycle/deadline/baseline
+  obligations before canonical derivation can activate P33. Preserve82whole/38slices and unapproved targets.
 acceptance_advance: false
 retained_current_repo_state_summaries:
 - source_commit: 7e5e88b0d265b679c4107d0475405c7c0eb7d7af
@@ -128,3 +127,74 @@ correction_attempt:
   remaining:
   - Governance/architecture, semantic, lint and package gates on exact completed Source
   - Full deadline population/distribution/adopter assurance, approved matched targets and immutable custody
+post_budget_continuation:
+  authority: false
+  status: partial_fixture_lint_block_recovered_negative
+  governed_records_commit: be6f78ca8beeb09cd39d0d84f4d1291818365691
+  parent: 7e5e88b0d265b679c4107d0475405c7c0eb7d7af
+  native_cases:
+    total: 86
+    passed: 86
+    failed: 0
+    errors: 0
+    skipped: 0
+    junit_sha256: c22815ce101765165f4b313b23fe0f5481a5774e14d7506b889d6073387d8cc3
+  returns:
+    pack: 0
+    governance: 0
+    semantic: 0
+    affected_lint: 1
+  lint_findings:
+  - F401/F811 fixture imports; original fixture objects and test semantics must remain unchanged
+  budget_disposition: Original governance1 remains historical; compact governed records now pass unchanged
+    existing byte limits.
+  preservation_disposition: Undeclared lint cache caused original preservation failure. Exact Source/Git
+    and old refs/objects independently preserved; known completed-job transaction recovered explicitly
+    negative. Original failure and overrun not waived. Machine-local custody details excluded.
+  final_production_commit_executed: false
+  acceptance_advance: false
+  remaining:
+  - Fixture binding contract and cheap no-cache lint
+  - Exact successor86/scoped gates/final production commit/independent custody
+  - Full deadlines/distributions/provider-selected adopters/approved matched targets/immutable2.5 custody
+  disposition: Historical negative retained; separately qualified fixture binding and exact production
+    continuation recorded below.
+accepted_scoped_continuation:
+  authority: false
+  status: bounded_source_private_installed_fixture_and_runtime_scoped_checks_pass
+  baseline_parent: be6f78ca8beeb09cd39d0d84f4d1291818365691
+  fixture_contract_commit: 7fc9a89ea3412849b25cffaaee1d10c676e5d862
+  production_commit: 18a09ada0305437d3495b289674f7fe55739e581
+  tree: d1778d5209230fec2e3518f1c966831917976229
+  changed_paths:
+  - bcf_governance/pack/template-repo/.bcf-pack-manifest.json
+  - bcf_governance/pack/template-repo/scripts/_bcf_runtime/provider_read.py
+  - bcf_governance/tooling/provider_read.py
+  - template-repo/.bcf-pack-manifest.json
+  - template-repo/scripts/_bcf_runtime/provider_read.py
+  - tests/test_installed_provider_error_retirement.py
+  native_cases:
+    total: 86
+    passed: 86
+    failed: 0
+    errors: 0
+    skipped: 0
+    junit_sha256: ef098044cb61df469e478aebdd7b83fa852dd077d761fd6c99cd3a1b357dde6d
+  returns:
+    affected_lint: 0
+    pack_precondition: 0
+    pack_parity: 0
+    governance_and_architecture: 0
+    semantic: 0
+  independent_verification: Complete Source/Git preservation, exact two-commit ancestry and six-path raw
+    tree/blob changes, same86JUnit population, runtime/service/input populations and output resource boundaries
+    verified. Negative predecessor cache and history preserved.
+  acceptance_advance: false
+  whole_requirements_open: 82
+  bounded_slices: 38
+  phase: P32active;P33-P35dormant
+  remaining:
+  - Complete whole lifecycle and sibling deadline/runtime consumer qualification
+  - Source/wheel/sdist/template/installed provider-selected adopter distributions
+  - Matched cohort protocol review and approved separate pipeline/resource targets
+  - Independent full2.5 terminal certification and immutable custody
