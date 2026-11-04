@@ -28,6 +28,7 @@ from bcf_governance.tooling.release_runtime_verification import (
     SDIST_PORTABLE_TEST_ENV,
 )
 from bcf_governance.tooling.ci_github_bootstrap import verify_controller_inventory
+from bcf_governance.tooling.interpreter_environment import PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT
 from release_source_inventory import tracked_source_inventory, validate_sdist_source_inventory
 from historical_source_fixture import restore as restore_historical_source_fixture
 
@@ -109,7 +110,7 @@ def venv_environment(root: Path) -> tuple[Path, dict[str, str]]:
     env["PATH"] = str(bindir) + os.pathsep + env.get("PATH", "")
     env["VIRTUAL_ENV"] = str(root)
     backend = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))["build-system"]["requires"]
-    run(str(python), "-m", "pip", "install", *backend, env=env)
+    run(str(python), "-m", "pip", "install", PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT, *backend, env=env)
     return python, env
 
 
