@@ -72,6 +72,59 @@ limitations:
 - No production correction, installed2.5, matched performance, phase/whole requirement or release custody
   credit.
 - Machine-local raw execution/custody details remain outside distributable governed artifacts.
-next_action: Separately scoped production correction with canonical/private/template runtime parity, full
-  affected positives and installed error-retirement checks.
+next_action: Repair compact summaries within unchanged budgets; qualify exact current Source through a
+  separate finite continuation and commit already-tested production postimages. Retain P32active/all82whole
+  open/38slices and unapproved performance targets.
 acceptance_advance: false
+retained_current_repo_state_summaries:
+- source_commit: 7e5e88b0d265b679c4107d0475405c7c0eb7d7af
+  original_index: 43
+  text: Unbound generic mutation frontier retired ataf5229b9 after12 genuine RED controls;101 recovery/provider
+    cases nowPASS. All function ASTs and21 supported edge values unchanged, mirrors regenerated; no new
+    authority or receipt family. Current census appended to historical recovery audit; broad/private/governance/semantic
+    qualification and integration pending. See audits/issue-394/recovery-mutation-frontier-verification.json;
+    all82 whole requirements remain open.
+- source_commit: 7e5e88b0d265b679c4107d0475405c7c0eb7d7af
+  original_index: 45
+  text: Exact f63431a2 contract/tests-only GET error-response baseline:13 intended behavioral failures,
+    zero errors/skips, including four real HTTP/TLS429/503 cases. Independent cause and Source/Git/resource
+    review retained. Production was unchanged in that baseline. The candidate correction remains under
+    scoped source/private-runtime qualification; inspect actual same-session evidence and independent
+    disposition before authored completion or proof reuse. Complete deadline composition and current distribution/adopter
+    qualification remain required. P32active/all82whole open/38slices unchanged. See audits/issue-394/provider-error-retirement-baseline.yml.
+correction_attempt:
+  authority: false
+  status: partial_governance_budget_block
+  contract_commit: 7e5e88b0d265b679c4107d0475405c7c0eb7d7af
+  parent: f63431a2f91281f0df5275b2b1dc731949b30159
+  native_cases:
+    total: 86
+    passed: 86
+    failed: 0
+    errors: 0
+    skipped: 0
+    junit_sha256: 44b2df838aa031481e144d4053dc1d69dd723852f7e50d8e048a283343c90484
+    typed_population_sha256: d59620211f85f95a2afe8e26464cfa3f3ad71111521131a7bc317e0eeeca1a04
+  pack_parity_returncode: 0
+  governance_returncode: 1
+  budget_failure_bytes:
+    MEMORY.yml:
+      actual: 29324
+      limit: 28672
+    plans/phase-ledger.yml:
+      actual: 16945
+      limit: 16384
+  not_executed:
+  - semantic ownership
+  - affected lint
+  - final production commit
+  production_disposition: Five intended canonical/private-runtime/pack postimages retained uncommitted;
+    no reset or blind retry.
+  provider_read_canonical_and_both_mirrors_sha256: ffdc1729e6fe1b353c2d4be80ff1250acfe5d36c7dce757ef0a4b459be27b6f5
+  independent_disposition: Exact86 case identities, six committed blobs,13 reachable new Git objects,11
+    working postimages and bounded partial Source/Git/resource preservation verified; governance failure
+    retained.
+  acceptance_advance: false
+  remaining:
+  - Governance/architecture, semantic, lint and package gates on exact completed Source
+  - Full deadline population/distribution/adopter assurance, approved matched targets and immutable custody

@@ -22,7 +22,7 @@ admission:
   canonical_release_train_id: release_27
   rule: Derive phase and train IDs only after exact predecessor closure qualifications compatible installed authority and immutable custody are authenticated
   canonical_active_phase_preserved: P32
-  blocker: "Attempt six accounted as noncertifying progress. Locked-project prior proof retained. Bounded maintenance terminal correction source/private/native/architecture/declared-semantic and exact c2d development archives/offline runtime independently qualified. Full provider-selected adopter/profile/lifecycle/deadline and approved matched targets remain open;82whole/38slices unchanged/P32active. See maintained-single-phase-terminal-verification.json."
+  blocker: "Attempt six accounted as noncertifying progress. Locked-project prior proof retained. Bounded maintenance terminal correction source/private/native/architecture/declared-semantic and exact c2d development archives/offline runtime independently qualified. Full provider-selected adopter/profile/lifecycle/deadline and approved matched targets remain open;82whole/38slices unchanged/P32active. See maintained-single-phase-terminal-verification.json. GET retirement86 cases/pack pass; annotation budgets block remaining gates/final commit. See audits/issue-394/provider-error-retirement-baseline.yml."
   unblock_condition: Complete admitted v2.3.4 source integration and existing canonical execution path. Optional compatibility failures remain residuals under current policy.
   evidence: audits/issue-394/v234-successor-admission.json
 stages:
