@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "issue": 394,
+  "phase": "P32",
+  "workitems": [
+    "P32-P0-04",
+    "P32-P0-05"
+  ],
+  "status": "authored_contract_pending_commit",
+  "bounded_context": "ci_authority",
+  "architectural_layer": "tooling",
+  "operation_side": "existing_query_and_command_transport_cleanup",
+  "canonical_owner": "bcf_governance/tooling/ci_github_response.py and existing per-consumer error mappings",
+  "source_subject": {
+    "commit_sha": "9355ec086c6ab7fca63fe8d21a3b627e927aadd6",
+    "source_inputs": {
+      "bcf_governance/tooling/ci_github_response.py": "c1b456a66f99f7d7d293c2d3b8841618b324d1e3db937fbc56586728b0becd5a",
+      "bcf_governance/tooling/provider_read.py": "ffdc1729e6fe1b353c2d4be80ff1250acfe5d36c7dce757ef0a4b459be27b6f5",
+      "bcf_governance/tooling/protection_inspection_client.py": "1519dda1fd3f39da2466a1c7388b62a979819d56977b195ffa9548366fceff24",
+      "bcf_governance/tooling/ci_github_transport.py": "e7287b57a2e2d5dfbeb5eb1871ad641b5da26e47ed1268dfdffbe74e701e5a9d",
+      "bcf_governance/tooling/ci_github_api.py": "8f43e0390fdf9f457da0bac5f44ff0f50b7b634a0852f193f30df2c4717dd1f7",
+      "bcf_governance/tooling/evidence_storage_github_api.py": "3a2cb5dcc5457d80e8264de8dbce32dff99efd308ba64ff19e26f670028f75d2",
+      "bcf_governance/tooling/ci_github_downloads.py": "215afe9c81268eae13e3022af3020f8b7f8b0a839ffe4f5ca4b9186d41990054"
+    }
+  },
+  "targets": [
+    "bcf_governance/tooling/ci_github_response.py",
+    "bcf_governance/tooling/protection_inspection_client.py",
+    "bcf_governance/tooling/ci_github_transport.py",
+    "bcf_governance/tooling/ci_github_api.py",
+    "bcf_governance/tooling/evidence_storage_github_api.py",
+    "tests/test_provider_error_retirement_siblings.py"
+  ],
+  "problem": "Direct protection GET and non-GET JSON/asset opener errors can bypass successful-response ownership contexts. Initial Source observations do not certify runtime leaks or complete consumer population.",
+  "required_behavior": [
+    "Extend existing response lifecycle owner for shared cleanup if appropriate; add no evaluator/broker/registry/receipt family",
+    "Retire response-bearing opener exceptions before error translation, conflict/reconciliation decisions or any continuation; preserve request identity and existing endpoint/method restrictions",
+    "Keep HTTP409/422 and existing not-found/status taxonomy intact after successful cleanup; cleanup failure remains a typed fail-closed condition with original cause/context retained and no swallowed cleanup exception",
+    "Never retry POST/PUT/PATCH/DELETE or infer mutation rejection/success from response cleanup; ambiguous provider outcome still requires existing reconciliation",
+    "Preserve existing GET primitive close-before-retry/terminal behavior and all86 retained cases; avoid accidental second retirement from outer transport mapping",
+    "Keep genuinely local/unbound and package-private supported behavior; qualify canonical Source, both mirrors and installed consumers through existing projection owners",
+    "Explicitly distinguish exception retirement from finite elapsed cleanup/setup bounds; neither close nor nominal socket timeout certifies full deadline sufficiency"
+  ],
+  "cause_specific_controls": [
+    "Proposed24 real HTTPError/BytesIO unit cases cover protection GET, release/evidence POST and JSON POST/PUT/PATCH/DELETE409/422/503 plus retained GET403/409/422 control contexts. Actual collected/executed population must be recorded; Source count alone is not execution.",
+    "Before translation or conflict/reconciliation continuation, verify actual body retirement; a mutation makes exactly one opener attempt.",
+    "Cleanup failure and interruption retain original HTTPError identity/status/cause, produce existing typed failure or propagate interruption, and cannot imply mutation rejection/success or permit blind retry.",
+    "Existing GET primitive remains sole retirement owner for its errors; no duplicate outer close. Retain all86 existing GET/installed controls with exact subject evidence.",
+    "Removing retirement or allowing continuation after failed cleanup must fail behavior at the consumer boundary; no import/collection/setup-error credit."
+  ],
+  "implementation_sequence": [
+    "Commit independently reviewed bounded contract through existing governed audit/workplan owners before production changes.",
+    "Collect executable baseline and cause controls in isolated qualified runtime under finite original-fence allocation; preserve original Source/Git.",
+    "Extend existing response lifecycle/error mappings without new broker/evaluator/registry/receipt family; no mutation retry or altered endpoint restrictions.",
+    "Run affected controls and required governance/architecture/semantic/package checks, then applicable source/wheel/sdist/template/installed consumer qualification."
+  ],
+  "not_qualified_by_this_slice": [
+    "Complete exception-bearing response consumers including alternate/recovery paths; initial four sites are not a complete population",
+    "Join per-consumer body/retry/setup/cleanup/headroom to actual sibling/job admission through existing composition/deadline schemas before claiming upper bounds",
+    "Finite DNS/TLS/header/setup/close or total response-read/retry/cleanup bounds; full568second/600second admission remains separate.",
+    "Complete indirect/transitive/dynamic effect populations or all provider/adopter profiles.",
+    "Approved matched performance targets, whole requirement closure, P32 completion, later phase activation or immutable2.5.0 release custody."
+  ],
+  "forbidden_surfaces": [
+    "Default/main machinery, immutable predecessor bytes, maintained adopter installations and other projects.",
+    "Provider writes or submission/release/status authority during this bounded qualification.",
+    "New transport broker, evaluator, registry or receipt family."
+  ],
+  "runtime_execution_count": 0,
+  "acceptance_advance": false
+}
