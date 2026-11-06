@@ -1048,8 +1048,9 @@ For an explicit job requiring the repository's original cleanup ordering, opt in
 to `required_environment_position: after-repo-preparation`. The first three
 components must be unconditional credential-free checkout in the repository
 root, exact `bash scripts/tools/ci_cleanup.sh start`, then exact
-`mkdir -p .artifacts/tmp`; no inherited generated checkout/components or consumed
-artifacts are allowed. Validation remains before every subsequent work component.
+`mkdir -p .artifacts/tmp` (a non-authoritative scratch directory); no inherited
+generated checkout/components or consumed artifacts are allowed. Validation remains
+before every subsequent work component.
 Without this declaration the existing environment-first default is unchanged.
 For the BDMCP adopter retain all artifact declarations and upload component
 retentions at 14 days or less, including framework and governance evidence.
