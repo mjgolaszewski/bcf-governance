@@ -2610,3 +2610,26 @@ protected merge -> exact-main/controller closure -> ordinary immutable release
 and independent custody -> official consumer adoption. The new Racecar
 credential-backed JIT backend and broader analyzer proposals remain preserved
 outside this release; ordinary BCF CI introduces no live Identity dependency.
+
+
+### Maintenance 2.3.10 existing-adopter and serial-capture compatibility
+
+The maintained candidate preserves existing adopter CI semantics and binds native
+source membership to the exact candidate build. Serial gate ownership is resolved
+from the actual compiled component-to-command capture binding. Existing receipt,
+subject, workflow parity, controller and immutable publication rules still apply.
+The following permutations cover the changed CI contracts and their downstream
+consumers; bounded source checks do not establish final release acceptance.
+
+| Reached state or permutation | Required transition | Rejection and authority boundary |
+| --- | --- | --- |
+| Existing authored shell, action pin, environment, condition or step outcome | Compile and render the original command and declared outcome without changing the existing adopter assurance boundary. | Unsupported expressions, unsafe preparation, lost conditions, action drift and rendered workflow drift reject; a renamed job is not equivalent proof. |
+| Reusable caller inherits or explicitly declares permissions | Derive the exact effective child permission bound and preserve the supported authored call shape. | Changed caller bounds, concealed child writes and permission omission outside reusable calls reject. |
+| Candidate source, built assets and installed native membership agree | Join actual candidate commit/tree, source observations, asset inventory and installed runtime through the existing native owners. | Missing, stale, mismatched or unexplained source/member bytes reject. A candidate qualification marker grants no immutable release authority. |
+| Exact-source worktree cleanup succeeds or remains unresolved | Preserve the exact source identity until the owned worktree closes and cleanup is verified. | Unresolved cleanup retains custody; it must not report a released source boundary or discard required input. |
+| All twenty serial capture commands are bound and rendered | Resolve each literal gate, output, selected session and interpreter from referenced always-run command components. Existing grouped, sharded and reusable workflows retain ownership. | Echo-only text, unreferenced components, extra shell statements, changed binding/session/output/interpreter, conditional capture and duplicate owners reject. Receipt and gate execution validation remain independent. |
+| Scheduled validator mutation reaches its defining owner | Apply phase-catalog and memory mutations at the actual authored-state validator; keep the original causal rejection oracles. | A stale secondary-module mutation, unchanged source or surviving control cannot count as a kill. |
+| Complete prospective train and protected integration | Validate this same-candidate matrix, canonical workflow authority and all required producers, then submit only the exact proved commit. | No selected proof, historical candidate wheel or authored completion record replaces current CI or exact-main certification. |
+| Controller target differs from installed executable closure | Perform the supported provider-authenticated protected transition and independently prove installation on declared trusted runners. | Stale executable/schema custody, invented pins and partial installation remain noncertifying; rotation does not publish a release. |
+| Exact main is certified and new assets are verified | Existing isolated build, fresh install/runtime verification, provider authentication, collector and publisher bind exact 2.3.10 wheel, source archive, checksums and attestations. | Conflicting tags, stale subjects, mismatched assets and candidate-only custody reject before immutable publication. |
+| SDK or BDMCP consumes official maintenance assets | Upgrade through the canonical release-backed installer, preserve project-owned contracts and independently qualify the consumer. | Do not hand-vendor runtime bytes or retain a false 2.3.9 lock. Broader 2.5 construction and the deferred live-Identity JIT backend remain separate. |
