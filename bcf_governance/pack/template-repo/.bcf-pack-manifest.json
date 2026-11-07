@@ -1716,7 +1716,7 @@
     },
     "scripts/_bcf_runtime/truth_workflow_graph.py": {
       "operation": "copy",
-      "sha256": "060eacddcf45760256b463da084f1f7058b81f72586e35182b5ddf51ade5a83f"
+      "sha256": "4de414440b371e97fe1b6dbdbb63a8e3385d87aeddf46b60d3b03c1633a2533f"
     },
     "scripts/_bcf_runtime/validate_governance_yaml.py": {
       "operation": "copy",

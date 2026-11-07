@@ -1,0 +1,253 @@
+{
+  "authority": false,
+  "commands": {
+    "sdk-capture-architecture-context-membership": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-context-membership --output \"$session_dir/architecture-context-membership\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-cqrs-side": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-cqrs-side --output \"$session_dir/architecture-cqrs-side\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-duplication": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-duplication --output \"$session_dir/architecture-duplication\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-import-boundaries": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-import-boundaries --output \"$session_dir/architecture-import-boundaries\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-layer-membership": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-layer-membership --output \"$session_dir/architecture-layer-membership\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-module-size": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-module-size --output \"$session_dir/architecture-module-size\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-router-thinness": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-router-thinness --output \"$session_dir/architecture-router-thinness\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-architecture-test": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate architecture-test --output \"$session_dir/architecture-test\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-contract-test": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate contract-test --output \"$session_dir/contract-test\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-governance-exposure-scan": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate governance-exposure-scan --output \"$session_dir/governance-exposure-scan\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-governance-validate": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate governance-validate --output \"$session_dir/governance-validate\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-lint": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate lint --output \"$session_dir/lint\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-runtime-smoke": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate runtime-smoke --output \"$session_dir/runtime-smoke\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-security-dependency-audit": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate security-dependency-audit --output \"$session_dir/security-dependency-audit\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-security-review": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate security-review --output \"$session_dir/security-review\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-security-sbom": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate security-sbom --output \"$session_dir/security-sbom\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-security-secret-scan": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate security-secret-scan --output \"$session_dir/security-secret-scan\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-security-vulnerability-scan": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate security-vulnerability-scan --output \"$session_dir/security-vulnerability-scan\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-test": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate test --output \"$session_dir/test\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    },
+    "sdk-capture-typecheck": {
+      "argv": [
+        "bash",
+        "-c",
+        "set -euo pipefail\nsession=\"$(.venv/bin/python scripts/governance_evidence.py --repo-root . select-session --session-root .artifacts/bcf/sessions)\"\nsession_dir=\"$(dirname -- \"$session\")\"\n.venv/bin/python scripts/governance_evidence.py --repo-root . run --gate typecheck --output \"$session_dir/typecheck\" --python .venv/bin/python --session-manifest \"$session\""
+      ],
+      "cwd": ".",
+      "environment": {
+        "GITHUB_TOKEN": "${{ github.token }}"
+      }
+    }
+  },
+  "gates": [
+    "architecture-context-membership",
+    "architecture-cqrs-side",
+    "architecture-duplication",
+    "architecture-import-boundaries",
+    "architecture-layer-membership",
+    "architecture-module-size",
+    "architecture-router-thinness",
+    "architecture-test",
+    "contract-test",
+    "governance-exposure-scan",
+    "governance-validate",
+    "lint",
+    "runtime-smoke",
+    "security-dependency-audit",
+    "security-review",
+    "security-sbom",
+    "security-secret-scan",
+    "security-vulnerability-scan",
+    "test",
+    "typecheck"
+  ],
+  "provenance": {
+    "commit": "668d7153d3a1ce236f919e688575c623571d9743",
+    "graph_sha256": "6b530d9db18663df5a1946d941699328b9d2d6e551013daeb0ccd00c162ce236",
+    "repository": "mjgolaszewski/chrysalis-identity-client",
+    "scope": "Preserved real command data, not execution evidence"
+  }
+}

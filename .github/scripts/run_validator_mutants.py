@@ -206,10 +206,10 @@ MUTANTS = (
     Mutant(
         mutant_id="phase-catalog-set-match",
         description="product spec and build plan phase catalogs must stay aligned",
-        search="    if set(product_phase_map) != set(build_phase_map):\n",
-        replace="    if False and set(product_phase_map) != set(build_phase_map):\n",
+        search="    if set(product_phases) != set(build_phases):\n",
+        replace="    if False and set(product_phases) != set(build_phases):\n",
         profiles=("high-value", "full"),
-        target_path="scripts/governance_validation/phase_catalog.py",
+        target_path="scripts/governance_validation/authored_phase_state.py",
     ),
     Mutant(
         mutant_id="planned-log-in-completed-release",
@@ -222,10 +222,10 @@ MUTANTS = (
     Mutant(
         mutant_id="memory-active-artifact-sync",
         description="MEMORY active artifacts must stay aligned with the active phase ledger",
-        search="        if active_artifacts.get(key) != expected:\n",
-        replace="        if False and active_artifacts.get(key) != expected:\n",
+        search="        if artifacts.get(key) != expected:\n",
+        replace="        if False and artifacts.get(key) != expected:\n",
         profiles=("high-value", "full"),
-        target_path="scripts/governance_validation/phase_catalog.py",
+        target_path="scripts/governance_validation/authored_phase_state.py",
     ),
     Mutant(
         mutant_id="workitems-cover-deliverables",

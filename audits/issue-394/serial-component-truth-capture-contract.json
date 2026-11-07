@@ -1,0 +1,37 @@
+{
+  "accepted_form": "Exact existing four-line SDK capture shell argv, command cwd '.', component kind command/condition always, actual referenced component\u2192command; required literal gate equals output gate and exact session/Python parameters",
+  "actual_runtime_owner": {
+    "module_sha256": "060eacddcf45760256b463da084f1f7058b81f72586e35182b5ddf51ade5a83f",
+    "source_commit": "db35dc9551b7f8a7aba947b759ca5a1caeab624b",
+    "version": "2.3.9"
+  },
+  "authority": false,
+  "delivery": "Closure-engine owns any pre2.5 release; Recovery schedules Source/execution boundary. No whole2.5 dependency.",
+  "expected_tests": "tests/test_truth_workflow_graph.py: exact serial capture, arbitrary-shell lookalikes, wrong binding/session/output/interpreter/condition, unreferenced components, duplicate ownership, legacy group/shard/reusable/parity/event controls",
+  "forbidden": [
+    "gate-count/shard fiction",
+    "relaxing gate/receipt/execution or graph parity checks",
+    "new evaluator/graph/receipt family",
+    "production SDK or Main changes by Ironwatch",
+    "claiming a private snapshot as maintained installed authority"
+  ],
+  "owner": "bcf_governance/tooling/truth_workflow_graph.py",
+  "preserve": [
+    "CI graph validation and rendered parity",
+    "exact paths/events, reusable workflow traversal and old group/shard resolution",
+    "actual receipt, subject, source inventory, required-gate and terminal certification checks",
+    "SDK actual serial components/capture commands/job statuses and ordinary CLI grammar"
+  ],
+  "reject": [
+    "names-only or text/echo/comment resemblance",
+    "unreferenced component",
+    "wrong session, output gate, executable, command, cwd or condition",
+    "extra or hidden shell statements",
+    "duplicate gate ownership in one workflow"
+  ],
+  "request": 39147,
+  "scope": "Maintained truth workflow ownership for actual serial component gate captures",
+  "side": "query",
+  "status": "CONTRACT_DEFINED_IMPLEMENTATION_UNRUN",
+  "tests": "Ordinary existing-owner unit/causal controls, then maintained governance/architecture/semantic/package checks; real SDK graph and terminal CI reviewed once"
+}

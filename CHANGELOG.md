@@ -10,6 +10,9 @@ Release target: `2.3.10`
 
 ### Fixed
 
+- Resolve exact serial CI gate capture commands from the canonical workflow graph,
+  retaining graph parity, receipt checks and duplicate ownership rejection.
+
 - Preserve authored CI shell bodies, immutable action pins, reusable-call shapes,
   safe repository preparation, inherited permission bounds and declared step
   outcomes when generating existing adopter workflows.
