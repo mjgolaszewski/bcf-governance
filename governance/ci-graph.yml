@@ -567,7 +567,7 @@ workflows:
     trust: candidate
     needs: [preflight]
     condition: success
-    timeout_minutes: 60
+    timeout_minutes: 75
     permissions: {actions: read, contents: read}
     checkout: false
     components: []
@@ -645,7 +645,7 @@ workflows:
     trust: candidate
     needs: [admit]
     condition: exact-main-admitted
-    timeout_minutes: 60
+    timeout_minutes: 75
     permissions: {contents: read}
     checkout: false
     components: []
