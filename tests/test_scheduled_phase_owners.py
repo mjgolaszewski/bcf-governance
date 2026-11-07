@@ -1,6 +1,6 @@
 """Early and late phase guards have independent, runtime-local causal oracles."""
-from copy import deepcopy
 import importlib
+from copy import deepcopy
 from pathlib import Path
 
 import pytest

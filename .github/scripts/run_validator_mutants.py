@@ -11,7 +11,6 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PYTEST = (sys.executable, "-m", "pytest")
 TRUTH_TARGETS = {
