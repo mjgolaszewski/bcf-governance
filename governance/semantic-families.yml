@@ -133,4 +133,5 @@ families:
   canonical_semantic_ids: [governance.trusted-input-verification.v1]
   material_selectors: {source_paths: [bcf_governance/tooling/trusted_inputs.py], symbols: [bcf_governance/tooling/trusted_inputs.py::TrustedInputVerification]}
   responsibilities: {construction: [verify_trusted_input], decoding: [authenticated_external_artifact], transition: [], projection: [verified_input]}
-migrations: []
+migrations:
+- {subject_kind: family, subject_id: ci_graph_compilation, change: reassigned, base_sha: db35dc9551b7f8a7aba947b759ca5a1caeab624b, previous_sha256: 21ce9f12c333e14130e6c89cfa08db6394ac9c9ee672bda6f54c77a2895f56c0, current_sha256: 756fdc56f28e7b807dbc83d6661c5defcbd09e6e5a54ea4775dd5c2eec9de406, owner: phases/phase-31-hotfix13.yml, reason: Register the inherited compiler-owned render option semantic IDs; preserve the existing authoritative family and exact validated adopter workflow semantics.}
