@@ -79,13 +79,15 @@ def _exact_read(path: Path) -> tuple[bytes, tuple[int, ...]]:
         os.close(descriptor)
 
 
-def _exact_git(repo_root: Path, *args: str) -> str:
+def _exact_git(repo_root: Path, *args: str,
+               process_environment: ChildProcessEnvironment | None = None) -> str:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
     # Native hook/filter/configuration applicability is qualified by the caller.
     try:
         result = subprocess.run(
             ["git", "-c", "gc.auto=0", "-c", "maintenance.auto=false", *args],
             cwd=repo_root, check=False, capture_output=True, text=True, timeout=30,
-            env={**os.environ, "GIT_OPTIONAL_LOCKS": "0"},
+            env={**process_environment.snapshot(), "GIT_OPTIONAL_LOCKS": "0"},
         )
     except subprocess.TimeoutExpired as failure:
         raise _ExactSourceGitError(failure) from failure

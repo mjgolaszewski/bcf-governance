@@ -18,6 +18,8 @@ from .bootstrap.contracts import ChildProcessEnvironment
 from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .check_governance_exposure import (
     PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS,
+)
+from .check_governance_exposure import (
     _validate_portable_governed_commands,
 )
 from .reconcile_contracts import Action as Action

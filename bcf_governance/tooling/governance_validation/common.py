@@ -13,8 +13,8 @@ from typing import Protocol, SupportsIndex, SupportsInt
 import yaml
 from jsonschema import Draft202012Validator, ValidationError
 
-
 from ..repository_discovery import _SKIPPED_DIRECTORY_NAMES
+
 
 class _IntegerBuffer(Protocol):
     def __buffer__(self, flags: int, /) -> memoryview: ...

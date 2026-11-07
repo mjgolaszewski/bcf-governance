@@ -13,8 +13,9 @@ from pathlib import Path
 
 from jsonschema import Draft202012Validator
 
+from .architecture_policy_input import _read as _read_bounded
+from .architecture_policy_input import _yaml_document
 from .architecture_source_observation import Policy
-from .architecture_policy_input import _read as _read_bounded, _yaml_document
 
 
 @dataclass(frozen=True)

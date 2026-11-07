@@ -7,8 +7,8 @@ from .ci_github_actions import action_pin
 from .ci_graph_conditions import validate_authored_conditions
 from .ci_graph_environment_bindings import validate_environment_output_bindings
 from .ci_graph_environment_placement import validate_environment_placement
-from .ci_graph_permission_projection import validate_permission_projection
 from .ci_graph_errors import CIGraphError
+from .ci_graph_permission_projection import validate_permission_projection
 from .ci_graph_step_outcomes import validate_deferred_step_failures
 
 

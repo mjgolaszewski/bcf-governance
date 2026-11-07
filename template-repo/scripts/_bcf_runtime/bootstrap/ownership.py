@@ -12,6 +12,7 @@ CONSUMER_CAPABILITIES: dict[str, tuple[str, ...]] = {'architecture_native_gate.c
  'break_glass_recovery._required': ('cli',),
  'ci_authority_preflight.verify_workflow_authority_preflight': ('provider', 'workflow'),
  'ci_commands.main': ('provider',),
+ 'ci_controller_builder._exact_git': ('process',),
  'ci_controller_builder.build': ('process',),
  'ci_github_cli_io.required_environment': ('cli',),
  'ci_github_controller.environment_api': ('provider',),

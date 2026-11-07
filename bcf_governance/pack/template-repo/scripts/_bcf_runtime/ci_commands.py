@@ -2,18 +2,15 @@
 
 from __future__ import annotations
 
-from .architecture_release_context import released_native_membership
-from .architecture_source_components import SourceComponentError
-from .architecture_native_inventory import ArchitectureInventoryError
-from .governance_install.release_custody import ReleaseCustodyError
-from .governance_install.runtime_custody import RuntimeCustodyError
-
 import argparse
 import json
 import sys
 from collections.abc import Mapping
 from pathlib import Path
 
+from .architecture_native_inventory import ArchitectureInventoryError
+from .architecture_release_context import released_native_membership
+from .architecture_source_components import SourceComponentError
 from .automation_commands import adopt_dependabot
 from .automation_contracts import AutomationContractError, load_automation_registry
 from .bootstrap.contracts import GitHubProviderSettings
@@ -40,6 +37,8 @@ from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_controller_lifecycle import recovery_builder_route
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_self_controller import project_self_controller_pin
+from .governance_install.release_custody import ReleaseCustodyError
+from .governance_install.runtime_custody import RuntimeCustodyError
 from .local_execution_admission import (
     LocalExecutionAdmissionError,
     ensure_local_project_python,

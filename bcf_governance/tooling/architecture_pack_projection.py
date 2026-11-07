@@ -4,20 +4,23 @@ This query grants no release or candidate authority. Both owners must authentica
 asset identity independently before asking for this byte join.
 """
 from __future__ import annotations
+
 import hashlib
 import io
 import json
 import os
-from pathlib import Path
 import stat
 import zipfile
+from pathlib import Path
+from typing import Any, Never
+
 from .architecture_policy_input import _read
 from .architecture_source_components import SourceComponentError
 from .governance_install.release_custody import MAXIMUM_WHEEL_BYTES
 from .release_asset_inventory import release_asset_paths
 
 
-def _refuse(detail: str) -> None:
+def _refuse(detail: str) -> Never:
     raise SourceComponentError(f"bound pack manifest: {detail}")
 
 
@@ -25,8 +28,8 @@ def _sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _unique_object(pairs):
-    result = {}
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
             _refuse("duplicate JSON field")
@@ -35,7 +38,7 @@ def _unique_object(pairs):
 
 
 def bound_wheel_manifest(assets_root: Path, template_root: Path,
-                         expected_sha256: str) -> dict:
+                         expected_sha256: str) -> dict[str, Any]:
     """Verify canonical wheel descriptor identity and exact executing metadata."""
     wheels = [path for path in release_asset_paths(assets_root) if path.suffix == ".whl"]
     if len(wheels) != 1 or wheels[0].resolve(strict=True) != wheels[0]:
@@ -49,8 +52,9 @@ def bound_wheel_manifest(assets_root: Path, template_root: Path,
             wheel_raw = stream.read(MAXIMUM_WHEEL_BYTES + 1)
         after = os.fstat(fd)
         named = wheels[0].lstat()
-        fields = lambda row: (row.st_dev, row.st_ino, row.st_mode, row.st_size,
-                              row.st_mtime_ns, row.st_ctime_ns, row.st_nlink)
+        def fields(row: os.stat_result) -> tuple[int, ...]:
+            return (row.st_dev, row.st_ino, row.st_mode, row.st_size,
+                    row.st_mtime_ns, row.st_ctime_ns, row.st_nlink)
         if fields(before) != fields(after) or fields(after) != fields(named):
             _refuse("release wheel changed during descriptor read")
     finally:
@@ -62,4 +66,6 @@ def bound_wheel_manifest(assets_root: Path, template_root: Path,
     if _read(template_root / ".bcf-pack-manifest.json") != manifest_raw:
         _refuse("executing pack manifest differs from authenticated wheel")
     manifest = json.loads(manifest_raw, object_pairs_hook=_unique_object)
+    if not isinstance(manifest, dict):
+        _refuse("pack manifest must be an object")
     return manifest

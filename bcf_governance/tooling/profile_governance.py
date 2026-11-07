@@ -9,8 +9,8 @@ import sys
 import tempfile
 from pathlib import Path
 
-from .governance_install.validation import run_validation
 from .governance_install.transaction import apply_transaction, copy_repository_shadow
+from .governance_install.validation import run_validation
 from .governance_profiles import apply_profile_contract, promote
 from .semantic_authority_commands import _apply_config, _load_config
 from .semantic_authority_contracts import capability_states

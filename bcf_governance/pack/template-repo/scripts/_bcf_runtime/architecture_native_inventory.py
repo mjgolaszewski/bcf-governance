@@ -6,16 +6,22 @@ Managed-pack authentication and effective component ownership are separate.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
 import hashlib
 import json
 import os
 import stat
+from dataclasses import dataclass
 from pathlib import Path
 
-from .architecture_policy_input import _read
 from .architecture_policy_compilation import load_policy
-from .architecture_source_observation import Policy, Observation, _contexts, _production_files, observe
+from .architecture_policy_input import _read
+from .architecture_source_observation import (
+    Observation,
+    Policy,
+    _contexts,
+    _production_files,
+    observe,
+)
 from .ci_authority_prospective_lanes import git_blob
 from .truth_reporting import current_subject
 

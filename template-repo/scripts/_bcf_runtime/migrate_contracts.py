@@ -12,8 +12,8 @@ from typing import Any
 
 import yaml
 
-from .governance_install.validation import run_validation
 from .governance_install.transaction import apply_transaction
+from .governance_install.validation import run_validation
 from .governance_profiles import apply_profile_contract, load_contract, promote
 from .profile_governance import MANAGED_PROFILE_PATHS
 

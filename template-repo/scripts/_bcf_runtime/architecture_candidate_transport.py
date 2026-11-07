@@ -1,7 +1,10 @@
 """Closed candidate input transport; data only, never custody authority."""
 from __future__ import annotations
+
 import json
 from pathlib import Path
+from typing import Any
+
 from .architecture_candidate_membership import CandidateQualificationInputs
 from .architecture_source_components import SourceComponentError
 
@@ -25,8 +28,8 @@ def decode_candidate_inputs(raw: str, *, isolated_candidate: bool) -> CandidateQ
         raise SourceComponentError("candidate transport: released execution domain required")
     if not isinstance(raw, str) or not raw or len(raw.encode()) > 8192:
         raise SourceComponentError("candidate transport: bounded explicit input required")
-    def unique(pairs):
-        result = {}
+    def unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
         for key, value in pairs:
             if key in result:
                 raise SourceComponentError("candidate transport: duplicate field")

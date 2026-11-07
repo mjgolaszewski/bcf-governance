@@ -6,11 +6,13 @@ YAML, a marker, and caller-created result records cannot enable this query.
 Production release readers remain separate and refuse candidate installations.
 """
 from __future__ import annotations
-from dataclasses import dataclass
+
 import hashlib
 import json
-from pathlib import Path
 import re
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any, Never
 
 from .architecture_effective_membership import MemberClassification
 from .architecture_native_inventory import build_native_inventory
@@ -18,12 +20,16 @@ from .architecture_pack_projection import bound_wheel_manifest
 from .architecture_policy_input import _read
 from .architecture_source_components import SourceComponentError
 from .governance_install.release_custody import (
-    _clean_git_identity, _project_bytes, _wheel_template_files,
+    _clean_git_identity,
+    _project_bytes,
+    _wheel_template_files,
     selected_runtime_inventory_paths,
 )
 from .governance_install.runtime_custody import (
-    CANDIDATE_QUALIFICATION_PATH, RUNTIME_LOCK_PATH,
-    RuntimeCustodyState, inspect_runtime_custody,
+    CANDIDATE_QUALIFICATION_PATH,
+    RUNTIME_LOCK_PATH,
+    RuntimeCustodyState,
+    inspect_runtime_custody,
 )
 from .install_governance_pack import UPGRADE_REFRESH_PATHS
 from .release_asset_inventory import release_asset_paths
@@ -53,7 +59,7 @@ class CandidateMembership:
     publication_authority: bool = False
 
 
-def _refuse(detail: str) -> None:
+def _refuse(detail: str) -> Never:
     raise SourceComponentError(f"candidate qualification membership: {detail}")
 
 
@@ -61,8 +67,8 @@ def _sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _unique(pairs):
-    result = {}
+def _unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
             _refuse("duplicate JSON field")

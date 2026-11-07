@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-import re
-from typing import Mapping
 
 
 class SourceComponentError(ValueError):
@@ -131,7 +131,8 @@ def parse_source_components(
         raise SourceComponentError("source_component_ownership: unsupported native consumer")
     declaration = _mapping(architecture["source_component_ownership"],
                            {"version", "components"}, "source_component_ownership")
-    if declaration["version"] not in ("1.0", "1.1"):
+    version = declaration["version"]
+    if not isinstance(version, str) or version not in ("1.0", "1.1"):
         raise SourceComponentError("source_component_ownership: unsupported version")
     components = declaration["components"]
     if not isinstance(components, list) or not components:
@@ -170,7 +171,7 @@ def parse_source_components(
             context=_text(component["context"], f"{label}.context"),
             rationale=_text(component["rationale"], f"{label}.rationale"),
             members=tuple(sorted(admitted)),
-            managed_pack=_managed_binding(component["managed_pack"], f"{label}.managed_pack", declaration["version"]),
+            managed_pack=_managed_binding(component["managed_pack"], f"{label}.managed_pack", version),
             context_authority=_context_binding(component["context_authority"], f"{label}.context_authority"),
         ))
     return tuple(result)

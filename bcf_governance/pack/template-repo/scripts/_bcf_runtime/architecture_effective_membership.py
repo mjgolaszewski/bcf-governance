@@ -10,14 +10,18 @@ Raw observations remain attached in full, including every original finding.
 from __future__ import annotations
 
 import ast
-from dataclasses import dataclass
 import hashlib
 import json
 import re
+from dataclasses import dataclass
+from typing import Never
 
 from .architecture_native_inventory import NativeSourceInventory
 from .architecture_source_components import (
-    CandidatePackBinding, ManagedPackBinding, SourceComponent, SourceComponentError,
+    CandidatePackBinding,
+    ManagedPackBinding,
+    SourceComponent,
+    SourceComponentError,
 )
 from .architecture_source_observation import Observation
 
@@ -50,7 +54,7 @@ class MembershipProjection:
     scope: str = "Private data projection; no native, release or installed ownership authority."
 
 
-def _refuse(detail: str) -> None:
+def _refuse(detail: str) -> Never:
     raise SourceComponentError(f"effective source membership: {detail}")
 
 
@@ -61,6 +65,7 @@ def _object_sha(value: object) -> str:
 
 def _context_witness(inventory: NativeSourceInventory, component: SourceComponent,
                      path: str) -> str:
+    witness: object
     selector = component.context_authority
     if selector.kind == "maintained_native_context_contract":
         _refuse("maintained native context contract is not implemented")
@@ -172,11 +177,11 @@ def _reduce_membership(inventory: NativeSourceInventory,
     projected: list[EffectiveMember] = []
     for member in inventory.members:
         assignment = declared.get(member.path)
-        component, witness = assignment if assignment else (None, None)
+        projected_component, projected_witness = assignment if assignment else (None, None)
         projected.append(EffectiveMember(
             member.path, member.sha256, member.inferred_layers, member.inferred_contexts,
-            (component.layer,) if component else member.inferred_layers,
-            (component.context,) if component else member.inferred_contexts,
-            component.id if component else None, witness,
+            (projected_component.layer,) if projected_component else member.inferred_layers,
+            (projected_component.context,) if projected_component else member.inferred_contexts,
+            projected_component.id if projected_component else None, projected_witness,
         ))
     return MembershipProjection(tuple(projected), inventory.observation)

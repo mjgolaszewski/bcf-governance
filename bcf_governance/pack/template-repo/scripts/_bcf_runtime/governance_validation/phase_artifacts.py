@@ -11,15 +11,19 @@ from .common import (
     Any,
     GovernanceValidationError,
     Path,
-    _document_status,
     _load_yaml,
     _require_mapping,
     _require_path,
     _require_sequence,
     _require_string,
     _require_string_sequence,
-    _validate_document_path,
     _validate_schema,
+)
+from .common import (
+    _document_status as _document_status,
+)
+from .common import (
+    _validate_document_path as _validate_document_path,
 )
 
 

@@ -382,3 +382,24 @@ def test_retained_anchor_source_history_and_shared_objects_preserved(case):
     assert git(repo, "show-ref") == refs
     assert git(repo, "rev-parse", "HEAD") == subject
     assert (peer / "source.py").read_text() == "VALUE = 1\n"
+
+
+def test_exact_git_uses_fresh_injected_child_environment(tmp_path, monkeypatch):
+    from bcf_governance.tooling.bootstrap.environment import child_process_environment
+
+    values = {"PATH": "/fixture", "EMPTY": "", "GIT_OPTIONAL_LOCKS": "1"}
+    port = child_process_environment(values)
+    observed = []
+
+    def run(argv, **kwargs):
+        observed.append(kwargs["env"])
+        return subprocess.CompletedProcess(argv, 0, "subject\n", "")
+
+    monkeypatch.setattr(owner.subprocess, "run", run)
+    assert owner._exact_git(tmp_path, "rev-parse", "HEAD", process_environment=port) == "subject"
+    values["EMPTY"] = "later"
+    owner._exact_git(tmp_path, "rev-parse", "HEAD", process_environment=port)
+    assert observed[0]["EMPTY"] == ""
+    assert observed[1]["EMPTY"] == "later"
+    assert all(value["GIT_OPTIONAL_LOCKS"] == "0" for value in observed)
+    assert values["GIT_OPTIONAL_LOCKS"] == "1"

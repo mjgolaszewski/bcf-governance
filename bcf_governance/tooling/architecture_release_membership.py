@@ -6,22 +6,28 @@ ReleaseCustody instance, or caller inventory is accepted as release authority.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
 import hashlib
 import json
+from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
+from typing import Any, Never
 
 from .architecture_effective_membership import MemberClassification
 from .architecture_native_inventory import build_native_inventory
-from .architecture_policy_input import _read
 from .architecture_pack_projection import bound_wheel_manifest
+from .architecture_policy_input import _read
 from .architecture_source_components import SourceComponentError
 from .governance_install.release_custody import (
-    ReleaseProvider, _project_bytes, prepare_release_custody,
+    ReleaseProvider,
+    _project_bytes,
+    prepare_release_custody,
     selected_runtime_inventory_paths,
 )
 from .governance_install.runtime_custody import (
-    CANDIDATE_QUALIFICATION_PATH, RUNTIME_LOCK_PATH, RuntimeCustodyState, inspect_runtime_custody,
+    CANDIDATE_QUALIFICATION_PATH,
+    RUNTIME_LOCK_PATH,
+    RuntimeCustodyState,
+    inspect_runtime_custody,
 )
 from .install_governance_pack import UPGRADE_REFRESH_PATHS
 from .runtime_capacity import executing_runtime_version
@@ -38,7 +44,7 @@ class ReleaseMembership:
     scope: str = "Fresh query result; consumers must reauthenticate before use."
 
 
-def _refuse(detail: str) -> None:
+def _refuse(detail: str) -> Never:
     raise SourceComponentError(f"release source membership: {detail}")
 
 
@@ -46,8 +52,8 @@ def _sha(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def _unique_object(pairs):
-    result = {}
+def _unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    result: dict[str, Any] = {}
     for key, value in pairs:
         if key in result:
             _refuse("duplicate JSON field")

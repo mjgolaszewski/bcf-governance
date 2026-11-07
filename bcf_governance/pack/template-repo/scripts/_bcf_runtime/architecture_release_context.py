@@ -1,12 +1,18 @@
 """Trusted native owner's explicit release context; persisted paths are data."""
 from __future__ import annotations
-from contextlib import contextmanager
+
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Any
+
 from .architecture_membership_compilation import NativeReleaseInputs
-from .architecture_release_membership import authenticate_release_membership
+from .architecture_release_membership import ReleaseMembership, authenticate_release_membership
 from .architecture_source_components import SourceComponentError
+from .bootstrap.contracts import GitHubProviderSettings, ScopedExecutionEnvironment
 from .bootstrap.environment import github_provider_settings, scoped_execution_environment
+from .governance_install.release_custody import ReleaseProvider
 
 KEY = "BCF_RELEASE_MEMBERSHIP_INPUTS"
 
@@ -23,8 +29,8 @@ def encode_release_inputs(inputs: NativeReleaseInputs) -> str:
 def decode_release_inputs(raw: str) -> NativeReleaseInputs:
     if not isinstance(raw, str) or not raw or len(raw.encode()) > 8192:
         raise SourceComponentError("native release context: bounded explicit inputs required")
-    def unique(pairs):
-        result = {}
+    def unique(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
         for key, value in pairs:
             if key in result:
                 raise SourceComponentError("native release context: duplicate field")
@@ -44,13 +50,17 @@ def decode_release_inputs(raw: str) -> NativeReleaseInputs:
         if not path.is_absolute() or path.resolve(strict=True) != path:
             raise SourceComponentError("native release context: canonical source paths required")
         paths[name] = path
-    return NativeReleaseInputs(**paths, token=github_provider_settings().token())
+    return NativeReleaseInputs(paths["assets_root"], paths["template_root"],
+                               token=github_provider_settings().token())
 
 
 @contextmanager
 def released_native_membership(root: Path, *, assets_root: Path | None = None,
                                template_root: Path | None = None,
-                               provider_settings=None, api=None, scoped_environment=None):
+                               provider_settings: GitHubProviderSettings | None = None,
+                               api: ReleaseProvider | None = None,
+                               scoped_environment: ScopedExecutionEnvironment | None = None,
+                               ) -> Iterator[NativeReleaseInputs | None]:
     """Authenticate around the existing native command and restore its scope.
 
     API injection is the existing maintained owner's closed fixture port. Normal
@@ -66,7 +76,7 @@ def released_native_membership(root: Path, *, assets_root: Path | None = None,
     if assets_root is None or template_root is None:
         raise SourceComponentError("native release context: both explicit assets and template required")
     inputs = NativeReleaseInputs(assets_root, template_root, token=settings.token(), api=api)
-    def authenticate():
+    def authenticate() -> ReleaseMembership:
         return authenticate_release_membership(root, assets_root=inputs.assets_root,
             template_root=inputs.template_root, token=inputs.token, api=inputs.api)
     initial = authenticate()

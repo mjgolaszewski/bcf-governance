@@ -6,16 +6,21 @@ This module is not yet wired into either production architecture reader.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 import hashlib
 import os
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Never
 
 from .architecture_candidate_membership import (
-    CandidateMembership, CandidateQualificationInputs, qualify_candidate_membership,
+    CandidateMembership,
+    CandidateQualificationInputs,
+    qualify_candidate_membership,
 )
 from .architecture_effective_membership import (
-    MemberClassification, MembershipProjection, _reduce_membership,
+    MemberClassification,
+    MembershipProjection,
+    _reduce_membership,
 )
 from .architecture_native_inventory import NativeSourceInventory, build_native_inventory
 from .architecture_policy_input import _read, load_architecture_mapping
@@ -43,7 +48,7 @@ class EffectiveSourceInventory:
     candidate: CandidateMembership | None = None
 
 
-def _refuse(detail: str) -> None:
+def _refuse(detail: str) -> Never:
     raise SourceComponentError(f"native ownership compilation: {detail}")
 
 
@@ -120,6 +125,8 @@ def _build_effective_inventory(root: Path, *,
         if hashlib.sha256(lock).hexdigest() != release.lock_sha256:
             _refuse("authenticated installed custody changed during compilation")
     if candidate is not None:
+        if candidate_inputs is None:
+            _refuse("candidate inputs missing during reauthentication")
         if qualify_candidate_membership(root, candidate_inputs) != candidate:
             _refuse("candidate context changed during compilation")
     return EffectiveSourceInventory(native, projection, release, candidate=candidate)

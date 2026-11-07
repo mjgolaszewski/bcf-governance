@@ -11,6 +11,8 @@ import yaml
 
 from .check_governance_exposure import (
     PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS,
+)
+from .check_governance_exposure import (
     _validate_portable_governed_commands,
 )
 

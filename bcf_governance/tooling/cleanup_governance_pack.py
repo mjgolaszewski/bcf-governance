@@ -25,7 +25,6 @@ from .governance_cleanup.models import (  # noqa: E402
     ManualAction,
 )
 from .governance_cleanup.pack_removal import governed_pack_removal_paths  # noqa: E402
-
 from .repository_discovery import _SKIPPED_DIRECTORY_NAMES  # noqa: E402
 
 OUTPUT_FORMATS = {"text", "json"}

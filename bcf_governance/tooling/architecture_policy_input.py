@@ -1,10 +1,10 @@
 """Bounded canonical architecture YAML admission; no ownership authority."""
 from __future__ import annotations
 
-import os
 import hashlib
-from pathlib import Path
+import os
 import stat
+from pathlib import Path
 from typing import Any
 
 import yaml

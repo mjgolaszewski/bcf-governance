@@ -12,14 +12,15 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from .ci_graph_compatibility import validate_compatibility_declarations
-from .ci_graph_compile_options import (
-    CIComponentRenderOptions, CIJobRenderOptions,
-    _apply_canonical_defaults, _compile_render_options,
-)
 from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_authority_policy import validate_graph_authority_policy
-from .ci_graph_push_authority import validate_push_authority
+from .ci_graph_compatibility import validate_compatibility_declarations
+from .ci_graph_compile_options import (
+    CIComponentRenderOptions,
+    CIJobRenderOptions,
+    _apply_canonical_defaults,
+    _compile_render_options,
+)
 from .ci_graph_controller_lifecycle import (
     ControllerLifecycle,
     ControllerLifecycleState,
@@ -36,6 +37,7 @@ from .ci_graph_execution import (
     job_execution_issues,
     validate_workflow_event_contract,
 )
+from .ci_graph_push_authority import validate_push_authority
 from .ci_graph_reusable_artifacts import (
     reusable_artifact_binding,
     validate_reusable_binding_declarations,

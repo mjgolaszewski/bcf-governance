@@ -140,14 +140,16 @@ def run_candidate_qualification_train(
 ) -> dict[str, Any]:
     """Execute one typed, observation-only adopter qualification proof."""
 
-    from .local_pr import run_prospective_train
-    from .local_pr_context import LocalValidationLane
-    from .prospective_candidate_identity import canonical_prospective_inputs
-
-    from .architecture_candidate_membership import CandidateQualificationInputs, qualify_candidate_membership
+    from .architecture_candidate_membership import (
+        CandidateQualificationInputs,
+        qualify_candidate_membership,
+    )
     from .architecture_candidate_transport import KEY, encode_candidate_inputs
     from .architecture_policy_input import _read, load_architecture_mapping
     from .bootstrap.environment import scoped_execution_environment
+    from .local_pr import run_prospective_train
+    from .local_pr_context import LocalValidationLane
+    from .prospective_candidate_identity import canonical_prospective_inputs
     # Ownership eligibility belongs only to PRESENT declarations. Existing
     # candidate installs may legitimately preserve consumer-owned files; ABSENT
     # retains the original full train without adding this classifier's rules.
@@ -187,8 +189,11 @@ def run_candidate_qualification_train(
             python_executable=project_python,
             validation_lane=LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
         )
-    if initial is not None and qualify_candidate_membership(repo_root, inputs) != initial:
-        raise ReleaseQualificationError("candidate membership changed during full prospective train")
+    if initial is not None:
+        if inputs is None:
+            raise ReleaseQualificationError("candidate inputs missing during reauthentication")
+        if qualify_candidate_membership(repo_root, inputs) != initial:
+            raise ReleaseQualificationError("candidate membership changed during full prospective train")
     return result
 
 
