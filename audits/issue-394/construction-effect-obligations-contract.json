@@ -1,0 +1,67 @@
+{
+  "authority": false,
+  "boundaries": {
+    "external_typed_candidates": "Remain neutral unqualified observations; this slice does not close external runtime receiver populations.",
+    "generated_files": "Existing canonical generator only, after contract commit under a native grant.",
+    "mro": "Conservative source hierarchy union, not authenticated runtime C3/MRO or descriptor qualification.",
+    "new_evaluator": false,
+    "new_graph": false,
+    "new_receipt_family": false,
+    "new_registry": false,
+    "protected_main_mutation": false,
+    "public_cli_change": false
+  },
+  "changes": [
+    "Retain full call spans to distinguish nested calls sharing a start coordinate.",
+    "Derive source constructor/new/init/post-init/setattr/base and descriptor obligations; unknown decorators, metaclasses, descriptors, external bases, cycles, duplicate populations and rebound lifecycle members remain unresolved.",
+    "Add source-resolved typed alternatives and construction bodies to the existing operation effect traversal, including declared read boundaries.",
+    "Preserve every existing dispatch failure, declared mutation/authority boundary and raw ownership finding; neutral facts never grant runtime authority.",
+    "Neutral constructor/type targets never satisfy positive required-port reachability; the existing traversal keeps separate credit/no-credit states."
+  ],
+  "generation_owner": {
+    "apply_argv": [
+      "<existing-qualified-source-bound-python>",
+      "-I",
+      "-B",
+      ".github/scripts/build_pack_manifest.py"
+    ],
+    "check_argv": [
+      "<same-qualified-python>",
+      "-I",
+      "-B",
+      ".github/scripts/build_pack_manifest.py",
+      "--check"
+    ],
+    "path": ".github/scripts/build_pack_manifest.py",
+    "scope": "Retained support candidate only; reauthenticate current 2.5 generator before later content-qualified integration.",
+    "sha256": "2ea5fb3f8809ae219e29cf9c96360d5a41f8abda6e0611facb3fdb1e1ee2bd99"
+  },
+  "next_action": "Independent Source review; preserve W341; register a bounded candidate, commit this contract before production changes, apply only reviewed postimages and canonical generation, then independently scheduled native controls.",
+  "predecessor": {
+    "live_owner_unchanged": true,
+    "primary_2_5_commit": "296bee654c23f171964812df51064499699f4148",
+    "source_checkpoint_manifest_sha256": "e8076aa1a7b4177c59fd33f163fd04b9ed4afd480e9ac37f30a336dbd751c84a",
+    "support_commit": "341cca3f8dbc125f813085eeb4d57d8fed614629"
+  },
+  "schema_version": "1.0",
+  "scope": "Additive source construction and typed receiver effect obligations through existing owners; no runtime SDK purity or registration authority.",
+  "status": "SOURCE_AUTHORED_UNRUN",
+  "tests": {
+    "additional_duplicate_census": 1,
+    "additional_non_authorization_cases": 4,
+    "decoder_construction_source_matrix": 56,
+    "existing_8_real_git_shape_cases": "Must remain and qualify separately; new Source fixture matrices do not substitute for them.",
+    "expected_inventory": "expected-new-nodeids.json",
+    "native_executions": 0,
+    "total_authored": 91,
+    "typed_flow_source_matrix": 30
+  },
+  "unresolved": [
+    "Exact installed MCP/Starlette/Pydantic and PrincipalOwner constructor/validator/runtime provenance.",
+    "Actual producer/control-flow wiring and complete subclass/descriptor/validator populations.",
+    "Independent tool/callback/control registration population and remove-edge-plus-test causes.",
+    "Full original semantic/governance/architecture/package/installed/adopter qualification.",
+    "Content-qualified integration into isolated 2.5; no whole older support-owner transplant.",
+    "The existing call-effect model is not complete global/nonlocal/container-state mutation or runtime-purity proof; such closure remains required before SDK-role admission."
+  ]
+}
