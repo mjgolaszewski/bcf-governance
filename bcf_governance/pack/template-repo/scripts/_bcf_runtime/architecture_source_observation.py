@@ -1,9 +1,8 @@
-"""Source draft of whole-population policy observations; not native acceptance.
+"""Whole-population architecture observations over exact governed source.
 
-The future caller must construct Policy from the exact governed configuration,
-authenticate the complete source population, and qualify real negative controls.
-Router and duplication rules retain the official 2.3.9 template semantics.
-No project imports, application execution, writes, or external effects occur here.
+The native caller binds Policy and the complete current source inventory.
+Implementation duplication is measured within lexical bodies; metadata does
+not count as repeated executable logic. No application imports or effects occur.
 """
 from __future__ import annotations
 
@@ -13,6 +12,47 @@ import re
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
+
+
+def duplication_lines(source: str) -> list[tuple[int, str]]:
+    """Count executable source, preserving body windows and original locations.
+
+    Shared signatures, imports and documentation are interface metadata rather
+    than repeated implementation. Runtime values, expressions and control flow
+    retain the existing normalized-line threshold and context scoping.
+    """
+    ignored: set[int] = set()
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            ignored.update(range(node.lineno, node.body[0].lineno))
+            for decorator in node.decorator_list:
+                ignored.update(range(decorator.lineno, (decorator.end_lineno or decorator.lineno) + 1))
+        elif isinstance(node, (ast.Import, ast.ImportFrom)) or (
+            isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+            and isinstance(node.value.value, str)
+        ) or (isinstance(node, ast.AnnAssign) and node.value is None):
+            ignored.update(range(node.lineno, (node.end_lineno or node.lineno) + 1))
+    return [(number, re.sub(r"\s+", " ", line.strip()))
+            for number, line in enumerate(source.splitlines(), 1)
+            if number not in ignored and line.strip() and not line.strip().startswith("#")]
+
+
+def duplication_blocks(source: str, minimum: int) -> list[tuple[int, tuple[str, ...]]]:
+    """Compare implementation windows within one lexical body, never signatures."""
+    scopes = [node for node in ast.walk(ast.parse(source))
+              if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
+    groups: list[list[tuple[int, str]]] = []
+    previous: tuple[int, int] | None = None
+    for number, line in duplication_lines(source):
+        owners = [(node.lineno, node.end_lineno or node.lineno) for node in scopes
+                  if node.body[0].lineno <= number <= (node.end_lineno or node.lineno)]
+        scope = min(owners, key=lambda row: row[1] - row[0]) if owners else (0, 0)
+        if scope != previous:
+            groups.append([])
+            previous = scope
+        groups[-1].append((number, line))
+    return [(rows[index][0], tuple(line for _, line in rows[index:index + minimum]))
+            for rows in groups for index in range(max(len(rows) - minimum + 1, 0))]
 
 
 @dataclass(frozen=True)
@@ -155,12 +195,8 @@ def observe(root: Path, policy: Policy) -> Observation:
                     violations.append(Violation("router_delegation", name, function.lineno, function.name))
         if len(contexts) == 1:
             context = next(iter(contexts))
-            lines = [(number, re.sub(r"\s+", " ", line.strip()))
-                     for number, line in enumerate(text.splitlines(), 1)
-                     if line.strip() and not line.strip().startswith("#")]
-            for index in range(max(len(lines) - policy.duplication_min_lines + 1, 0)):
-                block = tuple(line for _, line in lines[index:index + policy.duplication_min_lines])
-                blocks[(context, block)].add((name, lines[index][0]))
+            for line, block in duplication_blocks(text, policy.duplication_min_lines):
+                blocks[(context, block)].add((name, line))
     for (context, block), locations in blocks.items():
         if len({name for name, _ in locations}) > 1:
             identity = hashlib.sha256("\n".join(block).encode()).hexdigest()

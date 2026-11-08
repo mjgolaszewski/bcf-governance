@@ -22,6 +22,7 @@ from .ci_github_authority import load_authority, packaged_repo_root
 from .ci_github_bundle import (
     canonical_json as _canonical,
 )
+from .ci_github_bundle import certification_session, provider_snapshot
 from .ci_github_bundle import (
     prepare_output as _prepare_output,
 )
@@ -301,21 +302,8 @@ def finalize(
         "collection_complete": True,
     }
     snapshots = [
-        {
-            "schema_version": "1.0",
-            "producer_id": value["producer_id"],
-            "repository": {"provider": "github", "repository_id": main.repository_id},
-            "authentication": {
-                "collector_id": "bcf-trusted-finalizer",
-                "provider_api_verified": True,
-                "captured_at": captured_at,
-            },
-            "current_default_main": {
-                "checkout_sha": main.checkout_sha,
-                "tree_sha": main.tree_sha,
-            },
-            "admissions": [{**shared, "producer_run": value}],
-        }
+        provider_snapshot(main=main, admission=shared, producer_run=value,
+                          captured_at=captured_at)
         for value in run_values
     ]
     root = _prepare_output(output_dir)
@@ -336,30 +324,12 @@ def finalize(
                 "authenticated_at": captured_at,
             }
         )
-    session = {
-        "schema_version": "1.0",
-        "session_id": secrets.token_hex(16),
-        "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
-        "profile": "standard",
-        "profile_contract_version": "3.0",
-        "producer": {
-            "kind": "workflow",
-            "provider": "github",
-            "repository": repository,
-            "repository_id": main.repository_id,
-            "run_id": collector_identity.run_id,
-            "run_attempt": str(collector_identity.run_attempt),
-            "producer_id": "bcf-trusted-finalizer",
-        },
-        "expected_gate_inventory": ["ci-certification"],
-        "expected_producer_inventory": sorted(str(value["producer_id"]) for value in run_values),
-        "created_at": captured_at,
-        "session_root_policy": {
-            "mode": "0700",
-            "root_kind": "external",
-            "immutable_manifest": True,
-        },
-    }
+    session = certification_session(
+        main=main, repository=repository, collector=collector_identity,
+        session_id=secrets.token_hex(16),
+        producer_ids=tuple(str(value["producer_id"]) for value in run_values),
+        created_at=captured_at,
+    )
     session_path = root / "evidence-session.json"
     session_digest = _write_exclusive(session_path, session)
     session_producer = session["producer"]

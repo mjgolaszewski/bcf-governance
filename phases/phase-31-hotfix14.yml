@@ -1,0 +1,69 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF14 Hotfix Log
+  id: bcf-governance-phase-31-hotfix14
+  version: 1.0.0
+  generated_at_utc: '2026-11-08T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix14.yml
+hotfix:
+  id: P31-HF14
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 14
+  summary: Self-contained installed validation, native architecture and typed registration compatibility
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - Focused maintained package-root/local-membership suite:44 passed,0 failed.
+  - Typed registration initial causal and schema-owner suite:19 passed,0 failed.
+  - Actual BDMCP source:38 query and27 command registration handler/factory/effect-port bindings passed through maintained
+    import resolver.
+  - Final typed registration causal/schema suite:27 passed; actual38query/27command import-resolved handler/factory/effect
+    joins passed.
+  - Initial native duplication/controller/profile repair suite:153 passed.
+  - Complete320-file installed runtime:zero12-line executable-body duplicate windows under the actual flattened BDMCP runtime
+    context.
+  - Strict managed runtime lint and typing:319files pass after native duplication repair.
+  - Final native duplication/controller/profile suite:156 passed,0 failed.
+  - Effect/dispatch/typed-registration regression suite:89 passed,0 failed.
+  - First full3124-case native test producer:3123passed/1failed/0skipped. Existing path-hidden-command control caught changed
+    legacy discovery call arity; failed-source bundle is diagnostic-only and not reused as acceptance.
+  - Restored original two-argument legacy Python discovery dispatch, preserved TypeScript inventory-aware dispatch, synchronized
+    native mirrors; exact negative control plus typed-registration cases:28passed.
+  notes:
+  - 'Pre-edit scope: maintained architecture and operation-inventory queries in tooling, exact mirrored native gate, additive
+    opt-in schema1.1, tests and canonical release docs. Preserve effect ports, complete source census, candidate/publication
+    authority boundaries and tamper rejection.'
+  - 'Forbidden surfaces: deferred Identity/JIT work, BDMCP application source, credentials, active environments and other
+    project branches.'
+  - Existing Recovery package-root patch adopted. Local installed membership is an integrity observation over adopter-reviewed
+    pins, not provider reauthentication or release/publication authority.
+  - Implementation complete; final maintained standard CI, consolidated review, certification and immutable2.3.11 custody
+    remain required.
+  - 'Scope includes the concrete39896 framework duplication failures: signatures are metadata; implementation windows remain
+    checked within lexical bodies. Raw observer and installed gate share one normalizer. No production member is excluded.'
+  - Shared provider snapshot/session encoders and profile Makefile/workflow preambles preserve existing outputs and authority
+    domains; both original callers retain authentication and effect custody.
+  - First submit was deliberately interrupted in semantic-ownership preflight before any test producer to complete this material
+    repair; it supplies no positive acceptance evidence.
+  - Repeated fallback function-name lookup is memoized only within one fresh operation check; source observation, body traversal,
+    effect policy and acceptance are not cached.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

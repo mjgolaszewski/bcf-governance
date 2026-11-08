@@ -1,9 +1,7 @@
-"""Source draft: fresh native ownership compilation for maintained consumers.
+"""Fresh native source ownership compilation for project, installed and release contexts.
 
-Release inputs belong to the execution owner, not configuration declarations.
-Neither a serialized projection nor a caller-populated inventory is accepted.
-This module is not yet wired into either production architecture reader.
-"""
+Installed validation uses local pinned bytes. Explicit release authentication and
+candidate qualification retain their separate authority and execution domains."""
 from __future__ import annotations
 
 import hashlib
@@ -24,9 +22,15 @@ from .architecture_effective_membership import (
 )
 from .architecture_native_inventory import NativeSourceInventory, build_native_inventory
 from .architecture_policy_input import _read, load_architecture_mapping
-from .architecture_release_membership import ReleaseMembership, authenticate_release_membership
+from .architecture_release_membership import (
+    InstalledMembership,
+    ReleaseMembership,
+    authenticate_release_membership,
+    inspect_installed_membership,
+)
 from .architecture_source_components import SourceComponentError, parse_source_components
 from .governance_install.release_custody import ReleaseProvider
+from .governance_install.runtime_custody import runtime_custody_schema_path
 
 
 @dataclass(frozen=True)
@@ -46,6 +50,7 @@ class EffectiveSourceInventory:
     release: ReleaseMembership | None
     scope: str = "Fresh in-process observation; no cached, installed or release acceptance by itself."
     candidate: CandidateMembership | None = None
+    installed: InstalledMembership | None = None
 
 
 def _refuse(detail: str) -> Never:
@@ -84,6 +89,7 @@ def _build_effective_inventory(root: Path, *,
     if not isinstance(architecture, dict):
         _refuse("governed architecture mapping required")
     release = None
+    installed = None
     candidate = None
     projection = None
     if "source_component_ownership" in architecture:
@@ -95,7 +101,13 @@ def _build_effective_inventory(root: Path, *,
                 _refuse("candidate membership differs from native non-authoritative domain")
             classifications = candidate.classifications
         elif release_inputs is None:
-            classifications = _project_classifications(native)
+            if os.path.lexists(root / "governance/bcf-runtime-lock.json"):
+                installed = inspect_installed_membership(root)
+                if installed.subject != native.subject:
+                    _refuse("installed membership subject differs from initial native subject")
+                classifications = installed.classifications
+            else:
+                classifications = _project_classifications(native)
         else:
             if type(release_inputs) is not NativeReleaseInputs:
                 _refuse("native-owned release inputs required")
@@ -112,7 +124,8 @@ def _build_effective_inventory(root: Path, *,
             _refuse("independent classification differs from native source population")
         components = parse_source_components(architecture, reader_supported=True)
         projection = _reduce_membership(native, components, classifications,
-                                        managed_lock_sha256=release.lock_sha256 if release else None,
+                                        managed_lock_sha256=(release.lock_sha256 if release else
+                                                             installed.lock_sha256 if installed else None),
                                         candidate_qualification_sha256=(
                                             candidate.qualification_sha256 if candidate else None))
     if hashlib.sha256(_read(config)).hexdigest() != native.config_sha256:
@@ -124,12 +137,16 @@ def _build_effective_inventory(root: Path, *,
         lock = _read(root / "governance/bcf-runtime-lock.json")
         if hashlib.sha256(lock).hexdigest() != release.lock_sha256:
             _refuse("authenticated installed custody changed during compilation")
+    if installed is not None:
+        if (hashlib.sha256(_read(root / "governance/bcf-runtime-lock.json")).hexdigest() != installed.lock_sha256
+                or hashlib.sha256(_read(runtime_custody_schema_path(root))).hexdigest() != installed.schema_sha256):
+            _refuse("installed lock or schema changed during compilation")
     if candidate is not None:
         if candidate_inputs is None:
             _refuse("candidate inputs missing during reauthentication")
         if qualify_candidate_membership(root, candidate_inputs) != candidate:
             _refuse("candidate context changed during compilation")
-    return EffectiveSourceInventory(native, projection, release, candidate=candidate)
+    return EffectiveSourceInventory(native, projection, release, candidate=candidate, installed=installed)
 
 
 def build_effective_inventory(root: Path, *,

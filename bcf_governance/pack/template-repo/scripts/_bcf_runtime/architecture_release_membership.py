@@ -1,9 +1,7 @@
-"""Source draft: rejoin installed membership to the existing release custodian.
+"""Separate explicit release authentication from ordinary local installed membership.
 
-Explicit release inputs belong to the native execution owner, never architecture
-YAML. This module is not wired into a reader. No persisted lock, synthetic
-ReleaseCustody instance, or caller inventory is accepted as release authority.
-"""
+Provider-backed release qualification is an explicit owner operation. Installed
+adopters inspect their pinned local runtime without supplier access or credentials."""
 from __future__ import annotations
 
 import hashlib
@@ -26,8 +24,10 @@ from .governance_install.release_custody import (
 from .governance_install.runtime_custody import (
     CANDIDATE_QUALIFICATION_PATH,
     RUNTIME_LOCK_PATH,
+    RuntimeCustodyError,
     RuntimeCustodyState,
     inspect_runtime_custody,
+    runtime_custody_schema_path,
 )
 from .install_governance_pack import UPGRADE_REFRESH_PATHS
 from .runtime_capacity import executing_runtime_version
@@ -169,3 +169,55 @@ def authenticate_release_membership(root: Path, *, assets_root: Path,
         _refuse("installed custody changed during authentication")
     return ReleaseMembership(classifications, _sha(lock_raw), custody.version,
                              custody.source_commit, custody.wheel_sha256, inventory.subject)
+
+
+@dataclass(frozen=True)
+class InstalledMembership:
+    """Local installed-byte observation, never fresh release/publication authority.
+
+    The adopting repository owns its pinned lock and review boundary. Ordinary
+    validation checks that installation locally; it does not contact its supplier.
+    """
+
+    classifications: tuple[MemberClassification, ...]
+    lock_sha256: str
+    subject: tuple[tuple[str, object], ...]
+    schema_sha256: str
+
+
+def inspect_installed_membership(root: Path) -> InstalledMembership:
+    """Check the complete current installed inventory without network or secrets."""
+    inventory = build_native_inventory(root)
+    lock_path = root / RUNTIME_LOCK_PATH
+    marker = root / CANDIDATE_QUALIFICATION_PATH
+    if marker.exists() or marker.is_symlink():
+        _refuse("candidate qualification is not an installed release")
+    raw = _read(lock_path)
+    payload = json.loads(raw, object_pairs_hook=_unique_object)
+    if not isinstance(payload, dict):
+        _refuse("runtime lock must be an object")
+    schema = runtime_custody_schema_path(root)
+    schema_raw = _read(schema)
+    try:
+        snapshot = inspect_runtime_custody(root, schema_path=schema)
+    except RuntimeCustodyError as exc:
+        raise SourceComponentError(f"release source membership: invalid installed custody: {exc}") from exc
+    if snapshot.state is not RuntimeCustodyState.NORMALIZED_EXACT or snapshot.lock_bytes != raw:
+        _refuse("normalized exact installed custody required")
+    if snapshot.version != executing_runtime_version():
+        _refuse("installed version differs from executing runtime")
+    for relative, digest in sorted({**snapshot.runtime_owned, **snapshot.consumer_preserved}.items()):
+        if _sha(_read(root / _relative(relative))) != digest:
+            _refuse("installed byte inventory differs from current source")
+    for member in inventory.members:
+        if member.path.startswith("scripts/_bcf_runtime/") and member.path not in snapshot.runtime_owned:
+            _refuse("unexplained or consumer-reclassified source inside installed runtime footprint")
+    classifications = tuple(MemberClassification(
+        member.path, member.sha256,
+        "managed" if member.path in snapshot.runtime_owned else "project",
+    ) for member in inventory.members)
+    if (build_native_inventory(root) != inventory or _read(lock_path) != raw
+            or _read(schema) != schema_raw
+            or inspect_runtime_custody(root, schema_path=schema) != snapshot):
+        _refuse("source, configuration or installed custody changed during local validation")
+    return InstalledMembership(classifications, _sha(raw), inventory.subject, _sha(schema_raw))

@@ -6,7 +6,17 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.10`
+Release target: `2.3.11`
+
+### Fixed
+
+- Compare executable bodies for native duplication checks, retaining real duplicate rejection while excluding signatures, imports and documentation from implementation windows. Share the existing provider snapshot/session encoding and profile preambles without changing emitted outputs or authority boundaries.
+
+- Validate installed framework ownership entirely from pinned local files, without supplier repository access, release assets or BCF credentials. Installation and explicit upgrade retain separate custody checks.
+- Preserve package source-root import prefixes when counting real shared-module callers.
+- Support opt-in schema 1.1 frozen typed registration tables, binding each operation to its actual lexical handler, concrete factory and mediator direction while retaining effect checks.
+
+## [2.3.10] - 2026-11-07
 
 ### Fixed
 

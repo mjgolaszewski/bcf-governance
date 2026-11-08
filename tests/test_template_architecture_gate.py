@@ -146,3 +146,27 @@ def test_template_architecture_gate_rejects_underused_shared_abstraction(tmp_pat
     with pytest.raises(AssertionError) as excinfo:
         module.test_shared_abstraction_duplication_has_minimum_real_call_sites()
     assert "shared abstraction call-site" in str(excinfo.value)
+
+
+@pytest.mark.parametrize("package_root", [False, True])
+def test_shared_callers_use_actual_source_root_import_identity(tmp_path: Path, package_root: bool) -> None:
+    import yaml
+
+    repo_root = _instantiate_template_repo(tmp_path)
+    configuration = repo_root / "architecture-boundaries.yml"
+    payload = yaml.safe_load(configuration.read_text())
+    payload["architecture"]["source_roots"] = ["scripts"]
+    configuration.write_text(yaml.safe_dump(payload))
+    if package_root:
+        _write_python(repo_root / "scripts/__init__.py", "")
+    _write_python(repo_root / "scripts/shared/contracts.py", "VALUE = 1\n")
+    prefix = "scripts." if package_root else ""
+    for caller in ("first", "second"):
+        _write_python(repo_root / f"scripts/contexts/orders/{caller}.py",
+                      f"from {prefix}shared.contracts import VALUE\n")
+    module = _load_module(repo_root / "backend/tests/architecture/test_boundaries_ast.py")
+    assert module._module_name_for_path(repo_root / "scripts/shared/contracts.py") == prefix + "shared.contracts"
+    module.test_shared_abstraction_duplication_has_minimum_real_call_sites()
+    (repo_root / "scripts/contexts/orders/second.py").unlink()
+    with pytest.raises(AssertionError, match="1 real call site"):
+        module.test_shared_abstraction_duplication_has_minimum_real_call_sites()

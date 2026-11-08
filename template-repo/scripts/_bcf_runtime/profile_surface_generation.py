@@ -21,18 +21,9 @@ def render_makefile(contract: dict[str, Any]) -> str:
         return render_v2_makefile(contract)
     gates = contract["gates"]
     targets = " ".join(gates)
-    lines = [
-        "SHELL := /bin/bash",
-        "include .artifacts/bcf/local-cli.mk",
-        "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .",
-        "BCF_EVIDENCE_DIR ?= .artifacts/bcf",
-        "",
-        f".PHONY: governance-truthfulness release-check {targets}",
-        "",
-        "governance-truthfulness:",
-        "\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; \"$$python\" scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
-        "",
-    ]
+    from .profile_v2_surfaces import makefile_header_lines
+
+    lines = makefile_header_lines(targets)
     for target, gate in gates.items():
         from .profile_v2_surfaces import render_make_argv
 
@@ -105,25 +96,9 @@ def render_workflow(repo_root: Path, contract: dict[str, Any]) -> str:
     label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
     matrix = "\n".join(f"          - {target}" for target in gates)
     comparison = direct_comparison_environment(explicit_call=False)
-    text = f'''name: governance
+    from .profile_v2_surfaces import workflow_front_matter
 
-on:
-  pull_request:
-  push:
-    branches: [main]
-
-permissions:
-  contents: read
-
-env:
-  BCF_ENFORCE_PR_CHANGELOG: ${{{{ github.event_name == 'pull_request' }}}}
-  BCF_PROVIDER_EVENT: {comparison["BCF_PROVIDER_EVENT"]}
-  BCF_INVOCATION_KIND: {comparison["BCF_INVOCATION_KIND"]}
-  BCF_CALLER_COMPARISON_BASE_SHA: {comparison["BCF_CALLER_COMPARISON_BASE_SHA"]}
-  BCF_ORIGIN_COMPARISON_BASE_SHA: {comparison["BCF_ORIGIN_COMPARISON_BASE_SHA"]}
-  BCF_COMPARISON_BASE_SHA: {comparison["BCF_COMPARISON_BASE_SHA"]}
-  BCF_PR_BASE_SHA: {comparison["BCF_PR_BASE_SHA"]}
-
+    text = workflow_front_matter(comparison, preflight=False) + f'''
 jobs:
   evidence:
     runs-on: {label_yaml}

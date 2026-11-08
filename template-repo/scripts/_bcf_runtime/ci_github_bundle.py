@@ -8,7 +8,8 @@ import re
 from pathlib import Path
 from typing import Any
 
-from .ci_github_identity import GitHubControllerError
+from .ci_github import GithubRunIdentity
+from .ci_github_identity import GitHubControllerError, MainIdentity
 
 
 def canonical_json(payload: dict[str, Any]) -> bytes:
@@ -75,3 +76,44 @@ def verify_bundle(root: Path) -> dict[str, Any]:
                 f"certification bundle digest mismatch: {relative}"
             )
     return manifest
+
+
+def provider_snapshot(
+    *, main: MainIdentity, admission: dict[str, Any], producer_run: dict[str, Any],
+    captured_at: str, authority_contract_version: str | None = None,
+) -> dict[str, Any]:
+    """Encode already-authenticated inputs; grant no authentication or authority."""
+    payload = {
+        "schema_version": "1.0",
+        "producer_id": producer_run["producer_id"],
+        "repository": {"provider": "github", "repository_id": main.repository_id},
+        "authentication": {
+            "collector_id": "bcf-trusted-finalizer", "provider_api_verified": True,
+            "captured_at": captured_at,
+        },
+        "current_default_main": {"checkout_sha": main.checkout_sha, "tree_sha": main.tree_sha},
+        "admissions": [{**admission, "producer_run": producer_run}],
+    }
+    if authority_contract_version is not None:
+        payload["authority_contract_version"] = authority_contract_version
+    return payload
+
+
+def certification_session(
+    *, main: MainIdentity, repository: str, collector: GithubRunIdentity,
+    session_id: str, producer_ids: tuple[str, ...], created_at: str,
+) -> dict[str, Any]:
+    """Encode the common finalizer session from independently authenticated inputs."""
+    return {
+        "schema_version": "1.0", "session_id": session_id,
+        "subject": {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
+        "profile": "standard", "profile_contract_version": "3.0",
+        "producer": {
+            "kind": "workflow", "provider": "github", "repository": repository,
+            "repository_id": main.repository_id, "run_id": collector.run_id,
+            "run_attempt": str(collector.run_attempt), "producer_id": "bcf-trusted-finalizer",
+        },
+        "expected_gate_inventory": ["ci-certification"],
+        "expected_producer_inventory": sorted(producer_ids), "created_at": created_at,
+        "session_root_policy": {"mode": "0700", "root_kind": "external", "immutable_manifest": True},
+    }

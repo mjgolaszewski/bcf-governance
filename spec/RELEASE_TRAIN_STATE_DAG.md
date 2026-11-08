@@ -2634,3 +2634,26 @@ consumers; bounded source checks do not establish final release acceptance.
 | Controller target differs from installed executable closure | Perform the supported provider-authenticated protected transition and independently prove installation on declared trusted runners. | Stale executable/schema custody, invented pins and partial installation remain noncertifying; rotation does not publish a release. |
 | Exact main is certified and new assets are verified | Existing isolated build, fresh install/runtime verification, provider authentication, collector and publisher bind exact 2.3.10 wheel, source archive, checksums and attestations. | Conflicting tags, stale subjects, mismatched assets and candidate-only custody reject before immutable publication. |
 | SDK or BDMCP consumes official maintenance assets | Upgrade through the canonical release-backed installer, preserve project-owned contracts and independently qualify the consumer. | Do not hand-vendor runtime bytes or retain a false 2.3.9 lock. Broader 2.5 construction and the deferred live-Identity JIT backend remain separate. |
+
+### Maintenance 2.3.11 self-contained installed consumer compatibility
+
+Ordinary installed validation and CI derive membership from exact locally pinned
+runtime bytes and the adopter-owned lock. No supplier token, provider setting
+read, release asset acquisition or supplier availability participates. Local
+membership is a typed integrity observation and cannot certify, merge or
+publish. Explicit installation/upgrade and BCF-self publication retain their
+separate authenticated custody transitions.
+
+| State or trigger | Maintained behavior | Required rejection |
+| --- | --- | --- |
+| Installed source-component declaration | Derive complete current native inventory and local installed classification; join exact lock and component digests; reobserve before return. | Changed bytes, unexplained or consumer-reclassified runtime source, candidate markers, missing/invalid custody and concurrent source/lock drift. |
+| Package source root owns an import prefix | Preserve contiguous package parents when counting actual shared-module import callers. | A missing second actual caller still fails the existing shared abstraction rule. |
+| Explicit operation schema1.1 typed table | Bind every literal frozen spec to its own actual lexical handler, concrete factory and mediator direction; traverse existing effect graph. | Unknown forms, mutable/inherited specs, duplicate names, alias/cross-instance drift, changed inventory, omitted operations or false query/command classification. |
+| Native bounded-context duplication | Compare normalized executable windows within lexical bodies through one shared observer/gate owner; retain the configured threshold and complete source population. | Repeated implementation bodies still fail; signatures/imports/docstrings do not manufacture findings. Shared encoders preserve old authority-version fields and emitted bytes. |
+| Offline installed CI | Reconstruct only from adopter-local or adopter-owned inputs and validate without BCF network access or credentials. | A bootstrap helper re-entering installer/upgrade authentication or fetching supplier assets as recurring validation. |
+
+The maintained candidate pipeline must cover successful and causal negative
+cases for these transitions, build and fresh install, SDK/consumer compatibility,
+strict runtime quality, governance and security. Normal protected review,
+controller transition, exact-main certification and immutable publication remain
+required. Candidate-only source observations are never release custody.

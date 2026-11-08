@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.10/bcf_governance-2.3.10-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.11/bcf_governance-2.3.11-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -575,15 +575,56 @@ expired record blocks readiness. Regulated requirements cannot be bypassed by
 N/A, and CI authority cannot be marked N/A when CI evidence supports a release
 claim.
 
+## Installed framework independence
+
+After installation, ordinary validation and CI use the adopter's pinned local
+runtime and `governance/bcf-runtime-lock.json`. They require no BCF repository
+access, BCF token, release download, provider setting lookup or live supplier
+availability. Source repository and release identifiers in the lock are recorded
+provenance, not instructions to contact that repository. Credentials needed for
+the adopter's own CI resources remain scoped to that adopter.
+
+The installed architecture owner derives source-component membership locally,
+checks the exact runtime inventory, rejects unexplained runtime members and
+candidate-only state, and checks current source and lock identity again before
+returning. Its result establishes installed integrity under the adopting
+repository's review and pinning boundary. It does not claim fresh provider
+authentication or grant release/publication authority. Do not invoke installer
+or upgrade custody APIs from recurring adopter validation or bootstrap helpers.
+
+For a local capture before tests, use the installed runtime directly:
+
+```python
+from pathlib import Path
+from scripts._bcf_runtime._version import __version__
+from scripts._bcf_runtime.governance_install.release_custody import capture_installed_runtime
+
+root = Path.cwd()
+capture = capture_installed_runtime(
+    root, expected_version=__version__,
+    schema_path=root / "schemas/bcf-runtime-lock.schema.json",
+)
+```
+
+This API checks and captures the installed byte inventory without release assets
+or credentials. Its provenance fields repeat reviewed installation pins; they
+do not claim a new supplier authentication.
+
+Installation and an explicitly requested upgrade acquire and authenticate a
+chosen release separately. Retain all runtime inputs needed by CI in the adopter
+repository or its own artifact store so a clean CI environment can reconstruct
+the pinned installation without fetching BCF again. Ordinary CI must not use a
+cache miss as permission to contact the BCF repository.
+
 ## Upgrade and rescaffold
 
 Normal upgrade refreshes pack-owned runtime and schemas and creates required root
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.10 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.10
+gh release download v2.3.11 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.11
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.10 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.11 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -1086,3 +1127,36 @@ The graph keeps the derived execution bound and the containing workflow keeps
 its declared caller permissions. This reflects GitHub's supported downgrade-only
 reusable workflow permission semantics, not an authority bypass.
 Reference: https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations
+
+### Frozen typed tool registration populations
+
+Application-operation schema `1.1` adds the opt-in
+`python_typed_registrations` population adapter. Existing schema `1.0` adapters
+retain their behavior; using the new adapter under `1.0` refuses.
+
+```yaml
+schema_version: '1.1'
+# The remaining registry document, operations and migrations are required.
+populations:
+  - id: query_tools
+    adapter: python_typed_registrations
+    source: scripts/interfaces/mcp_shared/registrars/query_tools.py
+    symbol: _QUERY_TOOL_REGISTRATIONS
+    public_only: true
+```
+
+The table must be a nonempty literal sequence of keyword-only frozen dataclass
+instances. Each literal name binds a concrete source factory, a direct
+`Spec.register(server, context)` forwarding method and an actual lexical handler
+registered through `server.tool(name=spec.name)`. Its single mediator `ask` or
+`send` call must use that same spec's query or command factory and current
+context. The owning registration loop must visit that exact table once.
+
+Each discovered entrypoint includes its lexical handler and exact table/name
+binding; two instances sharing a handler remain distinct operations. Effects
+follow the bound concrete factory and existing source call graph. Queries must
+declare query/read semantics and commands command/mutation semantics; real
+effect ports remain required and reachable. This adapter supplies no authority
+or confirmation waiver. Unknown forms, mutable or inherited specs, duplicate
+names, dynamic metadata, aliases, instance substitutions and changed source
+inventories refuse. DTO exports cannot substitute for these executable paths.
