@@ -592,6 +592,24 @@ repository's review and pinning boundary. It does not claim fresh provider
 authentication or grant release/publication authority. Do not invoke installer
 or upgrade custody APIs from recurring adopter validation or bootstrap helpers.
 
+For a local capture before tests, use the installed runtime directly:
+
+```python
+from pathlib import Path
+from scripts._bcf_runtime._version import __version__
+from scripts._bcf_runtime.governance_install.release_custody import capture_installed_runtime
+
+root = Path.cwd()
+capture = capture_installed_runtime(
+    root, expected_version=__version__,
+    schema_path=root / "schemas/bcf-runtime-lock.schema.json",
+)
+```
+
+This API checks and captures the installed byte inventory without release assets
+or credentials. Its provenance fields repeat reviewed installation pins; they
+do not claim a new supplier authentication.
+
 Installation and an explicitly requested upgrade acquire and authenticate a
 chosen release separately. Retain all runtime inputs needed by CI in the adopter
 repository or its own artifact store so a clean CI environment can reconstruct

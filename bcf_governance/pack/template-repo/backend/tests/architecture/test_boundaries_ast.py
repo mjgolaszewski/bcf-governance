@@ -6,7 +6,6 @@ import hashlib
 import sys
 
 import pytest
-import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -636,13 +635,8 @@ def test_bounded_context_duplication_is_explicit() -> None:
         contexts = _context_names_for_file(path)
         if len(contexts) != 1:
             continue
-        lines = [
-            re.sub(r"\s+", " ", line.strip())
-            for line in path.read_text(encoding="utf-8").splitlines()
-            if line.strip() and not line.strip().startswith("#")
-        ]
-        for index in range(0, max(len(lines) - min_lines + 1, 0)):
-            block = tuple(lines[index : index + min_lines])
+        for _, block in _native_owner().duplication_blocks(
+                path.read_text(encoding="utf-8"), min_lines):
             blocks_by_context[next(iter(contexts))][block].append(path)
 
     violations: list[str] = []

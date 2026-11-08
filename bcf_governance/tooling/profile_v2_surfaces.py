@@ -43,10 +43,10 @@ def selective_release_check_lines() -> list[str]:
     ]
 
 
-def render_v2_makefile(contract: dict[str, Any]) -> str:
-    gates = contract["gates"]
-    targets = " ".join(gates)
-    lines = [
+def makefile_header_lines(targets: str) -> list[str]:
+    """Render the common profile-independent Makefile front door once."""
+
+    return [
         "SHELL := /bin/bash",
         "include .artifacts/bcf/local-cli.mk",
         "BCF_PROJECT_PYTHON = $(BCF) ci project-python --repo-root .",
@@ -58,6 +58,12 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
         "\t@python=\"$$($(BCF_PROJECT_PYTHON))\" || exit $$?; \"$$python\" scripts/governance_truth.py --repo-root . --evidence-dir $(BCF_EVIDENCE_DIR)",
         "",
     ]
+
+
+def render_v2_makefile(contract: dict[str, Any]) -> str:
+    gates = contract["gates"]
+    targets = " ".join(gates)
+    lines = makefile_header_lines(targets)
     for target, gate in gates.items():
         command = list(gate["invocation"]["argv"])
         argv = render_make_argv(command)
@@ -77,12 +83,10 @@ def render_v2_makefile(contract: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def render_v2_workflow(contract: dict[str, Any], labels: list[str]) -> str:
-    gates = list(contract["gates"])
-    label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
-    matrix = "\n".join(f"          - {target}" for target in gates)
-    comparison = direct_comparison_environment(explicit_call=False)
-    return f'''name: governance
+def workflow_front_matter(comparison: dict[str, str], *, preflight: bool) -> str:
+    """Render shared event/permission/comparison bindings without changing profile jobs."""
+
+    text = f'''name: governance
 
 on:
   pull_request:
@@ -100,8 +104,18 @@ env:
   BCF_ORIGIN_COMPARISON_BASE_SHA: {comparison["BCF_ORIGIN_COMPARISON_BASE_SHA"]}
   BCF_COMPARISON_BASE_SHA: {comparison["BCF_COMPARISON_BASE_SHA"]}
   BCF_PR_BASE_SHA: {comparison["BCF_PR_BASE_SHA"]}
-  BCF_PREFLIGHT_MODE: ${{{{ github.event_name == 'pull_request' && 'pr' || 'release' }}}}
+'''
+    if preflight:
+        text += "  BCF_PREFLIGHT_MODE: ${{ github.event_name == 'pull_request' && 'pr' || 'release' }}\n"
+    return text
 
+
+def render_v2_workflow(contract: dict[str, Any], labels: list[str]) -> str:
+    gates = list(contract["gates"])
+    label_yaml = yaml.safe_dump(labels, default_flow_style=True).strip()
+    matrix = "\n".join(f"          - {target}" for target in gates)
+    comparison = direct_comparison_environment(explicit_call=False)
+    return workflow_front_matter(comparison, preflight=True) + f'''
 jobs:
   preflight:
     runs-on: {label_yaml}

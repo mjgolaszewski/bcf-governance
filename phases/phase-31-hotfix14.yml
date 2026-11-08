@@ -11,7 +11,7 @@ hotfix:
   mode: full
   related_phase_id: P31
   hotfix_number: 14
-  summary: Self-contained installed validation and typed registration compatibility
+  summary: Self-contained installed validation, native architecture and typed registration compatibility
 execution_evidence:
   planned_commands:
   - bcf ci submit --repo-root .
@@ -20,6 +20,12 @@ execution_evidence:
   - Typed registration initial causal and schema-owner suite:19 passed,0 failed.
   - Actual BDMCP source:38 query and27 command registration handler/factory/effect-port bindings passed through maintained
     import resolver.
+  - Final typed registration causal/schema suite:27 passed; actual38query/27command import-resolved handler/factory/effect
+    joins passed.
+  - Initial native duplication/controller/profile repair suite:153 passed.
+  - Complete320-file installed runtime:zero12-line executable-body duplicate windows under the actual flattened BDMCP runtime
+    context.
+  - Strict managed runtime lint and typing:319files pass after native duplication repair.
   notes:
   - 'Pre-edit scope: maintained architecture and operation-inventory queries in tooling, exact mirrored native gate, additive
     opt-in schema1.1, tests and canonical release docs. Preserve effect ports, complete source census, candidate/publication
@@ -30,6 +36,12 @@ execution_evidence:
     pins, not provider reauthentication or release/publication authority.
   - Implementation complete; final maintained standard CI, consolidated review, certification and immutable2.3.11 custody
     remain required.
+  - 'Scope includes the concrete39896 framework duplication failures: signatures are metadata; implementation windows remain
+    checked within lexical bodies. Raw observer and installed gate share one normalizer. No production member is excluded.'
+  - Shared provider snapshot/session encoders and profile Makefile/workflow preambles preserve existing outputs and authority
+    domains; both original callers retain authentication and effect custody.
+  - First submit was deliberately interrupted in semantic-ownership preflight before any test producer to complete this material
+    repair; it supplies no positive acceptance evidence.
 closeout_requirements:
   claims:
     required_suites_green:
