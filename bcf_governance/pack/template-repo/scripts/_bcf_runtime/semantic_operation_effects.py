@@ -99,6 +99,9 @@ def validate_operation_effects(
     authority: set[str] = set()
     pending = [entrypoint, *(path + "::<module>" for path in source_modules if path + "::<module>" in functions)]
     visited: set[str] = set()
+    # The function-name population is fixed for this one fresh validation.
+    # Reuse only lookup answers, never source observations or acceptance results.
+    resolved_calls: dict[str, str | None] = {}
     while pending:
         symbol = pending.pop()
         if symbol in visited:
@@ -130,7 +133,9 @@ def validate_operation_effects(
             )
         for call in function.get("calls", []):
             raw = str(call.get("called_symbol", ""))
-            callee = _resolve_function(raw, functions)
+            if raw not in resolved_calls:
+                resolved_calls[raw] = _resolve_function(raw, functions)
+            callee = resolved_calls[raw]
             identity = ("function", callee) if callee is not None else ("call", raw)
             hard_dispatch_failure = (
                 call.get("dispatch_resolution") == "unresolved"

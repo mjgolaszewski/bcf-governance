@@ -26,6 +26,8 @@ execution_evidence:
   - Complete320-file installed runtime:zero12-line executable-body duplicate windows under the actual flattened BDMCP runtime
     context.
   - Strict managed runtime lint and typing:319files pass after native duplication repair.
+  - Final native duplication/controller/profile suite:156 passed,0 failed.
+  - Effect/dispatch/typed-registration regression suite:89 passed,0 failed.
   notes:
   - 'Pre-edit scope: maintained architecture and operation-inventory queries in tooling, exact mirrored native gate, additive
     opt-in schema1.1, tests and canonical release docs. Preserve effect ports, complete source census, candidate/publication
@@ -42,6 +44,8 @@ execution_evidence:
     domains; both original callers retain authentication and effect custody.
   - First submit was deliberately interrupted in semantic-ownership preflight before any test producer to complete this material
     repair; it supplies no positive acceptance evidence.
+  - Repeated fallback function-name lookup is memoized only within one fresh operation check; source observation, body traversal,
+    effect policy and acceptance are not cached.
 closeout_requirements:
   claims:
     required_suites_green:
