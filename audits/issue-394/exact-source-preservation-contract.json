@@ -1,0 +1,224 @@
+{
+  "api": {
+    "activation": "No provider, release, phase or controller progress from successful source materialization alone.",
+    "failure": "Existing TrustedControllerBuildError family reports unresolved custody. Preserve exact body failure when cleanup succeeds; on unresolved cleanup retain original primary failure as cause plus secondary failure evidence.",
+    "preserve": "exact_head_source(repo_root: Path) -> context manager yielding Path; same clean committed-source and ignored-state exclusion"
+  },
+  "authority": false,
+  "contract": [
+    "Use an explicit uniquely owned mkdtemp parent; no unconditional TemporaryDirectory finalization or fallback recursive deletion.",
+    "Authenticate clean exact source commit/tree and canonical common store before mutation; preserve frozen anchor, installed runtime and unrelated Git objects/refs/worktrees.",
+    "Create and durably flush private pre-add intent outside removable checkout before invoking native Git; bind subject, common-store and owned-parent identities, purpose and retirement boundary.",
+    "Authenticate marker, worktree admin and commondir/backlink, exact clean source and registered graph before yielding.",
+    "Treat nonzero/exceptional/partial creation and accepted-add callback/pre-yield failure as potentially mutated until reconciled. Preserve unknown checkout/admin/intent.",
+    "On normal or exceptional body exit, authenticated native removal returncode is insufficient without exact registered checkout/admin absence and retained source/common invariants.",
+    "Preserve unresolved state and typed recovery coordinates on failed/exceptional/false-success removal; retain primary body failure with cleanup evidence.",
+    "Only verified retirement permits deletion of exact owned empty parent and intent; never delete foreign/replaced paths or force-prune shared administration.",
+    "On abrupt interruption parent must join durable intent to actual Git graph under original execution ownership before retry or subsequent consuming work.",
+    "Native Git subprocess effects, hook/filter/configuration and maintenance routes require bounded authenticated admission; Python audit hooks do not constrain native child opens.",
+    "Supported-platform durability semantics must be explicit and tested; unqualified profile assumptions cannot grant assurance.",
+    "Candidate build consumes an independently qualified pinned maintained-owner implementation; no candidate-selected evaluator or mutation of retained installed runtime."
+  ],
+  "derived_governance_scope": "Existing hotfix scaffolder derives next available P31 full-hotfix log/record before implementation. Freeze exact new log path and governed deltas before write; no phase/release advance.",
+  "document_kind": "bounded_implementation_contract",
+  "existing_oracle": {
+    "nodeid": "tests/test_release_artifacts.py::test_exact_head_build_source_excludes_ignored_stale_payload",
+    "source_preserved": true,
+    "source_sha256": "7197e53b9a2d3134b9ed01851d1e7a634bd1594ddfcbd4527f72028f6eee51dd"
+  },
+  "forbidden": [
+    "frozen retained source checkout changes",
+    "installed runtime changes",
+    "protected/default branches or workflow authority edits",
+    "release-script materializer repair",
+    "governance_evidence materializer repair",
+    "alternate archive or materializer owner",
+    "SDK private payload access",
+    "unregistered Git store or worktree deletion",
+    "GC/prune/force removal of uncertain or shared state"
+  ],
+  "fresh_subject_rule": "Preimage e503 is historical. Any contract/implementation commit requires new exact subject and snapshot; no reuse of old1733-file claim for changed source.",
+  "owner_preimage_sha256": "1bdeb33e940838c9c092e477448aef6737fce7c9a92ba1d20f6682c10480d789",
+  "planned_causal_controls": [
+    {
+      "admission": "Bind exact source edit to original named assertion/type/line and native population before execution.",
+      "cause": "restore_implicit_recursive_finalization",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Bind exact source edit to original named assertion/type/line and native population before execution.",
+      "cause": "omit_durable_pre_add_intent",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Bind exact source edit to original named assertion/type/line and native population before execution.",
+      "cause": "trust_remove_zero_without_absence",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Bind exact source edit to original named assertion/type/line and native population before execution.",
+      "cause": "omit_admin_identity_join",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Bind exact source edit to original named assertion/type/line and native population before execution.",
+      "cause": "mask_primary_body_failure",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Bind exact source edit to original named assertion/type/line and native population before execution.",
+      "cause": "erase_uncertain_creation",
+      "status": "UNAUTHORED_UNRUN"
+    }
+  ],
+  "planned_tests": [
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_successful_exact_checkout_and_verified_retirement",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_body_failure_retires_and_preserves_original_failure",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_nonzero_remove_preserves_checkout_admin_and_intent",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_remove_exception_preserves_checkout_admin_and_intent",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_false_success_with_residue_is_unresolved",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_accepted_add_callback_failure_preserves_registered_state",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_nonzero_add_after_real_mutation_preserves_state",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_add_exception_after_real_mutation_preserves_state",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_changed_admin_linkage_is_typed_block",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_replaced_owned_parent_is_typed_block",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_body_plus_cleanup_failure_retains_primary_cause",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_duplicate_retirement_cannot_delete_foreign_state",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_forced_interruption_leaves_durable_reconciliation_intent",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_controller_build_consumes_maintained_owner",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_private_runtime_projection_matches_canonical_owner",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "nodeid": "tests/test_exact_head_source_custody.py::test_retained_anchor_source_history_and_shared_objects_preserved",
+      "status": "UNAUTHORED_UNRUN"
+    }
+  ],
+  "population": {
+    "actual": 0,
+    "new": 16,
+    "planned_causal": 6,
+    "planned_total": 40,
+    "restored": 17,
+    "retained": 1
+  },
+  "projection_owner": ".github/scripts/build_pack_manifest.py",
+  "projection_owner_sha256": "2ea5fb3f8809ae219e29cf9c96360d5a41f8abda6e0611facb3fdb1e1ee2bd99",
+  "residuals": [
+    "Separate release-script and governance_evidence TemporaryDirectory paths remain unqualified/open",
+    "Concrete fixtures/native IDs/fault-source bytes/Git-store-edge/storage/runtime and deadline envelopes require independent freeze/admission",
+    "No approved performance thresholds or release custody established",
+    "Contract-only source authoring grants no production or consuming execution"
+  ],
+  "scope": {
+    "bounded_context": "ci_authority",
+    "layer": "existing tooling",
+    "owner": "bcf_governance/tooling/ci_controller_builder.py::exact_head_source",
+    "preimage_commit": "e503b7fbefd88356c986b8c05fdedc6c9c0e7823",
+    "preimage_framework_version": "2.3.10",
+    "preimage_tree": "b00b7d04a423ced368486d82672dbeb7bf7230bd",
+    "side": "source-materialization command and custody query"
+  },
+  "sequence": [
+    "Materialize and independently review portable bounded contract only",
+    "Register persistent maintained owner and commit contract through separate finite Git/governance admission",
+    "Implement canonical owner and controls under separate Source scope; no oversized module or new parallel owner",
+    "Run real filesystem/Git behaviors, six cause-specific controls and exact restoration with qualified child-tree custody",
+    "Regenerate private runtime/pack manifests solely through existing projection owner",
+    "Required governance/architecture/semantic/lint/type/package/consumer parity on exact current subject",
+    "Reauthenticate candidate build inputs before use; no publication by this slice"
+  ],
+  "source_snapshot_preimage_sha256": "925e39d66dc07a074cf1177086ce2a2e4e11e281b704f1718478e47033d740a6",
+  "status": "PLANNED_UNCOMMITTED_UNIMPLEMENTED_ALL40_EVENTS_UNAUTHORED_UNRUN",
+  "targets": [
+    "audits/issue-394/exact-source-preservation-contract.json",
+    "bcf_governance/tooling/ci_controller_builder.py",
+    "tests/test_exact_head_source_custody.py",
+    "template-repo/scripts/_bcf_runtime/ci_controller_builder.py",
+    "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_controller_builder.py",
+    "template-repo/.bcf-pack-manifest.json",
+    "bcf_governance/pack/template-repo/.bcf-pack-manifest.json",
+    "plans/phase-ledger.yml",
+    "MEMORY.yml"
+  ],
+  "targets_preimages": {
+    "MEMORY.yml": {
+      "bytes": 9891,
+      "sha256": "2b702e99e9e4a7f97c3dd1a21423de5b94e584aeb5ed9b82e5d12c3a6c4adae3"
+    },
+    "audits/issue-394/exact-source-preservation-contract.json": {
+      "preimage": "ABSENT"
+    },
+    "bcf_governance/pack/template-repo/.bcf-pack-manifest.json": {
+      "bytes": 82775,
+      "sha256": "35d09ffdb7bada1a4d03aa744b558fface90a5c17619ecabdfc359efa396f655"
+    },
+    "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_controller_builder.py": {
+      "bytes": 9799,
+      "sha256": "1bdeb33e940838c9c092e477448aef6737fce7c9a92ba1d20f6682c10480d789"
+    },
+    "bcf_governance/tooling/ci_controller_builder.py": {
+      "bytes": 9799,
+      "sha256": "1bdeb33e940838c9c092e477448aef6737fce7c9a92ba1d20f6682c10480d789"
+    },
+    "plans/phase-ledger.yml": {
+      "bytes": 15355,
+      "sha256": "033b35707698b084257061d86ecd79d25282f4cfc87ebaa63d93881b380231aa"
+    },
+    "template-repo/.bcf-pack-manifest.json": {
+      "bytes": 82775,
+      "sha256": "35d09ffdb7bada1a4d03aa744b558fface90a5c17619ecabdfc359efa396f655"
+    },
+    "template-repo/scripts/_bcf_runtime/ci_controller_builder.py": {
+      "bytes": 9799,
+      "sha256": "1bdeb33e940838c9c092e477448aef6737fce7c9a92ba1d20f6682c10480d789"
+    },
+    "tests/test_exact_head_source_custody.py": {
+      "preimage": "ABSENT"
+    }
+  },
+  "version": "1.0"
+}

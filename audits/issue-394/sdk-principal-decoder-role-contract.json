@@ -1,0 +1,251 @@
+{
+  "authority": false,
+  "cases": [
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_legacy_absent_retains_raw_findings",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_supported_decoder_produces_non_authoritative_shadow_fact",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_unsupported_role_version_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_duplicate_function_selector_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_selector_outside_component_members_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_layer_context_and_raw_observation_preserved",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_actual_sdk_valid_owner_flow",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_forged_sdk_input_fails_closed",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_consistent_local_alias_rename_preserves_flow",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_shadowed_builtin_or_sdk_import_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_substituted_constructor_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_swapped_tenant_subject_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_default_principal_fallback_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_inline_business_predicate_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_nested_write_or_authority_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_unresolved_dynamic_dispatch_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_constructor_postinit_authority_effect_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_class_descriptor_or_decorator_effect_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_undeclared_discovered_function_remains_blocking",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_edge_declaration_test_removal_detected_by_required_operation_witness",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_moved_source_policy_schema_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_old_consumer_new_contract_typed_block",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_forged_cross_subject_cached_role_fact_refused",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "planned_nodeid": "tests/test_sdk_principal_decoder_role.py::test_candidate_activation_attempt_cannot_suppress_raw_failure",
+      "status": "UNAUTHORED_UNRUN"
+    }
+  ],
+  "causal_controls": [
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_sdk_type_provenance",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_constructor_provenance",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_tenant_subject_flow_join",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_closed_shape_business_predicate_check",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_transitive_effect_check",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_required_operation_witness_join",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "disable_consuming_subject_reauthentication",
+      "status": "UNAUTHORED_UNRUN"
+    },
+    {
+      "admission": "Freeze exact source edit and original assertion/type/line binding after implementation before execution",
+      "cause": "incorrectly_enable_candidate_suppression",
+      "status": "UNAUTHORED_UNRUN"
+    }
+  ],
+  "document_kind": "bounded_implementation_contract",
+  "execution": "Separate later grant only after concrete fixtures/native inventory/runtime pins/deadlines/storage/Git-registration plan; no execution budget or temporary-Git cardinality inferred now.",
+  "forbidden": [
+    "protected/default branch",
+    "generated workflow authority",
+    "maintained adopter source",
+    "actual SDK payloads",
+    "raw architecture violations",
+    "release activation",
+    "new graph, registry, evaluator or receipt family"
+  ],
+  "gating": [
+    "Commit bounded contract before production implementation",
+    "Complete independently authenticated fixture/provenance/witness scope; unsupported provenance remains a typed block",
+    "Retain original raw266 findings and unknown roles",
+    "Affected behaviors plus cause-specific original-frame failures and exact restoration",
+    "Required architecture/governance/semantic/package/installed parity checks on exact subject",
+    "No trusted activation as part of this shadow slice"
+  ],
+  "next_action": "Review and materialize contract only under fresh finite original-fence Source window; commit through maintained governance boundary before implementation",
+  "population": {
+    "actual": 0,
+    "causal": 8,
+    "healthy_and_adverse": 24,
+    "not_a_performance_cohort": true,
+    "planned_total": 56,
+    "restored": 24
+  },
+  "prior_conditions": [
+    "Exact target source/runtime must be authenticated before contract implementation; newer isolated 2.5 APIs are not presumed present in retained runtime",
+    "Existing native member discovery, raw architecture observation and semantic effect owners remain authoritative",
+    "This direct BDMCP-blocker shadow contract does not advance the isolated 2.5 P32 train or maintained release authority."
+  ],
+  "proof_obligations": [
+    "Add a versioned function_contracts field only inside existing SourceComponent; no new file registry or graph. Fields identify exact source-qualified selector, supported sdk_principal_decoder.v1 profile and existing SDK type/constructor identities; declarations are requests, not proof.",
+    "Membership compiler derives semantic facts from exactly native.members and checks file/hash/function completeness before role validation. Reuse discover_python_source and validate_operation_effects; resolve the selected function from admitted raw bytes and existing facts, with no new discovery population.",
+    "Closed role shape recognizes guarded actual AuthenticatedUser -> access_token -> getattr tenant_id/principal_id with None defaults -> str checks -> canonical PrincipalOwner(tenant,subject), catching only ValueError to None. Resolve aliases and dataflow, not variable names or exact whole-file hash.",
+    "Reject builtin/import/constructor shadowing, swapped tenant/sub flow, fallback/default principal, overridden authority argument, extra predicates, nested writes, dynamic dispatch, class/decorator/descriptor effects outside supported profile and constructor/post-init authority effects. Canonical PrincipalOwner and actual SDK type require existing independently qualified source/runtime provenance; string labels cannot bless them.",
+    "Attach non-authoritative role-validation data to existing EffectiveSourceInventory. Keep every raw Violation and unchanged layer/context. First slice is shadow qualification only; it may prove applicability of one named delegation finding but cannot suppress it in a released gate until trusted versioned consumer/policy activation is independently admitted. Other 265 findings and _set_validated_principal_attributes stay open.",
+    "Required caller/operation/effect witness comes from the existing independently discovered and authorized operation/registration population, not the role declaration. Removing edge, declaration and test together must still fail that required witness."
+  ],
+  "provenance_capability_status": "PROPOSED_SHADOW_PROFILE_ONLY; existing SDK package-metadata context is insufficient; actual external type/constructor witnesses unresolved, so positive role qualification remains typed blocked.",
+  "residuals": [
+    "No independent required operation/registration witness means no deletion-completeness claim",
+    "No actual SDK/constructor provenance means no valid-role proof",
+    "No remaining-role coverage, safe suppression, full Standard, performance or release custody"
+  ],
+  "scope": {
+    "context": "architecture_policy",
+    "layer": "existing tooling",
+    "operation": "Independently qualify one immutable SDK principal decoder profile as nonauthoritative shadow observation",
+    "side": "query",
+    "subject": "scripts/contexts/runtime_observability/interfaces/principal_observation.py::McpPrincipalObservation.read_principal"
+  },
+  "source_admission": "Private staging and implementation require scheduler-owned finite admission; this contract grants no execution.",
+  "status": "PLANNED_UNCOMMITTED_UNIMPLEMENTED_UNRUN",
+  "target_subject": {
+    "commit": "e503b7fbefd88356c986b8c05fdedc6c9c0e7823",
+    "framework_version": "2.3.10",
+    "fresh_Git_reauthentication_required_before_commit_or_execution": true,
+    "kind": "retained_committed_framework_source_and_exact_installed_runtime",
+    "subject_record_sha256": "aafac40d90963c440300d443199643aa95ef5ca0f83c0bdb304ef9df6616dfd7",
+    "tree": "b00b7d04a423ced368486d82672dbeb7bf7230bd"
+  },
+  "targets": [
+    "schemas/architecture-boundaries.schema.json",
+    "bcf_governance/tooling/architecture_source_components.py",
+    "bcf_governance/tooling/semantic_operation_effects.py",
+    "bcf_governance/tooling/architecture_membership_compilation.py",
+    "bcf_governance/tooling/architecture_native_gate.py",
+    "tests/test_sdk_principal_decoder_role.py",
+    "audits/issue-394/sdk-principal-decoder-role-contract.json"
+  ],
+  "targets_preimages": {
+    "audits/issue-394/sdk-principal-decoder-role-contract.json": {
+      "preimage": "ABSENT"
+    },
+    "bcf_governance/tooling/architecture_membership_compilation.py": {
+      "bytes": 7683,
+      "sha256": "e9aae13f28d5f01ec852767ff16dd15aa2ec89ce178dbd651612a6a342b0715b"
+    },
+    "bcf_governance/tooling/architecture_native_gate.py": {
+      "bytes": 2197,
+      "sha256": "e2cbbcefff584c438a9d5546c990336aa40354de9002d2de05725ae38bef0ab8"
+    },
+    "bcf_governance/tooling/architecture_source_components.py": {
+      "bytes": 7770,
+      "sha256": "ee87b367fca6128ddb21656ac04726b79c0a49f119a52813850221c477d19b7e"
+    },
+    "bcf_governance/tooling/semantic_operation_effects.py": {
+      "bytes": 8863,
+      "sha256": "8b3d1f33749ffd3a36e5b4d3f5464f36948a1e3deb6dd5688aaf7f44322706f4"
+    },
+    "schemas/architecture-boundaries.schema.json": {
+      "bytes": 20457,
+      "sha256": "00b2f04a125cda53e126ee78499e3ea3f8cf7e9fd5c9510bd358045ad663b907"
+    },
+    "tests/test_sdk_principal_decoder_role.py": {
+      "preimage": "ABSENT"
+    }
+  },
+  "version": "1.0",
+  "versioning": {
+    "legacy": "1.0/1.1 unchanged",
+    "migration": "additive optional shadow-only field, no change in gate status for absent declaration",
+    "proposal": "source_component_ownership 1.2 function_contracts nested in existing SourceComponent",
+    "unsupported": "typed refusal; no permissive fallback"
+  }
+}

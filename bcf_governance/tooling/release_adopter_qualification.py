@@ -123,34 +123,79 @@ from bcf_governance.tooling.release_adopter_qualification import (
 )
 
 print(json.dumps(
-    run_candidate_qualification_train(Path(sys.argv[1]), Path(sys.argv[2])),
+    run_candidate_qualification_train(
+        Path(sys.argv[1]), Path(sys.argv[2]),
+        candidate_source=Path(sys.argv[3]), candidate_assets=Path(sys.argv[4]),
+        candidate_build=Path(sys.argv[5]), adopter_commit=sys.argv[6], adopter_tree=sys.argv[7],
+    ),
     sort_keys=True,
 ))
 """
 
 
 def run_candidate_qualification_train(
-    repo_root: Path, project_python: Path
+    repo_root: Path, project_python: Path, *, candidate_source: Path | None = None,
+    candidate_assets: Path | None = None, candidate_build: Path | None = None,
+    adopter_commit: str = "", adopter_tree: str = "",
 ) -> dict[str, Any]:
     """Execute one typed, observation-only adopter qualification proof."""
 
+    from .architecture_candidate_membership import (
+        CandidateQualificationInputs,
+        qualify_candidate_membership,
+    )
+    from .architecture_candidate_transport import KEY, encode_candidate_inputs
+    from .architecture_policy_input import _read, load_architecture_mapping
+    from .bootstrap.environment import scoped_execution_environment
     from .local_pr import run_prospective_train
     from .local_pr_context import LocalValidationLane
     from .prospective_candidate_identity import canonical_prospective_inputs
-
+    # Ownership eligibility belongs only to PRESENT declarations. Existing
+    # candidate installs may legitimately preserve consumer-owned files; ABSENT
+    # retains the original full train without adding this classifier's rules.
+    config = repo_root / "architecture-boundaries.yml"
+    if config.exists() or config.is_symlink():
+        config_raw = _read(config)
+        document = load_architecture_mapping(config, expected_sha256=hashlib.sha256(config_raw).hexdigest())
+        architecture = document.get("architecture")
+        present = isinstance(architecture, dict) and "source_component_ownership" in architecture
+    else:
+        present = False
+    initial = None
+    inputs = None
+    if present:
+        if candidate_source is None or candidate_assets is None or candidate_build is None:
+            raise ReleaseQualificationError("candidate train requires its maintained exact build/source inputs")
+        inputs = CandidateQualificationInputs(
+            candidate_source, candidate_assets, candidate_build,
+            Path(__file__).resolve().parents[1] / "pack/template-repo",
+            adopter_commit, adopter_tree,
+        )
+        initial = qualify_candidate_membership(repo_root, inputs)
     canonical = canonical_prospective_inputs(
         repo_root, remote=_QUALIFICATION_BASE_REMOTE
     )
-    return run_prospective_train(
-        repo_root,
-        semantic_intent=str(canonical["semantic_intent"]),
-        evaluation_target=canonical["evaluation_target"],
-        subject_commit=str(canonical["subject_commit"]),
-        subject_tree=str(canonical["subject_tree"]),
-        remote=_QUALIFICATION_BASE_REMOTE,
-        python_executable=project_python,
-        validation_lane=LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
-    )
+    with scoped_execution_environment().comparison({
+        KEY: encode_candidate_inputs(inputs) if inputs is not None else "",
+        "BCF_RELEASE_MEMBERSHIP_INPUTS": "",
+    }):
+        result = run_prospective_train(
+            repo_root,
+            semantic_intent=str(canonical["semantic_intent"]),
+            evaluation_target=canonical["evaluation_target"],
+            subject_commit=str(canonical["subject_commit"]),
+            subject_tree=str(canonical["subject_tree"]),
+            remote=_QUALIFICATION_BASE_REMOTE,
+            python_executable=project_python,
+            validation_lane=LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION,
+        )
+    if initial is not None:
+        if inputs is None:
+            raise ReleaseQualificationError("candidate inputs missing during reauthentication")
+        if qualify_candidate_membership(repo_root, inputs) != initial:
+            raise ReleaseQualificationError("candidate membership changed during full prospective train")
+    return result
+
 
 
 def _exact_release_runtime(
@@ -380,7 +425,17 @@ def _isolated_project_python(
         text = path.read_text(encoding="utf-8")
         if source_text in text:
             path.write_text(text.replace(source_text, destination_text), encoding="utf-8")
-        if re.search(r"/(?:docker|home)/", path.read_text(encoding="utf-8")):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            if not re.search(r"/(?:docker|home)/", line):
+                continue
+            entry = Path(line)
+            if (
+                line == line.strip()
+                and entry.is_absolute()
+                and entry.resolve().is_relative_to(destination_root.resolve())
+                and entry.as_posix().startswith(destination_text + "/")
+            ):
+                continue
             raise ReleaseQualificationError(
                 "adopter environment retains an unrelated workspace path hook"
             )
@@ -547,6 +602,8 @@ def qualify_release(
                     _CANDIDATE_QUALIFICATION_TRAIN,
                     str(destination),
                     str(project_python),
+                    str(repo_root.resolve()), str(release_assets.resolve()),
+                    str(release_build_manifest.resolve()), source.commit_sha, source.tree_sha,
                 ],
                 cwd=destination,
                 env=environment,

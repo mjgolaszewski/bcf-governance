@@ -13,25 +13,12 @@ from typing import Any
 
 import yaml
 
+from .repository_discovery import _SKIPPED_DIRECTORY_NAMES
+
 OUTPUT_FORMATS = {"text", "json"}
 ALLOW_MARKERS = ("governance-exposure: allow", "exposure-scan: allow")
 TEXT_SUFFIXES = {".json", ".md", ".toml", ".txt", ".yaml", ".yml"}
-SKIP_DIRS = {
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".tox",
-    ".venv",
-    "__pycache__",
-    "artifacts",
-    ".artifacts",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-}
+SKIP_DIRS = set(_SKIPPED_DIRECTORY_NAMES)
 DEFAULT_SCAN_PATHS = [
     "AGENTS.yml",
     "MEMORY.yml",
@@ -55,6 +42,24 @@ PATTERNS = {
         r"(?<!\.)(?<![A-Za-z0-9_-])(?:[a-zA-Z0-9-]+\.)+(?:internal|corp|lan|local)\b(?![A-Za-z0-9.-])"
     ),
 }
+
+
+def _validate_portable_governed_commands(
+    commands: list[str], *, patterns: dict[str, re.Pattern[str]]
+) -> list[str]:
+    """Apply the existing portable-command contract for scaffolding consumers."""
+    for command in commands:
+        matched = sorted(
+            name
+            for name, pattern in patterns.items()
+            if pattern.search(command)
+        )
+        if matched:
+            raise ValueError(
+                "governed validation command exposes nonportable infrastructure: "
+                + ", ".join(matched)
+            )
+    return commands
 
 
 @dataclass(frozen=True)

@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from .governance_install.transaction import apply_transaction, copy_repository_shadow
+from .governance_install.validation import run_validation
 from .governance_profiles import apply_profile_contract, promote
 from .semantic_authority_commands import _apply_config, _load_config
 from .semantic_authority_contracts import capability_states
@@ -47,19 +48,8 @@ def _render_in_shadow(
             raise ValueError(
                 "--semantic-config is required before Standard-v2 or Regulated-v2 semantic adoption"
             )
-    validation = subprocess.run(
-        [
-            sys.executable,
-            str(shadow / "scripts/validate_governance_yaml.py"),
-            "--repo-root",
-            str(shadow),
-            "--format",
-            "json",
-            "--compact",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
+    validation = run_validation(
+        shadow, allow_placeholders=False, allow_release_gate_placeholders=False
     )
     if validation.returncode != 0:
         raise ValueError(
@@ -142,19 +132,8 @@ def main(argv: list[str] | None = None) -> None:
                     raise ValueError(
                         "--semantic-config is required before Standard-v2 or Regulated-v2 semantic adoption"
                     )
-            validation = subprocess.run(
-                [
-                    sys.executable,
-                    str(shadow / "scripts/validate_governance_yaml.py"),
-                    "--repo-root",
-                    str(shadow),
-                    "--format",
-                    "json",
-                    "--compact",
-                ],
-                capture_output=True,
-                text=True,
-                check=False,
+            validation = run_validation(
+                shadow, allow_placeholders=False, allow_release_gate_placeholders=False
             )
             if validation.returncode != 0:
                 raise ValueError(

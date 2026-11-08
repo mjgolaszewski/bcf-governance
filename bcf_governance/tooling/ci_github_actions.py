@@ -17,10 +17,35 @@ ACTION_PINS = MappingProxyType(
 )
 
 
-def action_pin(action_id: str) -> str:
+# Maintained adopter-only actions are supported without claiming framework use.
+ADOPTER_ACTION_PINS = MappingProxyType({
+    "setup-uv": "astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78",
+})
+
+
+# Additional maintained immutable identities are opt-in per component.
+# Existing consumers retain the default map above.
+ACTION_COMPATIBILITY_PINS = MappingProxyType({
+    "checkout": frozenset({
+        "actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd",
+    }),
+    "upload-artifact": frozenset({
+        "actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f",
+    }),
+})
+
+def action_pin(action_id: str, source_pin: str | None = None) -> str:
     """Return one closed, immutable action source identity."""
 
     try:
-        return ACTION_PINS[action_id]
+        default = (
+            ACTION_PINS[action_id] if action_id in ACTION_PINS
+            else ADOPTER_ACTION_PINS[action_id]
+        )
+        if source_pin is None or source_pin == default:
+            return default
+        if source_pin in ACTION_COMPATIBILITY_PINS.get(action_id, frozenset()):
+            return source_pin
+        raise ValueError(f"unregistered immutable source for action {action_id}")
     except KeyError as exc:
         raise ValueError(f"unknown GitHub action pin: {action_id}") from exc

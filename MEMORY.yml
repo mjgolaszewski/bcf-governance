@@ -20,6 +20,7 @@ memory_retention_policy:
   stale_entry_handling: [mark_deprecated_before_removal, preserve_replacement_reference_when_available]
 environment_facts:
   current_repo_state:
+  - "P31-HF12 implements exact-source custody preservation through the existing owner API. Independent scoped qualification accepts17 healthy cases,6 genuine causal failures and17 restored cases, plus affected Ruff and strict checks. External maintained-owner execution, distribution and complete candidate/CI/release custody remain pending; installed runtime is unchanged."
   - "Operator2026-10-28 prioritizes BDMCP unblock. P31-HF11 isolates the producer-only import repair for ordinary consumer typing. Broader semantic and Racecar JIT work remains preserved outside this candidate for later maintenance or independent2.5; ordinary CI has no live Identity dependency. Qualification and official custody remain pending."
   - P31-HF10 removes duplicate authenticated exact-main chain resolution via existing local custody routing; preserves deadline and recovery exclusion. Original negative topology proof and native reconciliation passed; full candidate and actual hosted custody pending.
   - P31-HF09 reproduced native console relocation and genuine setuptools adoption blockers; focused56 cases, production/new-test strict typing and actual49-package cold/warm console custody pass locally. Native reconcile/installer/full release/adopter assurance remains open; audits/maintenance-managed-quality-contract.yml owns the current scope.
@@ -43,6 +44,7 @@ environment_facts:
   - P31 and release_26 are closed; immutable v2.3.0 was published from certified commit 76c953c1f04b50d26df6e5c4162dc671a8eadcd5 and exact custody is recorded in audits/v2.3.0-release-custody.yml.
   active_artifacts: {spec: plans/product-spec.yml, build_plan: plans/build-plan.yml, active_phase_ledger: plans/phase-ledger.yml, phase_history: plans/phase-history.yml, active_phase_plan: plans/phase-31-plan.yml, active_workitem_ledger: plans/phase-31-workitems.yml, active_phase_log: phases/phase-31-log.yml}
 known_constraints:
+- P31-HF13 implements exact serial workflow capture ownership from Ironwatch handoff39219; maintained final CI and immutable2.3.10 custody remain pending.
 - P31-HF09 managed runtime strict quality repair remains open; audits/maintenance-managed-quality-contract.yml and phases/phase-31-hotfix09.yml own measured diagnostics, preserved behavior and release qualification obligations.
 - candidate code runs only on disposable workers; trusted workers reconstruct provider state and never check out candidate code
 - routine controller rotation becomes active only after its dormant provider compiler is installed through the one-time ordinary N/N+1 migration; provider evidence never grants release authority
@@ -56,3 +58,5 @@ references:
   governance: [AGENTS.yml, governance-profile.yml, governance/gate-contracts.yml, governance/evidence-policy.yml, governance/ci-graph.yml, plans/phase-ledger.yml, plans/phase-history.yml]
   product: [plans/product-spec.yml, plans/build-plan.yml]
   execution: [plans/phase-history.yml, plans/phase-30-plan.yml, plans/phase-30-workitems.yml, phases/phase-30-log.yml, plans/phase-31-plan.yml, plans/phase-31-workitems.yml, phases/phase-31-log.yml]
+
+# P31-HF12 recovery: stale clean-head control and fixture migration pending qualification; no gate waived.

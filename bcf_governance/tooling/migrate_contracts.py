@@ -13,6 +13,7 @@ from typing import Any
 import yaml
 
 from .governance_install.transaction import apply_transaction
+from .governance_install.validation import run_validation
 from .governance_profiles import apply_profile_contract, load_contract, promote
 from .profile_governance import MANAGED_PROFILE_PATHS
 
@@ -143,19 +144,8 @@ def apply_contract_migration(repo_root: Path) -> ContractMigrationPlan:
             storage_path.write_text(
                 yaml.safe_dump(storage, sort_keys=False), encoding="utf-8"
             )
-        validation = subprocess.run(
-            [
-                sys.executable,
-                str(shadow / "scripts/validate_governance_yaml.py"),
-                "--repo-root",
-                str(shadow),
-                "--format",
-                "json",
-                "--compact",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
+        validation = run_validation(
+            shadow, allow_placeholders=False, allow_release_gate_placeholders=False
         )
         if validation.returncode:
             raise ContractMigrationError(

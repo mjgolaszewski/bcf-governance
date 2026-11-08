@@ -1,0 +1,70 @@
+{
+  "owner": "home:bcf-governance:closure-engine",
+  "coordinator": "home:bdmcp:bcf-recovery",
+  "status": "SOURCE_REVIEW_DECISION_NOT_QUALIFIED",
+  "base_commit": "db35dc9551b7f8a7aba947b759ca5a1caeab624b",
+  "official_wheel_sha256": "b7474c73c5d788c4fab9779220755afd02f56d2159011e63a373527124a6df92",
+  "input_memo_sha256": "65a2f8dd40d8cca85dc7a7f5addb0b99d0c814c225dbb8976a1b9e8345e520f6",
+  "disposition": "No supported 2.3.9 declaration resolves all eight boundaries. Preserve current refusal, implement and qualify framework-owned corrections/extensions. A new distinct maintenance release is necessary IF these changes ship before 2.5; exact version not reserved or publication authorized by this memo. 2.3.9 remains immutable. Tuple correction alone does not unblock SDK Standard3.",
+  "capabilities": [
+    {
+      "capability": "property",
+      "decision": "MAINTAINED_REPAIR_REQUIRED",
+      "route": "Builtin descriptor identity and separate getter entrypoints; retain source getter body/effects. Name-only property allowlist is unsound.",
+      "negative_boundary": "Shadowed builtin, custom decorators, setters/deleters, descriptor/inheritance or rebinding ambiguity refuse."
+    },
+    {
+      "capability": "super_mro",
+      "decision": "MAINTAINED_REPAIR_REQUIRED",
+      "route": "Resolve source-proven class and cooperative MRO; explicit builtin exception local-state effect model where provable. Keep unknown cooperative dispatch hard.",
+      "negative_boundary": "Multiple/dynamic bases, custom overrides, shadowed super and unaccounted args/state effects refuse."
+    },
+    {
+      "capability": "receiver_alias",
+      "decision": "MAINTAINED_REPAIR_REQUIRED",
+      "route": "Distinguish value dependency from receiver identity; current ast.walk origins taint response/data with self when obtained through self.field. Need exact assignment/return/value provenance and category-specific external ports.",
+      "negative_boundary": "Never mark all aliases eligible; ambiguous branches/rebinding/custom receiver effects refuse; annotations alone insufficient."
+    },
+    {
+      "capability": "classmethod_construction",
+      "decision": "MAINTAINED_REPAIR_REQUIRED",
+      "route": "Record actual cls call as class-bound construction with receiver/subclass provenance; do not assert statically exact canonical class for arbitrary subclass dispatch.",
+      "negative_boundary": "Rebound/shadowed/escaped cls, unknown target and unaccounted normalization refuse."
+    },
+    {
+      "capability": "external_library_construction",
+      "decision": "CONTRACT_EXTENSION_REQUIRED",
+      "route": "Current covered=owner_discovered and bool(actual construction facts) has no external-library witness path. Add explicit externally callable construction responsibility with independently verified public API/consumer witness; keep constructor_count=0 truthful.",
+      "negative_boundary": "No fake calls, extra test roots, report-only downgrade or automatic zero-count acceptance."
+    },
+    {
+      "capability": "nested_callbacks",
+      "decision": "MAINTAINED_REPAIR_REQUIRED",
+      "route": "Inventory nested functions with lexical qualified identities; separate factory creation from deferred body calls/effects and connect actual callback invocation/field sink witnesses.",
+      "negative_boundary": "Do not flatten or treat factory invocation as callback execution; unknown escape/alias/async effect remains unresolved."
+    },
+    {
+      "capability": "tuple_receiver_targets",
+      "decision": "MAINTAINED_DEFECT_FIRST_SLICE",
+      "route": "Recursive tuple/list/starred/delete target traversal in existing visitor; reuse current rebinding/effect guard. Source-only patch+12 authored cases ready.",
+      "negative_boundary": "Every method target retained; exact-other receiver stays distinct; existing unresolved dispatch is not relaxed."
+    },
+    {
+      "capability": "defaults_normalization",
+      "decision": "DECLARATION_AVAILABLE_PROOF_INCOMPLETE",
+      "route": "Existing permitted_defaults_and_single_application_point entries name field,value,owner; authorized constructors/factories and hostile_boundary_decoder name distinct paths. These declarations do not currently establish path-sensitive single-application correctness. Preserve direct constructor defaults vs explicit decoded values; extend native conformance if required.",
+      "negative_boundary": "No empty defaults interpreted as absence, no tuple helper relabeled canonical owner, no DTO construction conferred token authority."
+    }
+  ],
+  "first_slice": {
+    "patch": "tuple-target-completeness-DRAFT.patch",
+    "tests": "test_semantic_receiver_target_completeness.py",
+    "expected_cases": 12,
+    "status": "UNAPPLIED_UNRUN",
+    "mirrors": "Both authored producer and managed runtime source patched identically; regenerated pack projection still required after application.",
+    "qualification": "Recovery scheduled exact official-base candidate, retain baseline/red and healthy/negative/restored controls; all existing method/semantic tests and source mirrors, typing/lint then required full native gates. Actual SDK reacquisition and complete original20+semantic21/337 required; no filtered facts or tests."
+  },
+  "source_custody": "No existing project/source/env/shared Git state mutated. Source-only owner staging; proposed isolated branch maintenance/sdk-native-compatibility after Recovery schedules exact source assembly. Existing main/dirty deferred work and 2.5 unaffected.",
+  "retirement": "Owner staging remains needed through decision/application/qualification; archive unique draft or retain committed reachable refs before retiring after merge.",
+  "runtime_or_native_execution": false
+}

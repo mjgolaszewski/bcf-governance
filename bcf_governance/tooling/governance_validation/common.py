@@ -13,6 +13,8 @@ from typing import Protocol, SupportsIndex, SupportsInt
 import yaml
 from jsonschema import Draft202012Validator, ValidationError
 
+from ..repository_discovery import _SKIPPED_DIRECTORY_NAMES
+
 
 class _IntegerBuffer(Protocol):
     def __buffer__(self, flags: int, /) -> memoryview: ...
@@ -117,28 +119,6 @@ RELEASE_GATE_POLICY_MARKERS = {
     "semantic_ownership": ("semantic-ownership", "semantic_ownership"),
     "ci_certification": ("ci-certification", "ci_certification"),
 }
-DEFAULT_RELEASE_GATE_TARGETS = {
-    "governance-validate",
-    "governance-exposure-scan",
-    "architecture-test",
-    "architecture-module-size",
-    "architecture-layer-membership",
-    "architecture-context-membership",
-    "architecture-import-boundaries",
-    "architecture-cqrs-side",
-    "architecture-router-thinness",
-    "architecture-duplication",
-    "lint",
-    "typecheck",
-    "test",
-    "contract-test",
-    "security-secret-scan",
-    "security-dependency-audit",
-    "security-sbom",
-    "security-vulnerability-scan",
-    "security-review",
-    "runtime-smoke",
-}
 DEFAULT_RELEASE_GATE_POLICIES = {
     "governance-validate": "governance_validation",
     "governance-exposure-scan": "governance_exposure_scan",
@@ -161,6 +141,7 @@ DEFAULT_RELEASE_GATE_POLICIES = {
     "security-review": "security_review",
     "runtime-smoke": "runtime_smoke",
 }
+DEFAULT_RELEASE_GATE_TARGETS = set(DEFAULT_RELEASE_GATE_POLICIES)
 MANDATORY_STRUCTURAL_GATE_TARGETS = (
     "architecture-module-size",
     "architecture-layer-membership",
@@ -180,22 +161,7 @@ GOVERNANCE_MARKER_FILENAMES = {
 GOVERNANCE_MARKER_DIRS = {"plans", "phases"}
 AUDIT_PATH_COMPONENTS = {"audit", "audits"}
 CLOSED_WORKITEM_STATUSES = {"DONE"}
-SKIPPED_DISCOVERY_DIRS = {
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".tox",
-    ".venv",
-    "__pycache__",
-    "artifacts",
-    ".artifacts",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-}
+SKIPPED_DISCOVERY_DIRS = set(_SKIPPED_DIRECTORY_NAMES)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:

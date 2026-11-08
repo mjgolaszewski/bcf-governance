@@ -126,6 +126,7 @@ def test_standalone_package_qualifiers_seed_compiler_before_consumer_or_source_t
     monkeypatch.setattr(module, "validate_sdist_payload", lambda *_: None)
     monkeypatch.setattr(module, "validate_sdist_source_inventory", lambda *_: None)
     monkeypatch.setattr(module, "initialize_source_custody", lambda *_: None)
+    monkeypatch.setattr(module, "restore_historical_source_fixture", lambda *_: None)
     monkeypatch.setattr(module, "venv_environment", lambda _: (Path(sys.executable), {}))
     calls = []
     class ReachedTestBoundary(Exception): pass

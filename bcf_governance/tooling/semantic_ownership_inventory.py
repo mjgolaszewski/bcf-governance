@@ -21,6 +21,7 @@ from .semantic_python_method_identity import (
     discover_class_facts,
     method_binding,
     method_dispatch_reference,
+    receiver_attribute_targets,
     resolve_method_dispatch,
     runtime_function_scopes,
     source_symbol,
@@ -281,13 +282,9 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.receiver_attribute_mutations: set[str] = set()
 
     def _record_receiver_attribute_target(self, target: ast.AST) -> None:
-        if (
-            self.receiver is not None
-            and isinstance(target, ast.Attribute)
-            and isinstance(target.value, ast.Name)
-            and target.value.id == self.receiver
-        ):
-            self.receiver_attribute_mutations.add(target.attr)
+        self.receiver_attribute_mutations.update(
+            receiver_attribute_targets(target, self.receiver)
+        )
 
     def _resolved_symbol(self, call: ast.Call) -> str:
         return source_symbol(call.func, self.path, self.imports)

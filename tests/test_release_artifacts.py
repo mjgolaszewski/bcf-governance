@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tarfile
 import tomllib
+from types import SimpleNamespace
 from xml.etree import ElementTree
 import zipfile
 
@@ -48,15 +49,42 @@ def test_controller_builder_derives_every_runtime_requirement_from_pyproject() -
 
 def test_controller_builder_rejects_dirty_tree_before_expense(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "--quiet"], cwd=repo, check=True)
+    subprocess.run(
+        ["git", "config", "user.email", "fixture@example.invalid"],
+        cwd=repo,
+        check=True,
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "Fixture"], cwd=repo, check=True
+    )
+    marker = repo / "bcf_governance/cli.py"
+    marker.parent.mkdir()
+    marker.write_text("# source-build fixture\n", encoding="utf-8")
+    source = repo / "source.py"
+    source.write_text("VALUE = 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "."], cwd=repo, check=True)
+    subprocess.run(["git", "commit", "--quiet", "-m", "fixture"], cwd=repo, check=True)
+    source.write_text("VALUE = 2\n", encoding="utf-8")
+
+    def refuse_allocation(**kwargs: object) -> str:
+        pytest.fail("dirty source reached build allocation")
+
+    monkeypatch.setattr(
+        controller_builder, "tempfile", SimpleNamespace(mkdtemp=refuse_allocation)
+    )
     monkeypatch.setattr(
         controller_builder, "_git", lambda _root, *args: " M source.py"
     )
 
     with pytest.raises(ValueError, match="clean committed HEAD"):
         controller_builder.build(
-            REPO_ROOT,
-            Path(".artifacts/unused-controller"),
+            repo,
+            repo / "unused-controller",
             run_id="1",
             run_attempt="1",
         )

@@ -6,7 +6,20 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.9`
+Release target: `2.3.10`
+
+### Fixed
+
+- Resolve exact serial CI gate capture commands from the canonical workflow graph,
+  retaining graph parity, receipt checks and duplicate ownership rejection.
+
+- Preserve authored CI shell bodies, immutable action pins, reusable-call shapes,
+  safe repository preparation, inherited permission bounds and declared step
+  outcomes when generating existing adopter workflows.
+- Preserve explicit protected-environment ownership and native pack/runtime parity
+  while retaining the original BDMCP workflow assurance contracts.
+
+## [2.3.9] - 2026-10-29
 
 ### Fixed
 
@@ -1640,7 +1653,8 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.8...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.9...HEAD
+[2.3.9]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.8...v2.3.9
 [2.3.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.7...v2.3.8
 [2.3.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.6...v2.3.7
 [2.3.6]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.5...v2.3.6

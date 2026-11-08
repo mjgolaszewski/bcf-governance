@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.9/bcf_governance-2.3.9-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.10/bcf_governance-2.3.10-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -581,9 +581,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.9 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.9
+gh release download v2.3.10 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.10
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.9 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.10 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -967,3 +967,122 @@ CI-owned Docker resources use the exact
 `io.bcf-governance.ci-run=<run-id>` label. BCF never infers ownership from names
 or performs global Docker/build-cache pruning; it revalidates the exact ID and
 label immediately before deletion and removes container anonymous volumes.
+
+
+### Preserving an existing split CI graph
+
+An existing split workflow topology may keep its original paths, triggers, jobs,
+and security hooks while adding declared governance evidence and terminal-truth
+jobs inside an existing workflow. Change the canonical graph and registered
+extensions, then use native reconciliation as the workflow and authority writer.
+
+The following graph fields are opt-in compatibility projections. Existing
+renderer defaults remain unchanged.
+
+- A command with `render_mode: shell-body` must declare exactly
+  `argv: [bash, -c, BODY]`. The renderer emits BODY without its usual strict-argv
+  prefix. The existing provider-expression hoisting and interpreter-source-sink
+  refusal still apply. This does not accept arbitrary workflow objects.
+- An action component may declare `source_pin` only from the maintained closed
+  per-action immutable registry. Omission keeps the default framework pin.
+  `setup-uv` is a supported registered action.
+- An action or command component may request `condition_style: bare` only with
+  `always`, `failure`, or `cancelled`. Otherwise condition rendering is unchanged.
+- An empty `workflow_call` event may declare `empty_configuration: 'null'`.
+  No other event configuration may accompany this projection.
+- A reusable-workflow caller may request `omit_name: true` to retain a uses-only
+  caller declaration. Other executor kinds cannot omit their names.
+- Exactly one `exact-main` workflow retains the push authority. Additional push
+  workflows require `role: push-consumer` and may use only push/manual events.
+  These workflows and transitive reusable callees must be candidate/read-only,
+  cannot execute authority or terminal-truth operations, produce control or
+  terminal artifacts, install controllers, or mint credentials. Put the declared
+  governance/truth owners in the exact-main workflow. Existing gate ownership,
+  evidence fan-in, authority policy, and failed-preflight checks still apply.
+
+After maintained tooling or schema changes, run the native pack-manifest builder
+and its check mode before packaging. This projects tooling and schemas into both
+standalone and packaged templates. Qualify an installed adopter from those actual
+artifacts; source-only renderer checks do not prove installed compatibility.
+
+
+### Authored scan outcomes and verified environment names
+
+A command component may opt into `continue_on_error: true` to retain native
+GitHub step outcome semantics while publishing scan reports. It must have a
+step ID and name a later `failure_guard` component in the same job. The guard is
+a noncontinued command that exits 1 and checks that exact step outcome. This
+projection is unavailable to declared governance, authority, receipt and truth
+execution. Existing scheduled mutation summary checks remain separate authored
+commands; an infrastructure-summary policy is not replaced with unconditional
+failure. A false flag is literal false; omission preserves the old default.
+
+For original literal conditions, `condition_style: named` emits the value of an
+already declared `conditions` entry without expression delimiters. It does not
+accept inline expressions. The closed grammar includes literal repository-local
+`hashFiles('path-or-glob') == ''` and `!= ''`, status functions and existing simple
+comparisons. Absolute/traversing paths, dynamic function arguments and arbitrary
+functions are rejected. Referenced step outcomes/outputs must belong to earlier
+steps in the same job. Shell-body commands preserve their authored environment
+without an unused automatic BCF_PYTHON variable; ordinary argv rendering keeps
+its prior environment and strict prefix.
+
+A candidate job may use `protected_environment_from: {job: verifier, output: environment}`
+to emit `environment: {name: '${{ needs.verifier.outputs.environment }}'}`. The
+verifier must be a direct successful dependency with a declared output from an
+unskipped, noncontinued command step. Both jobs remain candidate/read-only; a
+static protected environment cannot be combined with this binding. This is a
+closed output reference, not an arbitrary environment expression or a claim of
+remote environment existence. Preserve and qualify the actual verifier command,
+its existing metadata-only authorization and fail-closed behavior.
+
+Apply these maintained changes to a fresh clone of the accepted source candidate,
+then use the same native pack projection/check owner to regenerate both runtime
+mirrors, all schema copies and pack manifests. Re-run the original graph/authority
+and pack controls, new outcome/environment refusals, and the unchanged adopter
+workflow contract suite before private artifact and installed-adopter acceptance.
+
+Deferred command guards accept only their exact outcome comparison, optionally prefixed by always(), or the original nightly/weekly mutation missing-summary comparison with its matching literal summary path. Arbitrary masking conjunctions and reserved condition-name shadowing are refused. Guard styles must preserve the declared expression.
+
+For an explicit job requiring the repository's original cleanup ordering, opt in
+to `required_environment_position: after-repo-preparation`. The first three
+components must be unconditional credential-free checkout in the repository
+root, exact `bash scripts/tools/ci_cleanup.sh start`, then exact
+`mkdir -p .artifacts/tmp` (a non-authoritative scratch directory); no inherited
+generated checkout/components or consumed artifacts are allowed. Validation remains
+before every subsequent work component.
+Without this declaration the existing environment-first default is unchanged.
+For the BDMCP adopter retain all artifact declarations and upload component
+retentions at 14 days or less, including framework and governance evidence.
+Use declared gate_shard/canonical capture and terminal_truth ownership for
+explicit cleanup envelopes; preserve gate-once, fan-in and terminal truth rules.
+
+The preparation checkout permits only `persist-credentials: false`, optional
+`ref: '${{ github.sha }}'`, and optional integer `fetch-depth: 0`. Explicit
+repository, token, SSH, submodule, path or other checkout inputs are refused.
+
+To preserve an original singleton scalar YAML dependency, declare job
+`needs_style: singleton-scalar` with exactly one `needs` array member. The graph
+keeps its typed array; rendering emits the single scalar. Zero or multiple needs
+are refused for this opt-in. Absent this field, existing list rendering remains.
+
+A reusable workflow caller may preserve an original uses-only YAML shape with
+`permissions_style: inherit-workflow`. Native permission derivation still stores
+the exact callee bound in the graph. The opt-in is accepted only for a reusable
+caller whose derived bound exactly equals its containing workflow permissions;
+only the redundant YAML job permissions are omitted. A wider or narrower bound
+is refused rather than silently granting inherited permissions. Existing callers
+without this declaration retain explicit permission rendering. Combine with
+`omit_name: true` only when the original caller contract requires uses-only.
+
+For a read-only caller whose original workflow requires a wider read permission
+map, `permissions_style: inherit-callee-bound` is a separate opt-in. The caller
+must cover the nonempty native derived read-only bound; the called workflow
+must explicitly declare exactly that bound and contain only direct jobs whose
+permission map is empty (inherits the explicit callee map) or exactly that bound.
+Writes, implicit/empty callee bounds, nested reuse and different job bounds are
+refused. Strict `inherit-workflow` equality and default rendering stay unchanged.
+The graph keeps the derived execution bound and the containing workflow keeps
+its declared caller permissions. This reflects GitHub's supported downgrade-only
+reusable workflow permission semantics, not an authority bypass.
+Reference: https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations

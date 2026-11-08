@@ -1,0 +1,40 @@
+schema_version: '1.0'
+status: source_reviewed_native_qualification_pending
+authority: false
+owner: home:bcf-governance:closure-engine
+repository_path: audits/maintenance-released-membership-effect-owner.yml
+reviewed_base_commit: 05281c7d0ee208323ff48ede625dd86fcddfd466
+operation_id: governance.cli.ci.v1
+scope:
+  bounded_context: ci_authority
+  architectural_layer: tooling_command_orchestration
+  semantic_kind: command
+  exact_mutation_port: bcf_governance/tooling/architecture_release_context.py::released_native_membership
+  source_owner: bcf_governance/tooling/architecture_release_context.py
+  source_consumer: bcf_governance/tooling/ci_commands.py::main
+reviewed_effects:
+  - Authenticate exact explicit release assets and template membership using the existing provider-read owner before the native command.
+  - Temporarily set technical process comparison environment for release membership and clear candidate membership transport within the existing scoped environment capability.
+  - Restore comparison environment through the existing context manager and reauthenticate membership after successful native command completion.
+  - With no explicit release inputs, clear both membership transports only within the native command scope.
+classification:
+  authoritative_mutation: true
+  authority_conferral: false
+  effect_port_category: allowed_mutation_ports
+  rationale: This is a reached technical environment mutation and read-authentication boundary of an already command-classified operation. A read declaration or broad non-authoritative output exemption would misstate its effects.
+  unchanged: Existing operation command and authoritative mutation classification; all existing publication authority boundaries; provider authentication; lexical restoration behavior.
+prohibitions:
+  - No release publication, tag mutation, authorization conferral, or live Identity dependency is introduced by this declaration.
+  - No custom-decorator, dynamic dispatch, semantic effect, unused-port, or reachability analyzer bypass.
+  - No hand-authored migration digests or semantic lock.
+  - No original test assertion removal, added skip, or full release qualification claim.
+required_native_qualification:
+  - Independently review the exact application-operation declaration and this audit as tracked isolated Source.
+  - Validate complete operation effect structure and require the exact port to be reached, with unused declarations rejected.
+  - Run original semantic authority and ownership causal controls and full affected CI/preflight tests.
+  - Invoke native semantic-ownership migrate-operation against the actual reviewed base with this repository-relative audit owner and exact reason; retain native previous/current digests.
+  - Invoke native lock generation and check only after the reviewed structure and effect closure validate.
+  - Rebuild versioned package surfaces and rerun full distribution qualification; original 33026 remains negative.
+known_limits:
+  - This Source review is not execution, provider release authority, or completed migration.
+  - Additional actual effect failures discovered by the native whole-closure scan remain blocking.

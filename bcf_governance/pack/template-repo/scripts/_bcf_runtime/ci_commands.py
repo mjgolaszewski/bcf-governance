@@ -8,6 +8,9 @@ import sys
 from collections.abc import Mapping
 from pathlib import Path
 
+from .architecture_native_inventory import ArchitectureInventoryError
+from .architecture_release_context import released_native_membership
+from .architecture_source_components import SourceComponentError
 from .automation_commands import adopt_dependabot
 from .automation_contracts import AutomationContractError, load_automation_registry
 from .bootstrap.contracts import GitHubProviderSettings
@@ -34,6 +37,8 @@ from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_controller_lifecycle import recovery_builder_route
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_self_controller import project_self_controller_pin
+from .governance_install.release_custody import ReleaseCustodyError
+from .governance_install.runtime_custody import RuntimeCustodyError
 from .local_execution_admission import (
     LocalExecutionAdmissionError,
     ensure_local_project_python,
@@ -155,6 +160,8 @@ def _parser() -> argparse.ArgumentParser:
     local.add_argument("--repo-root", type=Path, default=Path.cwd())
     local.add_argument("--remote", default="origin")
     local.add_argument("--python", type=Path)
+    local.add_argument("--release-assets", type=Path)
+    local.add_argument("--release-template", type=Path)
     local.add_argument("command", nargs=argparse.REMAINDER)
     prospective = subparsers.add_parser(
         "prospective-train",
@@ -167,6 +174,8 @@ def _parser() -> argparse.ArgumentParser:
         help="resolve the provider-authenticated effective controller for this repository",
     )
     prospective.add_argument("--python", type=Path)
+    prospective.add_argument("--release-assets", type=Path)
+    prospective.add_argument("--release-template", type=Path)
     prospective.add_argument(
         "--intent",
         choices=("pr", "workitem", "closure"),
@@ -421,20 +430,24 @@ def main(
                 from .ci_github_controller import environment_api
 
                 provider_api = environment_api()
-            train_result = run_prospective_train(
-                args.repo_root,
-                semantic_intent=str(canonical["semantic_intent"]),
-                evaluation_target=canonical["evaluation_target"],
-                subject_commit=str(canonical["subject_commit"]),
-                subject_tree=str(canonical["subject_tree"]),
-                remote=args.remote,
-                python_executable=project_python,
-                repository=args.repository,
-                provider_api=provider_api,
-                progress_sink=lambda event: print(
-                    json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
-                ),
-            )
+            with released_native_membership(
+                args.repo_root.resolve(), assets_root=args.release_assets,
+                template_root=args.release_template, provider_settings=provider_settings,
+            ):
+                train_result = run_prospective_train(
+                    args.repo_root,
+                    semantic_intent=str(canonical["semantic_intent"]),
+                    evaluation_target=canonical["evaluation_target"],
+                    subject_commit=str(canonical["subject_commit"]),
+                    subject_tree=str(canonical["subject_tree"]),
+                    remote=args.remote,
+                    python_executable=project_python,
+                    repository=args.repository,
+                    provider_api=provider_api,
+                    progress_sink=lambda event: print(
+                        json.dumps(event, sort_keys=True), file=sys.stderr, flush=True
+                    ),
+                )
             _print(train_result, args.format)
             return
         if args.operation == "qualify-release":
@@ -559,18 +572,24 @@ def main(
             repo_root=args.repo_root,
             project_python=local_project_python,
         )
-        local_validation_result = run_local_pr_validation(
-            args.repo_root.resolve(),
-            command=command,
-            remote=args.remote,
-            project_python=local_project_python,
-        )
+        with released_native_membership(
+            args.repo_root.resolve(), assets_root=args.release_assets,
+            template_root=args.release_template, provider_settings=provider_settings,
+        ):
+            local_validation_result = run_local_pr_validation(
+                args.repo_root.resolve(),
+                command=command,
+                remote=args.remote,
+                project_python=local_project_python,
+            )
         if local_validation_result.stdout:
             print(local_validation_result.stdout, end="")
         if local_validation_result.stderr:
             print(local_validation_result.stderr, end="", file=sys.stderr)
         raise SystemExit(local_validation_result.returncode)
     except (
+        ArchitectureInventoryError, ReleaseCustodyError, RuntimeCustodyError,
+        SourceComponentError,
         CIAuthorityPinError,
         AutomationContractError,
         CIGraphError,

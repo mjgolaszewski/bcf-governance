@@ -81,7 +81,9 @@ def _events(events: list[dict[str, Any]]) -> dict[str, Any]:
         for key in ("branches", "workflows", "types", "inputs"):
             if key in event:
                 config[key] = event[key]
-        result[kind] = config
+        result[kind] = (
+            None if event.get("empty_configuration") == "null" else config
+        )
     return result
 
 
@@ -105,12 +107,14 @@ def _command_step(
 ) -> dict[str, Any]:
     command = compiled.commands[command_id]
     argv: list[str] = []
-    environment = {
-        "BCF_PYTHON": SELECTED_PYTHON,
-        **command["environment"],
-    }
+    environment = (
+        dict(command["environment"])
+        if compiled.command_render_modes[command_id] == "shell-body"
+        else {"BCF_PYTHON": SELECTED_PYTHON, **command["environment"]}
+    )
     require_available_generated_slots(environment, "BCF_COMMAND_ARG_")
-    for index, value in enumerate(command["argv"]):
+    rendered_argv = [] if compiled.command_render_modes[command_id] == "shell-body" else command["argv"]
+    for index, value in enumerate(rendered_argv):
         if value == "{python}":
             argv.append('"$BCF_PYTHON"')
         elif value == "{controller}":
@@ -119,8 +123,6 @@ def _command_step(
             argv.append('"${{ runner.temp }}/bcf-controller/bin/bcf"')
         elif value.startswith("{env:") and value.endswith("}"):
             env_name = value[5:-1]
-            if not env_name.replace("_", "A").isalnum() or env_name.upper() != env_name:
-                raise AssertionError(f"invalid governed environment placeholder {value}")
             argv.append(f'"${env_name}"')
         elif "${{" in value and "}}" in value:
             env_name = f"BCF_COMMAND_ARG_{index}"
@@ -136,8 +138,9 @@ def _command_step(
         "working-directory": command["cwd"],
         "env": environment,
         "run": (
-            "set -euo pipefail\n"
-            + " ".join(argv)
+            command["argv"][2]
+            if compiled.command_render_modes[command_id] == "shell-body"
+            else "set -euo pipefail\n" + " ".join(argv)
         ),
     }
 
@@ -169,6 +172,7 @@ def _component_steps(
     steps: list[dict[str, Any]] = []
     for component_id in component_ids:
         component = compiled.graph["step_components"][component_id]
+        options = compiled.component_render_options[component_id]
         if component["kind"] == "directory_setup":
             paths = " ".join(shlex.quote(value) for value in component["paths"])
             steps.append(
@@ -190,7 +194,7 @@ def _component_steps(
         if component["kind"] == "action":
             step: dict[str, Any] = {
                 "name": component["name"],
-                "uses": action_pin(component["action"]),
+                "uses": options.action_uses,
             }
             if component["with"]:
                 step["with"] = copy.deepcopy(component["with"])
@@ -206,8 +210,16 @@ def _component_steps(
                 step["env"].update(component["environment"])
         if component["id"] is not None:
             step["id"] = component["id"]
+        if "continue_on_error" in component:
+            step["continue-on-error"] = component["continue_on_error"]
         if component["condition"] is not None:
-            step["if"] = _condition(compiled, component["condition"])
+            step["if"] = (
+                component["condition"] + "()"
+                if options.condition_style == "bare"
+                else compiled.graph["conditions"][component["condition"]]
+                if options.condition_style == "named"
+                else _condition(compiled, component["condition"])
+            )
         if component["kind"] == "action" and component["environment"]:
             require_available_environment_names(component["environment"])
             require_available_generated_slots(
@@ -487,9 +499,14 @@ def _job(
     compiled: CompiledCIGraph, workflow: dict[str, Any], job: dict[str, Any]
 ) -> dict[str, Any]:
     executor = job["executor"]
-    result: dict[str, Any] = {"name": job["display_name"]}
+    options = compiled.job_render_options[(workflow["id"], job["id"])]
+    result: dict[str, Any] = (
+        {} if options.omit_name else {"name": job["display_name"]}
+    )
     if job["needs"]:
-        result["needs"] = job["needs"]
+        result["needs"] = (
+            job["needs"][0] if options.singleton_needs else job["needs"]
+        )
     condition = _condition(compiled, job["condition"])
     controller_condition = controller_requirement_condition(
         compiled.trusted_controller_lifecycle, job["controller_requirement"]
@@ -502,7 +519,7 @@ def _job(
         condition = f"${{{{ ({base}) && ({guard}) }}}}"
     if condition is not None:
         result["if"] = condition
-    if job["permissions"]:
+    if job["permissions"] and options.emit_permissions:
         result["permissions"] = copy.deepcopy(job["permissions"])
     if job["outputs"]:
         result["outputs"] = copy.deepcopy(job["outputs"])
@@ -547,9 +564,15 @@ def _job(
         )
     if "protected_environment" in job:
         result["environment"] = job["protected_environment"]
+    if "protected_environment_from" in job:
+        binding = job["protected_environment_from"]
+        result["environment"] = {
+            "name": "${{ needs." + binding["job"] + ".outputs." + binding["output"] + " }}"
+        }
     steps: list[dict[str, Any]] = []
     required_environment = _required_environment_step(compiled, workflow, job)
-    if required_environment is not None:
+    deferred_environment = options.deferred_environment
+    if required_environment is not None and not deferred_environment:
         steps.append(required_environment)
     if job["checkout"]:
         checkout_inputs: dict[str, Any] = {"persist-credentials": False}
@@ -620,6 +643,8 @@ def _job(
         ]
         insertion = checkout_positions[-1] + 1 if checkout_positions else 0
         executor_steps[insertion:insertion] = bound_downloads
+    if required_environment is not None and deferred_environment:
+        executor_steps.insert(3, required_environment)
     steps.extend(executor_steps)
     if not explicit_components:
         steps.extend(_prepare_durable_steps(compiled, job))

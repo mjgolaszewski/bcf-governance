@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
+import hashlib
+import sys
+
+import pytest
 import re
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
-
-import yaml  # type: ignore[import-untyped]
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -174,15 +177,113 @@ DEFAULT_CONFIG: dict[str, Any] = {
 }
 
 
+class SourceComponentUnsupportedError(AssertionError):
+    """Present source ownership cannot fall back to legacy inference."""
+
+
+_OWNER_TEST_ACTIVE = False
+_OWNERSHIP = None
+_CONFIG_ADMISSION_READY = False
+_ADMITTED_CONFIG_SHA = None
+
+
+def _admit_configuration(digest):
+    global _CONFIG_ADMISSION_READY, _ADMITTED_CONFIG_SHA
+    if not _OWNER_TEST_ACTIVE:
+        return
+    if not _CONFIG_ADMISSION_READY:
+        _ADMITTED_CONFIG_SHA = digest
+        _CONFIG_ADMISSION_READY = True
+    elif digest != _ADMITTED_CONFIG_SHA:
+        raise SourceComponentUnsupportedError("native configuration differs from pre-body admission")
+
+
+def _native_owner():
+    runtime = REPO_ROOT / "scripts/_bcf_runtime"
+    bridge = runtime / "architecture_native_gate.py"
+    if bridge.is_symlink() or not bridge.is_file() or bridge.resolve() != bridge:
+        raise SourceComponentUnsupportedError(
+            "source_component_ownership requires a qualified native ownership consumer")
+    name = "_bcf_architecture_owner_" + hashlib.sha256(str(REPO_ROOT).encode()).hexdigest()[:16]
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(
+            name, runtime / "__init__.py", submodule_search_locations=[str(runtime)])
+        if spec is None or spec.loader is None:
+            raise SourceComponentUnsupportedError("maintained ownership package is unavailable")
+        package = importlib.util.module_from_spec(spec)
+        sys.modules[name] = package
+        try:
+            spec.loader.exec_module(package)
+        except BaseException:
+            sys.modules.pop(name, None)
+            raise
+    return __import__(name + ".architecture_native_gate", fromlist=["compile_gate_ownership"])
+
+
+def _ownership():
+    global _OWNERSHIP
+    if not _OWNER_TEST_ACTIVE or _OWNERSHIP is None:
+        observed = _native_owner().compile_gate_ownership(REPO_ROOT)
+        if _OWNER_TEST_ACTIVE:
+            _OWNERSHIP = observed
+        return observed
+    return _OWNERSHIP
+
+
+@pytest.fixture(autouse=True)
+def _fresh_ownership_for_native_test():
+    global _OWNER_TEST_ACTIVE, _OWNERSHIP, _CONFIG_ADMISSION_READY, _ADMITTED_CONFIG_SHA
+    _OWNERSHIP = None
+    _OWNER_TEST_ACTIVE = True
+    _CONFIG_ADMISSION_READY = False
+    _ADMITTED_CONFIG_SHA = None
+    try:
+        # Admit the actual PRESENT contract before any pytest body hook can hide
+        # it. ABSENT only binds existing bytes/defaults, never new eligibility.
+        _architecture_config()
+        yield
+        _architecture_config()
+        if _OWNERSHIP is not None:
+            _native_owner().reauthenticate_gate_ownership(REPO_ROOT, _OWNERSHIP)
+    finally:
+        _OWNERSHIP = None
+        _OWNER_TEST_ACTIVE = False
+        _CONFIG_ADMISSION_READY = False
+        _ADMITTED_CONFIG_SHA = None
+
+
 def _architecture_config() -> dict[str, Any]:
+    if CONFIG_PATH.is_symlink():
+        raise ValueError("policy input must have a canonical absolute path")
     if not CONFIG_PATH.exists():
+        _admit_configuration(None)
         return DEFAULT_CONFIG["architecture"]
-    payload = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
+    admission_path = REPO_ROOT / "scripts/_bcf_runtime/architecture_policy_input.py"
+    try:
+        owner_canonical = admission_path.resolve(strict=True) == admission_path
+    except FileNotFoundError as exc:
+        raise SourceComponentUnsupportedError("maintained architecture input owner is unavailable") from exc
+    if not owner_canonical or not admission_path.is_file() or admission_path.is_symlink():
+        raise SourceComponentUnsupportedError("maintained architecture input owner is noncanonical")
+    specification = importlib.util.spec_from_file_location("architecture_policy_input", admission_path)
+    if specification is None or specification.loader is None:
+        raise SourceComponentUnsupportedError("maintained architecture input owner is unavailable")
+    admission = importlib.util.module_from_spec(specification)
+    specification.loader.exec_module(admission)
+    config_raw = admission._read(CONFIG_PATH)
+    config_sha256 = hashlib.sha256(config_raw).hexdigest()
+    _admit_configuration(config_sha256)
+    payload = admission.load_architecture_mapping(CONFIG_PATH, expected_sha256=config_sha256)
     if not isinstance(payload, dict):
         raise AssertionError(f"{CONFIG_PATH.relative_to(REPO_ROOT)} must contain a mapping")
     architecture = payload.get("architecture")
     if not isinstance(architecture, dict):
         raise AssertionError(f"{CONFIG_PATH.relative_to(REPO_ROOT)} must define architecture")
+    if "source_component_ownership" in architecture:
+        observed = _ownership()
+        if (config_sha256
+                != observed.native.config_sha256):
+            raise SourceComponentUnsupportedError("consumed native configuration changed")
     return architecture
 
 
@@ -256,6 +357,12 @@ def _production_python_files() -> list[Path]:
 
 
 def _layer_names_for_file(path: Path) -> set[str]:
+    if "source_component_ownership" in _architecture_config():
+        relative = path.relative_to(REPO_ROOT).as_posix()
+        rows = [row for row in _ownership().projection.members if row.path == relative]
+        if len(rows) != 1:
+            raise SourceComponentUnsupportedError("native layer population changed")
+        return set(rows[0].effective_layers)
     parent_parts = set(path.relative_to(REPO_ROOT).parent.parts)
     return {
         layer_name
@@ -269,6 +376,12 @@ def _layer_python_files(layer_name: str) -> list[Path]:
 
 
 def _context_names_for_file(path: Path) -> set[str]:
+    if "source_component_ownership" in _architecture_config():
+        relative = path.relative_to(REPO_ROOT).as_posix()
+        rows = [row for row in _ownership().projection.members if row.path == relative]
+        if len(rows) != 1:
+            raise SourceComponentUnsupportedError("native context population changed")
+        return set(rows[0].effective_contexts)
     policy = _bounded_context_policy()
     parent_parts = list(path.relative_to(REPO_ROOT).parent.parts)
     root_tokens = {str(token) for token in policy.get("context_root_tokens", [])}

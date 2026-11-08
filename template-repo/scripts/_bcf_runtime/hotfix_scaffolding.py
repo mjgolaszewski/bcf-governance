@@ -9,24 +9,20 @@ from typing import Any
 
 import yaml
 
-from .check_governance_exposure import PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS
+from .check_governance_exposure import (
+    PATTERNS as GOVERNANCE_EXPOSURE_PATTERNS,
+)
+from .check_governance_exposure import (
+    _validate_portable_governed_commands,
+)
 
 HOTFIX_MODES = {"lite", "full"}
 
 
 def _portable_governed_commands(commands: list[str]) -> list[str]:
-    for command in commands:
-        matched = sorted(
-            name
-            for name, pattern in GOVERNANCE_EXPOSURE_PATTERNS.items()
-            if pattern.search(command)
-        )
-        if matched:
-            raise ValueError(
-                "governed validation command exposes nonportable infrastructure: "
-                + ", ".join(matched)
-            )
-    return commands
+    return _validate_portable_governed_commands(
+        commands, patterns=GOVERNANCE_EXPOSURE_PATTERNS
+    )
 
 
 def _phase_number(phase_id: str) -> int:

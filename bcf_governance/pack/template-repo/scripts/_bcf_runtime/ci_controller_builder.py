@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -46,50 +48,235 @@ def _require_clean_head(repo_root: Path) -> None:
         raise TrustedControllerBuildError("trusted-controller source must be a clean committed HEAD")
 
 
+def _exact_node(path: Path, *, directory: bool = False) -> tuple[int, ...]:
+    value = path.lstat()
+    if path.resolve(strict=True) != path or not (
+        stat.S_ISDIR(value.st_mode) if directory else stat.S_ISREG(value.st_mode)
+    ):
+        raise TrustedControllerBuildError("exact-source custody path is not canonical")
+    return (value.st_dev, value.st_ino, value.st_mode, value.st_uid, value.st_gid,
+            value.st_size, value.st_mtime_ns, value.st_ctime_ns, value.st_nlink)
+
+
+def _exact_read(path: Path) -> tuple[bytes, tuple[int, ...]]:
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        before = _exact_node(path)
+        if before != tuple(getattr(os.fstat(descriptor), key) for key in (
+            "st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_size",
+            "st_mtime_ns", "st_ctime_ns", "st_nlink"
+        )) or before[5] > 65536:
+            raise TrustedControllerBuildError("exact-source custody file changed")
+        raw = os.read(descriptor, 65537)
+        after = _exact_node(path)
+        held = os.fstat(descriptor)
+        held_identity = (held.st_dev, held.st_ino, held.st_mode, held.st_uid, held.st_gid,
+                         held.st_size, held.st_mtime_ns, held.st_ctime_ns, held.st_nlink)
+        if before != after or before != held_identity or len(raw) != before[5]:
+            raise TrustedControllerBuildError("exact-source custody file changed")
+        return raw, before
+    finally:
+        os.close(descriptor)
+
+
+def _exact_git(repo_root: Path, *args: str,
+               process_environment: ChildProcessEnvironment | None = None) -> str:
+    process_environment = _default_child_process_environment() if process_environment is None else process_environment
+    # Native hook/filter/configuration applicability is qualified by the caller.
+    try:
+        result = subprocess.run(
+            ["git", "-c", "gc.auto=0", "-c", "maintenance.auto=false", *args],
+            cwd=repo_root, check=False, capture_output=True, text=True, timeout=30,
+            env={**process_environment.snapshot(), "GIT_OPTIONAL_LOCKS": "0"},
+        )
+    except subprocess.TimeoutExpired as failure:
+        raise _ExactSourceGitError(failure) from failure
+    if result.returncode:
+        raise _ExactSourceGitError(result)
+    return result.stdout.strip()
+
+
+def _exact_subject(repo_root: Path) -> tuple[str, str]:
+    if _exact_git(repo_root, "rev-parse", "--show-toplevel") != str(repo_root):
+        raise TrustedControllerBuildError("exact-source native Git selected another repository root")
+    gitdir = Path(_exact_git(repo_root, "rev-parse", "--absolute-git-dir"))
+    common = Path(_exact_git(repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir"))
+    _exact_node(gitdir, directory=True)
+    _exact_node(common, directory=True)
+    marker = repo_root / ".git"
+    if marker.is_dir():
+        _exact_node(marker, directory=True)
+        selected = marker
+    else:
+        raw, _ = _exact_read(marker)
+        if not raw.startswith(b"gitdir: ") or raw.count(b"\n") != 1:
+            raise TrustedControllerBuildError("exact-source repository marker is ambiguous")
+        selected = Path(raw[8:-1].decode())
+        selected = selected if selected.is_absolute() else repo_root / selected
+    if selected.resolve(strict=True) != gitdir:
+        raise TrustedControllerBuildError("exact-source repository marker differs from native Git selection")
+    commondir = gitdir / "commondir"
+    if os.path.lexists(commondir):
+        raw, _ = _exact_read(commondir)
+        if raw.count(b"\n") != 1 or not raw.endswith(b"\n"):
+            raise TrustedControllerBuildError("exact-source common-store marker is ambiguous")
+        selected_common = (gitdir / raw[:-1].decode()).resolve(strict=True)
+    else:
+        selected_common = gitdir
+    if selected_common != common:
+        raise TrustedControllerBuildError("exact-source common-store selection differs from its marker")
+    if _exact_git(repo_root, "status", "--porcelain", "--untracked-files=all"):
+        raise TrustedControllerBuildError("trusted-controller source must be a clean committed HEAD")
+    return (_exact_git(repo_root, "rev-parse", "HEAD"),
+            _exact_git(repo_root, "rev-parse", "HEAD^{tree}"))
+
+
+def _exact_sync(directory: Path) -> None:
+    descriptor = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _exact_link(source: Path, common: Path, subject: tuple[str, str]) -> dict[str, object]:
+    marker, marker_identity = _exact_read(source / ".git")
+    prefix = b"gitdir: "
+    if not marker.startswith(prefix) or marker.count(b"\n") != 1:
+        raise TrustedControllerBuildError("exact-source worktree marker is ambiguous")
+    admin = Path(marker[len(prefix):-1].decode("utf-8"))
+    if admin.parent != common / "worktrees":
+        raise TrustedControllerBuildError("exact-source administration is outside common store")
+    admin_identity = _exact_node(admin, directory=True)[:5]
+    if (_exact_read(admin / "commondir")[0] != b"../..\n"
+            or _exact_read(admin / "gitdir")[0] != str(source / ".git").encode() + b"\n"
+            or _exact_read(admin / "HEAD")[0] != subject[0].encode() + b"\n"
+            or _exact_subject(source) != subject):
+        raise TrustedControllerBuildError("exact-source administration does not bind the subject")
+    return {"admin": str(admin), "admin_identity": admin_identity,
+            "marker_identity": marker_identity, "marker_sha256": hashlib.sha256(marker).hexdigest(),
+            "source_identity": _exact_node(source, directory=True)[:5]}
+
+
+class _ExactSourceCustodyError(TrustedControllerBuildError):
+    """Private recovery state; never a receipt or release claim."""
+
+    def __init__(self, stage: str, recovery: dict[str, object], secondary: BaseException) -> None:
+        self.stage = stage
+        self.recovery = dict(recovery)
+        self.secondary_failure = secondary
+        self.recovery_intent = None if recovery["intent_unlinked"] else Path(str(recovery["intent"]))
+        state = ("source_admin_retired_cleanup_unqualified"
+                 if recovery["source_admin_retirement_durable"]
+                 else "source_admin_absence_observed_durability_unqualified"
+                 if recovery["source_admin_absence_verified"] else "unresolved")
+        super().__init__(f"exact-source custody {state} at {stage}; recovery={self.recovery}")
+        self.add_note(f"secondary failure type: {type(secondary).__name__}")
+
+
+class _ExactSourceGitError(TrustedControllerBuildError):
+    """Retain the exact bounded-admission native outcome for private recovery."""
+
+    def __init__(self, outcome: subprocess.CompletedProcess[str] | subprocess.TimeoutExpired) -> None:
+        self.native_outcome = outcome
+        super().__init__("exact-source native Git failed; exact outcome retained for recovery")
+
+
+def _exact_unresolved(
+    intent: Path, stage: str, failure: BaseException, recovery: dict[str, object]
+) -> TrustedControllerBuildError:
+    return _ExactSourceCustodyError(stage, recovery, failure)
+
+
 @contextmanager
 def exact_head_source(repo_root: Path) -> Iterator[Path]:
-    """Materialize committed HEAD without inheriting ignored build state."""
-
+    """Yield exact committed source; preserve uncertain native mutation for recovery."""
     repo_root = repo_root.resolve()
-    _require_clean_head(repo_root)
-    commit_sha = _git(repo_root, "rev-parse", "HEAD")
-    with tempfile.TemporaryDirectory(prefix="bcf-exact-source-") as name:
-        source = Path(name) / "source"
-        result = subprocess.run(
-            [
-                "git",
-                "worktree",
-                "add",
-                "--quiet",
-                "--detach",
-                str(source),
-                commit_sha,
-            ],
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-        )
-        if result.returncode:
-            raise TrustedControllerBuildError(
-                "exact committed source could not be materialized"
-            )
+    subject = _exact_subject(repo_root)
+    common = Path(_exact_git(repo_root, "rev-parse", "--path-format=absolute", "--git-common-dir"))
+    common_identity = _exact_node(common, directory=True)[:5]
+    parent = Path(tempfile.mkdtemp(prefix="bcf-exact-source-"))
+    source, intent = parent / "source", parent / "intent.json"
+    recovery: dict[str, object] = {
+        "parent": str(parent), "intent": str(intent), "source": str(source),
+        "common": str(common), "admin": None, "subject": list(subject),
+        "mutation_may_have_started": False, "source_admin_absence_verified": False,
+        "source_admin_retirement_durable": False, "intent_unlinked": False, "parent_removed": False,
+    }
+    try:
+        parent = parent.resolve(strict=True)
+        source, intent = parent / "source", parent / "intent.json"
+        recovery.update(parent=str(parent), source=str(source), intent=str(intent))
+        parent_identity = _exact_node(parent, directory=True)[:5]
+        if parent_identity[3] != os.getuid() or parent_identity[2] & 0o077 or list(parent.iterdir()):
+            raise TrustedControllerBuildError("exact-source parent is not exclusively owned and empty")
+        recovery["parent_identity"] = parent_identity
+        payload = {"kind": "private_exact_source_recovery_intent", "version": 1,
+                   "repo": str(repo_root), "subject": list(subject), "common": str(common),
+                   "common_identity": common_identity, "parent_identity": parent_identity,
+                   "source": str(source), "purpose": "exact committed build source",
+                   "retirement": "only after verified checkout/admin absence and retained subject"}
+        raw = (json.dumps(payload, sort_keys=True) + "\n").encode()
+        descriptor = os.open(intent, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(descriptor, "wb") as stream:
+            stream.write(raw)
+            stream.flush()
+            os.fsync(stream.fileno())
+        _exact_sync(parent)
+        _exact_sync(parent.parent)
+        intent_raw, intent_identity = _exact_read(intent)
+        if intent_raw != raw or intent_identity[-1] != 1:
+            raise TrustedControllerBuildError("exact-source intent is not exclusively owned")
+        recovery["mutation_may_have_started"] = True
+        _exact_git(repo_root, "worktree", "add", "--quiet", "--detach", str(source), subject[0])
+        binding = _exact_link(source, common, subject)
+        recovery['admin'] = binding['admin']
+        if (_exact_subject(repo_root) != subject
+                or _exact_node(common, directory=True)[:5] != common_identity
+                or _exact_node(parent, directory=True)[:5] != parent_identity):
+            raise TrustedControllerBuildError("retained exact-source owner changed during creation")
+    except BaseException as failure:
+        raise _exact_unresolved(intent, "creation", failure, recovery) from failure
+
+    primary: BaseException | None = None
+    try:
+        yield source
+    except BaseException as failure:
+        primary = failure
+        raise
+    finally:
         try:
-            if _git(source, "rev-parse", "HEAD") != commit_sha or _git(
-                source, "status", "--porcelain", "--untracked-files=all"
-            ):
-                raise TrustedControllerBuildError(
-                    "materialized build source is not exact committed HEAD"
-                )
-            yield source
-        finally:
-            subprocess.run(
-                ["git", "worktree", "remove", "--force", str(source)],
-                cwd=repo_root,
-                check=False,
-                capture_output=True,
-                text=True,
-            )
+            if (_exact_node(parent, directory=True)[:5] != parent_identity
+                    or _exact_node(common, directory=True)[:5] != common_identity
+                    or _exact_subject(repo_root) != subject
+                    or _exact_link(source, common, subject) != binding
+                    or _exact_read(intent) != (raw, intent_identity)):
+                raise TrustedControllerBuildError("exact-source owner changed before removal")
+            _exact_git(repo_root, "worktree", "remove", "--force", str(source))
+            if os.path.lexists(source) or os.path.lexists(Path(str(binding["admin"]))):
+                raise TrustedControllerBuildError("native removal left checkout or administration")
+            recovery['source_admin_absence_verified'] = True
+            if (_exact_subject(repo_root) != subject
+                    or _exact_node(common, directory=True)[:5] != common_identity
+                    or _exact_node(parent, directory=True)[:5] != parent_identity
+                    or _exact_read(intent) != (raw, intent_identity)
+                    or sorted(path.name for path in parent.iterdir()) != ["intent.json"]):
+                raise TrustedControllerBuildError("retained source changed during retirement")
+            administration_root = common / "worktrees"
+            _exact_sync(administration_root if administration_root.exists() else common)
+            _exact_sync(parent)
+            recovery['source_admin_retirement_durable'] = True
+            intent.unlink()
+            recovery['intent_unlinked'] = True
+            _exact_sync(parent)
+            parent.rmdir()
+            recovery['parent_removed'] = True
+            _exact_sync(parent.parent)
+        except BaseException as failure:
+            unresolved = _exact_unresolved(intent, "retirement", failure, recovery)
+            if primary is not None:
+                raise unresolved from primary
+            raise unresolved from failure
 
 
 def _source_requirements(repo_root: Path) -> tuple[str, ...]:

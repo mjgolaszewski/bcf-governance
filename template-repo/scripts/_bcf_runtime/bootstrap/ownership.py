@@ -5,9 +5,14 @@ owner, typed port, aliases, adapter keys and the CLI-only compatibility route.
 """
 from __future__ import annotations
 
-CONSUMER_CAPABILITIES: dict[str, tuple[str, ...]] = {'break_glass_recovery._required': ('cli',),
+CONSUMER_CAPABILITIES: dict[str, tuple[str, ...]] = {'architecture_native_gate.compile_gate_ownership': ('comparison',),
+ 'architecture_release_context.decode_release_inputs': ('provider',),
+ 'architecture_release_context.released_native_membership': ('provider', 'scoped'),
+ 'release_adopter_qualification.run_candidate_qualification_train': ('scoped',),
+ 'break_glass_recovery._required': ('cli',),
  'ci_authority_preflight.verify_workflow_authority_preflight': ('provider', 'workflow'),
  'ci_commands.main': ('provider',),
+ 'ci_controller_builder._exact_git': ('process',),
  'ci_controller_builder.build': ('process',),
  'ci_github_cli_io.required_environment': ('cli',),
  'ci_github_controller.environment_api': ('provider',),
@@ -54,7 +59,9 @@ LEGACY_CLI_MODULES = frozenset({
 })
 
 
-SETTING_READS: dict[str, tuple[str, str]] = {'_ComparisonSettings.base_sha': ('BCF_COMPARISON_BASE_SHA', '""'),
+SETTING_READS: dict[str, tuple[str, str]] = {
+ "_ComparisonSettings.release_membership_inputs": ("BCF_RELEASE_MEMBERSHIP_INPUTS", '""'),
+ "_ComparisonSettings.candidate_membership_inputs": ("BCF_CANDIDATE_MEMBERSHIP_INPUTS", '""'),'_ComparisonSettings.base_sha': ('BCF_COMPARISON_BASE_SHA', '""'),
  '_ComparisonSettings.caller_base_sha': ('BCF_CALLER_COMPARISON_BASE_SHA', '""'),
  '_ComparisonSettings.enforce_pr_changelog': ('BCF_ENFORCE_PR_CHANGELOG', '""'),
  '_ComparisonSettings.event_name': ('GITHUB_EVENT_NAME', '""'),
@@ -88,6 +95,8 @@ SETTING_READS: dict[str, tuple[str, str]] = {'_ComparisonSettings.base_sha': ('B
  '_WorkflowSettings.workflow_ref': ('GITHUB_WORKFLOW_REF', 'default')}
 
 COMPARISON_MUTATION_KEYS = frozenset({
+    "BCF_RELEASE_MEMBERSHIP_INPUTS",
+    "BCF_CANDIDATE_MEMBERSHIP_INPUTS",
     "BCF_PROVIDER_EVENT", "BCF_INVOCATION_KIND", "BCF_CALLER_COMPARISON_BASE_SHA",
     "BCF_ORIGIN_COMPARISON_BASE_SHA", "BCF_COMPARISON_BASE_SHA",
     "BCF_ENFORCE_PR_CHANGELOG", "BCF_PR_BASE_SHA", "BCF_VALIDATION_LANE",

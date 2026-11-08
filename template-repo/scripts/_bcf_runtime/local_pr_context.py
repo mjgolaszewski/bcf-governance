@@ -195,6 +195,13 @@ def _pr_environment_values(
         "GITHUB_HEAD_REF": context.head_ref,
         "GITHUB_SHA": context.head_sha,
     }
+    # Released/default execution explicitly removes any inherited candidate data.
+    # The isolated qualification owner scopes candidate inputs outside this
+    # nested comparison scope; membership still requires fresh authentication.
+    if validation_lane is not LocalValidationLane.ISOLATED_CANDIDATE_QUALIFICATION:
+        values["BCF_CANDIDATE_MEMBERSHIP_INPUTS"] = ""
+    else:
+        values["BCF_RELEASE_MEMBERSHIP_INPUTS"] = ""
     if event_path is not None:
         values["GITHUB_EVENT_PATH"] = event_path
     return values

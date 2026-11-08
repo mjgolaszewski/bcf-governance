@@ -25,25 +25,11 @@ from .governance_cleanup.models import (  # noqa: E402
     ManualAction,
 )
 from .governance_cleanup.pack_removal import governed_pack_removal_paths  # noqa: E402
+from .repository_discovery import _SKIPPED_DIRECTORY_NAMES  # noqa: E402
 
 OUTPUT_FORMATS = {"text", "json"}
 PHASE_RETENTION_MODE_CHOICES = {"archive", "git-history"}
-SKIP_DIRS = {
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".pytest_cache",
-    ".ruff_cache",
-    ".tox",
-    ".venv",
-    "__pycache__",
-    "artifacts",
-    ".artifacts",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-}
+SKIP_DIRS = set(_SKIPPED_DIRECTORY_NAMES)
 AUDIT_MOVE_ROOTS = {
     "docs/audits": "audits",
     "governance/parity-reviews": "audits/parity-reviews",

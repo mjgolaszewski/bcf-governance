@@ -1,0 +1,45 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF13 Hotfix Log
+  id: bcf-governance-phase-31-hotfix13
+  version: 1.0.0
+  generated_at_utc: '2026-11-07T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix13.yml
+hotfix:
+  id: P31-HF13
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 13
+  summary: Resolve exact serial CI gate captures for SDK release compatibility
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root . --intent pr
+  executed_commands:
+  - 'Ironwatch handoff39219: 20 causal cases pass on handed-off module4de41444; real SDK graph and all20 capture IDs, rendered
+    parity, governance, Ruff,7pack checks and canonical check pass. These are bounded original-subject results, not final
+    integrated release acceptance.'
+  - Integrated handed-off code/tests into existing341cca3f maintained2.3.10 candidate; canonical pack generator and all governed
+    test-manifest generation passed.
+  notes:
+  - 'Pre-edit scope: existing truth workflow ownership query in tooling; retain graph parity, actual receipts, subject validation
+    and duplicate rejection. No SDK or BDMCP application changes, no new evaluator or receipt family.'
+  - Existing Ironwatch implementation and tests adopted unchanged; required final maintained CI, certification and immutable
+    publication remain pending. Completed denotes implemented, not verified or closed.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

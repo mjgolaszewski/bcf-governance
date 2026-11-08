@@ -14,6 +14,13 @@ from jsonschema import Draft202012Validator
 
 from .ci_controller_policy import TrustedControllerPolicyError, load_graph_controller_policy
 from .ci_graph_authority_policy import validate_graph_authority_policy
+from .ci_graph_compatibility import validate_compatibility_declarations
+from .ci_graph_compile_options import (
+    CIComponentRenderOptions,
+    CIJobRenderOptions,
+    _apply_canonical_defaults,
+    _compile_render_options,
+)
 from .ci_graph_controller_lifecycle import (
     ControllerLifecycle,
     ControllerLifecycleState,
@@ -30,8 +37,8 @@ from .ci_graph_execution import (
     job_execution_issues,
     validate_workflow_event_contract,
 )
+from .ci_graph_push_authority import validate_push_authority
 from .ci_graph_reusable_artifacts import (
-    project_reusable_workflow_permissions,
     reusable_artifact_binding,
     validate_reusable_binding_declarations,
 )
@@ -54,6 +61,9 @@ class CompiledCIGraph:
     graph: dict[str, Any]
     workflows: tuple[dict[str, Any], ...]
     commands: dict[str, dict[str, Any]]
+    command_render_modes: dict[str, str]
+    component_render_options: dict[str, CIComponentRenderOptions]
+    job_render_options: dict[tuple[str, str], CIJobRenderOptions]
     graph_sha256: str
     extension_sha256: tuple[tuple[str, str], ...]
     input_sha256: tuple[tuple[str, str], ...]
@@ -245,42 +255,16 @@ def _compose(graph: dict[str, Any], extensions: list[dict[str, Any]]) -> dict[st
     return composed
 
 
-def _apply_canonical_defaults(graph: dict[str, Any]) -> None:
-    """Apply optional contract defaults once, before any downstream consumer."""
-    graph["policy"].setdefault("reserved_status_contexts", [])
-    for resource in graph["resource_classes"].values():
-        resource.setdefault("python_version", "3.12")
-    for command in graph["commands"].values():
-        command.setdefault("required_environment", [])
-    for component in graph["step_components"].values():
-        kind = component["kind"]
-        if kind != "directory_setup":
-            component.setdefault("condition", None)
-        if kind not in {"controller_install", "directory_setup"}:
-            component.setdefault("id", None)
-        if kind == "command":
-            component.setdefault("restores_private_artifacts", [])
-    for workflow in graph["workflows"]:
-        workflow.setdefault("environment", {})
-        for job in workflow["jobs"]:
-            job.setdefault("environment", {})
-            job.setdefault("outputs", {})
-            job.setdefault("controller_requirement", None)
-            executor = job["executor"]
-            if executor["kind"] == "reusable_workflow":
-                executor.setdefault("inputs", {})
-    project_reusable_workflow_permissions(graph)
-
-
 def _validate_step_components(graph: dict[str, Any]) -> None:
     artifacts = set(graph["artifacts"])
     commands = set(graph["commands"])
     conditions = set(graph["conditions"])
+    validate_compatibility_declarations(graph)
     for component_id, component in graph["step_components"].items():
         if component["kind"] == "directory_setup":
             continue
         condition = component["condition"]
-        if condition is not None and condition not in conditions:
+        if condition is not None and condition not in {"success", "always", "failure", "cancelled"} and condition not in conditions:
             raise CIGraphError(
                 f"CI graph step component {component_id} references unknown condition"
             )
@@ -428,15 +412,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
     paths = [item["path"] for item in workflows]
     if len(set(workflow_ids)) != len(workflow_ids) or len(set(paths)) != len(paths):
         raise CIGraphError("CI graph workflow IDs and paths must each be unique")
-    push_workflows = [
-        item for item in workflows if any(event["type"] == "push" for event in item["events"])
-    ]
-    if len(push_workflows) != 1 or push_workflows[0]["role"] != "exact-main":
-        raise CIGraphError(
-            "CI graph must have one exact-main push authority",
-            kind="event",
-            identifier="push",
-        )
+    validate_push_authority(graph)
     semantic_roles: set[str] = set()
     artifact_producers: dict[str, tuple[str, str]] = {}
     graph_resources = graph["resource_classes"]
@@ -485,6 +461,8 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
                     identifier=job["id"],
                 )
             executor = job["executor"]
+            if job.get("omit_name") and executor["kind"] != "reusable_workflow":
+                raise CIGraphError("omit_name is limited to reusable workflow callers")
             validate_reusable_binding_declarations(graph, job)
             condition = job["condition"]
             if condition not in {"success", "always", "failure", "cancelled"} and condition not in graph["conditions"]:
@@ -784,10 +762,14 @@ def validate_ci_graph(
     )
     inputs = tuple(sorted(set(value_inputs + controller_inputs + storage_inputs)))
     graph_digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    command_render_modes, component_render_options, job_render_options = _compile_render_options(composed)
     return CompiledCIGraph(
         graph=composed,
         workflows=tuple(composed["workflows"]),
         commands=composed["commands"],
+        command_render_modes=command_render_modes,
+        component_render_options=component_render_options,
+        job_render_options=job_render_options,
         graph_sha256=graph_digest,
         extension_sha256=digests,
         input_sha256=inputs,

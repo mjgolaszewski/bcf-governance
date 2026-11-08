@@ -444,7 +444,14 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
                 "requirements": [],
                 "version": "2.2.1",
             })
-        if len(argv) == 6 and argv[1:3] == ["-P", "-c"]:
+        if (len(argv) == 11 and argv[1:3] == ["-P", "-c"]
+                and argv[3] == qualification._CANDIDATE_QUALIFICATION_TRAIN):
+            assert argv[3] == qualification._CANDIDATE_QUALIFICATION_TRAIN
+            assert argv[4:] == [
+                str(cwd), str(tmp_path / cwd.name / ".venv/bin/python"),
+                str(REPO_ROOT.resolve()), str(assets.resolve()),
+                str(manifest.resolve()), source_trees[cwd.name], source_trees[cwd.name],
+            ]
             return json.dumps({
                 "status": "prospectively_admissible_provider_proof_required",
                 "subject": {"commit_sha": "c" * 40, "tree_sha": "d" * 40},
@@ -519,7 +526,8 @@ def test_release_subject_identity_cannot_be_replaced_by_adopter_iteration(
         for call in install_calls
     )
     qualification_calls = [
-        call for call in calls if len(call) == 6 and call[1:3] == ["-P", "-c"]
+        call for call in calls if len(call) == 11 and call[1:3] == ["-P", "-c"]
+        and call[3] == qualification._CANDIDATE_QUALIFICATION_TRAIN
     ]
     assert len(qualification_calls) == len(contract["required_adopters"])
     assert all("prospective-train" not in call for call in calls)
