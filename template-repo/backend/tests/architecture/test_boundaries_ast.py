@@ -460,7 +460,12 @@ def _module_name_for_path(path: Path) -> str:
         parts = list(relative_path.with_suffix("").parts)
         if parts and parts[-1] == "__init__":
             parts = parts[:-1]
-        return ".".join(parts)
+        package = source_root
+        prefix: list[str] = []
+        while package.is_relative_to(REPO_ROOT) and (package / "__init__.py").is_file():
+            prefix.insert(0, package.name)
+            package = package.parent
+        return ".".join([*prefix, *parts])
     return ""
 
 

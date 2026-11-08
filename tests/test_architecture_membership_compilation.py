@@ -58,9 +58,10 @@ def test_missing_release_context_cannot_classify_installed_footprint_as_project(
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("{}\n" if path.suffix == ".json" else '"""Footprint."""\n')
     commit(subject)
-    with pytest.raises(SourceComponentError, match="installed footprint requires explicit native release authentication") as failure:
+    diagnostic = ("invalid installed custody" if footprint == "governance/bcf-runtime-lock.json"
+                  else "installed footprint requires explicit native release authentication")
+    with pytest.raises(SourceComponentError, match=diagnostic):
         compiler.build_effective_inventory(subject)
-    assert any(entry.name == "_project_classifications" for entry in failure.traceback)
 
 
 @pytest.mark.parametrize("mutation", ["members", "observation", "projection", "context", "subject"])

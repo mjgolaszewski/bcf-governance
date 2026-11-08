@@ -42,6 +42,7 @@ from .semantic_operation_typescript import (
     discover_typescript_population,
 )
 from .semantic_ownership_registry import Registry, load_registry
+from .semantic_operation_registrations import TypedRegistrationError, discover_typed_registrations
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
 
 _legacy_generated_projections = legacy_generated_projections
@@ -499,10 +500,22 @@ def _validate_operations(
     _schema(repo_root, "application-operations.schema.json", payload)
     populations = payload["populations"]
     _validate_operation_structure(payload)
-    discovered = {str(row["id"]): (
-        _discover_population(repo_root, row, inventory) if row["adapter"] == "typescript_exports"
-        else _discover_population(repo_root, row)
-    ) for row in populations}
+    # Specialize actual lexical handlers only for the explicit closed adapter.
+    # Copy the inventory: the caller never receives a fabricated cached graph.
+    inventory = {**inventory, "functions": list(inventory.get("functions", []))}
+    discovered = {}
+    typed_bindings = {}
+    for row in populations:
+        if row["adapter"] == "python_typed_registrations":
+            try:
+                entries, bound = discover_typed_registrations(repo_root, row, inventory)
+            except TypedRegistrationError as exc:
+                raise SemanticAuthorityError(str(exc)) from exc
+            discovered[str(row["id"])] = entries
+            inventory["functions"].extend(bound)
+            typed_bindings.update({item["symbol"]: item["registration_binding"] for item in bound})
+        else:
+            discovered[str(row["id"])] = _discover_population(repo_root, row, inventory)
     classified: dict[tuple[str, str], str] = {}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
@@ -523,6 +536,15 @@ def _validate_operations(
                 f"operation {operation['id']} entrypoints must exactly match discovered {actual_symbol}"
             )
         kind = str(operation["semantic_kind"])
+        binding = typed_bindings.get(actual_symbol)
+        if binding is not None:
+            query = binding["dispatch"] == "ask"
+            if (kind != ("query" if query else "command")
+                    or bool(operation["authoritative_read"]) != query
+                    or bool(operation["authoritative_mutation"]) == query):
+                raise SemanticAuthorityError(
+                    f"operation {operation['id']} classification contradicts actual typed dispatch"
+                )
         mutates = bool(operation["authoritative_mutation"])
         confers = bool(operation["authority_conferral"])
         if kind in READ_ONLY_KINDS and (mutates or confers):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import json
 import re
@@ -14,6 +15,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request
 
+from ..architecture_policy_input import _read
 from ..bootstrap.contracts import GitHubProviderSettings
 from ..bootstrap.environment import github_provider_settings as _default_github_provider_settings
 from ..ci_github_artifacts import provider_digest
@@ -739,3 +741,41 @@ def project_upgrade_runtime_lock(
         qualification_path.write_text(
             json.dumps(payload, indent=2, sort_keys=False) + "\n", encoding="utf-8"
         )
+
+
+def capture_installed_runtime(
+    repo_root: Path, *, expected_version: str, schema_path: Path,
+) -> dict[str, Any]:
+    """Capture pinned local runtime integrity; no assets, secrets or provider IO.
+
+    This is an installed-consumer observation under the adopter's review boundary,
+    not fresh supplier authentication or release/publication authority.
+    """
+    repo_root = repo_root.resolve(strict=True)
+    lock_path = repo_root / RUNTIME_LOCK_PATH
+    lock_raw = _read(lock_path)
+    lock = validate_installed_runtime_lock(
+        repo_root, expected_version=expected_version, schema_path=schema_path,
+    )
+    files = {}
+    for relative, expected in sorted(lock["files"].items()):
+        raw = _read(repo_root / relative)
+        if _sha256_bytes(raw) != expected:
+            raise ReleaseCustodyError(f"installed runtime changed during capture: {relative}")
+        files[relative] = {"sha256": expected, "content_base64": base64.b64encode(raw).decode("ascii")}
+    if not files or len(json.dumps(files).encode()) > 16 * 1024**2:
+        raise ReleaseCustodyError("installed runtime capture must be nonempty and bounded")
+    if (_read(lock_path) != lock_raw or validate_installed_runtime_lock(
+            repo_root, expected_version=expected_version, schema_path=schema_path) != lock):
+        raise ReleaseCustodyError("installed runtime custody changed during capture")
+    return {
+        "schema_version": "1.0", "acquisition": "native_installed_runtime_integrity",
+        "guarantee": "pinned local runtime bytes; no provider reauthentication or new custody claim",
+        "runtime_lock_sha256": _sha256_bytes(lock_raw),
+        "release": {key: lock[key] for key in (
+            "version", "source_repository", "source_repository_id", "source_commit",
+            "release_id", "release_url", "wheel_sha256", "source_archive_sha256",
+            "checksum_manifest_sha256",
+        ) if key in lock},
+        "files": files,
+    }

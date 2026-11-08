@@ -213,6 +213,11 @@ def test_native_compiler_joins_real_release_before_managed_requests(installed_re
             assert len(assigned) == 1 and assigned[0].path == path
             assert assigned[0].effective_layers == ("tooling",)
             compiler.reauthenticate_effective_inventory(target, result, release_inputs=inputs)
+            installed = compiler.build_effective_inventory(target)
+            assert installed.release is None and installed.installed is not None
+            assert installed.installed.lock_sha256 == lock_digest
+            assert installed.projection == result.projection
+            compiler.reauthenticate_effective_inventory(target, installed)
             from bcf_governance.tooling.architecture_native_gate import compile_gate_ownership
             from bcf_governance.tooling.architecture_release_context import released_native_membership
             with released_native_membership(target, assets_root=assets, template_root=template,
@@ -229,3 +234,64 @@ def test_native_compiler_joins_real_release_before_managed_requests(installed_re
         config_path.write_bytes(original)
         commit(target)
     assert _query(installed_release).release_version == __version__
+
+
+def test_installed_membership_needs_no_supplier_assets_token_or_provider(installed_release, monkeypatch):
+    target, assets, _, _ = installed_release
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("installed validation must never authenticate against supplier")
+
+    monkeypatch.setattr(adapter, "prepare_release_custody", forbidden)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    unavailable = assets.with_name(assets.name + "-unavailable")
+    assets.rename(unavailable)
+    try:
+        result = adapter.inspect_installed_membership(target)
+        assert result.classifications
+        assert all(row.ownership == "managed" for row in result.classifications)
+        assert not hasattr(result, "release_commit")
+        assert adapter.inspect_installed_membership(target) == result
+        captured = release_custody.capture_installed_runtime(
+            target, expected_version=__version__,
+            schema_path=target / "schemas/bcf-runtime-lock.schema.json",
+        )
+        assert captured["acquisition"] == "native_installed_runtime_integrity"
+        assert captured["runtime_lock_sha256"] == result.lock_sha256
+        assert {row.path for row in result.classifications} <= set(captured["files"])
+    finally:
+        unavailable.rename(assets)
+
+
+@pytest.mark.parametrize("mutation", ["bytes", "unexplained-runtime", "reclassified-runtime", "candidate"])
+def test_local_installed_membership_rejects_actual_drift(installed_release, mutation):
+    target, _, _, _ = installed_release
+    path = target / "scripts/_bcf_runtime/__init__.py"
+    lock_path = target / RUNTIME_LOCK_PATH
+    original_source, original_lock = path.read_bytes(), lock_path.read_bytes()
+    added = None
+    if mutation == "bytes":
+        path.write_bytes(original_source + b"DRIFT = True\n")
+    elif mutation == "unexplained-runtime":
+        added = target / "scripts/_bcf_runtime/unexplained.py"
+        added.write_text("VALUE = 1\n")
+    elif mutation == "reclassified-runtime":
+        payload = json.loads(original_lock)
+        relative = path.relative_to(target).as_posix()
+        payload["preserved_consumer_files"][relative] = payload["files"].pop(relative)
+        payload["official_installer_adaptations"].pop(relative, None)
+        lock_path.write_text(json.dumps(payload))
+    else:
+        added = target / "governance/bcf-candidate-qualification.json"
+        added.write_text("{}\n")
+    commit(target)
+    try:
+        with pytest.raises(SourceComponentError):
+            adapter.inspect_installed_membership(target)
+    finally:
+        path.write_bytes(original_source)
+        lock_path.write_bytes(original_lock)
+        if added is not None:
+            added.unlink()
+        commit(target)

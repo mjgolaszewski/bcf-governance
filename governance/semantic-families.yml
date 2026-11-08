@@ -11,7 +11,7 @@ families:
   significance: authoritative
   ownership_required: true
   canonical_semantic_ids: [governance.application-operation-registry.v1]
-  material_selectors: {source_paths: [bcf_governance/tooling/semantic_authority_contracts.py], symbols: [bcf_governance/tooling/semantic_authority_contracts.py::ApplicationOperationRegistry]}
+  material_selectors: {source_paths: [bcf_governance/tooling/semantic_authority_contracts.py, bcf_governance/tooling/semantic_operation_registrations.py], symbols: [bcf_governance/tooling/semantic_authority_contracts.py::ApplicationOperationRegistry]}
   responsibilities: {construction: [load_application_operations], decoding: [discover_population], transition: [validate_exact_base_migrations], projection: [operation_observations]}
 - id: representation_provenance
   significance: authoritative

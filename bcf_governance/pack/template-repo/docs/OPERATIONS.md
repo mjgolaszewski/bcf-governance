@@ -305,3 +305,12 @@ evidence bundles and truth reports outside the tracked tree, normally under
 ignored `.artifacts/bcf/`, and retain them in CI artifact or release storage by sha256.
 Receipt result fields are descriptive only: BCF recomputes results from process
 outcomes, raw artifact hashes, test reports, declared expectations, and probes.
+
+## Self-contained installed validation
+
+Run normal validation and CI against this repository's pinned installed runtime
+and `governance/bcf-runtime-lock.json`. They need no BCF-repository credentials,
+release downloads or provider queries. Installation and explicit upgrade are
+separate acquisition operations. Keep all reconstruction inputs locally or in
+this project's own artifact store; a fresh CI environment must not fetch the
+framework from BCF. Local integrity observations do not grant release authority.
