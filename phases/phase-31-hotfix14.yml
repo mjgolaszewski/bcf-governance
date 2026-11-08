@@ -28,6 +28,10 @@ execution_evidence:
   - Strict managed runtime lint and typing:319files pass after native duplication repair.
   - Final native duplication/controller/profile suite:156 passed,0 failed.
   - Effect/dispatch/typed-registration regression suite:89 passed,0 failed.
+  - First full3124-case native test producer:3123passed/1failed/0skipped. Existing path-hidden-command control caught changed
+    legacy discovery call arity; failed-source bundle is diagnostic-only and not reused as acceptance.
+  - Restored original two-argument legacy Python discovery dispatch, preserved TypeScript inventory-aware dispatch, synchronized
+    native mirrors; exact negative control plus typed-registration cases:28passed.
   notes:
   - 'Pre-edit scope: maintained architecture and operation-inventory queries in tooling, exact mirrored native gate, additive
     opt-in schema1.1, tests and canonical release docs. Preserve effect ports, complete source census, candidate/publication

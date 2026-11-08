@@ -1600,7 +1600,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "cb1e4995d64f1e9118566b0c183ac5cf0f99a4501387dd4c3b0c7301151c6980"
+      "sha256": "c8469d5c5ea47f3cfb0ef919c4539ba0ad88b576e8565c5f8cd11175c1968dbc"
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",

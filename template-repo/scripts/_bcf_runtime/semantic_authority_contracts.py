@@ -515,7 +515,11 @@ def _validate_operations(
             inventory["functions"].extend(bound)
             typed_bindings.update({item["symbol"]: item["registration_binding"] for item in bound})
         else:
-            discovered[str(row["id"])] = _discover_population(repo_root, row, inventory)
+            discovered[str(row["id"])] = (
+                _discover_population(repo_root, row, inventory)
+                if row["adapter"] == "typescript_exports"
+                else _discover_population(repo_root, row)
+            )
     classified: dict[tuple[str, str], str] = {}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
