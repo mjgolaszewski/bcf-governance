@@ -101,6 +101,13 @@ def test_bound_factory_effects_are_followed_instead_of_dto_proxy(registered):
     ("patterns.py", 'spec.query_factory(value)', 'other.query_factory(value)'),
     ("patterns.py", 'name=spec.name', 'name="different"'),
     ("patterns.py", 'async def _tool(value):', 'async def _tool(value):\n        spec = other'),
+    ("patterns.py", 'def register_query', 'Alias = QuerySpec\nAlias.register = replacement\n\ndef register_query'),
+    ("patterns.py", 'def register_query', 'QuerySpec.register = replacement\n\ndef register_query'),
+    ("patterns.py", 'def register_query', 'def replace_factory(self):\n    object.__setattr__(self, "query_factory", replacement)\nQuerySpec.__post_init__ = replace_factory\n\ndef register_query'),
+    ("patterns.py", '    def register(self, server, context):', '    def __post_init__(self):\n        object.__setattr__(self, "query_factory", replacement)\n\n    def register(self, server, context):'),
+    ("patterns.py", '@dataclass(frozen=True)', '@wrapper\n@dataclass(frozen=True)'),
+    ("patterns.py", '    @server.tool(name=spec.name)', '    @replacement\n    @server.tool(name=spec.name)'),
+    ("table.py", 'def register_tools', 'Alias = QuerySpec\nAlias.register = replacement\n\ndef register_tools'),
 ])
 def test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed(registered, file, before, after):
     root, _ = registered
@@ -164,3 +171,10 @@ def test_owner_integrates_actual_handler_effects_and_explicit_opt_in(registered,
     else:
         assert len(_validate_operations(root, value, inventory)) == 2
     assert inventory == original
+
+
+def test_local_dataclasses_shadow_cannot_claim_frozen_contract(registered):
+    root, _ = registered
+    (root / "dataclasses.py").write_text("def dataclass(**kwargs):\n    return lambda cls: cls\n")
+    with pytest.raises(TypedRegistrationError, match="dataclasses shadow"):
+        discover(registered)

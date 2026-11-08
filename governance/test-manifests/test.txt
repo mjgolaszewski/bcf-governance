@@ -2704,17 +2704,25 @@ tests.test_semantic_method_effects::test_unsupported_same_instance_dispatch_fail
 tests.test_semantic_method_effects::test_unsupported_same_instance_dispatch_fails_closed[receiver-rebinding]
 tests.test_semantic_operation_registrations::test_bound_factory_effects_are_followed_instead_of_dto_proxy
 tests.test_semantic_operation_registrations::test_each_instance_joins_actual_lexical_handler_factory_and_dispatch
+tests.test_semantic_operation_registrations::test_local_dataclasses_shadow_cannot_claim_frozen_contract
 tests.test_semantic_operation_registrations::test_owner_integrates_actual_handler_effects_and_explicit_opt_in[None]
 tests.test_semantic_operation_registrations::test_owner_integrates_actual_handler_effects_and_explicit_opt_in[false-direction]
 tests.test_semantic_operation_registrations::test_owner_integrates_actual_handler_effects_and_explicit_opt_in[legacy-opt-in]
 tests.test_semantic_operation_registrations::test_owner_integrates_actual_handler_effects_and_explicit_opt_in[omitted-operation]
 tests.test_semantic_operation_registrations::test_source_changed_after_inventory_cannot_supply_registration
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-    @server.tool(name=spec.name)-    @replacement\n    @server.tool(name=spec.name)]
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-    def register(self, server, context):-    def __post_init__(self):\n        object.__setattr__(self, "query_factory", replacement)\n\n    def register(self, server, context):]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-@dataclass(frozen=True)-@dataclass(frozen=False)]
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-@dataclass(frozen=True)-@wrapper\n@dataclass(frozen=True)]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-async def _tool(value):-async def _tool(value):\n        spec = other]
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-def register_query-Alias = QuerySpec\nAlias.register = replacement\n\ndef register_query]
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-def register_query-QuerySpec.register = replacement\n\ndef register_query]
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-def register_query-def replace_factory(self):\n    object.__setattr__(self, "query_factory", replacement)\nQuerySpec.__post_init__ = replace_factory\n\ndef register_query]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-mediator.ask-mediator.send]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-name=spec.name-name="different"]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-register_query(server, context, self)-register_query(server, context, other)]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[patterns.py-spec.query_factory(value)-other.query_factory(value)]
+tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[table.py-def register_tools-Alias = QuerySpec\nAlias.register = replacement\n\ndef register_tools]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[table.py-def register_tools-QuerySpec = replacement\n\ndef register_tools]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[table.py-def register_tools-TOOLS.append(extra)\n\ndef register_tools]
 tests.test_semantic_operation_registrations::test_unknown_duplicate_cross_instance_or_alias_drift_fails_closed[table.py-name="first.get"-name=operation_name]

@@ -37,12 +37,12 @@ from .semantic_operation_python import (
     _function_for_entrypoint,
     _module_aliases,
 )
+from .semantic_operation_registrations import TypedRegistrationError, discover_typed_registrations
 from .semantic_operation_typescript import (
     TypeScriptOperationPopulationError,
     discover_typescript_population,
 )
 from .semantic_ownership_registry import Registry, load_registry
-from .semantic_operation_registrations import TypedRegistrationError, discover_typed_registrations
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
 
 _legacy_generated_projections = legacy_generated_projections

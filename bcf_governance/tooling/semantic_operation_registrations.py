@@ -68,12 +68,47 @@ def _resolve(root: Path, expression: ast.expr, tree: ast.Module, source: str) ->
     return symbol
 
 
+
+def _closed_module(tree: ast.Module, *, table: str | None = None) -> None:
+    """No executable module patching can replace the observed spec/factory."""
+    for row in tree.body:
+        if isinstance(row, (ast.Import, ast.ImportFrom, ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        # TypeAlias was added in Python3.12; keep the runtime importable on3.11.
+        if type(row).__name__ == "TypeAlias":
+            continue
+        if isinstance(row, ast.Expr) and isinstance(row.value, ast.Constant) and isinstance(row.value.value, str):
+            continue
+        if table is not None:
+            targets = row.targets if isinstance(row, ast.Assign) else ([row.target] if isinstance(row, ast.AnnAssign) else [])
+            if len(targets) == 1 and isinstance(targets[0], ast.Name) and targets[0].id == table:
+                continue
+        _refuse("module-level alias, mutation or executable binding is unsupported")
+
+
 def _forwarding_owner(root: Path, symbol: str, inventory: dict[str, Any]) -> tuple[str, str, frozenset[str], frozenset[str]]:
     source, name = symbol.split("::", 1)
     tree = _tree(root, source, inventory)
+    _closed_module(tree)
+    if any(row["path"].endswith(("/dataclasses.py", "/dataclasses/__init__.py"))
+           or row["path"] in {"dataclasses.py", "dataclasses/__init__.py"} for row in inventory["files"]):
+        _refuse("local dataclasses shadow cannot establish frozen spec identity")
     cls = _one([row for row in tree.body if isinstance(row, ast.ClassDef) and row.name == name], "spec class")
-    if cls.bases:
-        _refuse("inherited specs are unsupported")
+    if cls.bases or len(cls.decorator_list) != 1:
+        _refuse("inherited or additionally decorated specs are unsupported")
+    for row in cls.body:
+        if isinstance(row, ast.AnnAssign):
+            if row.value is not None:
+                try:
+                    ast.literal_eval(row.value)
+                except (ValueError, TypeError):
+                    _refuse("spec defaults must be closed literals")
+        elif isinstance(row, ast.FunctionDef) and row.name == "register" and not row.decorator_list:
+            continue
+        elif isinstance(row, ast.Expr) and isinstance(row.value, ast.Constant) and isinstance(row.value.value, str):
+            continue
+        else:
+            _refuse("custom spec construction, descriptors or methods are unsupported")
     frozen = [row for row in cls.decorator_list if isinstance(row, ast.Call)
               and _resolve(root, row.func, tree, source) == "dataclasses.py::dataclass"]
     # Import identities use the same source-first convention as the operation owner.
@@ -110,6 +145,7 @@ def discover_typed_registrations(root: Path, population: dict[str, Any],
     """Derive the complete literal table and specialize actual handler call facts."""
     source, table = str(population["source"]), str(population["symbol"])
     tree = _tree(root, source, inventory)
+    _closed_module(tree, table=table)
     assignments = [row for row in tree.body if (
         isinstance(row, ast.Assign) and any(isinstance(t, ast.Name) and t.id == table for t in row.targets)
         or isinstance(row, ast.AnnAssign) and isinstance(row.target, ast.Name) and row.target.id == table)]
@@ -156,7 +192,7 @@ def discover_typed_registrations(root: Path, population: dict[str, Any],
         if factory_node is None:
             _refuse("concrete factory required")
         factory = _resolve(root, factory_node, tree, source)
-        _tree(root, factory.split("::", 1)[0], inventory)
+        _closed_module(_tree(root, factory.split("::", 1)[0], inventory))
         if factory not in functions:
             _refuse("concrete factory absent from shared executable inventory")
         for field, value in keywords.items():
@@ -169,7 +205,7 @@ def discover_typed_registrations(root: Path, population: dict[str, Any],
         owner_tree = _tree(root, owner_source, inventory)
         register = _one([row for row in owner_tree.body if isinstance(row, ast.FunctionDef)
                          and row.name == owner_name], "registration adapter")
-        if [row.arg for row in register.args.args] != ["server", "context", "spec"]:
+        if register.decorator_list or [row.arg for row in register.args.args] != ["server", "context", "spec"]:
             _refuse("unsupported registration adapter signature")
         annotation = register.args.args[2].annotation
         if annotation is None or _resolve(root, annotation, owner_tree, owner_source) != spec:
@@ -185,6 +221,8 @@ def discover_typed_registrations(root: Path, population: dict[str, Any],
                  and ast.unparse(row.func) == "server.tool"
                  and any(k.arg == "name" and ast.unparse(k.value) == "spec.name" for k in row.keywords)]
         _one(tools, "current instance tool decorator")
+        if len(handler.decorator_list) != 1:
+            _refuse("additional handler decorators are unsupported")
         dispatches = [row for row in ast.walk(handler) if isinstance(row, ast.Call)
                       and ast.unparse(row.func) in {"context.services.mediator.ask", "context.services.mediator.send"}]
         call = _one(dispatches, "actual mediator dispatch")
