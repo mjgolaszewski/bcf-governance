@@ -35,7 +35,12 @@ _UniqueKeyLoader.add_constructor(
 
 def load_unique_mapping(path: Path) -> dict[str, Any]:
     try:
-        payload = yaml.load(path.read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
+        loader = _UniqueKeyLoader(path.read_text(encoding="utf-8"))
+        try:
+            payload = loader.get_single_data()
+        finally:
+            dispose: Callable[[], None] = loader.dispose
+            dispose()
     except (OSError, UnicodeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise SemanticYAMLError(str(exc)) from exc
     if not isinstance(payload, dict):

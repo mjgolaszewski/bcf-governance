@@ -2657,3 +2657,22 @@ cases for these transitions, build and fresh install, SDK/consumer compatibility
 strict runtime quality, governance and security. Normal protected review,
 controller transition, exact-main certification and immutable publication remain
 required. Candidate-only source observations are never release custody.
+
+### Maintenance 2.3.12 actual-consumer architecture and security repair
+
+Publication and adopter acceptance are distinct observations. Qualify the complete
+current BDMCP source/configuration and the actual SDK configuration before
+claiming that framework blockers are resolved; retain valid unchanged product
+and signed SDK evidence. Consumer failures remain typed remediation inputs.
+
+| Trigger | Maintained behavior | Required refusal |
+| --- | --- | --- |
+| Expanded source-component policy | Reuse parsing within one native body; read/hash current bounded bytes on every access, copy returned mappings, reauthenticate complete ownership at exit, then discard the cache. | Mid-body byte/presence changes, unsafe input and stale source/ownership. |
+| Flat installed CLI/runtime | Closed installed_bcf_runtime context recognizes only exact independently managed membership in tooling/_bcf_runtime, bound to current source/configuration and the owner custody domain. | Consumer-owned source, invented context/layer/selector, stale/cross-domain custody and conflicting inference. |
+| Evidence XML | Bound stable reads and defused DTD/entity/external-reference refusal; preserve normal JUnit interpretation. | Unsafe declarations including UTF-16 encodings, symlink leaves, oversized or changing input. |
+| Runtime source security | Execute medium/high Bandit checks, retain safe duplicate-rejecting YAML loaders and evidence one precise fixed-fence false positive with actual alias controls. | Unsafe XML parser mutation or any undispositioned medium/high finding. |
+| Rejected model authority command | Preserve real command/model/mutation dispatch; prove fail-closed reachable behavior and independently inventory the non-model trusted executor and real ports. | Hiding registrations, false validation/query labels, invented authority ports or model-conferrable authority. |
+| Cold controller dependency closure | Canonical and installed-source controller builders carry all declared runtime dependencies. | A materialized controller that drops the hardened XML dependency. |
+
+Exact protected CI, normal controller rotation, fresh exact-main certification,
+fresh artifact installation and immutable release custody remain required.

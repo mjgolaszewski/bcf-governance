@@ -79,6 +79,54 @@ def test_existing_owner_authenticates_exact_installed_membership(installed_relea
                for row in result.classifications)
 
 
+def test_complete_installed_framework_context_covers_flat_cli_without_hiding_product(installed_release):
+    from bcf_governance.tooling.architecture_membership_compilation import build_effective_inventory
+
+    target, _, _, _ = installed_release
+    config = target / "architecture-boundaries.yml"
+    original = config.read_bytes()
+    probe = target / "scripts/product_probe.py"
+    probe.write_bytes(b"VALUE = 1\n")
+    payload = yaml.safe_load(original)
+    architecture = payload["architecture"]
+    architecture["layers"]["tooling"] = {
+        "path_tokens": ["tools"], "required": False, "forbidden_import_prefixes": [],
+        "forbidden_layer_imports": [], "forbidden_import_names": [],
+    }
+    commit(target)
+    managed = adapter.inspect_installed_membership(target)
+    members = {row.path: row.sha256 for row in managed.classifications if row.ownership == "managed"}
+    assert "scripts/governance_truth.py" in members
+    component = {
+        "id": "installed-framework", "layer": "tooling", "context": "_bcf_runtime",
+        "rationale": "Exact framework infrastructure retains every source member and behavioral gate.",
+        "members": members, "managed_pack": {"runtime_lock_path": RUNTIME_LOCK_PATH,
+                                              "runtime_lock_sha256": managed.lock_sha256},
+        "context_authority": {"kind": "maintained_native_context_contract", "version": "1.0",
+                              "selector": "installed_bcf_runtime"},
+    }
+    architecture["source_component_ownership"] = {"version": "1.0", "components": [component]}
+    try:
+        config.write_text(yaml.safe_dump(payload))
+        commit(target)
+        observed = build_effective_inventory(target)
+        assert observed.installed is not None and observed.release is None
+        projected = {row.path: row for row in observed.projection.members}
+        assert set(projected) == {row.path for row in observed.native.members}
+        assert projected["scripts/governance_truth.py"].effective_contexts == ("_bcf_runtime",)
+        assert projected["scripts/product_probe.py"].effective_contexts == ()
+        assert observed.projection.raw_observation is observed.native.observation
+        members["scripts/product_probe.py"] = hashlib.sha256(probe.read_bytes()).hexdigest()
+        config.write_text(yaml.safe_dump(payload))
+        commit(target)
+        with pytest.raises(SourceComponentError, match="project member cannot claim managed"):
+            build_effective_inventory(target)
+    finally:
+        config.write_bytes(original)
+        probe.unlink()
+        commit(target)
+
+
 @pytest.mark.parametrize("mutation,diagnostic", [
     ("provenance", "persisted release identity differs"),
     ("omitted-member", "omits or adds maintained release members"),

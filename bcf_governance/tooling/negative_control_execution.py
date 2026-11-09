@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import subprocess
-import xml.etree.ElementTree as ET
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .evidence_gate_contracts import _gate_contract
+from .evidence_xml import read_evidence_xml
 from .test_manifests import (
     OracleManifestIndex,
     PytestSelectorMap,
@@ -179,7 +179,7 @@ def junit_nodes(path: Path) -> tuple[set[str], set[str]]:
         return set(), set()
     observed: set[str] = set()
     failed: set[str] = set()
-    root = ET.parse(path).getroot()
+    root = read_evidence_xml(path)
     for case in root.iter("testcase"):
         classname = case.attrib.get("classname", "")
         name = case.attrib.get("name", "")

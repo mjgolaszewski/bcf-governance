@@ -6,7 +6,16 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.11`
+Release target: `2.3.12`
+
+### Fixed
+
+- Bound architecture policy parsing to one native test body while retaining current-byte admission and source/ownership reauthentication.
+- Recognize exact installed framework CLI/runtime infrastructure context without excluding product source.
+- Harden evidence XML admission, retain safe unique YAML loaders and run medium/high source security checks in the maintained gate.
+- Qualify truthful registered/rejected command and independent trusted-executor guidance against actual consumers.
+
+## [2.3.11] - 2026-11-08
 
 ### Fixed
 

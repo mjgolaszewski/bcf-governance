@@ -23,7 +23,9 @@ from .bootstrap.contracts import ChildProcessEnvironment
 from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .ci_github_bootstrap import verify_controller_inventory
 
-RUNTIME_REQUIREMENTS = ("PyYAML>=6.0,<7", "jsonschema>=4.21,<5", "packaging>=24,<27")
+RUNTIME_REQUIREMENTS = (
+    "defusedxml>=0.7.1,<1", "PyYAML>=6.0,<7", "jsonschema>=4.21,<5", "packaging>=24,<27",
+)
 
 
 class TrustedControllerBuildError(ValueError):
@@ -331,7 +333,7 @@ def main(argv=None):
         encoding="utf-8",
     )
     (source / "pyproject.toml").write_text(
-        """[build-system]
+        f"""[build-system]
 requires = ["setuptools>=75", "wheel"]
 build-backend = "setuptools.build_meta"
 
@@ -339,7 +341,7 @@ build-backend = "setuptools.build_meta"
 name = "bcf-governance"
 version = "0.0.0"
 requires-python = ">=3.11"
-dependencies = ["PyYAML>=6.0,<7", "jsonschema>=4.21,<5", "packaging>=24,<27"]
+dependencies = {json.dumps(list(RUNTIME_REQUIREMENTS))}
 
 [project.scripts]
 bcf = "bcf_governance.cli:main"

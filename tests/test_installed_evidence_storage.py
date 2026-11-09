@@ -11,6 +11,7 @@ import ssl
 import subprocess
 import sys
 import threading
+import tomllib
 import venv
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,11 +20,10 @@ from urllib.parse import unquote, urlsplit
 import pytest
 import yaml
 from packaging.requirements import Requirement
-
-from bcf_governance.tooling.evidence_storage_manifests import verify_input_bundle
 from test_evidence_storage import _durable_graph_repo, _published_reference, _storage_repo
 from test_install_governance_pack import _run_installer
 
+from bcf_governance.tooling.evidence_storage_manifests import verify_input_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -33,7 +33,8 @@ def create_isolated_python(root: Path) -> Path:
     venv.EnvBuilder(with_pip=False).create(root)
     interpreter = root / "bin/python"
     site = root / f"lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages"
-    pending = ["PyYAML", "jsonschema", "packaging"]
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    pending = [Requirement(raw).name for raw in project["project"]["dependencies"]]
     seen = set()
     while pending:
         name = pending.pop()

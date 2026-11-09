@@ -345,7 +345,10 @@ def local_gate_lease(
     except RuntimeCapacityError as exc:
         raise LocalExecutionAdmissionError(str(exc)) from exc
     suffix = f"-{namespace}" if namespace is not None else ""
-    path = Path(f"/tmp/bcf-local-gate-{os.getuid()}{suffix}.lock")
+    # A fixed shared-host inode is the coordination contract, not a temporary
+    # output file. O_EXCL/O_NOFOLLOW plus uid, nlink and inode checks below
+    # reject precreated aliases; moving the path would split the execution fence.
+    path = Path(f"/tmp/bcf-local-gate-{os.getuid()}{suffix}.lock")  # nosec B108
     try:
         try:
             before = _gate_leaf_identity(path.lstat())

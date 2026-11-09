@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import copy
 import importlib.util
 import hashlib
 import sys
@@ -184,6 +185,7 @@ _OWNER_TEST_ACTIVE = False
 _OWNERSHIP = None
 _CONFIG_ADMISSION_READY = False
 _ADMITTED_CONFIG_SHA = None
+_CONFIG_DOCUMENT = None
 
 
 def _admit_configuration(digest):
@@ -231,11 +233,12 @@ def _ownership():
 
 @pytest.fixture(autouse=True)
 def _fresh_ownership_for_native_test():
-    global _OWNER_TEST_ACTIVE, _OWNERSHIP, _CONFIG_ADMISSION_READY, _ADMITTED_CONFIG_SHA
+    global _OWNER_TEST_ACTIVE, _OWNERSHIP, _CONFIG_ADMISSION_READY, _ADMITTED_CONFIG_SHA, _CONFIG_DOCUMENT
     _OWNERSHIP = None
     _OWNER_TEST_ACTIVE = True
     _CONFIG_ADMISSION_READY = False
     _ADMITTED_CONFIG_SHA = None
+    _CONFIG_DOCUMENT = None
     try:
         # Admit the actual PRESENT contract before any pytest body hook can hide
         # it. ABSENT only binds existing bytes/defaults, never new eligibility.
@@ -249,9 +252,11 @@ def _fresh_ownership_for_native_test():
         _OWNER_TEST_ACTIVE = False
         _CONFIG_ADMISSION_READY = False
         _ADMITTED_CONFIG_SHA = None
+        _CONFIG_DOCUMENT = None
 
 
 def _architecture_config() -> dict[str, Any]:
+    global _CONFIG_DOCUMENT
     if CONFIG_PATH.is_symlink():
         raise ValueError("policy input must have a canonical absolute path")
     if not CONFIG_PATH.exists():
@@ -272,7 +277,18 @@ def _architecture_config() -> dict[str, Any]:
     config_raw = admission._read(CONFIG_PATH)
     config_sha256 = hashlib.sha256(config_raw).hexdigest()
     _admit_configuration(config_sha256)
-    payload = admission.load_architecture_mapping(CONFIG_PATH, expected_sha256=config_sha256)
+    # Re-read and bind current bytes on EVERY access. Only parsing is reused
+    # within one native test body; callers never receive the cached mapping.
+    # The fixture reauthenticates ownership/source at exit and drops this value.
+    if _OWNER_TEST_ACTIVE and _CONFIG_DOCUMENT is not None:
+        cached_sha256, cached_payload = _CONFIG_DOCUMENT
+        if cached_sha256 != config_sha256:
+            raise SourceComponentUnsupportedError("native configuration differs from pre-body admission")
+        payload = copy.deepcopy(cached_payload)
+    else:
+        payload = admission.load_architecture_mapping(CONFIG_PATH, expected_sha256=config_sha256)
+        if _OWNER_TEST_ACTIVE:
+            _CONFIG_DOCUMENT = (config_sha256, copy.deepcopy(payload))
     if not isinstance(payload, dict):
         raise AssertionError(f"{CONFIG_PATH.relative_to(REPO_ROOT)} must contain a mapping")
     architecture = payload.get("architecture")

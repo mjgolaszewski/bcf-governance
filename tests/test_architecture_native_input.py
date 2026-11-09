@@ -2,11 +2,10 @@
 
 import importlib.util
 import json
-from pathlib import Path
 import shutil
+from pathlib import Path
 
 import pytest
-
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -38,6 +37,27 @@ def test_actual_native_entrypoint_keeps_true_absence_legacy_defaults(native_conf
     path, module = native_config
     assert not path.exists() and not path.is_symlink()
     assert module._architecture_config() == module.DEFAULT_CONFIG["architecture"]
+
+
+def test_native_body_policy_returns_independent_values_and_refuses_changed_bytes(native_config):
+    path, module = native_config
+    original = b"architecture: {layers: {tooling: {}}, marker: original}\n"
+    path.write_bytes(original)
+    lifecycle = module._fresh_ownership_for_native_test.__wrapped__()
+    next(lifecycle)
+    try:
+        returned = module._architecture_config()
+        returned["layers"].clear()
+        assert module._architecture_config()["layers"] == {"tooling": {}}
+        path.write_bytes(original.replace(b"original", b"modified"))
+        with pytest.raises(module.SourceComponentUnsupportedError, match="pre-body admission"):
+            module._architecture_config()
+        path.write_bytes(original)
+    finally:
+        with pytest.raises(StopIteration):
+            next(lifecycle)
+    path.write_bytes(original.replace(b"original", b"nextbody"))
+    assert module._architecture_config()["marker"] == "nextbody"
 
 
 @pytest.mark.parametrize("value", ["null", "{}", "[]", json.dumps({

@@ -16,6 +16,7 @@ from jsonschema import Draft202012Validator
 
 from .ci_github_api import GitHubAPI, GitHubAPIError
 from .ci_github_identity import GitHubControllerError, MainIdentity, positive_int
+from .evidence_xml import parse_evidence_xml
 from .github_protection import load_protection_bytes
 
 TRANSITION_PATH = "governance/pr-transition.yml"
@@ -386,7 +387,7 @@ def _verify_test_receipt(
         if len(matches) != 1:
             raise TransitionRejected("transition test receipt does not hash-bind required evidence")
     try:
-        root = ElementTree.fromstring(junit_raw)
+        root = parse_evidence_xml(junit_raw)
     except ElementTree.ParseError as exc:
         raise TransitionRejected("transition JUnit evidence is invalid") from exc
     classname, name = required_node.split("::", 1)

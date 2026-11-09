@@ -10,6 +10,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
+from .evidence_xml import read_evidence_xml
+
 OBSERVATIONS_PATH = Path("governance/test-duration-observations.json")
 MANIFEST_PATH = Path("governance/test-manifests/test.txt")
 POLICY_PATH = Path("governance/gate-contracts.yml")
@@ -65,7 +67,7 @@ def _cache_root(repo_root: Path) -> Path | None:
 
 def _junit_durations(path: Path) -> dict[str, int]:
     try:
-        cases = ET.parse(path).getroot().iter("testcase")
+        cases = read_evidence_xml(path).iter("testcase")
     except (OSError, ET.ParseError) as exc:
         raise TestDurationObservationError("test duration JUnit is unreadable") from exc
     durations: dict[str, int] = {}

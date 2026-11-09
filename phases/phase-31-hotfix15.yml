@@ -1,0 +1,52 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF15 Hotfix Log
+  id: bcf-governance-phase-31-hotfix15
+  version: 1.0.0
+  generated_at_utc: '2026-11-08T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix15.yml
+hotfix:
+  id: P31-HF15
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 15
+  summary: Complete consumer architecture and runtime security qualification
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - Focused parser/context/physical-fence qualification:99passed,1new hardlink fixture setup failure across filesystems; corrected
+    same-filesystem control then1passed.
+  - Bandit medium/high scan over canonical package and generated runtime:exit0,zero findings.
+  - Maintained runtime Ruff:exit0. Initial strict mypy found3 untyped SafeLoader dispose calls; typed lifecycle correction
+    authored, recheck pending.
+  - 'Typed lifecycle correction: maintained strict mypy passed all320runtime source files. All12safe-YAML/runtime-dependency/materialized-controller
+    controls passed; full native and actual consumer qualification remain pending.'
+  notes:
+  - Pre-edit bounded tooling-query scope and acceptance are registered in owner staging repair-scope.json. No consumer source,
+    published runtime, credentials, services or deferred Identity/JIT branch changed.
+  - All code and tests are authored; qualification pending. Actual complete BDMCP configuration/security and SDK compatibility
+    are required separately from BCF immutable custody.
+  - One exact B108 disposition retains the mandatory safe physical fence; no blanket runtime exclusions or product census
+    reduction.
+  - Closed installed-controller dependency materialization now includes the same complete runtime requirements as the canonical
+    package; exact producer/consumer dependency qualification required. No signed SDK rebuild, new trust authority, waived
+    product rules or supplier fetch is introduced.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

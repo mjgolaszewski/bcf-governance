@@ -1,16 +1,21 @@
 """Private reducer contracts. Synthetic inputs prove reduction, never authority."""
-from dataclasses import replace
 import hashlib
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
 from bcf_governance.tooling import architecture_effective_membership as reducer
 from bcf_governance.tooling.architecture_native_inventory import (
-    ContextBinding, NativeSourceInventory, SourceMember,
+    ContextBinding,
+    NativeSourceInventory,
+    SourceMember,
 )
 from bcf_governance.tooling.architecture_source_components import (
-    ContextSelector, ManagedPackBinding, SourceComponent, SourceComponentError,
+    ContextSelector,
+    ManagedPackBinding,
+    SourceComponent,
+    SourceComponentError,
 )
 from bcf_governance.tooling.architecture_source_observation import Observation, Policy, Violation
 
@@ -72,6 +77,39 @@ def test_absent_declarations_preserve_every_inference_and_raw_finding(data):
     assert all(row.component_id is None and row.context_witness_sha256 is None
                and row.inferred_layers == row.effective_layers
                and row.inferred_contexts == row.effective_contexts for row in result.members)
+
+
+@pytest.mark.parametrize("mutation", [None, "project", "selector", "context", "layer"])
+def test_installed_framework_context_is_exact_managed_membership_not_product_scope(data, mutation):
+    inventory, component, _ = data
+    original = inventory.members[1]
+    member = replace(original, path="scripts/governance_truth.py")
+    inventory = replace(inventory, members=(member,), contexts=(),
+                        policy=replace(inventory.policy, layer_tokens=(("tooling", ("tools",)), ("domain", ("domain",)))),
+                        observation=replace(inventory.observation, source_sha256=((member.path, member.sha256),)))
+    component = replace(component, layer="tooling", context="_bcf_runtime",
+                        members=((member.path, member.sha256),),
+                        managed_pack=ManagedPackBinding("governance/bcf-runtime-lock.json", "d" * 64),
+                        context_authority=ContextSelector("maintained_native_context_contract", "1.0", "installed_bcf_runtime"))
+    classification = reducer.MemberClassification(member.path, member.sha256, "managed")
+    if mutation == "project":
+        classification = replace(classification, ownership="project")
+        component = replace(component, managed_pack=None)
+    elif mutation == "selector":
+        component = replace(component, context_authority=replace(component.context_authority, selector="any_product_code"))
+    elif mutation == "context":
+        component = replace(component, context="orders")
+    elif mutation == "layer":
+        component = replace(component, layer="domain")
+    if mutation:
+        with pytest.raises(SourceComponentError, match="maintained native context"):
+            reducer._reduce_membership(inventory, (component,), (classification,), managed_lock_sha256="d" * 64)
+    else:
+        result = reducer._reduce_membership(inventory, (component,), (classification,), managed_lock_sha256="d" * 64)
+        assert result.members[0].effective_contexts == ("_bcf_runtime",)
+        assert result.members[0].effective_layers == ("tooling",)
+        assert result.members[0].inferred_contexts == ()
+        assert result.raw_observation is inventory.observation
 
 
 @pytest.mark.parametrize("mutation", ["healthy", "borrow-other-file", "executable", "owner-layer"])
@@ -171,7 +209,7 @@ def test_private_managed_data_requires_exact_native_lock_join(data, binding_stat
     ("ambiguous-layer", "conflicts with inferred layers"),
     ("conflicting-context", "conflicts with inferred contexts"),
     ("borrowed-context", "cannot be borrowed"),
-    ("unsupported-contract", "not implemented"),
+    ("unsupported-contract", "maintained native context requires"),
     ("stale-subject", "subject differs"),
     ("stale-config", "configuration differs"),
     ("stale-witness", "witness differs"),

@@ -608,9 +608,20 @@ def _vulnerability_scan(gate: str, policy: dict[str, object]) -> None:
                 violations.append(path.relative_to(REPO_ROOT).as_posix())
     if violations:
         _fail(gate, "shell=True in " + ", ".join(violations))
+    scan = subprocess.run(
+        [sys.executable, "-m", "bandit", "-r", "bcf_governance", "-ll", "-f", "json", "-q"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False, timeout=120,
+    )
+    try:
+        bandit_report = json.loads(scan.stdout)
+    except json.JSONDecodeError:
+        _fail(gate, "Bandit did not return a complete security report: " + scan.stderr[:1000])
+    if scan.returncode != 0 or bandit_report.get("results") or bandit_report.get("errors"):
+        _fail(gate, "Bandit installed-runtime source scan has findings or errors: " + scan.stdout[:4000])
     output = REPO_ROOT / ".artifacts/vulnerability-scan.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(json.dumps({"scanner": "bcf-ast", "findings": []}), encoding="utf-8")
+    output.write_text(json.dumps({"scanner": "bcf-ast+bandit", "findings": [],
+                                  "bandit": bandit_report}), encoding="utf-8")
 
 
 def _security_review(gate: str) -> None:

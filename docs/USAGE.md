@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.11/bcf_governance-2.3.11-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.12/bcf_governance-2.3.12-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -616,15 +616,62 @@ repository or its own artifact store so a clean CI environment can reconstruct
 the pinned installation without fetching BCF again. Ordinary CI must not use a
 cache miss as permission to contact the BCF repository.
 
+### Complete architecture scope for installed framework tooling
+
+Keep the complete product source census, including application entrypoints and
+adopter-owned CI tools. An installed framework CLI such as
+`scripts/governance_truth.py` is framework infrastructure, not an application
+bounded context. Its layer/context may be supplied by an exact source component
+using `context_authority: {kind: maintained_native_context_contract, version: '1.0',
+selector: installed_bcf_runtime}`, `layer: tooling`, and `context: _bcf_runtime`.
+This selector requires runtime 2.3.12 or later; older runtimes refuse it.
+This closed contract accepts only independently established managed members
+joined to the exact local runtime lock (or isolated candidate qualification).
+It cannot classify consumer-owned code, choose another concern, override a
+conflicting inference, omit source, or waive any behavioral architecture rule.
+All original source members and raw observations remain in the result.
+
+Native gates reuse only the parsed policy within one test body. Every access
+still reads stable current bytes and checks their admitted digest; returned
+mappings are independent copies. The native fixture reauthenticates complete
+source/ownership at teardown and discards the parsed mapping before another test.
+
+### Registered commands that always reject authority requests
+
+Retain actual model registrations and command dispatch in the operation census,
+including legacy commands that reject. A model-callable command remains
+`semantic_kind: command`, with its exact mutation dispatch port and truthful
+mutation classification; rejection does not turn it into a query or hide it.
+`authority_conferral` describes the reachable entrypoint, not its name. An entry
+that rejects before access, receipt reservation and vendor effects does not
+confer authority. That assertion requires the actual dispatch/rejection contract
+and causal controls; merely declaring a mediator port is insufficient evidence.
+The independent trusted executor is a separate `execution` operation with
+`model_callable: false` and its actual policy/authority and mutation ports.
+The proposal/read surface remains independent and read-only.
+
+### Runtime security qualification
+
+The maintained source security gate includes Bandit medium/high checks over the
+canonical package and generated runtime, in addition to shell-policy checks.
+Evidence XML readers reject DTDs, entities and external references through
+`defusedxml`; the dependency is part of the closed release wheelhouse and normal
+installed governance requirements. Custom duplicate-rejecting YAML readers use
+their explicit `SafeLoader` subclasses and retain safe-tag and ambiguity checks.
+One precise `B108` disposition applies to the fixed host execution-fence path:
+it is a shared coordination inode, opened with exclusive creation/no-follow and
+checked for owner, regular-file type, link count and unchanged inode. It is not
+a blanket runtime exclusion or an allowance for unsafe temporary output files.
+
 ## Upgrade and rescaffold
 
 Normal upgrade refreshes pack-owned runtime and schemas and creates required root
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.11 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.11
+gh release download v2.3.12 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.12
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.11 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.12 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF

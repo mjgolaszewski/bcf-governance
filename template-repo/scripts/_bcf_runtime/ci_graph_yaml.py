@@ -64,7 +64,12 @@ _GraphDumper.add_representer(str, _represent_string)
 
 def load_yaml_bytes(content: bytes, *, source: str) -> dict[str, Any]:
     try:
-        payload = yaml.load(content, Loader=_UniqueYAML12Loader)
+        loader = _UniqueYAML12Loader(content)
+        try:
+            payload = loader.get_single_data()
+        finally:
+            dispose: Callable[[], None] = loader.dispose
+            dispose()
     except (yaml.YAMLError, GraphYAMLError) as exc:
         raise GraphYAMLError(f"{source}: {exc}") from exc
     if not isinstance(payload, dict):
