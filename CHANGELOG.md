@@ -6,6 +6,11 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+### Changed
+
+<!-- bcf-automation-changelog:1207503211:dependabot:439:f8a17da7cc4b2e5cad73022dda82271bb75c54d824388cf5d22cc6de8cd578b5 -->
+- Automated dependency update `dependabot` from PR #439: `mypy` from `==1.19.1` to `==2.4.1` (`pyproject.toml`, `requirements-governance.txt`).
+
 Release target: `2.3.12`
 
 ### Fixed
