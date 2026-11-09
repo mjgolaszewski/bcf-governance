@@ -6,6 +6,9 @@ pip==26.2.2
 pip-audit==2.10.1
 pytest==9.0.3
 PyYAML>=6.0,<7
+defusedxml>=0.7.1,<1
+types-defusedxml==0.7.0.20260504
+bandit==1.9.4
 ruff==0.15.7
 setuptools>=69
 types-jsonschema==4.26.0.20261006

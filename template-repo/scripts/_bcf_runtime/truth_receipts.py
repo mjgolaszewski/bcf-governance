@@ -18,6 +18,7 @@ from jsonschema import Draft202012Validator
 from .evidence_claim_resolution import load_claim_gate_projection
 from .evidence_planning import qualification_applicability, receipt_applicability
 from .evidence_test_adapters import recompute_test_artifact_observations
+from .evidence_xml import read_evidence_xml
 from .governance_truth_support import artifact_issues
 from .truth_sessions import apply_session_validation
 
@@ -233,7 +234,7 @@ def _probe_issues(
             failed: set[str] = set()
             if junit_path.is_file():
                 try:
-                    for case in ET.parse(junit_path).getroot().iter("testcase"):
+                    for case in read_evidence_xml(junit_path).iter("testcase"):
                         if case.find("failure") is None and case.find("error") is None:
                             continue
                         classname = case.attrib.get("classname", "")

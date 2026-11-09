@@ -1,0 +1,35 @@
+document:
+  kind: audit
+  id: bcf-2.3.12-consumer-repair
+  version: 1.0.0
+  status: active
+  path: audits/v2.3.12-consumer-repair.yml
+scope: complete actual BDMCP and Identity SDK framework compatibility
+status: implemented_checks_partial_not_acceptance
+known_defects:
+  - Repeated full policy YAML composition in each per-file architecture helper timed out the actual expanded consumer configuration.
+  - Flat installed framework CLI members lacked a supported maintained infrastructure context under a complete broad source census.
+  - Required consumer security checks exceeded the framework self-gate shell-only scan and exposed XML admission and scanner-disposition gaps.
+  - The actual rejected legacy command versus independent trusted executor split lacked qualified adopter guidance.
+security_dispositions:
+  B506:
+    owner: explicit SafeLoader-derived unique YAML loaders
+    action: use explicit safe loader lifecycle; preserve unique keys, safe tags, YAML 1.2 and Compose directives
+    required_controls: unsafe Python tag rejection; duplicate-key rejection; existing graph/semantic/preflight suites
+  B314:
+    owner: bcf_governance/tooling/evidence_xml.py
+    action: bounded stable input and defusedxml with DTD, entity and external-reference prohibition
+    required_controls: UTF-8/UTF-16 DTD/entity refusal; valid JUnit parsing; file alias refusal; complete evidence-reader regression
+  B108:
+    owner: bcf_governance/tooling/local_execution_admission.py::local_gate_lease
+    disposition: one precise source-line false-positive annotation for the mandatory physical coordination inode
+    retained_guards: uid-scoped path; O_EXCL; O_NOFOLLOW; regular file; uid; nlink; inode checks before lock/write; bounded read
+    required_controls: actual symlink/hardlink leaves rejected without target mutation; normal lease and competing-owner refusal
+release_acceptance: pending
+required_qualification:
+  - Complete actual expanded BDMCP source/ownership/configuration packet within unchanged execution bounds
+  - All real registered operations, independent trusted execution and causal rejection/effect controls
+  - Exact installed runtime security scan, strict typing and dependency closure
+  - Actual SDK configuration compatibility; preserve valid unchanged signed SDK custody
+  - Canonical native and hosted evidence, consolidated review, controller rotation and exact-main certification
+  - Fresh artifact install/consumer qualification and immutable release custody

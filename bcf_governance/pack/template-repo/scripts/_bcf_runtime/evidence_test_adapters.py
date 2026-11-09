@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from .evidence_scheduling import validate_test_splinter_plan
+from .evidence_xml import read_evidence_xml
 from .test_splinter_proofs import load_test_splinter_proof
 
 
@@ -153,7 +154,7 @@ def _pytest_counts(text: str) -> dict[str, int]:
 
 
 def _junit_observations(path: Path) -> tuple[dict[str, int], list[str]]:
-    root = ET.parse(path).getroot()
+    root = read_evidence_xml(path)
     cases = list(root.iter("testcase"))
     node_ids: list[str] = []
     skipped = failed = errors = 0

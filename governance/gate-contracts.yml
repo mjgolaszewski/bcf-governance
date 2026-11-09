@@ -545,6 +545,9 @@ gates:
     evidence: {kind: gate, output_requirements: [{path: .artifacts/vulnerability-scan.json, media_type: *id093, authority: *id031}]}
     negative_controls:
     - {id: security-vulnerability-scan-behavior-must-fail, mutation: {path: *id028, yaml_path: forbid_subprocess_shell, value: false}, oracle: {kind: *id091, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-vulnerability-scan failed:'}}
+    - id: security-xml-parser-must-fail
+      mutation: {path: bcf_governance/tooling/evidence_xml.py, search: 'from defusedxml.ElementTree import fromstring', replace: 'from xml.etree.ElementTree import fromstring'}
+      oracle: {kind: *id091, exit_codes: [1], stream: stderr, regex: 'self-governance gate security-vulnerability-scan failed: Bandit'}
   semantic-ownership:
     invocation: {argv: [python3, *id029, *id094], cwd: ., env: {}, required_env: []}
     evidence: {kind: gate, output_requirements: [{path: .artifacts/semantic-ownership/report.json, media_type: *id093, authority: *id031}]}

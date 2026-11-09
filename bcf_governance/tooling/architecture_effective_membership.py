@@ -64,11 +64,28 @@ def _object_sha(value: object) -> str:
 
 
 def _context_witness(inventory: NativeSourceInventory, component: SourceComponent,
-                     path: str) -> str:
+                     path: str, *, classification: MemberClassification | None = None,
+                     custody_domain: str | None = None, custody_sha256: str | None = None) -> str:
     witness: object
     selector = component.context_authority
     if selector.kind == "maintained_native_context_contract":
-        _refuse("maintained native context contract is not implemented")
+        # This owner recognizes ONE closed framework-infrastructure concern.
+        # The complete independent installed/candidate classification and exact
+        # custody join are established before this private reduction. A YAML
+        # request cannot use it to classify project code or select another role.
+        if (selector.version != "1.0" or selector.selector != "installed_bcf_runtime"
+                or component.context != "_bcf_runtime" or component.layer != "tooling"
+                or classification is None or classification.ownership != "managed"
+                or classification.path != path
+                or custody_domain not in {"installed_runtime_lock", "isolated_candidate_qualification"}
+                or custody_sha256 is None or re.fullmatch(r"[0-9a-f]{64}", custody_sha256) is None):
+            _refuse("maintained native context requires exact managed framework membership")
+        member = next(row for row in inventory.members if row.path == path)
+        if classification.sha256 != member.sha256:
+            _refuse("maintained native context source differs from managed membership")
+        return _object_sha((selector.kind, selector.version, selector.selector,
+                            component.layer, component.context, custody_domain, custody_sha256,
+                            inventory.subject, inventory.config_sha256, path, member.sha256))
     if selector.version != "1.0":
         _refuse("unsupported context version")
     bindings = [row for row in inventory.contexts
@@ -172,7 +189,12 @@ def _reduce_membership(inventory: NativeSourceInventory,
                 _refuse("component conflicts with inferred layers")
             if member.inferred_contexts and member.inferred_contexts != (component.context,):
                 _refuse("component conflicts with inferred contexts")
-            witness = _context_witness(inventory, component, path)
+            witness = _context_witness(
+                inventory, component, path, classification=ownership[path],
+                custody_domain=("isolated_candidate_qualification" if candidate_qualification_sha256
+                                else "installed_runtime_lock" if managed_lock_sha256 else None),
+                custody_sha256=candidate_qualification_sha256 or managed_lock_sha256,
+            )
             declared[path] = (component, witness)
     projected: list[EffectiveMember] = []
     for member in inventory.members:

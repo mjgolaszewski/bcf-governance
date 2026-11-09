@@ -8,12 +8,13 @@ subject:
   abi: cp312
 resolution:
   lock_path: release/requirements-cp312-linux-x86_64.lock
-  lock_sha256: 2c801a3a1cf476253e85ba7748afbdd460aa2fba2e57eb83277f4eff0da6b55b
-  direct_requirements: [setuptools, wheel, build, twine, PyYAML, jsonschema, pytest]
+  lock_sha256: 85e35816b181611526b353e8d0d9cc5d24a57a5cf7d2d4c1a9eeebbd85c04cca
+  direct_requirements: [setuptools, wheel, build, twine, PyYAML, jsonschema, pytest, defusedxml]
   network_policy: candidate_may_download_only_manifest_admitted_wheels
   build_install: {no_index: true, require_hashes: true, no_isolation: true}
   verification_install: {no_index: true, require_hashes: true}
 wheels:
+  defusedxml-0.7.1-py2.py3-none-any.whl: a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61
   attrs-26.1.0-py3-none-any.whl: c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309
   build-1.6.0-py3-none-any.whl: f7aaf1ebbb79178a02ba248bb524f2176b256017e17e8e4bd4289c7b38cc2bad
   certifi-2026.7.22-py3-none-any.whl: 62f22742b58a1a33014a2b6b706588a8d7e2a88ae7bd1a6ebe8c992928483775

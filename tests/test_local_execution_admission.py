@@ -1,30 +1,33 @@
 from __future__ import annotations
 
+import os
+import sys
 from contextlib import ExitStack
 from pathlib import Path
-import sys
 
 import pytest
 
+from bcf_governance.tooling.bootstrap.environment import custody_settings
 from bcf_governance.tooling.interpreter_environment import InterpreterEnvironmentError
+from bcf_governance.tooling.local_cli_receipt import (
+    LocalCLIReceiptError,
+    project_local_cli_receipt,
+    resolve_local_cli,
+)
 from bcf_governance.tooling.local_execution_admission import (
-    ensure_local_project_python,
     LocalExecutionAdmissionError,
+    ensure_local_project_python,
     local_gate_lease,
     project_python_environment,
     resolve_local_project_python,
     selected_toolchain_environment,
     validate_local_toolchain,
 )
-from bcf_governance.tooling.local_cli_receipt import (
-    LocalCLIReceiptError,
-    project_local_cli_receipt,
-    resolve_local_cli,
-)
 from bcf_governance.tooling.runtime_capacity import (
     EXECUTION_STATE_ENVIRONMENT,
     EXECUTION_STATE_POLICY,
     allocate_execution_state,
+    authenticated_execution_state_namespace,
     retire_execution_state,
 )
 
@@ -62,6 +65,43 @@ def test_local_gate_requires_exact_execution_identity() -> None:
     with pytest.raises(LocalExecutionAdmissionError, match="identity"):
         with local_gate_lease("branch-name"):
             pass
+
+
+def test_named_physical_gate_rejects_real_symlink_and_hardlink_leaves(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    state = allocate_execution_state(
+        tmp_path, _runtime_contract(), session_id="physical-lock-alias-controls",
+        workload_id="test", execution_id="positive", invocation={},
+    )
+    for name, value in state.environment().items():
+        monkeypatch.setenv(name, value)
+    namespace = authenticated_execution_state_namespace(custody_settings().execution_inputs())
+    assert namespace is not None
+    path = Path(f"/tmp/bcf-local-gate-{os.getuid()}-{namespace}.lock")
+    target = path.with_name(path.name + ".test-target")
+    target_fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+    with os.fdopen(target_fd, "w") as stream:
+        stream.write("preserve\n")
+    try:
+        path.symlink_to(target)
+        with pytest.raises(LocalExecutionAdmissionError, match="lock leaf is unsafe"):
+            with local_gate_lease("a" * 40):
+                pass
+        assert target.read_text() == "preserve\n"
+        path.unlink()
+        os.link(target, path)
+        with pytest.raises(LocalExecutionAdmissionError, match="lock leaf is unsafe"):
+            with local_gate_lease("a" * 40):
+                pass
+        path.unlink()
+        with local_gate_lease("a" * 40):
+            assert path.stat().st_uid == os.getuid() and path.stat().st_nlink == 1
+        assert target.read_text() == "preserve\n"
+    finally:
+        path.unlink(missing_ok=True)
+        target.unlink(missing_ok=True)
+        retire_execution_state(state)
 
 
 def test_local_gate_uses_authenticated_execution_state_namespace(

@@ -47,6 +47,23 @@ def test_controller_builder_derives_every_runtime_requirement_from_pyproject() -
     )
 
 
+def test_installed_controller_materialization_retains_complete_runtime_dependencies(tmp_path: Path) -> None:
+    repo = tmp_path / "installed-adopter"
+    runtime = repo / "scripts/_bcf_runtime"
+    runtime.mkdir(parents=True)
+    (runtime / "_version.py").write_text('__version__ = "2.3.12"\n')
+    (repo / "schemas").mkdir()
+    (repo / "schemas/probe.schema.json").write_text("{}\n")
+    for args in (["init", "--quiet"], ["config", "user.email", "fixture@example.invalid"],
+                 ["config", "user.name", "Fixture"], ["add", "."],
+                 ["commit", "--quiet", "-m", "exact installed source"]):
+        subprocess.run(["git", "-c", "core.hooksPath=/dev/null", "-C", str(repo), *args],
+                       check=True, capture_output=True, timeout=10)
+    source = controller_builder._materialize_installed_source(repo, tmp_path / "materialized")
+    assert controller_builder._source_requirements(source) == controller_builder._source_requirements(REPO_ROOT)
+    assert controller_builder._source_requirements(source) == controller_builder.RUNTIME_REQUIREMENTS
+
+
 def test_controller_builder_rejects_dirty_tree_before_expense(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

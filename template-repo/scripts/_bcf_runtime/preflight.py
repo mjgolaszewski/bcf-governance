@@ -178,10 +178,12 @@ def _syntax_checks(repo_root: Path) -> dict[str, int]:
                 ast.parse(path.read_text(encoding="utf-8"), filename=relative)
                 counts["python"] += 1
             elif path.suffix in {".yml", ".yaml"}:
-                yaml.load(
-                    path.read_text(encoding="utf-8"),
-                    Loader=_yaml_syntax_loader(relative),
-                )
+                loader = _yaml_syntax_loader(relative)(path.read_text(encoding="utf-8"))
+                try:
+                    loader.get_single_data()
+                finally:
+                    dispose: Callable[[], None] = loader.dispose
+                    dispose()
                 counts["yaml"] += 1
             elif path.suffix == ".json":
                 json.loads(path.read_text(encoding="utf-8"))
