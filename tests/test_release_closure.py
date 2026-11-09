@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import hashlib
 import io
-from pathlib import Path
 import tarfile
 import zipfile
+from pathlib import Path
 
 import pytest
 import yaml
@@ -15,7 +15,6 @@ from bcf_governance.tooling.release_closure import (
     verify_release_lock,
     verify_wheelhouse,
 )
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -71,7 +70,10 @@ def test_repository_release_lock_is_a_complete_exact_hash_closure() -> None:
     )
     assert result.python == "3.12.14"
     assert result.platform == "linux_x86_64"
-    assert len(result.wheels) == 41
+    assert len(result.wheels) == 42
+    assert dict(result.wheels)["defusedxml-0.7.1-py2.py3-none-any.whl"] == (
+        "a352e7e428770286cc899e2542b6cdaedb2b4953ff269a210103ec58f6198a61"
+    )
 
 
 def test_wheelhouse_requires_exact_filenames_and_bytes(tmp_path: Path) -> None:
