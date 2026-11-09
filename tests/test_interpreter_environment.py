@@ -358,7 +358,9 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
     verify_interpreter_environment_projection(plan)
     assert plan.projection_path == REPO_ROOT / "requirements-governance.txt"
     assert plan.distribution_names == {
+        "bandit",
         "build",
+        "defusedxml",
         "jsonschema",
         "mypy",
         "packaging",
@@ -368,6 +370,7 @@ def test_repository_bootstrap_requirements_are_a_mechanical_projection() -> None
         "pyyaml",
         "ruff",
         "setuptools",
+        "types-defusedxml",
         "types-jsonschema",
         "types-pyyaml",
         "urllib3",
