@@ -458,6 +458,9 @@ def select_controller_chain(
             continue
         if value["subject"]["commit_sha"] not in ancestors:
             continue
+        if value["subject"]["commit_sha"] == value["artifact"]["commit_sha"] == baseline:
+            # Canonical source normalization has already incorporated this target.
+            continue
         admitted.append(value)
     chain: list[dict[str, Any]] = []
     current = baseline

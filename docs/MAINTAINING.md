@@ -160,6 +160,12 @@ Controller evolution remains fail-closed: installed authority must understand
 the candidate state required to authorize its successor before successor-only
 semantics activate. Break Glass is not a compatibility exemption.
 
+After canonical source normalization, chain selection starts at the declared
+installed baseline. A validated transition whose subject and artifact both equal
+that baseline is already incorporated. Validation and replay checks still apply,
+and successor transitions must form one complete chain. Missing unconsumed links
+require governed recovery; expiration does not authorize a guessed predecessor.
+
 ## Change contract
 
 Every pull request:
