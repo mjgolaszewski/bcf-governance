@@ -222,7 +222,7 @@ class _Calls:
 
     def registration_result(self, symbol: str) -> bool:
         definition = self.definitions.get(symbol)
-        if not isinstance(definition, ast.FunctionDef) or definition.decorator_list or definition.type_params:
+        if not isinstance(definition, ast.FunctionDef) or definition.decorator_list or getattr(definition, "type_params", ()):
             return False
         owner = symbol.split("::", 1)[0]
         locals_ = {argument.arg: self.annotation_type(argument.annotation, owner)
@@ -255,7 +255,7 @@ class _Calls:
                 for node in annotation_nodes)
             if (not child.decorator_list and len(parameters) == 1 and not args.defaults
                     and not args.kwonlyargs and args.vararg is None and args.kwarg is None
-                    and not child.type_params and safe_annotations
+                    and not getattr(child, "type_params", ()) and safe_annotations
                     and len(child.body) == 1 and isinstance(child.body[0], ast.Return)
                     and isinstance(child.body[0].value, ast.Name)
                     and child.body[0].value.id == parameters[0].arg):

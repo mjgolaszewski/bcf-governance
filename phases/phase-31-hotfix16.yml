@@ -87,6 +87,9 @@ execution_evidence:
     admit typed existing RuntimeContext/read ports, actual guarded-provider HTTP translation, and actual
     GetBatchSchemaHandler plus concrete resource/result codecs; an injected write remains failing. These
     are in-memory interface shapes, not delivered BDMCP repairs or installed final-package qualification.
+  - Portability review retained declared Python 3.11 support by reading optional PEP 695 AST fields with
+    defaults. The existing positive registration control now also exercises public AST nodes without that
+    optional field; all 84 focused checks pass. No test-node inventory or lifecycle contract changed.
 closeout_requirements:
   claims:
     required_suites_green:

@@ -232,6 +232,21 @@ def test_source_proven_conditional_registration_preserves_identity_branch() -> N
                       {"src/demo/infrastructure/registration.py": _REGISTRATION_HELPER})
 
 
+    # Python 3.11 AST nodes have no PEP 695 type_params field.
+    sources = {"src/demo/interfaces/http.py": ast.parse(
+        "from mcp.server.fastmcp import FastMCP\n"
+        "from demo.infrastructure.registration import conditional_prompt\n"
+        "def bind(server: FastMCP, callback):\n    conditional_prompt(server, True)(callback)\n"),
+        "src/demo/infrastructure/registration.py": ast.parse(_REGISTRATION_HELPER)}
+    for tree in sources.values():
+        for node in ast.walk(tree):
+            if isinstance(node, ast.FunctionDef) and hasattr(node, "type_params"):
+                del node.type_params
+    assert not transport_violations(sources,
+        {path: {"routers" if "interfaces" in path else "infrastructure"} for path in sources},
+        max_branch_nodes=4, max_loop_nodes=0, source_roots=("src",))
+
+
 @pytest.mark.parametrize("replacement", [
     "return repository.save", "return function()", "repository.save('changed')\n        return function",
 ])
