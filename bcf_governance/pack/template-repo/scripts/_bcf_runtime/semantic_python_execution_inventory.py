@@ -360,7 +360,16 @@ def discover_initializers(
             elif isinstance(node, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.With,
                                    ast.AsyncWith, ast.Try, ast.TryStar, ast.Match)):
                 # Split suites rather than visiting nested definitions as executable bodies.
-                expressions = [value for _, value in ast.iter_fields(node) if isinstance(value, ast.expr)]
+                expressions: list[ast.expr] = []
+                def heads(current: ast.AST, found: list[ast.expr]) -> None:
+                    for child in ast.iter_child_nodes(current):
+                        if isinstance(child, ast.stmt):
+                            continue
+                        if isinstance(child, ast.expr):
+                            found.append(child)
+                        else:
+                            heads(child, found)
+                heads(node, expressions)
                 record(f"{scope}.@{node.lineno}", expressions, local)
                 suites: list[list[ast.stmt]] = []
                 for _, value in ast.iter_fields(node):
@@ -369,8 +378,6 @@ def discover_initializers(
                     elif isinstance(value, list):
                         for item in value:
                             if isinstance(item, (ast.ExceptHandler, ast.match_case)):
-                                if isinstance(item, ast.ExceptHandler) and item.type is not None:
-                                    record(f"{scope}.@{item.lineno}", [item.type], local)
                                 suites.append(item.body)
                 for suite in suites:
                     walk(suite, scope, local)

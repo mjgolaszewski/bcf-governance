@@ -168,3 +168,12 @@ def test_nested_class_initializers_keep_their_enclosing_identity(tmp_path: Path)
     assert {row["caller"] for row in value["constructors"]} == {
         "consumer.py::First.Inner.<class>.OWNER", "consumer.py::Second.Inner.<class>.OWNER",
     }
+
+
+def test_context_manager_and_match_guard_construction_are_not_omitted(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "def factory(value):\n    yield value\n"
+                      "with factory(PrincipalOwner('context')):\n    pass\n"
+                      "match value:\n    case _ if PrincipalOwner('guard'):\n        pass\n")
+    assert len([row for row in value["constructors"]
+                if row["constructed_symbol"] == "owner.py::PrincipalOwner"]) == 2

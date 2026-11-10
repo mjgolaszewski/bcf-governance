@@ -31,6 +31,8 @@ execution_evidence:
   - 'Final causal/import/typed-registration/transport packet: 69 passed. Explicit controls cover repeated same-line
     assignments, nested class site identity, cross-language fact retention, source-bound SDK ASGI delegation and
     mutable-base rejection.'
+  - Control-header characterization exposed omitted with-context/match-guard calls; actual RED retained, generic
+    non-suite header traversal corrected it, and 70 focused cases passed.
   notes:
   - 'P31-HF16 targets 2.3.13: inventory executable initializer construction without changing consumer identities;
     transport helpers require closed source-resolved technical or inward call boundaries, never substring waivers;
