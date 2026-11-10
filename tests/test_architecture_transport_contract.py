@@ -296,6 +296,14 @@ def test_source_method_lookup_rejects_shadowing_or_unresolved_base_precedence(bo
                   {"src/demo/infrastructure/config.py": helper})
 
 
+def test_inherited_application_read_port_preserves_the_standard_protocol_base() -> None:
+    assert not _check("from demo.application.ports import SessionRepositoryPort\n"
+                      "def snapshot(reader: SessionRepositoryPort):\n    return reader.load_snapshot()\n",
+                      {"src/demo/application/ports.py": "from typing import Protocol\n"
+                       "class ReadPort(Protocol):\n    def load_snapshot(self): ...\n"
+                       "class SessionRepositoryPort(ReadPort, Protocol):\n    pass\n"})
+
+
 _METADATA = """from urllib.parse import urlparse
 from mcp.server.auth.routes import build_resource_metadata_url, cors_middleware
 from pydantic import AnyHttpUrl

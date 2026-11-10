@@ -216,7 +216,7 @@ class _Calls:
         known = [base for base in bases if isinstance(self.definitions.get(base), ast.ClassDef)]
         candidates = {value for base in known if (value := self.inherited_method(
             base, name, seen | {symbol})) is not None}
-        if candidates and any(base != "object" and base not in known for base in bases):
+        if candidates and any(base not in {"object", "typing.Protocol"} and base not in known for base in bases):
             return "<ambiguous-source-method>"
         return next(iter(candidates)) if len(candidates) == 1 else "<ambiguous-source-method>" if candidates else None
 

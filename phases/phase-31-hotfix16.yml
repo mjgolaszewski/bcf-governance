@@ -82,6 +82,11 @@ execution_evidence:
   - Pre-test provenance review added refusal controls for class-body method rebinding, unknown competing base
     precedence and wrapped registration definitions. Admission was stopped before the full test body; these
     controls narrow provenance and do not broaden transport authority. Revised full qualification remains pending.
+  - Actual inherited read-port characterization exposed standard typing.Protocol as a neutral nominal base;
+    opaque competing bases remain rejected. Focused packet 84 passed. Exact current-source capability probes
+    admit typed existing RuntimeContext/read ports, actual guarded-provider HTTP translation, and actual
+    GetBatchSchemaHandler plus concrete resource/result codecs; an injected write remains failing. These
+    are in-memory interface shapes, not delivered BDMCP repairs or installed final-package qualification.
 closeout_requirements:
   claims:
     required_suites_green:
