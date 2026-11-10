@@ -193,7 +193,7 @@ def observe(root: Path, policy: Policy) -> Observation:
                       for path, line, rule, detail in transport_violations(
                           trees, source_layers, max_branch_nodes=policy.router_max_branch_nodes,
                           max_loop_nodes=policy.router_max_loop_nodes,
-                          source_roots=policy.source_roots))
+                          source_roots=policy.source_roots, root=root))
     for (context, block), locations in blocks.items():
         if len({name for name, _ in locations}) > 1:
             identity = hashlib.sha256("\n".join(block).encode()).hexdigest()

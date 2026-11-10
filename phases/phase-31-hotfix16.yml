@@ -25,6 +25,9 @@ execution_evidence:
   - 'Actual BDMCP 6b391d735824170457c87951d3db5f1d83cb9edd immutable source: existing service initializer is now
     observed and rejected by original declarations; explicit exact-site authorization passes; actual registration
     error encoder and RegisterBrokerClient adapter pass scoped native transport proof. No consumer source changed.'
+  - 'Final additional alias/read-port controls: 31 passed, including local/imported constructor aliases, unsupported
+    conditional factory rejection, real standalone gate and typed application-owned read-port injection. Strict
+    mypy passed the transport owner.'
   notes:
   - 'P31-HF16 targets 2.3.13: inventory executable initializer construction without changing consumer identities;
     transport helpers require closed source-resolved technical or inward call boundaries, never substring waivers;
@@ -40,6 +43,17 @@ execution_evidence:
   - One exploratory compatibility run was stopped after stale generated-runtime bytes were detected during local
     iteration; its partial results are not accepted current-tree evidence. Generated copies were synchronized before
     the frozen focused controls.
+  - First canonical reconciliation refused before mutation because the two new modules lacked explicit self-governance
+    tooling-context ownership. Exact semantic_ownership and validation mappings now declared; no rule waiver or
+    manual workflow pins.
+  - Whole-population consumer comparison rejected an overbroad draft that treated all reachable helpers as closed
+    transport APIs. Final routing scope uses proven source delegation or bounded standalone technical data/encoding,
+    while transitive direct business effects remain failing. No new one-operation counter or name-token grant is
+    introduced.
+  - The existing native frozen-registration owner supplies exact handler/factory bindings; no new effect-port exemption,
+    abstract DTO proxy, Identity connection or provider credential is used.
+  - Current source-role mappings include the execution-inventory extraction and the two transport/profile query
+    owners. Remaining BDMCP ownership/SOIP/product failures remain explicit, not framework or product acceptance.
 closeout_requirements:
   claims:
     required_suites_green:

@@ -1226,7 +1226,7 @@ or authorize them automatically.
 
 The native router gate preserves configured module branch/loop limits and checks
 actual source definitions. Inward calls must reach discovered application/use-case
-or port definitions. Local technical helpers are followed transitively; bounded
+or port definitions. Real inward delegation retains the established structural scope; helper traversal still rejects direct business effects. Standalone technical helpers require a bounded source proof. Bounded
 HTTP response/cookie operations, protocol error/model translation and logging
 operations retain their technical roles. A function name containing `query`,
 `command`, or `service` grants no authority. Unknown calls remain failing
@@ -1234,3 +1234,5 @@ diagnostics; review and place the actual implementation at its architectural own
 Keep SDK implementations of application-owned read ports in infrastructure, and
 keep HTTP/SDK objects out of Domain/Application. Business-rule review remains
 required: structural call analysis is not proof of arbitrary business semantics.
+
+Frozen typed registration tables reuse the native source-bound handler/factory profile. This is delegation evidence only; operation classification, source ownership and exact effect-port checks remain independently required.

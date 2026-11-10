@@ -54,7 +54,7 @@
     },
     "backend/tests/architecture/test_boundaries_ast.py": {
       "operation": "copy",
-      "sha256": "881847fd1c8379c33d14370e46c36fb921a65dee79f9a831af1d7306923933b5"
+      "sha256": "51545bd50f71001acad77cdff5750266d94b7447beaa4e26ed5f0d17aa25ad61"
     },
     "contracts/observability/v1/logging.contract.yml": {
       "operation": "copy",
@@ -488,6 +488,10 @@
       "operation": "copy",
       "sha256": "d8a443eff3ff0e080b9c97c837491dc8f1cbfd4f3f7300bfdffc7d1298be54b6"
     },
+    "scripts/_bcf_runtime/architecture_registration_contract.py": {
+      "operation": "copy",
+      "sha256": "ad50e6622be0e6a5ac1ffa311c228e0fb277d75a313122f8fe06b1c9022c35ce"
+    },
     "scripts/_bcf_runtime/architecture_release_context.py": {
       "operation": "copy",
       "sha256": "a7465c064640164c39eb0fe36133c059b14bf1c8bba5a1358d16c237cb05c274"
@@ -502,11 +506,11 @@
     },
     "scripts/_bcf_runtime/architecture_source_observation.py": {
       "operation": "copy",
-      "sha256": "224ef4828b0b3bb6cab5d2d77bd4b89ef8e91b1b06a0ac34946289866a5acf35"
+      "sha256": "bb0b5ddf4d2bb0bb52a40bc73847ec9b4511cd7a5fe8a76063c2d95fe55f35d6"
     },
     "scripts/_bcf_runtime/architecture_transport_contract.py": {
       "operation": "copy",
-      "sha256": "ee73fe73217c591da782b96e34b8f63762f3a3b662aae1f1b387ca99843231dd"
+      "sha256": "476b0024aad04bcc9603d7ce2a078b2c18f2b846ab1259277e1dd00199dc6143"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",

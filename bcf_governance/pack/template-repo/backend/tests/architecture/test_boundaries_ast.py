@@ -627,7 +627,7 @@ def test_routers_remain_thin_transport_adapters() -> None:
     layers = {path.relative_to(REPO_ROOT).as_posix(): _layer_names_for_file(path) for path in paths}
     violations = _native_owner().transport_violations(
         trees, layers, max_branch_nodes=max_branch_nodes, max_loop_nodes=max_loop_nodes,
-        source_roots=tuple(str(value) for value in _architecture_config()["source_roots"]))
+        source_roots=tuple(str(value) for value in _architecture_config()["source_roots"]), root=REPO_ROOT)
     assert not violations, "router thinness violations:\n" + "\n".join(
         f"{path}:{line} {rule}: {detail}" for path, line, rule, detail in violations)
 

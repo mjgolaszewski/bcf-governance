@@ -105,9 +105,9 @@ def test_registration_sdk_translation_uses_real_command_and_protocol_error() -> 
 
 def test_business_orchestration_hidden_in_a_helper_is_rejected() -> None:
     failures = _check("from demo.application.register import create_order\n"
-                      "def helper():\n    create_order()\n"
+                      "def helper():\n    create_order()\n    repository.save('changed')\n"
                       "def encode():\n    helper()\n    helper()\n")
-    assert any("application orchestrator" in detail for _, _, _, detail in failures)
+    assert any("repository.save" in detail for _, _, _, detail in failures)
 
 
 def test_alternative_transport_dispatch_does_not_invent_sequential_orchestration() -> None:
@@ -127,3 +127,79 @@ def test_real_standalone_gate_accepts_response_mapping_and_rejects_injected_effe
     _write_python(target, safe.replace("    return", "    repository.save('changed')\n    return"))
     with pytest.raises(AssertionError, match="router thinness.*|repository.save"):
         gate.test_routers_remain_thin_transport_adapters()
+
+
+def test_application_owned_read_port_is_resolved_from_actual_typed_injection() -> None:
+    assert not _check("from demo.application.ports import InventoryPort\n"
+                      "class Endpoint:\n"
+                      "    def __init__(self, reader: InventoryPort):\n        self.reader = reader\n"
+                      "    def list_tools(self):\n        return self.reader.list_tools()\n",
+                      {"src/demo/application/ports.py": "from typing import Protocol\n"
+                       "class InventoryPort(Protocol):\n    def list_tools(self) -> list: ...\n"})
+
+
+def test_rebound_read_port_does_not_grant_unknown_effects() -> None:
+    assert _check("from demo.application.ports import InventoryPort\n"
+                  "class Endpoint:\n    reader: InventoryPort\n"
+                  "    def list_tools(self, rogue):\n"
+                  "        self.reader = rogue\n        return self.reader.list_tools()\n",
+                  {"src/demo/application/ports.py": "class InventoryPort:\n    def list_tools(self): ...\n"})
+
+
+def test_frozen_native_registration_proof_is_reused_without_an_effect_exemption(tmp_path: Path) -> None:
+    from test_semantic_operation_registrations import PATTERNS, TABLE
+    texts = {"patterns.py": PATTERNS, "table.py": TABLE,
+             "factories.py": "def first(value):\n    return value\ndef second(value):\n    return value\n"}
+    for name, text in texts.items():
+        (tmp_path / name).write_text(text)
+    layers = {"patterns.py": {"routers"}, "table.py": {"composition"}, "factories.py": {"use_cases"}}
+    sources = {name: ast.parse(text) for name, text in texts.items()}
+    assert not transport_violations(sources, layers, max_branch_nodes=4, max_loop_nodes=0, root=tmp_path)
+    texts["factories.py"] = texts["factories.py"].replace("    return value", "    value.write_text('changed')\n    return value", 1)
+    (tmp_path / "factories.py").write_text(texts["factories.py"])
+    sources["factories.py"] = ast.parse(texts["factories.py"])
+    failures = transport_violations(sources, layers, max_branch_nodes=4, max_loop_nodes=0, root=tmp_path)
+    assert any("write_text" in detail for _, _, _, detail in failures)
+
+
+def test_real_delegation_does_not_require_unrelated_technical_helpers_to_be_use_cases() -> None:
+    assert not _check("from demo.application.register import create_order\n"
+                      "from demo.infrastructure.encode import encode\n"
+                      "def endpoint(value):\n    return encode(create_order())\n",
+                      {"src/demo/infrastructure/encode.py": "def encode(value):\n    return value.model_dump()\n"})
+
+
+def test_real_delegation_cannot_hide_a_local_constructor_write() -> None:
+    failures = _check("from demo.application.register import create_order\n"
+                      "class Encoded:\n    def __init__(self):\n        repository.save('changed')\n"
+                      "def endpoint():\n    create_order()\n    return Encoded()\n")
+    assert any("repository.save" in detail for _, _, _, detail in failures)
+
+
+def test_url_query_encoding_mutates_only_a_locally_constructed_container() -> None:
+    assert not _check("from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit\n"
+                      "def append_params(url: str, params: dict[str, str]):\n"
+                      "    parts = urlsplit(url)\n    pairs = parse_qsl(parts.query)\n"
+                      "    pairs.extend(params.items())\n"
+                      "    return urlunsplit((parts.scheme, parts.netloc, parts.path, urlencode(pairs), parts.fragment))\n")
+
+
+def test_closed_frozen_projection_data_does_not_need_a_fake_query_alias() -> None:
+    assert not _check("from demo.infrastructure.metrics import MetricsQuery\n"
+                      "def metrics():\n    return MetricsQuery(service='http')\n",
+                      {"src/demo/infrastructure/metrics.py": "from dataclasses import dataclass\n"
+                       "@dataclass(frozen=True)\nclass MetricsQuery:\n    service: str\n"})
+
+
+def test_inherited_configuration_field_remains_transport_data() -> None:
+    assert not _check("from demo.infrastructure.config import Config\n"
+                      "def public_url(config: Config):\n    return config.public_url.rstrip('/')\n",
+                      {"src/demo/infrastructure/config.py": "class UrlConfig:\n    public_url: str\n"
+                       "class Config(UrlConfig):\n    pass\n"})
+
+
+def test_real_sdk_route_registration_never_grants_business_effects() -> None:
+    safe = "from mcp.server.fastmcp import FastMCP\n" \
+           "def bind(server: FastMCP, handler):\n    server.custom_route('/status')(handler)\n"
+    assert not _check(safe)
+    assert _check(safe + "    repository.save('changed')\n")
