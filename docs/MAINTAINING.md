@@ -278,8 +278,10 @@ python3 .github/scripts/run_validator_mutants.py --profile full
 Before a release-candidate PR, run the five-cycle adoption soak from a clean,
 committed candidate. It creates disposable clones, never mutates either source
 repository, launches no Actions runs, and proves project-owned byte preservation,
-idempotent pack-owned refresh, exact rollback, and fail-closed Identity legacy
-diagnostics:
+idempotent pack-owned refresh on a natively installed consumer, exact rollback,
+and fail-closed Identity legacy custody/migration diagnostics. Framework source
+and unexplained partial installations must be refused unchanged; custody refusal
+precedes successor contract interpretation:
 
 ```bash
 python3 .github/scripts/run_adoption_soak.py \

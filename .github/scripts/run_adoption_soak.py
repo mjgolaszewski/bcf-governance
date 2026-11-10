@@ -212,10 +212,18 @@ def run_soak(
                 _upgrade(python, installer, identity)
                 if _changed_inventory(identity) != identity_refresh:
                     raise RuntimeError("Identity pack refresh was not idempotent")
-            identity_migration, _ = plan_contract_migration(identity)
-            diagnostics = diagnose_ci_graph(identity)
-            if identity_migration.status != "blocked" or diagnostics["status"] != "fail":
-                raise RuntimeError(f"Identity legacy adoption did not fail closed in soak cycle {cycle}")
+            # Custody refusal precedes contract interpretation. Do not feed an
+            # unadopted legacy schema to a successor migration compiler.
+            if legacy_refused:
+                migration_blockers = ["partial installed custody; migration not attempted"]
+                graph_diagnostic = None
+            else:
+                identity_migration, _ = plan_contract_migration(identity)
+                diagnostics = diagnose_ci_graph(identity)
+                if identity_migration.status != "blocked" or diagnostics["status"] != "fail":
+                    raise RuntimeError(f"Identity legacy adoption did not fail closed in soak cycle {cycle}")
+                migration_blockers = list(identity_migration.blockers)
+                graph_diagnostic = diagnostics["diagnostics"][0]
             _reset_temporary_clone(identity)
             results.append(
                 {
@@ -226,8 +234,9 @@ def run_soak(
                     "identity_status": "partial_custody_refused_unchanged" if legacy_refused else "project_owned_preserved_pack_refresh_idempotent_fail_closed",
                     "identity_refreshed_path_count": len(changed),
                     "identity_workflow_count": len(workflow_inventory["workflows"]),
-                    "identity_migration_blockers": list(identity_migration.blockers),
-                    "identity_graph_diagnostic": diagnostics["diagnostics"][0],
+                    "identity_migration_blockers": migration_blockers,
+                    "identity_graph_diagnostic": graph_diagnostic,
+                    "identity_custody_refusal": "reject_partial_installation" if legacy_refused else None,
                 }
             )
     return {
