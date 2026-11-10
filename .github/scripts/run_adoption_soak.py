@@ -150,58 +150,80 @@ def run_soak(
             bcf_owned = _owned_inventory(bcf)
             if check_ci_graph(bcf).status != "clean":
                 raise RuntimeError(f"BCF graph drift in soak cycle {cycle}")
-            _upgrade(python, installer, bcf)
-            if _owned_inventory(bcf) != bcf_owned:
-                raise RuntimeError(f"BCF project-owned bytes changed in soak cycle {cycle}")
-            bcf_changed = _changed_paths(bcf)
+            # The framework source repository is not an installed consumer.
+            # Its missing installed custody must remain a refusal, never a repair.
+            try:
+                _upgrade(python, installer, bcf)
+            except RuntimeError as exc:
+                if "reject_partial_installation" not in str(exc):
+                    raise
+            else:
+                raise RuntimeError("framework source without installed custody was upgraded")
+            if _owned_inventory(bcf) != bcf_owned or _changed_paths(bcf):
+                raise RuntimeError("rejected framework-source upgrade changed source")
+
+            # Exercise refresh on a genuinely installed, non-authoritative consumer.
+            fresh = root / f"fresh-{cycle}"
+            fresh.mkdir()
+            _git(fresh, "init", "--quiet")
+            _git(fresh, "config", "user.email", "bcf-soak@example.invalid")
+            _git(fresh, "config", "user.name", "BCF Adoption Soak")
+            _run(str(python), str(installer), "--target", str(fresh),
+                 "--profile", "lite", "--project-id", "adoption-soak",
+                 "--skip-validation")
+            _git(fresh, "add", "-A")
+            _git(fresh, "commit", "--quiet", "-m", "native fresh consumer")
+            fresh_owned = _owned_inventory(fresh)
+            _upgrade(python, installer, fresh)
+            if _owned_inventory(fresh) != fresh_owned:
+                raise RuntimeError("native consumer refresh changed project-owned bytes")
+            bcf_changed = _changed_paths(fresh)
             unexpected = [path for path in bcf_changed if not _upgrade_change_allowed(path)]
             if unexpected:
-                raise RuntimeError(
-                    f"BCF upgrade touched unexpected paths in cycle {cycle}: {unexpected}"
-                )
-            bcf_refresh = _changed_inventory(bcf)
-            _upgrade(python, installer, bcf)
-            if _changed_inventory(bcf) != bcf_refresh:
-                raise RuntimeError(f"BCF pack refresh was not idempotent in soak cycle {cycle}")
-            if check_ci_graph(bcf).status != "clean":
-                raise RuntimeError(f"BCF graph changed after upgrade in soak cycle {cycle}")
-            bcf_migration, _ = plan_contract_migration(bcf)
-            if bcf_migration.status != "current":
-                raise RuntimeError(f"BCF contract was not current in soak cycle {cycle}")
+                raise RuntimeError(f"native consumer refresh touched unexpected paths: {unexpected}")
+            bcf_refresh = _changed_inventory(fresh)
+            _upgrade(python, installer, fresh)
+            if _changed_inventory(fresh) != bcf_refresh:
+                raise RuntimeError("native consumer refresh was not idempotent")
+            if check_ci_graph(fresh).status != "clean":
+                raise RuntimeError("native consumer graph changed after refresh")
+            _reset_temporary_clone(fresh)
             _reset_temporary_clone(bcf)
 
             identity_owned = _owned_inventory(identity)
             workflow_inventory = inventory_github_workflows(identity)
-            _upgrade(python, installer, identity)
+            legacy_refused = False
+            try:
+                _upgrade(python, installer, identity)
+            except RuntimeError as exc:
+                if "reject_partial_installation" not in str(exc):
+                    raise
+                legacy_refused = True
             if _owned_inventory(identity) != identity_owned:
-                raise RuntimeError(
-                    f"Identity project-owned bytes changed in soak cycle {cycle}"
-                )
+                raise RuntimeError(f"Identity project-owned bytes changed in soak cycle {cycle}")
             changed = _changed_paths(identity)
+            if legacy_refused and changed:
+                raise RuntimeError("rejected legacy upgrade changed source")
             unexpected = [path for path in changed if not _upgrade_change_allowed(path)]
             if unexpected:
-                raise RuntimeError(
-                    f"Identity upgrade touched unexpected paths in cycle {cycle}: {unexpected}"
-                )
-            identity_refresh = _changed_inventory(identity)
-            _upgrade(python, installer, identity)
-            if _changed_inventory(identity) != identity_refresh:
-                raise RuntimeError(
-                    f"Identity pack refresh was not idempotent in soak cycle {cycle}"
-                )
+                raise RuntimeError(f"Identity upgrade touched unexpected paths: {unexpected}")
+            if not legacy_refused:
+                identity_refresh = _changed_inventory(identity)
+                _upgrade(python, installer, identity)
+                if _changed_inventory(identity) != identity_refresh:
+                    raise RuntimeError("Identity pack refresh was not idempotent")
             identity_migration, _ = plan_contract_migration(identity)
             diagnostics = diagnose_ci_graph(identity)
             if identity_migration.status != "blocked" or diagnostics["status"] != "fail":
-                raise RuntimeError(
-                    f"Identity legacy adoption did not fail closed in soak cycle {cycle}"
-                )
+                raise RuntimeError(f"Identity legacy adoption did not fail closed in soak cycle {cycle}")
             _reset_temporary_clone(identity)
             results.append(
                 {
                     "cycle": cycle,
-                    "bcf_status": "project_owned_preserved_pack_refresh_idempotent",
+                    "bcf_status": "source_without_installed_custody_refused_unchanged",
+                    "fresh_adopter_status": "native_install_project_owned_preserved_refresh_idempotent",
                     "bcf_refreshed_path_count": len(bcf_changed),
-                    "identity_status": "project_owned_preserved_pack_refresh_idempotent_fail_closed",
+                    "identity_status": "partial_custody_refused_unchanged" if legacy_refused else "project_owned_preserved_pack_refresh_idempotent_fail_closed",
                     "identity_refreshed_path_count": len(changed),
                     "identity_workflow_count": len(workflow_inventory["workflows"]),
                     "identity_migration_blockers": list(identity_migration.blockers),
