@@ -33,7 +33,7 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 6bbb47998436b084301f51f7688d45d84a80f564136094142348e90379644f96
-  after_sha256: 500032c2a5507618e4584e9b7694856665186c2b2918a548a03d53a1c31b57d5
+  after_sha256: 6397cb7c52a6c45f23e138e9848edbc61fecb3c982025dff099116d1fbc3a356
   findings:
   - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
@@ -96,7 +96,7 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: 3246b511bbd00b215bac0a0f0c98b131b2af2b712107cbd8db0aad0d195e252b
-  after_sha256: df002e00094ed9aeb39798366148d54100ca93962289d628e26fca644d3c1f71
+  after_sha256: e6e9d39c5990e9ea3830ac57d8ba33b3377d00b58235bc052e2bf97d1c7b2573
   findings:
   - removed superseded controller runbooks and retained only routine transition and dormant self-recovery boundaries
   disposition: revised
@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: 3889eaae166439b381026d859719e739472a439066d726cb79142efe30e227ae
-  after_sha256: c29320ed9ca7a147ed24bb3cf60bbdbb341f4f285da16783eb43de91c5aa4a69
+  after_sha256: 1efead57552822f9a099bf661b3726e8fdd65fcde29276c5d5762a03176ef09f
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised
