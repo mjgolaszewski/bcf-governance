@@ -62,6 +62,10 @@ execution_evidence:
   - Canonical reconciliation next refused before mutation because version-derived CI projection required a same-candidate
     state matrix update. Maintenance 2.3.13 transitions and downstream refusals are now recorded in the canonical
     matrix; no workflow/authority edits were authored.
+  - Required five-cycle adoption helper resolved the selected virtualenv symlink to base Python and suppressed the
+    child stderr. Preserve the selected interpreter path and relay failures; a real virtualenv-only dependency proves
+    the CLI repair. Fresh candidate build/install and installed native consumer contracts already passed; no production
+    framework bytes changed for this helper repair.
 closeout_requirements:
   claims:
     required_suites_green:

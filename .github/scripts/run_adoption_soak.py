@@ -5,12 +5,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
-import shutil
 import subprocess
 import sys
 import tempfile
-
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
@@ -25,14 +23,17 @@ from bcf_governance.tooling.install_governance_pack import (
 )
 from bcf_governance.tooling.migrate_contracts import plan_contract_migration
 
-
 PROJECT_OWNED = UPGRADE_PROJECT_OWNED_PATHS
 
 
 def _run(*argv: str, cwd: Path | None = None) -> str:
-    return subprocess.run(
-        argv, cwd=cwd, check=True, capture_output=True, text=True
-    ).stdout.strip()
+    result = subprocess.run(argv, cwd=cwd, capture_output=True, text=True)
+    if result.returncode:
+        raise RuntimeError(
+            f"adoption soak subprocess failed ({result.returncode}):\n"
+            + result.stdout + result.stderr
+        )
+    return result.stdout.strip()
 
 
 def _git(repo: Path, *args: str) -> str:
@@ -229,7 +230,7 @@ def main() -> None:
         bcf_source=args.bcf_source.resolve(),
         identity_source=args.identity_source,
         identity_commit=args.identity_commit,
-        python=args.python.resolve(),
+        python=args.python.absolute(),
         cycles=args.cycles,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
