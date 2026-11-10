@@ -66,6 +66,10 @@ execution_evidence:
     child stderr. Preserve the selected interpreter path and relay failures; a real virtualenv-only dependency proves
     the CLI repair. Fresh candidate build/install and installed native consumer contracts already passed; no production
     framework bytes changed for this helper repair.
+  - Standard four-way test execution stopped on two 180-second native cache/presence child deadlines.
+    Both unchanged tests passed alone (2 passed in 725.89 seconds), including all actual fault and restoration
+    assertions. Increase only their bounded subprocess deadlines to 300 seconds for concurrent source admission;
+    no assertion, source admission, custody check or release gate is removed. Full pipeline acceptance remains pending.
 closeout_requirements:
   claims:
     required_suites_green:

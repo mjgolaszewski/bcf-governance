@@ -94,7 +94,8 @@ def test_real_native_pytest_cache_healthy_source_context_faults_and_restored(ins
             junit = tmp_path / (mode + ".xml")
             result = subprocess.run([sys.executable, "-I", "-B", "-c", _CHILD,
                 str(root), mode, str(state), str(junit)], cwd=root, env=environment,
-                capture_output=True, text=True, timeout=180)
+                # Native source admission runs concurrently in the standard four-way suite.
+                capture_output=True, text=True, timeout=300)
             observed = json.loads(state.read_bytes())
             assert observed["original_native_call_passed"] and observed["real_autouse_cache_active"]
             assert observed["same_cache_object_reused"] and observed["candidate_authority"] is False
