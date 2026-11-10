@@ -54,6 +54,9 @@ execution_evidence:
     abstract DTO proxy, Identity connection or provider credential is used.
   - Current source-role mappings include the execution-inventory extraction and the two transport/profile query
     owners. Remaining BDMCP ownership/SOIP/product failures remain explicit, not framework or product acceptance.
+  - Canonical reconciliation next refused before mutation because version-derived CI projection required a same-candidate
+    state matrix update. Maintenance 2.3.13 transitions and downstream refusals are now recorded in the canonical
+    matrix; no workflow/authority edits were authored.
 closeout_requirements:
   claims:
     required_suites_green:

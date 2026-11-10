@@ -2676,3 +2676,21 @@ and signed SDK evidence. Consumer failures remain typed remediation inputs.
 
 Exact protected CI, normal controller rotation, fresh exact-main certification,
 fresh artifact installation and immutable release custody remain required.
+
+### Maintenance 2.3.13 executable-source coverage and transport roles
+
+The full hotfix preserves normal authority transitions. Source-only diagnosis and
+scoped consumer controls cannot certify the candidate or authorize publication.
+The ordinary native reconciler owns the complete workflow definition/authority
+pair, including version-derived projection; agents never hand-edit its pins.
+
+| State or trigger | Maintained transition | Required refusal |
+| --- | --- | --- |
+| Python module/class initialization or definition defaults | Discover exact assignment/definition initializer identities separately from invocation bodies; resolve imported and local constructor aliases through the declared roots. | Unauthorized canonical construction, computed dispatch, unsupported rebinding or silently omitted material initializer coverage. |
+| Exact initializer is explicitly authorized | Bind only that source site to the existing owner; retain existing principal and storage bytes. | A declaration authorizing another assignment, automatic grandfathering or declaring whole modules authorized. |
+| Transport helper or actual inward delegation | Preserve module branch/loop limits, require real source delegation or bounded technical proof, and follow direct business effects. | Fake query/command aliases, hidden writes, unproved source roles and blanket file exclusions. |
+| Frozen typed registration supplies delegation facts | Reuse the existing closed native handler/factory/dispatch binding and follow the concrete factory's effects. | Mutable/cross-instance bindings, stale source and treating a DTO or a registration label as authority. |
+| Candidate changes generated CI/version contracts | Reconcile source/pack/semantic state and workflow authority atomically against this same-candidate matrix. | Missing matrix coverage, independently authored pins, stale projection or partial definition/authority custody. |
+| Required prospective producers and fresh installation complete | Review one consolidated exact-source result, then protected merge, normal controller transition and exact-main certification. | Selected tests or preserved but unintegrated source substituting for required CI. |
+| Certified main and verified release bytes reach publication | Use ordinary isolated build/runtime verification, trusted collection and immutable publisher; verify exact assets and credential revocation. | Candidate-only assets, conflicting provider state, stale certification and publication without valid custody. |
+| Official assets are adopted by SDK/BDMCP | Qualify the actual maintained consumer cases through local installed runtime; preserve project source and unchanged signed SDK evidence. | Supplier-repository access as recurring CI, live Identity dependencies, hidden product failures or claiming complete SOIP from declared-family passes. |
