@@ -70,6 +70,15 @@ execution_evidence:
     Both unchanged tests passed alone (2 passed in 725.89 seconds), including all actual fault and restoration
     assertions. Increase only their bounded subprocess deadlines to 300 seconds for concurrent source admission;
     no assertion, source admission, custody check or release gate is removed. Full pipeline acceptance remains pending.
+  - Exact candidate 51a1af8e completed native prospective qualification in 2430.161 seconds, including all
+    3193 tests and enclosing mutation/security/runtime evidence; submitted PR444. This evidence precedes the
+    following material compatibility correction and does not certify the revised source.
+  - Final BDMCP source review found two additional technical provenance gaps before merge; auto-merge disabled.
+    Three causal positive fixtures failed, negative controls passed. Exact registration-or-identity results,
+    inherited source methods and bounded typed SDK route assembly corrected; focused controls include arbitrary
+    returned callables, receiver mutation and executable annotations. Four confirmed consumer registration/metadata
+    functions clear in the source census. Remaining Any, captured receiver and generic dispatch proofs are explicit
+    project typing/declaration work, not permission to waive unknown business effects. Full revised qualification pending.
 closeout_requirements:
   claims:
     required_suites_green:

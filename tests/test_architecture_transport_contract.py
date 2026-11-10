@@ -211,3 +211,86 @@ def test_single_known_sdk_base_preserves_real_asgi_delegation() -> None:
            "        return super().streamable_http_app()\n"
     assert not _check(safe)
     assert _check(safe + "Server.streamable_http_app = replacement\n")
+
+
+_REGISTRATION_HELPER = """from mcp.server.fastmcp import FastMCP
+from typing import Callable, Any
+def conditional_prompt(server: FastMCP, enabled: bool, **kwargs: Any) -> Callable:
+    if enabled:
+        return server.prompt(**kwargs)
+    def identity(function: Callable[..., Any]) -> Callable[..., Any]:
+        return function
+    return identity
+"""
+
+
+def test_source_proven_conditional_registration_preserves_identity_branch() -> None:
+    assert not _check("from mcp.server.fastmcp import FastMCP\n"
+                      "from demo.infrastructure.registration import conditional_prompt\n"
+                      "def bind(server: FastMCP, enabled, callback):\n"
+                      "    conditional_prompt(server, enabled, name='fixed')(callback)\n",
+                      {"src/demo/infrastructure/registration.py": _REGISTRATION_HELPER})
+
+
+@pytest.mark.parametrize("replacement", [
+    "return repository.save", "return function()", "repository.save('changed')\n        return function",
+])
+def test_conditional_registration_cannot_launder_arbitrary_returned_callables(replacement: str) -> None:
+    assert _check("from mcp.server.fastmcp import FastMCP\n"
+                  "from demo.infrastructure.registration import conditional_prompt\n"
+                  "def bind(server: FastMCP, callback):\n"
+                  "    conditional_prompt(server, True)(callback)\n",
+                  {"src/demo/infrastructure/registration.py":
+                   _REGISTRATION_HELPER.replace("return function", replacement)})
+
+
+@pytest.mark.parametrize("mutation", [
+    "    server = rogue\n", "    setattr(server, 'prompt', rogue)\n",
+])
+def test_conditional_registration_rejects_receiver_mutation(mutation: str) -> None:
+    helper = _REGISTRATION_HELPER.replace("    if enabled:", mutation + "    if enabled:")
+    assert _check("from mcp.server.fastmcp import FastMCP\n"
+                  "from demo.infrastructure.registration import conditional_prompt\n"
+                  "def bind(server: FastMCP, callback):\n"
+                  "    conditional_prompt(server, True)(callback)\n",
+                  {"src/demo/infrastructure/registration.py": helper})
+
+
+def test_conditional_registration_rejects_executable_identity_annotation() -> None:
+    helper = _REGISTRATION_HELPER.replace("function: Callable[..., Any]", "function: rogue()")
+    assert _check("from mcp.server.fastmcp import FastMCP\n"
+                  "from demo.infrastructure.registration import conditional_prompt\n"
+                  "def bind(server: FastMCP, callback):\n"
+                  "    conditional_prompt(server, True)(callback)\n",
+                  {"src/demo/infrastructure/registration.py": helper})
+
+
+def test_inherited_configuration_method_uses_actual_source_body() -> None:
+    router = "from demo.infrastructure.config import Config\n" \
+             "def encode(config: Config):\n    return config.url()\n"
+    helper = "class Base:\n    public_url: str\n    def url(self):\n        return self.public_url.rstrip('/')\n" \
+             "class Config(Base):\n    pass\n"
+    assert not _check(router, {"src/demo/infrastructure/config.py": helper})
+    assert _check(router, {"src/demo/infrastructure/config.py":
+                          helper.replace("return self.public_url", "repository.save('changed')\n        return self.public_url")})
+
+
+_METADATA = """from urllib.parse import urlparse
+from mcp.server.auth.routes import build_resource_metadata_url, cors_middleware
+from pydantic import AnyHttpUrl
+from starlette.applications import Starlette
+from starlette.routing import Route
+def bind(app: Starlette, callback, resource: str):
+    path = urlparse(str(build_resource_metadata_url(AnyHttpUrl(resource)))).path
+    indexes = [index for index, route in enumerate(app.routes) if getattr(route, 'path', None) == path]
+    if len(indexes) != 1:
+        raise RuntimeError('missing route')
+    app.routes[indexes[0]] = Route(path, endpoint=cors_middleware(callback, ['GET']), methods=['GET'])
+"""
+
+
+def test_sdk_metadata_route_assembly_is_source_bound_transport() -> None:
+    assert not _check(_METADATA)
+    assert _check(_METADATA.replace("'path', None", "user_selected_method, None"))
+    assert _check(_METADATA + "    repository.save('changed')\n")
+    assert _check(_METADATA.replace("app: Starlette", "app"))

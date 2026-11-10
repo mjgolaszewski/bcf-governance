@@ -18,13 +18,16 @@ from .semantic_operation_effects import AUTHORITY_CALL_PREFIXES, MUTATION_CALL_P
 _FUNCTIONS = (ast.FunctionDef, ast.AsyncFunctionDef)
 _PURE = frozenset({"str", "int", "float", "bool", "bytes", "dict", "list", "tuple", "set",
                    "frozenset", "len", "isinstance", "issubclass", "type", "sorted",
-                   "min", "max", "abs", "round", "enumerate", "zip", "range", "repr"})
+                   "min", "max", "abs", "round", "enumerate", "zip", "range", "repr",
+                   "RuntimeError", "ValueError", "TypeError"})
 _RESPONSES = frozenset({f"{module}.{name}" for module in ("starlette.responses", "fastapi.responses")
                         for name in ("Response", "JSONResponse", "RedirectResponse", "HTMLResponse",
                                      "PlainTextResponse", "StreamingResponse", "FileResponse")})
 _TECHNICAL = frozenset({"json.dumps", "json.loads", "html.escape", "html.unescape", "typing.cast",
                         "urllib.parse.urlencode", "urllib.parse.urlsplit", "urllib.parse.urlunsplit",
-                        "urllib.parse.parse_qsl", "urllib.parse.quote", "urllib.parse.unquote",
+                        "urllib.parse.parse_qsl", "urllib.parse.quote", "urllib.parse.unquote", "urllib.parse.urlparse",
+                        "mcp.server.auth.routes.build_resource_metadata_url", "mcp.server.auth.routes.cors_middleware",
+                        "pydantic.AnyHttpUrl", "starlette.routing.Route",
                         "mcp.server.auth.provider.construct_redirect_uri", "time.time", "time.monotonic",
                         "fastapi.HTTPException", "starlette.exceptions.HTTPException",
                         "logging.getLogger", "structlog.get_logger"})
@@ -192,6 +195,96 @@ class _Calls:
         base = self.target(cls.bases[0], owner, {})
         return base if base in {"mcp.server.fastmcp.FastMCP", "mcp.server.fastmcp.server.FastMCP"} else None
 
+    def inherited_method(self, symbol: str, name: str, seen: frozenset[str] = frozenset()) -> str | None:
+        cls = self.definitions.get(symbol)
+        if (symbol in seen or symbol in self.rebound_classes or not isinstance(cls, ast.ClassDef)
+                or cls.keywords or any(isinstance(member, _FUNCTIONS)
+                and member.name in {"__getattr__", "__getattribute__"} for member in cls.body)):
+            return None
+        direct = f"{symbol}.{name}"
+        if isinstance(self.definitions.get(direct), _FUNCTIONS):
+            return direct
+        if any(isinstance(member, ast.AnnAssign) and isinstance(member.target, ast.Name)
+               and member.target.id == name for member in cls.body):
+            return None
+        owner = symbol.split("::", 1)[0]
+        candidates = {value for base in cls.bases if (value := self.inherited_method(
+            self.annotation_type(base, owner), name, seen | {symbol})) is not None}
+        return next(iter(candidates)) if len(candidates) == 1 else None
+
+    def registration_result(self, symbol: str) -> bool:
+        definition = self.definitions.get(symbol)
+        if not isinstance(definition, ast.FunctionDef):
+            return False
+        owner = symbol.split("::", 1)[0]
+        locals_ = {argument.arg: self.annotation_type(argument.annotation, owner)
+                   for argument in [*definition.args.posonlyargs, *definition.args.args,
+                                    *definition.args.kwonlyargs] if argument.annotation is not None}
+        nodes = list(_body_nodes(definition))
+        if any(isinstance(node, (ast.Assign, ast.AnnAssign, ast.AugAssign, ast.NamedExpr,
+                                 ast.Delete, ast.Import, ast.ImportFrom, ast.Global, ast.Nonlocal,
+                                 ast.Yield, ast.YieldFrom, ast.Await, ast.For, ast.AsyncFor,
+                                 ast.While, ast.With, ast.AsyncWith, ast.Try, ast.TryStar)) for node in nodes):
+            return False
+        if any(isinstance(node, ast.Call) and self.target(node.func, owner, locals_) not in _PROTOCOL_BINDINGS
+               for node in nodes):
+            return False
+        identities = set()
+        for child in definition.body:
+            if not isinstance(child, ast.FunctionDef) or child.name in locals_:
+                continue
+            args = child.args
+            parameters = [*args.posonlyargs, *args.args]
+            annotations = [value for value in [*(argument.annotation for argument in parameters), child.returns]
+                           if value is not None]
+            annotation_nodes = [node for value in annotations for node in ast.walk(value)]
+            safe_annotations = all(
+                isinstance(node, (ast.Name, ast.Load, ast.Subscript, ast.Tuple, ast.Constant, ast.Attribute))
+                and (not isinstance(node, ast.Name) or self.target(node, owner, locals_) in {
+                    "typing", "collections", "typing.Callable", "collections.abc.Callable", "typing.Any"})
+                and (not isinstance(node, ast.Attribute) or self.target(node, owner, locals_) in {
+                    "typing.Callable", "collections.abc", "collections.abc.Callable", "typing.Any"})
+                for node in annotation_nodes)
+            if (not child.decorator_list and len(parameters) == 1 and not args.defaults
+                    and not args.kwonlyargs and args.vararg is None and args.kwarg is None
+                    and not child.type_params and safe_annotations
+                    and len(child.body) == 1 and isinstance(child.body[0], ast.Return)
+                    and isinstance(child.body[0].value, ast.Name)
+                    and child.body[0].value.id == parameters[0].arg):
+                identities.add(child.name)
+        returns = [node.value for node in _body_nodes(definition) if isinstance(node, ast.Return)]
+        protocol = False
+        for value in returns:
+            if isinstance(value, ast.Call) and self.target(value.func, owner, locals_) in _PROTOCOL_BINDINGS:
+                protocol = True
+            elif not isinstance(value, ast.Name) or value.id not in identities:
+                return False
+        # Actual helper effects remain checked by check(); only its returned decorator is proven here.
+        return protocol
+
+    def route_path(self, node: ast.Call, path: str, locals_: dict[str, str]) -> bool:
+        if (self.target(node.func, path, locals_) != "getattr" or node.keywords
+                or len(node.args) not in {2, 3} or not isinstance(node.args[0], ast.Name)
+                or not isinstance(node.args[1], ast.Constant) or node.args[1].value != "path"
+                or (len(node.args) == 3 and not (isinstance(node.args[2], ast.Constant)
+                                               and node.args[2].value is None))):
+            return False
+        for scope in ast.walk(self.sources[path]):
+            if (not isinstance(scope, (ast.ListComp, ast.SetComp, ast.GeneratorExp))
+                    or len(scope.generators) != 1 or node not in ast.walk(scope)
+                    or any(isinstance(value, ast.NamedExpr) for value in ast.walk(scope))):
+                continue
+            generator = scope.generators[0]
+            target, iterator = generator.target, generator.iter
+            if (isinstance(target, ast.Tuple) and len(target.elts) == 2
+                    and isinstance(target.elts[1], ast.Name) and target.elts[1].id == node.args[0].id
+                    and isinstance(iterator, ast.Call) and not iterator.keywords and len(iterator.args) == 1
+                    and self.target(iterator.func, path, locals_) == "enumerate"
+                    and isinstance(iterator.args[0], ast.Attribute) and iterator.args[0].attr == "routes"
+                    and self.target(iterator.args[0].value, path, locals_) == "starlette.applications.Starlette"):
+                return True
+        return False
+
     def frozen_data(self, symbol: str) -> bool:
         cls = self.definitions.get(symbol)
         if not isinstance(cls, ast.ClassDef) or cls.bases or cls.keywords:
@@ -246,6 +339,9 @@ class _Calls:
             field = self.field_type(receiver, node.attr)
             if field is not None:
                 return field
+            inherited = self.inherited_method(receiver, node.attr)
+            if inherited is not None:
+                return inherited
             base = self.sdk_base(receiver)
             if base is not None and f"{receiver}.{node.attr}" not in self.definitions and f"{base}.{node.attr}" in _PROTOCOL_BINDINGS:
                 return f"{base}.{node.attr}"
@@ -260,10 +356,12 @@ class _Calls:
                 return f"<local_{'mapping' if value == 'dict' else value}>"
             if value == "urllib.parse.parse_qsl":
                 return "<local_list>"
-            if value == "urllib.parse.urlsplit":
+            if value in {"urllib.parse.urlsplit", "urllib.parse.urlparse"}:
                 return "<urlparts>"
             if value in _PROTOCOL_BINDINGS:
                 return "<protocol-registration>"
+            if value == "getattr" and self.route_path(node, path, locals_):
+                return "<str>"
             if value in _REQUEST_READS:
                 return "<str>"
             if value in {"logging.getLogger", "structlog.get_logger"} or value.startswith("<logger>."):
@@ -275,6 +373,8 @@ class _Calls:
                 return value
             if isinstance(definition, _FUNCTIONS):
                 owner = value.split("::", 1)[0]
+                if self.registration_result(value):
+                    return "<protocol-registration>"
                 if definition.returns is not None:
                     declared = self.annotation_type(definition.returns, owner)
                     if declared not in {"Any", "typing.Any", "object", "None", "<unknown>"}:
@@ -402,6 +502,8 @@ class _Calls:
             if target in self.definitions and self.layers.get(location, set()) & _INWARD:
                 continue
             if target == "super" and "<super>" in locals_:
+                continue
+            if target == "getattr" and self.route_path(node, path, locals_):
                 continue
             if target in _PURE or target in _RESPONSES or target in _TECHNICAL or target in _PROTOCOL_ERRORS or target in _PROTOCOL_BINDINGS or target in _REQUEST_READS or target == "<protocol-registration>":
                 continue

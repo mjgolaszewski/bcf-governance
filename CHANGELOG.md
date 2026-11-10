@@ -12,6 +12,7 @@ Release target: `2.3.13`
 
 - Discover material Python module/class initializers with exact source identities and import resolution; reject unauthorized or unsupported constructor paths.
 - Check actual source-resolved application delegation and bounded transport calls instead of granting delegation by function-name substrings. Preserve module branch/loop limits and reject hidden business effects.
+- Preserve exact conditional SDK registration/identity decorators, source-defined inherited configuration methods, and typed SDK metadata-route assembly without permitting arbitrary returned callables or dynamic attribute dispatch.
 
 ## [2.3.12] - 2026-11-09
 
