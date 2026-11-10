@@ -124,3 +124,20 @@ def test_initializer_can_be_an_explicit_discovered_owner(tmp_path: Path) -> None
     registry = _registry(site)
     entry = replace(registry.entries[0], owner_symbol=site)
     assert evaluate_discovery(value, replace(registry, entries=(entry,)))["verdict"] == "conformant"
+
+
+def test_attribute_constructor_alias_is_not_lost(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "import owner as identity\n"
+                      "constructor = identity.PrincipalOwner\nOWNER = constructor('forged')\n")
+    assert value["constructors"][0]["constructed_symbol"] == "owner.py::PrincipalOwner"
+
+
+def test_local_class_alias_is_not_lost(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "class LocalOwner: pass\nconstructor = LocalOwner\nOWNER = constructor()\n")
+    assert any(row["constructed_symbol"] == "consumer.py::LocalOwner" for row in value["constructors"])
+
+
+def test_conditional_unresolved_factory_is_not_silently_omitted(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "if condition:\n    factory = PrincipalOwner\nOWNER = factory('forged')\n")
+    assert any(row["kind"] == "unsupported_initializer_callee" for row in value["unresolved"])

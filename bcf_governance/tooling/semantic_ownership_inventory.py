@@ -480,6 +480,16 @@ def resolve_python_imports(
         attributes: list[str],
         seen: frozenset[tuple[str, str]] = frozenset(),
     ) -> str | None:
+        if binding["kind"] == "unresolved":
+            raise SemanticInventoryError(f"unsupported rebound initializer import: {path}")
+        if binding["kind"] == "alias":
+            return binding_target(path, binding["source_binding"],
+                                  [*binding["source_attributes"], *attributes], seen)
+        if binding["kind"] == "local":
+            target = ".".join([binding["symbol"], *attributes])
+            if target not in known_symbols:
+                raise SemanticInventoryError(f"unsupported initializer source alias: {path}")
+            return target
         current_module = module_by_path.get(path)
         if current_module is None:
             return None

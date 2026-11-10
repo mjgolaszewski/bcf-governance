@@ -265,6 +265,15 @@ def discover_initializers(
     No source is imported or evaluated. Unsupported computed dispatch is explicit.
     """
     rows: list[dict[str, Any]] = []
+    local_functions = {node.name for node in tree.body
+                       if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    builtin_calls = frozenset({"object", "str", "bytes", "int", "float", "bool", "list", "dict",
+                               "set", "frozenset", "tuple", "range", "len", "sorted", "enumerate",
+                               "zip", "map", "filter", "iter", "next", "min", "max", "sum", "any",
+                               "all", "isinstance", "issubclass", "type", "property", "classmethod",
+                               "staticmethod", "super", "print", "open", "getattr", "setattr",
+                               "hasattr", "globals", "locals", "vars", "repr", "Exception",
+                               "ValueError", "RuntimeError", "TypeError", "KeyError", "OSError"})
     deferred_annotations = any(
         isinstance(node, ast.ImportFrom) and node.module == "__future__"
         and any(alias.name == "annotations" for alias in node.names)
@@ -281,6 +290,11 @@ def discover_initializers(
         for call in row["calls"]:
             if call["call_name"] == "<dynamic>":
                 row["unresolved"].append({"kind": "unsupported_initializer_dispatch",
+                                          "symbol": row["symbol"], "line": call["line"]})
+            if (call["called_symbol"] == f"{path}::{call['call_name']}"
+                    and not call.get("import_reference")
+                    and call["call_name"] not in local_types | local_functions | builtin_calls):
+                row["unresolved"].append({"kind": "unsupported_initializer_callee",
                                           "symbol": row["symbol"], "line": call["line"]})
         if row["calls"] or row["unresolved"]:
             rows.append({**row, "scope_kind": "initializer"})
@@ -331,9 +345,12 @@ def discover_initializers(
                 if node.value is not None:
                     reference = _call_reference(node.value, local)
                     for name in names:
-                        if reference is not None and not reference["attributes"]:
-                            local[name] = dict(reference["binding"])
-                        elif name in local:
+                        if reference is not None:
+                            local[name] = {"kind": "alias", "source_binding": dict(reference["binding"]),
+                                           "source_attributes": reference["attributes"]}
+                        elif isinstance(node.value, ast.Name) and node.value.id in local_types:
+                            local[name] = {"kind": "local", "symbol": f"{path}::{node.value.id}"}
+                        elif name in local or name in local_types:
                             # A rebound import is no longer evidence for the original callee.
                             local[name] = {"kind": "unresolved", "local": name, "line": node.lineno}
             elif isinstance(node, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.With,
