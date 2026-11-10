@@ -365,3 +365,28 @@ def test_standard_typing_generic_constructor_keeps_exact_owner_identity(tmp_path
         tmp_path, sorted(tmp_path.glob("*.py"))), (".",))
     report = evaluate_discovery(value, _registry("consumer.py::other"))
     assert [row["kind"] for row in report["violations"]] == ["unauthorized_constructor"]
+
+
+def test_nonimportable_generated_copy_does_not_invent_fallback_import_authority(tmp_path: Path) -> None:
+    (tmp_path / "owner.py").write_text("class Owner: pass\n")
+    mirror = tmp_path / "template-copy"
+    mirror.mkdir()
+    (mirror / "runtime.py").write_text("def version():\n    return 'test'\n")
+    (mirror / "doctor.py").write_text("try:\n    from .runtime import version\n"
+        "except ImportError:\n    from runtime import version\nVERSION = version()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.rglob("*.py"))), (".",))
+    assert value["initializers"][0]["calls"][0]["called_symbol"] == "template-copy/doctor.py::version"
+
+
+@pytest.mark.parametrize("source", [
+    "FACTORY = lambda *make: make()\n",
+    "FACTORY = lambda **make: make()\n",
+    "FACTORY = lambda make: make.construct()\n",
+    "FACTORY = lambda: unknown_factory()\n",
+])
+def test_deferred_opaque_factory_paths_remain_unresolved(tmp_path: Path, source: str) -> None:
+    value = _discover(tmp_path, source)
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert any(row["kind"] == "unsupported_deferred_callable_dispatch"
+               for row in report["violations"])

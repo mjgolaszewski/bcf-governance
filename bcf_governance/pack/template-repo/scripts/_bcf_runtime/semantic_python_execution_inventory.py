@@ -251,6 +251,7 @@ class _FunctionVisitor(ast.NodeVisitor):
 
 class _InitializerVisitor(_FunctionVisitor):
     deferred_functions: list[dict[str, Any]]
+    deferred_allowed_callees: set[str]
 
     def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
         if isinstance(node.func, ast.Subscript) and isinstance(node.func.value, (ast.Name, ast.Attribute)):
@@ -286,8 +287,16 @@ class _InitializerVisitor(_FunctionVisitor):
             initializer_symbol=f"{self.symbol}.<lambda@{node.lineno}.{node.col_offset}>",
         )
         visitor.visit_Return(ast.copy_location(ast.Return(value=node.body), node))
+        parameters = {*visitor.parameters, *(arg.arg for arg in
+                      (node.args.vararg, node.args.kwarg) if arg is not None)}
         for call in visitor.calls:
-            if call["call_name"] in visitor.parameters or call["call_name"] == "<dynamic>":
+            unknown_named = (call["called_symbol"] == f"{self.path}::{call['call_name']}"
+                             and not call.get("import_reference")
+                             and call["call_name"] not in self.deferred_allowed_callees)
+            parameter_dispatch = any(call["called_symbol"].startswith(f"{self.path}::{name}.")
+                                     for name in parameters)
+            if (call["call_name"] in parameters or call["call_name"] == "<dynamic>"
+                    or unknown_named or parameter_dispatch):
                 visitor.unresolved.append({"kind": "unsupported_deferred_callable_dispatch",
                                            "symbol": visitor.symbol, "line": call["line"]})
         self.deferred_functions.append({**visitor.facts(), "scope_kind": "deferred_callable"})
@@ -326,6 +335,7 @@ def discover_initializers(
                                    local_types=local_types, class_name=None, function=None,
                                    initializer_symbol=f"{path}::{symbol}")
         visitor.deferred_functions = deferred_functions
+        visitor.deferred_allowed_callees = local_types | local_functions | set(builtin_calls)
         for node in nodes:
             visitor.visit(node)
         row = visitor.facts()

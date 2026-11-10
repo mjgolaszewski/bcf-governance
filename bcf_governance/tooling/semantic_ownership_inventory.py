@@ -481,6 +481,8 @@ def resolve_python_imports(
         seen: frozenset[tuple[str, str]] = frozenset(),
     ) -> str | None:
         if binding["kind"] == "alternatives":
+            if path not in module_by_path:
+                return None
             targets = [binding_target(path, choice, attributes, seen)
                        for choice in binding["choices"]]
             # Package/direct-script fallbacks name the same sibling explicitly:

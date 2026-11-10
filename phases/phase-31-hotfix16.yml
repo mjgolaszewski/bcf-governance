@@ -33,9 +33,12 @@ execution_evidence:
     mutable-base rejection.'
   - Control-header characterization exposed omitted with-context/match-guard calls; actual RED retained, generic
     non-suite header traversal corrected it, and 70 focused cases passed.
-  - Revised initializer/import/method/transport/registration/pack packet passes 148 controls with zero skips;
+  - Revised initializer/import/method/transport/registration/pack packet passes 153 controls with zero skips;
     changed-owner strict typing and Ruff pass. Includes standard typing.Generic, source hook/decorator rebinding,
     deferred callable/default execution and competing fallback import refusals. Full revised pipeline pending.
+  - Canonical reconciliation refused relative fallback resolution for nonimportable generated mirror paths.
+    Preserve their neutral discovery without inventing an import root; resolve only admitted module paths.
+    The new mirror control and deferred opaque/variadic callable refusals pass; no authority is widened.
   notes:
   - 'P31-HF16 targets 2.3.13: inventory executable initializer construction without changing consumer identities;
     transport helpers require closed source-resolved technical or inward call boundaries, never substring waivers;
