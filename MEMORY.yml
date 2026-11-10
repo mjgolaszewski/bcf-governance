@@ -20,6 +20,7 @@ memory_retention_policy:
   stale_entry_handling: [mark_deprecated_before_removal, preserve_replacement_reference_when_available]
 environment_facts:
   current_repo_state:
+  - "P31-HF16 full consumer scan exposed initializer precision gaps after earlier focused qualification. Source-proven generic calls, deferred lambdas and exact fallback/metadata aliases now retain ownership; revised installed/full release qualification remains required."
   - "P31-HF16 targets 2.3.13: inventory executable initializer construction with exact identities and fail-closed import coverage; transport calls require actual inward definitions or closed technical helpers, never name-substring exemptions; retain module branch/loop limits and qualify actual adopters."
   - "P31-HF12 implements exact-source custody preservation through the existing owner API. Independent scoped qualification accepts17 healthy cases,6 genuine causal failures and17 restored cases, plus affected Ruff and strict checks. External maintained-owner execution, distribution and complete candidate/CI/release custody remain pending; installed runtime is unchanged."
   - "Operator2026-10-28 prioritizes BDMCP unblock. P31-HF11 isolates the producer-only import repair for ordinary consumer typing. Broader semantic and Racecar JIT work remains preserved outside this candidate for later maintenance or independent2.5; ordinary CI has no live Identity dependency. Qualification and official custody remain pending."

@@ -250,14 +250,53 @@ class _FunctionVisitor(ast.NodeVisitor):
 
 
 class _InitializerVisitor(_FunctionVisitor):
+    deferred_functions: list[dict[str, Any]]
+
+    def visit_Call(self, node: ast.Call) -> None:  # noqa: N802
+        if isinstance(node.func, ast.Subscript) and isinstance(node.func.value, (ast.Name, ast.Attribute)):
+            arguments = node.func.slice
+            safe_arguments = all(isinstance(value, (ast.Name, ast.Tuple, ast.Load,
+                                                     ast.Constant)) for value in ast.walk(arguments))
+            if safe_arguments:
+                direct = ast.copy_location(ast.Call(
+                    func=node.func.value, args=node.args, keywords=node.keywords,
+                ), node)
+                start = len(self.calls)
+                super().visit_Call(direct)
+                self.calls[start]["generic_subscription"] = True
+                self.calls[start]["column"] = node.col_offset
+                self.unresolved.append({"kind": "unsupported_initializer_subscription",
+                                        "symbol": self.symbol, "line": node.lineno,
+                                        "column": node.col_offset})
+                return
+        super().visit_Call(node)
+
     def visit_Lambda(self, node: ast.Lambda) -> None:  # noqa: N802
-        self.unresolved.append({"kind": "unsupported_initializer_lambda",
-                                "symbol": self.symbol, "line": node.lineno})
+        # Creating a lambda evaluates defaults, but does not execute its body.
+        for default in [*node.args.defaults, *node.args.kw_defaults]:
+            if default is not None:
+                self.visit(default)
+        function = ast.parse("def deferred(): pass").body[0]
+        assert isinstance(function, ast.FunctionDef)
+        function.name = "<lambda>"
+        function.args = node.args
+        visitor = _FunctionVisitor(
+            path=self.path, imports=self.imports, import_bindings=self.import_bindings,
+            local_types=self.local_types, class_name=None, function=function,
+            initializer_symbol=f"{self.symbol}.<lambda@{node.lineno}.{node.col_offset}>",
+        )
+        visitor.visit_Return(ast.copy_location(ast.Return(value=node.body), node))
+        for call in visitor.calls:
+            if call["call_name"] in visitor.parameters or call["call_name"] == "<dynamic>":
+                visitor.unresolved.append({"kind": "unsupported_deferred_callable_dispatch",
+                                           "symbol": visitor.symbol, "line": call["line"]})
+        self.deferred_functions.append({**visitor.facts(), "scope_kind": "deferred_callable"})
 
 
 def discover_initializers(
     tree: ast.Module, *, path: str, imports: dict[str, str],
     import_bindings: dict[str, dict[str, Any]], local_types: set[str],
+    deferred_functions: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Inventory import-time execution separately from callable bodies.
 
@@ -274,7 +313,8 @@ def discover_initializers(
                                "all", "isinstance", "issubclass", "type", "property", "classmethod",
                                "staticmethod", "super", "print", "open", "getattr", "setattr",
                                "hasattr", "globals", "locals", "vars", "repr", "Exception",
-                               "ValueError", "RuntimeError", "TypeError", "KeyError", "OSError"})
+                               "ValueError", "RuntimeError", "TypeError", "KeyError", "OSError",
+                               "SystemExit"})
     deferred_annotations = any(
         isinstance(node, ast.ImportFrom) and node.module == "__future__"
         and any(alias.name == "annotations" for alias in node.names)
@@ -285,6 +325,7 @@ def discover_initializers(
         visitor = _InitializerVisitor(path=path, imports=imports, import_bindings=bindings,
                                    local_types=local_types, class_name=None, function=None,
                                    initializer_symbol=f"{path}::{symbol}")
+        visitor.deferred_functions = deferred_functions
         for node in nodes:
             visitor.visit(node)
         row = visitor.facts()
@@ -303,7 +344,7 @@ def discover_initializers(
                          "column": min(getattr(node, "col_offset", 0) for node in nodes)})
 
     def walk(body: list[ast.stmt], scope: str,
-             bindings: dict[str, dict[str, Any]]) -> None:
+             bindings: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]:
         local = dict(bindings)
         for node in body:
             if isinstance(node, ast.Import):
@@ -336,11 +377,15 @@ def discover_initializers(
                     if node.returns is not None:
                         values.append(node.returns)
                 record(f"{scope}.{node.name}", values, local)
+                if node.name in local:
+                    local[node.name] = {"kind": "unresolved", "local": node.name, "line": node.lineno}
             elif isinstance(node, ast.ClassDef):
                 record(f"{scope}.{node.name}", [*node.decorator_list, *node.bases,
                                                *(value.value for value in node.keywords)], local)
                 qualified = node.name if scope == "<module>" else scope.removesuffix(".<class>") + "." + node.name
                 walk(node.body, f"{qualified}.<class>", local)
+                if node.name in local:
+                    local[node.name] = {"kind": "unresolved", "local": node.name, "line": node.lineno}
             elif isinstance(node, (ast.Assign, ast.AnnAssign)):
                 targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                 names = sorted({child.id for target in targets for child in ast.walk(target)
@@ -348,6 +393,12 @@ def discover_initializers(
                 record(f"{scope}.{','.join(names) or '@' + str(node.lineno)}", [node], local)
                 if node.value is not None:
                     reference = _call_reference(node.value, local)
+                    if (reference is None and isinstance(node.value, ast.Attribute)
+                            and isinstance(node.value.value, ast.Name)
+                            and node.value.value.id in local_types):
+                        reference = {"binding": {"kind": "local",
+                                     "symbol": f"{path}::{node.value.value.id}"},
+                                     "attributes": [node.value.attr]}
                     for name in names:
                         if reference is not None:
                             local[name] = {"kind": "alias", "source_binding": dict(reference["binding"]),
@@ -359,6 +410,12 @@ def discover_initializers(
                             local[name] = {"kind": "unresolved", "local": name, "line": node.lineno}
             elif isinstance(node, (ast.If, ast.For, ast.AsyncFor, ast.While, ast.With,
                                    ast.AsyncWith, ast.Try, ast.TryStar, ast.Match)):
+                if (isinstance(node, ast.If)
+                        and source_symbol(node.test, path, imports) in
+                        {"typing::TYPE_CHECKING", "typing::module.TYPE_CHECKING"}
+                        and local.get(_root_name(node.test) or "", {}).get("kind") in {"from", "import"}):
+                    local = walk(node.orelse, scope, local)
+                    continue
                 # Split suites rather than visiting nested definitions as executable bodies.
                 expressions: list[ast.expr] = []
                 def heads(current: ast.AST, found: list[ast.expr]) -> None:
@@ -379,10 +436,22 @@ def discover_initializers(
                         for item in value:
                             if isinstance(item, (ast.ExceptHandler, ast.match_case)):
                                 suites.append(item.body)
-                for suite in suites:
-                    walk(suite, scope, local)
+                outcomes = [walk(suite, scope, local) for suite in suites]
+                # A fallback import is usable only if every branch resolves to
+                # the same actual source symbol. Resolution happens after discovery.
+                if (isinstance(node, ast.Try) and node.handlers
+                        and not node.orelse and not node.finalbody
+                        and all(isinstance(handler.type, ast.Name)
+                                and handler.type.id == "ImportError" for handler in node.handlers)
+                        and all(isinstance(statement, (ast.Import, ast.ImportFrom))
+                                for suite in suites for statement in suite)):
+                    for name in set.intersection(*(set(outcome) for outcome in outcomes)):
+                        choices = [outcome[name] for outcome in outcomes]
+                        if any(choice != local.get(name) for choice in choices):
+                            local[name] = {"kind": "alternatives", "choices": choices}
             else:
                 record(f"{scope}.@{node.lineno}", [node], local)
+        return local
 
     walk(tree.body, "<module>", import_bindings)
     counts = Counter(row["symbol"] for row in rows)

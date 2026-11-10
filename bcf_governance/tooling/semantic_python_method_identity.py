@@ -186,9 +186,57 @@ def discover_class_facts(
                     "decorators": sorted(ast.unparse(value) for value in member.decorator_list),
                 }
             )
+        standard_generic_base = (
+            len(node.bases) == 1 and isinstance(node.bases[0], ast.Subscript)
+            and source_symbol(node.bases[0].value, path, imports) in
+            {"typing::Generic", "typing::module.Generic"}
+        )
+        plain_generic = (bool(getattr(node, "type_params", False)) or standard_generic_base) and not (
+            (node.bases and not standard_generic_base) or node.keywords or "__class_getitem__" in class_rebindings
+            or any(method["name"] == "__class_getitem__" for method in methods)
+        )
+        for statement in tree.body:
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                continue
+            for value in ast.walk(statement):
+                if (isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del))
+                        and root_name(value) == node.name):
+                    plain_generic = False
+                if (isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"}
+                        and value.args and isinstance(value.args[0], ast.Name)
+                        and value.args[0].id == node.name):
+                    plain_generic = False
+        proofs = [*node.decorator_list, *(node.bases if standard_generic_base else [])]
+        for proof in proofs:
+            is_base = isinstance(proof, ast.Subscript)
+            target = proof.value if isinstance(proof, ast.Subscript) else proof.func if isinstance(proof, ast.Call) else proof
+            if not is_base and source_symbol(target, path, imports) not in {
+                "dataclasses::dataclass", "dataclasses::module.dataclass",
+            }:
+                plain_generic = False
+            roots = {value.id for value in ast.walk(target) if isinstance(value, ast.Name)}
+            for statement in tree.body:
+                if statement is node:
+                    break
+                if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                    if statement.name in roots:
+                        plain_generic = False
+                    continue
+                if any(isinstance(value, ast.Name) and isinstance(value.ctx, ast.Store)
+                       and value.id in roots for value in ast.walk(statement)):
+                    plain_generic = False
+            if isinstance(proof, ast.Call) and (
+                proof.args or any(
+                    keyword.arg is None or not isinstance(keyword.value, ast.Constant)
+                    or not isinstance(keyword.value.value, bool)
+                    for keyword in proof.keywords
+                )
+            ):
+                plain_generic = False
         rows.append(
             {
                 "symbol": f"{path}::{node.name}",
+                **({"plain_generic": True} if plain_generic else {}),
                 "bases": bases,
                 "methods": methods,
                 "class_decorators": sorted(

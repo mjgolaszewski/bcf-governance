@@ -1222,6 +1222,14 @@ dispatch and unsupported rebound constructor imports fail closed. This coverage
 extension may reveal previously unobserved product violations; it does not migrate
 or authorize them automatically.
 
+Source-proven plain PEP 695 and standard `typing.Generic` constructors retain the underlying constructor
+identity and exact-site authorization. Custom subscription hooks and opaque class
+decorators remain unresolved. Creating a lambda evaluates its defaults in the
+enclosing initializer; its body is inventoried separately at
+`<initializer>.<lambda@line.column>`. Immediate computed invocation and unknown
+callable parameters remain unresolved. Package/direct-script fallback imports
+must identify the same source sibling; a competing declared module is refused.
+
 ### Thin transport call boundaries
 
 The native router gate preserves configured module branch/loop limits and checks

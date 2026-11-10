@@ -237,7 +237,7 @@ def discover_python_source(
         )
         initializers.extend(discover_initializers(
             tree, path=relative, imports=imports, import_bindings=bindings_by_local,
-            local_types=local_types,
+            local_types=local_types, deferred_functions=functions,
         ))
         scopes, missing = runtime_function_scopes(
             tree, path=relative, imports=imports
@@ -480,6 +480,25 @@ def resolve_python_imports(
         attributes: list[str],
         seen: frozenset[tuple[str, str]] = frozenset(),
     ) -> str | None:
+        if binding["kind"] == "alternatives":
+            targets = [binding_target(path, choice, attributes, seen)
+                       for choice in binding["choices"]]
+            # Package/direct-script fallbacks name the same sibling explicitly:
+            # `from .module import member` / `from module import member`.
+            # Never substitute a competing declared top-level module.
+            for index, choice in enumerate(binding["choices"]):
+                if (targets[index] is not None or choice.get("kind") != "from"
+                        or choice.get("level", 0) or choice.get("module") in module_index):
+                    continue
+                for sibling, target in zip(binding["choices"], targets, strict=True):
+                    if (target is not None and sibling.get("kind") == "from"
+                            and sibling.get("level") == 1
+                            and choice.get("module") == sibling.get("module")
+                            and choice.get("member") == sibling.get("member")):
+                        targets[index] = target
+            if not targets or targets[0] is None or any(target != targets[0] for target in targets):
+                raise SemanticInventoryError(f"ambiguous initializer fallback import: {path}")
+            return targets[0]
         if binding["kind"] == "unresolved":
             raise SemanticInventoryError(f"unsupported rebound initializer import: {path}")
         if binding["kind"] == "alias":
@@ -488,6 +507,16 @@ def resolve_python_imports(
         if binding["kind"] == "local":
             target = ".".join([binding["symbol"], *attributes])
             if target not in known_symbols:
+                class_row = next((row for row in resolved.get("classes", [])
+                                  if row["symbol"] == binding["symbol"]), None)
+                if (class_row is not None and len(attributes) == 1
+                        and attributes[0] in {"add_constructor", "add_implicit_resolver", "add_representer"}
+                        and len(class_row.get("bases", [])) == 1
+                        and not any(class_row.get(key) for key in
+                                    ("methods", "class_rebindings", "class_decorators", "metaclass_keywords"))):
+                    base = class_row["bases"][0]
+                    if base["called_symbol"] in {"yaml::module.SafeLoader", "yaml::module.SafeDumper"}:
+                        return f"{base['called_symbol']}.{attributes[0]}"
                 raise SemanticInventoryError(f"unsupported initializer source alias: {path}")
             return target
         current_module = module_by_path.get(path)
@@ -584,7 +613,16 @@ def resolve_python_imports(
             if target is not None:
                 fact["called_symbol"] = target
     known_types = set(resolved.get("types", []))
+    plain_generics = {row["symbol"] for row in resolved.get("classes", [])
+                      if row.get("plain_generic")}
     for scope in [*resolved.get("functions", []), *resolved.get("initializers", [])]:
+        proven_subscriptions = {(call["line"], call["column"])
+                                for call in scope.get("calls", [])
+                                if call.get("generic_subscription")
+                                and call["called_symbol"] in plain_generics}
+        scope["unresolved"] = [row for row in scope.get("unresolved", [])
+                               if row.get("kind") != "unsupported_initializer_subscription"
+                               or (row["line"], row["column"]) not in proven_subscriptions]
         existing = {(row["line"], row["called_symbol"]) for row in scope.get("constructors", [])}
         for call in scope.get("calls", []):
             if call["called_symbol"] in known_types and (call["line"], call["called_symbol"]) not in existing:
@@ -595,4 +633,7 @@ def resolve_python_imports(
         for function in [*resolved.get("functions", []), *resolved.get("initializers", [])]
         for fact in function.get("constructors", [])
     ]
+    resolved["unresolved"] = [fact
+        for scope in [*resolved.get("functions", []), *resolved.get("initializers", [])]
+        for fact in scope.get("unresolved", [])]
     return resolved

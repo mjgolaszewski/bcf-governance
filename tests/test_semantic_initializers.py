@@ -1,3 +1,4 @@
+import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -177,3 +178,190 @@ def test_context_manager_and_match_guard_construction_are_not_omitted(tmp_path: 
                       "match value:\n    case _ if PrincipalOwner('guard'):\n        pass\n")
     assert len([row for row in value["constructors"]
                 if row["constructed_symbol"] == "owner.py::PrincipalOwner"]) == 2
+
+
+def test_builtin_system_exit_keeps_nested_constructor_authorization(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "raise SystemExit(PrincipalOwner('local'))\n")
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert not any(row["kind"] == "unsupported_initializer_callee"
+                   for row in report["violations"])
+    assert any(row["kind"] == "unauthorized_constructor"
+               for row in report["violations"])
+
+
+def test_shadowed_system_exit_still_requires_constructor_authorization(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner as SystemExit\n"
+                      "raise SystemExit('local')\n")
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert any(row["kind"] == "unauthorized_constructor"
+               for row in report["violations"])
+
+
+def test_deferred_lambda_body_has_its_own_constructor_site(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "FACTORY = lambda: PrincipalOwner('deferred')\n")
+    assert not value["initializers"]
+    assert len(value["constructors"]) == 1
+    fact = value["constructors"][0]
+    assert fact["caller"] == "consumer.py::<module>.FACTORY.<lambda@2.10>"
+    report = evaluate_discovery(value, _registry("consumer.py::<module>.FACTORY"))
+    assert any(row["kind"] == "unauthorized_constructor" for row in report["violations"])
+
+
+def test_lambda_defaults_execute_in_enclosing_initializer(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "FACTORY = lambda value=PrincipalOwner('eager'): value\n")
+    assert value["constructors"][0]["caller"] == "consumer.py::<module>.FACTORY"
+
+
+def test_immediately_invoked_lambda_remains_explicit_dynamic_dispatch(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "OWNER = (lambda: PrincipalOwner('eager'))()\n")
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert any(row["kind"] == "unsupported_initializer_dispatch"
+               for row in report["violations"])
+    assert any(row["kind"] == "unauthorized_constructor" for row in report["violations"])
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 syntax")
+def test_plain_source_generic_constructor_retains_exact_owner_site(tmp_path: Path) -> None:
+    (tmp_path / "owner.py").write_text("class PrincipalOwner[T]:\n    pass\n")
+    (tmp_path / "consumer.py").write_text(
+        "from owner import PrincipalOwner\nOWNER = PrincipalOwner[str]()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.glob("*.py"))), (".",))
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert [row["kind"] for row in report["violations"]] == ["unauthorized_constructor"]
+    assert value["constructors"][0]["constructed_symbol"] == "owner.py::PrincipalOwner"
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 syntax")
+@pytest.mark.parametrize("extra", [
+    "    def __class_getitem__(cls, key):\n        return lambda: object()\n",
+    "    __class_getitem__ = choose_factory()\n",
+])
+def test_source_generic_custom_subscription_stays_unresolved(tmp_path: Path, extra: str) -> None:
+    (tmp_path / "owner.py").write_text("class PrincipalOwner[T]:\n" + extra)
+    (tmp_path / "consumer.py").write_text(
+        "from owner import PrincipalOwner\nOWNER = PrincipalOwner[str]()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.glob("*.py"))), (".",))
+    report = evaluate_discovery(value, _registry("consumer.py::<module>.OWNER"))
+    assert any(row["kind"] == "unsupported_initializer_subscription"
+               for row in report["violations"])
+
+
+def test_fallback_imports_must_resolve_to_identical_source(tmp_path: Path) -> None:
+    (tmp_path / "package").mkdir()
+    (tmp_path / "package/__init__.py").write_text("")
+    (tmp_path / "package/owner.py").write_text("def factory():\n    return object()\n")
+    consumer = tmp_path / "package/consumer.py"
+    consumer.write_text("try:\n    from .owner import factory\n"
+                        "except ImportError:\n    from package.owner import factory\n"
+                        "VALUE = factory()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.rglob("*.py"))), (".",))
+    row = next(row for row in value["initializers"] if row["symbol"].endswith(".VALUE"))
+    assert row["calls"][0]["called_symbol"] == "package/owner.py::factory"
+    assert not row["unresolved"]
+    (tmp_path / "package/other.py").write_text("def factory():\n    return object()\n")
+    consumer.write_text(consumer.read_text().replace("from package.owner", "from package.other"))
+    with pytest.raises(SemanticInventoryError, match="ambiguous initializer fallback"):
+        resolve_python_imports(tmp_path, discover_python_source(
+            tmp_path, sorted(tmp_path.rglob("*.py"))), (".",))
+
+
+def test_exact_yaml_metadata_method_alias_resolves_without_callable_name_grant(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "import yaml\nclass Loader(yaml.SafeLoader):\n    pass\n"
+                      "configure = Loader.add_implicit_resolver\nconfigure('tag', None, [])\n")
+    assert not value["unresolved"]
+    assert any(call["called_symbol"] == "yaml::module.SafeLoader.add_implicit_resolver"
+               for row in value["initializers"] for call in row["calls"])
+
+
+def test_replaced_yaml_metadata_method_does_not_get_inherited_identity(tmp_path: Path) -> None:
+    with pytest.raises(SemanticInventoryError, match="unsupported initializer source alias"):
+        _discover(tmp_path, "import yaml\nclass Loader(yaml.SafeLoader):\n"
+                  "    add_implicit_resolver = choose_factory()\n"
+                  "configure = Loader.add_implicit_resolver\nconfigure('tag', None, [])\n")
+
+
+def test_runtime_fallback_inside_standard_type_checking_else(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from typing import TYPE_CHECKING\n"
+                      "if TYPE_CHECKING:\n    from owner import PrincipalOwner\n"
+                      "else:\n    try:\n        from owner import PrincipalOwner\n"
+                      "    except ImportError:\n        from owner import PrincipalOwner\n"
+                      "OWNER = PrincipalOwner('local')\n")
+    assert not value["unresolved"]
+    assert value["constructors"][0]["constructed_symbol"] == "owner.py::PrincipalOwner"
+
+
+def test_exact_sibling_standalone_fallback_keeps_competing_root_refusal(tmp_path: Path) -> None:
+    (tmp_path / "package").mkdir()
+    (tmp_path / "package/__init__.py").write_text("")
+    (tmp_path / "package/owner.py").write_text("def factory():\n    return object()\n")
+    (tmp_path / "package/consumer.py").write_text(
+        "try:\n    from .owner import factory\nexcept ImportError:\n"
+        "    from owner import factory\nVALUE = factory()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.rglob("*.py"))), (".",))
+    row = next(row for row in value["initializers"] if row["symbol"].endswith(".VALUE"))
+    assert row["calls"][0]["called_symbol"] == "package/owner.py::factory"
+    (tmp_path / "owner.py").write_text("def factory():\n    return object()\n")
+    with pytest.raises(SemanticInventoryError, match="ambiguous initializer fallback"):
+        resolve_python_imports(tmp_path, discover_python_source(
+            tmp_path, sorted(tmp_path.rglob("*.py"))), (".",))
+
+
+def test_deferred_parameter_dispatch_remains_unresolved(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "FACTORY = lambda make: make()\n")
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert any(row["kind"] == "unsupported_deferred_callable_dispatch"
+               for row in report["violations"])
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 syntax")
+def test_rebound_generic_decorator_cannot_prove_standard_subscription(tmp_path: Path) -> None:
+    (tmp_path / "owner.py").write_text(
+        "from dataclasses import dataclass\ndataclass = choose_decorator()\n"
+        "@dataclass\nclass PrincipalOwner[T]:\n    pass\n")
+    (tmp_path / "consumer.py").write_text(
+        "from owner import PrincipalOwner\nOWNER = PrincipalOwner[str]()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.glob("*.py"))), (".",))
+    report = evaluate_discovery(value, _registry("consumer.py::<module>.OWNER"))
+    assert any(row["kind"] == "unsupported_initializer_subscription"
+               for row in report["violations"])
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="PEP 695 syntax")
+def test_generic_module_hook_replacement_stays_unresolved(tmp_path: Path) -> None:
+    (tmp_path / "owner.py").write_text("class PrincipalOwner[T]:\n    pass\n"
+        "PrincipalOwner.__class_getitem__ = make_subscription\n")
+    (tmp_path / "consumer.py").write_text(
+        "from owner import PrincipalOwner\nOWNER = PrincipalOwner[str]()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.glob("*.py"))), (".",))
+    report = evaluate_discovery(value, _registry("consumer.py::<module>.OWNER"))
+    assert any(row["kind"] == "unsupported_initializer_subscription"
+               for row in report["violations"])
+
+
+def test_redefined_type_checking_name_cannot_hide_executed_constructor(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from typing import TYPE_CHECKING\n"
+                      "from owner import PrincipalOwner\n"
+                      "def TYPE_CHECKING():\n    pass\n"
+                      "if TYPE_CHECKING:\n    OWNER = PrincipalOwner('local')\n")
+    assert value["constructors"][0]["constructed_symbol"] == "owner.py::PrincipalOwner"
+
+
+def test_standard_typing_generic_constructor_keeps_exact_owner_identity(tmp_path: Path) -> None:
+    (tmp_path / "owner.py").write_text("from typing import Generic, TypeVar\n"
+        "T = TypeVar('T')\nclass PrincipalOwner(Generic[T]):\n    pass\n")
+    (tmp_path / "consumer.py").write_text(
+        "from owner import PrincipalOwner\nOWNER = PrincipalOwner[str]()\n")
+    value = resolve_python_imports(tmp_path, discover_python_source(
+        tmp_path, sorted(tmp_path.glob("*.py"))), (".",))
+    report = evaluate_discovery(value, _registry("consumer.py::other"))
+    assert [row["kind"] for row in report["violations"]] == ["unauthorized_constructor"]
