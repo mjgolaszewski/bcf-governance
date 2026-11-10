@@ -510,7 +510,7 @@
     },
     "scripts/_bcf_runtime/architecture_transport_contract.py": {
       "operation": "copy",
-      "sha256": "7818ba9e807301a1ddf342877b244652092337c9b45d0cc51b92e5029c779d29"
+      "sha256": "7df9388c0bd7df1fafe27e8364032e5c197a033e83d634a653ad96a2bf6f89e5"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",

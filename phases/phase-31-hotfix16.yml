@@ -79,6 +79,9 @@ execution_evidence:
     returned callables, receiver mutation and executable annotations. Four confirmed consumer registration/metadata
     functions clear in the source census. Remaining Any, captured receiver and generic dispatch proofs are explicit
     project typing/declaration work, not permission to waive unknown business effects. Full revised qualification pending.
+  - Pre-test provenance review added refusal controls for class-body method rebinding, unknown competing base
+    precedence and wrapped registration definitions. Admission was stopped before the full test body; these
+    controls narrow provenance and do not broaden transport authority. Revised full qualification remains pending.
 closeout_requirements:
   claims:
     required_suites_green:

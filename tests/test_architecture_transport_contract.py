@@ -265,6 +265,15 @@ def test_conditional_registration_rejects_executable_identity_annotation() -> No
                   {"src/demo/infrastructure/registration.py": helper})
 
 
+def test_conditional_registration_requires_an_unwrapped_source_definition() -> None:
+    helper = _REGISTRATION_HELPER.replace("def conditional_prompt", "@rogue\ndef conditional_prompt")
+    assert _check("from mcp.server.fastmcp import FastMCP\n"
+                  "from demo.infrastructure.registration import conditional_prompt\n"
+                  "def bind(server: FastMCP, callback):\n"
+                  "    conditional_prompt(server, True)(callback)\n",
+                  {"src/demo/infrastructure/registration.py": helper})
+
+
 def test_inherited_configuration_method_uses_actual_source_body() -> None:
     router = "from demo.infrastructure.config import Config\n" \
              "def encode(config: Config):\n    return config.url()\n"
@@ -273,6 +282,18 @@ def test_inherited_configuration_method_uses_actual_source_body() -> None:
     assert not _check(router, {"src/demo/infrastructure/config.py": helper})
     assert _check(router, {"src/demo/infrastructure/config.py":
                           helper.replace("return self.public_url", "repository.save('changed')\n        return self.public_url")})
+
+
+@pytest.mark.parametrize("body", [
+    "class Config(Base):\n    url = rogue\n",
+    "class Config(Base):\n    def url(self): return 'safe'\n    url = rogue\n",
+    "from unknown_sdk import OpaqueBase\nclass Config(OpaqueBase, Base):\n    pass\n",
+])
+def test_source_method_lookup_rejects_shadowing_or_unresolved_base_precedence(body: str) -> None:
+    helper = "class Base:\n    def url(self): return 'safe'\n" + body
+    assert _check("from demo.infrastructure.config import Config\n"
+                  "def encode(config: Config):\n    return config.url()\n",
+                  {"src/demo/infrastructure/config.py": helper})
 
 
 _METADATA = """from urllib.parse import urlparse

@@ -197,24 +197,32 @@ class _Calls:
 
     def inherited_method(self, symbol: str, name: str, seen: frozenset[str] = frozenset()) -> str | None:
         cls = self.definitions.get(symbol)
-        if (symbol in seen or symbol in self.rebound_classes or not isinstance(cls, ast.ClassDef)
+        if not isinstance(cls, ast.ClassDef):
+            return None
+        if (symbol in seen or symbol in self.rebound_classes
                 or cls.keywords or any(isinstance(member, _FUNCTIONS)
                 and member.name in {"__getattr__", "__getattribute__"} for member in cls.body)):
-            return None
+            return "<ambiguous-source-method>"
+        for member in cls.body:
+            targets = member.targets if isinstance(member, ast.Assign) else [member.target] if isinstance(
+                member, (ast.AnnAssign, ast.AugAssign)) else []
+            if any(isinstance(target, ast.Name) and target.id == name for target in targets):
+                return "<rebound-source-method>"
         direct = f"{symbol}.{name}"
         if isinstance(self.definitions.get(direct), _FUNCTIONS):
             return direct
-        if any(isinstance(member, ast.AnnAssign) and isinstance(member.target, ast.Name)
-               and member.target.id == name for member in cls.body):
-            return None
         owner = symbol.split("::", 1)[0]
-        candidates = {value for base in cls.bases if (value := self.inherited_method(
-            self.annotation_type(base, owner), name, seen | {symbol})) is not None}
-        return next(iter(candidates)) if len(candidates) == 1 else None
+        bases = [self.annotation_type(base, owner) for base in cls.bases]
+        known = [base for base in bases if isinstance(self.definitions.get(base), ast.ClassDef)]
+        candidates = {value for base in known if (value := self.inherited_method(
+            base, name, seen | {symbol})) is not None}
+        if candidates and any(base != "object" and base not in known for base in bases):
+            return "<ambiguous-source-method>"
+        return next(iter(candidates)) if len(candidates) == 1 else "<ambiguous-source-method>" if candidates else None
 
     def registration_result(self, symbol: str) -> bool:
         definition = self.definitions.get(symbol)
-        if not isinstance(definition, ast.FunctionDef):
+        if not isinstance(definition, ast.FunctionDef) or definition.decorator_list or definition.type_params:
             return False
         owner = symbol.split("::", 1)[0]
         locals_ = {argument.arg: self.annotation_type(argument.annotation, owner)
@@ -339,12 +347,12 @@ class _Calls:
             field = self.field_type(receiver, node.attr)
             if field is not None:
                 return field
-            inherited = self.inherited_method(receiver, node.attr)
-            if inherited is not None:
-                return inherited
             base = self.sdk_base(receiver)
             if base is not None and f"{receiver}.{node.attr}" not in self.definitions and f"{base}.{node.attr}" in _PROTOCOL_BINDINGS:
                 return f"{base}.{node.attr}"
+            inherited = self.inherited_method(receiver, node.attr)
+            if inherited is not None:
+                return inherited
             if receiver == "<urlparts>" and node.attr in {"scheme", "netloc", "path", "query", "fragment"}:
                 return "<str>"
             return self.resolve(f"{receiver}.{node.attr}")
