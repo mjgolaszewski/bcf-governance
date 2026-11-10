@@ -14,14 +14,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bcf_governance.tooling.ci_graph_diagnostics import diagnose_ci_graph
-from bcf_governance.tooling.ci_graph_import import inventory_github_workflows
-from bcf_governance.tooling.ci_graph_render import check_ci_graph
-from bcf_governance.tooling.install_governance_pack import (
+from bcf_governance.tooling.ci_graph_diagnostics import diagnose_ci_graph  # noqa: E402
+from bcf_governance.tooling.ci_graph_import import inventory_github_workflows  # noqa: E402
+from bcf_governance.tooling.ci_graph_render import check_ci_graph  # noqa: E402
+from bcf_governance.tooling.install_governance_pack import (  # noqa: E402
     UPGRADE_PROJECT_OWNED_PATHS,
     UPGRADE_REFRESH_PATHS,
 )
-from bcf_governance.tooling.migrate_contracts import plan_contract_migration
+from bcf_governance.tooling.migrate_contracts import plan_contract_migration  # noqa: E402
 
 PROJECT_OWNED = UPGRADE_PROJECT_OWNED_PATHS
 
