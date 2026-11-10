@@ -28,6 +28,9 @@ execution_evidence:
   - 'Final additional alias/read-port controls: 31 passed, including local/imported constructor aliases, unsupported
     conditional factory rejection, real standalone gate and typed application-owned read-port injection. Strict
     mypy passed the transport owner.'
+  - 'Final causal/import/typed-registration/transport packet: 69 passed. Explicit controls cover repeated same-line
+    assignments, nested class site identity, cross-language fact retention, source-bound SDK ASGI delegation and
+    mutable-base rejection.'
   notes:
   - 'P31-HF16 targets 2.3.13: inventory executable initializer construction without changing consumer identities;
     transport helpers require closed source-resolved technical or inward call boundaries, never substring waivers;

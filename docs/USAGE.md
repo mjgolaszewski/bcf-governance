@@ -1236,3 +1236,5 @@ keep HTTP/SDK objects out of Domain/Application. Business-rule review remains
 required: structural call analysis is not proof of arbitrary business semantics.
 
 Frozen typed registration tables reuse the native source-bound handler/factory profile. This is delegation evidence only; operation classification, source ownership and exact effect-port checks remain independently required.
+
+Repeated initializer bindings receive `@line.column` site suffixes (Python AST zero-based columns), so authorizing one assignment never authorizes a second assignment to the same name. Nested class identities retain every enclosing class.

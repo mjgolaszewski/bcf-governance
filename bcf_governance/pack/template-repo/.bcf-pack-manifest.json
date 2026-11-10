@@ -510,7 +510,7 @@
     },
     "scripts/_bcf_runtime/architecture_transport_contract.py": {
       "operation": "copy",
-      "sha256": "476b0024aad04bcc9603d7ce2a078b2c18f2b846ab1259277e1dd00199dc6143"
+      "sha256": "b563d8ee580c3ffa4a474736a17e7c4a7989aadc1e1201bfa50653a1bdd1bbf7"
     },
     "scripts/_bcf_runtime/automation_changelog.py": {
       "operation": "copy",
@@ -1680,7 +1680,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_execution_inventory.py": {
       "operation": "copy",
-      "sha256": "87e3b864748006a41c5f635400a1f6e0ae351dbd9f38d2cf2bb1335c12e4470f"
+      "sha256": "8c19b9ddc90b1d9ee51edb711219964c2b0578f31902ed45a9c657334d1d5c13"
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
@@ -1688,7 +1688,7 @@
     },
     "scripts/_bcf_runtime/semantic_source_discovery.py": {
       "operation": "copy",
-      "sha256": "96c62f1f7167b7c5ceda809248ae241fbab688cc27fd85696296fd153eeef876"
+      "sha256": "65aa06ee348c7c65be623a114f9d509e9ef0d663a967a679aa61949ad6f3ad74"
     },
     "scripts/_bcf_runtime/semantic_source_paths.py": {
       "operation": "copy",

@@ -23,7 +23,7 @@ from .semantic_ownership_typescript import (
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
 
 FACT_LISTS = (
-    "files", "types", "functions", "constructors", "codecs", "translations",
+    "files", "types", "functions", "initializers", "constructors", "codecs", "translations",
     "normalizations", "sinks", "unresolved", "fetches", "endpoint_calls",
     "decoder_calls", "endpoint_contracts", "public_exports", "typescript_inputs",
 )

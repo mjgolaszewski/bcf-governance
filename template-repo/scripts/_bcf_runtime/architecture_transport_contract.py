@@ -61,6 +61,7 @@ class _Calls:
                  source_roots: tuple[str, ...], bound_factories: Mapping[str, set[str]]) -> None:
         self.sources, self.layers = sources, layers
         self.bound_factories = bound_factories
+        self.rebound_classes: set[str] = set()
         self.modules: dict[str, set[str]] = {}
         self.bindings: dict[str, dict[str, str]] = {}
         self.definitions: dict[str, ast.AST] = {}
@@ -105,6 +106,15 @@ class _Calls:
                 for child in ast.iter_child_nodes(node):
                     definitions(child, prefix, source_path)
             definitions(tree)
+            for mutation in ast.walk(tree):
+                targets = mutation.targets if isinstance(mutation, ast.Assign) else [mutation.target] if isinstance(mutation, (ast.AnnAssign, ast.AugAssign)) else []
+                if isinstance(mutation, ast.Call) and isinstance(mutation.func, ast.Name) and mutation.func.id == "setattr" and mutation.args:
+                    targets = [ast.Attribute(value=mutation.args[0], attr="<dynamic>", ctx=ast.Store())]
+                for target in targets:
+                    if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name):
+                        symbol = f"{path}::{target.value.id}"
+                        if isinstance(self.definitions.get(symbol), ast.ClassDef):
+                            self.rebound_classes.add(symbol)
             self.bindings[path] = values
 
     def resolve(self, value: str, seen: frozenset[str] = frozenset()) -> str:
@@ -170,6 +180,18 @@ class _Calls:
             self.annotation_type(base, owner), name, seen | {symbol})) is not None}
         return next(iter(inherited)) if len(inherited) == 1 else None
 
+    def sdk_base(self, symbol: str) -> str | None:
+        cls = self.definitions.get(symbol)
+        if (not isinstance(cls, ast.ClassDef) or len(cls.bases) != 1 or cls.keywords
+                or cls.decorator_list or symbol in self.rebound_classes):
+            return None
+        if any(isinstance(member, _FUNCTIONS) and member.name in {"__getattr__", "__getattribute__"}
+               for member in cls.body):
+            return None
+        owner = symbol.split("::", 1)[0]
+        base = self.target(cls.bases[0], owner, {})
+        return base if base in {"mcp.server.fastmcp.FastMCP", "mcp.server.fastmcp.server.FastMCP"} else None
+
     def frozen_data(self, symbol: str) -> bool:
         cls = self.definitions.get(symbol)
         if not isinstance(cls, ast.ClassDef) or cls.bases or cls.keywords:
@@ -224,11 +246,16 @@ class _Calls:
             field = self.field_type(receiver, node.attr)
             if field is not None:
                 return field
+            base = self.sdk_base(receiver)
+            if base is not None and f"{receiver}.{node.attr}" not in self.definitions and f"{base}.{node.attr}" in _PROTOCOL_BINDINGS:
+                return f"{base}.{node.attr}"
             if receiver == "<urlparts>" and node.attr in {"scheme", "netloc", "path", "query", "fragment"}:
                 return "<str>"
             return self.resolve(f"{receiver}.{node.attr}")
         if isinstance(node, ast.Call):
             value = self.target(node.func, path, locals_, depth + 1)
+            if value == "super" and not node.args and not node.keywords:
+                return locals_.get("<super>", "<unsupported-super>")
             if value in {"dict", "list", "set"}:
                 return f"<local_{'mapping' if value == 'dict' else value}>"
             if value == "urllib.parse.parse_qsl":
@@ -274,6 +301,9 @@ class _Calls:
         ):
             receiver = parameters[0].arg
             locals_[receiver] = class_symbol
+            base = self.sdk_base(class_symbol)
+            if base is not None:
+                locals_["<super>"] = base
             for member in class_definition.body:
                 if isinstance(member, ast.AnnAssign) and isinstance(member.target, ast.Name):
                     locals_[f"{receiver}.{member.target.id}"] = self.annotation_type(member.annotation, path)
@@ -371,6 +401,8 @@ class _Calls:
             location = target.split("::", 1)[0]
             if target in self.definitions and self.layers.get(location, set()) & _INWARD:
                 continue
+            if target == "super" and "<super>" in locals_:
+                continue
             if target in _PURE or target in _RESPONSES or target in _TECHNICAL or target in _PROTOCOL_ERRORS or target in _PROTOCOL_BINDINGS or target in _REQUEST_READS or target == "<protocol-registration>":
                 continue
             if any(target == f"{model}.{method}" for model in _PROTOCOL_MODELS
@@ -410,7 +442,8 @@ class _Calls:
             business_effect = (name in _BUSINESS_WRITES or name.startswith((*AUTHORITY_CALL_PREFIXES, *MUTATION_CALL_PREFIXES))
                                or target.startswith(("requests.", "httpx.", "sqlalchemy.", "psycopg.", "redis.", "subprocess.")))
             dynamic = (name in {"<dynamic>", "eval", "exec", "__import__"}
-                       or target.startswith(("<rebound", "<ambiguous", "<cyclic")))
+                       or target.startswith(("<rebound", "<ambiguous", "<cyclic"))
+                       or (name == "super" and "<super>" not in locals_))
             if business_effect or dynamic:
                 effect = (node.lineno, f"business effect or dynamic dispatch requires an inward boundary: {target}")
                 effects.append(effect)

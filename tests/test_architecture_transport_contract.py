@@ -203,3 +203,11 @@ def test_real_sdk_route_registration_never_grants_business_effects() -> None:
            "def bind(server: FastMCP, handler):\n    server.custom_route('/status')(handler)\n"
     assert not _check(safe)
     assert _check(safe + "    repository.save('changed')\n")
+
+
+def test_single_known_sdk_base_preserves_real_asgi_delegation() -> None:
+    safe = "from mcp.server.fastmcp import FastMCP\n" \
+           "class Server(FastMCP):\n    def streamable_http_app(self):\n" \
+           "        return super().streamable_http_app()\n"
+    assert not _check(safe)
+    assert _check(safe + "Server.streamable_http_app = replacement\n")

@@ -141,3 +141,30 @@ def test_conditional_unresolved_factory_is_not_silently_omitted(tmp_path: Path) 
     value = _discover(tmp_path, "from owner import PrincipalOwner\n"
                       "if condition:\n    factory = PrincipalOwner\nOWNER = factory('forged')\n")
     assert any(row["kind"] == "unsupported_initializer_callee" for row in value["unresolved"])
+
+
+def test_mixed_language_merge_preserves_initializer_ownership_facts(tmp_path: Path) -> None:
+    from bcf_governance.tooling.semantic_source_discovery import merge_inventories
+    value = _discover(tmp_path, "from owner import PrincipalOwner\nOWNER = PrincipalOwner('local')\n")
+    combined = merge_inventories([value, {"files": [{"path": "view.ts", "sha256": "0" * 64}]}])
+    assert combined["initializers"] == value["initializers"]
+    assert evaluate_discovery(combined, _registry("consumer.py::other"))["verdict"] == "non_conformant"
+
+
+def test_repeated_binding_requires_two_distinct_construction_authorizations(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "OWNER = PrincipalOwner('allowed'); OWNER = PrincipalOwner('forged')\n")
+    callers = [row["caller"] for row in value["constructors"]]
+    assert len(set(callers)) == 2
+    report = evaluate_discovery(value, _registry(callers[0]))
+    assert [row["symbol"] for row in report["violations"]
+            if row["kind"] == "unauthorized_constructor"] == [callers[1]]
+
+
+def test_nested_class_initializers_keep_their_enclosing_identity(tmp_path: Path) -> None:
+    value = _discover(tmp_path, "from owner import PrincipalOwner\n"
+                      "class First:\n    class Inner:\n        OWNER = PrincipalOwner('one')\n"
+                      "class Second:\n    class Inner:\n        OWNER = PrincipalOwner('two')\n")
+    assert {row["caller"] for row in value["constructors"]} == {
+        "consumer.py::First.Inner.<class>.OWNER", "consumer.py::Second.Inner.<class>.OWNER",
+    }

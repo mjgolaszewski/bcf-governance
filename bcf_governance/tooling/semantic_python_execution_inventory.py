@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+from collections import Counter
 from collections.abc import Sequence
 from typing import Any
 
@@ -297,7 +298,9 @@ def discover_initializers(
                 row["unresolved"].append({"kind": "unsupported_initializer_callee",
                                           "symbol": row["symbol"], "line": call["line"]})
         if row["calls"] or row["unresolved"]:
-            rows.append({**row, "scope_kind": "initializer"})
+            rows.append({**row, "scope_kind": "initializer",
+                         "line": min(getattr(node, "lineno", 0) for node in nodes),
+                         "column": min(getattr(node, "col_offset", 0) for node in nodes)})
 
     def walk(body: list[ast.stmt], scope: str,
              bindings: dict[str, dict[str, Any]]) -> None:
@@ -336,7 +339,8 @@ def discover_initializers(
             elif isinstance(node, ast.ClassDef):
                 record(f"{scope}.{node.name}", [*node.decorator_list, *node.bases,
                                                *(value.value for value in node.keywords)], local)
-                walk(node.body, f"{node.name}.<class>", local)
+                qualified = node.name if scope == "<module>" else scope.removesuffix(".<class>") + "." + node.name
+                walk(node.body, f"{qualified}.<class>", local)
             elif isinstance(node, (ast.Assign, ast.AnnAssign)):
                 targets = node.targets if isinstance(node, ast.Assign) else [node.target]
                 names = sorted({child.id for target in targets for child in ast.walk(target)
@@ -374,4 +378,16 @@ def discover_initializers(
                 record(f"{scope}.@{node.lineno}", [node], local)
 
     walk(tree.body, "<module>", import_bindings)
+    counts = Counter(row["symbol"] for row in rows)
+    for row in rows:
+        previous = row["symbol"]
+        if counts[previous] < 2:
+            continue
+        row["symbol"] = f"{previous}@{row.get('line', 0)}.{row.get('column', 0)}"
+        for collection in ("calls", "constructors", "normalizations"):
+            for fact in row.get(collection, []):
+                fact["caller"] = row["symbol"]
+        for fact in row.get("unresolved", []):
+            if fact.get("symbol") == previous:
+                fact["symbol"] = row["symbol"]
     return rows

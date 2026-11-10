@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 6bd15834cc4ea23422a03b371f0328418c13fa6c94524e18e1b5ec5a063588c4
-  after_sha256: 9dd56c900c35271944f8ea454443e4e0a8a720af098a41c8e191a1406b8f0742
+  after_sha256: d83194164b0c773c12d98537f468a509a48262a370c5c236857374585dfc7601
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
