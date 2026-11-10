@@ -1,0 +1,59 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF16 Hotfix Log
+  id: bcf-governance-phase-31-hotfix16
+  version: 1.0.0
+  generated_at_utc: '2026-11-10T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix16.yml
+hotfix:
+  id: P31-HF16
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 16
+  summary: Close executable initializer coverage and enforce real transport boundaries
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - 'Initial missing-initializer RED: six failures and one unchanged-function characterization pass.'
+  - Function-visitor extraction retained 40 existing import/method characterization controls.
+  - 'Focused candidate initializer/import/method/transport controls: 61 passed before final added boundaries; latest
+    initializer/transport/standalone causal controls: 25 passed.'
+  - 'Changed implementation strict mypy: three modules passed; focused Ruff passed. Pack/standalone compatibility:
+    36 passed before final added boundaries; complete current-tree pipeline remains pending.'
+  - 'Actual BDMCP 6b391d735824170457c87951d3db5f1d83cb9edd immutable source: existing service initializer is now
+    observed and rejected by original declarations; explicit exact-site authorization passes; actual registration
+    error encoder and RegisterBrokerClient adapter pass scoped native transport proof. No consumer source changed.'
+  notes:
+  - 'P31-HF16 targets 2.3.13: inventory executable initializer construction without changing consumer identities;
+    transport helpers require closed source-resolved technical or inward call boundaries, never substring waivers;
+    retain branch/loop limits and full consumer qualification.'
+  - 'Pre-edit scope: tooling query/discovery and structural architecture validation only. Preserve public CLI, source
+    identities, current source, ten earlier product changes, services/trust and deferred work.'
+  - 'Characterization: extraction of function call facts retained 40 existing method/import controls. Initial initializer
+    RED exposed missing module/class coverage; candidate focused proofs remain separate from complete pipeline acceptance.'
+  - One executor, native submit and consolidated review. Original workspace fence, cleanup priority and source continuity
+    govern all execution.
+  - Native semantic scan correctly reports stale semantic lock after source changes. Canonical reconcile is the
+    sole owner of derived semantic/workflow state; no manual lock or workflow/pin edits.
+  - One exploratory compatibility run was stopped after stale generated-runtime bytes were detected during local
+    iteration; its partial results are not accepted current-tree evidence. Generated copies were synchronized before
+    the frozen focused controls.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

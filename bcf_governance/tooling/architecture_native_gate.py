@@ -12,6 +12,7 @@ from .architecture_membership_compilation import (
 )
 from .architecture_release_context import decode_release_inputs
 from .architecture_source_components import SourceComponentError
+from .architecture_transport_contract import transport_violations as transport_violations
 from .architecture_source_observation import duplication_blocks as duplication_blocks
 from .bootstrap.environment import comparison_settings
 from .local_pr_context import LocalValidationLane

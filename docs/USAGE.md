@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.12/bcf_governance-2.3.12-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.13/bcf_governance-2.3.13-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -624,7 +624,7 @@ adopter-owned CI tools. An installed framework CLI such as
 bounded context. Its layer/context may be supplied by an exact source component
 using `context_authority: {kind: maintained_native_context_contract, version: '1.0',
 selector: installed_bcf_runtime}`, `layer: tooling`, and `context: _bcf_runtime`.
-This selector requires runtime 2.3.12 or later; older runtimes refuse it.
+This selector requires runtime 2.3.13 or later; older runtimes refuse it.
 This closed contract accepts only independently established managed members
 joined to the exact local runtime lock (or isolated candidate qualification).
 It cannot classify consumer-owned code, choose another concern, override a
@@ -669,9 +669,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.12 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.12
+gh release download v2.3.13 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.13
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.12 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.13 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -1207,3 +1207,30 @@ effect ports remain required and reachable. This adapter supplies no authority
 or confirmation waiver. Unknown forms, mutable or inherited specs, duplicate
 names, dynamic metadata, aliases, instance substitutions and changed source
 inventories refuse. DTO exports cannot substitute for these executable paths.
+
+
+### Executable Python initializer ownership
+
+BCF 2.3.13 inventories import-time construction separately from callable bodies.
+`path.py::<module>.NAME` identifies a module assignment;
+`path.py::Class.<class>.NAME` identifies a class-body assignment. Definition
+defaults and decorators belong to their enclosing initializer, not to invocation.
+Authorize an actual initializer only after reviewing its construction authority;
+authorizing one assignment does not authorize another assignment in the module.
+Imported constructor aliases resolve through the declared Python roots. Computed
+dispatch and unsupported rebound constructor imports fail closed. This coverage
+extension may reveal previously unobserved product violations; it does not migrate
+or authorize them automatically.
+
+### Thin transport call boundaries
+
+The native router gate preserves configured module branch/loop limits and checks
+actual source definitions. Inward calls must reach discovered application/use-case
+or port definitions. Local technical helpers are followed transitively; bounded
+HTTP response/cookie operations, protocol error/model translation and logging
+operations retain their technical roles. A function name containing `query`,
+`command`, or `service` grants no authority. Unknown calls remain failing
+diagnostics; review and place the actual implementation at its architectural owner.
+Keep SDK implementations of application-owned read ports in infrastructure, and
+keep HTTP/SDK objects out of Domain/Application. Business-rule review remains
+required: structural call analysis is not proof of arbitrary business semantics.

@@ -6,7 +6,14 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.12`
+Release target: `2.3.13`
+
+### Fixed
+
+- Discover material Python module/class initializers with exact source identities and import resolution; reject unauthorized or unsupported constructor paths.
+- Check actual source-resolved application delegation and bounded transport calls instead of granting delegation by function-name substrings. Preserve module branch/loop limits and reject hidden business effects.
+
+## [2.3.12] - 2026-11-09
 
 ### Fixed
 
