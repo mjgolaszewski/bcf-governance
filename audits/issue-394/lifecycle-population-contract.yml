@@ -1646,7 +1646,7 @@ construction_phase_fixture_ingress_correction:
 
 construction_phase_runtime_observations:
   report: audits/issue-394/construction-phase-runtime-consumers.json
-  sha256: 03553cfd1733ea8dc4faf88fd441b15d7623e47c66503fc8e413d1774376d24e
+  sha256: 740a5d9779d3a2ff790367ddd88e4e7b701a231b5c2e514804aa0479527cb292
   subject: 498a14c2a8c333c45adf02a6696101021db6b6e6
   tests:
     tests: 13
@@ -1666,3 +1666,14 @@ construction_phase_runtime_observations:
   current_ledger:
     type: 394source
     statement: 498a14c2 bounded runtime cases; full adoption blocked.
+
+construction_phase_report_portability_correction:
+  contract: Retain exact tested subjects, behavior/results and local receipt. Remove
+    machine-local interpreter executable path from distributable report; preserve
+    version/implementation observation and historical original locally. Production,
+    schemas, tests and assurance status unchanged.
+  previous_report_sha256: 03553cfd1733ea8dc4faf88fd441b15d7623e47c66503fc8e413d1774376d24e
+  current_report_sha256: 740a5d9779d3a2ff790367ddd88e4e7b701a231b5c2e514804aa0479527cb292
+  source_base: 1487a58183e114cab697fb7222768ca14f12c7ed
+  behavioral_evidence_reused: true
+  whole_requirement_advancement: false

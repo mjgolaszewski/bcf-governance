@@ -13,7 +13,7 @@
   "interpreter": {
     "version": "3.12.14 (main, Sep  1 2026, 14:16:52) [Clang 22.1.3 ]",
     "implementation": "cpython",
-    "executable": "/docker/.superworkspace-tools/coordination/ironwatch-consolidation-20261029/source-reader-production-42041/test-env/bin/python"
+    "executable_path_retention": "machine_local_qualification_packet_only"
   },
   "runtime_cases": 12,
   "runtime_subject": "bda3928e585731c1c7e39346e242564b9aded2a6",
