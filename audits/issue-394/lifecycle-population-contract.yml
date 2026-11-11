@@ -1337,3 +1337,62 @@ construction_characterization_summary_disposition:
   current_ledger:
     type: 394source
     statement: e3ce pass; construction source RED/open.
+
+construction_current_owner_implementation_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  targets:
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_ownership_inventory.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  retained_source_treatment: Reexpress only constructor-obligation semantics into
+    existing2.5 owners. Preserve originals; do not import absent architecture-membership/SDK
+    decoder APIs, public role profile or schema.
+  schema_or_cli_migration: false
+  mechanics:
+  - Retain source call start/end spans in the existing AST visitor and constructor
+    facts.
+  - Use existing class/base/method/decorator/rebinding facts and conservative descriptor
+    observations to derive constructor body candidates and unresolved provenance.
+  - Attach neutral authority:false observations only to the exact matching constructor
+    call; ambiguous or contradictory populations remain explicit unresolved.
+  - Both source_operation_call_population and validated_operation_effect_inventory
+    consume the same private source-target decoder (two actual callers). Extra source
+    bodies can expand obligations, not turn unresolved calls into runtime resolution.
+  - 'Effect traversal retains independent (symbol, credit) states: constructor-added
+    paths cannot earn required mutation/authority/output port credit; ordinary independently
+    observed paths retain existing credit.'
+  - Preserve every existing hard dispatch failure, effect finding, source-call contract,
+    declared port rule and typed count. External constructor identities remain explicitly
+    unqualified; this slice is not complete runtime or external dependency assurance.
+  - An unqualified decorator name such as staticmethod/classmethod is not proof of
+    builtin identity; constructor methods with decorators retain unresolved provenance
+    until a separate mechanically authenticated qualification exists.
+  tests_before_production:
+    retained_characterization: audits/issue-394/construction-current-owner-characterization.json
+    new_controls: 6
+    preproduction_expectation: Full-span/population/forged-observation causes must
+      be distinguished from existing no-credit/direct-credit positives; record actual
+      results before applying production.
+  postimplementation:
+  - 42generic constructor controls and5new controls
+  - Existing effect/source-call/method/import/annotation/initialization consumers
+  - Source-absent installed parity
+  - Earliest authored semantic owner before expensive projection; if unknown constructor
+    provenance blocks current consumers, report exact block and qualify it mechanically,
+    never waive or bless it for green CI.
+  - Canonical generator/reconciler alone projects private copies, manifests and any
+    locks/authority changes; required architecture/native gates and exact feature
+    backup.
+  forbidden:
+  - main/maintained repositories
+  - new graph/registry/evaluator/broker/receipt family
+  - manual schema/public catalog/authority/workflow/pin or semantic lock edits
+  - runtime SDK role/purity authority inferred from syntax or annotations
+  - phase/whole requirement advancement
+  remaining: Typed receiver/control flow, implicit initialization/runtime/SDK effects,
+    complete protected lifecycle populations and both trace directions, deadlines/targets/adopters/custody
+    and all82whole remain open.
