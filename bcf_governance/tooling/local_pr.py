@@ -330,7 +330,7 @@ def _run_prospective_train(
         graph = validate_ci_graph(root).graph
         if graph_controller_policy_path(graph) is not None:
             controller_authority = effective_controller_authority(
-                provider_api, repository=repository
+                provider_api, repository=repository, repo_root=root
             )
     boundaries: list[dict[str, Any]] = []
 

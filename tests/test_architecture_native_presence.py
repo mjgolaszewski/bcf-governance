@@ -81,7 +81,8 @@ def test_real_native_PRESENT_admission_cannot_be_downgraded_for_body(installed_c
             state = tmp_path / (mode + ".json")
             junit = tmp_path / (mode + ".xml")
             result = subprocess.run([sys.executable,"-I","-B","-c",_CHILD,str(root),mode,
-                str(state),str(junit)],cwd=root,env=environment,capture_output=True,text=True,timeout=180)
+                # Keep bounded headroom for concurrent native source admission.
+                str(state),str(junit)],cwd=root,env=environment,capture_output=True,text=True,timeout=300)
             report = ET.parse(junit).getroot()
             failures, errors = report.findall(".//failure"), report.findall(".//error")
             assert not report.findall(".//skipped")

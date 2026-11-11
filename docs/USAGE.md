@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.12/bcf_governance-2.3.12-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.13/bcf_governance-2.3.13-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -624,7 +624,7 @@ adopter-owned CI tools. An installed framework CLI such as
 bounded context. Its layer/context may be supplied by an exact source component
 using `context_authority: {kind: maintained_native_context_contract, version: '1.0',
 selector: installed_bcf_runtime}`, `layer: tooling`, and `context: _bcf_runtime`.
-This selector requires runtime 2.3.12 or later; older runtimes refuse it.
+This selector requires runtime 2.3.13 or later; older runtimes refuse it.
 This closed contract accepts only independently established managed members
 joined to the exact local runtime lock (or isolated candidate qualification).
 It cannot classify consumer-owned code, choose another concern, override a
@@ -669,9 +669,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.12 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.12
+gh release download v2.3.13 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.13
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.12 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.13 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -945,6 +945,11 @@ Protocol annotations and read declarations do not prove projection purity.
   transactionally install a complete semantic configuration.
 - `bcf semantic-ownership lock --check|--apply`: verify or derive contract,
   source, recipe, and projection digests mechanically.
+- `bcf semantic-ownership deconstruct-registry --check|--apply`: preview or
+  transactionally split a clean Git-tracked flat representation registry into
+  explicit local source documents. Review the reported paths, run
+  `bcf semantic-ownership lock --apply`, and commit the sources with the
+  resulting lock before qualification.
 - `bcf ci local-pr`: exact local pull-request context and preflight.
 - `bcf ci submit`: derive the exact repository, bounded target, commit, and tree;
   execute the complete prospective train in canonical order; recheck immutable
@@ -975,6 +980,16 @@ must not expose the same module name. BCF rejects missing, symlinked,
 overlapping, or ambiguous roots before ownership evaluation. Omitting the field
 retains the 1.1.0 compatibility behavior of repository root, so existing flat
 consumers do not require a migration.
+
+The canonical representation registry may stay flat or declare
+`representation_sources` as an ordered list of explicit local files under
+`governance/canonical-representations/`. Each source declares its own path and
+family; its records remain subject to the same schema, owner, migration and
+native scan rules. Sources cannot include other sources, resolve remote paths,
+or hide undeclared files. The root and each source retain the existing registry
+context cap; the closed source list is limited to 512 files and 8 MiB total.
+The semantic lock binds the exact root and every source byte digest. A flat
+registry keeps its previous lock digest and needs no migration.
 
 Python operation-effect analysis resolves a direct `self.method()` call to the
 exact method in its declaring lexical class before walking effects. Receiver
@@ -1207,3 +1222,44 @@ effect ports remain required and reachable. This adapter supplies no authority
 or confirmation waiver. Unknown forms, mutable or inherited specs, duplicate
 names, dynamic metadata, aliases, instance substitutions and changed source
 inventories refuse. DTO exports cannot substitute for these executable paths.
+
+
+### Executable Python initializer ownership
+
+BCF 2.3.13 inventories import-time construction separately from callable bodies.
+`path.py::<module>.NAME` identifies a module assignment;
+`path.py::Class.<class>.NAME` identifies a class-body assignment. Definition
+defaults and decorators belong to their enclosing initializer, not to invocation.
+Authorize an actual initializer only after reviewing its construction authority;
+authorizing one assignment does not authorize another assignment in the module.
+Imported constructor aliases resolve through the declared Python roots. Computed
+dispatch and unsupported rebound constructor imports fail closed. This coverage
+extension may reveal previously unobserved product violations; it does not migrate
+or authorize them automatically.
+
+Source-proven plain PEP 695 and standard `typing.Generic` constructors retain the underlying constructor
+identity and exact-site authorization. Custom subscription hooks and opaque class
+decorators remain unresolved. Creating a lambda evaluates its defaults in the
+enclosing initializer; its body is inventoried separately at
+`<initializer>.<lambda@line.column>`. Immediate computed invocation and unknown
+callable parameters remain unresolved. Package/direct-script fallback imports
+must identify the same source sibling; a competing declared module is refused.
+
+### Thin transport call boundaries
+
+The native router gate preserves configured module branch/loop limits and checks
+actual source definitions. Inward calls must reach discovered application/use-case
+or port definitions. Real inward delegation retains the established structural scope; helper traversal still rejects direct business effects. Standalone technical helpers require a bounded source proof. Bounded
+HTTP response/cookie operations, protocol error/model translation and logging
+operations retain their technical roles. A function name containing `query`,
+`command`, or `service` grants no authority. Unknown calls remain failing
+diagnostics; review and place the actual implementation at its architectural owner.
+Keep SDK implementations of application-owned read ports in infrastructure, and
+keep HTTP/SDK objects out of Domain/Application. Business-rule review remains
+required: structural call analysis is not proof of arbitrary business semantics.
+
+Conditional registration helpers may return a source-proven SDK registration decorator or an exact identity decorator. Arbitrary returned callbacks, receiver rebinding, executable identity annotations and hidden effects do not gain that proof. Inherited source methods retain their actual bodies and ownership; bounded SDK metadata route assembly permits only typed route-path inspection, never caller-selected attribute dispatch.
+
+Frozen typed registration tables reuse the native source-bound handler/factory profile. This is delegation evidence only; operation classification, source ownership and exact effect-port checks remain independently required.
+
+Repeated initializer bindings receive `@line.column` site suffixes (Python AST zero-based columns), so authorizing one assignment never authorizes a second assignment to the same name. Nested class identities retain every enclosing class.

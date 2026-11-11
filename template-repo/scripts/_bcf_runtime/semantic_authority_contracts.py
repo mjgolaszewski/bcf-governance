@@ -678,10 +678,13 @@ def validate_semantic_contract_structure(repo_root: Path, registry: Registry) ->
 def build_semantic_lock(
     repo_root: Path, inventory: dict[str, Any], projections: Iterable[dict[str, str]]
 ) -> dict[str, Any]:
+    from .semantic_ownership_layout import registry_digest
     contracts = {
         "semantic_families": sha256_bytes((repo_root / FAMILIES_PATH).read_bytes()),
         "application_operations": sha256_bytes((repo_root / OPERATIONS_PATH).read_bytes()),
-        "canonical_representations": sha256_bytes((repo_root / REPRESENTATIONS_PATH).read_bytes()),
+        "canonical_representations": registry_digest(
+            (repo_root / REPRESENTATIONS_PATH).read_bytes(), load_registry(repo_root).source_digests
+        ),
     }
     source_rows = dict(_semantic_source_rows(repo_root))
     for row in inventory.get("typescript_inputs", []):

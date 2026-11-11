@@ -24,6 +24,7 @@ from .ci_github_authority import (
     load_authority,
     packaged_repo_root,
 )
+from .ci_github_errors import GitHubAPIError
 from .ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
@@ -211,11 +212,39 @@ def _active_receipts(
         match = pattern.fullmatch(name)
         if match is None:
             continue
+        artifact_id = positive_int(artifact.get("id"), field="transition artifact ID")
+        workflow_run = artifact.get("workflow_run")
+        if isinstance(workflow_run, dict):
+            positive_int(workflow_run.get("id"), field="transition run ID")
+        if not isinstance(workflow_run, dict) or workflow_run.get("repository_id") != int(
+            current.repository_id
+        ) or workflow_run.get("head_repository_id") != int(
+            current.repository_id
+        ) or workflow_run.get("head_branch") != current.default_branch:
+            raise GitHubControllerError(
+                "controller transition artifact provider subject is not exact"
+            )
+        provider_subject = workflow_run.get("head_sha")
+        if not isinstance(provider_subject, str) or re.fullmatch(
+            r"[a-f0-9]{40}", provider_subject
+        ) is None:
+            raise GitHubControllerError(
+                "controller transition artifact provider subject is not exact"
+            )
+        try:
+            follows_normalization = transition_follows_normalization(
+                transition_subject=provider_subject,
+                normalization_subject=normalization_subject,
+                is_ancestor=lambda base, head: _is_ancestor(
+                    api, repository, base=base, head=head
+                ),
+            )
+        except RoutineRotationError as exc:
+            raise GitHubControllerError(str(exc)) from exc
+        if not follows_normalization:
+            continue
         if artifact.get("expired") is not False:
             raise GitHubControllerError("active controller transition artifact expired")
-        artifact_id = positive_int(
-            artifact.get("id"), field="transition artifact ID"
-        )
         raw = api.artifact_bytes(
             repository, artifact_id, maximum_bytes=1_048_576
         )
@@ -266,8 +295,7 @@ def _active_receipts(
             run_attempt=activation["run_attempt"],
             require_success=True,
         )
-        workflow_run = artifact.get("workflow_run")
-        if not isinstance(workflow_run, dict) or workflow_run != {
+        if workflow_run != {
             "id": int(activation["run_id"]),
             "repository_id": int(current.repository_id),
             "head_repository_id": int(current.repository_id),
@@ -277,18 +305,6 @@ def _active_receipts(
             raise GitHubControllerError(
                 "controller transition artifact provider subject is not exact"
             )
-        try:
-            follows_normalization = transition_follows_normalization(
-                transition_subject=subject,
-                normalization_subject=normalization_subject,
-                is_ancestor=lambda base, head: _is_ancestor(
-                    api, repository, base=base, head=head
-                ),
-            )
-        except RoutineRotationError as exc:
-            raise GitHubControllerError(str(exc)) from exc
-        if not follows_normalization:
-            continue
         receipts.append(receipt)
     return tuple(receipts)
 
@@ -371,7 +387,25 @@ def effective_controller_authority(
             api=api,
             repository=repository,
         )
-    pin = resolve_effective_controller(api, repository=repository)["pin"]
+    try:
+        pin = resolve_effective_controller(api, repository=repository)["pin"]
+    except (RoutineRotationError, GitHubAPIError) as exc:
+        expired_transition_bytes = isinstance(exc, GitHubAPIError) and bool(
+            re.fullmatch(
+                r"GitHub API GET /repos/[^/]+/[^/]+/actions/artifacts/[0-9]+/zip returned 410",
+                str(exc),
+            )
+        )
+        disconnected_chain = isinstance(exc, RoutineRotationError) and str(exc) == (
+            "active controller transition chain is disconnected"
+        )
+        if repo_root is None or not (expired_transition_bytes or disconnected_chain):
+            raise
+        from .routine_controller_prospective import prospective_normalized_controller_authority
+
+        return prospective_normalized_controller_authority(
+            api, repository=repository, repo_root=repo_root
+        )
     return {
         "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
         "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],

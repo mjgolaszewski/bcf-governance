@@ -622,23 +622,14 @@ def test_routers_remain_thin_transport_adapters() -> None:
     policy = _thin_router_policy()
     max_branch_nodes = int(policy.get("max_branch_nodes", 4))
     max_loop_nodes = int(policy.get("max_loop_nodes", 0))
-    delegate_tokens = [str(token).lower() for token in policy.get("delegate_call_name_tokens", [])]
-    violations: list[str] = []
-    for path in _layer_python_files("routers"):
-        tree = _tree(path)
-        branch_nodes = sum(isinstance(node, (ast.If, ast.Match, ast.Try)) for node in ast.walk(tree))
-        loop_nodes = sum(isinstance(node, (ast.For, ast.AsyncFor, ast.While)) for node in ast.walk(tree))
-        if branch_nodes > max_branch_nodes:
-            violations.append(f"{path.relative_to(REPO_ROOT)} has {branch_nodes} branch nodes")
-        if loop_nodes > max_loop_nodes:
-            violations.append(f"{path.relative_to(REPO_ROOT)} has {loop_nodes} loop nodes")
-        for function in [
-            node for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-        ]:
-            calls = [_call_name(call.func).lower() for call in ast.walk(function) if isinstance(call, ast.Call)]
-            if calls and not any(any(token in call for token in delegate_tokens) for call in calls):
-                violations.append(f"{path.relative_to(REPO_ROOT)} {function.name} does not delegate")
-    assert not violations, "router thinness violations:\n" + "\n".join(violations)
+    paths = _production_python_files()
+    trees = {path.relative_to(REPO_ROOT).as_posix(): _tree(path) for path in paths}
+    layers = {path.relative_to(REPO_ROOT).as_posix(): _layer_names_for_file(path) for path in paths}
+    violations = _native_owner().transport_violations(
+        trees, layers, max_branch_nodes=max_branch_nodes, max_loop_nodes=max_loop_nodes,
+        source_roots=tuple(str(value) for value in _architecture_config()["source_roots"]), root=REPO_ROOT)
+    assert not violations, "router thinness violations:\n" + "\n".join(
+        f"{path}:{line} {rule}: {detail}" for path, line, rule, detail in violations)
 
 
 def test_bounded_context_duplication_is_explicit() -> None:

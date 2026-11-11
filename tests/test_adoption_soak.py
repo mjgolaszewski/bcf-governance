@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
-from pathlib import Path
 import subprocess
+import sys
+from pathlib import Path
 
 import pytest
-
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,3 +48,24 @@ def test_changed_path_parser_rejects_rename_shape(tmp_path: Path) -> None:
 
     with pytest.raises(RuntimeError, match="renamed or copied"):
         _module()._changed_paths(repo)
+
+
+def test_cli_preserves_selected_virtualenv_dependencies(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    environment = tmp_path / "selected"
+    subprocess.run([sys.executable, "-m", "venv", "--without-pip", str(environment)], check=True)
+    python = environment / "bin/python"
+    site = Path(subprocess.check_output(
+        [str(python), "-I", "-c", "import sysconfig; print(sysconfig.get_path('purelib'))"], text=True,
+    ).strip())
+    (site / "soak_environment_dependency.py").write_text("AVAILABLE = True\n")
+    module = _module()
+
+    def qualify(**values):
+        module._run(str(values["python"]), "-I", "-c", "import soak_environment_dependency; assert soak_environment_dependency.AVAILABLE")
+        return {"selected_dependency_available": True}
+
+    monkeypatch.setattr(module, "run_soak", qualify)
+    monkeypatch.setattr(sys, "argv", ["soak", "--identity-source", "unused",
+                                    "--identity-commit", "0" * 40, "--python", str(python),
+                                    "--output", str(tmp_path / "result.json")])
+    module.main()

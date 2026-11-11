@@ -35,13 +35,21 @@ _UniqueKeyLoader.add_constructor(
 
 def load_unique_mapping(path: Path) -> dict[str, Any]:
     try:
-        loader = _UniqueKeyLoader(path.read_text(encoding="utf-8"))
+        return load_unique_bytes(path.read_bytes())
+    except OSError as exc:
+        raise SemanticYAMLError(str(exc)) from exc
+
+
+def load_unique_bytes(raw: bytes) -> dict[str, Any]:
+    """Decode Git-held contract bytes with the same duplicate-key rule."""
+    try:
+        loader = _UniqueKeyLoader(raw.decode("utf-8"))
         try:
             payload = loader.get_single_data()
         finally:
             dispose: Callable[[], None] = loader.dispose
             dispose()
-    except (OSError, UnicodeError, yaml.YAMLError, SemanticYAMLError) as exc:
+    except (OSError, UnicodeError, TypeError, yaml.YAMLError, SemanticYAMLError) as exc:
         raise SemanticYAMLError(str(exc)) from exc
     if not isinstance(payload, dict):
         raise SemanticYAMLError("document must contain a mapping")

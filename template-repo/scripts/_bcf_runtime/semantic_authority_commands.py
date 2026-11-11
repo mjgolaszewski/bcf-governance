@@ -38,6 +38,8 @@ from .semantic_locking import (
     render_compact_semantic_yaml,
     validated_lock_bytes,
 )
+from .semantic_ownership_deconstruct import deconstruct
+from .semantic_ownership_layout import RegistryLayoutError
 from .semantic_ownership_registry import load_registry
 from .semantic_ownership_typescript import TypeScriptDiscoveryError
 from .semantic_source_discovery import compiler_contracts, discover_source
@@ -195,7 +197,7 @@ def _scaffold(repo_root: Path, output: Path) -> None:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="bcf semantic-ownership")
     parser.add_argument(
-        "command", choices=("scaffold", "adopt", "lock", "migrate-operation")
+        "command", choices=("scaffold", "adopt", "lock", "migrate-operation", "deconstruct-registry")
     )
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--output", type=Path)
@@ -229,6 +231,10 @@ def main(argv: list[str] | None = None) -> None:
                 "status": "lock_applied" if args.apply else "lock_check_passed",
                 "projection_outputs": len(lock["projection_outputs"]),
             }
+        elif args.command == "deconstruct-registry":
+            if args.check == args.apply:
+                raise SemanticAuthorityError("deconstruct-registry requires exactly one of --check or --apply")
+            result = deconstruct(repo_root, apply=args.apply)
         else:
             if (
                 args.check == args.apply
@@ -253,7 +259,7 @@ def main(argv: list[str] | None = None) -> None:
                 "migration_count": len(rows),
                 "changes": [row["change"] for row in rows],
             }
-    except (SemanticAuthorityError, SemanticMigrationError, TypeScriptDiscoveryError, SemanticLockError, SemanticDependencyError) as exc:
+    except (SemanticAuthorityError, SemanticMigrationError, TypeScriptDiscoveryError, SemanticLockError, SemanticDependencyError, RegistryLayoutError) as exc:
         print(f"semantic-ownership-{args.command}-failed: {exc}")
         raise SystemExit(1) from exc
     print(json.dumps(result, sort_keys=True))

@@ -15,6 +15,9 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from .semantic_ownership_layout import RegistryLayoutError, expand_sources
+from .semantic_yaml import SemanticYAMLError, load_unique_mapping
+
 REGISTRY_PATH = Path("governance/canonical-representations.yml")
 SCHEMA_PATH = Path("schemas/canonical-representations.schema.json")
 
@@ -46,6 +49,7 @@ class Registry:
     entries: tuple[RegistryEntry, ...]
     raw: dict[str, Any]
     python_import_roots: tuple[str, ...] = (".",)
+    source_digests: tuple[tuple[str, str], ...] = ()
 
 
 def _mapping(path: Path) -> dict[str, Any]:
@@ -95,7 +99,16 @@ def _safe_roots(values: object, *, field: str) -> tuple[str, ...]:
 def load_registry(repo_root: Path) -> Registry:
     """Load declarations only after a caller has completed source discovery."""
     payload = _mapping(repo_root / REGISTRY_PATH)
+    if "representation_sources" in payload or b"representation_sources" in (repo_root / REGISTRY_PATH).read_bytes():
+        try:
+            payload = load_unique_mapping(repo_root / REGISTRY_PATH)
+        except SemanticYAMLError as exc:
+            raise SemanticOwnershipRegistryError(f"invalid indexed registry root: {exc}") from exc
     _validate_schema(repo_root, payload)
+    try:
+        payload, source_digests = expand_sources(repo_root, payload)
+    except RegistryLayoutError as exc:
+        raise SemanticOwnershipRegistryError(str(exc)) from exc
     enforcement = payload["enforcement"]
     source_authority = payload["source_authority"]
     blocking_ids = set(enforcement["blocking_semantic_ids"])
@@ -175,4 +188,5 @@ def load_registry(repo_root: Path) -> Registry:
             source_authority.get("python_import_roots", ["."]),
             field="source_authority.python_import_roots",
         ),
+        source_digests=source_digests,
     )

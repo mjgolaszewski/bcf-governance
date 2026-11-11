@@ -18,6 +18,7 @@ import yaml
 from .bootstrap.contracts import ComparisonSettings
 from .bootstrap.environment import comparison_settings as _default_comparison_settings
 from .semantic_locking import atomic_write, prepend_compact_list_rows
+from .semantic_ownership_layout import RegistryLayoutError, expand_sources
 from .semantic_ownership_registry import Registry
 
 
@@ -167,6 +168,27 @@ def _git_yaml(repo_root: Path, base_sha: str, relative: Path) -> dict[str, Any] 
         return None
     payload = yaml.safe_load(result.stdout)
     return payload if isinstance(payload, dict) else None
+
+
+def _git_registry(repo_root: Path, base_sha: str) -> dict[str, Any] | None:
+    root = _git_yaml(repo_root, base_sha, Path("governance/canonical-representations.yml"))
+    if root is None or "representation_sources" not in root:
+        return root
+
+    def read(relative: Path) -> bytes:
+        result = subprocess.run(
+            ["git", "show", f"{base_sha}:{relative.as_posix()}"],
+            cwd=repo_root, capture_output=True, check=False,
+        )
+        if result.returncode != 0:
+            raise RegistryLayoutError(f"missing exact-base representation source: {relative}")
+        return result.stdout
+
+    try:
+        expanded, _ = expand_sources(repo_root, root, reader=read, check_orphans=False)
+    except RegistryLayoutError as exc:
+        raise SemanticMigrationError(str(exc)) from exc
+    return expanded
 
 
 def _migration_index(*payloads: dict[str, Any]) -> set[tuple[str, ...]]:
@@ -369,9 +391,7 @@ def validate_exact_base_migrations(
     old_operations = _git_yaml(
         repo_root, base_sha, Path("governance/application-operations.yml")
     )
-    old_registry = _git_yaml(
-        repo_root, base_sha, Path("governance/canonical-representations.yml")
-    )
+    old_registry = _git_registry(repo_root, base_sha)
     migrations = _migration_index(families, operations)
     if old_families is not None:
         _family_changes(old_families, families, migrations, base_sha)

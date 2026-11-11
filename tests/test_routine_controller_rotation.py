@@ -21,7 +21,6 @@ from bcf_governance.tooling.routine_controller_rotation import (
     validate_transition,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 OLD = "1" * 40
 NEW = "2" * 40
@@ -35,7 +34,8 @@ def test_source_normalization_absorbs_only_older_active_transitions() -> None:
     normalized = "2" * 40
     newer = "3" * 40
     ancestry = {(normalized, newer): True, (older, normalized): True}
-    relation = lambda base, head: ancestry.get((base, head), base == head)
+    def relation(base: str, head: str) -> bool:
+        return ancestry.get((base, head), base == head)
     assert transition_follows_normalization(
         transition_subject=older,
         normalization_subject=normalized,
@@ -81,10 +81,11 @@ def _receipt(*, state: str = "active") -> dict:
         repository_id="1207503211", installed_commit=OLD,
         subject_commit=NEW, subject_tree=TREE, artifact_digest=DIGEST,
     )
-    proofs = lambda run: [
-        {"runner": runner, "controller_commit": NEW, "run_id": run, "run_attempt": "1", "job_id": str(int(run) * 10 + index)}
-        for index, runner in enumerate(("bcf-trusted-control-1", "bcf-trusted-control-2"), 1)
-    ]
+    def proofs(run: str) -> list[dict[str, str]]:
+        return [
+            {"runner": runner, "controller_commit": NEW, "run_id": run, "run_attempt": "1", "job_id": str(int(run) * 10 + index)}
+            for index, runner in enumerate(("bcf-trusted-control-1", "bcf-trusted-control-2"), 1)
+        ]
     value = {
         "schema_version": "1.0", "transition_id": identity, "state": state,
         "repository": {"id": "1207503211", "full_name": "mjgolaszewski/bcf-governance"},
@@ -219,6 +220,11 @@ def test_linear_transition_chain_projects_effective_controller() -> None:
     pin = effective_controller_pin({"legacy": "ignored"}, chain)
     assert [value["artifact"]["commit_sha"] for value in chain] == [NEW, "7" * 40]
     assert pin["BCF_BOOTSTRAP_COMMIT_SHA"] == "7" * 40
+    normalized = select_controller_chain(
+        ROOT, [first, second], repository_id="1207503211",
+        baseline_installed_commit=NEW, ancestor_commits=[NEW, "7" * 40],
+    )
+    assert normalized == (second,)
 
 
 def test_chain_replay_fork_and_disconnected_receipts_fail_closed() -> None:
@@ -253,4 +259,39 @@ def test_chain_replay_fork_and_disconnected_receipts_fail_closed() -> None:
             repository_id="1207503211",
             baseline_installed_commit=OLD,
             ancestor_commits=[NEW, "7" * 40],
+        )
+
+
+def test_normalized_source_baseline_absorbs_its_valid_transition() -> None:
+    receipt = _receipt()
+    assert select_controller_chain(
+        ROOT, [receipt], repository_id="1207503211",
+        baseline_installed_commit=NEW, ancestor_commits=[NEW],
+    ) == ()
+
+
+def test_normalized_baseline_does_not_waive_receipt_validation() -> None:
+    receipt = _receipt()
+    receipt["probe"] = []
+    with pytest.raises(RoutineRotationError):
+        select_controller_chain(
+            ROOT, [receipt], repository_id="1207503211",
+            baseline_installed_commit=NEW, ancestor_commits=[NEW],
+        )
+
+
+def test_normalized_baseline_does_not_hide_receipt_replay() -> None:
+    receipt = _receipt()
+    with pytest.raises(RoutineRotationError, match="replay"):
+        select_controller_chain(
+            ROOT, [receipt, copy.deepcopy(receipt)], repository_id="1207503211",
+            baseline_installed_commit=NEW, ancestor_commits=[NEW],
+        )
+
+
+def test_normalized_baseline_does_not_absorb_a_different_disconnected_target() -> None:
+    with pytest.raises(RoutineRotationError, match="disconnected"):
+        select_controller_chain(
+            ROOT, [_receipt()], repository_id="1207503211",
+            baseline_installed_commit="b" * 40, ancestor_commits=[NEW],
         )

@@ -1,0 +1,147 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF16 Hotfix Log
+  id: bcf-governance-phase-31-hotfix16
+  version: 1.0.0
+  generated_at_utc: '2026-11-10T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix16.yml
+hotfix:
+  id: P31-HF16
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 16
+  summary: Close executable initializer coverage and enforce real transport boundaries
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - 'Initial missing-initializer RED: six failures and one unchanged-function characterization pass.'
+  - Function-visitor extraction retained 40 existing import/method characterization controls.
+  - 'Focused candidate initializer/import/method/transport controls: 61 passed before final added boundaries; latest
+    initializer/transport/standalone causal controls: 25 passed.'
+  - 'Changed implementation strict mypy: three modules passed; focused Ruff passed. Pack/standalone compatibility:
+    36 passed before final added boundaries; complete current-tree pipeline remains pending.'
+  - 'Actual BDMCP 6b391d735824170457c87951d3db5f1d83cb9edd immutable source: existing service initializer is now
+    observed and rejected by original declarations; explicit exact-site authorization passes; actual registration
+    error encoder and RegisterBrokerClient adapter pass scoped native transport proof. No consumer source changed.'
+  - 'Final additional alias/read-port controls: 31 passed, including local/imported constructor aliases, unsupported
+    conditional factory rejection, real standalone gate and typed application-owned read-port injection. Strict
+    mypy passed the transport owner.'
+  - 'Final causal/import/typed-registration/transport packet: 69 passed. Explicit controls cover repeated same-line
+    assignments, nested class site identity, cross-language fact retention, source-bound SDK ASGI delegation and
+    mutable-base rejection.'
+  - 'Indexed representation registry RED/GREEN: one-level explicit local source closure, inherited per-document caps,
+    512-source/8MiB ceilings, exact source-byte lock digest and Git-base migration expansion; 128-family fixture and
+    13 focused controls pass with strict typing and lint. A broader semantic selection reached its 300s local
+    command cap without a verdict; complete candidate pipeline remains pending.'
+  - 'Provider recovery: exact-main protected build, two trusted-runner installs and probes, and immutable non-certifying
+    receipt succeeded. Stale same-commit runner caches required host-owner archival/retirement first. The machine
+    normalizer then exposed old/new custody comparison, controller/project Python, and intermediate workflow order
+    defects; corrected source passed focused controls and produced ordinary current-main definition/authority commits
+    ca4469d4/c0dfad5e in a preserved validation workbench. Active branch transfer and full qualification pending.'
+  - Control-header characterization exposed omitted with-context/match-guard calls; actual RED retained, generic
+    non-suite header traversal corrected it, and 70 focused cases passed.
+  - Revised initializer/import/method/transport/registration/pack packet passes 153 controls with zero skips;
+    changed-owner strict typing and Ruff pass. Includes standard typing.Generic, source hook/decorator rebinding,
+    deferred callable/default execution and competing fallback import refusals. Full revised pipeline pending.
+  - Canonical reconciliation refused relative fallback resolution for nonimportable generated mirror paths.
+    Preserve their neutral discovery without inventing an import root; resolve only admitted module paths.
+    The new mirror control and deferred opaque/variadic callable refusals pass; no authority is widened.
+  notes:
+  - 'P31-HF16 targets 2.3.13: inventory executable initializer construction without changing consumer identities;
+    transport helpers require closed source-resolved technical or inward call boundaries, never substring waivers;
+    retain branch/loop limits and full consumer qualification.'
+  - 'Pre-edit scope: tooling query/discovery and structural architecture validation only. Preserve public CLI, source
+    identities, current source, ten earlier product changes, services/trust and deferred work.'
+  - 'Characterization: extraction of function call facts retained 40 existing method/import controls. Initial initializer
+    RED exposed missing module/class coverage; candidate focused proofs remain separate from complete pipeline acceptance.'
+  - One executor, native submit and consolidated review. Original workspace fence, cleanup priority and source continuity
+    govern all execution.
+  - Native semantic scan correctly reports stale semantic lock after source changes. Canonical reconcile is the
+    sole owner of derived semantic/workflow state; no manual lock or workflow/pin edits.
+  - One exploratory compatibility run was stopped after stale generated-runtime bytes were detected during local
+    iteration; its partial results are not accepted current-tree evidence. Generated copies were synchronized before
+    the frozen focused controls.
+  - First canonical reconciliation refused before mutation because the two new modules lacked explicit self-governance
+    tooling-context ownership. Exact semantic_ownership and validation mappings now declared; no rule waiver or
+    manual workflow pins.
+  - Whole-population consumer comparison rejected an overbroad draft that treated all reachable helpers as closed
+    transport APIs. Final routing scope uses proven source delegation or bounded standalone technical data/encoding,
+    while transitive direct business effects remain failing. No new one-operation counter or name-token grant is
+    introduced.
+  - The existing native frozen-registration owner supplies exact handler/factory bindings; no new effect-port exemption,
+    abstract DTO proxy, Identity connection or provider credential is used.
+  - Current source-role mappings include the execution-inventory extraction and the two transport/profile query
+    owners. Remaining BDMCP ownership/SOIP/product failures remain explicit, not framework or product acceptance.
+  - Canonical reconciliation next refused before mutation because version-derived CI projection required a same-candidate
+    state matrix update. Maintenance 2.3.13 transitions and downstream refusals are now recorded in the canonical
+    matrix; no workflow/authority edits were authored.
+  - Required five-cycle adoption helper resolved the selected virtualenv symlink to base Python and suppressed the
+    child stderr. Preserve the selected interpreter path and relay failures; a real virtualenv-only dependency proves
+    the CLI repair. Fresh candidate build/install and installed native consumer contracts already passed; no production
+    framework bytes changed for this helper repair.
+  - Standard four-way test execution stopped on two 180-second native cache/presence child deadlines.
+    Both unchanged tests passed alone (2 passed in 725.89 seconds), including all actual fault and restoration
+    assertions. Increase only their bounded subprocess deadlines to 300 seconds for concurrent source admission;
+    no assertion, source admission, custody check or release gate is removed. Full pipeline acceptance remains pending.
+  - Exact candidate 51a1af8e completed native prospective qualification in 2430.161 seconds, including all
+    3193 tests and enclosing mutation/security/runtime evidence; submitted PR444. This evidence precedes the
+    following material compatibility correction and does not certify the revised source.
+  - Final BDMCP source review found two additional technical provenance gaps before merge; auto-merge disabled.
+    Three causal positive fixtures failed, negative controls passed. Exact registration-or-identity results,
+    inherited source methods and bounded typed SDK route assembly corrected; focused controls include arbitrary
+    returned callables, receiver mutation and executable annotations. Four confirmed consumer registration/metadata
+    functions clear in the source census. Remaining Any, captured receiver and generic dispatch proofs are explicit
+    project typing/declaration work, not permission to waive unknown business effects. Full revised qualification pending.
+  - Pre-test provenance review added refusal controls for class-body method rebinding, unknown competing base
+    precedence and wrapped registration definitions. Admission was stopped before the full test body; these
+    controls narrow provenance and do not broaden transport authority. Revised full qualification remains pending.
+  - Actual inherited read-port characterization exposed standard typing.Protocol as a neutral nominal base;
+    opaque competing bases remain rejected. Focused packet 84 passed. Exact current-source capability probes
+    admit typed existing RuntimeContext/read ports, actual guarded-provider HTTP translation, and actual
+    GetBatchSchemaHandler plus concrete resource/result codecs; an injected write remains failing. These
+    are in-memory interface shapes, not delivered BDMCP repairs or installed final-package qualification.
+  - Portability review retained declared Python 3.11 support by reading optional PEP 695 AST fields with
+    defaults. The existing positive registration control now also exercises public AST nodes without that
+    optional field; all 84 focused checks pass. No test-node inventory or lifecycle contract changed.
+  - Exact f1a61297 completed native local qualification with 3207 tests and hosted exact-tree certification.
+    The later complete BDMCP semantic scan found 155 initializer precision failures plus one genuine missing
+    service-owner declaration. Merge remained disabled; this evidence does not certify the revised source.
+  - Source-only full native semantic scan of BDMCP 0b03fdd5231e6ef54c35dfd9c03d02b69777f312 is conformant
+    after the consumer explicitly declared its existing exact service-owner site and the framework resolved
+    source-proven PEP 695 generics, separately inventoried deferred lambdas, standard SystemExit, identical
+    package/standalone imports and exact inherited YAML metadata aliases. Custom hooks, ambiguous imports,
+    rebinding, unknown callable dispatch and unauthorized constructors remain failing. No consumer grant is
+    generated by the framework. Revised installed and full pipeline qualification remains pending.
+  - 'Controller recovery pre-edit scope: ci_authority tooling query selection in routine_controller_rotation.py,
+    its causal tests and persisted state matrix. Preserve provider authentication, replay/fork/missing-link refusal,
+    source pins and installation confirmation; no hand-authored authority, main merge or publication override.'
+  - 'Current source policy still anchors5665e3f5 while early provider transition artifacts have reached30-day
+    retention. Native submission90f74 stopped before tests with disconnected chain; installed consumer scan,
+    technical checks and adoption soak passed. Owner-reviewed exact-main recovery build42900685429 is pending;
+    no normalization, recovery receipt, controller install or release authority is claimed.'
+  - 'Normalization-boundary RED:1 failing valid-baseline-consumption case,99 passing controller/recovery controls.
+    A validated transition whose exact subject/artifact controller is already the source baseline is consumed,
+    while replay, malformed receipts and genuinely disconnected successors must remain failing.'
+  - 'Normalization-boundary GREEN:101 controller/provider/recovery controls pass, including continued valid
+    successors after normalization, malformed/replayed consumed receipts and an unrelated disconnected target.
+    Changed production strict typing and touched-file Ruff pass; native mirrors regenerated. This bounded query
+    correction does not restore the missing provider chain or authorize recovery installation/publication.'
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

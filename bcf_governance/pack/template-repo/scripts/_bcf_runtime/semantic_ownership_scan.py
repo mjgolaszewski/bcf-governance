@@ -132,7 +132,7 @@ def evaluate_discovery(
     functions = {
         str(value["symbol"]): value
         for source in inventories
-        for value in source.get("functions", [])
+        for value in [*source.get("functions", []), *source.get("initializers", [])]
         if _authoritative(str(value["symbol"]), registry, project_files)
     }
     types = {
@@ -359,6 +359,7 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
                 "file_count": len(inventory["files"]),
                 "type_count": len(inventory["types"]),
                 "function_count": len(inventory["functions"]),
+                "initializer_count": len(inventory.get("initializers", [])),
                 "constructor_count": len(inventory["constructors"]),
                 "normalization_count": len(inventory["normalizations"]),
                 "unresolved_count": len(inventory["unresolved"]),
@@ -385,7 +386,7 @@ def run_scan(repo_root: Path) -> dict[str, Any]:
 
 def main(argv: list[str] | None = None) -> None:
     raw_args = list(sys.argv[1:] if argv is None else argv)
-    if raw_args and raw_args[0] in {"scaffold", "adopt", "lock", "migrate-operation"}:
+    if raw_args and raw_args[0] in {"scaffold", "adopt", "lock", "migrate-operation", "deconstruct-registry"}:
         authority_main(raw_args)
         return
     if raw_args and raw_args[0] == "scan":

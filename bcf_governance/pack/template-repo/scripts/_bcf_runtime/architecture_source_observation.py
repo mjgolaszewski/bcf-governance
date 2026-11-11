@@ -13,6 +13,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from .architecture_transport_contract import transport_violations
+
 
 def duplication_lines(source: str) -> list[tuple[int, str]]:
     """Count executable source, preserving body windows and original locations.
@@ -152,6 +154,8 @@ def observe(root: Path, policy: Policy) -> Observation:
     violations: list[Violation] = []
     source_pins: list[tuple[str, str]] = []
     router_modules: list[str] = []
+    trees: dict[str, ast.Module] = {}
+    source_layers: dict[str, set[str]] = {}
     blocks: dict[tuple[str, tuple[str, ...]], set[tuple[str, int]]] = defaultdict(set)
     for path in population:
         relative = path.relative_to(root)
@@ -160,6 +164,7 @@ def observe(root: Path, policy: Policy) -> Observation:
         source_pins.append((name, hashlib.sha256(raw).hexdigest()))
         text = raw.decode("utf-8")
         tree = ast.parse(text, filename=name)
+        trees[name] = tree
         parent_parts = set(relative.parent.parts)
         layers = {layer for layer, tokens in policy.layer_tokens if parent_parts.intersection(tokens)}
         contexts = _contexts(relative, policy)
@@ -177,26 +182,18 @@ def observe(root: Path, policy: Policy) -> Observation:
             violations.append(Violation("layer_membership", name, 1, repr(sorted(layers))))
         if len(contexts) != 1:
             violations.append(Violation("context_membership", name, 1, repr(sorted(contexts))))
+        source_layers[name] = layers
         if "routers" in layers:
             router_modules.append(name)
-            branches = sum(isinstance(node, (ast.If, ast.Match, ast.Try)) for node in ast.walk(tree))
-            loops = sum(isinstance(node, (ast.For, ast.AsyncFor, ast.While)) for node in ast.walk(tree))
-            if branches > policy.router_max_branch_nodes:
-                violations.append(Violation("router_branches", name, 1, str(branches)))
-            if loops > policy.router_max_loop_nodes:
-                violations.append(Violation("router_loops", name, 1, str(loops)))
-            for function in ast.walk(tree):
-                if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    continue
-                calls = [_call_name(call.func).lower() for call in ast.walk(function)
-                         if isinstance(call, ast.Call)]
-                if calls and not any(token.lower() in call for call in calls
-                                     for token in policy.delegate_call_tokens):
-                    violations.append(Violation("router_delegation", name, function.lineno, function.name))
         if len(contexts) == 1:
             context = next(iter(contexts))
             for line, block in duplication_blocks(text, policy.duplication_min_lines):
                 blocks[(context, block)].add((name, line))
+    violations.extend(Violation(rule, path, line, detail)
+                      for path, line, rule, detail in transport_violations(
+                          trees, source_layers, max_branch_nodes=policy.router_max_branch_nodes,
+                          max_loop_nodes=policy.router_max_loop_nodes,
+                          source_roots=policy.source_roots, root=root))
     for (context, block), locations in blocks.items():
         if len({name for name, _ in locations}) > 1:
             identity = hashlib.sha256("\n".join(block).encode()).hexdigest()
