@@ -35,7 +35,7 @@
     },
     "contracts": {
       "type": "object", "minProperties": 1, "additionalProperties": {"$ref": "#/$defs/versionedContract"},
-      "required": ["profile", "receipt", "evidence_session", "ci_authority", "ci_graph", "ci_graph_extension"]
+      "required": ["profile", "receipt", "evidence_session", "ci_authority", "ci_graph", "ci_graph_extension", "lifecycle_composition"]
     },
     "ci_graph": {
       "type": "object", "additionalProperties": false,
