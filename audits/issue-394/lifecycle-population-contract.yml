@@ -1482,3 +1482,59 @@ construction_census_summary_disposition:
   current_ledger:
     type: 394source
     statement: 249 proto blocked; source census retained.
+
+construction_source_association_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  source_base: fb1f8dd2ea7b3ba7dfd3b159ae47727594947836
+  targets:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  scope: Mechanically derive known-class constructor obligations from exact discovered
+    called_symbol identity and require a unique matching fact/observation at both
+    consuming boundaries; optional producer classification cannot override the actual
+    current class population.
+  preproduction_controls:
+    new_cases: 9
+    styles:
+    - lowercase imported alias
+    - qualified module class
+    - local lowercase class
+    consumer_causes:
+    - missing fact and observation
+    - false class flag
+    - duplicate fact
+    consumers: 2
+  requirements:
+  - Preserve the48previous controls and source-census scope; zero omissions over current
+    class calls does not establish spelling-independent handling of future candidates.
+  - The producer supplements constructor facts for every call whose resolved symbol
+    is a discovered source class, independent of identifier capitalization.
+  - Each consumer derives the class population from current inventory, rejects ambiguous
+    source class identities and verifies exact caller/span/target association and
+    one constructor fact for known-class calls.
+  - Source-class resolution is checked against actual population membership, not accepted
+    from an optional flag. Missing/false/contradictory/duplicate associations block
+    before traversal or any port credit.
+  - Retain two source-target consumers, no-credit constructor paths, hard-dispatch
+    failures and external/dynamic/module/runtime/SDK limitations.
+  - Known existing decorator/external-base adoption block remains open; this packet
+    does not qualify or whitelist those mechanisms. Do not rerun known unchanged full
+    adoption failures or expensive reconciliation for bookkeeping.
+  frozen:
+  - all remaining production
+  - all schema/catalog/authority/workflow/pin owners
+  - all retained unique source
+  gates:
+  - Commit contract/9compatible controls first and distinguish genuine causes/positive
+    paths.
+  - Apply only reviewed two-module delta and canonical pack generation.
+  - Qualify57cause/positive controls and affected pure source/operation/import/initialization
+    consumers; report all unexpected failures rather than waiving them.
+  - Capture governance and backup WIP with exact source/evidence; no full/native/runtime/SDK/phase
+    or release claim.
+  remaining: Full constructor/decorator/external-base and typed-flow/runtime qualification,
+    protected context/effect/lifecycle populations, deadlines/approved targets/adopters/custody
+    and all82whole remain open.
