@@ -1538,3 +1538,32 @@ construction_source_association_contract:
   remaining: Full constructor/decorator/external-base and typed-flow/runtime qualification,
     protected context/effect/lifecycle populations, deadlines/approved targets/adopters/custody
     and all82whole remain open.
+
+inventory_characterization_additive_compatibility:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tests
+  operation_side: observation
+  target: tests/test_semantic_python_inventory_characterization.py
+  source_base: 424626cff4340fe417103f580a8540bcd490f299
+  immutable_snapshot_sha256: fe3850476fa70b9fa68facd822ad015d6149b588fbf6058fdb5765b5b58919a0
+  immutable_source_fixture_sha256: e087ab066da9990efe1b7a7174656b7efa39c18b902cd4e74a2d3a759e895c64
+  reason: Historical pre-deconstruction equality compares old inventory semantics,
+    while the prototype adds neutral span/descriptor/construction facts. Preserve
+    all old values and snapshot bytes; qualify every removed additive key before projection.
+  requirements:
+  - Keep snapshot JSON and fixture source byte-identical; no regenerated golden data.
+  - Validate each new call span against the immutable source AST, each new descriptor
+    field against this fixture's empty descriptor population, and each constructor
+    observation's exact field family, non-authority, actual class/function source
+    identities and unqualified runtime marker.
+  - Remove only those explicitly checked new fields at known class/call/constructor/normalization
+    locations; every old value and any unrecognized new key remains under exact historical
+    equality.
+  - Retain original source immutability, endpoint, unresolved-flow, classmethod and
+    mutated-call assertions; additionally require mutation visible in the historical
+    projection.
+  - Five cause guards prove changed old fields and unknown keys cannot disappear,
+    and forged spans/descriptors/authority reject.
+  - Projection test changes confer no source/runtime/SDK authority and do not close
+    the existing full-adoption block.

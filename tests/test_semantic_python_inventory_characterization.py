@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import ast
+from copy import deepcopy
 import json
+
+import pytest
 from pathlib import Path
 
 from bcf_governance.tooling.semantic_ownership_inventory import (
@@ -18,13 +22,61 @@ def _source(root: Path) -> Path:
     return source
 
 
+
+def _pre_deconstruction_view(inventory, source):
+    """Validate additive facts independently, then preserve every historical field."""
+    nodes = ast.parse(source.read_text())
+    spans = {
+        (node.lineno, node.col_offset, node.end_lineno, node.end_col_offset)
+        for node in ast.walk(nodes) if isinstance(node, ast.Call)
+    }
+    symbols = {function['symbol'] for function in inventory['functions']}
+
+    def fact_view(fact):
+        actual = dict(fact)
+        assert (actual['line'], actual['column'], actual['end_line'], actual['end_column']) in spans
+        for key in ('column', 'end_line', 'end_column'):
+            actual.pop(key)
+        if 'construction_effect_observation' in actual:
+            observation = actual.pop('construction_effect_observation')
+            assert set(observation) == {
+                'authority', 'source_class_resolved', 'class_candidates',
+                'function_candidates', 'unresolved', 'qualification',
+            }
+            assert observation['authority'] is False
+            assert observation['source_class_resolved'] is True
+            assert observation['class_candidates'] == ['model.py::Repository']
+            assert 'model.py::Repository.__init__' in observation['function_candidates']
+            assert set(observation['function_candidates']) <= symbols
+            assert all(isinstance(value, str) and value for value in observation['unresolved'])
+            assert observation['qualification'] == 'SOURCE_OBLIGATIONS_ONLY_RUNTIME_PROVENANCE_REQUIRED'
+        return actual
+
+    result = dict(inventory)
+    result['classes'] = []
+    for row in inventory['classes']:
+        actual = dict(row)
+        # The immutable fixture has annotations and methods, no descriptor-valued assignment.
+        assert actual.pop('descriptor_bindings') == []
+        result['classes'].append(actual)
+    result['functions'] = []
+    for row in inventory['functions']:
+        actual = dict(row)
+        for key in ('calls', 'constructors', 'normalizations'):
+            actual[key] = [fact_view(fact) for fact in row[key]]
+        result['functions'].append(actual)
+    for key in ('constructors', 'normalizations'):
+        result[key] = [fact_view(fact) for fact in inventory[key]]
+    return result
+
+
 def test_python_inventory_matches_pre_deconstruction_characterization(tmp_path):
     source = _source(tmp_path)
     before = source.read_bytes()
     expected = json.loads((FIXTURES / 'semantic-python-inventory-before-deconstruction.json').read_text())
     discovered = discover_python_source(tmp_path, files=[source])
-    assert discovered == expected['discovered']
-    assert resolve_python_imports(tmp_path, discovered) == expected['resolved']
+    assert _pre_deconstruction_view(discovered, source) == expected['discovered']
+    assert _pre_deconstruction_view(resolve_python_imports(tmp_path, discovered), source) == expected['resolved']
     assert source.read_bytes() == before
     assert discovered['endpoints'][0]['path'] == '/api/rows/{name}'
     assert any(function['unresolved'] for function in discovered['functions'])
@@ -41,3 +93,30 @@ def test_python_inventory_characterization_observes_source_call_mutation(tmp_pat
     expected = json.loads((FIXTURES / 'semantic-python-inventory-before-deconstruction.json').read_text())
     assert discovered['files'] != expected['discovered']['files']
     assert discovered != expected['discovered']
+    assert _pre_deconstruction_view(discovered, source) != expected['discovered']
+
+
+@pytest.mark.parametrize('defect', ('old-field', 'unrecognized-field', 'span', 'descriptor', 'authority'))
+def test_characterization_view_does_not_hide_unaccounted_changes(tmp_path, defect):
+    source = _source(tmp_path)
+    inventory = resolve_python_imports(tmp_path, discover_python_source(tmp_path, files=[source]))
+    inventory = deepcopy(inventory)
+    function = next(row for row in inventory['functions'] if row['calls'])
+    call = function['calls'][0]
+    if defect == 'old-field':
+        call['called_symbol'] = 'forged.py::old-field'
+    elif defect == 'unrecognized-field':
+        call['unrecognized_authority'] = True
+    elif defect == 'span':
+        call['column'] += 10000
+    elif defect == 'descriptor':
+        inventory['classes'][0]['descriptor_bindings'] = ['forged']
+    else:
+        constructor = inventory['constructors'][0]
+        constructor['construction_effect_observation']['authority'] = True
+    if defect in {'old-field', 'unrecognized-field'}:
+        expected = json.loads((FIXTURES / 'semantic-python-inventory-before-deconstruction.json').read_text())
+        assert _pre_deconstruction_view(inventory, source) != expected['resolved']
+    else:
+        with pytest.raises(AssertionError):
+            _pre_deconstruction_view(inventory, source)
