@@ -1203,3 +1203,20 @@ protected_policy_source_reader_implementation_contract:
   - new registry, broker, evaluator, receipt family or public CLI grammar
   - phase activation, whole requirement advancement, submission, merge or release
     publication
+
+protected_child_finalizer_fixture_source_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: test_fixture
+  operation_side: observation
+  target: tests/test_exact_main_phase_proof.py
+  reason: Current B source has POLICY_TREE distinct from historical A; finalizer fixture
+    report/proposition/final assertion must observe that exact source, not shared
+    historical api.tree. Actual finalizer rejected the old mismatch.
+  production_changed: false
+  unchanged_evidence: 288 passing cases from exact ea711512 retained; rerun only the
+    one failed case after correcting observations.
+  forbidden:
+  - production verification or source policy weakening
+  - authority/workflow/pin/schema/catalog mutation
+  - whole lifecycle acceptance advancement

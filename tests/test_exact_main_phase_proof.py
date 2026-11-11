@@ -8,11 +8,12 @@ import zipfile
 
 from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_exact_main import finalize_exact_main
-from tests.test_phase_closure_population import protected_population, phase_input, SHA_A, SHA_B  # noqa: F401
+from tests.test_phase_closure_population import protected_population, phase_input, SHA_A, SHA_B, POLICY_TREE  # noqa: F401
 
 
 def test_child_finalizer_requires_and_consumes_normalized_parent_certificate(tmp_path, monkeypatch, protected_population):
     api, policy, _ = protected_population
+    assert api.commit("owner/repo", SHA_B)["tree"]["sha"] == POLICY_TREE
     policy["plans/phase-ledger.yml"]["active_phase"].update(
         workitems="plans/phase-02-workitems.yml", log="phases/phase-02-log.yml",
     )
@@ -32,7 +33,7 @@ def test_child_finalizer_requires_and_consumes_normalized_parent_certificate(tmp
     api.run_job_names["500"] = ("Finalize",)
     with zipfile.ZipFile(BytesIO(api._truth_archive())) as archive:
         report = json.loads(archive.read("truth-report.json"))
-    report["subject"] = {"commit_sha": SHA_B, "tree_sha": api.tree}
+    report["subject"] = {"commit_sha": SHA_B, "tree_sha": POLICY_TREE}
     report["evaluation_scope"]["target"]["id"] = "P02"
     report["certified_proposition"].update(
         target={"kind": "phase", "id": "P02"}, subject=deepcopy(report["subject"]),
@@ -70,4 +71,4 @@ def test_child_finalizer_requires_and_consumes_normalized_parent_certificate(tmp
     assert api.reads == 1
     certification = json.loads((tmp_path / "child/ci-certification.json").read_text())
     assert certification["evaluation_scope"] == {"intent": "closure", "target": {"kind": "phase", "id": "P02"}}
-    assert certification["certified_proposition"]["subject"] == {"commit_sha": SHA_B, "tree_sha": api.tree}
+    assert certification["certified_proposition"]["subject"] == {"commit_sha": SHA_B, "tree_sha": POLICY_TREE}
