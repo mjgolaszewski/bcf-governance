@@ -96,7 +96,7 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: 50b618c97306fae3c9a784988370bbfced59501a3498f6e5e63b4a40722740d4
-  after_sha256: 56f161f58f7ec708b7fcd08e9d6de0f92b97b5123d374c487278630e56c4dffb
+  after_sha256: 9ec1968de4f2bf941c0851fb9c84a53f4690fc137c2b030ad7f1e5e41b711038
   findings:
   - removed superseded controller runbooks and retained only routine transition and dormant self-recovery boundaries
   disposition: revised
@@ -114,7 +114,7 @@ documents:
   canonical_topic_owner: docs/USAGE.md
   topic_role: canonical
   before_sha256: 60e4bceffc2dd0f595178a59311e13bf07a5a5421e6e68d3ca274840d6b4a674
-  after_sha256: 18164fe67c0a92fded5e00637064e4e3b7e5044f3317923586eda94ccb86882d
+  after_sha256: 27b0772435490f94c23c03d1b85d55d489f8e0f7ef1d3914bd872eba718b780e
   findings:
   - replaced obsolete controller ceremony with the canonical 2.1 adopter and semantic-intent operation
   disposition: revised
@@ -141,7 +141,7 @@ documents:
   canonical_topic_owner: spec/RELEASE_TRAIN_STATE_DAG.md
   topic_role: canonical
   before_sha256: aa9884b88902649dd5ba48b258ccf8a744d8d466ce55fe5bf1a06e04fb71286f
-  after_sha256: 4de1bb6fddbf2b4425f8c468d7b6369f2b2a6b0303595a1a25ef022245e841fb
+  after_sha256: 0135f4a1712a5e09aacefef976c76fed81eadc3e163aafbc814c8d5425bef1d8
   findings:
   - reviewed; no currency, consolidation, or pruning change required
   disposition: revised

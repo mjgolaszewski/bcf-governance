@@ -396,7 +396,7 @@
     },
     "schemas/public-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7"
+      "sha256": "446590b9e4b31f020e3bb447a3af33f04f79dc8a17eb159c28e880ba8d38cf82"
     },
     "schemas/reconcile-ledger.schema.json": {
       "operation": "copy",
@@ -1675,7 +1675,7 @@
     },
     "scripts/_bcf_runtime/resources/schemas/public-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7"
+      "sha256": "446590b9e4b31f020e3bb447a3af33f04f79dc8a17eb159c28e880ba8d38cf82"
     },
     "scripts/_bcf_runtime/resources/schemas/reconcile-ledger.schema.json": {
       "operation": "copy",
