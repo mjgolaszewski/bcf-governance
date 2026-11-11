@@ -1035,3 +1035,70 @@ protected_source_reader_summary_disposition:
   current_ledger:
     type: 394source
     statement: 06255 reg; protected baseline; scope open.
+
+protected_policy_blob_custody_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  status: cause_controls_before_source_reader_adoption
+  source_base: eae8fede8711508c779244fc3dc6680f40a74668
+  existing_consumers:
+  - ci_exact_main_truth.authenticate_exact_main_readiness
+  - trusted_inputs.verify_required_phase_closure_inputs
+  scope: Bind the three protected phase-policy files to their authenticated selected
+    tree, regular Git modes and existing source-byte safety budget before predecessor-population
+    derivation or proof acquisition.
+  test: tests/test_phase_policy_blob_custody.py
+  fixture: Each provider source is an actual temporary Git commit/tree; complete tree
+    modes and blob OIDs derive through real Git, and content facts carry computed
+    Git blob hashes. Port fixtures supply observations only; actual SDK identity/population
+    verification runs unchanged.
+  cause_matrix:
+    positive_regular_modes:
+    - '100644'
+    - '100755'
+    wrong_tree_self_consistent_blob_paths:
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - plans/phase-history.yml
+    nonregular_tree_paths:
+    - plans/build-plan.yml
+    - plans/phase-ledger.yml
+    - plans/phase-history.yml
+    aggregate_source_budget_cases: 1
+    total: 9
+  production_requirements:
+  - Commit and run genuine positive/cause controls before changing production; retain
+    every original result and distinguish fixture/collection errors from cause failures.
+  - Reuse the existing exact-main complete-tree/mode/blob reader through existing
+    trusted_inputs ownership with two real call sites; do not introduce another source
+    broker, evaluator, registry or receipt.
+  - Preserve exact-main reader guards, error class, valid data paths, historical admitted
+    source, byte safety bound and readiness outcomes while moving its source-reading
+    responsibility.
+  - Strengthen prerequisite policy reads to reject missing, duplicate, nonregular
+    or wrong-tree blob identity and source-budget violations before predecessor proof
+    acquisition. Preserve existing current-frontier and selected historical policy
+    checks.
+  - Correct old test fixtures to real Git blob identity/mode facts where required;
+    never waive verification to admit synthetic malformed source.
+  - Retain source-correct ordinary current/historical policy and genuinely local/unbound
+    behavior; neither source input validation nor successful empty predecessor result
+    grants certification.
+  - Qualify affected 204-case consumer population, source-absent installed consumers
+    and required architecture/semantic/governance/package checks after implementation.
+    Existing canonical generation alone owns mirrors and authority changes.
+  - Full protected lifecycle populations, typed model, operation/effect/context wiring
+    and both runtime trace directions remain unimplemented by this bounded source
+    correction.
+  forbidden:
+  - production changes in characterization packet
+  - weakening source or policy pins
+  - mocking verifier outcomes
+  - claiming live provider or release authority
+  - whole requirement/phase advancement
+  prior_evidence:
+    source_subject: bdc3c69f88427dc5b29babdeba5dbd759254e9dd
+    cases: 204
+    status: PASS; retained exact source scope, not rerun for bookkeeping
