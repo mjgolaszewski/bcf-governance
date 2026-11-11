@@ -1747,3 +1747,59 @@ construction_lifetime_source_qualification:
     type: 394source
     statement: a6f26508 lifetime source effects; full adoption blocked.
   whole_requirement_advancement: false
+
+construction_protocol_source_contract:
+  authority: false
+  workitems:
+  - P32-P0-03
+  - P32-P0-04
+  context: Independent potential Python protocol source population and consuming-boundary
+    consistency, composed through existing source owners
+  layer: tooling
+  side: query
+  targets:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  - bcf_governance/tooling/semantic_source_discovery.py
+  - tests/test_construction_source_protocol_population.py
+  - tests/fixtures/cpython-31214-protocol-source-input.json
+  contract:
+  - Production recognizes possible source-defined special methods conservatively,
+    retaining unknown runtime provenance and no port credit; normative CPython fixture
+    is test-only and never a runtime registry.
+  - One shared source-construction-body policy used by producer and consuming guard;
+    no project/SDK-name allowlist or runtime-purity assertion.
+  - Consumers cross-check class/type/method scope, actual function bodies, inherited
+    class population and unresolved runtime context; jointly dropping class-method
+    edges and constructor observations cannot hide a separately discovered function
+    body.
+  - Existing mixed-source merger retains Python classes and rejects contradictory
+    class identities while preserving ordinary TypeScript effect semantics.
+  - Independent fixture binds81CPython3.12.14 slot names plus8documented non-slot
+    hooks; custom future-looking method remains conservatively unknown. This is a
+    bounded source population, not complete Python runtime effects.
+  - Ordinary fresh CPython consumers witness12implicit-write mechanisms for local/inherited
+    classes; no GC, monkeypatching or Python-internals instrumentation.
+  - Canonical pack generator alone owns mirrors; exact source/runtime evidence, existing
+    full adoption block and historical failures retained.
+  verification:
+    new_cases: 198
+    expected_before:
+      failures: 163
+      passes: 35
+    source_witnesses: 24
+    affected_existing_cases: 245
+    typescript: Existing real compiler consumer tests only after standard --check
+      proves cached locked compiler; no install/bootstrap mutation permitted. Missing/stale
+      cache blocks native stage.
+    architecture: Full40cases; only required CLI whole-operation provenance block
+      may remain red, recorded without waiver or full qualification.
+  forbidden:
+  - new graph/registry/evaluator/broker/receipt family
+  - normal CLI grammar change
+  - candidate-controlled assurance or activation
+  - performance targets or percentile claims
+  - main/release/SDK/whole advancement
+  remaining: Authenticated builtin/decorator/runtime binding, complete source/context/lifecycle/effect
+    populations and installed supported-profile/adopter conformance; deadlines, approved
+    measurements and all82whole remain open.
