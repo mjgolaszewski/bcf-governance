@@ -218,6 +218,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - tests/test_source_repository_environment.py
+    - tests/test_source_comparison_environment.py
     - audits/issue-394/development-distribution-4c0bc612-verification.json
     - audits/issue-394/periodic-planned-consumption-contract.json
     - audits/issue-394/periodic-planned-consumption-verification.json
@@ -283,6 +284,7 @@ workitems:
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
     - tests/test_source_repository_environment.py
+    - tests/test_source_comparison_environment.py
     - tests/test_installed_provider_error_retirement_siblings.py
     - audits/issue-394/provider-response-error-retirement-siblings-contract.json
     - audits/issue-394/semantic-operation-admission-verification.json

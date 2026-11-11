@@ -473,3 +473,53 @@ comparison_characterization_oracle_disposition:
     fails. Fix only negative oracle, retain other20 cases at original subject; characterize
     changed9 before production
   production_unchanged: true
+
+comparison_source_context_qualification:
+  authority: false
+  controls_commit: 9e999362f704a5253e83727dac118def990af544
+  implementation_commit: 9550ba508910f829210cac7cb91763f54981e20f
+  implementation_tree: c02dda31320a1e3de26cf1a6c5a0c32b25e685f4
+  original_controls_commit: ba784ac00156c6c7b89a409efbee314162e8a6e3
+  original29_characterization:
+    tests: 29
+    failures: 11
+    errors: 0
+    skipped: 0
+  original29_genuine_failures: 9
+  original29_oracle_failures: 2
+  retained_unchanged20: 8 genuineFAIL/12PASS at ba784ac0; not rerun before production
+  corrected_foreign9_characterization:
+    tests: 9
+    failures: 1
+    errors: 0
+    skipped: 0
+  baseline_junit_sha256: a46e8ca2426922f72a8527e017a59435d2897f42dd71320d5d537afbdca9d2f1
+  affected:
+    tests: 199
+    failures: 0
+    errors: 0
+    skipped: 0
+  affected_junit_sha256: 9ab8a80f2ee339754f4f260c2303364f3910b6832073ba15492607cf4c1ae85c
+  architecture:
+    tests: 40
+    failures: 0
+    errors: 0
+    skipped: 0
+  architecture_junit_sha256: 9b2ef9c20fc1c780f7b59cc0c56f5d0633fc59c6a1d92f070157841ff106e676
+  source_test_sha256: d6e02304d6493b80e1d503907678f1cb56c6a02e34a4fb7acf39f66e569b7f88
+  private_pytest_cases: 2
+  private_internal_behaviors_each: 29
+  python: 3.12.14
+  dependencies: 41 exact release-lock wheels plus existing pinned installer26.2.2
+    artifact
+  acceptance_advance: false
+  scope: comparison Git source selection only; complete authenticated workspace/provider/lifecycle/profile/deadline/performance/adopter/independent
+    custody remain open
+
+comparison_context_prior_summary_disposition:
+  memory: P32 active; P33-P35 dormant. Source-context guards qualified at 39d1b5a2;
+    archives stay f1fd-scoped. Full SDK/lifecycle/deadline/target/adopter/custody
+    proof open. See audits/issue-394/workplan.yml.
+  ledger:
+    type: 394source
+    statement: 39d1b5a2 src/private pass; lifecycle audit; scope open.
