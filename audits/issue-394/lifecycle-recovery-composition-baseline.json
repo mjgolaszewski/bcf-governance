@@ -1,7 +1,7 @@
 {
   "authority": false,
   "execution_qualified": false,
-  "status": "authored_unexecuted",
+  "status": "legacy_characterization_passed_new_integration_pending",
   "source_start": "63dc90caea9f555478b46c70073bea417ffa4002",
   "source_sha256": {
     "bcf_governance/tooling/ci_recovery_frontier.py": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635",
@@ -140,5 +140,22 @@
       "successor": "provider_observation"
     }
   ],
-  "limits": "Legacy characterization pending; typed recovery integration not implemented; no whole acceptance"
+  "limits": "Legacy characterization pending; typed recovery integration not implemented; no whole acceptance",
+  "subject": "dfede1cd5abd081049ef9c2af107ec7adbb9ad8b",
+  "tree_sha": "cbfd26311d18901f2b396330bdc54fa2b4eb4a94",
+  "tests": {
+    "tests": 437,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": "3682c5759361d40b43433c545ecf55e1bea167565fa4ea0b50d975dce475c66f",
+  "python": "3.12.14",
+  "selectors": [
+    "tests/test_ci_graph_composition.py",
+    "tests/test_ci_recovery_frontier.py",
+    "tests/test_candidate_provider_recovery.py",
+    "tests/test_installed_lifecycle_composition.py"
+  ],
+  "qualification": "Exact legacy behavior only; typed recovery population integration remains unimplemented"
 }
