@@ -1981,3 +1981,23 @@ decorator_characterization_scope_correction:
   single_all_green_613_claim: false
   remaining: Required whole-operation runtime provenance block remains explicit; no
     whole acceptance or SDK/adopter/release qualification.
+
+decorator_spelling_source_repair_qualification:
+  report: audits/issue-394/decorator-spelling-source-repair.json
+  sha256: 1c140324ffefd6b8146308a1d783f897cffba2ee8ba115df925e0b0d7ed31889
+  subject: 34d94c4831c9bf514fba03db2db5c6b7f4524cd1
+  previous_memory: P32 active; P33-P35 dormant. Protocol/private-schema f45b5e04 retained;
+    decorator spelling-only direct effect authority diagnostic has12cause failures,6real
+    wrapper writes. Repair/runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Decorator spelling source authority
+    34d94c48 repaired;613cases supported (603retained+10corrected), whole-operation
+    provenance blocked. Runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 1dc9c000 decorator binding gap; repair open.
+  current_ledger:
+    type: 394source
+    statement: 34d94c48 decorator guard; runtime open.
+  whole_requirement_advancement: false
