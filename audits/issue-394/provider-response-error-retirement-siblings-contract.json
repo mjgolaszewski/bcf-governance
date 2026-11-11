@@ -7,7 +7,7 @@
     "P32-P0-04",
     "P32-P0-05"
   ],
-  "status": "source_correction_authored_pending_qualification",
+  "status": "scoped_behavior_pass_semantic_normalization_and_installed_residuals_pending",
   "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "existing_query_and_command_transport_cleanup",
@@ -103,7 +103,7 @@
     "contract_commit": "296bee654c23f171964812df51064499699f4148",
     "tests_before_production_commit": "aa4e6ab6b7bd41933d3a7fce5f2715e9edd403ec",
     "scope": "Existing response owner plus four direct consumer HTTPError mappings; GET primitive remains sole GET retirement owner",
-    "behavioral_qualification": "not_run_on_corrected_source",
+    "behavioral_qualification": "292 affected and40architecture cases PASS at exact2676300b; separate semantic gate returned stale generated lock; nine historical installed/template cases unrun",
     "remaining": "32new and86retained affected cases; causal controls; governance architecture semantic package and installed consumer qualification; full lifecycle/deadline bounds remain open",
     "canonical_sha256": {
       "ci_github_response.py": "9be4c376de6c1c8989d8d2f691d669decae8b1d298565107f5780258f6869470",
@@ -112,5 +112,60 @@
       "protection_inspection_client.py": "3071e7603ec23edc52dc6aadbe795ec71aa3c25ea25de22aad6b9c70eb024994",
       "evidence_storage_github_api.py": "138a0accaa966de70ee140fbad45ed588391e5aa3cef0d4575e50f48201aac19"
     }
+  },
+  "qualification_observations": {
+    "authority": false,
+    "acceptance_advance": false,
+    "subject_commit": "2676300b348869105ae966c13a0d0f48510dc547",
+    "subject_tree": "5cb4343a88f6832ec2dcf508219c66ad6f14e14c",
+    "lint_exit": 0,
+    "governance_exit": 0,
+    "pack_exit": 0,
+    "affected": {
+      "cases": 292,
+      "new_cases": 32,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "9774f3365f39d7fd08ee32a2158663bf44c55c8866a831935aff4a79aff0a5aa"
+    },
+    "architecture": {
+      "cases": 40,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "966e04485a68f9a9b981480b4b8a7a438b76c3862222206ec94473ead8c8d66f"
+    },
+    "semantic": {
+      "exit_code": 1,
+      "diagnostic": "governance/semantic-lock.yml is stale; run bcf semantic-ownership lock --apply"
+    },
+    "native_result_sha256": "023499bc2b9205375642bd309795ededee942aa602053ddc27a4c1a3de107050",
+    "historical_population": {
+      "authority": false,
+      "historical_junit_sha256": "ef098044cb61df469e478aebdd7b83fa852dd077d761fd6c99cd3a1b357dde6d",
+      "historical_cases": 86,
+      "current_cases": 332,
+      "historical_matched_cases": 77,
+      "historical_not_executed": [
+        "tests.test_installed_provider_error_retirement::test_installed_actual_error_response_retirement[fresh]",
+        "tests.test_installed_provider_error_retirement::test_installed_actual_error_response_retirement[upgrade]",
+        "tests.test_installed_provider_response::test_installed_provider_budgets_precede_allocation_and_bound_framing[fresh]",
+        "tests.test_installed_provider_response::test_installed_provider_budgets_precede_allocation_and_bound_framing[upgrade]",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_accepts_valid_sample_slice",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_oversized_modules",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_query_side_mutation",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_underused_shared_abstraction",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_use_case_http_objects"
+      ],
+      "reason": "Four fresh/upgrade installed cases need isolated offline fixture environment creation; five template-architecture cases not selected in the sealed packet. No claim of complete86execution."
+    },
+    "normalization": "Existing canonical owner will derive lock after these authored records; final semantic recheck remains separately required",
+    "remaining": [
+      "Nine historical installed/template cases including fresh/upgrade isolated consumers",
+      "Native semantic recheck after supported lock normalization",
+      "Applicable whole lifecycle/deadline bounds, full distribution/adopter qualification, approved targets and immutable2.5custody"
+    ],
+    "scope": "Historical2676300b results are retained without retagging to a later commit. Current source record is not certification or closure."
   }
 }
