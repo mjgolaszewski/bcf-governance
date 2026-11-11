@@ -1,0 +1,64 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "existing_reader_consumers_characterized_before_extraction",
+  "subject": "bdc3c69f88427dc5b29babdeba5dbd759254e9dd",
+  "tree": "66ebd48fbe96e74d8b5a8915c729974e7eabe66e",
+  "source_base": "e7c2cca279207ce01ceb192cf551caff03428c71",
+  "consumer_test_files": [
+    "tests/test_exact_main_phase_readiness.py",
+    "tests/test_exact_main_phase_proof.py",
+    "tests/test_phase_policy_subject.py",
+    "tests/test_phase_closure_population.py",
+    "tests/test_phase_closure_input.py",
+    "tests/test_trusted_inputs.py",
+    "tests/test_ci_github_controller.py"
+  ],
+  "results": {
+    "tests": 204,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": "25b5c0c61cb1f451588f6e65e7816b94cc354458fdfe4f800f67b4c7adf7d68a",
+  "source_sha256": {
+    "bcf_governance/tooling/ci_exact_main_truth.py": "829817595aa11a0a1561d8e92d81ac13d2156bb756a956bbe3812c49b9e65dfb",
+    "bcf_governance/tooling/trusted_inputs.py": "703b24557aab46e2b5c70a02be5f2730ab675371a805153fac0eb053869710ae",
+    "bcf_governance/tooling/ci_github_identity.py": "6c51981c339a2bda533d17d378af5cdb49104b07c1d226b9c3e774379dc3eed7",
+    "bcf_governance/tooling/ci_github_api.py": "2ebaff06557f6ac292a70d0a430adc82a691f6e25e656a385382acab44f1a39e",
+    "bcf_governance/tooling/evidence_workitem_lifecycle.py": "707a86ce7e2a88780d1649d1bb87b1627b883023e3fdb98b1e63ecf8609063f6"
+  },
+  "prior_readiness_input_comparison": {
+    "bcf_governance/tooling/ci_exact_main_truth.py": {
+      "prior_sha256": "1637a062bbb6cf45207946e22e13cd3fdc0ed44b68ba7050b53682ba72e079f6",
+      "current_sha256": "829817595aa11a0a1561d8e92d81ac13d2156bb756a956bbe3812c49b9e65dfb",
+      "unchanged": false
+    },
+    "bcf_governance/tooling/ci_github_exact_main.py": {
+      "prior_sha256": "9f196eded7bea31ace79340055e98a0b00ae7150bb01d4cce54c132042a5ba49",
+      "current_sha256": "1faf27f0ac1ed6885d148dc5ee4407d07a01f4b968ff3e6419599588b55ca2c7",
+      "unchanged": false
+    },
+    "bcf_governance/tooling/ci_github_api.py": {
+      "prior_sha256": "19d66ce21db6b856380398b55a0221599aa3b985668b501b7fe4009c83e09f32",
+      "current_sha256": "2ebaff06557f6ac292a70d0a430adc82a691f6e25e656a385382acab44f1a39e",
+      "unchanged": false
+    },
+    "bcf_governance/tooling/evidence_workitem_lifecycle.py": {
+      "prior_sha256": "2f09e9ad26e1046cb5d74d0d616dc2e0bd4929b116d054e2500f6b12ce029a81",
+      "current_sha256": "707a86ce7e2a88780d1649d1bb87b1627b883023e3fdb98b1e63ecf8609063f6",
+      "unchanged": false
+    },
+    "bcf_governance/tooling/trusted_inputs.py": {
+      "prior_sha256": "f359894d101f3cf64f579c3520caae3415bb894feacfc4e302d53d510edfe4ca",
+      "current_sha256": "703b24557aab46e2b5c70a02be5f2730ab675371a805153fac0eb053869710ae",
+      "unchanged": false
+    }
+  },
+  "prior_evidence_scope_retained": true,
+  "production_paths_unchanged": true,
+  "production_population_files": 1417,
+  "protected_population_consumer_implemented": false,
+  "complete_lifecycle_adoption": false,
+  "remaining": "Shared source ownership and actual protected typed population/model/consumer wiring, both trace directions and runtime conformance; all82whole remain open."
+}

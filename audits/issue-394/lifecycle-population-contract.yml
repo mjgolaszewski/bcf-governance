@@ -1009,3 +1009,29 @@ protected_lifecycle_consumer_adoption_contract:
     treatment: Review ancestry/content and actual consumer matrix before integrating
       only required behavior; preserve originals and reachable history. Do not claim
       complete effect reconstruction until this dependency is independently disposed.
+
+protected_source_reader_baseline:
+  report: audits/issue-394/protected-source-reader-baseline.json
+  sha256: 670651fbab28c4cd9588b68cdbc4017f837533892f2888d01cf554c7b9b79f0a
+  source_subject: bdc3c69f88427dc5b29babdeba5dbd759254e9dd
+  results:
+    tests: 204
+    failures: 0
+    errors: 0
+    skipped: 0
+  scope: Existing exact-main and prerequisite-query source baseline only; full protected
+    population/consumer not implemented.
+
+protected_source_reader_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Lifecycle public registration 06255e64
+    source/private qualified; full protected population/runtime/deadlines/targets/adopters/custody
+    open.9550/f1fd retain exact scopes.
+  current_memory: P32 active; P33-P35 dormant. Registration06255 qualified; protected
+    consumer contract/reader baseline bdc3c69f retained. Full protected population/runtime/deadlines/targets/adopters/custody
+    open;9550/f1fd stay scoped.
+  previous_ledger:
+    type: 394source
+    statement: 06255e64 registration pass; full scope open.
+  current_ledger:
+    type: 394source
+    statement: 06255 reg; protected baseline; scope open.
