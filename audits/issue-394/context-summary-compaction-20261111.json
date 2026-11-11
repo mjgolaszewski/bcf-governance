@@ -1,0 +1,60 @@
+{
+  "document": {
+    "kind": "audit_report",
+    "path": "audits/issue-394/context-summary-compaction-20261111.json",
+    "status": "authored_pending_governance_validation"
+  },
+  "authority": false,
+  "acceptance_advance": false,
+  "source_commit": "c38a043f8b794c6d8e03ff2615ef31113cf91fa4",
+  "reason": "Prior duplicated planning summaries exceeded fixed required-context limits",
+  "fixed_budgets_bytes": {
+    "MEMORY.yml": 28672,
+    "plans/phase-ledger.yml": 16384
+  },
+  "sizes": {
+    "MEMORY.yml": {
+      "before": 28936,
+      "after": 28493
+    },
+    "plans/phase-ledger.yml": {
+      "before": 16942,
+      "after": 15912
+    }
+  },
+  "preserved_originals_and_dispositions": [
+    {
+      "artifact": "MEMORY.yml",
+      "field": "known_constraints[0]",
+      "original": "Operator-approved workspace and source-history divergence requirement registered under existing P32 composition/conformance with P35 installed-consumer qualification; one declared active checkout/branch/remote, complete worktree/branch/dirty-source inventory, exact-commit checkpoints, separate ancestry/content comparisons and reviewed retirement dispositions. No automatic merge/deletion or CI transfer across identical-tree commits. Planning only; implementation and executable qualification pending; no acceptance or phase advance.",
+      "disposition": "Full requirement retained in canonical workplan/P32 acceptance; bounded current summary points there"
+    },
+    {
+      "artifact": "plans/phase-ledger.yml",
+      "field": "operator_requirements_choices_disambiguations[0]",
+      "original": {
+        "type": "requirement",
+        "statement": "Operator-approved workspace and source-history divergence requirement registered under existing P32 composition/conformance with P35 installed-consumer qualification; one declared active checkout/branch/remote, complete worktree/branch/dirty-source inventory, exact-commit checkpoints, separate ancestry/content comparisons and reviewed retirement dispositions. No automatic merge/deletion or CI transfer across identical-tree commits. Planning only; implementation and executable qualification pending; no acceptance or phase advance."
+      },
+      "disposition": "Full requirement retained in canonical workplan/P32 acceptance; bounded current summary points there"
+    },
+    {
+      "artifact": "plans/phase-ledger.yml",
+      "field": "operator_requirements_choices_disambiguations[type=issue_394_pinned_qualification_terminal]",
+      "original": {
+        "type": "issue_394_pinned_qualification_terminal",
+        "statement": "Actual3ec171d0 canonical pinned-adopter qualification SUCCESS exit0 after1043288ms; receipt31b94deba5e298c281b9e5e084841758a833fc152242c9fee6d24d4cca21384a passes existing validator, stdout equality, unchanged assets/stream hashes and exact three pinned source comparisons. Tradeflow Lite, Racecar Standard and AgentBus Standard each pass; local observation-only IDs/authority remain explicit. New maintained Racecar162fc76 is outside old389 pin. Capacity returned8865/8867 before Racecar R3.45 installed cases and712 package parity pass. All82 whole requirements/CP07 independent completeness remain open; next full consumer matrix/current-main integration require native admission. Evidence audits/issue-394/pinned-qualification-3ec171d0-terminal.json."
+      },
+      "disposition": "Historical original retained here; bounded ledger retains exact evidence pointer and current nonqualification"
+    }
+  ],
+  "preflight": {
+    "subject_commit": "c38a043f8b794c6d8e03ff2615ef31113cf91fa4",
+    "lint_exit": 0,
+    "governance_exit": 1,
+    "diagnostic": "MEMORY28.3KiB>28; phase-ledger16.5KiB>16",
+    "later_stages": "pack parity affected architecture semantic all unrun",
+    "native_result_sha256": "b7585fd15aecfa6075f15c9abe5cb130f31b93f069a446f21009eabd64b5cf51"
+  },
+  "scope": "Summary compaction only. Canonical source-continuity workplan/P32 acceptance and production correction remain unchanged. Historical evidence remains scoped to its original subject."
+}
