@@ -356,3 +356,10 @@ semantic_source_private_environment_controls:
   cases: fresh and upgrade source-SDK-absent private readers each execute all47real-Git context/replacement behaviors with parent/config/index preservation
   implementation: Existing semantic source owner derives one read-only environment; sibling preflight readers reuse it and disable replacement-object reads through existing admitted-command ports
   limits: No provider/publication authority or full workspace/lifecycle qualification inferred
+
+source_context_qualification_disposition:
+  authority: false
+  source_subject: eca85f0c33fbe93c9152a936bca781fa0e9c224a
+  prior: 229PASS and2FAIL; native lint/governance/pack/semantic PASS
+  corrections: Update stale authored-phase direct-consumer binding; qualify wrong-pytest oracle only after exact pinned installer is present in isolated test environment
+  retained: Original45characterization and47source-context/fresh-upgrade private PASS remain exact-subject evidence; no runtime change or whole acceptance advance

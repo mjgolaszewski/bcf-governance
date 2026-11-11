@@ -15,7 +15,7 @@
   "result_schema": "schemas/authored-phase-state-result.schema.json",
   "consumers": [
     {
-      "symbol": "bcf_governance/tooling/ci_authority_submit.py::_normalize_submission",
+      "symbol": "bcf_governance/tooling/ci_authority_submit.py::_validate_authored_submission_inputs",
       "consumption": "rejection_guard"
     },
     {
