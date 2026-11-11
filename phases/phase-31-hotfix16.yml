@@ -128,6 +128,29 @@ execution_evidence:
     successors after normalization, malformed/replayed consumed receipts and an unrelated disconnected target.
     Changed production strict typing and touched-file Ruff pass; native mirrors regenerated. This bounded query
     correction does not restore the missing provider chain or authorize recovery installation/publication.'
+  - 'PR444 merged at e9a612308f1a4df29db8b66058fcec776d587540 after exact d451f426 native
+    qualification and hosted governance42938470351 passed. Fresh installed consumer contracts,
+    complete native BDMCP semantic scan and five-cycle adoption soak passed before submission.'
+  - 'Ordinary rotation42942947288 failed because installed669a453f treated its already-consumed
+    source-normalized transition as disconnected. The successor contains the consumed-baseline
+    correction, but installed authority could not authorize that successor. Prior qualification
+    missed this installed-to-successor dependency; no failed gate was bypassed.'
+  - 'Recovery operation bc1535d185b6032cbb10b9ba6a765e81 built exact merged main in42943689495,
+    installed on both declared trusted runners in42943886327 and passed both probes plus receipt
+    in42944248839. Receipt SHA256 b36debf2d4d93db8c9049fc59d8eb6ed337b427a2451d6c34f940fdd834b402d
+    explicitly declares recovery_only=true and governance_certified=false; it grants no merge,
+    certification or publication authority.'
+  - 'Canonical project-installation and normalize-installation authenticated the receipt and matched
+    recovered bytes to ordinary artifact13821248052 from admission42942774671, wheel SHA256
+    aeb034de3727301db8f1d73141ba4f80849e8d972d729dd78cd10ceb035c55b2. Canonical reconciliation
+    generated definition35f9eeaa145f2b3ce4790f69b6660262b9a5f08b and authority1ab812bff656706f57493e01e34343f7af698b6d.
+    No production code changed. This is prepared ordinary custody; protected qualification/merge,
+    exact-main certification and immutable release publication remain required.'
+  - 'Recovery currently requires separate owner approvals for build, install, probes and receipt.
+    This repetitive incident workflow remains a maintenance limitation; its protected gates were retained.'
+  - 'Native submission f4846635 stopped before producers because generated custody workflows require
+    a same-candidate state-matrix update. Added explicit disconnected-installed-controller, noncertifying
+    recovery, ordinary-byte normalization and protected certification permutations; no gate was waived.'
 closeout_requirements:
   claims:
     required_suites_green:
