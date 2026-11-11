@@ -102,3 +102,58 @@ def lifecycle_effect_population(
                 raise CIGraphError("lifecycle source effect context binding is invalid")
             effects.add((*relationship, _bytes(port).decode()))
     return frozenset(effects)
+
+def lifecycle_recovery_coverage(relationships) -> dict[str, Any]:
+    """Close loaded-owner references, not context authority or runtime truth."""
+    from .ci_recovery_frontier import recovery_edge_population
+
+    population = recovery_edge_population()
+    if (not population or any(not isinstance(row, tuple) or len(row) != 4
+            or any(not isinstance(value, str) or not value for value in row)
+            for row in population)
+            or len({row[:2] for row in population}) != len(population)):
+        raise CIGraphError("lifecycle recovery owner population is invalid")
+    required = {(operation, state): (action, successor)
+                for operation, state, action, successor in population}
+    bindings: dict[tuple[str, str], set[Relationship]] = {}
+    if not isinstance(relationships, list):
+        raise CIGraphError("lifecycle recovery relationship population is invalid")
+    for row in relationships:
+        if not isinstance(row, Mapping):
+            raise CIGraphError("lifecycle recovery relationship is malformed")
+        contract = row.get("contract")
+        if contract is None:
+            continue
+        pair = tuple(row.get(name) for name in ("context", "producer", "consumer"))
+        if any(not isinstance(value, str) or not value for value in pair):
+            raise CIGraphError("lifecycle recovery context reference is invalid")
+        references = contract.get("recovery_edges") if isinstance(contract, Mapping) else None
+        if not isinstance(references, list):
+            raise CIGraphError("lifecycle recovery references are absent")
+        seen = set()
+        for reference in references:
+            if (not isinstance(reference, Mapping)
+                    or set(reference) != {"operation", "state"}
+                    or any(not isinstance(value, str) or not value for value in reference.values())):
+                raise CIGraphError("lifecycle recovery reference is malformed")
+            identity = reference["operation"], reference["state"]
+            if identity in seen or identity not in required:
+                raise CIGraphError("lifecycle recovery population is duplicated or invented")
+            seen.add(identity)
+            bindings.setdefault(identity, set()).add(pair)
+    if bindings.keys() != required.keys():
+        raise CIGraphError("lifecycle recovery population is incomplete")
+    return {
+        "authority": False, "execution_qualified": False,
+        "context_authority_qualified": False,
+        "scope": "loaded_recovery_owner_reference_coverage",
+        "owner_population_sha256": hashlib.sha256(_bytes(population)).hexdigest(),
+        "edges_checked": len(required),
+        "bindings": [
+            {"operation": operation, "state": state,
+             "action": required[operation, state][0],
+             "successor": required[operation, state][1],
+             "relationships": [list(pair) for pair in sorted(bindings[operation, state])]}
+            for operation, state in sorted(required)
+        ],
+    }

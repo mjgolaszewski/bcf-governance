@@ -221,6 +221,28 @@
         },
         "deadline": {
           "$ref": "#/$defs/deadline"
+        },
+        "recovery_edges": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "operation",
+              "state"
+            ],
+            "properties": {
+              "operation": {
+                "type": "string",
+                "minLength": 1
+              },
+              "state": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
         }
       }
     },
@@ -358,7 +380,8 @@
     "schema_version": {
       "enum": [
         "1.0",
-        "1.1"
+        "1.1",
+        "1.2"
       ]
     },
     "source": {
@@ -458,6 +481,57 @@
           "required": [
             "source"
           ]
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "1.2"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "relationships": {
+            "items": {
+              "properties": {
+                "contract": {
+                  "if": {
+                    "type": "object"
+                  },
+                  "then": {
+                    "required": [
+                      "recovery_edges"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "relationships": {
+            "items": {
+              "properties": {
+                "contract": {
+                  "if": {
+                    "type": "object"
+                  },
+                  "then": {
+                    "not": {
+                      "required": [
+                        "recovery_edges"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

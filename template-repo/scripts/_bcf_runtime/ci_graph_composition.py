@@ -14,11 +14,13 @@ import re
 from pathlib import Path
 from typing import Any, Iterable, Mapping, TYPE_CHECKING
 
-from jsonschema import Draft202012Validator
+from jsonschema import Draft202012Validator, SchemaError
 
+from .ci_github_authority import packaged_repo_root
 from .ci_graph_errors import CIGraphError
 from .ci_graph_composition_populations import (
     Effect, Relationship, _bytes, edge_population_sha256, lifecycle_effect_population,
+    lifecycle_recovery_coverage,
 )
 from .ci_graph_composition_costs import validate_lifecycle_deadline_bindings
 from .semantic_operation_effects import (
@@ -28,6 +30,22 @@ from .semantic_operation_effects import (
 if TYPE_CHECKING:
     from .ci_graph_contracts import CompiledCIGraph
 
+
+
+
+def _owned_lifecycle_schema() -> dict[str, Any]:
+    """Read the schema owned by the loaded runtime, never the candidate root."""
+    try:
+        path = packaged_repo_root() / "schemas/ci-lifecycle-composition.schema.json"
+        if path.is_symlink() or not path.is_file():
+            raise ValueError("owned schema must be a regular nonsymlink resource")
+        schema = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(schema, dict):
+            raise ValueError("owned schema must be an object")
+        Draft202012Validator.check_schema(schema)
+    except (OSError, ValueError, SchemaError) as exc:
+        raise CIGraphError("lifecycle recovery owned schema unavailable or invalid") from exc
+    return schema
 
 
 
@@ -59,6 +77,14 @@ def compile_lifecycle_composition(
     Callers must obtain both expected populations from protected canonical owners,
     independently of the proposed payload. No result confers truth authority.
     """
+
+    if payload.get("schema_version") not in ("1.0", "1.1", "1.2"):
+        raise CIGraphError("lifecycle composition schema version is unsupported")
+    if payload.get("schema_version") == "1.2":
+        owned_schema = _owned_lifecycle_schema()
+        if schema != owned_schema:
+            raise CIGraphError("lifecycle recovery requires the owned schema")
+        schema = owned_schema
 
     errors = sorted(
         Draft202012Validator(schema).iter_errors(payload),
@@ -133,6 +159,8 @@ def compile_lifecycle_composition(
         "source": dict(source),
         "relationships": [observed[key] for key in sorted(observed)],
     }
+    if payload["schema_version"] == "1.2":
+        result["recovery_frontier"] = lifecycle_recovery_coverage(result["relationships"])
     result["composition_sha256"] = hashlib.sha256(_bytes(result)).hexdigest()
     # Detach nested collections from caller-owned mutable input snapshots.
     return json.loads(_bytes(result))
@@ -145,6 +173,24 @@ def _validate_compiled_identity(compiled: dict[str, Any]) -> None:
         or hashlib.sha256(_bytes(content)).hexdigest() != compiled.get("composition_sha256")
     ):
         raise CIGraphError("lifecycle composition projection identity is invalid")
+    version = compiled.get("schema_version")
+    if version not in ("1.0", "1.1", "1.2"):
+        raise CIGraphError("lifecycle composition schema version is unsupported")
+    if version != "1.2" and (
+        "recovery_frontier" in compiled or any(
+            isinstance(row.get("contract"), Mapping) and "recovery_edges" in row["contract"]
+            for row in compiled.get("relationships", []) if isinstance(row, Mapping)
+        )
+    ):
+        raise CIGraphError("lifecycle recovery snapshot version differs")
+    if version == "1.2":
+        authored = {"schema_version": "1.2", "relationships": compiled.get("relationships")}
+        if next(Draft202012Validator(_owned_lifecycle_schema()).iter_errors(authored), None) is not None:
+            raise CIGraphError("lifecycle recovery owned schema rejects the snapshot")
+        current = lifecycle_recovery_coverage(compiled.get("relationships"))
+        if compiled.get("recovery_frontier") != current:
+            raise CIGraphError("lifecycle recovery snapshot differs from the loaded owner")
+
 
 
 
@@ -629,6 +675,8 @@ def validate_reconstructed_lifecycle_bindings(
         result["source_effect_bindings"] = validate_reconstructed_effects(
             compiled, public_operations, required_effect_bindings,
         )
+    if compiled.get("schema_version") == "1.2":
+        result["recovery_frontier"] = lifecycle_recovery_coverage(compiled["relationships"])
     result["source_reconstruction"] = {
         "subject": dict(subject),
         "population_sha256": hashlib.sha256(_bytes(inventory["source_population"])).hexdigest(),

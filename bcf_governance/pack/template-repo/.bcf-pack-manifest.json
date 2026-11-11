@@ -254,7 +254,7 @@
     },
     "schemas/ci-lifecycle-composition.schema.json": {
       "operation": "copy",
-      "sha256": "dc1e233ec3483f648cb26abd5b4a548933cdab41684516951213a2ac4e5f43ba"
+      "sha256": "8b92faae2f7b042fe2e3fdbda2af2a2f175807e126597b54b0620d843873f041"
     },
     "schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",
@@ -740,7 +740,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition.py": {
       "operation": "copy",
-      "sha256": "a6e694be404e998549d8bba3eb71d960ba376efcdf4621ee1fa1c8cd0bd13733"
+      "sha256": "bd4c0a366cbceacfd381c5beb53a90664bba706a59c29d7629c40d0763a00012"
     },
     "scripts/_bcf_runtime/ci_graph_composition_costs.py": {
       "operation": "copy",
@@ -752,7 +752,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition_populations.py": {
       "operation": "copy",
-      "sha256": "d781d011e371c991d7e28fe42af4c26673ec9307cdf10e40ec23f483982705ba"
+      "sha256": "b71e98c2346cc41cf96e8a78cc51b63d523f3404d10ed7872732784f1ea8d6b7"
     },
     "scripts/_bcf_runtime/ci_graph_composition_schemas.py": {
       "operation": "copy",
@@ -760,7 +760,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_composition_views.py": {
       "operation": "copy",
-      "sha256": "3dc9b46f41d03dc551bf3f0c453656ea30a97f95263c7f9df8a9eb5ddfb6899c"
+      "sha256": "a65dade3e1838f2c50c63c66af17836d5691b5e319a587e7206fab78e0bddaf6"
     },
     "scripts/_bcf_runtime/ci_graph_contracts.py": {
       "operation": "copy",
@@ -872,7 +872,7 @@
     },
     "scripts/_bcf_runtime/ci_recovery_frontier.py": {
       "operation": "copy",
-      "sha256": "99105dda7b15cde61b42ecba400ca0f3bb3db17667c374dea97a831b00610635"
+      "sha256": "6119ff30539cb2ea27258d287933b1a0e12887c01bc47c2c16aa2d48184f7250"
     },
     "scripts/_bcf_runtime/ci_reuse_attestation_verifier.py": {
       "operation": "copy",
@@ -1535,7 +1535,7 @@
     },
     "scripts/_bcf_runtime/resources/schemas/ci-lifecycle-composition.schema.json": {
       "operation": "copy",
-      "sha256": "dc1e233ec3483f648cb26abd5b4a548933cdab41684516951213a2ac4e5f43ba"
+      "sha256": "8b92faae2f7b042fe2e3fdbda2af2a2f175807e126597b54b0620d843873f041"
     },
     "scripts/_bcf_runtime/resources/schemas/ci-provider-snapshot.schema.json": {
       "operation": "copy",

@@ -20,12 +20,17 @@ def _render_lifecycle_composition(compiled: dict[str, Any], *, view: str = "boun
         raise CIGraphError("lifecycle composition projection view is invalid")
     if view == "machine":
         return _bytes({
-            "schema_version": "1.1", "relationships": compiled["relationships"],
+            "schema_version": "1.2" if compiled["schema_version"] == "1.2" else "1.1",
+            "relationships": compiled["relationships"],
         }).decode() + "\n"
-    source = compiled["source"]
+    source = dict(compiled["source"])
+    if compiled["schema_version"] == "1.2":
+        source["recovery_owner_population_sha256"] = compiled["recovery_frontier"]["owner_population_sha256"]
     identity = f"Composition: `{compiled['composition_sha256']}`"
     if view == "contract":
         source = {key: source[key] for key in ("graph_sha256", "ci_edges_sha256", "policy_sha256")}
+        if compiled["schema_version"] == "1.2":
+            source["recovery_owner_population_sha256"] = compiled["recovery_frontier"]["owner_population_sha256"]
         digest = hashlib.sha256(_bytes({
             "schema_version": compiled["schema_version"],
             "source": source,

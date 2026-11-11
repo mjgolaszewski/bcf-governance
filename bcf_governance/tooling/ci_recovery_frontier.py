@@ -365,3 +365,10 @@ def controller_transition_frontier(value: Mapping[str, Any]) -> dict[str, Any]:
         transition_class=transition,
         alternate_lane=lane,
     )
+
+def recovery_edge_population() -> tuple[tuple[str, str, str, str], ...]:
+    """Observe the existing closed owner; this grants no execution authority."""
+    return tuple(sorted(
+        (operation, state, action, successor)
+        for (operation, state), (action, successor) in _EDGES.items()
+    ))
