@@ -1677,3 +1677,40 @@ construction_phase_report_portability_correction:
   source_base: 1487a58183e114cab697fb7222768ca14f12c7ed
   behavioral_evidence_reused: true
   whole_requirement_advancement: false
+
+construction_lifetime_source_contract:
+  authority: false
+  workitem: P32-P0-04
+  context: Conservative constructor/lifetime source obligations through existing operation
+    consumers
+  layer: tooling
+  side: query
+  targets:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - tests/test_construction_source_lifetime_effects.py
+  required:
+  - Retain source-defined __del__ and __delattr__ bodies across local/imported/lowercase-alias
+    class construction
+  - Mark finalization timing/runtime provenance unknown; do not claim deterministic
+    portable destructor timing
+  - Both effect and source-population consumers retain obligation; source bodies earn
+    no effect-port credit
+  - Ordinary fresh CPython consumers witness actual writes using source-level deletion;
+    no GC/introspection instrumentation
+  - Canonical generator owns runtime mirrors; exact source and evidence remain distinct
+  forbidden:
+  - new graph/registry/receipt family
+  - project/class-name allowlist
+  - unknown-runtime purity
+  - schema/evaluator bypass
+  - SDK/main/release/whole advancement
+  verification:
+    before:
+      source_rejections: 8
+      source_population: 8
+      isolated_runtime: 4
+    after: Cause-specific20, all affected source consumers, architecture/lint/governance
+      and pack checks; known full decorator/runtime adoption block retained without
+      redundant full train
+  remaining: Full source/runtime/lifecycle populations, authenticated decorator/builtin
+    binding, installed consumer conformance and all82whole remain open.
