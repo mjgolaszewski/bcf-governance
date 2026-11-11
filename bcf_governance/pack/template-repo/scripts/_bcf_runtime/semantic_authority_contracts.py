@@ -34,6 +34,7 @@ from .semantic_authority_migrations import (
     validate_exact_base_migrations,
 )
 from .semantic_locking import atomic_write, render_lock_yaml, sha256_bytes, stable_payload_digest
+from .ci_github_authority import packaged_repo_root
 from .semantic_operation_effects import (
     SemanticOperationEffectError,
     validated_operation_effect_inventory,
@@ -125,16 +126,10 @@ def _load_yaml(path: Path, *, expected_sha256: str | None = None) -> dict[str, A
 def _schema(
     repo_root: Path, name: str, payload: dict[str, Any], *, consumer_owned: bool = False,
 ) -> None:
-    schema_root = repo_root / "schemas"
-    if consumer_owned:
-        source = Path(__file__).resolve()
-        schema_root = (
-            source.parents[1] / "pack/template-repo/schemas"
-            if source.parent.name == "tooling" else source.parents[2] / "schemas"
-        )
     try:
+        schema_root = packaged_repo_root() / "schemas" if consumer_owned else repo_root / "schemas"
         schema = json.loads((schema_root / name).read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, ValueError) as exc:
         raise SemanticAuthorityError(f"cannot load schemas/{name}: {exc}") from exc
     errors = sorted(
         Draft202012Validator(schema).iter_errors(payload),

@@ -7,12 +7,12 @@ Licensed under the MIT License.
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from jsonschema import Draft202012Validator
 from typing import Any
 
 from .semantic_python_method_identity import SOURCE_CONSTRUCTION_BODY_HOOKS
+from .ci_github_authority import packaged_repo_root
 
 
 WRITE_CALLS = {
@@ -136,14 +136,8 @@ def source_operation_call_population(
 
 def _initialization_population(inventory: dict[str, Any], files: dict[str, str]) -> dict[str, Any]:
     """Validate only with the executing distribution's schema, never candidate policy."""
-    source = Path(__file__).resolve()
-    schema_root = (
-        source.parents[1] / "pack/template-repo/schemas"
-        if source.parent.name == "tooling"
-        else source.parents[2] / "schemas"
-    )
     try:
-        schema = json.loads((schema_root / "semantic-initialization-contracts.schema.json").read_text())
+        schema = json.loads((packaged_repo_root() / "schemas/semantic-initialization-contracts.schema.json").read_text())
         errors = list(Draft202012Validator(schema).iter_errors(inventory))
     except (OSError, UnicodeError, ValueError) as exc:
         raise SemanticOperationEffectError("initialization schema is unavailable or invalid") from exc
