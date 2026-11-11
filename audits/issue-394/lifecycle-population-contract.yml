@@ -318,3 +318,33 @@ semantic_source_ambient_git_context:
   - Global environment or Git configuration mutation
   - Repair in validation copies, maintained adopter/main/predecessor changes, hand-edited generated assets
   - A new registry/evaluator/receipt or source/workspace completeness inferred from this bounded observation
+
+
+semantic_source_ambient_characterization:
+  authority: false
+  subject_commit: ccf3f40c6bc0f33a8e6a8691d111318199ce086f
+  subject_tree: 82a7fcf415988f3150d3d1c9d9c7dd2694fc93fb
+  cases: 45
+  passed: 30
+  failed: 15
+  errors: 0
+  skipped: 0
+  test_sha256: 5c603b53ec6d03786c1055bde8b1f4a32211e1f2250af20a3c7922979e56a70c
+  native_result_sha256: 356b377be4525652002643c000ac1f7c492dc4fe903a99b884aa2ee2cb6673d0
+  junit_sha256: 47dfd99aeb13e23ad8aad605cc79cea7e0c79eb4ec70a30f58e8026c77e444d8
+  findings:
+  - Foreign Git dir/index can omit actual candidate or tracked source.
+  - Foreign dir/common/object context breaks exact committed population and blob queries.
+  - Preflight clean subject follows foreign dir/common/worktree/index/object context.
+  - None/benign positive observations and parent/config/index preservation remain retained.
+  scope: Real source-reader controls only, not complete workspace/provider/lifecycle conformance.
+
+semantic_source_replacement_identity_control:
+  authority: false
+  status: authored_unexecuted
+  owners: [semantic_source_paths._source_git, preflight_repository_context.git_value, preflight_repository_context.tracked_files]
+  required: An exact source commit must not acquire another tree through local replacement refs; preserve the existing semantic-owner defense and qualify the sibling preflight read.
+  fixture: Two actual independent Git repositories; copy foreign immutable objects into the active fixture, add one local replacement ref, compare the exact original tree and committed source population.
+  tests: [tests/test_source_repository_environment.py::test_source_tree_identity_ignores_local_replacement]
+  sequence: Characterize the two added controls before production; preserve the original45 source bytes/oracles and old exact evidence.
+  limits: No global/config/environment mutation, source execution or full lifecycle/authority claim; fixture-only refs are not provider authority.

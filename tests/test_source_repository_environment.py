@@ -124,3 +124,22 @@ def test_source_reads_bind_explicit_repository(repositories, monkeypatch, kind, 
         "source read mutated repository configuration or index bytes"
     )
 
+
+@pytest.mark.parametrize("consumer", ["preflight", "committed-source"])
+def test_source_tree_identity_ignores_local_replacement(repositories, consumer):
+    import shutil
+
+    active, foreign, _config, identity, expected_blobs, preserved = repositories
+    # Supply actual foreign Git objects without a provider or network operation.
+    shutil.copytree(foreign / ".git/objects", active / ".git/objects", dirs_exist_ok=True)
+    foreign_commit = _git(foreign, "rev-parse", "HEAD")
+    _git(active, "replace", identity["commit_sha"], foreign_commit)
+    if consumer == "preflight":
+        assert preflight.git_value(active, "rev-parse", "HEAD^{tree}") == identity["tree_sha"], (
+            "local replacement changed the tree bound to an exact source commit"
+        )
+    else:
+        observed = source.committed_python_source_population(active, **identity)
+        assert observed["python_blobs"] == expected_blobs
+    assert {path: path.read_bytes() for path in preserved} == preserved
+
