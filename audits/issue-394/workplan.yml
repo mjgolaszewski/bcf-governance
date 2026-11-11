@@ -223,6 +223,7 @@ workitems:
     - audits/issue-394/periodic-planned-consumption-contract.json
     - audits/issue-394/periodic-planned-consumption-verification.json
     - audits/issue-394/lifecycle-population-contract.yml
+    - audits/issue-394/lifecycle-recovery-composition-baseline.json
     - audits/issue-394/lifecycle-population-census.json
     - audits/issue-394/ci-edge-population-consumer-verification.json
     - audits/issue-394/graph-transport-extraction-verification.json

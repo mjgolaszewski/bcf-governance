@@ -523,3 +523,80 @@ comparison_context_prior_summary_disposition:
   ledger:
     type: 394source
     statement: 39d1b5a2 src/private pass; lifecycle audit; scope open.
+
+closed_recovery_population_adoption_contract:
+  authority: false
+  status: contract_only_implementation_pending
+  phase: P32
+  workitems:
+  - P32-P0-03
+  - P32-P0-04
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  canonical_owners:
+  - bcf_governance/tooling/ci_recovery_frontier.py
+  - bcf_governance/tooling/ci_graph_composition.py
+  - bcf_governance/tooling/ci_graph_composition_populations.py
+  - bcf_governance/tooling/ci_graph_composition_views.py
+  - schemas/ci-lifecycle-composition.schema.json
+  - governance/public-contracts.yml
+  - bcf_governance/tooling/public_contracts.py
+  contract:
+  - Derive the complete existing closed recovery operation/state/action/successor
+    population directly from the loaded authorized recovery owner; proposed composition
+    rows or their tests cannot select required edges
+  - Consume the schema from the authorized installed runtime; candidate schemas cannot
+    supply qualification authority
+  - Bind every required existing recovery edge to explicit context-qualified composition
+    relationships, reject missing invented duplicate or contradictory references before
+    downstream discovery or allocation
+  - Reauthenticate compiled recovery semantics at consuming boundaries; a cached hash
+    or caller completeness boolean cannot replace current authorized owner state
+  - Reuse the existing compiled lifecycle and recovery owners, no parallel graph registry
+    evaluator broker or receipt
+  - Preserve existing composition1.0/1.1 and unchanged recovery decisions; new typed
+    recovery bindings require explicit1.2 schema migration and old-reader safe rejection
+  - Preserve canonical machine roundtrip and deterministic human views with recovery
+    semantics bound, without introducing tracked commit/tree self-reference
+  - Register actual readable versions through the existing public-contract owner and
+    canonical reconciliation before treating new support as delivered; do not hand-author
+    graph digests workflow pins or authority commits
+  expected_tests:
+  - tests/test_ci_graph_composition.py
+  - tests/test_ci_recovery_frontier.py
+  - tests/test_candidate_provider_recovery.py
+  - tests/test_installed_lifecycle_composition.py
+  - new omitted-edge-and-test false-exclusion invented-ref stale-frontier and source-SDK-absent
+    fresh/upgrade controls before production
+  baseline: audits/issue-394/lifecycle-recovery-composition-baseline.json
+  public_inventory_disposition:
+    current_subject: 63dc90caea9f555478b46c70073bea417ffa4002
+    prior_requirement: composition-slice tracked_machine_contract_slice requires registration
+      of both readable versions; it does not assert completed registration
+    registry_sha256: b958aba90e9099f60957f878b1c00e9f2c9dfb5daacabd2ea819601af37c72cf
+    actual: Current governance/public-contracts.yml contains no lifecycle composition
+      schema entry
+    treatment: Unfulfilled planned registration requirement; no historical verification
+      claim is superseded. Registration and canonical projection remain explicit implementation
+      prerequisites
+  forbidden:
+  - production/schema/public inventory/workflow/authority edits during this contract-baseline
+    packet
+  - main/predecessor/adopter mutation
+  - new graph registry evaluator receipt or active suppression
+  - whole lifecycle recovery or P32 closure inferred from the finite recovery table
+  remaining:
+  - Full protected contexts profiles operations source/runtime effects alternate paths
+    and terminal completeness
+  - Independent runtime/provider authentication, deadline/resource costs and independent
+    custody; this21-edge table is one owner population only
+  - All82 whole requirements remain open; P33-P35 dormant
+
+closed_recovery_summary_disposition:
+  memory: P32 active; P33-P35 dormant. Source/comparison guards qualified at 9550ba50;
+    archives stay f1fd-scoped. Full SDK/lifecycle/deadline/target/adopter/custody
+    proof open. See audits/issue-394/workplan.yml.
+  ledger:
+    type: 394source
+    statement: 9550ba50 src/comparison pass; lifecycle audit; scope open.
