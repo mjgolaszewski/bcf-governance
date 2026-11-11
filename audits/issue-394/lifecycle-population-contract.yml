@@ -412,3 +412,46 @@ source_environment_memory_disposition:
   replacement: P32 active; P33-P35 dormant. Source-context guards qualified at 39d1b5a2;
     archives stay f1fd-scoped. Full SDK/lifecycle/deadline/target/adopter/custody
     proof open. See audits/issue-394/workplan.yml.
+
+comparison_source_context_contract:
+  authority: false
+  status: authored_unexecuted
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  expected_tests:
+  - tests/test_source_comparison_environment.py
+  - tests/test_ci_state_matrix.py
+  - tests/test_native_lease_custody.py
+  - tests/test_native_preflight_consumers.py
+  - tests/test_installed_source_admission.py::test_installed_comparison_observations_bind_explicit_repository
+  - tests/test_self_governance_contracts.py
+  forbidden:
+  - main/predecessor/maintained-adopter mutations
+  - hand-edited generated workflows or runtime mirrors
+  - new registry/broker/evaluator/receipt
+  - public CLI or schema changes
+  workitems:
+  - P32-P0-03
+  - P32-P0-04
+  - P32-P0-07
+  owners:
+  - bcf_governance/tooling/governance_validation/preflight_repository_context.py
+  - bcf_governance/tooling/governance_validation/ci_state_matrix.py
+  consumers:
+  - pr_context comparison-base availability
+  - pr_context comparison ancestry
+  - ci_state_matrix local comparison and changed-contract reads
+  contract:
+  - Bind every comparison query to its explicit repository through existing semantic
+    source environment owner, disable replacement reads and optional index writes
+  - Preserve comparison metadata, repository/default versus PR base distinctions,
+    ordinary local/unbound behavior, exceptions, inherited native guardian context
+    and parent/config/index bytes
+  - No provider authentication, merge eligibility, full workspace/source population
+    or lifecycle closure inferred
+  controls: 29 real-Git source controls and29 behaviors each in fresh/upgrade private
+    namespace; commit controls before production; original47source controls remain
+    exact-subject evidence
+  remaining: Protected complete lifecycle/profile populations, provider freshness,
+    filesystem metadata and runtime conformance remain open

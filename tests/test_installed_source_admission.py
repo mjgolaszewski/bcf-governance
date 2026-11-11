@@ -310,3 +310,106 @@ def test_installed_source_observations_bind_explicit_repository(installed_consum
     actual = json.loads(result.stdout)
     assert actual['source_sdk_absent'] is True and actual['private_origins']
     assert len(actual['cases']) == len({tuple(case) for case in actual['cases']}) == 47
+
+
+COMPARISON_ENVIRONMENT_PROBE = r'''import importlib.util,json,os,subprocess,sys,shutil,hashlib
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+installed=Path.cwd();private=installed/'scripts'
+sys.path.insert(0,str(private))
+from _bcf_runtime import semantic_source_paths as source
+from _bcf_runtime.governance_validation import preflight_repository_context as context
+from _bcf_runtime.governance_validation import ci_state_matrix as matrix
+root=installed/'comparison-environment-fixture';root.mkdir()
+active=root/'active';foreign=root/'foreign'
+def git(directory,*args):
+ env={k:v for k,v in os.environ.items() if not k.startswith('GIT_')}
+ return subprocess.run(['git','-c','commit.gpgsign=false','-c','core.autocrlf=false',*args],cwd=directory,env=env,capture_output=True,text=True,check=True).stdout.strip()
+for directory in (active,foreign):
+ directory.mkdir();git(directory,'init','-q')
+ git(directory,'config','user.name','Private Source Fixture')
+ git(directory,'config','user.email','private-source@example.invalid')
+body=b'raise AssertionError("source must remain data")\n'
+(active/'root.py').write_bytes(body)
+(active/'foreign.py').write_text('ACTIVE=True\n')
+(active/'.gitignore').write_text('root.py\n')
+git(active,'add','-f','root.py','foreign.py','.gitignore')
+git(active,'commit','-qm','active')
+(foreign/'foreign.py').write_text('FOREIGN=True\n')
+git(foreign,'add','.');git(foreign,'commit','-qm','foreign')
+config=root/'ambient.gitconfig';config.write_text('[core]\n    worktree = '+str(foreign)+'\n')
+identity={'commit_sha':git(active,'rev-parse','HEAD'),'tree_sha':git(active,'rev-parse','HEAD^{tree}')}
+blobs=tuple((name,'100644',git(active,'rev-parse','HEAD:'+name)) for name in ('foreign.py','root.py'))
+preserved={p:p.read_bytes() for directory in (active,foreign) for p in (directory/'.git/config',directory/'.git/index')}
+variations=[
+ ('none',{}),('author',{'GIT_AUTHOR_NAME':'Unrelated Author'}),
+ ('dir',{'GIT_DIR':str(foreign/'.git')}),
+ ('common',{'GIT_COMMON_DIR':str(foreign/'.git')}),
+ ('worktree',{'GIT_WORK_TREE':str(foreign)}),
+ ('index',{'GIT_INDEX_FILE':str(foreign/'.git/index')}),
+ ('objects',{'GIT_OBJECT_DIRECTORY':str(foreign/'.git/objects')}),
+ ('config',{'GIT_CONFIG_COUNT':'1','GIT_CONFIG_KEY_0':'core.worktree','GIT_CONFIG_VALUE_0':str(foreign)}),
+ ('global',{'GIT_CONFIG_GLOBAL':str(config)})]
+
+keys=('BCF_PROVIDER_EVENT','GITHUB_EVENT_NAME','BCF_INVOCATION_KIND','BCF_COMPARISON_BASE_SHA','BCF_ORIGIN_COMPARISON_BASE_SHA','BCF_CALLER_COMPARISON_BASE_SHA','BCF_PR_BASE_SHA')
+def metadata(base):
+ for key in keys:os.environ.pop(key,None)
+ os.environ.update(BCF_PROVIDER_EVENT='pull_request',BCF_INVOCATION_KIND='direct_event',BCF_COMPARISON_BASE_SHA=base,BCF_ORIGIN_COMPARISON_BASE_SHA=base,BCF_PR_BASE_SHA=base)
+def clean_metadata():
+ for key in keys:os.environ.pop(key,None)
+own=identity['commit_sha'];other=git(foreign,'rev-parse','HEAD')
+for directory in (active,foreign):git(directory,'update-ref','refs/remotes/origin/main','HEAD')
+cases=[]
+for kind,changes in variations:
+ for consumer in ('valid-pr','foreign-pr','local-matrix'):
+  saved=dict(os.environ)
+  try:
+   clean_metadata()
+   if consumer!='local-matrix':metadata(own if consumer=='valid-pr' else other)
+   os.environ.update(changes);before=dict(os.environ)
+   if consumer=='valid-pr':assert context.pr_context(active,'pr')['base_sha']==own
+   elif consumer=='foreign-pr':
+    try:context.pr_context(active,'pr')
+    except ValueError as error:assert 'comparison base commit is unavailable' in str(error)
+    else:raise AssertionError('foreign repository base was accepted')
+   else:assert matrix._comparison_base(active)==own
+   assert dict(os.environ)==before
+   assert {p:p.read_bytes() for p in preserved}==preserved
+   cases.append([consumer,kind])
+  finally:
+   os.environ.clear();os.environ.update(saved)
+(active/'root.py').write_text('NEXT=True\n')
+git(active,'add','-f','root.py');git(active,'commit','-qm','descendant')
+head=git(active,'rev-parse','HEAD')
+shutil.copytree(foreign/'.git/objects',active/'.git/objects',dirs_exist_ok=True)
+git(active,'replace',head,other)
+preserved={p:p.read_bytes() for directory in (active,foreign) for p in (directory/'.git/config',directory/'.git/index')}
+for consumer in ('valid-pr','local-matrix'):
+ saved=dict(os.environ)
+ try:
+  clean_metadata()
+  if consumer=='valid-pr':metadata(own)
+  before=dict(os.environ)
+  result=context.pr_context(active,'pr')['base_sha'] if consumer=='valid-pr' else matrix._comparison_base(active)
+  assert result==own and dict(os.environ)==before
+  assert {p:p.read_bytes() for p in preserved}==preserved
+  cases.append([consumer,'replacement'])
+ finally:
+  os.environ.clear();os.environ.update(saved)
+origins={name:str(Path(module.__file__).resolve()) for name,module in list(sys.modules.items()) if name.startswith('_bcf_runtime.') and getattr(module,'__file__',None)}
+assert origins and all(Path(value).is_relative_to(private) for value in origins.values())
+assert importlib.util.find_spec('bcf_governance') is None and len(cases)==29
+print(json.dumps({'source_sdk_absent':True,'cases':cases,'private_origins':origins},sort_keys=True))
+'''
+compile(COMPARISON_ENVIRONMENT_PROBE, 'installed-comparison-repository-environment', 'exec')
+
+
+def test_installed_comparison_observations_bind_explicit_repository(installed_consumer, isolated_python):
+    result = subprocess.run(
+        [str(isolated_python), '-I', '-B', '-c', COMPARISON_ENVIRONMENT_PROBE],
+        cwd=installed_consumer, env=_environment(), capture_output=True, text=True, timeout=60,
+    )
+    assert result.returncode == 0, _record(result)
+    actual = json.loads(result.stdout)
+    assert actual['source_sdk_absent'] is True and actual['private_origins']
+    assert len(actual['cases']) == len({tuple(case) for case in actual['cases']}) == 29
