@@ -54,11 +54,27 @@ def main() -> None:
             raise RuntimeError(installed.stdout + installed.stderr)
         python = create_isolated_python(root / "consumer-python")
         fresh_siblings = exercise_installed_sibling_retirement(consumer, python)
-        project_owned = consumer / "project-owned-sibling-qualification.txt"
-        project_owned.write_bytes(b"project-owned bytes\n")
+        report = exercise_installed_consumer(consumer, python, root / "acceptance")
+        upgrade_consumer = root / "upgrade-consumer"
+        upgrade_consumer.mkdir()
+        subprocess.run(
+            ["git", "init", "--quiet"], cwd=upgrade_consumer,
+            check=True, env=environment,
+        )
+        upgrade_fresh_command = list(command)
+        upgrade_fresh_command[upgrade_fresh_command.index("--target") + 1] = str(upgrade_consumer)
+        prepared = subprocess.run(
+            upgrade_fresh_command, cwd=root, env=environment,
+            capture_output=True, text=True,
+        )
+        if prepared.returncode:
+            raise RuntimeError(prepared.stdout + prepared.stderr)
+        before_upgrade_siblings = exercise_installed_sibling_retirement(upgrade_consumer, python)
+        project_owned = upgrade_consumer / "project-owned-sibling-qualification.txt"
+        project_owned.write_bytes(b"project-owned bytes")
         project_owned.chmod(0o640)
         preserved = project_owned.read_bytes(), project_owned.stat().st_mode
-        upgrade_command = [*command, "--upgrade"]
+        upgrade_command = [*upgrade_fresh_command, "--upgrade"]
         upgraded = subprocess.run(
             upgrade_command, cwd=root, env=environment, capture_output=True, text=True,
         )
@@ -66,11 +82,13 @@ def main() -> None:
             raise RuntimeError(upgraded.stdout + upgraded.stderr)
         if (project_owned.read_bytes(), project_owned.stat().st_mode) != preserved:
             raise RuntimeError("installed SDK upgrade changed project-owned bytes or mode")
-        upgrade_siblings = exercise_installed_sibling_retirement(consumer, python)
-        report = exercise_installed_consumer(consumer, python, root / "acceptance")
+        upgrade_siblings = exercise_installed_sibling_retirement(upgrade_consumer, python)
         report["sibling_response_retirement"] = {
-            "fresh": fresh_siblings, "upgrade": upgrade_siblings,
-            "project_owned_preserved": True,
+            "fresh": fresh_siblings, "before_upgrade": before_upgrade_siblings,
+            "upgrade": upgrade_siblings, "project_owned_preserved": True,
+            "upgrade_preparation_installer": {
+                "argv": upgrade_fresh_command, "exit_code": prepared.returncode,
+            },
             "upgrade_installer": {"argv": upgrade_command, "exit_code": upgraded.returncode},
         }
         report["installed_package"] = str(package)
