@@ -1396,3 +1396,25 @@ construction_current_owner_implementation_contract:
   remaining: Typed receiver/control flow, implicit initialization/runtime/SDK effects,
     complete protected lifecycle populations and both trace directions, deadlines/targets/adopters/custody
     and all82whole remain open.
+
+construction_current_owner_adoption_block:
+  report: audits/issue-394/construction-current-owner-adoption-block.json
+  sha256: 259f607705aefb779462fccc97ccf8e3b11c2adf50d8277f881feb997757b42b
+  subject: 2496622d48d4fb8224d0a93df812cd9935a2cb9f
+  source_controls_passed: 48
+  full_adoption_qualified: false
+  source_governance_exit_code: 0
+
+construction_block_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified;
+    construction-source controls 00704bce characterized, implementation pending. Full
+    population/runtime/deadlines/targets/adopters/custody open.
+  current_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified; construction2496622d48controls
+    pass, decorator/descriptor adoption blocked. Full population/runtime/deadlines/targets/adopters/custody
+    and82whole open.
+  previous_ledger:
+    type: 394source
+    statement: e3ce pass; construction source RED/open.
+  current_ledger:
+    type: 394source
+    statement: 2496622d proto; adoption blocked.
