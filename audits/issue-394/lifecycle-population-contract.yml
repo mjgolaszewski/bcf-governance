@@ -1418,3 +1418,44 @@ construction_block_summary_disposition:
   current_ledger:
     type: 394source
     statement: 2496622d proto; adoption blocked.
+
+construction_source_census_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  owner: bcf_governance/tooling/semantic_ownership_scan.py::_discover_ownership_inputs
+  source_subject: c109514ddf8a940d2f5c1725c1eb83a956722765
+  scope: Native read-only diagnostic through the existing Python source-discovery
+    owner; no second parser, graph, registry, evaluator or runtime introspection.
+  derivation:
+  - Load the same current-source Python inventory used by earliest authored semantic
+    validation.
+  - Derive known class calls independently by exact called_symbol membership in the
+    discovered class population, not identifier capitalization or proposed constructor
+    rows.
+  - Compare each known-class call's exact span/target with constructor facts and neutral
+    constructor observations; retain every missing/contradictory span or observation.
+  - Census unresolved source constructor obligations across all discovered function
+    scopes and retain source class/external provenance distinctions; do not call unknown
+    static scope runtime failure.
+  - Keep module/class initialization, dynamic factories, external/native behavior,
+    SDK purity, complete runtime contexts and full lifecycle authority explicitly
+    outside this diagnostic.
+  - Retain the existing source owner outputs/digests and exact code hashes; the diagnostic
+    view has no scheduling/suppression/phase/release authority.
+  - The expected known-class subset comes from the existing owner; no claim that this
+    census independently proves complete class discovery or covers nested/dynamic
+    classes.
+  frozen:
+  - all production
+  - all schemas/catalog/graph/workflow/authority
+  - all original retained source
+  - existing test evidence
+  outputs:
+  - machine-local raw source census
+  - bounded governed summary with exact subject/evidence hashes and residual populations
+  - coordinated ledger/MEMORY/phase-log append and normal feature backup
+  acceptance: A completed source census is diagnostic evidence only; missing populations
+    and unsupported provenance remain open. No runtime qualification, canonical projection
+    or existing checks rerun.
