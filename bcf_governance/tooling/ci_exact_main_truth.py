@@ -132,50 +132,25 @@ def authenticate_exact_main_readiness(
 ) -> None:
     """Run the shared readiness owner on exact provider-owned lifecycle bytes."""
 
-    from .trusted_inputs import _authenticated_phase_policy_subject
+    from .trusted_inputs import (
+        _authenticated_lifecycle_source_snapshot, _read_authenticated_lifecycle_blob,
+    )
     from .prior_evidence_transport import _mapping
     from .evidence_workitem_lifecycle import (
         WorkitemContractError, validate_bounded_target_successor, validate_evaluation_authored_ready,
     )
 
-    _, selected = _authenticated_phase_policy_subject(
+    _, selected, blobs, modes = _authenticated_lifecycle_source_snapshot(
         api, repository=repository, policy_subject=main,
     )
-    inventory = api.complete_tree_with_modes(repository, selected.tree_sha)
-    blobs: dict[str, str] = {}
-    modes: dict[str, str] = {}
-    for row in inventory:
-        if not isinstance(row, (tuple, list)) or len(row) != 3:
-            raise GitHubControllerError("exact-main lifecycle source inventory is invalid")
-        path, oid, mode = row
-        if (not isinstance(path, str) or not path or path in blobs
-                or PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts):
-            raise GitHubControllerError("exact-main lifecycle source inventory is ambiguous")
-        if not isinstance(mode, str) or mode not in {"100644", "100755", "120000"}:
-            raise GitHubControllerError("exact-main lifecycle source mode is invalid")
-        modes[path] = mode
-        blobs[path] = exact_sha(oid, field="exact-main lifecycle blob")
     total = 0
 
     def read(path: Any) -> bytes:
         nonlocal total
-        if (not isinstance(path, str) or "\\" in path
-                or PurePosixPath(path).as_posix() != path
-                or PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts
-                or not PurePosixPath(path).parts or path not in blobs):
-            raise GitHubControllerError("exact-main lifecycle source path is unsafe or missing")
-        if modes[path] not in {"100644", "100755"}:
-            raise GitHubControllerError("exact-main lifecycle source is not a regular blob")
-        content = api.content(repository, path, ref=selected.checkout_sha)
-        raw = content.content
-        if not isinstance(raw, bytes):
-            raise GitHubControllerError("exact-main lifecycle source bytes are invalid")
-        total += len(raw)
-        if total > _MAX_ARCHIVE:
-            raise GitHubControllerError("exact-main lifecycle source exceeds bounded input")
-        digest = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
-        if content.path != path or content.blob_oid != blobs[path] or digest != blobs[path]:
-            raise GitHubControllerError("exact-main lifecycle source blob is not exact")
+        raw, total = _read_authenticated_lifecycle_blob(
+            api, repository=repository, selected=selected, blobs=blobs, modes=modes,
+            path=path, total=total,
+        )
         return raw
 
     ledger_raw = read("plans/phase-ledger.yml")

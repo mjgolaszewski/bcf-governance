@@ -588,7 +588,7 @@
     },
     "scripts/_bcf_runtime/ci_exact_main_truth.py": {
       "operation": "copy",
-      "sha256": "829817595aa11a0a1561d8e92d81ac13d2156bb756a956bbe3812c49b9e65dfb"
+      "sha256": "712599d75a9f54c05a77bff123b4c15f39526918163b43be70561da62a3d1bcd"
     },
     "scripts/_bcf_runtime/ci_github.py": {
       "operation": "copy",
@@ -1903,7 +1903,7 @@
     },
     "scripts/_bcf_runtime/trusted_inputs.py": {
       "operation": "copy",
-      "sha256": "703b24557aab46e2b5c70a02be5f2730ab675371a805153fac0eb053869710ae"
+      "sha256": "28b2e04e0cbdb8fc44dc3631f5abee0141cf2b5939816d38cc40ec54ace7bb99"
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",

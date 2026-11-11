@@ -7,10 +7,10 @@ import hashlib
 import json
 import os
 import stat
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import re
 from tempfile import TemporaryDirectory
-from typing import Any
+from typing import Any, Mapping
 
 from .ci_authority_contracts import validate_ci_contract
 from .ci_authority_certification import (
@@ -25,6 +25,9 @@ from .ci_github_release_inputs import _exact_finalizer_run, _exact_role_run
 from .controller_transition_provider_custody import github_is_ancestor
 from .evaluation_scope import is_terminal_phase_certification
 from .prior_evidence_transport import MAX_ARCHIVE_BYTES, MAX_EXPANDED_BYTES, _archive_files, _mapping
+
+
+_MAX_LIFECYCLE_SOURCE_BYTES = 2_000_000
 
 
 class TrustedInputError(ValueError):
@@ -173,6 +176,59 @@ def _authenticated_phase_policy_subject(
     return current, selected
 
 
+def _authenticated_lifecycle_source_snapshot(
+    api: GitHubAPI, *, repository: str, policy_subject: MainIdentity | None,
+) -> tuple[MainIdentity, MainIdentity, dict[str, str], dict[str, str]]:
+    """Capture exact provider lifecycle source facts for the consuming query."""
+    if not callable(getattr(api, "complete_tree_with_modes", None)):
+        raise GitHubControllerError("exact-main lifecycle source inventory is unavailable")
+    current, selected = _authenticated_phase_policy_subject(
+        api, repository=repository, policy_subject=policy_subject,
+    )
+    inventory = api.complete_tree_with_modes(repository, selected.tree_sha)
+    if not isinstance(inventory, (tuple, list)):
+        raise GitHubControllerError("exact-main lifecycle source inventory is invalid")
+    blobs: dict[str, str] = {}
+    modes: dict[str, str] = {}
+    for row in inventory:
+        if not isinstance(row, (tuple, list)) or len(row) != 3:
+            raise GitHubControllerError("exact-main lifecycle source inventory is invalid")
+        path, oid, mode = row
+        if (not isinstance(path, str) or not path or path in blobs
+                or PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts):
+            raise GitHubControllerError("exact-main lifecycle source inventory is ambiguous")
+        if not isinstance(mode, str) or mode not in {"100644", "100755", "120000"}:
+            raise GitHubControllerError("exact-main lifecycle source mode is invalid")
+        modes[path] = mode
+        blobs[path] = exact_sha(oid, field="exact-main lifecycle blob")
+    return current, selected, blobs, modes
+
+
+def _read_authenticated_lifecycle_blob(
+    api: GitHubAPI, *, repository: str, selected: MainIdentity,
+    blobs: Mapping[str, str], modes: Mapping[str, str], path: Any, total: int,
+) -> tuple[bytes, int]:
+    """Consume a blob from the locally authenticated inventory and byte budget."""
+    if (not isinstance(path, str) or "\\" in path
+            or PurePosixPath(path).as_posix() != path
+            or PurePosixPath(path).is_absolute() or ".." in PurePosixPath(path).parts
+            or not PurePosixPath(path).parts or path not in blobs):
+        raise GitHubControllerError("exact-main lifecycle source path is unsafe or missing")
+    if modes[path] not in {"100644", "100755"}:
+        raise GitHubControllerError("exact-main lifecycle source is not a regular blob")
+    content = api.content(repository, path, ref=selected.checkout_sha)
+    raw = content.content
+    if not isinstance(raw, bytes):
+        raise GitHubControllerError("exact-main lifecycle source bytes are invalid")
+    total += len(raw)
+    if total > _MAX_LIFECYCLE_SOURCE_BYTES:
+        raise GitHubControllerError("exact-main lifecycle source exceeds bounded input")
+    digest = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+    if content.path != path or content.blob_oid != blobs[path] or digest != blobs[path]:
+        raise GitHubControllerError("exact-main lifecycle source blob is not exact")
+    return raw, total
+
+
 def verify_required_phase_closure_inputs(
     api: GitHubAPI, *, repository: str, phase_id: str | None,
     policy_subject: MainIdentity | None = None,
@@ -182,15 +238,17 @@ def verify_required_phase_closure_inputs(
     if (phase_id is None and policy_subject is None) or (phase_id is not None and (
             not isinstance(phase_id, str) or re.fullmatch(r"P[0-9]+", phase_id) is None)):
         raise GitHubControllerError("phase prerequisite target is invalid")
-    current, selected = _authenticated_phase_policy_subject(
+    current, selected, blobs, modes = _authenticated_lifecycle_source_snapshot(
         api, repository=repository, policy_subject=policy_subject,
     )
+    total = 0
     documents: dict[str, dict[str, Any]] = {}
     for path in ("plans/build-plan.yml", "plans/phase-ledger.yml", "plans/phase-history.yml"):
-        content = api.content(repository, path, ref=selected.checkout_sha)
-        if content.path != path:
-            raise GitHubControllerError("protected lifecycle document path is not exact")
-        documents[path] = _mapping(content.content, label=f"protected {path}")
+        raw, total = _read_authenticated_lifecycle_blob(
+            api, repository=repository, selected=selected, blobs=blobs, modes=modes,
+            path=path, total=total,
+        )
+        documents[path] = _mapping(raw, label=f"protected {path}")
     phases = documents["plans/build-plan.yml"].get("phase_sequence")
     if not isinstance(phases, list) or not all(isinstance(value, dict) for value in phases):
         raise GitHubControllerError("protected phase sequence is invalid")
