@@ -7,7 +7,7 @@ import sys
 
 import pytest
 
-from bcf_governance.tooling.semantic_operation_effects import source_operation_call_population
+from bcf_governance.tooling.semantic_operation_effects import SemanticOperationEffectError, source_operation_call_population
 from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source, resolve_python_imports
 
 CASES = {
@@ -130,7 +130,7 @@ def test_source_population_keeps_initialization_and_runtime_uncertainty(tmp_path
     fixture = tmp_path / "service.py"
     fixture.write_text(_source(case))
     inventory = resolve_python_imports(
-        tmp_path, discover_python_source(tmp_path, files=[fixture], call_contracts_version="1.0"),
+        tmp_path, discover_python_source(tmp_path, files=[fixture], call_contracts_version="1.0", initialization_contracts_version="1.0"),
     )
     observation = source_operation_call_population(
         "service.py::query", inventory, include_initialization=True,
@@ -155,3 +155,13 @@ def test_source_population_keeps_initialization_and_runtime_uncertainty(tmp_path
     fact = constructors[0]["construction_effect_observation"]
     assert fact["authority"] is False
     assert fact["qualification"] == "SOURCE_OBLIGATIONS_ONLY_RUNTIME_PROVENANCE_REQUIRED"
+
+def test_initialization_population_without_explicit_contract_version_rejects(tmp_path: Path):
+    fixture = tmp_path / "service.py"
+    fixture.write_text(_source("ordinary"))
+    inventory = resolve_python_imports(
+        tmp_path, discover_python_source(tmp_path, files=[fixture], call_contracts_version="1.0"),
+    )
+    assert "module_initializers" not in inventory
+    with pytest.raises(SemanticOperationEffectError, match="initialization population facts are incompatible"):
+        source_operation_call_population("service.py::query", inventory, include_initialization=True)

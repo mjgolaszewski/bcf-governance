@@ -1632,3 +1632,14 @@ construction_phase_runtime_contract:
     class creation and module initialization obligations, qualify full native/installed
     consumer population and all82whole requirements; these twelve examples are not
     a complete population.
+
+construction_phase_fixture_ingress_correction:
+  contract: Preserve production/schema guard; opt in to existing initialization contract1.0
+    in fixture, retain wrong-ingress12FAIL and unchanged12runtimePASS, add missing-version
+    rejection. No production change or runtime rerun.
+  before_subject: bda3928e585731c1c7e39346e242564b9aded2a6
+  before_results:
+    tests: 24
+    failures: 12
+    errors: 0
+    skipped: 0
