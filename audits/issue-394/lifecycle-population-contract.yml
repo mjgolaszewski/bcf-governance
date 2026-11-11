@@ -1311,3 +1311,29 @@ construction_current_owner_characterization_contract:
     proof.
   - Retain current source identities and unintegrated originals; no implementation
     or lifecycle advance in this packet.
+
+construction_current_owner_characterization:
+  report: audits/issue-394/construction-current-owner-characterization.json
+  sha256: 28355ef0447aeeae6dc66cdc46809d7a3879dcda32a3f6c31a13fcd7102c1b97
+  subject: 00704bcee41ae2e99fb2946a35609636b716e844
+  results:
+    tests: 42
+    failures: 39
+    errors: 0
+    skipped: 0
+  original_source_preserved: true
+  full_runtime_or_sdk_authority: false
+
+construction_characterization_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Protected policy reader e3ce046c source/private
+    qualified; full population/runtime/deadlines/targets/adopters/custody open.9550/f1fd
+    retain exact scopes.
+  current_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified; construction-source
+    controls 00704bce characterized, implementation pending. Full population/runtime/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: e3ce046c policy reader pass; full scope open.
+  current_ledger:
+    type: 394source
+    statement: e3ce pass; construction source RED/open.
