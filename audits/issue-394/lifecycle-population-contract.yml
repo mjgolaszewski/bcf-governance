@@ -600,3 +600,38 @@ closed_recovery_summary_disposition:
   ledger:
     type: 394source
     statement: 9550ba50 src/comparison pass; lifecycle audit; scope open.
+
+typed_recovery_prototype_controls:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  status: prototype_controls_before_production
+  version_guards: Unknown versions reject before schema selection; rehashed cached
+    version downgrades cannot skip typed recovery validation
+  schema_migration: Optional explicit1.2 adds per-contract recovery_edges(operation,state);1.0/1.1
+    reject the new field and retain prior behavior
+  implementation_targets:
+  - bcf_governance/tooling/ci_recovery_frontier.py
+  - bcf_governance/tooling/ci_graph_composition.py
+  - bcf_governance/tooling/ci_graph_composition_populations.py
+  - bcf_governance/tooling/ci_graph_composition_views.py
+  - schemas/ci-lifecycle-composition.schema.json
+  additional_existing_schema_resource_owner: ci_github_authority.packaged_repo_root;
+    no caller/candidate schema authority in1.2
+  tests:
+  - tests/test_lifecycle_recovery_composition.py
+  - tests/test_installed_lifecycle_recovery.py
+  - 437legacy families
+  - 40architecture controls
+  qualification: Source/private prototype only; public registration through canonical
+    reconciliation and complete protected context/runtime adoption remain prerequisites
+    before delivered support
+  forbidden:
+  - public catalog/CI graph/workflow/authority changes in this packet
+  - new registry/evaluator/receipt or active optimization
+  - full recovery or P32 closure inferred
+  new_control_sequence: Commit migration note and all controls first; execute exactly
+    one new valid1.2 control to demonstrate unsupported mode before production, not
+    missed-failure detector qualification; execute cause controls after valid positive
+    setup

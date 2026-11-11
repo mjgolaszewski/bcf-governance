@@ -2543,3 +2543,7 @@ P32 source-admission refinement: the loaded runtime owns the static source inven
 P32 admission order places runtime-owned source declaration coverage ahead of test-reference collection and semantic discovery. Missing coverage is a typed rejection before those costs; this order preserves all required valid-candidate checks and canonical mutation boundaries.
 
 P32 consuming-boundary work treats mandatory lifecycle predicates as executable obligations. The current model has 21 public CLI roots and separately typed state/fact populations; source declarations alone do not establish the full protected consuming path. Phase predecessor predicates require qualified proof and cannot fall through as prose.
+
+### Dormant typed recovery reference construction
+
+The planned1.2 migration and bounded controls are recorded in audits/issue-394/lifecycle-population-contract.yml; maintainer compatibility guidance is in docs/MAINTAINING.md. Existing recovery decisions and all provider/phase/release authorities remain unchanged. The finite recovery owner population does not establish complete lifecycle recovery.
