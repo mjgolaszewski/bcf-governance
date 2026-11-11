@@ -1957,3 +1957,14 @@ decorator_spelling_source_repair_contract:
   authority: false
   remaining: Actual builtin/decorator/descriptor/runtime binding remains unqualified.
     No whole acceptance advancement or main/release/SDK/adopter certification.
+
+decorator_called_boundary_continuation:
+  scope: 'Test-only continuation at4f26af52: retain exact already generated root manifest,
+    source unchanged. Twenty-four added controls exercise six same-instance decorated
+    targets, undeclared/declared-port effects and six ordinary fresh wrapper writes.'
+  previous: Generator succeeded; omitted root manifest caused dirty-boundary stop
+    before any affected/architecture execution. No generator or initial diagnostic
+    rerun.
+  qualification: 613affected source/private/TS controls,40architecture with required
+    provenance failure retained, lint/gov/pack-check, exact feature backup.
+  authority: false

@@ -78,3 +78,42 @@ def test_undecorated_same_instance_query_remains_local(tmp_path, body):
     source = "class Service:\n    def query(self):\n        " + body + "\n    def read(self):\n        return 1\n"
     inventory = _inventory(tmp_path, source)
     assert validate_operation_effects(_operation(), "service.py::Service.query", inventory) == (0, 0)
+
+
+def _called_source(spelling):
+    source = _source(spelling).replace("def query(self):", "def read(self):")
+    return source.replace("class Service:\n", "class Service:\n    def query(self):\n        return self.read()\n")
+
+
+@pytest.mark.parametrize("spelling", SPELLINGS)
+def test_same_instance_decorated_target_cannot_claim_exact_binding(tmp_path, spelling):
+    inventory = _inventory(tmp_path, _called_source(spelling))
+    query = next(row for row in inventory["functions"] if row["symbol"] == "service.py::Service.query")
+    call = next(row for row in query["calls"] if row["call_name"] == "read")
+    assert call["dispatch_resolution"] == "unresolved"
+    assert call["dispatch_port_eligible"] is False
+
+
+@pytest.mark.parametrize("spelling", SPELLINGS)
+@pytest.mark.parametrize("declared", (False, True), ids=("undeclared", "declared-port"))
+def test_decorated_target_uncertainty_cannot_be_hidden_at_effect_port(tmp_path, spelling, declared):
+    inventory = _inventory(tmp_path, _called_source(spelling))
+    operation = _operation()
+    if declared:
+        operation["allowed_mutation_ports"] = ["service.py::Service.read"]
+    with pytest.raises(SemanticOperationEffectError, match="unresolved effect"):
+        validate_operation_effects(operation, "service.py::Service.query", inventory)
+
+
+@pytest.mark.parametrize("spelling", SPELLINGS)
+def test_fresh_python_consumer_witnesses_same_instance_wrapper_write(tmp_path, spelling):
+    fixture = tmp_path / "consumer.py"
+    fixture.write_text(_called_source(spelling) + "\nassert Service().query() == 1\nassert Path('state').read_text() == 'changed'\nprint('called-decorator-write-witnessed')\n")
+    environment = {key: value for key, value in os.environ.items()
+                   if not key.startswith(("PYTHON", "BCF_", "GIT_", "GITHUB_", "AGENTBUS_"))
+                   and key not in {"GH_TOKEN", "VIRTUAL_ENV"}}
+    result = subprocess.run([sys.executable, "-I", "-B", str(fixture)], cwd=tmp_path,
+                            env=environment, capture_output=True, text=True, timeout=10)
+    assert result.returncode == 0, result.stderr
+    assert result.stdout == "called-decorator-write-witnessed\n"
+    assert not result.stderr
