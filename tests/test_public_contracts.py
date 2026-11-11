@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import json
 import shutil
 
 import pytest
@@ -101,3 +102,69 @@ def test_session_activation_and_claim_capability_cannot_diverge(tmp_path: Path) 
 
     with pytest.raises(PublicContractError, match="differs"):
         validate_public_contracts(root)
+
+
+def _lifecycle_registration(root: Path) -> dict[str, object]:
+    schema = json.loads(
+        (root / "schemas/ci-lifecycle-composition.schema.json").read_text(encoding="utf-8")
+    )
+    return {
+        "path": "schemas/ci-lifecycle-composition.schema.json",
+        "version_field": "schema_version",
+        "readable_versions": schema["properties"]["schema_version"]["enum"],
+        "active_version": "1.1",
+        "migration_only_versions": [],
+    }
+
+
+def test_lifecycle_composition_registration_tracks_readable_owner() -> None:
+    registry = yaml.safe_load(
+        (REPO_ROOT / "governance/public-contracts.yml").read_text(encoding="utf-8")
+    )
+    assert registry["contracts"].get("lifecycle_composition") == _lifecycle_registration(REPO_ROOT)
+
+
+def test_lifecycle_composition_family_cannot_disappear(tmp_path: Path) -> None:
+    root = _fixture(tmp_path)
+    contract_path = root / "governance/public-contracts.yml"
+    payload = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
+    payload["contracts"].pop("lifecycle_composition", None)
+    contract_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    with pytest.raises(PublicContractError, match="lifecycle_composition"):
+        validate_public_contracts(root)
+
+
+@pytest.mark.parametrize(
+    ("field", "value", "message"),
+    [
+        ("readable_versions", ["1.0", "1.1"], "readable versions"),
+        ("readable_versions", ["1.0", "1.1", "1.2", "9.9"], "readable versions"),
+        ("active_version", "9.9", "active version"),
+        ("migration_only_versions", ["1.1"], "migration-only"),
+        ("version_field", "not_a_version_field", "top-level"),
+    ],
+)
+def test_lifecycle_composition_registration_mutants(
+    tmp_path: Path, field: str, value: object, message: str
+) -> None:
+    root = _fixture(tmp_path)
+    contract_path = root / "governance/public-contracts.yml"
+    payload = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
+    registration = _lifecycle_registration(root)
+    registration[field] = value
+    payload["contracts"]["lifecycle_composition"] = registration
+    contract_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    with pytest.raises(PublicContractError, match=message):
+        validate_public_contracts(root)
+
+
+def test_lifecycle_composition_registration_preserves_readable_legacy(
+    tmp_path: Path,
+) -> None:
+    root = _fixture(tmp_path)
+    contract_path = root / "governance/public-contracts.yml"
+    payload = yaml.safe_load(contract_path.read_text(encoding="utf-8"))
+    payload["contracts"]["lifecycle_composition"] = _lifecycle_registration(root)
+    contract_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    inventory = validate_public_contracts(root)
+    assert inventory.contract_count == len(payload["contracts"])

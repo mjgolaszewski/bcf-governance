@@ -688,3 +688,58 @@ typed_recovery_summary_disposition:
   current_ledger:
     type: 394source
     statement: 9550 guards; 7d4ec224 recovery proto; scope open.
+
+lifecycle_public_registration_contract:
+  subject: aba8ba73452014760707970d843c10afaeaecc30
+  scope: P32 public registration only, no lifecycle activation
+  schema_owner: schemas/ci-lifecycle-composition.schema.json
+  registry_owner: governance/public-contracts.yml
+  registry_schema_owner: schemas/public-contracts.schema.json
+  readable_versions:
+  - '1.0'
+  - '1.1'
+  - '1.2'
+  active_version: '1.1'
+  migration_only_versions: []
+  rationale: Existing default machine rendering remains1.1;1.2 explicit opt-in prototype
+    does not establish whole lifecycle adoption. Existing1.0 remains readable, no
+    new deprecation/migration-only status.
+  defect: validate_public_contracts iterates only declared entries; registry schema
+    does not require lifecycle_composition, so removing/omitting this entire family
+    is accepted.
+  production_after_contract: Require lifecycle_composition through existing registry
+    schema; declare family against canonical lifecycle schema; canonical reconciliation
+    alone owns hash-bound graph/workflow/authority changes.
+  controls:
+  - actual registry family/versions match canonical schema
+  - removing entire family rejected by registry schema
+  - missing/invented readable version rejected
+  - unsupported active version rejected
+  - active cannot be migration-only
+  - wrong version field rejected
+  - all three readable without deprecation accepted
+  frozen:
+  - governance/public-contracts.yml
+  - governance/ci-graph.yml
+  - governance/ci-authority.yml
+  - .github/workflows
+  pending: Finite Recovery grant41926; no execution started.
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  status: contract_before_registration_production
+  tests: tests/test_public_contracts.py:8 new lifecycle registration controls
+  earliest_boundary_note: 'Current reconcile and submit authored guards do not call
+    public-contract validator before interpreter admission. Full validator combines
+    authored contract/schema compatibility with mechanically projected package-version/CLI/graph
+    surfaces. Do not simply hoist whole validator and block canonical repair of generated
+    drift. Scope a later extracted authored-only check from existing public-contract
+    owner, used before environment allocation, with full canonical validation after
+    projection; prove ordering with real entrypoint controls. Not implemented or qualified
+    in current contract-only packet.
+
+
+    '
+  forbidden: No catalog/schema/graph/workflow/authority production changes, apply/reconcile/submit/main/PR/release
+    in this packet.
