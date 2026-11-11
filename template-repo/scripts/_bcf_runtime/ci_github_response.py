@@ -12,10 +12,25 @@ import math
 import socket
 import ssl
 import time
+from urllib.error import HTTPError
 
 
 class ProviderResponseError(OSError):
     """A response transport cannot establish its required elapsed bound."""
+
+
+def _retire_provider_error_response(error: HTTPError) -> None:
+    """Retire an opener's error body before translating its provider outcome.
+
+    This neither retries a request nor certifies a finite cleanup deadline.
+    The consumer retains status mapping; failed cleanup blocks that mapping.
+    """
+    try:
+        error.close()
+    except Exception:
+        # Explicit cause keeps the provider outcome; implicit context retains
+        # the actual cleanup exception. Cancellation propagates unchanged.
+        raise ProviderResponseError("provider error response cleanup failed") from error
 
 
 def valid_provider_byte_limit(value):

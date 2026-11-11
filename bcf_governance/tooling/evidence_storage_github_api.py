@@ -19,7 +19,10 @@ from .ci_github_downloads import (
     open_download,
 )
 from .provider_read import ProviderReadError, open_provider_get
-from .ci_github_response import provider_response_deadline, valid_provider_byte_limit
+from .ci_github_response import (
+    ProviderResponseError, _retire_provider_error_response,
+    provider_response_deadline, valid_provider_byte_limit,
+)
 
 
 EVIDENCE_TAG = re.compile(r"^bcf-evidence-[a-z0-9-]+-[a-f0-9]{64}$")
@@ -166,6 +169,10 @@ class GitHubEvidenceAPI(GitHubAPI):
                 ) as bounded:
                     raw = bounded.read(1_048_577)
         except HTTPError as exc:
+            try:
+                _retire_provider_error_response(exc)
+            except ProviderResponseError as cleanup_error:
+                raise GitHubAPIError("GitHub evidence upload error response cleanup failed") from cleanup_error
             raise GitHubAPIError(f"GitHub evidence asset upload returned {exc.code}") from exc
         except (OSError, URLError) as exc:
             raise GitHubAPIError("GitHub evidence asset upload failed") from exc

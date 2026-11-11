@@ -9,7 +9,10 @@ from urllib.request import Request
 
 from .ci_github_downloads import GitHubDownloadKind, build_download_request
 from .provider_read import ProviderReadAttempt, ProviderReadError, open_provider_get
-from .ci_github_response import provider_response_deadline, valid_provider_byte_limit
+from .ci_github_response import (
+    ProviderResponseError, _retire_provider_error_response,
+    provider_response_deadline, valid_provider_byte_limit,
+)
 
 
 class GitHubTransportError(ValueError):
@@ -57,6 +60,13 @@ def request_json(
         with operation as response, provider_response_deadline(response, timeout=30) as bounded:
             raw = bounded.read()
     except HTTPError as exc:
+        if method != "GET":
+            try:
+                _retire_provider_error_response(exc)
+            except ProviderResponseError as cleanup_error:
+                raise GitHubTransportError(
+                    f"GitHub API {method} {path} error response cleanup failed"
+                ) from cleanup_error
         if not_found_none and method == "GET" and exc.code == 404:
             return None
         raise GitHubTransportError(

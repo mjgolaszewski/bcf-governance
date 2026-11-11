@@ -21,7 +21,10 @@ from .ci_github_downloads import (
     open_download,
 )
 from .provider_read import ProviderReadAttempt
-from .ci_github_response import provider_response_deadline
+from .ci_github_response import (
+    ProviderResponseError, _retire_provider_error_response,
+    provider_response_deadline,
+)
 from .ci_github_errors import GitHubAPIConflictError, GitHubAPIError
 from .ci_github_release_api import GitHubReleaseAPIMixin
 from .ci_github_transport import GitHubTransportError, request_bytes, request_json
@@ -129,6 +132,10 @@ class GitHubAPI(
                 with provider_response_deadline(response, timeout=60) as bounded:
                     raw = bounded.read(1_048_577)
         except HTTPError as exc:
+            try:
+                _retire_provider_error_response(exc)
+            except ProviderResponseError as cleanup_error:
+                raise GitHubAPIError("GitHub release upload error response cleanup failed") from cleanup_error
             if exc.code in {409, 422}:
                 raise GitHubAPIConflictError(
                     f"GitHub release asset upload returned {exc.code}"

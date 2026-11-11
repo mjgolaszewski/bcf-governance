@@ -14,7 +14,10 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 
 from .ci_github_api import GitHubAPIError
 from .ci_github_identity import positive_int
-from .ci_github_response import provider_response_deadline
+from .ci_github_response import (
+    ProviderResponseError, _retire_provider_error_response,
+    provider_response_deadline,
+)
 
 
 _REPOSITORY = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -81,6 +84,10 @@ class ProtectionInspectionClient:
             ) as bounded:
                 raw = bounded.read(_MAX_RESPONSE + 1)
         except HTTPError as exc:
+            try:
+                _retire_provider_error_response(exc)
+            except ProviderResponseError as cleanup_error:
+                raise GitHubAPIError("protection inspection error response cleanup failed") from cleanup_error
             raise GitHubAPIError(f"protection inspection GET failed: {exc.code}") from exc
         except (OSError, URLError) as exc:
             raise GitHubAPIError("protection inspection GET failed") from exc

@@ -181,5 +181,10 @@ def test_failed_error_retirement_blocks_continuation(
                 "failed cleanup cannot establish the ordinary conflict continuation"
             )
     finally:
-        # Test-owned body is released without invoking the deliberate failing close.
-        BytesIO.close(body)
+        # Release the HTTPError wrapper too, including on an intended RED path.
+        try:
+            error.close()
+        except BaseException as final_cleanup:
+            assert final_cleanup is cleanup
+        finally:
+            BytesIO.close(body)

@@ -7,7 +7,7 @@
     "P32-P0-04",
     "P32-P0-05"
   ],
-  "status": "observed_negative_baseline_correction_pending",
+  "status": "source_correction_authored_pending_qualification",
   "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "existing_query_and_command_transport_cleanup",
@@ -97,5 +97,20 @@
     "physical_fence_freshly_reacquired_and_released": true,
     "limits": "One CPU/1GiB; 180s baseline+60s cleanup;4GiB floor;64MiB output bound",
     "scope": "Local source consumer fixtures only; not full86GET corpus, current source after added controls, installed parity, deadline sufficiency or phase closure"
+  },
+  "source_correction": {
+    "authority": false,
+    "contract_commit": "296bee654c23f171964812df51064499699f4148",
+    "tests_before_production_commit": "aa4e6ab6b7bd41933d3a7fce5f2715e9edd403ec",
+    "scope": "Existing response owner plus four direct consumer HTTPError mappings; GET primitive remains sole GET retirement owner",
+    "behavioral_qualification": "not_run_on_corrected_source",
+    "remaining": "32new and86retained affected cases; causal controls; governance architecture semantic package and installed consumer qualification; full lifecycle/deadline bounds remain open",
+    "canonical_sha256": {
+      "ci_github_response.py": "9be4c376de6c1c8989d8d2f691d669decae8b1d298565107f5780258f6869470",
+      "ci_github_transport.py": "359f9a7adf3d0790378f711bbe9e68a112a7cc1d0a043923626ccd538f0a769e",
+      "ci_github_api.py": "2ebaff06557f6ac292a70d0a430adc82a691f6e25e656a385382acab44f1a39e",
+      "protection_inspection_client.py": "3071e7603ec23edc52dc6aadbe795ec71aa3c25ea25de22aad6b9c70eb024994",
+      "evidence_storage_github_api.py": "138a0accaa966de70ee140fbad45ed588391e5aa3cef0d4575e50f48201aac19"
+    }
   }
 }
