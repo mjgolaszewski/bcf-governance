@@ -258,5 +258,32 @@
     },
     "native_result_sha256": "11666feb1792b1c7da6afca9594f11f86254dcb825c6a95df2fbf909f064c0d8",
     "junit_sha256": "1a36e2b7f68e3defb84e553f87c22d15bc516708c2206997b4d5c2ea488a3796"
+  },
+  "archive_installer_binding_contract": {
+    "authority": false,
+    "status": "authored_unexecuted",
+    "scope": "Existing installed consumer/artifact verifier consumes same32behavior sibling probe on actual installed SDK fresh and same-candidate upgrade before full consumer acceptance",
+    "owners": [
+      ".github/scripts/verify_installed_consumer.py",
+      "tests/test_installed_provider_error_retirement_siblings.py"
+    ],
+    "required_behavior": [
+      "Installer must originate from candidate distribution in isolated SDK interpreter",
+      "No source-template projection may substitute for candidate distribution",
+      "Run identical source-absent private-runtime probe before and after actual installer upgrade",
+      "Preserve project-owned marker bytes and mode across upgrade",
+      "Fail closed on install or probe failure before broader consumer acceptance",
+      "Retain fresh and upgrade actual probe reports and installer command under existing verification report",
+      "No new CLI/status/receipt/authority or performance claim"
+    ],
+    "unchanged_gates": [
+      "archive inventory",
+      "wheel/source mapping",
+      "strict metadata and dependency admission",
+      "existing consumer acceptance",
+      "sdist source custody and SDK tests"
+    ],
+    "verification": "Native source-absent fixture then existing artifact verifier on exact development wheel/sdist; real adopter/profile/full lifecycle/deadline/targets/custody remain separate",
+    "production_change_authority": "Commit this bounded extension before harness edits; no release publication authorization"
   }
 }
