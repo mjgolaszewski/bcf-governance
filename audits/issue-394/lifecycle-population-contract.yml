@@ -282,3 +282,39 @@ shared_authored_phase_applicability:
   controls: [submit missing-ledger refusal, reconcile check/apply malformed-or-missing ledger refusal, projection planner refusal before later stage planning, valid present/absent inputs]
   qualification: Pure source controls first; native/private projection/full required and installed qualification remains mandatory before primary integration.
   forbidden: [primary54b09168 or immutable tools mutation, retrospective adopter gates, new phase registry/evaluator/receipt family, phase or full normalization closure from source controls]
+
+
+semantic_source_ambient_git_context:
+  authority: false
+  status: authored_unexecuted
+  workitems: [P32-P0-03, P32-P0-04]
+  bounded_context: semantic_ownership and existing ci_authority source admission
+  operation_side: query
+  owners:
+  - bcf_governance/tooling/semantic_source_paths.py
+  - bcf_governance/tooling/governance_validation/preflight_repository_context.py
+  consumers:
+  - candidate_source_files
+  - committed_python_source_population
+  - committed_regular_blob_capture
+  - preflight_repository_context.tracked_files
+  - preflight_repository_context.git_state
+  problem: Explicit repository source reads currently inherit ambient Git repository, worktree, index, object-store and configuration selection.
+  contract:
+  - Bind read-only Git observations to the requested repository rather than ambient GIT_ context; centralize environment derivation in the existing source owner, not a parallel Git broker.
+  - Preserve parent environment bytes, physical linked-worktree/common-object/alternates configuration, public signatures, valid local and unbound results, ordinary exception behavior and installed private namespaces.
+  - Keep repository hooks/fsmonitor disabled and replacement-object use disabled; source observations do not authenticate provider or publication authority.
+  - Reuse actual run_admitted_command/native guardian custody and inherited execution bounds; retain non-Git execution-context variables and prevent optional index refresh writes.
+  - Before implementation execute real independent Git repository controls for foreign GIT_DIR, GIT_COMMON_DIR, GIT_WORK_TREE, GIT_INDEX_FILE, GIT_OBJECT_DIRECTORY and injected/global Git configuration; retain genuine failures and positive none/benign cases.
+  - Qualify affected source consumers and fresh/upgrade private copies with the source package absent, then mandatory governance/architecture/semantic/package checks; canonical generation alone mirrors runtime bytes.
+  - Retain complete workspace/root declarations, provider-authenticated population, filesystem Git metadata/shallow history, ancestry/content handoff, dynamic effects and runtime lifecycle conformance as separate open obligations; no whole requirement or phase advance.
+  tests:
+  - tests/test_source_repository_environment.py
+  - tests/test_semantic_source_paths.py
+  - tests/test_preflight.py
+  - tests/test_installed_source_admission.py
+  - tests/test_native_lease_custody.py
+  forbidden:
+  - Global environment or Git configuration mutation
+  - Repair in validation copies, maintained adopter/main/predecessor changes, hand-edited generated assets
+  - A new registry/evaluator/receipt or source/workspace completeness inferred from this bounded observation
