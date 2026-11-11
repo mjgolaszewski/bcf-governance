@@ -1643,3 +1643,26 @@ construction_phase_fixture_ingress_correction:
     failures: 12
     errors: 0
     skipped: 0
+
+construction_phase_runtime_observations:
+  report: audits/issue-394/construction-phase-runtime-consumers.json
+  sha256: 03553cfd1733ea8dc4faf88fd441b15d7623e47c66503fc8e413d1774376d24e
+  subject: 498a14c2a8c333c45adf02a6696101021db6b6e6
+  tests:
+    tests: 13
+    failures: 0
+    errors: 0
+    skipped: 0
+  full_adoption_qualified: false
+  previous_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified;
+    constructor association e5922843 source controls pass, full adoption blocked.
+    Full population/runtime/deadlines/targets/adopters/custody open.
+  current_memory: P32 active; P33-P35 dormant. Constructor associations e5922843 qualified;12runtime
+    cases bda3928e retained,13source cases 498a14c2 pass. Full adoption/builtin binding/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: e5922843 associations; full adoption blocked.
+  current_ledger:
+    type: 394source
+    statement: 498a14c2 bounded runtime cases; full adoption blocked.

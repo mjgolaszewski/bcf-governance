@@ -1,0 +1,38 @@
+{
+  "authority": false,
+  "status": "bounded_isolated_language_consumers_qualified_full_adoption_blocked",
+  "subject": "498a14c2a8c333c45adf02a6696101021db6b6e6",
+  "tree": "a29c4a8bfed169b9193151e5e8b47a608302064e",
+  "source_base": "bda3928e585731c1c7e39346e242564b9aded2a6",
+  "tests": {
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "interpreter": {
+    "version": "3.12.14 (main, Sep  1 2026, 14:16:52) [Clang 22.1.3 ]",
+    "implementation": "cpython",
+    "executable": "/docker/.superworkspace-tools/coordination/ironwatch-consolidation-20261029/source-reader-production-42041/test-env/bin/python"
+  },
+  "runtime_cases": 12,
+  "runtime_subject": "bda3928e585731c1c7e39346e242564b9aded2a6",
+  "runtime_evidence_sha256": "f0413cd24411bec8c52ecbc5568c9ba09b2b5ff3ba3a5366808a2184b73a2072",
+  "runtime_results_retained": {
+    "passed": 12,
+    "unmatched_source_failures": 12
+  },
+  "runtime_inputs_ast_unchanged": true,
+  "single_all_green_run_claimed": false,
+  "source_initialization_cases": 13,
+  "test_sha256": "1feb6d161523d9355d460a8ad98595ef8b3656a1b2dd8891c4a8510198e0ff2b",
+  "evidence_sha256": {
+    "consumers.xml": "ad2897191d882d12829e819f4c6124dc7afbbe68a0230e2a5348e7afeb05ab1a"
+  },
+  "production_changed": false,
+  "corpus_complete": false,
+  "builtin_or_decorator_binding_authenticated": false,
+  "full_native_or_installed_qualified": false,
+  "whole_requirement_advancement": false,
+  "remaining": "Mechanically authenticate builtin/decorator/runtime binding, preserve class creation and module initialization obligations, qualify full native/installed consumer population and all82whole requirements; these twelve examples are not a complete population."
+}
