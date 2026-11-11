@@ -4,22 +4,30 @@ import copy
 import hashlib
 import io
 import json
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
-import zipfile
 
 import pytest
 import yaml
 
+from bcf_governance.tooling import (
+    ci_controller_provider,
+)
+from bcf_governance.tooling import (
+    routine_controller_materialization as materialization,
+)
+from bcf_governance.tooling import (
+    routine_controller_provider as provider,
+)
+from bcf_governance.tooling.ci_authority_contracts import authority_role_jobs
+from bcf_governance.tooling.ci_authority_pins import compiled_workflow_job_names
+from bcf_governance.tooling.ci_github_errors import GitHubAPIError
 from bcf_governance.tooling.ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
 )
-from bcf_governance.tooling import (
-    ci_controller_provider,
-    routine_controller_materialization as materialization,
-    routine_controller_provider as provider,
-)
+from bcf_governance.tooling.controller_custody import compile_controller_custody
 from bcf_governance.tooling.routine_controller_rotation import (
     ALTERNATE_POLICY_LANE_SEQUENCE,
     AUTHORIZE_JOB,
@@ -29,16 +37,47 @@ from bcf_governance.tooling.routine_controller_rotation import (
     skipped_matrix_facades,
     transition_id,
 )
-from bcf_governance.tooling.ci_authority_contracts import authority_role_jobs
-from bcf_governance.tooling.ci_authority_pins import compiled_workflow_job_names
-from bcf_governance.tooling.controller_custody import compile_controller_custody
-
 
 ROOT = Path(__file__).resolve().parents[1]
 OLD = "1" * 40
 NEW = "2" * 40
 TREE = "3" * 40
 MAIN = MainIdentity("1207503211", "main", NEW, TREE)
+
+
+def test_prospective_normalization_only_handles_expired_transition_zip(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    from bcf_governance.tooling import routine_controller_prospective
+
+    monkeypatch.setattr(provider, "verify_provider_workflow_authority", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        routine_controller_prospective,
+        "prospective_normalized_controller_authority",
+        lambda *_a, **_k: {"controller_commit_sha": NEW, "controller_bundle_sha256": "a" * 64},
+    )
+    expired = GitHubAPIError(
+        "GitHub API GET /repos/owner/repo/actions/artifacts/11719527305/zip returned 410"
+    )
+    monkeypatch.setattr(
+        provider, "resolve_effective_controller", lambda *_a, **_k: (_ for _ in ()).throw(expired)
+    )
+    assert (
+        provider.effective_controller_authority(
+            object(), repository="owner/repo", repo_root=tmp_path
+        )["controller_commit_sha"]
+        == NEW
+    )
+    with pytest.raises(GitHubAPIError):
+        provider.effective_controller_authority(object(), repository="owner/repo")
+    unrelated = GitHubAPIError("GitHub API GET /repos/owner/repo/actions/runs/1 returned 410")
+    monkeypatch.setattr(
+        provider, "resolve_effective_controller", lambda *_a, **_k: (_ for _ in ()).throw(unrelated)
+    )
+    with pytest.raises(GitHubAPIError):
+        provider.effective_controller_authority(
+            object(), repository="owner/repo", repo_root=tmp_path
+        )
 
 
 def test_adopter_controller_policy_is_resolved_without_self_authority() -> None:

@@ -32,7 +32,7 @@ from .ci_graph_locks import apply_ci_graph_locks
 from .ci_graph_render import apply_ci_graph
 from .ci_self_controller import (
     compile_resolved_self_controller_pin,
-    project_self_controller_custody,
+    project_self_controller_pin,
     resolve_self_controller_artifact,
 )
 
@@ -48,8 +48,6 @@ def reconcile_normalized_installation(root: Path) -> dict[str, Any]:
             "reconcile",
             "--repo-root",
             str(root),
-            "--python",
-            sys.executable,
             "--apply",
         ],
         cwd=root,
@@ -345,7 +343,8 @@ def normalize_recovered_installation(
         )
     subject = receipt["subject"]
     if (
-        receipt["pre_recovery_controller"] != lifecycle.installed_commit
+        receipt["pre_recovery_controller"] != lifecycle.target_commit
+        or receipt["resulting_installed_controller"] != lifecycle.installed_commit
         or receipt["resulting_installed_controller"] != main.checkout_sha
         or subject != {"commit": main.checkout_sha, "tree": main.tree_sha}
     ):
@@ -400,7 +399,7 @@ def normalize_recovered_installation(
             "probe_run_attempt",
         )
     }
-    projection = project_self_controller_custody(
+    projection = project_self_controller_pin(
         root, pin=pin, confirmation=confirmation, apply=True
     )
     reconciliation = reconcile_normalized_installation(root)

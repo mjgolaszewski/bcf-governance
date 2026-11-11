@@ -945,6 +945,11 @@ Protocol annotations and read declarations do not prove projection purity.
   transactionally install a complete semantic configuration.
 - `bcf semantic-ownership lock --check|--apply`: verify or derive contract,
   source, recipe, and projection digests mechanically.
+- `bcf semantic-ownership deconstruct-registry --check|--apply`: preview or
+  transactionally split a clean Git-tracked flat representation registry into
+  explicit local source documents. Review the reported paths, run
+  `bcf semantic-ownership lock --apply`, and commit the sources with the
+  resulting lock before qualification.
 - `bcf ci local-pr`: exact local pull-request context and preflight.
 - `bcf ci submit`: derive the exact repository, bounded target, commit, and tree;
   execute the complete prospective train in canonical order; recheck immutable
@@ -975,6 +980,16 @@ must not expose the same module name. BCF rejects missing, symlinked,
 overlapping, or ambiguous roots before ownership evaluation. Omitting the field
 retains the 1.1.0 compatibility behavior of repository root, so existing flat
 consumers do not require a migration.
+
+The canonical representation registry may stay flat or declare
+`representation_sources` as an ordered list of explicit local files under
+`governance/canonical-representations/`. Each source declares its own path and
+family; its records remain subject to the same schema, owner, migration and
+native scan rules. Sources cannot include other sources, resolve remote paths,
+or hide undeclared files. The root and each source retain the existing registry
+context cap; the closed source list is limited to 512 files and 8 MiB total.
+The semantic lock binds the exact root and every source byte digest. A flat
+registry keeps its previous lock digest and needs no migration.
 
 Python operation-effect analysis resolves a direct `self.method()` call to the
 exact method in its declaring lexical class before walking effects. Receiver

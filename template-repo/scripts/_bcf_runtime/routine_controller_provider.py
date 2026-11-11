@@ -24,6 +24,7 @@ from .ci_github_authority import (
     load_authority,
     packaged_repo_root,
 )
+from .ci_github_errors import GitHubAPIError
 from .ci_github_identity import (
     GitHubControllerError,
     MainIdentity,
@@ -371,7 +372,25 @@ def effective_controller_authority(
             api=api,
             repository=repository,
         )
-    pin = resolve_effective_controller(api, repository=repository)["pin"]
+    try:
+        pin = resolve_effective_controller(api, repository=repository)["pin"]
+    except (RoutineRotationError, GitHubAPIError) as exc:
+        expired_transition_bytes = isinstance(exc, GitHubAPIError) and bool(
+            re.fullmatch(
+                r"GitHub API GET /repos/[^/]+/[^/]+/actions/artifacts/[0-9]+/zip returned 410",
+                str(exc),
+            )
+        )
+        disconnected_chain = isinstance(exc, RoutineRotationError) and str(exc) == (
+            "active controller transition chain is disconnected"
+        )
+        if repo_root is None or not (expired_transition_bytes or disconnected_chain):
+            raise
+        from .routine_controller_prospective import prospective_normalized_controller_authority
+
+        return prospective_normalized_controller_authority(
+            api, repository=repository, repo_root=repo_root
+        )
     return {
         "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
         "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],

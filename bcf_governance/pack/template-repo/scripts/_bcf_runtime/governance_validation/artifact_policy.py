@@ -674,6 +674,14 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
     governed_prefixes = ["audits/", "docs/", "governance/", "plans/", "phases/"]
     durable_markers = ("sha256", "ci artifact", "non-authoritative", "uploaded artifact")
     native_adoption_files = authenticated_native_adoption_files(repo_root)
+    registry_path = repo_root / "governance/canonical-representations.yml"
+    registry_root = _load_yaml(registry_path) if registry_path.is_file() else {}
+    declared_registry_sources = {
+        value for value in registry_root.get("representation_sources", [])
+        if isinstance(value, str) and re.fullmatch(
+            r"governance/canonical-representations/[a-z0-9][a-z0-9_-]*\.yml", value
+        )
+    } if isinstance(registry_root, dict) else set()
     violations: list[str] = []
     for path in _iter_repo_files(repo_root):
         relative_path = _repo_relative_path(repo_root, path)
@@ -697,7 +705,7 @@ def _validate_ephemeral_evidence_references(repo_root: Path, manifest: dict[str,
             "governance/canonical-representations.yml",
             "governance/evidence-policy.yml",
             "governance/gate-contracts.yml",
-        } or graph_extension:
+        } or graph_extension or relative_path in declared_registry_sources:
             continue
         if relative_path not in {"AGENTS.yml", "MEMORY.yml"} and not _relative_path_is_under_any(
             relative_path, governed_prefixes

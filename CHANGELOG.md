@@ -13,8 +13,10 @@ Release target: `2.3.13`
 - Discover material Python module/class initializers with exact source identities and import resolution; reject unauthorized or unsupported constructor paths.
 - Preserve source-proven generic constructor identities, deferred lambda ownership, equivalent package/standalone imports and exact YAML metadata aliases without authorizing dynamic factories.
 - Absorb validated controller transitions already incorporated into the declared source baseline while retaining replay, corruption, fork and missing-link refusals.
+- Normalize a protected recovery receipt against the matching ordinary current-main controller, keeping controller and project Python separate and reconciling the final workflow projection. Admit that exact committed normalization for prospective checks while an expired historical transition blocks ordinary source-baseline resolution.
 - Check actual source-resolved application delegation and bounded transport calls instead of granting delegation by function-name substrings. Preserve module branch/loop limits and reject hidden business effects.
 - Preserve exact conditional SDK registration/identity decorators, source-defined inherited configuration methods, and typed SDK metadata-route assembly without permitting arbitrary returned callables or dynamic attribute dispatch.
+- Admit bounded local per-family representation sources with exact digest closure and a transactional flat-to-indexed deconstruction command; retain flat registry behavior and existing context caps.
 
 ## [2.3.12] - 2026-11-09
 

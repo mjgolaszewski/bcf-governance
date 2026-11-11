@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import json
-import io
 import hashlib
+import io
+import json
+import zipfile
 from pathlib import Path
 from types import SimpleNamespace
-import zipfile
 
-from jsonschema import Draft202012Validator, ValidationError
 import pytest
 import yaml
+from jsonschema import Draft202012Validator, ValidationError
 
 from bcf_governance.tooling import break_glass_recovery as recovery
 from bcf_governance.tooling import break_glass_reentry as reentry
@@ -17,7 +17,6 @@ from bcf_governance.tooling.ci_github_identity import GitHubControllerError, Mai
 from bcf_governance.tooling.ci_graph_controller_lifecycle import (
     ControllerLifecycleState,
 )
-
 
 ROOT = Path(__file__).resolve().parents[1]
 OPERATION = "1" * 32
@@ -402,8 +401,8 @@ def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
     policy_path.write_text(
         yaml.safe_dump({
             "runner_security": {
-                "trusted_controller_artifact": {"BCF_BOOTSTRAP_COMMIT_SHA": "9" * 40},
-                "trusted_controller_installation": {"installed_commit_sha": "c" * 40},
+                "trusted_controller_artifact": {"BCF_BOOTSTRAP_COMMIT_SHA": "c" * 40},
+                "trusted_controller_installation": {"installed_commit_sha": COMMIT},
                 "trusted_controller_recovery_reentry": {"state": "authenticated-recovery-reentry"},
             }
         }),
@@ -423,7 +422,8 @@ def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
         "resolve_controller_lifecycle",
         lambda *_args, **_kwargs: SimpleNamespace(
             state=ControllerLifecycleState.AUTHENTICATED_RECOVERY_REENTRY,
-            installed_commit="c" * 40,
+            target_commit="c" * 40,
+            installed_commit=COMMIT,
         ),
     )
     ordinary = SimpleNamespace(
@@ -467,7 +467,7 @@ def test_recovery_normalization_requires_matching_ordinary_and_installed_bytes(
         }), encoding="utf-8")
         return SimpleNamespace(changed_paths=("governance/self-governance-policy.yml",))
 
-    monkeypatch.setattr(reentry, "project_self_controller_custody", project)
+    monkeypatch.setattr(reentry, "project_self_controller_pin", project)
     monkeypatch.setattr(
         reentry,
         "reconcile_normalized_installation",
@@ -532,6 +532,7 @@ def test_recovery_normalization_invokes_one_closed_canonical_reconcile(
     command, cwd = observed[0]
     assert cwd == tmp_path
     assert command[1:4] == ["-m", "bcf_governance.cli", "reconcile"]
+    assert "--python" not in command
     assert command[-1] == "--apply"
 
 
