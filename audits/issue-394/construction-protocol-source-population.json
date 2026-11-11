@@ -1,0 +1,100 @@
+{
+  "authority": false,
+  "status": "protocol_and_owned_schema_source_controls_pass_full_adoption_blocked",
+  "subject": "0466b7ec8e250d4035e1eaddf4ce310e67f74cda",
+  "tree": "36b2a5ae16a5604809c54256aa76388a623e4cc8",
+  "fixture_subject": "bbca29b52075ebb74df3bae0d8da1c58e743e01f",
+  "protocol_production_subject": "c9686f841b99da2268e2ec819da23c60647b19ce",
+  "protocol_before": {
+    "subject": "bf89793a32f58e0b7350837f6d774305aab7653c",
+    "counts": {
+      "tests": 198,
+      "failures": 163,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sha256": "f29b453ecd0861d8a3dca88e6a48b09b66d1be6148c505acf5d6a45543791497"
+  },
+  "original_namespace_failure": {
+    "subject": "c9686f841b99da2268e2ec819da23c60647b19ce",
+    "counts": {
+      "tests": 494,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sha256": "74332b6fc31198e7f23930920e74f4ca19a19744d648e348770123f3d62d8548",
+    "disposition": "Ordinary private-package positive fixture passes before schema production; original retained."
+  },
+  "namespace_positive_before_production": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "owned_schema_before": {
+    "tests": 8,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_evidence": {
+    "prior_subject": "0466b7ec8e250d4035e1eaddf4ce310e67f74cda",
+    "original_results": {
+      "tests": 566,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0
+    },
+    "retained_unchanged_passing_cases": 563,
+    "corrected_fixture_cases": {
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "effective_passing_case_population": 566,
+    "single_all_green_run_claimed": false,
+    "source_hashes_unchanged": true
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false,
+    "scope": "Whole-operation runtime provenance remains unqualified; exact traceback retained locally."
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "23a8c8555af24414da4ad17fe4c7dcd9205fcf0c291e402b0a4b6747377709e6",
+    "bcf_governance/tooling/semantic_operation_effects.py": "02be3d9d15f76eb50b2af79e150a146f35016bc3b688ddeb9be337fae9843344",
+    "bcf_governance/tooling/semantic_source_discovery.py": "76f9b9859073a209ad83d4108e7953f94212f31e1be7bec6f6acb04bb65e87e2",
+    "bcf_governance/tooling/semantic_authority_contracts.py": "5be7c11431d4254f1ece32a772e41df2c7635b0c5ff919d97b748f82032aa1e9"
+  },
+  "protocol_fixture_sha256": "422bed5776d398f8212984ea3f637c37c6865feafeb9da739fd1859ab17a356e",
+  "typescript_cache": {
+    "archive_sha256": "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a",
+    "compiler_files": 140,
+    "lock_sha256": "53adf32fd78f77fac66cd058eb2e0b2b0a14bc342e99800fcb4a464fba33f3d7",
+    "network_requests": 0,
+    "node_executable_sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+    "node_version": "v22.23.2",
+    "status": "test_toolchain_checked",
+    "typescript_version": "6.0.3"
+  },
+  "evidence_sha256": {
+    "prior_after.xml": "3fe1d6b54ef3f253541c75a3515d1ee0ea6ff026344e3b94dea30bd20746edc7",
+    "schema-before.xml": "28d80767d4966467a21fb03544551d5b7197bf5e59ffb284ed8859d3497087fd",
+    "namespace.xml": "9744ab7882b9008791cc7014444a55876ca96937d66d63439e35cd8fc8014c11",
+    "portable.xml": "a73e3aa90ab728359bf6c4c7d2a91cdb3c294d17e04fc195dfebd869609f994d",
+    "architecture.xml": "2640bb861b4e712b99e8d06f6c7c66f8a20bf193b8a4be984378cabbd4b81d66"
+  },
+  "private_probe_scope": "Ordinary copied generated _bcf_runtime package, fresh CPython3.12.14 -I process, SDK unavailable and not imported; not wheel/sdist/adopter/upgrade certification.",
+  "full_native_or_installed_qualified": false,
+  "whole_requirement_advancement": false,
+  "remaining": "Authenticated runtime/builtin/decorator binding and complete source/context/effect/lifecycle populations, installed profiles/adopters, deadlines/approved measurements and independent2.5custody; all82whole remain open."
+}
