@@ -44,7 +44,7 @@ def test_comparison_queries_bind_requested_repository(repositories, monkeypatch,
         result = context.pr_context(active, "pr")
         assert result["base_sha"] == own, "comparison followed foreign Git state"
     elif consumer == "foreign-pr":
-        with pytest.raises(ValueError, match="comparison base commit is unavailable"):
+        with pytest.raises(ValueError, match=r"comparison base (commit is unavailable|SHA is not an ancestor of HEAD)"):
             context.pr_context(active, "pr")
     else:
         assert matrix._comparison_base(active) == own, "matrix comparison followed foreign Git state"

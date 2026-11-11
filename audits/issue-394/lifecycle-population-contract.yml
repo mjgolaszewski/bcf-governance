@@ -455,3 +455,21 @@ comparison_source_context_contract:
     exact-subject evidence
   remaining: Protected complete lifecycle/profile populations, provider freshness,
     filesystem metadata and runtime conformance remain open
+
+comparison_characterization_oracle_disposition:
+  authority: false
+  original_subject: ba784ac00156c6c7b89a409efbee314162e8a6e3
+  original29:
+    tests: 29
+    failures: 11
+    errors: 0
+    skipped: 0
+  original_junit_sha256: 57135d91aa4009b179cb5c9924143bcab748f8e097194a7e20675557c2198f8a
+  genuine_failures: 9
+  over_specific_oracle_failures:
+  - test_comparison_queries_bind_requested_repository[foreign-pr-GIT_COMMON_DIR]
+  - test_comparison_queries_bind_requested_repository[foreign-pr-GIT_OBJECT_DIRECTORY]
+  correction: Foreign base must be rejected for absence or nonancestry; success still
+    fails. Fix only negative oracle, retain other20 cases at original subject; characterize
+    changed9 before production
+  production_unchanged: true
