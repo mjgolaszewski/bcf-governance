@@ -1900,3 +1900,40 @@ decorator_spelling_authority_contract:
     familiar spellings cannot suppress missing provenance. Preserve ordinary undecorated
     local behavior.
   authority: false
+
+decorator_spelling_diagnostic:
+  report: audits/issue-394/decorator-spelling-source-authority.json
+  sha256: 75b3beb2a98c99ba342f880c7af075b68dc245f69fb6b8889cfe7f71572413b2
+  subject: 1dc9c0003d0ad1a39bc5e2dc0212b57f91829587
+  previous_memory: P32 active; P33-P35 dormant. Protocol/classes and private semantic
+    schemas 0466b7ec source controls pass; full runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Protocol/private-schema f45b5e04 retained;
+    decorator spelling-only direct effect authority diagnostic has12cause failures,6real
+    wrapper writes. Repair/runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 0466b7ec protocol/schema controls; full adoption blocked.
+  current_ledger:
+    type: 394source
+    statement: 1dc9c000 decorator spelling authority diagnostic; repair open.
+  whole_requirement_advancement: false
+
+decorator_spelling_metadata_recovery:
+  original_diagnostic: 1dc9c0003d0ad1a39bc5e2dc0212b57f91829587
+  original_result:
+    tests: 20
+    failures: 12
+    errors: 0
+    skipped: 0
+  tests_rerun: false
+  reason: Metadata checkpoint exceeded16384-byte active ledger budget by one byte;
+    exact diagnostic and production source retained.
+  previous_ledger:
+    type: 394source
+    statement: 1dc9c000 decorator spelling authority diagnostic; repair open.
+  current_ledger:
+    type: 394source
+    statement: 1dc9c000 decorator binding gap; repair open.
+  whole_requirement_advancement: false

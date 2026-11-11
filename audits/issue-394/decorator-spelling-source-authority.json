@@ -1,0 +1,22 @@
+{
+  "authority": false,
+  "status": "decorator_spelling_rejection_controls_fail_repair_required",
+  "subject": "1dc9c0003d0ad1a39bc5e2dc0212b57f91829587",
+  "tree": "29145cebbde1917afaa7adc38ddf7a974edaa155",
+  "before": {
+    "tests": 20,
+    "failures": 12,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ordinary_fresh_consumer_write_witnesses_passed": 6,
+  "ordinary_undecorated_local_controls_passed": 2,
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "23a8c8555af24414da4ad17fe4c7dcd9205fcf0c291e402b0a4b6747377709e6"
+  },
+  "evidence_sha256": "e9fa05d1651b49e2f1529d6f8e239cef6c9aae463e1e58aac252db0fef09a7c4",
+  "failure_cause": "Decorator basenames staticmethod/classmethod erase unresolved binding in direct method effect consumers; source body looks pure while an actual decorator wrapper writes. No production repair in this diagnostic.",
+  "scope": "Source controls and fresh isolated CPython3.12.14 execution only; no SDK/adopter/release qualification.",
+  "whole_requirement_advancement": false,
+  "next": "Conservatively retain unresolved decorated method effects without name exemptions, then qualify affected consumers and canonical projection; genuine builtin/runtime binding still open."
+}
