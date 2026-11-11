@@ -743,3 +743,59 @@ lifecycle_public_registration_contract:
     '
   forbidden: No catalog/schema/graph/workflow/authority production changes, apply/reconcile/submit/main/PR/release
     in this packet.
+
+lifecycle_public_registration_characterization:
+  authority: false
+  subject: 28667407c158599ea66cb31a68d4cf39ce2b781c
+  tree: 4e4f84cc0319e43e4b5a94fe0d6d7de724f08410
+  status: registration_contract_characterized_production_pending
+  new_controls:
+    tests: 8
+    failures: 2
+    errors: 0
+    skipped: 0
+  junit_sha256: 45a3111c80868d86cc9e72c52a8dda52ef6a94905f6e2a731e12568d1052c754
+  cause: Actual lifecycle family missing; removing the entire family is accepted by
+    the current registry schema. Six declared-version/metadata positive and negative
+    controls pass.
+  production_inputs_unchanged:
+    governance/public-contracts.yml: b958aba90e9099f60957f878b1c00e9f2c9dfb5daacabd2ea819601af37c72cf
+    schemas/public-contracts.schema.json: 9d4ba185bbb2fb21442c810a8351762d6ab0fb55fd9db6c3a937827763acb3b7
+    governance/ci-graph.yml: cbcee967dfd4969f0025eaec820d20ec70951138a40792dee2b7a44d44b9848a
+    governance/ci-authority.yml: 061ee4ca5ed1b93415bd5e7e60a828f65ffb90c2738d6fd8ff49323aea1b2b32
+    .github/workflows/bcf-authority-canary.yml: b0c356ca87cb718fecfc039ec3aa016b008dc380b8dd3c2fb4044f33e25a163c
+    .github/workflows/bcf-automation-admission.yml: 414c3f68127adc0526669e7032c0cd8606e447baa9d18dd3973785d752ddb5d3
+    .github/workflows/bcf-automation-reconcile.yml: f3af240b1972db232d0515dc037d6a4213a552c7272e77d7de4f1154da597491
+    .github/workflows/bcf-break-glass-recovery.yml: 8d361eb09ba2c70d560cfa57be568a039c2deecd5325c2328ef4b4b99ca099e8
+    .github/workflows/bcf-controller-rotation.yml: e19b478e947102c9337cdd99cc4cc84ee8c6bc0e8f20db56d0c3faed8e1981f8
+    .github/workflows/bcf-evidence-storage-qualification-source.yml: 6d3045a4ba688af0f7c66ff2d985a6dd7760efe95f8b0fd33cdfc708266ae3ba
+    .github/workflows/bcf-evidence-storage-qualification.yml: 54115d74f0f2d4ce615c48bc006689f502208cd41df03048e205c6548c76afa6
+    .github/workflows/bcf-exact-main.yml: 6859c34c05faf514656e7694e43efd97b824738f901c243a24b44bcb2f1e0997
+    .github/workflows/bcf-pr-finalizer.yml: 6b332b1cb79676d932392af21221add28338fb3899b1b3937b436e4544692c40
+    .github/workflows/bcf-pr-status-publisher.yml: 2fec3d00ae03587dff45f97a95c602950747bf491f0b6ba28aec38700af16428
+    .github/workflows/bcf-release-publisher.yml: 34fd76b058717e1e0ef5285861d398f0d8aafae78b3d2799106cb259d7fabe93
+    .github/workflows/bcf-release-verifier.yml: 0675f86309c59484dae119d691f371fc0dad892302bd5460c63a5ce8f42b37e0
+    .github/workflows/bcf-status-publisher.yml: d43356e1dddebf5bf8ea3755aa5119c3650e3122887810d4124fd5f72cccd0e1
+    .github/workflows/bcf-trusted-finalizer.yml: ec9a4f75c8768b549d3ee20baef254ea1b22d1be2cf109eca8a92da76e6d3f29
+    .github/workflows/governance-mutants-nightly.yml: 0d976716861c6af6a21acac10930c89e26e9054c76d10aa333ee93b195a6d30c
+    .github/workflows/governance-mutants-weekly.yml: 2e8c7ac1366a435a512cf5d2740c018005d6b18c6f2df80e34f152b0a47d1949
+    .github/workflows/governance.yml: f9f072e08a30f08141f0b57d63ef743095afb42bd64309803ffb7a6e22fdc585
+    .github/workflows/release.yml: 3e1ebe5ffdd3b845a57eb2d8c26b44753d7f9addf3a0164b2eeb3a75fe771cf0
+  prior_qualification: 7d4ec224 recovery460affected+40architecture remains exact scope;
+    not rerun or rebound
+  public_registration_complete: false
+  whole_requirement_advancement: false
+
+lifecycle_registration_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Recovery1.2 prototype 7d4ec224 source/private
+    qualified; public registration and full context/runtime adoption pending. Guards9550/archivef1fd
+    retain exact scopes; full deadlines/targets/adopters/custody open.
+  current_memory: P32 active; P33-P35 dormant. Recovery7d4ec qualified; registration
+    contract 28667407 baseline2RED/6PASS, production pending. Full contexts/runtime/deadlines/targets/adopters/custody
+    open;9550/f1fd evidence stays scoped.
+  previous_ledger:
+    type: 394source
+    statement: 9550 guards; 7d4ec224 recovery proto; scope open.
+  current_ledger:
+    type: 394source
+    statement: 7d4ec recovery; 28667407 registration RED; scope open.
