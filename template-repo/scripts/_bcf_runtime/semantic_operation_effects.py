@@ -12,6 +12,8 @@ from pathlib import Path
 from jsonschema import Draft202012Validator
 from typing import Any
 
+from .semantic_python_method_identity import SOURCE_CONSTRUCTION_BODY_HOOKS
+
 
 WRITE_CALLS = {
     "chmod", "mkdir", "rename", "rmdir", "symlink_to", "touch", "unlink",
@@ -200,7 +202,7 @@ def _port_identity(
 
 
 
-def _construction_source_classes(inventory: dict[str, Any]) -> frozenset[str]:
+def _construction_source_classes(inventory: dict[str, Any]) -> dict[str, dict[str, Any]]:
     """Derive expected constructor identities from the actual class population."""
     rows = inventory.get("classes", [])
     if not isinstance(rows, (list, tuple)):
@@ -208,12 +210,24 @@ def _construction_source_classes(inventory: dict[str, Any]) -> frozenset[str]:
     symbols = [row.get("symbol") if isinstance(row, dict) else None for row in rows]
     if any(not isinstance(value, str) or not value for value in symbols) or len(set(symbols)) != len(symbols):
         raise SemanticOperationEffectError("construction source class population is ambiguous")
-    return frozenset(symbols)
+    if inventory.get("language") == "python" and "types" in inventory:
+        types = inventory["types"]
+        if not isinstance(types, list) or any(not isinstance(value, str) for value in types):
+            raise SemanticOperationEffectError("construction source type population is invalid")
+        if len(types) != len(set(types)) or set(types) != set(symbols):
+            raise SemanticOperationEffectError("construction source class/type population is incomplete")
+    for function in inventory.get("functions", []):
+        if not isinstance(function, dict) or function.get("language", "python") != "python":
+            continue
+        owner = function.get("class_symbol")
+        if owner is not None and (not isinstance(owner, str) or owner not in symbols):
+            raise SemanticOperationEffectError("construction source method class population is incomplete")
+    return {row["symbol"]: row for row in rows}
 
 
 def _construction_source_targets(
     call: dict[str, Any], functions: dict[str, dict[str, Any]],
-    classes: frozenset[str], function: dict[str, Any],
+    classes: dict[str, dict[str, Any]], function: dict[str, Any],
 ) -> tuple[set[str], tuple[str, ...]]:
     """Verify neutral facts against independently derived class/call membership."""
     target = call.get("called_symbol")
@@ -259,6 +273,65 @@ def _construction_source_targets(
         or matches[0].get("construction_effect_observation") != observation
     ):
         raise SemanticOperationEffectError("construction source fact association is missing or ambiguous")
+    # Class-method rows and constructor observations cannot jointly hide a body
+    # independently retained in the function population.
+    ancestry: set[str] = set()
+    pending = [(target, frozenset())]
+    runtime_unknown = False
+    declared_methods: set[str] = set()
+    while pending:
+        identity, lineage = pending.pop()
+        if identity in lineage:
+            raise SemanticOperationEffectError("construction source ancestry is cyclic")
+        if identity in ancestry:
+            continue
+        ancestry.add(identity)
+        row = classes.get(identity)
+        if row is None:
+            runtime_unknown = True
+            continue
+        runtime_unknown = runtime_unknown or any(row.get(key) for key in (
+            "class_decorators", "metaclass_keywords", "descriptor_bindings",
+        ))
+        methods = row.get("methods", [])
+        if not isinstance(methods, list):
+            raise SemanticOperationEffectError("construction source method population is invalid")
+        for method in methods:
+            name = method.get("name") if isinstance(method, dict) else None
+            body = method.get("symbol") if isinstance(method, dict) else None
+            if not isinstance(name, str) or not name or body != identity + "." + name:
+                raise SemanticOperationEffectError("construction source method identity is incompatible")
+            special = name.startswith("__") and name.endswith("__")
+            if special or method.get("decorators"):
+                declared_methods.add(body)
+                runtime_unknown = runtime_unknown or bool(method.get("decorators")) or (
+                    special and name not in SOURCE_CONSTRUCTION_BODY_HOOKS
+                )
+        bases = row.get("bases", [])
+        if not isinstance(bases, list):
+            raise SemanticOperationEffectError("construction source bases are invalid")
+        for base in bases:
+            parent = base.get("called_symbol") if isinstance(base, dict) else None
+            if not isinstance(parent, str) or not parent:
+                raise SemanticOperationEffectError("construction source base identity is missing")
+            pending.append((parent, lineage | {identity}))
+    expected: set[str] = set(declared_methods)
+    for symbol, body in functions.items():
+        owner, _, name = symbol.rpartition(".")
+        special = name.startswith("__") and name.endswith("__")
+        if owner in ancestry and (special or body.get("decorators")):
+            expected.add(symbol)
+            runtime_unknown = runtime_unknown or bool(body.get("decorators")) or (
+                special and name not in SOURCE_CONSTRUCTION_BODY_HOOKS
+            )
+    if not expected <= functions.keys():
+        raise SemanticOperationEffectError("construction source declared method body is absent")
+    if not ancestry <= set(observation["class_candidates"]):
+        raise SemanticOperationEffectError("construction source ancestry population is incomplete")
+    if not expected <= set(observation["function_candidates"]):
+        raise SemanticOperationEffectError("construction source hook body population is incomplete")
+    if runtime_unknown and not observation["unresolved"]:
+        raise SemanticOperationEffectError("construction source runtime provenance is missing")
     targets = set(observation["function_candidates"])
     if not targets <= functions.keys():
         raise SemanticOperationEffectError("construction source body is absent or ambiguous")

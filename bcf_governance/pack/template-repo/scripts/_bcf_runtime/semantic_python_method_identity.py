@@ -10,6 +10,12 @@ import ast
 from typing import Any
 
 
+# These source bodies are traced directly; this grants no runtime authority.
+SOURCE_CONSTRUCTION_BODY_HOOKS = frozenset({
+    "__new__", "__init__", "__post_init__", "__setattr__",
+})
+
+
 _OVERLOAD_DECORATORS = {
     "typing::module.overload",
     "typing::overload",
@@ -478,7 +484,7 @@ def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
             target = call.get("called_symbol")
             if target in classes and not any(site(fact) == site(call) for fact in constructors):
                 constructors.append({**call, "constructed_symbol": target})
-    lifecycle = {"__new__", "__init__", "__post_init__", "__setattr__", "__del__"}
+    lifecycle = SOURCE_CONSTRUCTION_BODY_HOOKS | {"__del__"}
     interception = {"__getattribute__", "__getattr__", "__delattr__", "__get__", "__set__", "__delete__"}
 
     def closure(symbol: str, seen: frozenset[str]) -> tuple[set[str], set[str], set[str]]:
@@ -502,13 +508,16 @@ def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
         for method in row.get("methods", []):
             name = str(method.get("name", ""))
             decorators = set(method.get("decorators", []))
-            if name not in lifecycle | interception and not decorators:
+            special_method = name.startswith("__") and name.endswith("__")
+            if name not in lifecycle | interception and not decorators and not special_method:
                 continue
             target = str(method.get("symbol", ""))
             if target in functions:
                 targets.add(target)
             else:
                 missing.add(target + ":source_body_missing")
+            if special_method and name not in lifecycle | interception:
+                missing.add(target + ":implicit_protocol_runtime_provenance_required")
             if name == "__del__":
                 missing.add(target + ":finalization_runtime_provenance_required")
             if name in interception:
