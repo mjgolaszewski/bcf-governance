@@ -114,6 +114,8 @@ def source_operation_call_population(
                 and call.get("call_name") not in {"__import__", "eval", "exec", "<dynamic>"}
             )
             calls.append((caller, callee, expression, occurrence, "source" if resolved else "unresolved"))
+            construction_targets, _ = _construction_source_targets(call, functions)
+            pending.extend(sorted(construction_targets))
             if resolved:
                 pending.append(callee)
     result = {
@@ -196,6 +198,36 @@ def _port_identity(
     return ("function", resolved) if resolved is not None else ("call", value)
 
 
+
+def _construction_source_targets(
+    call: dict[str, Any], functions: dict[str, dict[str, Any]],
+) -> tuple[set[str], tuple[str, ...]]:
+    """Expand neutral source obligations; this is never runtime or port authority."""
+    observation = call.get("construction_effect_observation")
+    if observation is None:
+        return set(), ()
+    if (
+        not isinstance(observation, dict)
+        or observation.get("authority") is not False
+        or not isinstance(observation.get("source_class_resolved"), bool)
+        or any(
+            not isinstance(observation.get(key), list)
+            or any(not isinstance(value, str) or not value for value in observation[key])
+            or len(observation[key]) != len(set(observation[key]))
+            for key in ("class_candidates", "function_candidates", "unresolved")
+        )
+    ):
+        raise SemanticOperationEffectError("construction source observations are incompatible")
+    # External constructor identity remains explicitly unresolved in the source
+    # call population. This bounded source query cannot qualify its runtime.
+    if observation["source_class_resolved"] is False:
+        return set(), ()
+    targets = set(observation["function_candidates"])
+    if not observation["class_candidates"] or not targets <= functions.keys():
+        raise SemanticOperationEffectError("construction source body is absent or ambiguous")
+    return targets, tuple(observation["unresolved"])
+
+
 def validated_operation_effect_inventory(
     operation: dict[str, Any],
     entrypoint_symbol: str,
@@ -227,18 +259,18 @@ def validated_operation_effect_inventory(
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
-    pending = [entrypoint, *(path + "::<module>" for path in source_modules if path + "::<module>" in functions)]
-    visited: set[str] = set()
+    pending = [(entrypoint, True), *((path + "::<module>", True) for path in source_modules if path + "::<module>" in functions)]
+    visited: set[tuple[str, bool]] = set()
     while pending:
-        symbol = pending.pop()
-        if symbol in visited:
+        symbol, credit = pending.pop()
+        if (symbol, credit) in visited:
             continue
-        visited.add(symbol)
+        visited.add((symbol, credit))
         function = functions[symbol]
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
-                pending.append(module)
+                pending.append((module, credit))
             for effect in function.get("effects", []):
                 target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
                 if effect.get("kind") == "write":
@@ -270,8 +302,16 @@ def validated_operation_effect_inventory(
                 raise SemanticOperationEffectError(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
+            construction_targets, construction_missing = _construction_source_targets(call, functions)
+            if construction_missing:
+                raise SemanticOperationEffectError(
+                    "source construction requires unresolved runtime provenance: "
+                    + ", ".join(construction_missing)
+                )
+            pending.extend((target, False) for target in sorted(construction_targets))
             if identity in declared_ports:
-                reached.add(identity)
+                if credit:
+                    reached.add(identity)
                 continue
             if call.get("dispatch_resolution") == "unresolved":
                 raise SemanticOperationEffectError(
@@ -283,7 +323,7 @@ def validated_operation_effect_inventory(
                 if call.get("authority_effect") is True:
                     authority.add(raw)
                 if callee is not None:
-                    pending.append(callee)
+                    pending.append((callee, credit))
                 continue
             name = str(call.get("call_name", ""))
             receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
@@ -303,7 +343,7 @@ def validated_operation_effect_inventory(
             # Module boundaries are organizational, not effect boundaries; a
             # query cannot conceal a write in an imported helper.
             if callee is not None:
-                pending.append(callee)
+                pending.append((callee, credit))
     missing = declared_ports - reached
     if missing:
         rendered = ", ".join(sorted(value for _, value in missing))

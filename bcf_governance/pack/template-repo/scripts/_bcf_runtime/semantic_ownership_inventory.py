@@ -17,6 +17,7 @@ from typing import Any
 from .semantic_python_method_identity import (
     call_name as _call_name,
     discover_class_facts,
+    extend_constructor_effect_obligations,
     resolve_method_dispatch,
     root_name as _root_name,
     runtime_function_scopes,
@@ -643,6 +644,7 @@ def resolve_python_imports(
             if target is not None:
                 fact["called_symbol"] = target
     resolve_method_dispatch(resolved)
+    extend_constructor_effect_obligations(resolved)
     resolved["constructors"] = [
         fact
         for function in resolved.get("functions", [])

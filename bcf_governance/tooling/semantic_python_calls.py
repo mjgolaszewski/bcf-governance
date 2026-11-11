@@ -213,6 +213,9 @@ class _FunctionVisitor(ast.NodeVisitor):
             "called_symbol": symbol,
             "call_name": name,
             "line": node.lineno,
+            "column": node.col_offset,
+            "end_line": node.end_lineno,
+            "end_column": node.end_col_offset,
             "argument_origins": sorted(self._origins(node)),
         }
         if self.call_contracts:

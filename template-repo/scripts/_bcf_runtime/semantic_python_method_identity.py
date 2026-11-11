@@ -169,12 +169,17 @@ def discover_class_facts(
             bases.append(fact)
         methods = []
         class_rebindings: set[str] = set()
+        descriptor_bindings: set[str] = set()
         for member in node.body:
             if isinstance(member, (ast.Assign, ast.AnnAssign)):
                 targets = member.targets if isinstance(member, ast.Assign) else [member.target]
                 class_rebindings.update(
                     target.id for target in targets if isinstance(target, ast.Name)
                 )
+                if member.value is not None and not isinstance(member.value, ast.Constant):
+                    descriptor_bindings.update(
+                        target.id for target in targets if isinstance(target, ast.Name)
+                    )
             if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             kind, receiver = method_binding(member)
@@ -196,6 +201,7 @@ def discover_class_facts(
                     ast.unparse(value) for value in node.decorator_list
                 ),
                 "class_rebindings": sorted(class_rebindings),
+                "descriptor_bindings": sorted(descriptor_bindings),
                 "metaclass_keywords": sorted(
                     keyword.arg or "**" for keyword in node.keywords
                 ),
@@ -448,3 +454,90 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
                 }
             )
         function["effect_unresolved"] = failures
+
+
+def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
+    """Add source-visible construction obligations without resolving runtime types.
+
+    Candidate targets can only expand the existing effect traversal. Decorated,
+    external, cyclic or rebound constructors retain explicit missing provenance.
+    These observations never change dispatch decisions or grant decoder authority.
+    """
+    class_rows = inventory.get("classes", [])
+    function_rows = inventory.get("functions", [])
+    classes = {str(row["symbol"]): row for row in class_rows}
+    functions = {str(row["symbol"]): row for row in function_rows}
+    ambiguous = len(classes) != len(class_rows) or len(functions) != len(function_rows)
+    lifecycle = {"__new__", "__init__", "__post_init__", "__setattr__"}
+    interception = {"__getattribute__", "__getattr__", "__get__", "__set__", "__delete__"}
+
+    def closure(symbol: str, seen: frozenset[str]) -> tuple[set[str], set[str], set[str]]:
+        if symbol in seen:
+            return set(), {symbol + ":cyclic_hierarchy"}, {symbol}
+        row = classes.get(symbol)
+        if row is None:
+            return set(), {symbol + ":external_class_provenance_required"}, {symbol}
+        targets: set[str] = set()
+        missing: set[str] = set()
+        population = {symbol}
+        if row.get("class_decorators"):
+            missing.add(symbol + ":decorated_class_runtime_provenance_required")
+        if row.get("metaclass_keywords"):
+            missing.add(symbol + ":metaclass_runtime_provenance_required")
+        if row.get("descriptor_bindings"):
+            missing.add(symbol + ":class_attribute_descriptor_provenance_required")
+        rebound = set(row.get("class_rebindings", []))
+        if rebound & (lifecycle | interception):
+            missing.add(symbol + ":lifecycle_binding_rebound")
+        for method in row.get("methods", []):
+            name = str(method.get("name", ""))
+            decorators = set(method.get("decorators", []))
+            if name not in lifecycle | interception and not decorators:
+                continue
+            target = str(method.get("symbol", ""))
+            if target in functions:
+                targets.add(target)
+            else:
+                missing.add(target + ":source_body_missing")
+            if name in interception:
+                missing.add(target + ":descriptor_runtime_provenance_required")
+            if decorators:
+                missing.add(target + ":decorator_runtime_provenance_required")
+        for base in row.get("bases", []):
+            target = base.get("called_symbol")
+            if not isinstance(target, str) or not target:
+                missing.add(symbol + ":base_identity_missing")
+                continue
+            inherited, errors, identities = closure(target, seen | {symbol})
+            targets.update(inherited)
+            missing.update(errors)
+            population.update(identities)
+        return targets, missing, population
+
+    for function in function_rows:
+        call_sites: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+        for call in function.get("calls", []):
+            call_sites.setdefault((call.get("line"), call.get("column"), call.get("end_line"), call.get("end_column")), []).append(call)
+        for constructor in function.get("constructors", []):
+            target = str(constructor.get("constructed_symbol", ""))
+            candidates, missing, population = closure(target, frozenset())
+            if ambiguous:
+                missing.add("ambiguous_source_symbol_population")
+            observation = {
+                "authority": False,
+                "source_class_resolved": target in classes,
+                "class_candidates": sorted(population),
+                "function_candidates": sorted(candidates),
+                "unresolved": sorted(missing),
+                "qualification": "SOURCE_OBLIGATIONS_ONLY_RUNTIME_PROVENANCE_REQUIRED",
+            }
+            constructor["construction_effect_observation"] = observation
+            sites = call_sites.get((constructor.get("line"), constructor.get("column"), constructor.get("end_line"), constructor.get("end_column")), [])
+            if len(sites) == 1 and sites[0].get("called_symbol") == constructor.get("called_symbol"):
+                sites[0]["construction_effect_observation"] = observation
+            elif sites:
+                for call in sites:
+                    call["construction_effect_observation"] = {
+                        **observation,
+                        "unresolved": sorted(missing | {"contradictory_constructor_site"}),
+                    }
