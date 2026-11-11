@@ -1,0 +1,38 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "real_git_source_custody_characterized_production_pending",
+  "subject": "658a8bd97c0db20731962222e7a7c1eb375273f3",
+  "tree": "45d7faffe46ccb6157701c4cf2c11727589d46c2",
+  "source_base": "eae8fede8711508c779244fc3dc6680f40a74668",
+  "test_path": "tests/test_phase_policy_blob_custody.py",
+  "test_sha256": "072362689f21130173fc68379f1f76eb79147b0f41d137b8a56c49fda281594e",
+  "results": {
+    "tests": 9,
+    "failures": 7,
+    "errors": 0,
+    "skipped": 0
+  },
+  "genuine_expected_rejection_failures": {
+    "wrong_tree": 3,
+    "nonregular": 3,
+    "aggregate_budget": 1
+  },
+  "positive_modes_passed": 2,
+  "junit_sha256": "1168dc6a460deef168d2e3bfa128ac9a4e24fa3dee4a6d35698ed5310ecf11b8",
+  "unchanged_consumer_baseline": {
+    "subject": "bdc3c69f88427dc5b29babdeba5dbd759254e9dd",
+    "results": {
+      "tests": 204,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "source_inputs_rechecked": true,
+    "rerun": false
+  },
+  "production_paths_unchanged": true,
+  "production_population_files": 1417,
+  "full_lifecycle_adoption": false,
+  "remaining": "Implement shared exact source reader through both real consumers, qualify fixture source identities and installed/native consumer matrix, then complete protected lifecycle population/model/consumer/runtime wiring;82whole remain open."
+}

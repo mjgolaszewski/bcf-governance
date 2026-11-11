@@ -1102,3 +1102,33 @@ protected_policy_blob_custody_contract:
     source_subject: bdc3c69f88427dc5b29babdeba5dbd759254e9dd
     cases: 204
     status: PASS; retained exact source scope, not rerun for bookkeeping
+
+protected_policy_blob_custody_characterization:
+  report: audits/issue-394/phase-policy-blob-characterization.json
+  sha256: f5c9ad2c9821b708c4168fed1c780c25da4fe1e9aa38ffdc3e8e42e6ccf94213
+  subject: 658a8bd97c0db20731962222e7a7c1eb375273f3
+  results:
+    tests: 9
+    failures: 7
+    errors: 0
+    skipped: 0
+  cause_families:
+    wrong_tree: 3
+    nonregular: 3
+    aggregate_budget: 1
+  status: Production fix pending; source rejection controls only, not detector qualification
+    or full lifecycle assurance.
+
+protected_policy_custody_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Registration06255 qualified; protected
+    consumer contract/reader baseline bdc3c69f retained. Full protected population/runtime/deadlines/targets/adopters/custody
+    open;9550/f1fd stay scoped.
+  current_memory: P32 active; P33-P35 dormant. Registration06255 qualified; protected
+    policy source controls 658a8bd9 show7RED/2PASS, fix pending.204baseline retained;
+    full population/runtime/deadlines/targets/adopters/custody open.
+  previous_ledger:
+    type: 394source
+    statement: 06255 reg; protected baseline; scope open.
+  current_ledger:
+    type: 394source
+    statement: 06255 reg; policy source RED; scope open.
