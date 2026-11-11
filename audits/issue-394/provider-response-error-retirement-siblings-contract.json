@@ -7,7 +7,7 @@
     "P32-P0-04",
     "P32-P0-05"
   ],
-  "status": "authored_contract_pending_commit",
+  "status": "committed_contract_with_authored_unrun_baseline",
   "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "existing_query_and_command_transport_cleanup",
@@ -67,6 +67,14 @@
     "Provider writes or submission/release/status authority during this bounded qualification.",
     "New transport broker, evaluator, registry or receipt family."
   ],
+  "authored_baseline": {
+    "path": "tests/test_provider_error_retirement_siblings.py",
+    "designed_case_count": 24,
+    "collection_status": "not_run",
+    "behavioral_status": "not_run",
+    "scope": "Real HTTPError bodies at existing consumer boundaries; one opener and one retirement owner; status and original cause retained",
+    "remaining_controls": "Cleanup failure and interruption causal cases, real network coverage, complete consumer population and installed qualification remain pending"
+  },
   "runtime_execution_count": 0,
   "acceptance_advance": false
 }
