@@ -11,7 +11,7 @@ constraints:
 architecture: {backend: python_package_with_private_portable_runtime, frontend: canonical_markdown_operator_and_maintainer_guides, data: closed_yaml_json_contracts_and_content_addressed_evidence}
 phase_history: {path: plans/phase-history.yml, through_phase: P31}
 execution_phases:
-- {phase_id: P32, build_block: idcc-foundation-2.5.0, objective: Issue 394 foundation with complete assurance through immutable 2.5.0 custody, release_train: release_27}
+- {phase_id: P32, build_block: idcc-foundation-2.5.0, objective: Issue 394 foundation including workspace and source-history continuity with complete assurance through immutable 2.5.0 custody, release_train: release_27}
 - {phase_id: P33, build_block: idcc-dormant-mechanisms-2.5.0, objective: Issue 394 dormant with complete assurance through immutable 2.5.0 custody, release_train: release_27}
 - {phase_id: P34, build_block: idcc-guarded-activation-2.5.0, objective: Issue 394 activation with complete assurance through immutable 2.5.0 custody, release_train: release_27}
 - {phase_id: P35, build_block: idcc-measured-certification-2.5.0, objective: Issue 394 certification with complete assurance through immutable 2.5.0 custody, release_train: release_27}

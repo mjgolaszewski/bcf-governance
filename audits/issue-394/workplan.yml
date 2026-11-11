@@ -195,10 +195,21 @@ workitems:
     - foundation.residuals
     expected_tests:
     - kind: positive
+      scenario: Real Git fixtures identify declared active remote and branch enumerate registered and linked worktrees plus branch tips preserve unique dirty and untracked bytes and distinguish incorporated ancestry from identical-tree snapshots
+    - kind: cause_specific_negative
+      scenario: Reject omitted or unavailable worktrees historical-only commits wrong publication remotes unpushed repairs stale inventory movement during capture interrupted checkpoints and retirement with unresolved differing bytes; identical-tree commits cannot inherit CI
+    - kind: positive
       scenario: Schema-validate and compile complete context-qualified lifecycle contracts through existing CI edges
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized composition inputs before dependent effects
     acceptance:
+    - Declare one active checkout and branch per project with authoritative remote; register temporary worktrees by owner purpose and retirement boundary; distinguish historical local remotes from publication destinations
+    - Checkpoint each bounded change on the declared branch and push to its declared remote; report dirty source and unpushed commits explicitly and bind CI to the exact tested commit
+    - At checkpoint handoff and retirement independently inventory every registered or Git-discovered worktree every local branch tip and modified or untracked source; report unavailable roots and unresolved inventory as blockers rather than silently omitting them
+    - Compare history by ancestry and source by content separately; identical trees at different commits establish snapshot equality only and confer neither provenance equivalence nor transferable CI authority
+    - Before retirement preserve differing source bytes with a verified manifest and required reachable Git history; block retirement until each difference is integrated and qualified on the active branch or explicitly reviewed as superseded; retain originals while assessment is open
+    - Expose one deterministic current inventory with multiple active checkouts unpushed commits dirty source stale temporary copies and explicit dispositions through existing composition recovery and source-custody owners; never automatically merge or delete differences
+    - Validation copies remain immutable inputs; transfer any repair to the active checkout qualify commit and push it before describing it as delivered behavior
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
@@ -260,6 +271,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized conformance inputs before dependent effects
     acceptance:
+    - Independently discover workspace and source-history populations so omission of a worktree branch or its test together fails; verify both inventory-to-source and source-to-disposition directions
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
@@ -796,6 +808,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized distribution inputs before dependent effects
     acceptance:
+    - Qualify source-continuity inventory checkpoint and retirement refusal through exact wheel sdist templates and installed consumers; preserve opt-out and historical-source custody with exact-commit evidence
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
@@ -2574,6 +2587,11 @@ requirements:
     terminal_gate: certification.custody
     evidence_status: not_executed
 additional_regressions:
+- id: workspace_source_history_divergence
+  workitem: foundation.composition
+  positive: Complete deterministic real-Git inventory joins declared active checkout remote branch exact commit and preserved source dispositions through existing composition recovery and custody owners
+  negative: Omitted roots unresolved differing bytes unpushed validation repairs and identical-tree CI laundering block retirement or delivery claims without automatic merge or deletion
+  source: Operator-approved workspace and source-history divergence requirement; source continuity directive 2026-11-09
 - id: provider_deadline_948
   workitem: foundation.deadlines
   positive: A complete bounded inner envelope plus setup cleanup and headroom fits the canonically quantized outer deadline
