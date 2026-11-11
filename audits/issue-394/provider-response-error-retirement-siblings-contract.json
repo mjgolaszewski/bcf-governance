@@ -7,7 +7,7 @@
     "P32-P0-04",
     "P32-P0-05"
   ],
-  "status": "scoped_behavior_pass_semantic_normalization_and_installed_residuals_pending",
+  "status": "bounded_source_and_retained_consumer_checks_recorded_full_scope_open",
   "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "existing_query_and_command_transport_cleanup",
@@ -70,12 +70,12 @@
   "authored_baseline": {
     "path": "tests/test_provider_error_retirement_siblings.py",
     "designed_case_count": 32,
-    "collection_status": "24 collected at286db0fc; 8 additional controls uncollected",
-    "behavioral_status": "21 intended open-body failures and 3 retained GET passes at286db0fc; 8 additional controls unrun",
+    "collection_status": "24 at286db baseline;32new source controls at2676300b;9retained installed/template controls at257bd618",
+    "behavioral_status": "21intended baselineREDs becamePASS with original24case IDs and test-source prefix retained; all32new source controls pass",
     "scope": "Real HTTPError bodies at existing consumer boundaries; one opener and one retirement owner; status and original cause retained",
-    "remaining_controls": "Execute 8cleanup-failure/interruption controls; real network/full population/installed qualification and full retained86case regression remain pending"
+    "remaining_controls": "Full installed sibling-specific consumer matrix, archives, profiles/adopters and lifecycle/deadline bounds remain required"
   },
-  "runtime_execution_count": 24,
+  "runtime_execution_count": 365,
   "acceptance_advance": false,
   "baseline_evidence": {
     "authority": false,
@@ -103,8 +103,8 @@
     "contract_commit": "296bee654c23f171964812df51064499699f4148",
     "tests_before_production_commit": "aa4e6ab6b7bd41933d3a7fce5f2715e9edd403ec",
     "scope": "Existing response owner plus four direct consumer HTTPError mappings; GET primitive remains sole GET retirement owner",
-    "behavioral_qualification": "292 affected and40architecture cases PASS at exact2676300b; separate semantic gate returned stale generated lock; nine historical installed/template cases unrun",
-    "remaining": "32new and86retained affected cases; causal controls; governance architecture semantic package and installed consumer qualification; full lifecycle/deadline bounds remain open",
+    "behavioral_qualification": "Exact2676300b:292affected including32new controls and40architecture pass; exact257bd618:semantic recheck and9retained installed/template cases pass",
+    "remaining": "Installed sibling-specific response-error mappings, source/wheel/sdist and supported profile/adopter matrices, complete lifecycle/deadline/approved-target/custody obligations; no whole requirement closure",
     "canonical_sha256": {
       "ci_github_response.py": "9be4c376de6c1c8989d8d2f691d669decae8b1d298565107f5780258f6869470",
       "ci_github_transport.py": "359f9a7adf3d0790378f711bbe9e68a112a7cc1d0a043923626ccd538f0a769e",
@@ -166,6 +166,52 @@
       "Native semantic recheck after supported lock normalization",
       "Applicable whole lifecycle/deadline bounds, full distribution/adopter qualification, approved targets and immutable2.5custody"
     ],
-    "scope": "Historical2676300b results are retained without retagging to a later commit. Current source record is not certification or closure."
+    "scope": "Historical2676300b results are retained without retagging to a later commit. Current source record is not certification or closure.",
+    "post_normalization": {
+      "authority": false,
+      "subject_commit": "257bd618b3c0e211cb2226e37bf9406e5acfac78",
+      "subject_tree": "b4c64dbba1938e569c5af13592586282f4db4b5b",
+      "lint_exit": 0,
+      "governance_exit": 0,
+      "semantic_exit": 0,
+      "remaining_cases": 9,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "junit_sha256": "2a7446947145815b1a5e88101f34827f8cf18dfa8ede8f2989810a90f3a0599e",
+      "native_result_sha256": "e5e830b353133c4ebe96210ae2b37ef1c55c31aa724be315a78e6f6a036d4502",
+      "case_ids": [
+        "tests.test_installed_provider_error_retirement::test_installed_actual_error_response_retirement[fresh]",
+        "tests.test_installed_provider_error_retirement::test_installed_actual_error_response_retirement[upgrade]",
+        "tests.test_installed_provider_response::test_installed_provider_budgets_precede_allocation_and_bound_framing[fresh]",
+        "tests.test_installed_provider_response::test_installed_provider_budgets_precede_allocation_and_bound_framing[upgrade]",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_accepts_valid_sample_slice",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_use_case_http_objects",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_query_side_mutation",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_oversized_modules",
+        "tests.test_template_architecture_gate::test_template_architecture_gate_rejects_underused_shared_abstraction"
+      ],
+      "historical_86_case_identity_coverage": "77at2676300b plus9at257bd618; not an exact-current-subject full86rerun",
+      "normalization_commit": "257bd618b3c0e211cb2226e37bf9406e5acfac78",
+      "causal_join": {
+        "authority": false,
+        "baseline_commit": "286db0fc71b1c1a63e2ce6cc7d1343b9b304579e",
+        "qualified_commit": "2676300b348869105ae966c13a0d0f48510dc547",
+        "original_test_source_preserved_as_exact_prefix": true,
+        "original_test_source_sha256": "3dfbf6c77adb39a81cfa4ba053db1ebe2cc423d4c00d2eb40cb7091efb8c8997",
+        "identical_case_ids": 24,
+        "failed_to_passed": 21,
+        "passed_to_passed": 3,
+        "cases_missing": [],
+        "claim": "Original24source-bound case IDs retained;21intended REDs nowPASS and3GETguards stayPASS. Not full phase/whole requirement qualification."
+      },
+      "scope": "Local source and retained fresh/upgrade private GET/budget/template fixtures only; new sibling-specific installed mapping and full distribution/adopter/train proof remain open"
+    }
+  },
+  "execution_count_scope": "24negative-baseline+292affected+40architecture+9remaining executions; overlapping case IDs are not independent statistical samples",
+  "memory_summary_disposition": {
+    "original": "Issue 394 foundation remains dormant: complete protected lifecycle/effect populations and runtime conformance must precede prose DAG retirement; matched measurement targets and budgets are not yet frozen",
+    "replacement": "P32 active; P33-P35 dormant. Full lifecycle/effect conformance precedes prose DAG retirement; sibling scoped checks pass; targets/distribution/custody open. See audits/issue-394/workplan.yml.",
+    "reason": "Clarify active foundation versus dormant mechanisms; preserve full requirements through canonical workplan"
   }
 }

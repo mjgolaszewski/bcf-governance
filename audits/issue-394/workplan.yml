@@ -277,6 +277,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/provider-response-error-retirement-siblings-contract.json
     - audits/issue-394/semantic-operation-admission-verification.json
     - audits/issue-394/semantic-shape-admission-contract.json
     - audits/issue-394/semantic-shape-admission-verification.json
@@ -373,6 +374,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/provider-response-error-retirement-siblings-contract.json
     - audits/issue-394/preflight-repository-context-custody-verification.json
     - audits/issue-394/profile-gate-deadline-verification.json
     - audits/issue-394/development-distribution-7c6b3d65-verification.json
