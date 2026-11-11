@@ -363,3 +363,52 @@ source_context_qualification_disposition:
   prior: 229PASS and2FAIL; native lint/governance/pack/semantic PASS
   corrections: Update stale authored-phase direct-consumer binding; qualify wrong-pytest oracle only after exact pinned installer is present in isolated test environment
   retained: Original45characterization and47source-context/fresh-upgrade private PASS remain exact-subject evidence; no runtime change or whole acceptance advance
+
+semantic_source_ambient_qualification:
+  authority: false
+  contract_commit: dbe3b659bd0880f1fc0b4e6d94a5b7c927f1de35
+  private_controls_commit: 8c723970d400208738c0e992eb1552bbe2386816
+  implementation_commit: 39d1b5a2ea4d700ec0b98b62d6c0ffdd0dc57ee6
+  implementation_tree: 3592bfcac108aeb9e43552d3ae97395bc7386a03
+  original45_subject: ccf3f40c6bc0f33a8e6a8691d111318199ce086f
+  original45_result: 15RED/30PASS/0ERROR/0SKIP; unchanged source prefix retained
+  replacement_characterization:
+    tests: 2
+    failures: 1
+    errors: 0
+    skipped: 0
+  replacement_junit_sha256: 3a6523b1d6531bf073baa1177b098e5b0bd46f3030e0aacab8368ed4a3a31ba5
+  previous_subject: eca85f0c33fbe93c9152a936bca781fa0e9c224a
+  previous_affected:
+    tests: 231
+    failures: 2
+    errors: 0
+    skipped: 0
+  retained_previous_passes: 229
+  targeted_corrections:
+    tests: 2
+    failures: 0
+    errors: 0
+    skipped: 0
+  affected_junit_sha256: b3f6ec6e2936d54e241dbb995fba46134797f6ee12afa1aa852ea5d2a682a35c
+  architecture:
+    tests: 40
+    failures: 0
+    errors: 0
+    skipped: 0
+  architecture_junit_sha256: 1d40e3c4dcdd592410f2efa3bb029643063217d4511eafa3a528529a366f3b34
+  test_python: 3.12.14
+  dependency_wheels: 41
+  qualification: source and canonical private fresh/upgrade controls only
+  installed_private_behaviors_each: 47
+  acceptance_advance: false
+  remaining: all other source/workspace/provider/lifecycle populations and complete
+    deadline/target/profile/adopter/independent release custody obligations; current
+    exact archive proof remains f1fd-scoped
+
+source_environment_memory_disposition:
+  original: P32 active; P33-P35 dormant. f1fd scoped dev archives/private probes pass;
+    full SDK/profile/adopter/lifecycle/deadline/target/custody proof open. See audits/issue-394/workplan.yml.
+  replacement: P32 active; P33-P35 dormant. Source-context guards qualified at 39d1b5a2;
+    archives stay f1fd-scoped. Full SDK/lifecycle/deadline/target/adopter/custody
+    proof open. See audits/issue-394/workplan.yml.
