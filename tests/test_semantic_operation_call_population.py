@@ -169,16 +169,20 @@ def test_candidate_schema_cannot_weaken_initialization_contract(initialization_i
 
 
 def test_private_runtime_resolves_its_installed_initialization_schema(initialization_inventory, tmp_path):
-    import runpy
+    import json
     import shutil
+    from semantic_private_runtime_fixture import private_package_probe
 
     root = Path(__file__).parents[1]
-    runtime = tmp_path / 'scripts/_bcf_runtime'
-    runtime.mkdir(parents=True)
-    schemas = tmp_path / 'schemas'
-    schemas.mkdir()
-    shutil.copy2(root / 'bcf_governance/tooling/semantic_operation_effects.py', runtime / 'semantic_operation_effects.py')
-    shutil.copy2(root / 'schemas/semantic-initialization-contracts.schema.json', schemas / 'semantic-initialization-contracts.schema.json')
-    private = runpy.run_path(str(runtime / 'semantic_operation_effects.py'))
+    def candidate_schema(project, _runtime):
+        schemas = project / "schemas"
+        schemas.mkdir()
+        shutil.copy2(root / "schemas/semantic-initialization-contracts.schema.json",
+                     schemas / "semantic-initialization-contracts.schema.json")
+    observed = private_package_probe(tmp_path, (
+        "from _bcf_runtime.semantic_operation_effects import source_operation_call_population\n"
+        "inventory=json.loads(Path('inventory.json').read_text())\n"
+        "print(json.dumps(source_operation_call_population('root.py::root', inventory, include_initialization=True)))\n"
+    ), inventory=initialization_inventory, mutate=candidate_schema)
     expected = source_operation_call_population('root.py::root', initialization_inventory, include_initialization=True)
-    assert private['source_operation_call_population']('root.py::root', initialization_inventory, include_initialization=True) == expected
+    assert observed == json.loads(json.dumps(expected))

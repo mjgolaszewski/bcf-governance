@@ -1803,3 +1803,41 @@ construction_protocol_source_contract:
   remaining: Authenticated builtin/decorator/runtime binding, complete source/context/lifecycle/effect
     populations and installed supported-profile/adopter conformance; deadlines, approved
     measurements and all82whole remain open.
+
+private_semantic_schema_contract:
+  authority: false
+  workitems:
+  - P32-P0-03
+  - P32-P0-04
+  context: Private semantic schema ownership and faithful SDK-absent package import
+  layer: tooling
+  side: query
+  targets:
+  - bcf_governance/tooling/semantic_operation_effects.py
+  - bcf_governance/tooling/semantic_authority_contracts.py
+  - tests/test_semantic_operation_call_population.py
+  - tests/semantic_private_runtime_fixture.py
+  - tests/test_private_semantic_schema_ownership.py
+  requirements:
+  - Repair the prior standalone runpy fixture to consume a genuine generated _bcf_runtime
+    package in a fresh -I process, with SDK unavailable and no SDK import; no production
+    change before this positive setup passes.
+  - Both semantic readers reuse existing ci_github_authority.packaged_repo_root for
+    consumer-owned schemas; candidate project schemas cannot replace missing/corrupt
+    executing-package resources.
+  - Preserve ordinary authored project-schema validation when consumer_owned=False
+    and existing CLI/error domains.
+  - Eight real private-package controls cover candidate missing/permissive and runtime
+    missing/invalid across initialization facts and protected registry loader; registry
+    digest remains caller-authenticated, never custody proof.
+  - Canonical pack generator owns mirrors; retain the original 493PASS/1namespace
+    failure and protocol198-before evidence. No private-copy repairs become delivered
+    source.
+  forbidden:
+  - new root locator/registry/evaluator/receipt family
+  - source-code or SDK fallback in private probes
+  - schema validation weakening
+  - main/release/SDK adoption/whole advancement
+  remaining: Full interpreter/builtin/decorator/runtime, context/effect/lifecycle,
+    installed profile/adopter/deadline/measurement/custody assurance and all82whole
+    remain open.
