@@ -1,0 +1,43 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "scope": "current_owner_python_function_source_only",
+  "source_files": 1217,
+  "source_functions": 10476,
+  "source_class_rows": 806,
+  "distinct_source_classes": 806,
+  "duplicate_class_symbols": [],
+  "constructor_facts": 17470,
+  "known_class_calls": 12382,
+  "known_class_calls_missing_or_ambiguous_constructor_fact": 0,
+  "known_class_calls_missing_observation": 0,
+  "source_constructor_unresolved_occurrences": 12222,
+  "external_constructor_unqualified_occurrences": 5088,
+  "source_unresolved_cause_counts": {
+    "class_attribute_descriptor_provenance_required": 40,
+    "decorated_class_runtime_provenance_required": 876,
+    "decorator_runtime_provenance_required": 381,
+    "descriptor_runtime_provenance_required": 14,
+    "external_class_provenance_required": 11177
+  },
+  "limitations": [
+    "Owner-discovered classes and function-scope source calls only; this does not prove class-discovery exhaustiveness or complete module/class initialization closure.",
+    "Dynamic factories, external/native behavior, actual runtime MRO/descriptor effects and SDK/runtime purity remain unqualified.",
+    "This is an independent comparison of existing source facts, not a new graph, parser, registry, proof or authority."
+  ],
+  "source_unresolved_target_count": 661,
+  "raw_census_sha256": "e1b8b2207df03a6bb8a374fd36655915868677a8a9bc0588f57d6ad75f099848",
+  "raw_census_archive_sha256": "5a51577bcaa27d79ad268416d538ec8efeaf9d526138d62ab0eaf91d55309d9b",
+  "raw_census_bytes": 21026229,
+  "raw_census_archive_bytes": 678070,
+  "raw_codec": "gzip;lossless;mtime0",
+  "subject": "935ba1713f0cb9230b27497b935bb9ae293d3c0b",
+  "tree": "88d820de2811cc147f255e8d3f688fe3455c5564",
+  "source_base": "935ba1713f0cb9230b27497b935bb9ae293d3c0b",
+  "query_owner": "bcf_governance/tooling/semantic_ownership_scan.py::_discover_ownership_inputs",
+  "native_query_sha256": "307922474e0258b3f1350f4f49be6a1a2bb340dbd36921caf995d095737e683c",
+  "source_owner_sha256": "c429d3eb20199d0308374c65ef0dc8565e2a41cc724d2272b3cd45b5bd8f5ffc",
+  "production_paths_frozen": 1417,
+  "whole_requirement_advancement": false,
+  "next": "Dispose each missing source-constructor population and qualification class mechanically through existing owners; retain full module/runtime/external and lifecycle obligations. No source constructor or SDK purity is certified by this census."
+}

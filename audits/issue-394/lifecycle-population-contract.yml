@@ -1459,3 +1459,26 @@ construction_source_census_contract:
   acceptance: A completed source census is diagnostic evidence only; missing populations
     and unsupported provenance remain open. No runtime qualification, canonical projection
     or existing checks rerun.
+
+construction_source_adoption_census:
+  report: audits/issue-394/construction-source-adoption-census.json
+  sha256: ce13a6caf8c33892d8c4418d630807268e99456e339ff9f5d902dc67f88798fe
+  subject: 935ba1713f0cb9230b27497b935bb9ae293d3c0b
+  known_class_calls: 12382
+  missing_constructor_facts: 0
+  unresolved_source_constructor_occurrences: 12222
+  runtime_qualified: false
+
+construction_census_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified;
+    construction2496622d48controls pass, decorator/descriptor adoption blocked. Full
+    population/runtime/deadlines/targets/adopters/custody and82whole open.
+  current_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified; construction2496622d48controls
+    pass, adoption blocked; source census 935ba171 retained. Full population/runtime/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 2496622d proto; adoption blocked.
+  current_ledger:
+    type: 394source
+    statement: 249 proto blocked; source census retained.
