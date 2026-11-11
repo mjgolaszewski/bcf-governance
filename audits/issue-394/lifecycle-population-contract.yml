@@ -635,3 +635,56 @@ typed_recovery_prototype_controls:
     one new valid1.2 control to demonstrate unsupported mode before production, not
     missed-failure detector qualification; execute cause controls after valid positive
     setup
+
+typed_recovery_prototype_qualification:
+  authority: false
+  status: prototype_source_private_qualified_registration_pending
+  controls_commit: 4f9528f0df1a7dc56208b1b248ba238d9c88ff47
+  subject: 7d4ec224e07fb6b427746dfb885c02a7bd50312e
+  tree_sha: 7f46d6bd3d81a619c06324d70e4735193ee15e41
+  existing_recovery_owner_prefix_preserved: true
+  preimplementation_unsupported_mode:
+    tests: 1
+    failures: 1
+    errors: 0
+    skipped: 0
+  preimplementation_junit_sha256: 40141bec17303003a91ea8ad6b1ab1b696a3b44cde7ffc448cf6cd4bbcc35b81
+  affected:
+    tests: 460
+    failures: 0
+    errors: 0
+    skipped: 0
+  affected_junit_sha256: 4a30e0c73ae862ff4a2ae48b4ba75ae6a25bb3ab855dc1415eab410914bf048e
+  architecture:
+    tests: 40
+    failures: 0
+    errors: 0
+    skipped: 0
+  architecture_junit_sha256: d45d4cdd269b659a858d31b17b9dd03a34109dd19513ede0f642bb0818da7fb6
+  source_sdk_absent_private_cases: 2
+  private_causal_controls_each: 10
+  public_registration_complete: false
+  context_authority_qualified: false
+  runtime_recovery_execution_qualified: false
+  prior_legacy_baseline: dfede1cd5abd081049ef9c2af107ec7adbb9ad8b 437PASS
+  public_graph_authority_inputs_unchanged:
+    governance/public-contracts.yml: b958aba90e9099f60957f878b1c00e9f2c9dfb5daacabd2ea819601af37c72cf
+    governance/ci-graph.yml: cbcee967dfd4969f0025eaec820d20ec70951138a40792dee2b7a44d44b9848a
+    governance/ci-authority.yml: 061ee4ca5ed1b93415bd5e7e60a828f65ffb90c2738d6fd8ff49323aea1b2b32
+  remaining: Canonical public registration/reconciliation, full protected contexts/source-runtime
+    conformance/profile/adopter/deadline/performance and independent terminal custody;82whole
+    remain open
+
+typed_recovery_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Guards9550ba50 qualified; recovery
+    population contract/baseline pending implementation. Archivesf1fd only. Full SDK/lifecycle/deadline/target/adopter/custody
+    open. See audits/issue-394/workplan.yml.
+  current_memory: P32 active; P33-P35 dormant. Recovery1.2 prototype 7d4ec224 source/private
+    qualified; public registration and full context/runtime adoption pending. Guards9550/archivef1fd
+    retain exact scopes; full deadlines/targets/adopters/custody open.
+  previous_ledger:
+    type: 394source
+    statement: 9550ba50 guards pass; recovery plan; scope open.
+  current_ledger:
+    type: 394source
+    statement: 9550 guards; 7d4ec224 recovery proto; scope open.
