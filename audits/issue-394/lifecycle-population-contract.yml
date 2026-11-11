@@ -799,3 +799,50 @@ lifecycle_registration_summary_disposition:
   current_ledger:
     type: 394source
     statement: 7d4ec recovery; 28667407 registration RED; scope open.
+
+lifecycle_public_registration_qualification:
+  authority: false
+  status: public_registration_source_private_qualified_full_adoption_pending
+  controls_subject: 28667407c158599ea66cb31a68d4cf39ce2b781c
+  authored_subject: 39a926ca7fd0b44a39f8475ade0da347456896a4
+  definition_commit: dafcde39a7f5c178dc1489a1207caea187e05968
+  subject: 06255e64c1708d86725c81ee57b0e6a4cb783ef5
+  tree: 2bbcf3b6131c4f8c51c51d638262843e9eb26a5c
+  affected:
+    tests: 438
+    failures: 0
+    errors: 0
+    skipped: 0
+  affected_junit_sha256: 4a90cb6859e0168d63acd3d27cda0352c9f037d5407af4aaabe067fe666b6780
+  architecture:
+    tests: 40
+    failures: 0
+    errors: 0
+    skipped: 0
+  architecture_junit_sha256: 4de7d7db1b620fcabe105a7cd36d3ac2ab2ded094c5a4211ec6f2b895d804b7d
+  readable_versions:
+  - '1.0'
+  - '1.1'
+  - '1.2'
+  active_version: '1.1'
+  migration_only_versions: []
+  public_registration_complete: true
+  full_protected_context_adoption_complete: false
+  runtime_recovery_execution_qualified: false
+  whole_requirement_advancement: false
+  remaining: Full protected population/runtime conformance, phase authority, installed/profile/adopter/deadline/measurement/approved
+    targets and independent terminal custody;82whole remain open.
+
+lifecycle_registration_qualified_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Recovery7d4ec qualified; registration
+    contract 28667407 baseline2RED/6PASS, production pending. Full contexts/runtime/deadlines/targets/adopters/custody
+    open;9550/f1fd evidence stays scoped.
+  current_memory: P32 active; P33-P35 dormant. Lifecycle public registration 06255e64
+    source/private qualified; full protected population/runtime/deadlines/targets/adopters/custody
+    open.9550/f1fd retain exact scopes.
+  previous_ledger:
+    type: 394source
+    statement: 7d4ec recovery; 28667407 registration RED; scope open.
+  current_ledger:
+    type: 394source
+    statement: 06255e64 registration pass; full scope open.
