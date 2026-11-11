@@ -75,7 +75,7 @@
     "scope": "Real HTTPError bodies at existing consumer boundaries; one opener and one retirement owner; status and original cause retained",
     "remaining_controls": "Full installed sibling-specific consumer matrix, archives, profiles/adopters and lifecycle/deadline bounds remain required"
   },
-  "runtime_execution_count": 365,
+  "runtime_execution_count": 367,
   "acceptance_advance": false,
   "baseline_evidence": {
     "authority": false,
@@ -104,7 +104,7 @@
     "tests_before_production_commit": "aa4e6ab6b7bd41933d3a7fce5f2715e9edd403ec",
     "scope": "Existing response owner plus four direct consumer HTTPError mappings; GET primitive remains sole GET retirement owner",
     "behavioral_qualification": "Exact2676300b:292affected including32new controls and40architecture pass; exact257bd618:semantic recheck and9retained installed/template cases pass",
-    "remaining": "Installed sibling-specific response-error mappings, source/wheel/sdist and supported profile/adopter matrices, complete lifecycle/deadline/approved-target/custody obligations; no whole requirement closure",
+    "remaining": "Source/wheel/sdist and broader supported profile/real-adopter matrices, complete lifecycle/deadline/approved-target/custody obligations; scoped lite installed siblings pass, no whole requirement closure",
     "canonical_sha256": {
       "ci_github_response.py": "9be4c376de6c1c8989d8d2f691d669decae8b1d298565107f5780258f6869470",
       "ci_github_transport.py": "359f9a7adf3d0790378f711bbe9e68a112a7cc1d0a043923626ccd538f0a769e",
@@ -208,7 +208,7 @@
       "scope": "Local source and retained fresh/upgrade private GET/budget/template fixtures only; new sibling-specific installed mapping and full distribution/adopter/train proof remain open"
     }
   },
-  "execution_count_scope": "24negative-baseline+292affected+40architecture+9remaining executions; overlapping case IDs are not independent statistical samples",
+  "execution_count_scope": "24negative-baseline+292affected+40architecture+9retained+2installed-sibling pytest executions; new2each assert32internal behaviors, not64independent pytest/statistical samples",
   "memory_summary_disposition": {
     "original": "Issue 394 foundation remains dormant: complete protected lifecycle/effect populations and runtime conformance must precede prose DAG retirement; matched measurement targets and budgets are not yet frozen",
     "replacement": "P32 active; P33-P35 dormant. Full lifecycle/effect conformance precedes prose DAG retirement; sibling scoped checks pass; targets/distribution/custody open. See audits/issue-394/workplan.yml.",
@@ -216,7 +216,7 @@
   },
   "installed_sibling_followup": {
     "authority": false,
-    "status": "authored_unexecuted",
+    "status": "scoped_lite_fresh_upgrade_qualified_full_distribution_open",
     "test": "tests/test_installed_provider_error_retirement_siblings.py",
     "test_sha256": "b4f1045c8ba09e1d8a3b9a6314a95cb2b9f93d3654b8ed3fdb739af23a553aff",
     "contract_scope": "Existing committed sibling response retirement contract; no production behavior change",
@@ -239,6 +239,24 @@
       "cleanup cancellation propagates unchanged",
       "private installed module origins; source package absent"
     ],
-    "remaining": "Execution, package archives, supported profiles/real adopters, total setup/cleanup deadline and full lifecycle/targets/custody; no acceptance advance"
+    "remaining": "Source/wheel/sdist archives, broader supported profiles and isolated real adopters, total setup/cleanup deadlines, full lifecycle/approved targets/custody; no acceptance advance",
+    "subject_commit": "7cfb2e52f89d061cb9d7429d379971f3927bcee1",
+    "subject_tree": "ccca17f905b5d5a9a3244acbe98d804af682c379",
+    "pytest_cases": 2,
+    "internal_behaviors": 64,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "source_package_absent": true,
+    "private_installed_origins": true,
+    "standard_gates": {
+      "lint": 0,
+      "governance": 0,
+      "pack": 0,
+      "semantic": 0,
+      "remaining": 0
+    },
+    "native_result_sha256": "11666feb1792b1c7da6afca9594f11f86254dcb825c6a95df2fbf909f064c0d8",
+    "junit_sha256": "1a36e2b7f68e3defb84e553f87c22d15bc516708c2206997b4d5c2ea488a3796"
   }
 }
