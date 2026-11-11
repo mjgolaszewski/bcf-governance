@@ -1883,3 +1883,20 @@ protocol_and_private_schema_qualification:
     type: 394source
     statement: 0466b7ec protocol/schema controls; full adoption blocked.
   whole_requirement_advancement: false
+
+decorator_spelling_authority_contract:
+  scope: Source-only effect consumers cannot treat decorator basename staticmethod/classmethod
+    as authenticated binding. Ordinary isolated consumers witness six wrapper writes.
+    No runtime authority or constructor claim.
+  cases: 20
+  expected_before:
+    failures: 12
+    passed: 8
+    errors: 0
+    skipped: 0
+  production: None in diagnostic; contract and executable controls precede any future
+    repair.
+  next: All decorator bindings remain unqualified until mechanically authenticated;
+    familiar spellings cannot suppress missing provenance. Preserve ordinary undecorated
+    local behavior.
+  authority: false
