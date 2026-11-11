@@ -284,6 +284,13 @@
       "sdist source custody and SDK tests"
     ],
     "verification": "Native source-absent fixture then existing artifact verifier on exact development wheel/sdist; real adopter/profile/full lifecycle/deadline/targets/custody remain separate",
-    "production_change_authority": "Commit this bounded extension before harness edits; no release publication authorization"
+    "production_change_authority": "Commit this bounded extension before harness edits; no release publication authorization",
+    "fresh_acceptance_preservation": {
+      "authority": false,
+      "status": "authored_unexecuted",
+      "problem": "Moving existing broad acceptance after upgrade removed its original fresh-install subject",
+      "required_behavior": "Preserve original fresh target and full acceptance; exercise the same32behavior probe before/after upgrade on a separately installed declared target; preserve project-owned marker; report each actual subject",
+      "unchanged": "Original broad acceptance helper, all original assertions, probe bytes, SDK runtime, CLI/status identities and existing report family"
+    }
   }
 }
