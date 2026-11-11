@@ -213,5 +213,32 @@
     "original": "Issue 394 foundation remains dormant: complete protected lifecycle/effect populations and runtime conformance must precede prose DAG retirement; matched measurement targets and budgets are not yet frozen",
     "replacement": "P32 active; P33-P35 dormant. Full lifecycle/effect conformance precedes prose DAG retirement; sibling scoped checks pass; targets/distribution/custody open. See audits/issue-394/workplan.yml.",
     "reason": "Clarify active foundation versus dormant mechanisms; preserve full requirements through canonical workplan"
+  },
+  "installed_sibling_followup": {
+    "authority": false,
+    "status": "authored_unexecuted",
+    "test": "tests/test_installed_provider_error_retirement_siblings.py",
+    "test_sha256": "b4f1045c8ba09e1d8a3b9a6314a95cb2b9f93d3654b8ed3fdb739af23a553aff",
+    "contract_scope": "Existing committed sibling response retirement contract; no production behavior change",
+    "installation_modes": [
+      "fresh",
+      "upgrade"
+    ],
+    "behavioral_cases_per_mode": 32,
+    "bindings": [
+      "JSON POST/PUT/PATCH/DELETE",
+      "release upload",
+      "evidence upload",
+      "protection GET",
+      "retained JSON GET"
+    ],
+    "oracles": [
+      "one request and one retirement attempt",
+      "typed status mapping and original provider cause retained",
+      "cleanup failure cannot authorize conflict continuation",
+      "cleanup cancellation propagates unchanged",
+      "private installed module origins; source package absent"
+    ],
+    "remaining": "Execution, package archives, supported profiles/real adopters, total setup/cleanup deadline and full lifecycle/targets/custody; no acceptance advance"
   }
 }
