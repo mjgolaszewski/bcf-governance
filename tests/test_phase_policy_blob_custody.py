@@ -159,3 +159,19 @@ def test_policy_source_total_budget_rejects_before_proof(tmp_path):
     with pytest.raises(GitHubControllerError, match="bounded input"):
         verify_required_phase_closure_inputs(api, repository="owner/repo", phase_id="P32")
     assert api.artifact_reads == 0
+
+def test_missing_inventory_capability_rejects_before_policy_consumption(tmp_path):
+    api = _source(tmp_path)
+    api.complete_tree_with_modes = None
+    api.repository = lambda *args: pytest.fail("missing inventory allocated provider identity")
+    with pytest.raises(GitHubControllerError, match="inventory"):
+        verify_required_phase_closure_inputs(api, repository="owner/repo", phase_id="P32")
+    assert api.content_reads == [] and api.artifact_reads == 0
+
+
+def test_malformed_inventory_rejects_before_policy_consumption(tmp_path):
+    api = _source(tmp_path)
+    api.complete_tree_with_modes = lambda repository, tree: None
+    with pytest.raises(GitHubControllerError, match="inventory"):
+        verify_required_phase_closure_inputs(api, repository="owner/repo", phase_id="P32")
+    assert api.content_reads == [] and api.artifact_reads == 0

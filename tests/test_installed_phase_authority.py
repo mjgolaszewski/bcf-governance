@@ -24,4 +24,5 @@ def test_installed_phase_query_uses_runtime_schema_authority(
         'runtime_owned_schemas': True,
         'candidate_schema_rejected': True,
         'protected_empty_population_verified': True,
+        'protected_policy_blob_custody_controls': 9,
     }

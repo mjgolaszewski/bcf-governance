@@ -16,7 +16,7 @@ from bcf_governance.tooling import ci_github_authority
 
 ROOT = Path(__file__).resolve().parents[1]
 PROBE = r'''
-import importlib.util, json, sys
+import hashlib, importlib.util, json, sys
 from pathlib import Path
 if len(sys.argv) > 2:
     assert importlib.util.find_spec('bcf_governance') is None
@@ -24,6 +24,7 @@ sys.path.insert(0, sys.argv[1])
 from _bcf_runtime import ci_github_authority as owner
 from _bcf_runtime.ci_authority_contracts import CIAuthorityContractError, validate_ci_contract
 from _bcf_runtime.ci_github_api import GitHubContent
+from _bcf_runtime.ci_github_identity import GitHubControllerError
 from _bcf_runtime.trusted_inputs import verify_required_phase_closure_inputs
 resource = owner.packaged_repo_root()
 assert resource.is_relative_to(Path(owner.__file__).resolve().parent)
@@ -34,8 +35,18 @@ except CIAuthorityContractError:
     pass
 else:
     raise AssertionError('candidate schema supplied authority')
+def oid(raw):
+    return hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest()
 class API:
-    calls = []
+    documents = {
+        'plans/build-plan.yml': {'phase_sequence': [{'phase_id': 'P01', 'hard_dependencies': []}]},
+        'plans/phase-ledger.yml': {'active_phase': {'id': 'P01'}},
+        'plans/phase-history.yml': {'entries': []},
+    }
+    def __init__(self, *, mode='100644', wrong=None, nonregular=None, oversized=False):
+        self.calls = []
+        self.mode, self.wrong, self.nonregular = mode, wrong, nonregular
+        self.oversized = oversized
     def repository(self, repository):
         assert repository == 'owner/repo'
         return {'id': 42, 'full_name': repository, 'default_branch': 'main'}
@@ -45,22 +56,53 @@ class API:
     def commit(self, repository, sha):
         assert repository == 'owner/repo' and sha == 'a'*40
         return {'sha': sha, 'tree': {'sha': 'b'*40}}
+    def _raw(self, path):
+        raw = json.dumps(self.documents[path]).encode()
+        if self.oversized:
+            raw += (b'\n#' + b'x'*897) * 1000
+        return raw
+    def complete_tree_with_modes(self, repository, tree):
+        assert repository == 'owner/repo' and tree == 'b'*40
+        return tuple((path, oid(self._raw(path)), '120000' if path == self.nonregular else self.mode)
+                     for path in sorted(self.documents))
     def content(self, repository, path, *, ref):
         assert repository == 'owner/repo' and ref == 'a'*40
         self.calls.append(path)
-        data = {
-            'plans/build-plan.yml': {'phase_sequence': [{'phase_id': 'P01', 'hard_dependencies': []}]},
-            'plans/phase-ledger.yml': {'active_phase': {'id': 'P01'}},
-            'plans/phase-history.yml': {'entries': []},
-        }
-        return GitHubContent(path, 'c'*40, json.dumps(data[path]).encode())
-api = API()
-subject, inputs = verify_required_phase_closure_inputs(api, repository='owner/repo', phase_id='P01')
-assert subject.repository_id == '42' and subject.checkout_sha == 'a'*40
-assert inputs == {} and len(api.calls) == 3
+        raw = self._raw(path)
+        if path == self.wrong:
+            raw += b'\n# self-consistent wrong-tree blob\n'
+        return GitHubContent(path, oid(raw), raw)
+controls = []
+for mode in ('100644', '100755'):
+    api = API(mode=mode)
+    subject, inputs = verify_required_phase_closure_inputs(api, repository='owner/repo', phase_id='P01')
+    assert subject.repository_id == '42' and subject.checkout_sha == 'a'*40
+    assert inputs == {} and len(api.calls) == 3
+    controls.append('valid-' + mode)
+for kind in ('wrong', 'nonregular'):
+    for path in API.documents:
+        api = API(**{kind: path})
+        try:
+            verify_required_phase_closure_inputs(api, repository='owner/repo', phase_id='P01')
+        except GitHubControllerError as error:
+            assert ('blob' in str(error) or 'regular' in str(error)), str(error)
+        else:
+            raise AssertionError('private policy query accepted ' + kind + ': ' + path)
+        controls.append(kind + ':' + path)
+api = API(oversized=True)
+try:
+    verify_required_phase_closure_inputs(api, repository='owner/repo', phase_id='P01')
+except GitHubControllerError as error:
+    assert 'bounded input' in str(error), str(error)
+else:
+    raise AssertionError('private policy query accepted aggregate source overflow')
+controls.append('aggregate-budget')
+assert len(controls) == 9
 assert 'bcf_governance' not in sys.modules
 print(json.dumps({'runtime_owned_schemas': True, 'candidate_schema_rejected': True,
-                  'protected_empty_population_verified': True}))
+                  'protected_empty_population_verified': True,
+                  'protected_policy_blob_custody_controls': len(controls)}))
+
 '''
 compile(PROBE, 'private-phase-authority-resources', 'exec')
 

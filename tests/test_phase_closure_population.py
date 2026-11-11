@@ -11,6 +11,65 @@ from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError
 from tests.test_phase_closure_input import SHA_A, SHA_B, TREE, phase_input  # noqa: F401
 
+POLICY_TREE = "e" * 40
+
+
+def _policy_blob(raw):
+    return hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+
+
+def bind_policy_source(api, monkeypatch, *, commit, tree, documents):
+    """Supply consistent provider observations; SDK verification is never replaced."""
+    if not hasattr(api, "policy_sources"):
+        api.policy_sources = {}
+        api.policy_raw_overrides = {}
+        api.policy_source_reads = []
+        original_content = api.content
+        original_commit = api.commit
+        original_inventory = api.complete_tree_with_modes
+
+        def content(repository, path, *, ref):
+            source = api.policy_sources.get(ref)
+            if source is None or path not in source[1]:
+                return original_content(repository, path, ref=ref)
+            assert repository == "owner/repo"
+            api.policy_source_reads.append((path, ref))
+            raw = api.policy_raw_overrides.get((ref, path))
+            if raw is None:
+                raw = yaml.safe_dump(source[1][path]).encode()
+            return GitHubContent(path, _policy_blob(raw), raw)
+
+        def commit_content(repository, sha):
+            value = original_commit(repository, sha)
+            source = api.policy_sources.get(sha)
+            # Preserve deliberate provider corruption in the original fixture.
+            if source is not None and value["tree"]["sha"] == api.tree:
+                return {**value, "tree": {"sha": source[0]}}
+            return value
+
+        def inventory(repository, tree_sha):
+            assert repository == "owner/repo"
+            matches = [(ref, docs) for ref, (oid, docs) in api.policy_sources.items()
+                       if oid == tree_sha]
+            if not matches:
+                return original_inventory(repository, tree_sha)
+            assert len(matches) == 1, "fixture policy trees must distinguish subjects"
+            ref, docs = matches[0]
+            rows = []
+            for path, value in {**api.lifecycle_documents, **docs}.items():
+                raw = api.policy_raw_overrides.get((ref, path))
+                if raw is None:
+                    raw = yaml.safe_dump(value, sort_keys=path in docs).encode()
+                rows.append((path, _policy_blob(raw), "100644"))
+            return tuple(sorted(rows))
+
+        monkeypatch.setattr(api, "content", content)
+        monkeypatch.setattr(api, "commit", commit_content)
+        monkeypatch.setattr(api, "complete_tree_with_modes", inventory)
+    assert all(source[0] != tree for key, source in api.policy_sources.items() if key != commit)
+    api.policy_sources[commit] = tree, documents
+    return api.policy_source_reads
+
 
 @pytest.fixture
 def protected_population(phase_input, monkeypatch):
@@ -27,16 +86,9 @@ def protected_population(phase_input, monkeypatch):
             "verification_snapshot": {"commit_sha": SHA_A, "tree_sha": TREE},
         }]},
     }
-    original = api.content
-    calls = []
-    def content(repository, path, *, ref):
-        if path not in policy:
-            return original(repository, path, ref=ref)
-        assert repository == "owner/repo" and ref == SHA_B
-        calls.append((path, ref))
-        raw = yaml.safe_dump(policy[path]).encode()
-        return GitHubContent(path=path, blob_oid=hashlib.sha1(raw).hexdigest(), content=raw)
-    monkeypatch.setattr(api, "content", content)
+    calls = bind_policy_source(
+        api, monkeypatch, commit=SHA_B, tree=POLICY_TREE, documents=policy,
+    )
     return api, policy, calls
 
 
@@ -51,20 +103,12 @@ def test_duplicate_protected_policy_blocks_before_any_phase_artifact(protected_p
     api, _, _ = protected_population
     assert _verify(api)[1]["P01"][1].computed_state == "certified"
     api.reads = 0
-    original = api.content
-
-    def content(repository, observed_path, *, ref):
-        result = original(repository, observed_path, ref=ref)
-        if observed_path != path:
-            return result
-        mapping = yaml.safe_load(result.content)
-        key = next(iter(mapping))
-        raw = result.content + b"\n" + yaml.safe_dump({key: mapping[key]}).encode()
-        oid = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
-        return GitHubContent(path=path, blob_oid=oid, content=raw)
-
-    monkeypatch.setattr(api, "content", content)
-    with pytest.raises(GitHubControllerError):
+    raw = yaml.safe_dump(api.policy_sources[SHA_B][1][path]).encode()
+    mapping = yaml.safe_load(raw)
+    key = next(iter(mapping))
+    raw += b"\n" + yaml.safe_dump({key: mapping[key]}).encode()
+    api.policy_raw_overrides[(SHA_B, path)] = raw
+    with pytest.raises(GitHubControllerError, match="not a valid mapping"):
         _verify(api)
     assert api.reads == 0
 
@@ -132,7 +176,7 @@ def test_active_predecessor_uses_current_main_without_archived_history(protected
         _verify(api)
     assert seen == [{
         "repository": "owner/repo", "phase_id": "P01",
-        "source_commit": SHA_B, "source_tree": TREE,
+        "source_commit": SHA_B, "source_tree": POLICY_TREE,
     }]
 
 

@@ -1,35 +1,29 @@
 """Admitted policy source and current default frontier are independent identities."""
 
 from dataclasses import replace
-import hashlib
 
 import pytest
-import yaml
 
 from bcf_governance.tooling import trusted_inputs
-from bcf_governance.tooling.ci_github_api import GitHubContent
 from bcf_governance.tooling.ci_github_identity import GitHubControllerError, MainIdentity
-from tests.test_phase_closure_population import protected_population, phase_input, SHA_A, SHA_B, TREE  # noqa: F401
+from tests.test_phase_closure_population import (  # noqa: F401
+    protected_population, phase_input, SHA_A, SHA_B, TREE, POLICY_TREE, bind_policy_source,
+)
 
 
 @pytest.fixture
 def admitted_policy(protected_population, monkeypatch):
-    api, policy, calls = protected_population
-    original = api.content
-    history_calls = []
+    api, _, _ = protected_population
     historical = {
         "plans/build-plan.yml": {"phase_sequence": [{"phase_id": "P01", "hard_dependencies": []}]},
         "plans/phase-ledger.yml": {"active_phase": {"id": "P01"}},
         "plans/phase-history.yml": {"entries": []},
     }
-    def content(repository, path, *, ref):
-        if ref == SHA_A and path in historical:
-            history_calls.append((path, ref))
-            raw = yaml.safe_dump(historical[path]).encode()
-            return GitHubContent(path, hashlib.sha1(raw).hexdigest(), raw)
-        return original(repository, path, ref=ref)
-    monkeypatch.setattr(api, "content", content)
-    return api, MainIdentity("42", "main", SHA_A, TREE), history_calls
+    calls = bind_policy_source(
+        api, monkeypatch, commit=SHA_A, tree=TREE, documents=historical,
+    )
+    return api, MainIdentity("42", "main", SHA_A, TREE), calls
+
 
 
 def test_historical_admitted_policy_is_not_replaced_by_current_plan(admitted_policy):
@@ -90,7 +84,7 @@ def advanced_admitted_population(protected_population, monkeypatch):
     def commit(repository, sha):
         if sha == SHA_B:
             assert repository == "owner/repo"
-            return {"sha": SHA_B, "tree": {"sha": TREE}}
+            return {"sha": SHA_B, "tree": {"sha": POLICY_TREE}}
         return original_commit(repository, sha)
     monkeypatch.setattr(api, "commit", commit)
     original = api.compare_commits
@@ -99,7 +93,7 @@ def advanced_admitted_population(protected_population, monkeypatch):
             return {"status": "ahead", "base_commit": {"sha": base}, "merge_base_commit": {"sha": base}}
         return original(repository, base=base, head=head)
     monkeypatch.setattr(api, "compare_commits", compare)
-    return api, MainIdentity("42", "main", SHA_B, TREE), calls
+    return api, MainIdentity("42", "main", SHA_B, POLICY_TREE), calls
 
 
 def test_historical_policy_consumes_real_predecessor_bundle_after_default_advances(advanced_admitted_population):
@@ -136,16 +130,10 @@ def test_asserted_authority_is_not_a_policy_subject(admitted_policy, subject):
 
 def test_active_predecessor_uses_admitted_subject_not_new_default(admitted_policy, monkeypatch):
     api, subject, _ = admitted_policy
-    original = api.content
-    def content(repository, path, *, ref):
-        if ref == SHA_A and path == "plans/build-plan.yml":
-            raw = yaml.safe_dump({"phase_sequence": [
-                {"phase_id": "P01", "hard_dependencies": []},
-                {"phase_id": "P02", "hard_dependencies": ["P01"]},
-            ]}).encode()
-            return GitHubContent(path, hashlib.sha1(raw).hexdigest(), raw)
-        return original(repository, path, ref=ref)
-    monkeypatch.setattr(api, "content", content)
+    api.policy_sources[SHA_A][1]["plans/build-plan.yml"] = {"phase_sequence": [
+        {"phase_id": "P01", "hard_dependencies": []},
+        {"phase_id": "P02", "hard_dependencies": ["P01"]},
+    ]}
     selected, inputs = trusted_inputs.verify_required_phase_closure_inputs(
         api, repository="owner/repo", phase_id="P02", policy_subject=subject,
     )

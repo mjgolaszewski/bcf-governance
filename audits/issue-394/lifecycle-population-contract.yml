@@ -1132,3 +1132,74 @@ protected_policy_custody_summary_disposition:
   current_ledger:
     type: 394source
     statement: 06255 reg; policy source RED; scope open.
+
+protected_policy_source_reader_implementation_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  status: tests_and_fixture_provenance_before_implementation
+  production_targets:
+  - bcf_governance/tooling/trusted_inputs.py
+  - bcf_governance/tooling/ci_exact_main_truth.py
+  helpers:
+  - trusted_inputs._authenticated_lifecycle_source_snapshot
+  - trusted_inputs._read_authenticated_lifecycle_blob
+  real_consumers:
+  - ci_exact_main_truth.authenticate_exact_main_readiness
+  - trusted_inputs.verify_required_phase_closure_inputs
+  preservation: Compare moved inventory and blob guard statements structurally, normalizing
+    only formal source-parameter/counter/budget relocation. Preserve original blob/mode/path/hash
+    errors and every other existing function AST; source-byte bound remains2_000_000.
+    No returned callable, caller authentication boolean or new receipt/broker.
+  new_ingress: Unavailable mode inventory and malformed inventory get typed refusal
+    before reading lifecycle policy or acquiring proof.
+  fixture_provenance:
+  - Use actual Git blob header hashes rather than sha1(raw). Inventory and content
+    observations agree for valid and semantically malformed protected documents.
+  - Use a distinct current policy tree for current P02 and historical P01; retain
+    old parent certificate source identity. Historical/default policy assertions remain
+    distinct.
+  - Anchor duplicate-YAML source bytes in both inventory and content so duplicate-key
+    rejection is still exercised; strengthen its expected mapping refusal.
+  - Preserve all original source/authority assertions; changes correct observation
+    provenance, not verifier behavior or outcomes.
+  tests_first:
+    existing_real_git_control_source: 658a8bd97c0db20731962222e7a7c1eb375273f3
+    new_real_git_ingress_cases: 2
+    changed_fixture_files:
+    - tests/test_phase_closure_population.py
+    - tests/test_phase_policy_subject.py
+    private_cases: Fresh and after canonical same-candidate upgrade, source SDK absent;
+      existing fixture deliberately breaks a legacy SDK-import wrapper before upgrade
+      and preserves project-owned bytes/mode. Probe runs after upgrade, with no pre-upgrade
+      query or previous-release compatibility claim. Two valid modes and seven custody
+      causes run per private process.
+    preproduction_sequence:
+    - Commit contract, fixture corrections, ingress controls and private probe before
+      production edits.
+    - Run changed legacy fixture population; require valid existing behavior.
+    - Run only the two new real-Git ingress controls and the two installed cases;
+      retain genuine expected failures, distinguish fixture errors.
+    - Apply production only after those causes are authenticated. Original nine-case
+      characterization is not rerun for bookkeeping.
+  verification:
+  - Revalidate original seven cause controls after repair plus both new inventory
+    controls and all affected phase/readiness/source consumers.
+  - Fresh/upgrade and copied-runtime probes consume actual private SDK code with permissive
+    candidate schemas and correct provider-port facts; no verifier success replay.
+  - Native lint/governance/architecture/semantic/package gates; existing generator/reconciler
+    alone projects mirrors/manifests/locks/workflows/authority.
+  - Capture exact tested source and evidence hashes before metadata successor, then
+    normal feature push and exact provider reread. Metadata successor is not whole-tested.
+  limits: This strengthens policy-source custody through two existing consumers only.
+    Complete protected lifecycle population/model/context/effect wiring, runtime conformance,
+    deadlines, approved targets, adopters and independent 2.5 terminal custody remain
+    open. No P33-P35 activation or whole requirement closure.
+  forbidden_surfaces:
+  - main/default branch machinery and maintained 2.3.x repositories
+  - manual schema/public contract/catalog/CI graph/workflow/authority/semantic-lock
+    edits
+  - new registry, broker, evaluator, receipt family or public CLI grammar
+  - phase activation, whole requirement advancement, submission, merge or release
+    publication
