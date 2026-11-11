@@ -402,7 +402,7 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
         custom_function_decorators = {
             str(value).rsplit(".", 1)[-1]
             for value in function.get("decorators", [])
-        } - {"classmethod", "staticmethod"}
+        }
         failures: list[dict[str, Any]] = []
         if custom_function_decorators:
             failures.append(
@@ -426,7 +426,7 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
                 value.rsplit(".", 1)[-1]
                 for value in target_fact.get("decorators", [])
             }
-            custom_decorators = decorators - {"classmethod", "staticmethod"}
+            custom_decorators = decorators
             rebound = (
                 method in set(classes.get(class_symbol, {}).get("class_rebindings", []))
                 or method in instance_rebindings.get(class_symbol, set())
