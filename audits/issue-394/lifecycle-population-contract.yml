@@ -1968,3 +1968,16 @@ decorator_called_boundary_continuation:
   qualification: 613affected source/private/TS controls,40architecture with required
     provenance failure retained, lint/gov/pack-check, exact feature backup.
   authority: false
+
+decorator_characterization_scope_correction:
+  scope: Test-only qualified AST selection in historical characterization helper;
+    module normalize overloads must not collide with Repository.normalize. Existing
+    ten behavioral/anti-hiding cases rerun,603unchanged passed cases retained with
+    source hashes and remaining test AST equality.
+  authority: false
+  production_changed: false
+  immutable_golden_changed: false
+  tests_rerun: 10
+  single_all_green_613_claim: false
+  remaining: Required whole-operation runtime provenance block remains explicit; no
+    whole acceptance or SDK/adopter/release qualification.

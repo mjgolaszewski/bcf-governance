@@ -64,10 +64,16 @@ def _pre_deconstruction_view(inventory, source):
         actual = dict(row)
         if 'effect_unresolved' in actual and row.get('decorators') in (['classmethod'], ['staticmethod']):
             # New fail-closed uncertainty is checked before comparing the immutable old view.
-            name = row['symbol'].rsplit('.', 1)[-1]
-            declarations = [node for node in ast.walk(nodes)
+            scope = row['symbol'].partition('::')[2].split('.')
+            members = nodes.body
+            for owner in scope[:-1]:
+                declarations = [node for node in members
+                                if isinstance(node, ast.ClassDef) and node.name == owner]
+                assert len(declarations) == 1
+                members = declarations[0].body
+            declarations = [node for node in members
                             if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-                            and node.name == name]
+                            and node.name == scope[-1]]
             assert len(declarations) == 1
             assert [ast.unparse(value) for value in declarations[0].decorator_list] == row['decorators']
             assert actual['effect_unresolved'] == [{
