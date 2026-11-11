@@ -7,7 +7,7 @@
     "P32-P0-04",
     "P32-P0-05"
   ],
-  "status": "committed_contract_with_authored_unrun_baseline",
+  "status": "observed_negative_baseline_correction_pending",
   "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "existing_query_and_command_transport_cleanup",
@@ -69,12 +69,33 @@
   ],
   "authored_baseline": {
     "path": "tests/test_provider_error_retirement_siblings.py",
-    "designed_case_count": 24,
-    "collection_status": "not_run",
-    "behavioral_status": "not_run",
+    "designed_case_count": 32,
+    "collection_status": "24 collected at286db0fc; 8 additional controls uncollected",
+    "behavioral_status": "21 intended open-body failures and 3 retained GET passes at286db0fc; 8 additional controls unrun",
     "scope": "Real HTTPError bodies at existing consumer boundaries; one opener and one retirement owner; status and original cause retained",
-    "remaining_controls": "Cleanup failure and interruption causal cases, real network coverage, complete consumer population and installed qualification remain pending"
+    "remaining_controls": "Execute 8cleanup-failure/interruption controls; real network/full population/installed qualification and full retained86case regression remain pending"
   },
-  "runtime_execution_count": 0,
-  "acceptance_advance": false
+  "runtime_execution_count": 24,
+  "acceptance_advance": false,
+  "baseline_evidence": {
+    "authority": false,
+    "subject_commit": "286db0fc71b1c1a63e2ce6cc7d1343b9b304579e",
+    "subject_tree": "fa2bb9d1469545d6f637703e7d32c0983b58e666",
+    "test_sha256": "3dfbf6c77adb39a81cfa4ba053db1ebe2cc423d4c00d2eb40cb7091efb8c8997",
+    "cases": 24,
+    "passed": 3,
+    "failed": 21,
+    "errors": 0,
+    "skipped": 0,
+    "failure_cause": "Owned HTTPError bodies remain open at translated consumer boundary; all21failures reach that assertion",
+    "pytest_exit": 1,
+    "junit_sha256": "4ec95f0f67d23c834b2debfa80c6787fe05529842fdc6e9e0b7865e8f9d15b6d",
+    "native_result_sha256": "3cb61dd199adcd68c5caa59daed0e229ed8a8bfa367b130242720e64c1e4073c",
+    "existing_environment_probe": "Python version pytest version and pip check all EXIT0",
+    "source_unchanged": true,
+    "processes_reaped": true,
+    "physical_fence_freshly_reacquired_and_released": true,
+    "limits": "One CPU/1GiB; 180s baseline+60s cleanup;4GiB floor;64MiB output bound",
+    "scope": "Local source consumer fixtures only; not full86GET corpus, current source after added controls, installed parity, deadline sufficiency or phase closure"
+  }
 }

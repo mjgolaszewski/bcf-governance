@@ -100,3 +100,86 @@ def test_asset_post_retires_error_without_retry(monkeypatch, tmp_path, kind, cod
             client.upload_evidence_asset(upload_url=url, repository="acme/project",
                 release_id=1, name="evidence.bin", path=source, maximum_bytes=5)
     _assert_retired(body, error, calls, failure, "POST")
+
+
+def _exception_population(error):
+    """Retain both explicit cause and cleanup context without losing either."""
+    pending = [error]
+    found = []
+    while pending:
+        current = pending.pop()
+        if current is None or any(current is seen for seen in found):
+            continue
+        found.append(current)
+        pending.extend([current.__cause__, current.__context__])
+    return found
+
+
+@pytest.mark.parametrize("consumer", ["json", "release", "evidence", "protection"])
+@pytest.mark.parametrize("interrupted", [False, True])
+def test_failed_error_retirement_blocks_continuation(
+    monkeypatch, tmp_path, consumer, interrupted
+):
+    cleanup = SystemExit("controlled cleanup interruption") if interrupted else OSError(
+        "controlled cleanup failure"
+    )
+    attempted = []
+
+    class RefusingClose(BytesIO):
+        def close(self):
+            attempted.append("close")
+            raise cleanup
+
+    body = RefusingClose(b"controlled error body")
+    error = HTTPError("https://api.github.com/repos/acme/project", 409,
+                      "controlled conflict", Message(), body)
+    calls = []
+
+    def opener(request, **_kwargs):
+        calls.append(request)
+        raise error
+
+    url = "https://uploads.github.com/repos/acme/project/releases/1/assets"
+    try:
+        expected = SystemExit if interrupted else GitHubAPIError
+        with pytest.raises(expected) as failure:
+            if consumer == "json":
+                monkeypatch.setattr(ci_github_api, "open_download", opener)
+                GitHubAPI(token="fixture-token")._request(
+                    "POST", "/repos/acme/project/value", payload={"value": "exact"}
+                )
+            elif consumer == "release":
+                monkeypatch.setattr(ci_github_api, "open_download", opener)
+                GitHubAPI(token="fixture-token")._upload_bytes(
+                    url, payload=b"exact", media_type="application/octet-stream"
+                )
+            elif consumer == "evidence":
+                monkeypatch.setattr(evidence_storage_github_api, "open_download", opener)
+                source = tmp_path / "evidence.bin"
+                source.write_bytes(b"exact")
+                GitHubEvidenceAPI(token="fixture-token").upload_evidence_asset(
+                    upload_url=url, repository="acme/project", release_id=1,
+                    name="evidence.bin", path=source, maximum_bytes=5
+                )
+            else:
+                monkeypatch.setattr(protection_inspection_client, "_open_inspection", opener)
+                client = ProtectionInspectionClient(
+                    token="fixture-token", repository="acme/project", repository_id=1,
+                    installation_id=2, observed_installation_id=2
+                )
+                client._request("GET", "/repos/acme/project")
+        assert attempted == ["close"], "retirement must be attempted once before mapping"
+        assert len(calls) == 1, "failed retirement cannot authorize another request"
+        assert error.code == 409
+        population = _exception_population(failure.value)
+        assert any(item is error for item in population), "original provider outcome lost"
+        assert any(item is cleanup for item in population), "actual cleanup cause lost"
+        if interrupted:
+            assert failure.value is cleanup
+        else:
+            assert not isinstance(failure.value, GitHubAPIConflictError), (
+                "failed cleanup cannot establish the ordinary conflict continuation"
+            )
+    finally:
+        # Test-owned body is released without invoking the deliberate failing close.
+        BytesIO.close(body)
