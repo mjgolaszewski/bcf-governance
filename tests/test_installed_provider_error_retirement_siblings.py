@@ -97,7 +97,7 @@ print(json.dumps({'source_package_absent':True,'cases':completed,'private_origin
 
 compile(PROBE, 'installed-sibling-response-retirement', 'exec')
 
-def test_installed_sibling_response_retirement(installed_consumer, isolated_python):
+def exercise_installed_sibling_retirement(installed_consumer, isolated_python):
     result = subprocess.run(
         [str(isolated_python), '-I', '-B', '-c', PROBE], cwd=installed_consumer,
         env=_environment(), capture_output=True, text=True, timeout=30,
@@ -107,4 +107,10 @@ def test_installed_sibling_response_retirement(installed_consumer, isolated_pyth
     assert actual['source_package_absent'] is True and actual['private_origins']
     assert len(actual['cases']) == 32
     assert len({tuple(case) for case in actual['cases']}) == 32
+
+    return actual
+
+
+def test_installed_sibling_response_retirement(installed_consumer, isolated_python):
+    exercise_installed_sibling_retirement(installed_consumer, isolated_python)
 
