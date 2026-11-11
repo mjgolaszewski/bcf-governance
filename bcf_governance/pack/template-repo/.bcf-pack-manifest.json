@@ -1867,7 +1867,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
-      "sha256": "015bc4e248d4ad8a6388313a4a66a7479a1c5ec51f23f6eb04a94d1d19209452"
+      "sha256": "4835dad4e76ec130b93d678fdbf0dd01af03bd0bb67e68a36140e852b3d8684e"
     },
     "scripts/_bcf_runtime/semantic_source_discovery.py": {
       "operation": "copy",

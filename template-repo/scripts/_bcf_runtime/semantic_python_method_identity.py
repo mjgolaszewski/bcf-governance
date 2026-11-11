@@ -478,8 +478,8 @@ def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
             target = call.get("called_symbol")
             if target in classes and not any(site(fact) == site(call) for fact in constructors):
                 constructors.append({**call, "constructed_symbol": target})
-    lifecycle = {"__new__", "__init__", "__post_init__", "__setattr__"}
-    interception = {"__getattribute__", "__getattr__", "__get__", "__set__", "__delete__"}
+    lifecycle = {"__new__", "__init__", "__post_init__", "__setattr__", "__del__"}
+    interception = {"__getattribute__", "__getattr__", "__delattr__", "__get__", "__set__", "__delete__"}
 
     def closure(symbol: str, seen: frozenset[str]) -> tuple[set[str], set[str], set[str]]:
         if symbol in seen:
@@ -509,6 +509,8 @@ def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
                 targets.add(target)
             else:
                 missing.add(target + ":source_body_missing")
+            if name == "__del__":
+                missing.add(target + ":finalization_runtime_provenance_required")
             if name in interception:
                 missing.add(target + ":descriptor_runtime_provenance_required")
             if decorators:
