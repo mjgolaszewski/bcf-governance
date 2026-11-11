@@ -1576,7 +1576,7 @@
     },
     "scripts/_bcf_runtime/routine_controller_provider.py": {
       "operation": "copy",
-      "sha256": "e408722211110dad02c80ea508e8cb74289681cb9e5ac760f3713b101893306c"
+      "sha256": "792c3c47062c78aaa47b283eed0ce22ed8b16950ed3ee518214ac48dff69595b"
     },
     "scripts/_bcf_runtime/routine_controller_rotation.py": {
       "operation": "copy",

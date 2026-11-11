@@ -1285,3 +1285,39 @@ def test_active_transition_artifact_fails_closed_on_provider_custody(
             normalization_subject=OLD,
         )
     assert filters == [{"name_prefix": provider.TRANSITION_ARTIFACT_PREFIX}]
+
+
+def test_obsolete_transition_artifact_is_excluded_before_expired_bytes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    artifact = {
+        "id": 50,
+        "name": provider.TRANSITION_ARTIFACT_PREFIX + "a" * 64,
+        "expired": False,
+        "workflow_run": {
+            "id": 30,
+            "repository_id": int(MAIN.repository_id),
+            "head_repository_id": int(MAIN.repository_id),
+            "head_branch": MAIN.default_branch,
+            "head_sha": OLD,
+        },
+    }
+    api = SimpleNamespace(
+        repository_artifacts=lambda *_a, **_k: (artifact,),
+        artifact_bytes=lambda *_a, **_k: (_ for _ in ()).throw(
+            GitHubAPIError("obsolete transition ZIP returned 410")
+        ),
+    )
+    monkeypatch.setattr(
+        provider, "_is_ancestor",
+        lambda _api, _repository, *, base, head: (base, head) in {(OLD, NEW), (OLD, OLD)},
+    )
+    assert provider._active_receipts(
+        api, "mjgolaszewski/bcf-governance", current=MAIN,
+        normalization_subject=NEW,
+    ) == ()
+    with pytest.raises(GitHubAPIError, match="obsolete transition ZIP"):
+        provider._active_receipts(
+            api, "mjgolaszewski/bcf-governance", current=MAIN,
+            normalization_subject=OLD,
+        )
