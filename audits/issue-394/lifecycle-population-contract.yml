@@ -1567,3 +1567,33 @@ inventory_characterization_additive_compatibility:
     and forged spans/descriptors/authority reject.
   - Projection test changes confer no source/runtime/SDK authority and do not close
     the existing full-adoption block.
+
+construction_source_association_controls:
+  report: audits/issue-394/construction-source-association-controls.json
+  sha256: c21ef1598922cddddf49068bf1a6708dcccd27c5b14193d8af7d5ce77adcc961
+  subject: e592284399baf2e3294af3efff7ce20ac8de4d61
+  controls:
+    tests: 57
+    failures: 0
+    errors: 0
+    skipped: 0
+  adjacent:
+    tests: 155
+    failures: 0
+    errors: 0
+    skipped: 0
+  full_adoption_qualified: false
+
+construction_association_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified;
+    construction2496622d48controls pass, adoption blocked; source census 935ba171
+    retained. Full population/runtime/deadlines/targets/adopters/custody open.
+  current_memory: P32 active; P33-P35 dormant. Policy reader e3ce046c qualified; constructor
+    association e5922843 source controls pass, full adoption blocked. Full population/runtime/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 249 proto blocked; source census retained.
+  current_ledger:
+    type: 394source
+    statement: e5922843 associations; full adoption blocked.

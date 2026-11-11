@@ -1,0 +1,59 @@
+{
+  "authority": false,
+  "status": "constructor_source_association_controls_qualified_full_adoption_blocked",
+  "subject": "e592284399baf2e3294af3efff7ce20ac8de4d61",
+  "tree": "5280d750a7f7ccc683cc099e58f2f4cfeb743eb2",
+  "source_base": "424626cff4340fe417103f580a8540bcd490f299",
+  "controls_subject": "3d13efa50e895c608d4e42398895e0ced9c71993",
+  "preproduction": {
+    "tests": 9,
+    "failures": 7,
+    "errors": 0,
+    "skipped": 0
+  },
+  "controls": {
+    "tests": 57,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "adjacent_baseline": {
+    "prior_subject": "424626cff4340fe417103f580a8540bcd490f299",
+    "prior_results": {
+      "tests": 150,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "retained_unchanged_passing_cases": 148,
+    "compatibility_subject": "3d13efa50e895c608d4e42398895e0ced9c71993",
+    "compatibility_results": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "combined_expected_cases": 155,
+    "single_all_green_baseline_claimed": false
+  },
+  "adjacent_after": {
+    "tests": 155,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "015bc4e248d4ad8a6388313a4a66a7479a1c5ec51f23f6eb04a94d1d19209452",
+    "bcf_governance/tooling/semantic_operation_effects.py": "e1d9503986bfb12c1692f5882d6565ff34c111f896330489e53824047651c587"
+  },
+  "evidence_sha256": {
+    "before.xml": "0249095cf92ff3745789b69d942fe91876a96362c5b722ca1a15c90c9470969b",
+    "controls.xml": "b748c05951945ca84eb3a8f4b5daa8f41f0fac4cc067849ae7a178962fef36cd",
+    "compatibility.xml": "5cbdbc36f1ba3ed5771215ba60d6fe2f4db2116a96fc4d1268afa7df233ffe73",
+    "after.xml": "df4044856195897888f17a03638b4ba48afcd8e0d7e349dac9024abdc2033a93"
+  },
+  "full_native_or_installed_qualified": false,
+  "known_adoption_block_retained": "Prior2496622d decorator/external-base provenance block is still open; full semantic adoption/reconciliation not rerun or asserted by this bounded association correction.",
+  "whole_requirement_advancement": false,
+  "remaining": "Full constructor/decorator/external-base and typed-flow/runtime qualification, protected context/effect/lifecycle populations, deadlines/approved targets/adopters/custody and all82whole remain open."
+}
