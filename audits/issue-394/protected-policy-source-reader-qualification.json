@@ -1,0 +1,95 @@
+{
+  "authority": false,
+  "status": "shared_protected_policy_source_reader_qualified_full_adoption_pending",
+  "controls_subject": "f31650e303ad78c9f03d4254472d5026658ada3c",
+  "authored_subject": "657738b1dfb7443097cc348e2bd90f0bc364d024",
+  "definition_commit": null,
+  "subject": "e3ce046ce5bbb1ca1a165e18433e0071956bfb3a",
+  "tree": "00ccb6b338c022c2505c0a65cea7f8cb5ec09ca2",
+  "affected": {
+    "prior_subject": "ea7115120ee21b62ecad9f3c4df955971df7b2ac",
+    "prior_run": {
+      "tests": 289,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    "retained_unchanged_passing_cases": 288,
+    "repaired_subject": "e3ce046ce5bbb1ca1a165e18433e0071956bfb3a",
+    "repaired_case": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "combined_case_population": 289,
+    "single_all_green_run_claimed": false,
+    "unchanged_source_inputs_reauthenticated": true
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "canonical_projection": {
+    "authority": false,
+    "projection_commit": "ea7115120ee21b62ecad9f3c4df955971df7b2ac",
+    "rounds": 3,
+    "source_commit": "657738b1dfb7443097cc348e2bd90f0bc364d024",
+    "status": "committed_candidate_projection"
+  },
+  "prior_packet_outer_cause": "unknown; no continuous outer resource claim",
+  "guard_extraction": {
+    "existing_guard_statements_preserved": true,
+    "nonmoved_functions_preserved": true,
+    "population_proof_logic_preserved": true,
+    "added_inventory_refusals": 2,
+    "source_byte_budget": 2000000,
+    "actual_call_sites": {
+      "_authenticated_lifecycle_source_snapshot": 2,
+      "_read_authenticated_lifecycle_blob": 2
+    }
+  },
+  "fixture_provenance": {
+    "tests": 36,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "ingress_before": {
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  "private_before": {
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_custody_after": {
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "evidence_sha256": {
+    "fixtures.xml": "e74eb65e0a8b6e7eab69373c61f85af66a75ef1e43571cd66c2cf89d3ed42c37",
+    "ingress.xml": "e2ec4da8b9e311aa2da44b4908f1168458dce8dcb1deda0d0451c638579c596d",
+    "private-before.xml": "78f35aea72c11db5e5b09a0998f776a5b7e224955a548a1f408694a283b43a5a",
+    "repaired.xml": "2f64ced466b250dfc21e913f169d84af54db21b07c6680b59a3674053c875d23",
+    "affected-before.xml": "fc8b288183543bf6fbbb97ebfd84c67b1263b54eef16ccef962bcd4c138bd589",
+    "child.xml": "46b6ed34e397268e3a99179158d58582ff6866c6f896abde3d060c8920accf57",
+    "architecture.xml": "4d8271bc921dd9ef426c99012f3f4c4063a69a61e2109908654ad492e4acbdb9"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_exact_main_truth.py": "712599d75a9f54c05a77bff123b4c15f39526918163b43be70561da62a3d1bcd",
+    "bcf_governance/tooling/trusted_inputs.py": "28b2e04e0cbdb8fc44dc3631f5abee0141cf2b5939816d38cc40ec54ace7bb99"
+  },
+  "full_protected_lifecycle_adoption_complete": false,
+  "runtime_recovery_execution_qualified": false,
+  "whole_requirement_advancement": false,
+  "remaining": "Complete protected lifecycle population/model/context/effect wiring and runtime conformance; deadlines, approved targets, adopters and independent2.5terminal custody remain open;82whole unchanged."
+}

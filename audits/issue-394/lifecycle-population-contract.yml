@@ -1220,3 +1220,45 @@ protected_child_finalizer_fixture_source_contract:
   - production verification or source policy weakening
   - authority/workflow/pin/schema/catalog mutation
   - whole lifecycle acceptance advancement
+
+protected_policy_source_reader_qualification:
+  report: audits/issue-394/protected-policy-source-reader-qualification.json
+  sha256: c96c67d9fa04e2c1d2bf6284e018c691a6f7cf890a339b6b4a495c587996ed63
+  subject: e3ce046ce5bbb1ca1a165e18433e0071956bfb3a
+  affected:
+    prior_subject: ea7115120ee21b62ecad9f3c4df955971df7b2ac
+    prior_run:
+      tests: 289
+      failures: 1
+      errors: 0
+      skipped: 0
+    retained_unchanged_passing_cases: 288
+    repaired_subject: e3ce046ce5bbb1ca1a165e18433e0071956bfb3a
+    repaired_case:
+      tests: 1
+      failures: 0
+      errors: 0
+      skipped: 0
+    combined_case_population: 289
+    single_all_green_run_claimed: false
+    unchanged_source_inputs_reauthenticated: true
+  architecture:
+    tests: 40
+    failures: 0
+    errors: 0
+    skipped: 0
+  full_lifecycle_adoption: false
+
+protected_policy_reader_summary_disposition:
+  previous_memory: P32 active; P33-P35 dormant. Registration06255 qualified; protected
+    policy source controls 658a8bd9 show7RED/2PASS, fix pending.204baseline retained;
+    full population/runtime/deadlines/targets/adopters/custody open.
+  current_memory: P32 active; P33-P35 dormant. Protected policy reader e3ce046c source/private
+    qualified; full population/runtime/deadlines/targets/adopters/custody open.9550/f1fd
+    retain exact scopes.
+  previous_ledger:
+    type: 394source
+    statement: 06255 reg; policy source RED; scope open.
+  current_ledger:
+    type: 394source
+    statement: e3ce046c policy reader pass; full scope open.
