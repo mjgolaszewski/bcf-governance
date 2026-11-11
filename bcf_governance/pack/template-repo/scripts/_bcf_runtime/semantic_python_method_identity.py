@@ -468,6 +468,16 @@ def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
     classes = {str(row["symbol"]): row for row in class_rows}
     functions = {str(row["symbol"]): row for row in function_rows}
     ambiguous = len(classes) != len(class_rows) or len(functions) != len(function_rows)
+    def site(row: dict[str, Any]) -> tuple[Any, ...]:
+        return tuple(row.get(key) for key in ("line", "column", "end_line", "end_column"))
+
+    # Resolved class identity is independent of local/imported identifier spelling.
+    for function in function_rows:
+        constructors = function.setdefault("constructors", [])
+        for call in function.get("calls", []):
+            target = call.get("called_symbol")
+            if target in classes and not any(site(fact) == site(call) for fact in constructors):
+                constructors.append({**call, "constructed_symbol": target})
     lifecycle = {"__new__", "__init__", "__post_init__", "__setattr__"}
     interception = {"__getattribute__", "__getattr__", "__get__", "__set__", "__delete__"}
 

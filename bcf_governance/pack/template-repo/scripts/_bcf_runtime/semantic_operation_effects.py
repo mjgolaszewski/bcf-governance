@@ -74,6 +74,7 @@ def source_operation_call_population(
         files[path] = sha
     if not files:
         reject()
+    classes = _construction_source_classes(inventory)
     initialization = _initialization_population(inventory, files) if include_initialization else {}
     calls: list[tuple[str, str, str, int, str]] = []
     identities: set[tuple[str, str, int]] = set()
@@ -114,7 +115,7 @@ def source_operation_call_population(
                 and call.get("call_name") not in {"__import__", "eval", "exec", "<dynamic>"}
             )
             calls.append((caller, callee, expression, occurrence, "source" if resolved else "unresolved"))
-            construction_targets, _ = _construction_source_targets(call, functions)
+            construction_targets, _ = _construction_source_targets(call, functions, classes, function)
             pending.extend(sorted(construction_targets))
             if resolved:
                 pending.append(callee)
@@ -199,31 +200,67 @@ def _port_identity(
 
 
 
+def _construction_source_classes(inventory: dict[str, Any]) -> frozenset[str]:
+    """Derive expected constructor identities from the actual class population."""
+    rows = inventory.get("classes", [])
+    if not isinstance(rows, (list, tuple)):
+        raise SemanticOperationEffectError("construction source class population is invalid")
+    symbols = [row.get("symbol") if isinstance(row, dict) else None for row in rows]
+    if any(not isinstance(value, str) or not value for value in symbols) or len(set(symbols)) != len(symbols):
+        raise SemanticOperationEffectError("construction source class population is ambiguous")
+    return frozenset(symbols)
+
+
 def _construction_source_targets(
     call: dict[str, Any], functions: dict[str, dict[str, Any]],
+    classes: frozenset[str], function: dict[str, Any],
 ) -> tuple[set[str], tuple[str, ...]]:
-    """Expand neutral source obligations; this is never runtime or port authority."""
+    """Verify neutral facts against independently derived class/call membership."""
+    target = call.get("called_symbol")
+    known_class = target in classes
     observation = call.get("construction_effect_observation")
     if observation is None:
+        if known_class:
+            raise SemanticOperationEffectError("construction source observation is missing")
         return set(), ()
     if (
         not isinstance(observation, dict)
         or observation.get("authority") is not False
         or not isinstance(observation.get("source_class_resolved"), bool)
+        or observation["source_class_resolved"] != known_class
         or any(
             not isinstance(observation.get(key), list)
             or any(not isinstance(value, str) or not value for value in observation[key])
             or len(observation[key]) != len(set(observation[key]))
             for key in ("class_candidates", "function_candidates", "unresolved")
         )
+        or target not in observation.get("class_candidates", [])
     ):
-        raise SemanticOperationEffectError("construction source observations are incompatible")
-    # External constructor identity remains explicitly unresolved in the source
-    # call population. This bounded source query cannot qualify its runtime.
-    if observation["source_class_resolved"] is False:
+        raise SemanticOperationEffectError("construction source identity or observations are incompatible")
+    if not known_class:
         return set(), ()
+    constructors = function.get("constructors", [])
+    keys = ("line", "column", "end_line", "end_column")
+    position = tuple(call.get(key) for key in keys)
+    if (
+        not isinstance(constructors, list)
+        or any(isinstance(value, bool) or not isinstance(value, int) for value in position)
+        or call.get("caller") != function.get("symbol")
+    ):
+        raise SemanticOperationEffectError("construction source call association is invalid")
+    matches = [
+        fact for fact in constructors if isinstance(fact, dict)
+        and tuple(fact.get(key) for key in keys) == position
+    ]
+    if (
+        len(matches) != 1 or matches[0].get("caller") != call["caller"]
+        or matches[0].get("called_symbol") != target
+        or matches[0].get("constructed_symbol") != target
+        or matches[0].get("construction_effect_observation") != observation
+    ):
+        raise SemanticOperationEffectError("construction source fact association is missing or ambiguous")
     targets = set(observation["function_candidates"])
-    if not observation["class_candidates"] or not targets <= functions.keys():
+    if not targets <= functions.keys():
         raise SemanticOperationEffectError("construction source body is absent or ambiguous")
     return targets, tuple(observation["unresolved"])
 
@@ -238,6 +275,7 @@ def validated_operation_effect_inventory(
     functions = {
         str(row["symbol"]): row for row in inventory.get("functions", [])
     }
+    classes = _construction_source_classes(inventory)
     entrypoint = _resolve_function(entrypoint_symbol, functions)
     if entrypoint is None:
         raise SemanticOperationEffectError(
@@ -302,7 +340,7 @@ def validated_operation_effect_inventory(
                 raise SemanticOperationEffectError(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
-            construction_targets, construction_missing = _construction_source_targets(call, functions)
+            construction_targets, construction_missing = _construction_source_targets(call, functions, classes, function)
             if construction_missing:
                 raise SemanticOperationEffectError(
                     "source construction requires unresolved runtime provenance: "
