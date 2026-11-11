@@ -142,8 +142,9 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
         if pr_base != base:
             raise ValueError("pull-request comparison base does not match BCF_PR_BASE_SHA")
     available = run_admitted_command(
-        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "cat-file", "-e", f"{base}^{{commit}}"],
+        ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "cat-file", "-e", f"{base}^{{commit}}"],
         unbound_runner=_comparison_git_unbound,
+        env=_source_git_environment(),
         capture_output=True,
         cwd=repo_root,
         check=False,
@@ -151,8 +152,9 @@ def pr_context(repo_root: Path, mode: str) -> dict[str, Any]:
     if available.returncode != 0:
         raise ValueError("repository comparison base commit is unavailable")
     result = run_admitted_command(
-        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "merge-base", "--is-ancestor", base, "HEAD"],
+        ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "merge-base", "--is-ancestor", base, "HEAD"],
         unbound_runner=_comparison_git_unbound,
+        env=_source_git_environment(),
         capture_output=True,
         cwd=repo_root,
         check=False,

@@ -9,6 +9,7 @@ import subprocess
 from typing import Any
 
 from ..evidence_process_supervisor import run_admitted_command
+from ..semantic_source_paths import _source_git_environment
 
 from jsonschema import Draft202012Validator, SchemaError
 
@@ -39,8 +40,8 @@ REQUIRED_MARKERS = (
 
 def _git(repo_root: Path, *args: str) -> str | None:
     result = run_admitted_command(
-        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *args],
-        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, text=True, check=False
+        ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *args],
+        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, text=True, check=False, env=_source_git_environment()
     )
     return result.stdout.strip() if result.returncode == 0 else None
 
