@@ -148,6 +148,9 @@ execution_evidence:
     exact-main certification and immutable release publication remain required.'
   - 'Recovery currently requires separate owner approvals for build, install, probes and receipt.
     This repetitive incident workflow remains a maintenance limitation; its protected gates were retained.'
+  - 'Native submission f4846635 stopped before producers because generated custody workflows require
+    a same-candidate state-matrix update. Added explicit disconnected-installed-controller, noncertifying
+    recovery, ordinary-byte normalization and protected certification permutations; no gate was waived.'
 closeout_requirements:
   claims:
     required_suites_green:
