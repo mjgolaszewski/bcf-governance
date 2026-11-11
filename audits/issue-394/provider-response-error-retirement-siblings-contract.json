@@ -7,7 +7,7 @@
     "P32-P0-04",
     "P32-P0-05"
   ],
-  "status": "bounded_source_and_retained_consumer_checks_recorded_full_scope_open",
+  "status": "bounded_source_lite_archive_consumer_evidence_full_train_open",
   "bounded_context": "ci_authority",
   "architectural_layer": "tooling",
   "operation_side": "existing_query_and_command_transport_cleanup",
@@ -75,7 +75,7 @@
     "scope": "Real HTTPError bodies at existing consumer boundaries; one opener and one retirement owner; status and original cause retained",
     "remaining_controls": "Full installed sibling-specific consumer matrix, archives, profiles/adopters and lifecycle/deadline bounds remain required"
   },
-  "runtime_execution_count": 367,
+  "runtime_execution_count": 391,
   "acceptance_advance": false,
   "baseline_evidence": {
     "authority": false,
@@ -104,7 +104,7 @@
     "tests_before_production_commit": "aa4e6ab6b7bd41933d3a7fce5f2715e9edd403ec",
     "scope": "Existing response owner plus four direct consumer HTTPError mappings; GET primitive remains sole GET retirement owner",
     "behavioral_qualification": "Exact2676300b:292affected including32new controls and40architecture pass; exact257bd618:semantic recheck and9retained installed/template cases pass",
-    "remaining": "Source/wheel/sdist and broader supported profile/real-adopter matrices, complete lifecycle/deadline/approved-target/custody obligations; scoped lite installed siblings pass, no whole requirement closure",
+    "remaining": "Scoped exact development archives and lite fresh/upgrade mappings pass at f1fd5e85; full SDK/profile/real-adopter/lifecycle/deadline/approved-target/independent evaluator/custody obligations remain open, no whole requirement closure",
     "canonical_sha256": {
       "ci_github_response.py": "9be4c376de6c1c8989d8d2f691d669decae8b1d298565107f5780258f6869470",
       "ci_github_transport.py": "359f9a7adf3d0790378f711bbe9e68a112a7cc1d0a043923626ccd538f0a769e",
@@ -206,9 +206,164 @@
         "claim": "Original24source-bound case IDs retained;21intended REDs nowPASS and3GETguards stayPASS. Not full phase/whole requirement qualification."
       },
       "scope": "Local source and retained fresh/upgrade private GET/budget/template fixtures only; new sibling-specific installed mapping and full distribution/adopter/train proof remain open"
+    },
+    "archive_source_controls": {
+      "authority": false,
+      "subject_commit": "2d6a1952d661321d1b9d657229fa37ce2550a225",
+      "subject_tree": "03712e1cc4188d5517a6a4ab586e14c41954a15d",
+      "pytest_passed": 24,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "explicit_deselections": [
+        "tests/test_release_artifacts.py::test_built_sdist_contains_every_governed_source_file"
+      ],
+      "standard_gates": "native lint/governance/packcheck/semantic pass",
+      "native_result_sha256": "5f3dcf007a6edc509a0b29cd55303f27bb0e64f4314a7bef0cd7d20fe9a1ec74",
+      "junit_sha256": "725f29128872b21a6b71fc88b2e8c37932f784cdab99fd36a0ba69773c159535",
+      "scope": "Source helper/artifact controls only; actual corrected archive harness is separately bound to f1fd5e85"
+    },
+    "development_archive": {
+      "authority": false,
+      "subject_commit": "f1fd5e85524db9348dcf1caf834559f48ce3a7dd",
+      "subject_tree": "76fa4d55b7bd24dd87f60e364bf206cb6f2ec47d",
+      "status": "scoped_native_development_archives_passed_full_train_open",
+      "target_python": "3.12.14",
+      "target_platform": "linux_x86_64",
+      "dependency_wheels": 41,
+      "lock_sha256": "754d5509e74b5ddf32319b62b43e22c94e064687f776f686875c925ddd253392",
+      "assets": {
+        "SHA256SUMS": {
+          "bytes": 198,
+          "sha256": "77e2f48058597f5f2631e9a1756a2c44b796c6fdffdf327cf0fc5a471336e22a"
+        },
+        "bcf_governance-2.5.0-py3-none-any.whl": {
+          "bytes": 2149297,
+          "sha256": "b6c9398bec84e4fdcf59790f3fb461fa7835385a4cf2b94fa05eb97b927720d4"
+        },
+        "bcf_governance-2.5.0.tar.gz": {
+          "bytes": 9560653,
+          "sha256": "ce1efbf76dfca8056c11df7b596d7359a29a586bbaf9d91a574f8825923e03cb"
+        }
+      },
+      "builds": 1,
+      "prebuild_gates": "native lint/governance/semantic passed at f1fd5e85; unchanged pack/24source-helper evidence retains2d6a subject",
+      "native_runtime_commands": [
+        {
+          "label": "wheel-venv",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-closure-install",
+          "exit_code": 0
+        },
+        {
+          "label": "twine-check",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-install",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-smoke",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-venv",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-closure-install",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-install",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-smoke",
+          "exit_code": 0
+        },
+        {
+          "label": "wheel-installed-consumer",
+          "exit_code": 0
+        },
+        {
+          "label": "sdist-installed-consumer",
+          "exit_code": 0
+        }
+      ],
+      "native_raw_evidence_sha256": {
+        "sdist-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sdist-closure-install.stdout": "901b663e494551f58c5146782f16a3345ed35169246121d36b402b98c81a602f",
+        "sdist-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sdist-install.stdout": "08be71907fa5b036c527b5acf9025e27065e08630d7b7c460dc03d736af714df",
+        "sdist-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sdist-installed-consumer.stdout": "e3723b629ec6d8fb7c6563474d13ee0d21cbc43d34cdf3e5582673bd48eba516",
+        "sdist-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sdist-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+        "sdist-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "sdist-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "twine-check.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "twine-check.stdout": "ff08705518994d0ff73ada2c3f03cbf359373d496f19416f76ffe0a96bf0e03e",
+        "wheel-closure-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wheel-closure-install.stdout": "901b663e494551f58c5146782f16a3345ed35169246121d36b402b98c81a602f",
+        "wheel-install.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wheel-install.stdout": "bdf01590965987e43192bacc4cb1d7764be2948a4e3b81c200b80722a1bdcdf0",
+        "wheel-installed-consumer.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wheel-installed-consumer.stdout": "b403dcd383c72d66621d938dcb1df4f5e1c797f10a687d5d20556904d6b05fe7",
+        "wheel-smoke.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wheel-smoke.stdout": "40371af11c40c19a2a417153f9011c4363858742eedc3b89c5ee5a7ac1e9976b",
+        "wheel-venv.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "wheel-venv.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "runtime_report_sha256": "d760367f06dccf693113ed3da57d0ac43747cf90943cd8c2cf5ba803be770cec",
+      "native_result_sha256": "22fb8864481644fdf4a996476dcbb6a4e60b4e4407428f561bc46a7938390e78",
+      "scoped_summary_sha256": "8b5058874000e1a7bdc04758a5541e0cc38bdd4ed21193b2e2b56c717571be08",
+      "source_mapping": {
+        "status": "exact",
+        "mapped_files": 796
+      },
+      "evidence_verifier": "existing verify_runtime_evidence with required1.1 format and independently supplied exact dependency closure; raw digests and archive/source correspondence recomputed",
+      "consumers": {
+        "wheel": {
+          "fresh_broad_acceptance": "pass",
+          "source_absent_probe_subjects": 3,
+          "behaviors_each": 32,
+          "project_owned_preserved": true,
+          "distinct_upgrade_target": true
+        },
+        "sdist": {
+          "fresh_broad_acceptance": "pass",
+          "source_absent_probe_subjects": 3,
+          "behaviors_each": 32,
+          "project_owned_preserved": true,
+          "distinct_upgrade_target": true
+        }
+      },
+      "internal_probe_behaviors": 192,
+      "probe_executions": 6,
+      "original_failure": {
+        "stage": "native runtime CLI adapter before runtime environment/consumer allocation",
+        "diagnostic": "trusted workflow environment is missing GITHUB_OUTPUT",
+        "disposition": "continued only unrun runtime stage using owned local output file per existing CLI contract; no provider identity/run or release authority supplied",
+        "exact_archives_preserved": true
+      },
+      "performance_inference": "none; controlled observations are not matched approved cohorts or target adjudication",
+      "scope": "Exact development source/wheel/sdist and lite fresh/same-candidate-upgrade private runtime, including original fresh broad acceptance; not full SDK/profile/real-adopter/lifecycle/deadline/approved-target/independent trusted-evaluator/release-custody certification",
+      "remaining": [
+        "full SDK acceptance",
+        "broader supported profiles and real adopters selected by provider resolver",
+        "complete lifecycle/effect/runtime conformance",
+        "total provider setup/retry/read/cleanup/headroom bounds",
+        "approved matched performance targets",
+        "independent authorized evaluator and immutable release custody"
+      ],
+      "acceptance_advance": false
     }
   },
-  "execution_count_scope": "24negative-baseline+292affected+40architecture+9retained+2installed-sibling pytest executions; new2each assert32internal behaviors, not64independent pytest/statistical samples",
+  "execution_count_scope": "24baseline+292affected+40architecture+9retained+2installed+24artifact/helper pytest executions across exact recorded subjects; repeats are not independent samples. Native11commands and192internal archive behaviors are separately scoped, not added as pytest cases.",
   "memory_summary_disposition": {
     "original": "Issue 394 foundation remains dormant: complete protected lifecycle/effect populations and runtime conformance must precede prose DAG retirement; matched measurement targets and budgets are not yet frozen",
     "replacement": "P32 active; P33-P35 dormant. Full lifecycle/effect conformance precedes prose DAG retirement; sibling scoped checks pass; targets/distribution/custody open. See audits/issue-394/workplan.yml.",
@@ -261,7 +416,7 @@
   },
   "archive_installer_binding_contract": {
     "authority": false,
-    "status": "authored_unexecuted",
+    "status": "scoped_native_archive_execution_passed_full_train_open",
     "scope": "Existing installed consumer/artifact verifier consumes same32behavior sibling probe on actual installed SDK fresh and same-candidate upgrade before full consumer acceptance",
     "owners": [
       ".github/scripts/verify_installed_consumer.py",
@@ -287,10 +442,16 @@
     "production_change_authority": "Commit this bounded extension before harness edits; no release publication authorization",
     "fresh_acceptance_preservation": {
       "authority": false,
-      "status": "authored_unexecuted",
+      "status": "scoped_native_archive_execution_passed",
       "problem": "Moving existing broad acceptance after upgrade removed its original fresh-install subject",
       "required_behavior": "Preserve original fresh target and full acceptance; exercise the same32behavior probe before/after upgrade on a separately installed declared target; preserve project-owned marker; report each actual subject",
-      "unchanged": "Original broad acceptance helper, all original assertions, probe bytes, SDK runtime, CLI/status identities and existing report family"
+      "unchanged": "Original broad acceptance helper, all original assertions, probe bytes, SDK runtime, CLI/status identities and existing report family",
+      "subject_commit": "f1fd5e85524db9348dcf1caf834559f48ce3a7dd"
     }
+  },
+  "archive_memory_summary_disposition": {
+    "original": "P32 active; P33-P35 dormant. Full lifecycle/effect conformance precedes prose DAG retirement; sibling scoped checks pass; targets/distribution/custody open. See audits/issue-394/workplan.yml.",
+    "replacement": "P32 active; P33-P35 dormant. f1fd scoped dev archives/private probes pass; full SDK/profile/adopter/lifecycle/deadline/target/custody proof open. See audits/issue-394/workplan.yml.",
+    "reason": "Record scoped development archive progress while retaining complete workplan obligations and historical source evidence"
   }
 }
