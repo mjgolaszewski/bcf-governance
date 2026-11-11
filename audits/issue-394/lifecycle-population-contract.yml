@@ -1597,3 +1597,38 @@ construction_association_summary_disposition:
   current_ledger:
     type: 394source
     statement: e5922843 associations; full adoption blocked.
+
+construction_phase_runtime_contract:
+  authority: false
+  context: P32 construction-effect source population; full implementation remains
+    isolated and unqualified
+  layer: Existing source owners plus ordinary isolated consumer fixture execution
+  targets:
+  - tests/test_construction_phase_runtime_consumers.py
+  - audits/issue-394/lifecycle-population-contract.yml
+  - audits/issue-394/construction-phase-runtime-consumers.json
+  - MEMORY.yml
+  - plans/phase-ledger.yml
+  - phases/phase-32-log.yml
+  acceptance:
+    runtime_cases: 12
+    source_initialization_cases: 12
+    required: Exact creation/construction event sequences in fresh -I child processes;
+      initialization facts and source observations remain non-authoritative and incomplete
+    qualification: language-profile observations only; no source-authorized purity
+      or runtime suppression
+  forbidden:
+  - production changes
+  - builtin or application-name allowlist
+  - runtime monkeypatching or Python-internals instrumentation
+  - source import into fixture consumer
+  - SDK or prior-release claim
+  - P33 activation
+  - main or release mutation
+  sources:
+  - https://github.com/python/cpython/blob/v3.12.11/Doc/reference/datamodel.rst
+  - https://github.com/python/cpython/blob/v3.12.14/Doc/reference/datamodel.rst
+  remaining: Mechanically authenticate builtin/decorator/runtime binding, preserve
+    class creation and module initialization obligations, qualify full native/installed
+    consumer population and all82whole requirements; these twelve examples are not
+    a complete population.
