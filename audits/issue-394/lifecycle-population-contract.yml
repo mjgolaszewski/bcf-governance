@@ -846,3 +846,166 @@ lifecycle_registration_qualified_summary_disposition:
   current_ledger:
     type: 394source
     statement: 06255e64 registration pass; full scope open.
+
+protected_lifecycle_consumer_adoption_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  status: contract_before_protected_population_production
+  objective: Complete the protected consuming lifecycle path and both trace directions;
+    structural registration, helper extraction, or caller-supplied expected populations
+    are not adoption.
+  existing_owners:
+    provider_identity: ci_github_identity.resolve_main and trusted_inputs._authenticated_phase_policy_subject
+    provider_inventory: GitHubAPI.complete_tree_with_modes
+    provider_blob_reader: ci_exact_main_truth.authenticate_exact_main_readiness existing
+      local read closure
+    source_input: trusted_inputs
+    context: local_pr_context.LocalPRContext and existing authenticated provider run/PR
+      sources
+    orchestration: ci_graph_contracts.validate_ci_graph and ci_graph_edges.compile_edge_contracts
+    canonical_model: spec/phase0/release-train-backtrace.yml
+    compiler: ci_graph_composition
+    source_effects: semantic_ownership_inventory, semantic_operation_effects and ci_graph_composition_operations
+    schema_owner: loaded runtime resources via ci_github_authority.packaged_repo_root
+  first_dependency:
+    treatment: Characterize both existing consumers first. Extract exact-main inventory/blob
+      reader into existing trusted_inputs owner without changing exact-main guards,
+      error identity, source identity, byte limits or readiness outcomes. Add source-cause
+      controls before adopting it in the required-phase population query.
+    real_consumers:
+    - ci_exact_main_truth.authenticate_exact_main_readiness
+    - trusted_inputs.verify_required_phase_closure_inputs
+    next_consumer: Protected lifecycle composition population query through existing
+      ci_graph_composition owners.
+    reason: The prerequisite query currently validates content path and uses GitHubAPI's
+      self-declared blob validation, but does not itself bind those policy files to
+      complete tree modes and expected blob OIDs. Treat this as a source-review gap
+      until genuine cause controls establish actual behavior.
+    proof: Retain existing exact-source positive/cause evidence and characterize changed
+      current inputs. Prove real-Git wrong-tree and nonregular policy source rejection
+      before any proof acquisition, with source-correct fixtures and no mocked verifier
+      success. Reuse unchanged valid evidence; full lifecycle adoption remains open.
+  protected_ingress:
+  - Derive repository/default frontier and exact selected policy source using existing
+    provider authentication; callers cannot assert authenticated=True, populations_complete=True,
+    readiness, terminal scope or evaluator identity.
+  - Keep protected default policy/evaluator, PR comparison base, observed PR head,
+    local descendant, candidate runtime source and installed controller separate;
+    authenticate their repository, exact commit/tree and permitted ancestry at consuming
+    boundaries.
+  - Read full provider inventory and verify paths, regular modes, exact blob OIDs
+    and content hashes before consuming policy data. Missing/duplicate/unsafe/truncated/forked/rewritten
+    or contradictory source facts block.
+  - Use the loaded authorized runtime's schemas and evaluator, never candidate or
+    stacked-base code. Reauthenticate moving context through existing owners before
+    consuming or publishing results.
+  - Treat backtrace document.source as retained historical construction provenance,
+    not current provider authentication. Capture current exact commit/tree/blob and
+    canonical parsed-model digest in the consuming result; never write self-referential
+    HEAD/tree identities into authored policy.
+  complete_model:
+  - Derive complete required context/profile/node/relationship populations independently
+    of proposed composition rows and test selectors from protected canonical graph,
+    profile, lifecycle and operation owners.
+  - Cover default and nondefault PRs, descendants and policy movement, local/unbound
+    contexts, exact-main, controller, scheduled, recovery, release, adopter installation/upgrade/opt-out/rollback
+    and terminal custody wherever applicable. Derive applicability and grounded exclusions;
+    do not silently omit unavailable contexts.
+  - Keep root state transitions, supplemental state rows and fact-boundary edges distinct.
+    Bind all canonical sections to their real owner outputs; do not classify them
+    by matching labels or treating source presence as behavioral evidence.
+  - Bind success, rejection, ambiguous mutation, interrupted continuation, failed
+    cleanup, bounded recovery and terminal classes. Recovery preserves original invariant
+    obligations and cannot imply protected-main, phase, controller or release progress
+    from nondefault PR success.
+  - 'Bind both directions: independently discovered public operation/source function/call/effect
+    populations to every required producer/consumer context, plus each declared relationship
+    back to executable owners, schemas, real positive/negative controls and terminal
+    consumers.'
+  - Derive schema references through the existing public catalog and protected exact
+    source; missing/ambiguous or substituted schemas block. Preserve strict offline
+    reference closure.
+  - Unknown dynamic dependency or behavioral applicability expands required execution;
+    missing authority or unresolved effect ownership blocks qualification. Detector-only,
+    static preflight, behavioral proof and independent runtime executions remain distinct.
+  - Generate human and machine views deterministically from validated canonical data,
+    without self-referential commit/tree hashes. Historical prose remains explanatory
+    until complete conformance and runtime evidence qualify replacement.
+  migration:
+  - Use existing composition/backtrace schema families and explicit readable-version
+    migration if new required typed contexts or bindings cannot be expressed compatibly.
+    Do not silently reinterpret legacy formats.
+  - Keep existing readable composition 1.0/1.1/1.2, genuinely local/unbound behavior
+    and ordinary CLI grammar. Registration alone does not enable a profile or activate
+    optimization.
+  - Old/missing installed policy or evaluator capability gives a typed block or fully
+    assured existing fallback, never partial lifecycle authority.
+  - Existing canonical reconciler alone owns schema mirrors, test manifests, graph
+    locks, generated workflows and authority definition/pin ordering. No manual generated
+    digests.
+  adoption_gates:
+  - Protected query reconstructs expected populations itself; omission of a relationship
+    and its associated test still fails.
+  - All applicable contexts/profiles/terminals and alternate/recovery/cleanup paths
+    have executable conformance; real source-absent fresh and upgrade consumers exercise
+    actual test/control behavior.
+  - Actual local/prospective/trusted finalizer/controller/release consumers use the
+    same existing owner before their consuming allocation or authority boundary as
+    applicable. Partial wiring is recorded as incomplete.
+  - Keep structural/preflight observations authority:false and execution_qualified:false;
+    preserve independent finalizers, full-run/security sentinels and separate collector/verifier/publisher
+    roles.
+  - P32 closure, P33 activation, approved targets, all 82 whole requirements and immutable
+    2.5 custody remain separately computed and unproven until full scoped evidence
+    exists.
+  controls:
+  - Valid protected exact subject and independently reconstructed population; equivalent
+    reorderings produce identical bytes.
+  - Wrong repository/default/commit/tree/controller; fork, rewritten head, moving
+    policy/base/head and candidate evaluator or permissive schema substitution.
+  - Removed edge and its test; omitted producer/consumer/operation/effect; invented
+    or ambiguous context; false exclusion; missing root/supplemental/fact boundary;
+    unknown dynamic dependency.
+  - Missing/contradictory schema binding; missing positive or cause control; forged
+    cached result; incorrect terminal scope; premature allocation.
+  - Ambiguous accepted mutation, interruption, bounded retry exhaustion, stale continuation,
+    cleanup failure and exact terminal custody mismatch.
+  - Fresh/upgrade installed consumers with SDK source unavailable, ordinary local/unbound
+    compatibility, profile/toolchain variants and exact opt-out/rollback.
+  initial_packet:
+    production_behavior_changed: false
+    baseline_tests:
+    - tests/test_exact_main_phase_readiness.py
+    - tests/test_exact_main_phase_proof.py
+    - tests/test_phase_policy_subject.py
+    - tests/test_phase_closure_population.py
+    - tests/test_phase_closure_input.py
+    - tests/test_trusted_inputs.py
+    - tests/test_ci_github_controller.py
+    limits: Existing reader/consumer baseline and full adoption contract only; no
+      new consumer, typed model migration or complete runtime qualification in this
+      packet.
+    frozen:
+    - production Python
+    - schemas
+    - governance/public-contracts.yml
+    - governance/ci-graph.yml
+    - governance/ci-authority.yml
+    - .github/workflows
+    next: Extract existing authenticated reader with unchanged behavior, then implement
+      the actual protected population/query and full typed canonical bindings before
+      claiming adoption.
+  retained_source_dependency:
+    historical_workbench: Preserved construction-effect source checkpoint; machine-local
+      custody remains outside governed artifacts.
+    head: b00b975a14451820bb3bf524b64f7e427105aae8
+    source_status: 25 unique modified/untracked paths preserved; not integrated or
+      qualified in current release branch
+    relevance: Constructor, typed receiver and implicit lifecycle effects can expand
+      source obligations; neutral source observations never grant SDK authority or
+      read purity.
+    treatment: Review ancestry/content and actual consumer matrix before integrating
+      only required behavior; preserve originals and reachable history. Do not claim
+      complete effect reconstruction until this dependency is independently disposed.
