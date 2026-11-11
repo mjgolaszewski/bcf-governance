@@ -348,3 +348,11 @@ semantic_source_replacement_identity_control:
   tests: [tests/test_source_repository_environment.py::test_source_tree_identity_ignores_local_replacement]
   sequence: Characterize the two added controls before production; preserve the original45 source bytes/oracles and old exact evidence.
   limits: No global/config/environment mutation, source execution or full lifecycle/authority claim; fixture-only refs are not provider authority.
+
+semantic_source_private_environment_controls:
+  authority: false
+  status: authored_unexecuted
+  test: tests/test_installed_source_admission.py::test_installed_source_observations_bind_explicit_repository
+  cases: fresh and upgrade source-SDK-absent private readers each execute all47real-Git context/replacement behaviors with parent/config/index preservation
+  implementation: Existing semantic source owner derives one read-only environment; sibling preflight readers reuse it and disable replacement-object reads through existing admitted-command ports
+  limits: No provider/publication authority or full workspace/lifecycle qualification inferred

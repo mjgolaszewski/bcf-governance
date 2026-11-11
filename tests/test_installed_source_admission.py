@@ -224,3 +224,89 @@ print(json.dumps({'source_sdk_absent': True, 'private_origin_verified': True,
         'bound_preflight_guardians_verified_and_reaped': 17,
         'repository_configuration_preserved': True,
     }
+
+
+SOURCE_ENVIRONMENT_PROBE = r'''import importlib.util,json,os,subprocess,sys,shutil,hashlib
+from pathlib import Path
+assert importlib.util.find_spec('bcf_governance') is None
+installed=Path.cwd();private=installed/'scripts'
+sys.path.insert(0,str(private))
+from _bcf_runtime import semantic_source_paths as source
+from _bcf_runtime.governance_validation import preflight_repository_context as context
+root=installed/'source-environment-fixture';root.mkdir()
+active=root/'active';foreign=root/'foreign'
+def git(directory,*args):
+ env={k:v for k,v in os.environ.items() if not k.startswith('GIT_')}
+ return subprocess.run(['git','-c','commit.gpgsign=false','-c','core.autocrlf=false',*args],cwd=directory,env=env,capture_output=True,text=True,check=True).stdout.strip()
+for directory in (active,foreign):
+ directory.mkdir();git(directory,'init','-q')
+ git(directory,'config','user.name','Private Source Fixture')
+ git(directory,'config','user.email','private-source@example.invalid')
+body=b'raise AssertionError("source must remain data")\n'
+(active/'root.py').write_bytes(body)
+(active/'foreign.py').write_text('ACTIVE=True\n')
+(active/'.gitignore').write_text('root.py\n')
+git(active,'add','-f','root.py','foreign.py','.gitignore')
+git(active,'commit','-qm','active')
+(foreign/'foreign.py').write_text('FOREIGN=True\n')
+git(foreign,'add','.');git(foreign,'commit','-qm','foreign')
+config=root/'ambient.gitconfig';config.write_text('[core]\n    worktree = '+str(foreign)+'\n')
+identity={'commit_sha':git(active,'rev-parse','HEAD'),'tree_sha':git(active,'rev-parse','HEAD^{tree}')}
+blobs=tuple((name,'100644',git(active,'rev-parse','HEAD:'+name)) for name in ('foreign.py','root.py'))
+preserved={p:p.read_bytes() for directory in (active,foreign) for p in (directory/'.git/config',directory/'.git/index')}
+cases=[]
+variations=[
+ ('none',{}),('author',{'GIT_AUTHOR_NAME':'Unrelated Author'}),
+ ('dir',{'GIT_DIR':str(foreign/'.git')}),
+ ('common',{'GIT_COMMON_DIR':str(foreign/'.git')}),
+ ('worktree',{'GIT_WORK_TREE':str(foreign)}),
+ ('index',{'GIT_INDEX_FILE':str(foreign/'.git/index')}),
+ ('objects',{'GIT_OBJECT_DIRECTORY':str(foreign/'.git/objects')}),
+ ('config',{'GIT_CONFIG_COUNT':'1','GIT_CONFIG_KEY_0':'core.worktree','GIT_CONFIG_VALUE_0':str(foreign)}),
+ ('global',{'GIT_CONFIG_GLOBAL':str(config)})]
+for kind,changes in variations:
+ before={name:os.environ.get(name) for name in changes}
+ os.environ.update(changes)
+ try:
+  assert source.candidate_source_files(active,('*.py',),label='Python',error=ValueError)==[active/'foreign.py',active/'root.py']
+  cases.append(['paths',kind])
+  population=source.committed_python_source_population(active,**identity)
+  assert population['python_blobs']==blobs and population['authority'] is False
+  cases.append(['population',kind])
+  capture,observed=source.committed_regular_blob_capture(active,**identity,path='root.py')
+  assert observed==body and capture['authority'] is False
+  cases.append(['blob',kind])
+  assert context.tracked_files(active)==[active/'.gitignore',active/'foreign.py',active/'root.py']
+  cases.append(['tracked',kind])
+  assert context.git_state(active)=={**identity,'status_porcelain_sha256':hashlib.sha256(b'').hexdigest()}
+  cases.append(['subject',kind])
+  assert {name:os.environ[name] for name in changes}==changes
+  assert {p:p.read_bytes() for p in preserved}==preserved
+ finally:
+  for name,value in before.items():
+   if value is None:os.environ.pop(name,None)
+   else:os.environ[name]=value
+shutil.copytree(foreign/'.git/objects',active/'.git/objects',dirs_exist_ok=True)
+git(active,'replace',identity['commit_sha'],git(foreign,'rev-parse','HEAD'))
+assert context.git_value(active,'rev-parse','HEAD^{tree}')==identity['tree_sha']
+cases.append(['preflight-tree','replacement'])
+assert source.committed_python_source_population(active,**identity)['python_blobs']==blobs
+cases.append(['committed-tree','replacement'])
+assert {p:p.read_bytes() for p in preserved}==preserved
+origins={name:str(Path(module.__file__).resolve()) for name,module in list(sys.modules.items()) if name.startswith('_bcf_runtime.') and getattr(module,'__file__',None)}
+assert origins and all(Path(value).is_relative_to(private) for value in origins.values())
+assert importlib.util.find_spec('bcf_governance') is None and len(cases)==47
+print(json.dumps({'source_sdk_absent':True,'cases':cases,'private_origins':origins},sort_keys=True))
+'''
+compile(SOURCE_ENVIRONMENT_PROBE, 'installed-source-repository-environment', 'exec')
+
+
+def test_installed_source_observations_bind_explicit_repository(installed_consumer, isolated_python):
+    result = subprocess.run(
+        [str(isolated_python), '-I', '-B', '-c', SOURCE_ENVIRONMENT_PROBE],
+        cwd=installed_consumer, env=_environment(), capture_output=True, text=True, timeout=60,
+    )
+    assert result.returncode == 0, _record(result)
+    actual = json.loads(result.stdout)
+    assert actual['source_sdk_absent'] is True and actual['private_origins']
+    assert len(actual['cases']) == len({tuple(case) for case in actual['cases']}) == 47
