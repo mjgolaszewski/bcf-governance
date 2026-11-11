@@ -1,0 +1,50 @@
+{
+  "authority": false,
+  "status": "bounded_lifetime_source_controls_pass_architecture_adoption_blocked",
+  "subject": "a6f265086a9242f7da4284c1810867fea48b5bcf",
+  "tree": "83faad433f313ffdf74ee7c8703be9279de0b3d5",
+  "source_base": "b43c1e1ac54bd07976e5f56900e3e6d293fd8b93",
+  "controls_subject": "426d00c6638c9882f8dc7256805d41fbc7d746c1",
+  "before": {
+    "tests": 20,
+    "failures": 16,
+    "errors": 0,
+    "skipped": 0
+  },
+  "after": {
+    "tests": 245,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "known_architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "cause": "Previously retained GitHubAPI._repository/provider_read_observations decorator runtime provenance block",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "4835dad4e76ec130b93d678fdbf0dd01af03bd0bb67e68a36140e852b3d8684e"
+  },
+  "evidence_sha256": {
+    "before.xml": "7762cd6b0059889b9a9ee056e04590049a07915e81f14ea230fc34427fc90ab5",
+    "after.xml": "b12337fb899a0a47b1808d468302cdd9df9f070879be8e6eebd44ef2e4e341ff",
+    "architecture.xml": "945e9236f34be17077ad698af5fe8f3a288108c3c01be196f54f34ba2ec8dc65"
+  },
+  "isolated_runtime_scope": "Four ordinary fresh CPython3.12.14 local/inherited write witnesses; no portable finalizer timing or complete lifecycle claim.",
+  "unchanged_runtime_cases_reused": {
+    "subject": "bda3928e585731c1c7e39346e242564b9aded2a6",
+    "cases": 12,
+    "scope": "separate unchanged ordinary Python language fixture observations"
+  },
+  "full_native_or_installed_qualified": false,
+  "known_full_adoption_block_retained": true,
+  "whole_requirement_advancement": false,
+  "remaining": "Full source/runtime/lifecycle populations, authenticated decorator/builtin binding, installed consumer conformance and all82whole remain open."
+}

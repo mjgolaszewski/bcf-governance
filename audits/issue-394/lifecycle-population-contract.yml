@@ -1714,3 +1714,36 @@ construction_lifetime_source_contract:
       redundant full train
   remaining: Full source/runtime/lifecycle populations, authenticated decorator/builtin
     binding, installed consumer conformance and all82whole remain open.
+
+construction_lifetime_source_qualification:
+  report: audits/issue-394/construction-lifetime-source-effects.json
+  sha256: 7c263426137f1e2754c7a2ec04e1694ba1d172d9a4c347b81abf9f5dc4c5521d
+  subject: a6f265086a9242f7da4284c1810867fea48b5bcf
+  before:
+    tests: 20
+    failures: 16
+    errors: 0
+    skipped: 0
+  after:
+    tests: 245
+    failures: 0
+    errors: 0
+    skipped: 0
+  architecture:
+    tests: 40
+    failures: 1
+    errors: 0
+    skipped: 0
+  previous_memory: P32 active; P33-P35 dormant. Constructor associations e5922843
+    qualified;12runtime cases bda3928e retained,13source cases 498a14c2 pass. Full
+    adoption/builtin binding/populations/deadlines/targets/adopters/custody open.
+  current_memory: P32 active; P33-P35 dormant. Lifetime hook source effects a6f26508
+    scoped-qualified; full adoption/builtin binding/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 498a14c2 bounded runtime cases; full adoption blocked.
+  current_ledger:
+    type: 394source
+    statement: a6f26508 lifetime source effects; full adoption blocked.
+  whole_requirement_advancement: false
