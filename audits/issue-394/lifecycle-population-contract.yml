@@ -1262,3 +1262,52 @@ protected_policy_reader_summary_disposition:
   current_ledger:
     type: 394source
     statement: e3ce046c policy reader pass; full scope open.
+
+construction_current_owner_characterization_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  status: test_contract_before_production_characterization
+  target: tests/test_construction_source_effect_consumption.py
+  source_base: d2feeac953870a44d6ceca4305501ab15a05ca04
+  existing_owners:
+  - semantic_ownership_inventory.discover_python_source
+  - semantic_ownership_inventory.resolve_python_imports
+  - semantic_operation_effects.validate_operation_effects
+  scope: Consume source constructor effects conservatively through existing 2.5 owners.
+    Plain source constructor is a positive; known potential writes and unresolved
+    construction lifecycle facts require rejection before effect assurance. Source
+    observations never grant SDK/runtime/registration authority.
+  retained_source_disposition: Original b00b975a workbench and25unique paths preserved.
+    Its91controls depend on absent maintenance architecture-membership/SDK-decoder
+    interfaces; not imported or described as active2.5qualification. Reexpress generic
+    construction safety against current2.5interfaces; do not transplant other codebase,
+    registry, schema or evaluator. Typed-flow, span identity, neutral port credit
+    and SDK/runtime populations remain outstanding.
+  cases:
+    contexts:
+    - local
+    - imported
+    - imported-alias
+    constructor_forms: 14
+    total: 42
+    positives: 3
+    potential_write_forms: 5
+    unknown_mechanism_forms: 8
+  qualification_limits: Static source-conservative characterization, not observed
+    execution of every lifecycle member, C3/MRO completeness, installed SDK purity
+    or complete effects/global mutation closure.
+  frozen:
+  - all production
+  - schemas
+  - public catalog
+  - graph/workflows/authority
+  - existing unique retained source
+  required_sequence:
+  - Commit this contract and compatible control source before execution.
+  - Run collection/behavior under current owner-derived qualified environment; retain
+    actual cases, fails, errors and causes without calling collection errors behavioral
+    proof.
+  - Retain current source identities and unintegrated originals; no implementation
+    or lifecycle advance in this packet.
