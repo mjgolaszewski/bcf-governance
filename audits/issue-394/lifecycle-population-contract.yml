@@ -1841,3 +1841,19 @@ private_semantic_schema_contract:
   remaining: Full interpreter/builtin/decorator/runtime, context/effect/lifecycle,
     installed profile/adopter/deadline/measurement/custody assurance and all82whole
     remain open.
+
+portable_schema_fixture_correction:
+  authority: false
+  scope: 'Test-only correction: actual generated private package replaces reader __file__
+    monkeypatch; valid/missing/malformed expectations unchanged, SDK absent, no fallback
+    or schema weakening.'
+  prior_subject: 0466b7ec8e250d4035e1eaddf4ce310e67f74cda
+  prior_results:
+    tests: 566
+    failures: 2
+    errors: 0
+    skipped: 0
+  unchanged_cases_to_reuse: 563
+  repaired_cases: 3
+  single_all_green_run_claimed: false
+  production_changed: false

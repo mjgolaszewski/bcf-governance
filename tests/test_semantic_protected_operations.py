@@ -247,23 +247,37 @@ def test_ordinary_authored_factory_keeps_authored_schema(inputs):
 
 
 @pytest.mark.parametrize('trusted_schema', ['valid', 'missing', 'malformed'])
-def test_protected_schema_resolves_from_executing_portable_layout(inputs, monkeypatch, tmp_path, trusted_schema):
-    installed = tmp_path / 'installed'
-    schema_root = installed / 'schemas'
-    schema_root.mkdir(parents=True)
-    schema = schema_root / 'application-operations.schema.json'
-    if trusted_schema == 'valid':
-        shutil.copy2(Path(__file__).parents[1] / 'schemas/application-operations.schema.json', schema)
-    elif trusted_schema == 'malformed':
-        schema.write_text('{invalid')
-    monkeypatch.setattr(owner, '__file__', str(installed / 'scripts/_bcf_runtime/semantic_authority_contracts.py'))
-    if trusted_schema == 'valid':
-        (inputs[0] / 'schemas/application-operations.schema.json').write_text('false')
-        assert len(run(inputs)['operations']) == 1
+def test_protected_schema_resolves_from_executing_portable_layout(inputs, tmp_path, trusted_schema):
+    from semantic_private_runtime_fixture import private_package_probe
+
+    def schema_state(project, runtime):
+        schema = runtime / "resources/schemas/application-operations.schema.json"
+        assert schema.is_file()
+        if trusted_schema == "valid":
+            (project / "schemas/application-operations.schema.json").write_text("false")
+        elif trusted_schema == "missing":
+            schema.unlink()
+        else:
+            schema.write_text("{invalid")
+    observed = private_package_probe(tmp_path, (
+        "from _bcf_runtime import semantic_authority_contracts as owner\n"
+        "from _bcf_runtime.semantic_ownership_inventory import discover_python_source\n"
+        "import hashlib\n"
+        "root=Path('.')\n"
+        "path=root/'governance/application-operations.yml'\n"
+        "facts=discover_python_source(root, files=[root/'runtime.py'])\n"
+        "try:\n"
+        "    result=owner.required_application_operation_population(root, facts, expected_registry_sha256=hashlib.sha256(path.read_bytes()).hexdigest())\n"
+        "    observation={'accepted':True,'operations':len(result['operations'])}\n"
+        "except owner.SemanticAuthorityError as exc:\n"
+        "    observation={'accepted':False,'error':str(exc)}\n"
+        "print(json.dumps(observation))\n"
+    ), mutate=schema_state)
+    if trusted_schema == "valid":
+        assert observed == {"accepted": True, "operations": 1}
     else:
-        # Valid candidate schema must not become fallback for missing trusted bytes.
-        with pytest.raises(owner.SemanticAuthorityError, match='cannot load schemas'):
-            run(inputs)
+        assert observed["accepted"] is False
+        assert "cannot load schemas" in observed["error"]
 
 
 def _authored_query_inputs(inputs, monkeypatch, *, source_text=None, local_port=False):
