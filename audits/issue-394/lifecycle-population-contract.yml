@@ -1937,3 +1937,23 @@ decorator_spelling_metadata_recovery:
     type: 394source
     statement: 1dc9c000 decorator binding gap; repair open.
   whole_requirement_advancement: false
+
+decorator_spelling_source_repair_contract:
+  scope: Remove two spelling-based exemptions in existing source method-dispatch consumer.
+    All decorators retain unresolved binding until an authenticated mechanism exists;
+    lexical static/class metadata remains observational.
+  source_owner: bcf_governance/tooling/semantic_python_method_identity.py
+  before:
+    subject: 1dc9c0003d0ad1a39bc5e2dc0212b57f91829587
+    tests: 20
+    failures: 12
+    passed: 8
+  compatibility: Immutable characterization golden/source untouched; independently
+    AST-check exactly added classmethod/staticmethod uncertainty before historical
+    view comparison, with three cause-specific anti-hiding controls.
+  consumers: Six fresh isolated real wrapper-write witnesses, twelve source uncertainty/effect
+    rejection controls, two ordinary local positives; full affected source/private/type-script
+    matrix and forty architecture controls.
+  authority: false
+  remaining: Actual builtin/decorator/descriptor/runtime binding remains unqualified.
+    No whole acceptance advancement or main/release/SDK/adopter certification.

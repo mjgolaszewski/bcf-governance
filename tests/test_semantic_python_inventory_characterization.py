@@ -62,6 +62,19 @@ def _pre_deconstruction_view(inventory, source):
     result['functions'] = []
     for row in inventory['functions']:
         actual = dict(row)
+        if 'effect_unresolved' in actual and row.get('decorators') in (['classmethod'], ['staticmethod']):
+            # New fail-closed uncertainty is checked before comparing the immutable old view.
+            name = row['symbol'].rsplit('.', 1)[-1]
+            declarations = [node for node in ast.walk(nodes)
+                            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                            and node.name == name]
+            assert len(declarations) == 1
+            assert [ast.unparse(value) for value in declarations[0].decorator_list] == row['decorators']
+            assert actual['effect_unresolved'] == [{
+                'kind': 'ambiguous_method_definition', 'dispatch_kind': 'decorated_method',
+                'symbol': row['symbol'], 'decorators': row['decorators'],
+            }]
+            actual['effect_unresolved'] = []
         for key in ('calls', 'constructors', 'normalizations'):
             actual[key] = [fact_view(fact) for fact in row[key]]
         result['functions'].append(actual)
@@ -96,7 +109,7 @@ def test_python_inventory_characterization_observes_source_call_mutation(tmp_pat
     assert _pre_deconstruction_view(discovered, source) != expected['discovered']
 
 
-@pytest.mark.parametrize('defect', ('old-field', 'unrecognized-field', 'span', 'descriptor', 'authority'))
+@pytest.mark.parametrize('defect', ('old-field', 'unrecognized-field', 'span', 'descriptor', 'authority', 'decorator-uncertainty', 'decorator-erasure', 'decorator-symbol'))
 def test_characterization_view_does_not_hide_unaccounted_changes(tmp_path, defect):
     source = _source(tmp_path)
     inventory = resolve_python_imports(tmp_path, discover_python_source(tmp_path, files=[source]))
@@ -111,6 +124,14 @@ def test_characterization_view_does_not_hide_unaccounted_changes(tmp_path, defec
         call['column'] += 10000
     elif defect == 'descriptor':
         inventory['classes'][0]['descriptor_bindings'] = ['forged']
+    elif defect.startswith('decorator-'):
+        decorated = next(row for row in inventory['functions'] if row.get('decorators') == ['staticmethod'])
+        if defect == 'decorator-erasure':
+            decorated['effect_unresolved'] = []
+        elif defect == 'decorator-symbol':
+            decorated['effect_unresolved'][0]['symbol'] = 'forged.py::other'
+        else:
+            decorated['effect_unresolved'][0]['authority'] = True
     else:
         constructor = inventory['constructors'][0]
         constructor['construction_effect_observation']['authority'] = True
