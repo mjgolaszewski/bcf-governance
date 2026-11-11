@@ -10,6 +10,7 @@ import subprocess
 from typing import Any
 
 from ..evidence_process_supervisor import run_admitted_command
+from ..semantic_source_paths import _source_git_environment
 
 
 class RepositoryContextError(ValueError):
@@ -20,8 +21,8 @@ def git_value(repo_root: Path, *args: str) -> str:
     """Read one exact Git value for a preflight-owned consumer."""
 
     result = run_admitted_command(
-        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *args],
-        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, text=True, check=False
+        ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", *args],
+        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, text=True, check=False, env=_source_git_environment()
     )
     if result.returncode != 0:
         raise RepositoryContextError(
@@ -34,11 +35,12 @@ def tracked_files(repo_root: Path) -> list[Path]:
     """Return exact tracked regular files for deterministic source checks."""
 
     output = run_admitted_command(
-        ["git", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "ls-files", "-z"],
+        ["git", "--no-replace-objects", "-c", "core.hooksPath=/dev/null", "-c", "core.fsmonitor=false", "ls-files", "-z"],
         unbound_runner=subprocess.run,
         cwd=repo_root,
         capture_output=True,
         check=True,
+        env=_source_git_environment(),
     ).stdout
     return [
         repo_root / value.decode("utf-8")

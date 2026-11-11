@@ -13,6 +13,16 @@ from typing import Callable
 from .evidence_process_supervisor import run_admitted_command
 
 
+def _source_git_environment() -> dict[str, str]:
+    """Read the requested repository without ambient Git context or index writes."""
+    environment = {
+        name: value for name, value in os.environ.items()
+        if not name.startswith("GIT_")
+    }
+    environment.update(GIT_OPTIONAL_LOCKS="0", GIT_TERMINAL_PROMPT="0")
+    return environment
+
+
 def _source_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
     """Read source facts without executing repository-configured Git programs."""
     return run_admitted_command(
@@ -20,7 +30,7 @@ def _source_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess
             "git", "--no-replace-objects", "-c", f"core.hooksPath={os.devnull}",
             "-c", "core.fsmonitor=false", *arguments,
         ],
-        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, check=False,
+        unbound_runner=subprocess.run, cwd=repo_root, capture_output=True, check=False, env=_source_git_environment(),
     )
 
 
