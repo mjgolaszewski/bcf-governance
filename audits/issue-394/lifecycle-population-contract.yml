@@ -2418,3 +2418,22 @@ lexical_class_population_contract:
     neutral consumers; both source/effect consumers reject omitted class/type rows.
     Whole runtime and binding/population contexts remain open.
   whole_requirement_advancement: false
+
+lexical_class_context_qualification:
+  report: audits/issue-394/lexical-class-function-source-controls.json
+  sha256: c340c3ea420103fc2fe968d49658413ee96750a27df8bbc28ae356435d2f4d5f
+  subject: 11c7a7697f5fc3e520c94162208638e706eee2fa
+  previous_memory: P32 active; P33-P35 dormant. Nested-scope diagnostic e630f905;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Lexical contexts 11c7a769 guarded;20class+51lexicalPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: e630f905 nested gap.
+  current_ledger:
+    type: 394source
+    statement: 11c7a769 lexical.
+  metadata_interruption: Original continuation stopped on proposed compact ledger
+    text exceeding previous entry length, after all declared scoped checks. Shorter
+    text resolves only metadata; no behavioral rerun or production change.
+  whole_requirement_advancement: false

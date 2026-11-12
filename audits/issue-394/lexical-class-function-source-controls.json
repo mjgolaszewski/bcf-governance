@@ -1,0 +1,80 @@
+{
+  "authority": false,
+  "status": "lexical_class_source_controls_pass_runtime_profiles_open",
+  "subject": "11c7a7697f5fc3e520c94162208638e706eee2fa",
+  "tree": "db826defbbfd74dc32810afe735d1842e75040e8",
+  "controls_subject": "11e1e013e20358b13b3b5ba2ea6c6e0deb374e78",
+  "before_core": {
+    "tests": 16,
+    "failures": 12,
+    "errors": 0,
+    "skipped": 0
+  },
+  "class_population_after": {
+    "classes": 881,
+    "unique_classes": 881,
+    "types": 881,
+    "functions": 11453,
+    "missing_method_owners": [],
+    "class_type_difference": [],
+    "authority": false,
+    "execution_qualified": false
+  },
+  "lexical_before_retained": {
+    "results": {
+      "tests": 40,
+      "failures": 20,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sha256": "cc02810383bd0932e9359542573af82c6b19a91a95a3114f2f2ed107954dba2e",
+    "rerun": false
+  },
+  "affected_after": {
+    "tests": 880,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_control_cases_passed": 20,
+  "retained_prior_lexical_controls": 51,
+  "required_remaining_failures": [],
+  "remaining_failures_waived": false,
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false,
+    "failure_text_sha256": "e00e8f97059c665f7dcaca58ad4b6ca017f42f9fd6d21650c2abb810b22133ca"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "6fe558ff4db4d5dfc201ffc014ae499b8f26a7b59d6fef636e1e47c775242051",
+    "bcf_governance/tooling/semantic_ownership_inventory.py": "4401e2483e27371350f8849ce5cffd538ae3016352f9fe241c4d700c1ca67b08"
+  },
+  "evidence_sha256": {
+    "before.xml": "14da7e715eee6d8adc72600f68220cdf0e86fcb3ce488b5f0e5e77e66b2337c0",
+    "after.xml": "1946f30409a3f1129d91251b021e7988b21e200c88ad6ce6250825b0a86a5f83",
+    "architecture.xml": "60aad24e506388e30a8fecc65562ebb032dcd61ddf79f3d0163b07df0e30acdc"
+  },
+  "typescript_cache": {
+    "archive_sha256": "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a",
+    "compiler_files": 140,
+    "lock_sha256": "53adf32fd78f77fac66cd058eb2e0b2b0a14bc342e99800fcb4a464fba33f3d7",
+    "network_requests": 0,
+    "node_executable_sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+    "node_version": "v22.23.2",
+    "status": "test_toolchain_checked",
+    "typescript_version": "6.0.3"
+  },
+  "scope": "Lexical class/function source owner populations through existing source inventory and method identity owners. Missing/ambiguous class/type metadata still blocks; source-only class presence confers no runtime-construction authority.",
+  "observation_authority": false,
+  "observation_execution_qualified": false,
+  "whole_requirement_advancement": false,
+  "full_native_or_installed_qualification": false,
+  "remaining": "Full runtime binding/alias/closure/class/context profiles and lifecycle populations, deadlines/approved targets/adopters/custody; all82whole remain open."
+}
