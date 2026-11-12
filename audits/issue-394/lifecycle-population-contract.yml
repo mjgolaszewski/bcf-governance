@@ -2278,3 +2278,20 @@ runtime_target_characterization_followup:
     Prior assignment-origin and diagnostic correction retained; all11method cases
     PASS. Test-only/no production or golden edit; rerun18char,retain773PASS,no791rerun.
   whole_requirement_advancement: false
+
+callback_runtime_target_qualification:
+  report: audits/issue-394/callback-runtime-target-source-controls.json
+  sha256: 2ee3c08d805a7db1ba6fce43fd20f50dc04655e6dd3b00eef6deff0090d40f42
+  subject: 2554c808a52350d69884a6f5e50540fd233acefc
+  previous_memory: P32 active; P33-P35 dormant. Callback diagnostic 05b9df9e;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Callback targets 2554c808 guarded;14controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 05b9df9e callback gap.
+  current_ledger:
+    type: 394source
+    statement: 2554c808 target guard.
+  remaining_state_failures: []
+  whole_requirement_advancement: false
