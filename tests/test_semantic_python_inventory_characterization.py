@@ -33,6 +33,46 @@ def _pre_deconstruction_view(inventory, source):
         for node in ast.walk(nodes) if isinstance(node, ast.Call)
     }
     symbols = {function['symbol'] for function in inventory['functions']}
+    expected_protocols = {}
+    for owner in nodes.body:
+        if not isinstance(owner, ast.ClassDef):
+            continue
+        for method in owner.body:
+            if not isinstance(method, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for node in ast.walk(method):
+                if (isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load)
+                        and isinstance(node.value, ast.Name) and node.value.id == "self" and node.attr == "root"):
+                    span = (node.lineno, node.col_offset, node.end_lineno, node.end_col_offset)
+                    expected_protocols[span] = ("model.py::" + owner.name + "." + method.name, node)
+    observed_protocols = set()
+
+    def historical_calls(facts):
+        retained = []
+        for fact in facts:
+            if "implicit_protocol" not in fact:
+                retained.append(fact_view(fact))
+                continue
+            span = (fact["line"], fact["column"], fact["end_line"], fact["end_column"])
+            assert span in expected_protocols and span not in observed_protocols
+            caller, node = expected_protocols[span]
+            digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+            assert fact["caller"] == caller
+            assert fact["called_symbol"] == "python-implicit::attribute_read"
+            assert fact["call_name"] == "<implicit>"
+            assert fact["dispatch_resolution"] == "unresolved"
+            assert fact["dispatch_port_eligible"] is False
+            assert fact["argument_origins"] == ["parameter:self"]
+            assert fact["implicit_protocol"] == {
+                "version": "1.0", "authority": False, "execution_qualified": False,
+                "kind": "attribute_read", "expression_sha256": digest, "occurrence": 0,
+            }
+            if "call_contract" in fact:
+                assert fact["call_contract"] == {"authority": False, "expression_sha256": digest,
+                                                 "occurrence": 0, "arguments": []}
+            observed_protocols.add(span)
+        return retained
+
 
     def fact_view(fact):
         actual = dict(fact)
@@ -143,9 +183,11 @@ def _pre_deconstruction_view(inventory, source):
                 'symbol': row['symbol'], 'decorators': row['decorators'],
             }]
             actual['effect_unresolved'] = []
-        for key in ('calls', 'constructors', 'normalizations'):
+        actual['calls'] = historical_calls(row['calls'])
+        for key in ('constructors', 'normalizations'):
             actual[key] = [fact_view(fact) for fact in row[key]]
         result['functions'].append(actual)
+    assert observed_protocols == set(expected_protocols), 'implicit protocol source population omitted'
     for key in ('constructors', 'normalizations'):
         result[key] = [fact_view(fact) for fact in inventory[key]]
     return result

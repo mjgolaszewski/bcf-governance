@@ -2481,3 +2481,29 @@ implicit_protocol_source_diagnostic:
     Unknown context cannot gain authority, and no syntax rewrite may hide the same
     effect. Full profiles and independent closure remain open.
   whole_requirement_advancement: false
+
+implicit_protocol_repair_contract:
+  before_subject: c826b0f47bac05e80e970a09c375faa55ad3bd72
+  diagnostic: audits/issue-394/implicit-runtime-protocol-source-diagnostic.json
+  scope: Versioned neutral implicit_protocol1.0 observations in existing function.calls
+    and existing source-call schema; no second graph/evaluator/receipt registry. Unknown
+    context is always unresolved and cannot gain port credit. Two existing consumers
+    validate marker identity/flags/version/hash/caller and reject forgery.
+  owners:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  - schemas/semantic-call-contracts.schema.json
+  deconstruction: Move existing _native_literal_value unchanged into existing Python
+    identity owner, reuse from original call owner and protocol classifier. Preserve
+    original module alias.
+  characterization: Unchanged immutable golden/source. Independently enumerate exactly
+    fixture self.root Load AST spans and require their versioned unknown-call facts
+    before excluding only these additive observations from historical comparison.
+  controls: Retain28before12FAIL/16PASS. Commit25marker controls and strengthened
+    historical oracle before production; causal-before new source-edge and historical-population
+    controls must both fail for real omission. Targeted53,affected933,required architecture/gov/lint/pack/meta.
+  residuals: Full native/operator/call-target/generator/coroutine/context profiles,
+    runtime applicability and lifecycle populations remain open. No annotation-based
+    authority, no syntax rewrite workaround, no whole advancement.
+  whole_requirement_advancement: false
