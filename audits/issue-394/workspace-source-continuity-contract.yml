@@ -523,3 +523,19 @@ augmented_assignment_contract:
   exit:51controls and affected consumer population pass, including closed/escaped cells
     and both SDK-absent32case contexts. Required known main runtime block remains
     unwaived; canonical pack generation and source gates accounted for.
+
+augmented_assignment_verification:
+  report: audits/issue-394/augmented-assignment-verification.json
+  sha256: 997e85fc558e33d04471d20d4941e55d0b289b7358451b0ff33b79433781af31
+  subject: 349e6ed1baadf38175d861c0fc6f4f429ff2b24b
+  previous_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  previous_ledger:
+    type: 394source
+    statement: 935ad1dc pattern.
+  current_ledger:
+    type: 394source
+    statement: 349e6ed1 augassign.
+  whole_requirement_advancement: false

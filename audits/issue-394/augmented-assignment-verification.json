@@ -1,0 +1,44 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "augmented_assignment_controls_pass_runtime_context_open",
+  "subject": "349e6ed1baadf38175d861c0fc6f4f429ff2b24b",
+  "tree": "f8cb21dc86af80ed49ec0dc5b3bf565fd92d829e",
+  "controls_subject": "19659819c09fa9fb55dce1d0fd0aa73b7001fc83",
+  "causal_before": {
+    "tests": 51,
+    "failures": 36,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 1127,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "2c2eaa805e204a745b47f64e30968df6c8c6b6ac9954a09d7236e7d6d315fdc2",
+    "bcf_governance/tooling/semantic_python_calls.py": "bd83c08aa547f6cfefdf2bde3c7b1052e7d5ae5536f0f739a976056bf228df84",
+    "bcf_governance/tooling/semantic_ownership_inventory.py": "66b3e983c9aa24b7d0e78fba000b2fef3d98a1062b0c6836f0433468a5ffe458"
+  },
+  "evidence_sha256": {
+    "before.xml": "59e0cc43ef4100cbc72583a82a13643207a1cab76ee51cf7cefea6bccb17f019",
+    "after.xml": "f6e6d4c791548b9ae17dd6ab320daa96b799a9ff6bd46403c6013df4983b7f94",
+    "architecture.xml": "53d9c3965a79b46db39c4d068db3ffb3dc47f05445dfbfb7bf3d66e5fedbc7a5"
+  },
+  "scope": "Existing protocol owner emits operator1.0 for unknown augmented target/value.15native cases cover13in-place operators and ordinary/reflected addition. Preserve existing literal and whole-parent private scalar-cell eligibility only through actual direct parent/child AST identity in existing factory; no annotations/caller sets/opaque escapes qualify. Source-only observations remain unknown; declared ports cannot credit markers. Both SDK-absent contexts execute32cases. Schema, existing marker versions and immutable goldens unchanged; no new evaluator, graph, registry, receipt or runtime authority.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}
