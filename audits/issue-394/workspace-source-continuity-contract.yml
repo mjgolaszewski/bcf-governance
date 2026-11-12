@@ -105,3 +105,19 @@ registered_source_history_contract:
   - transferring CI between equal-tree distinct commits
   remaining: Independent clones, content custody, declared owner/remote checkpoint
     and handoff/retirement gate remain open.
+
+registered_source_history_source_verification:
+  report: audits/issue-394/registered-source-history-verification.json
+  sha256: 8062eb3a1e310452df94bfc655ba6def431bc3a631d7cd9f92929b2c5528cf57
+  subject: aa2807e17084dfc8d2ded3bf01fc3935cbf88299
+  previous_memory: P32 active; P33-P35 dormant. Audit source c0ed671d exactpaths;6controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Audit source aa2807e1 registered;10controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: c0ed671d audit-paths.
+  current_ledger:
+    type: 394source
+    statement: aa2807e1 registered.
+  whole_requirement_advancement: false

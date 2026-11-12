@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "registered_source_history_query_controls_pass_full_continuity_open",
+  "subject": "aa2807e17084dfc8d2ded3bf01fc3935cbf88299",
+  "tree": "e452587ded97eb775b6d3d18cde4098e70fd16b8",
+  "controls_subject": "5a3aa2daa35d926785d2a183a33a5fb1d693d45c",
+  "causal_before": {
+    "tests": 10,
+    "failures": 10,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 237,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_audit.py": "2bfc81aee732afa3af11cfbf94a39d2c6eaa541c423262b433df3b7ee775b7c1"
+  },
+  "evidence_sha256": {
+    "before.xml": "e06655953de0083a0f76f3f9b2b3dc095fcdb4ceced5d23062c72d3c52401549",
+    "after.xml": "4b32e93ab0577abc6e4fc98814d56d90deade2f13d5ec5b5f5893224d66774be",
+    "architecture.xml": "726ebad1168de09b5b74597bd72e5f6758f4224345149e9a1939fba6e84ac5c9"
+  },
+  "scope": "Existing audit query enumerates registered common-directory worktrees and local branch tips, exact identities/ancestry and dirty/untracked paths; two actual snapshots reauthenticate those observations. Equal-tree distinct commits stay distinct. Full workspace/source-byte/remote checkpoint/handoff/retirement custody remains unresolved; report1.1 additive extension, no CLI grammar or mutation authority. No new registry, topology graph, caller flag, policy or authority. Full worktree/branch/dirty-source inventory, push/checkpoint/handoff/retirement dispositions remain unimplemented by this slice.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}
