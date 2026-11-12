@@ -2313,3 +2313,21 @@ nested_runtime_scope_contract:
   residuals: Complete lifetime/binding/context profiles, installation/adopters/deadlines/approved
     targets/custody and82whole stay open.
   whole_requirement_advancement: false
+
+nested_runtime_scope_diagnostic:
+  report: audits/issue-394/nested-runtime-scope-source-diagnostic.json
+  sha256: e825ca91b5a6099aa33373487a2029392186216e71ee317a37f730e8a390ec19
+  previous_memory: P32 active; P33-P35 dormant. Callback targets 2554c808 guarded;14controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Nested-scope diagnostic e630f905;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 2554c808 target guard.
+  current_ledger:
+    type: 394source
+    statement: e630f905 nested gap.
+  next_action: Retain actual failures. Extend existing runtime scope/call/effect context
+    owners; preserve source vs execution and lexical cell ownership, no second graph
+    or name-based authority. Contract before production then affected qualified controls.
+  whole_requirement_advancement: false

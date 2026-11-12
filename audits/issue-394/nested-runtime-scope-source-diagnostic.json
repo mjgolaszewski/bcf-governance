@@ -1,0 +1,44 @@
+{
+  "authority": false,
+  "subject": "e630f9053e64b2657ab4a470485e01c778276ecd",
+  "tree": "a2de390642cb250ae224d66f8589c474473e9f52",
+  "before": {
+    "tests": 18,
+    "failures": 9,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_failed_cases": [
+    "test_runtime_named_nested_definition_population_is_not_omitted[global]",
+    "test_runtime_named_nested_definition_population_is_not_omitted[parameter-item]",
+    "test_runtime_named_nested_definition_population_is_not_omitted[parameter-attribute]",
+    "test_runtime_named_nested_definition_population_is_not_omitted[two-level]",
+    "test_called_nested_body_cannot_hide_shared_mutation[global]",
+    "test_called_nested_body_cannot_hide_shared_mutation[parameter-item]",
+    "test_called_nested_body_cannot_hide_shared_mutation[parameter-attribute]",
+    "test_called_nested_body_cannot_hide_shared_mutation[two-level]",
+    "test_deferred_or_owned_cell_context_remains_pure[unused-write-call]"
+  ],
+  "failure_groups": {
+    "omitted_named_definitions": [
+      "test_runtime_named_nested_definition_population_is_not_omitted[global]",
+      "test_runtime_named_nested_definition_population_is_not_omitted[parameter-item]",
+      "test_runtime_named_nested_definition_population_is_not_omitted[parameter-attribute]",
+      "test_runtime_named_nested_definition_population_is_not_omitted[two-level]"
+    ],
+    "false_shared_mutation_acceptance": [
+      "test_called_nested_body_cannot_hide_shared_mutation[global]",
+      "test_called_nested_body_cannot_hide_shared_mutation[parameter-item]",
+      "test_called_nested_body_cannot_hide_shared_mutation[parameter-attribute]",
+      "test_called_nested_body_cannot_hide_shared_mutation[two-level]"
+    ],
+    "misphased_or_owned_context_rejection": [
+      "test_deferred_or_owned_cell_context_remains_pure[unused-write-call]"
+    ]
+  },
+  "failure_causes": "Record missing named source definitions, falsely accepted called-body mutations and misphased unused-body effects separately. All7ordinary native witnesses pass; no fixture errors/skips.",
+  "evidence_sha256": "fd52452fa16497b99716496ba870ec41a4d7c25f141096a102f9e5d72521e24d",
+  "production_changed": false,
+  "all_whole_requirements_open": 82,
+  "whole_requirement_advancement": false
+}
