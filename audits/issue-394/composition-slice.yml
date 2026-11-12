@@ -240,3 +240,24 @@ protected_operation_call_binding_slice:
     focused: 147 composition operation-call and call-fact cases passed; one governed-oracle resolution check remains deferred until canonical test manifest regeneration.
     qualification_limit: Full protected population acquisition effect interpretation installation and runtime execution remain unqualified.
     architecture: Ten source/package/private-copy context CLI-effect and module-cap checks passed; existing lint and typecheck gates passed.
+
+function_population_identity_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/semantic_operation_effects.py
+  scope: Both existing source-call and operation-effect consumers reject duplicate
+    function symbols before root/port traversal; neither row order nor source-only
+    observation mode can select a duplicate. Share one validator, preserve actual
+    producer overload filtering and ordinary unique-population results.
+  cases: 24
+  expected_before:
+    failures: 16
+    passes: 8
+  forbidden:
+  - last-row or first-row wins
+  - treating overload names as runtime authority
+  - editing characterization goldens
+  - claiming source population is runtime qualification
+  remaining: Source census is not executable phase, alias, runtime binding or installed
+    conformance.
