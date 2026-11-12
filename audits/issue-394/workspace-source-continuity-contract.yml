@@ -586,3 +586,30 @@ protocol_owner_extraction_contract:
   exit: Declaration byte comparison, facade/consumer identity and full affected
     matrix pass; old module shrinks belowcap and new module has2realconsumers. Keep
     required strict-main block and82wholeOPEN; canonical pack/source gates accounted.
+
+protocol_owner_namespace_repair_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  scope: Supersede only extracted helper filename:semantic_ownership_protocols under
+    already-declared semantic_ownership_ family; restore my self-governance policy
+    edit to exact e27c7325 bytes. Keep unchanged declarations,legacy aliases and sole
+    producer/effect owner. No CI value digest,workflow or authority rebind.
+  previous_failure:
+    subject: f58a5befa01f79ee1dd62b0d17ceac3ae5eea4b7
+    affected_passes: 1128
+    architecture:
+      tests: 40
+      failures: 25
+      errors: 0
+      skipped: 0
+    new_policy_digest_failures: 24
+    known_main_block: 1
+  verification: Retain exact1128PASS baseline with raw hash; fresh facade/2SDK-absent32case
+    contexts,required architecture/lint/gov/pack. No new detection or schema changes;
+    source/module rename changes custody hashes and requires exact fresh evidence.
+  forbidden:
+  - CI digest/authority/workflow rebind
+  - new policy or trust rule
+  - main/adopter/release changes
+  - gate waiver or phase progress
