@@ -167,3 +167,44 @@ source_byte_observation_source_verification:
     type: 394source
     statement: ab22e717 bytes.
   whole_requirement_advancement: false
+
+inert_source_filter_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owners:
+  - bcf_governance/tooling/ci_graph_audit.py
+  - bcf_governance/tooling/semantic_source_paths.py
+  bounded_context: ci_authority
+  operation_side: query
+  scope: Refuse unqualified working-tree Git comparisons in existing source reader.
+    Existing audit compares inert index metadata with descriptor-read literal blob
+    identities, never invokes Git status or modified/deleted comparisons; captures
+    staged/working/untracked source separately.
+  migration: Audit1.1 to1.2 retains existing fields with explicit literal source status
+    semantics, no filter conversion/rename folding. status_sha256 covers canonical
+    JSON of sorted status_entries; byte observations add blob_oid/mode and known-index
+    scope. Private unsafe status/diff/modified calls return typed nonzero; ordinary
+    object/index queries retain behavior. Resolved regular tracked entries only; Gitlinks/unmerged/symlink
+    contexts yield unavailable rather than clean. No CLI grammar or authority change.
+  cases: 7
+  expected_before:
+    failures: 7
+    passes: 0
+  historical_diagnostic:
+    subject: 8be20cd4879a9e2d8ddc7fdad087b6fd2d6dfd3e
+    cases: 4
+    cause: source query recreated marker after unlink
+    witness_disposition: Original ordinary-status witness could inherit Git-add marker;
+      refresh marker before ordinary status in this committed contract. Original source-query
+      execution failures remain genuine.
+  forbidden:
+  - candidate clean/process/external-diff execution
+  - using mutable filter-name enumeration as authority
+  - following symlinks/FIFO
+  - silently accepting Gitlink/merge context
+  - automatic merge/delete
+  - full workspace/content custody claims
+  remaining: Independent clone discovery, ignored-source population, preserved content
+    and handoff/retirement gate, native full lifecycle and installed profiles remain
+    open.
