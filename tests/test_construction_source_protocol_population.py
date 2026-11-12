@@ -131,7 +131,7 @@ def test_independent_language_population_retains_each_potential_source_body(tmp_
 @pytest.mark.parametrize("context", ("local", "imported", "lower-import-alias", "inherited"))
 def test_source_effect_consumer_cannot_hide_implicit_protocol_write(tmp_path, case, context):
     inventory = _inventory(tmp_path, _sources(case, context))
-    with pytest.raises(SemanticOperationEffectError, match="(source construction|construction source|undeclared write)"):
+    with pytest.raises(SemanticOperationEffectError, match="(source construction|construction source|undeclared write|unresolved effect)"):
         _consume("effect", inventory)
 
 @pytest.mark.parametrize("case", tuple(NATIVE_CASES))

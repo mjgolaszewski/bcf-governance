@@ -2126,3 +2126,11 @@ subscript_object_store_contract:
     neutral inventory; no CLI/status or authority-family change. Empty legacy populations
     unchanged. Both observation authority and execution_qualified remain false.
   no_new_registry_graph_evaluator_or_receipt_family: true
+
+subscript_diagnostic_followup:
+  source_subject: c83152e696cfbb40f3b57440663907ed2f8d5a26
+  reason: Eight older source-protocol rejection checks now receive unresolved effect
+    before constructor provenance. Accept that conservative rejection; no production
+    change or waiver. Retain716unchanged passes and receiver failure; execute only8
+    affected cases.
+  whole_requirement_advancement: false
