@@ -401,7 +401,18 @@ def test_async_same_instance_method_is_resolved_exactly(tmp_path: Path) -> None:
         "        return 1\n",
     )
 
-    assert _validate(inventory, "query") == (0, 0)
+    # Method resolution is a source fact; the awaited runtime binding stays unknown.
+    query = next(row for row in inventory["functions"] if row["symbol"] ==
+                 "backend/src/demo/service.py::Service.query")
+    explicit = [row for row in query["calls"] if "implicit_protocol" not in row]
+    assert len(explicit) == 1
+    assert explicit[0]["called_symbol"] == "backend/src/demo/service.py::Service._read"
+    assert validate_operation_effects(
+        _operation(), "backend/src/demo/service.py::Service.query", inventory,
+        require_runtime_context=False,
+    ) == (0, 0)
+    with pytest.raises(SemanticOperationEffectError, match="unresolved effect runtime protocol"):
+        _validate(inventory, "query")
 
 
 @pytest.mark.parametrize(

@@ -2636,3 +2636,27 @@ implicit_grammar_repair_contract:
   - claiming source population is runtime qualification
   remaining: Source census is not executable phase, alias, runtime binding or installed
     conformance.
+
+async_context_source_fixture_contract:
+  authority: false
+  execution_qualified: false
+  status: source_fixture_contract_before_execution
+  production_subject: 40c966f36b8b404eae39dbaf19a3457234130c53
+  retained_affected:
+    tests: 1039
+    failures: 1
+    errors: 0
+    skipped: 0
+  scope: Existing async same-instance fixture proves exact source method resolution,
+    not actual awaited receiver binding. Preserve explicit called-symbol assertion,
+    source-only counts and strict default await refusal. Two fresh ordinary native
+    contexts use identical Service source with pristine vs rebound receiver and demonstrate
+    why runtime binding remains required.
+  production_changes: false
+  forbidden:
+  - weakening protected runtime checks
+  - labeling source-only counts as runtime certificate
+  - editing immutable goldens
+  - repeating unchanged1038passing cases for bookkeeping
+  remaining: Benign runtime profiles and full installed/lifecycle context qualification
+    remain open.
