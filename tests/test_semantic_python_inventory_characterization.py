@@ -50,8 +50,23 @@ def _pre_deconstruction_view(inventory, source):
         assert len(declarations) == 1
         declaration = declarations[0]
         parameters = {arg.arg for arg in declaration.args.posonlyargs + declaration.args.args + declaration.args.kwonlyargs}
+        bindings = {name: {name} for name in parameters}
+        assignments = sorted((node for node in ast.walk(declaration)
+                              if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.lineno < span[0]),
+                             key=lambda node: (node.lineno, node.col_offset))
+        for assignment in assignments:
+            value = assignment.value
+            if value is None:
+                continue
+            roots = {node.id for node in ast.walk(value) if isinstance(node, ast.Name)}
+            derived = set().union(*(bindings.get(name, set()) for name in roots))
+            assigned = assignment.targets if isinstance(assignment, ast.Assign) else [assignment.target]
+            for target in assigned:
+                if isinstance(target, ast.Name):
+                    bindings[target.id] = bindings.get(target.id, set()) | derived
         targets = {node.id for node in ast.walk(expression.func) if isinstance(node, ast.Name)}
-        expected_origins = sorted('parameter:' + name for name in targets & parameters)
+        derived = set().union(*(bindings.get(name, set()) for name in targets))
+        expected_origins = sorted('parameter:' + name for name in derived)
         # The immutable fixture's self-method dispatch remains with the existing owner.
         if owner.startswith('Repository.') and 'self' in targets:
             expected_origins = []

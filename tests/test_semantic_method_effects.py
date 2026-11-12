@@ -283,7 +283,7 @@ def test_unsupported_same_instance_dispatch_fails_closed(
     )
 
     with pytest.raises(
-        SemanticOperationEffectError, match=r"unresolved (?:dynamic|effect) call path"
+        SemanticOperationEffectError, match=r"unresolved (?:dynamic call path|effect (?:call path|runtime target))"
     ):
         _validate(inventory, "query")
 

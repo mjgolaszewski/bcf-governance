@@ -2262,3 +2262,12 @@ callback_runtime_target_contract:
     independently discovered whole population, deadlines/targets/adopters/custody
     remain open.
   whole_requirement_advancement: false
+
+runtime_target_characterization_followup:
+  source_subject: 2554c808a52350d69884a6f5e50540fd233acefc
+  reason: Independent immutable fixture helper must derive parameter origins through
+    prior local assignments; earlier runtime-target rejection is valid alternate cause
+    for unsupported dispatch. Test-only; no weakened rejection or production change.
+    Rerun18characterization+11unsupported-dispatch cases, retain762unchangedPASS;
+    no full791rerun.
+  whole_requirement_advancement: false
