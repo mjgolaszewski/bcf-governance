@@ -23,17 +23,128 @@ def _tracked(repo_root: Path, patterns: tuple[str, ...]) -> list[str]:
     return sorted(line for line in result.stdout.decode("utf-8").split("\0") if line) if result.returncode == 0 else []
 
 
+def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
+    """Observe registered Git identities; source bytes and clone coverage are separate."""
+    identity = _source_git(repo_root, "rev-parse", "HEAD", "HEAD^{tree}")
+    common = _source_git(repo_root, "rev-parse", "--git-common-dir")
+    branch = _source_git(repo_root, "symbolic-ref", "-q", "HEAD")
+    worktrees = _source_git(repo_root, "worktree", "list", "--porcelain", "-z")
+    refs = _source_git(repo_root, "for-each-ref", "--format=%(refname)%00%(objectname)%00%(tree)", "refs/heads/")
+    if any(row.returncode for row in (identity, common, worktrees, refs)) or branch.returncode not in (0, 1):
+        raise ValueError("registered source-history discovery failed")
+    subject = identity.stdout.decode("ascii").splitlines()
+    if len(subject) != 2 or any(re.fullmatch(r"[a-f0-9]{40}", value) is None for value in subject):
+        raise ValueError("registered source-history subject is not exact")
+    common_path = (repo_root / common.stdout.decode("utf-8").rstrip("\n")).resolve()
+    subject_branch = branch.stdout.decode("utf-8").rstrip("\n") if branch.returncode == 0 else None
+    branches = []
+    for raw in refs.stdout.splitlines():
+        fields = raw.decode("utf-8").split("\0")
+        if len(fields) != 3 or not fields[0].startswith("refs/heads/") or any(
+            re.fullmatch(r"[a-f0-9]{40}", value) is None for value in fields[1:]
+        ):
+            raise ValueError("registered branch inventory is malformed")
+        ancestry = _source_git(repo_root, "merge-base", "--is-ancestor", fields[1], subject[0])
+        if ancestry.returncode not in (0, 1):
+            raise ValueError("registered branch ancestry is unavailable")
+        branches.append(dict(ref=fields[0], commit_sha=fields[1], tree_sha=fields[2],
+                             ancestor_of_subject=ancestry.returncode == 0))
+    roots = []
+    if worktrees.stdout and not worktrees.stdout.endswith(b"\0\0"):
+        raise ValueError("registered worktree inventory is malformed")
+    for block in worktrees.stdout.split(b"\0\0"):
+        if not block:
+            continue
+        values = {}
+        for raw in block.split(b"\0"):
+            key, _, value = raw.partition(b" ")
+            name = key.decode("ascii")
+            if name not in {"worktree", "HEAD", "branch", "bare", "detached", "locked", "prunable"} or name in values:
+                raise ValueError("registered worktree metadata is ambiguous")
+            values[name] = value.decode("utf-8")
+        if not values.get("worktree"):
+            raise ValueError("registered worktree path is absent")
+        if "bare" not in values and (
+                ("branch" in values) == ("detached" in values)
+                or re.fullmatch(r"[a-f0-9]{40}", values.get("HEAD", "")) is None):
+            raise ValueError("registered worktree branch metadata is contradictory")
+        path = Path(values["worktree"])
+        if not path.is_absolute():
+            raise ValueError("registered worktree path is not absolute")
+        row = dict(path=str(path), head_sha=values.get("HEAD"), branch_ref=values.get("branch"),
+                   locked=values.get("locked"), prunable=values.get("prunable"), available=False)
+        roots.append(row)
+        if "bare" in values or not path.is_dir():
+            row["unresolved"] = "bare_or_missing_registered_checkout"
+            continue
+        observed = _source_git(path, "rev-parse", "HEAD", "HEAD^{tree}")
+        peer_common = _source_git(path, "rev-parse", "--git-common-dir")
+        peer_branch = _source_git(path, "symbolic-ref", "-q", "HEAD")
+        status = _source_git(path, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+        untracked = _source_git(path, "ls-files", "-z", "--others", "--exclude-standard", "--")
+        if any(value.returncode for value in (observed, peer_common, status, untracked)) or peer_branch.returncode not in (0, 1):
+            row["unresolved"] = "registered_checkout_read_unavailable"
+            continue
+        peer_identity = observed.stdout.decode("ascii").splitlines()
+        peer_ref = peer_branch.stdout.decode("utf-8").rstrip("\n") if peer_branch.returncode == 0 else None
+        if (len(peer_identity) != 2 or peer_identity[0] != values.get("HEAD")
+                or peer_ref != values.get("branch")
+                or (path / peer_common.stdout.decode("utf-8").rstrip("\n")).resolve() != common_path):
+            row["unresolved"] = "registered_checkout_identity_mismatch"
+            continue
+        if any(re.fullmatch(r"[a-f0-9]{40}", value) is None for value in peer_identity):
+            raise ValueError("registered checkout subject is not exact")
+        row.update(available=True, tree_sha=peer_identity[1],
+                   status_entries=sorted(value.decode("utf-8") for value in status.stdout.split(b"\0") if value),
+                   untracked_paths=sorted(value.decode("utf-8") for value in untracked.stdout.split(b"\0") if value))
+    if not roots or len({row["path"] for row in roots}) != len(roots):
+        raise ValueError("registered worktree population is empty or duplicated")
+    if not any(Path(row["path"]).resolve() == repo_root.resolve() and row["head_sha"] == subject[0]
+               and row["branch_ref"] == subject_branch for row in roots):
+        raise ValueError("active source subject is absent from registered worktrees")
+    if subject_branch is not None and not any(row["ref"] == subject_branch and row["commit_sha"] == subject[0]
+                                              for row in branches):
+        raise ValueError("active source branch contradicts branch inventory")
+    equal_trees: dict[str, set[str]] = {}
+    for row in branches:
+        equal_trees.setdefault(row["tree_sha"], set()).add(row["commit_sha"])
+    return dict(subject=dict(commit_sha=subject[0], tree_sha=subject[1], branch_ref=subject_branch),
+                worktrees=sorted(roots, key=lambda value: value["path"]),
+                branches=sorted(branches, key=lambda value: value["ref"]),
+                same_tree_distinct_commits=[dict(tree_sha=tree, commits=sorted(commits))
+                    for tree, commits in sorted(equal_trees.items()) if len(commits) > 1])
+
+
 def _repository_state(repo_root: Path) -> dict[str, Any]:
     result = _source_git(repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
     if result.returncode:
         return {"available": False, "committed_clean": False}
     entries = sorted(value.decode("utf-8") for value in result.stdout.split(b"\0") if value)
-    return {
+    state = {
         "available": True,
         "committed_clean": not entries,
         "status_entries": entries,
         "status_sha256": hashlib.sha256(result.stdout).hexdigest(),
     }
+    history = dict(schema_version="1.0", authority=False, execution_qualified=False,
+                   scope="registered_git_worktrees_and_local_branch_tips", full_workspace_inventory=False,
+                   independent_clone_discovery="unresolved", source_byte_custody="unresolved",
+                   retirement_authorized=False, available=False, identity_observation_stable=False)
+    try:
+        captured = _source_history_snapshot(repo_root)
+        consuming = _source_history_snapshot(repo_root)
+        current_status = _source_git(repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+        stable = captured == consuming and current_status.returncode == 0 and current_status.stdout == result.stdout
+        history.update(captured, identity_observation_stable=stable,
+                       available=stable and all(row["available"] for row in captured["worktrees"]))
+        if not stable:
+            history["unresolved"] = "registered_source_identity_moved_during_capture"
+        if current_status.returncode or current_status.stdout != result.stdout:
+            state.update(available=False, committed_clean=False)
+    except (OSError, ValueError, UnicodeError) as exc:
+        history["unresolved"] = type(exc).__name__ + ": " + str(exc)
+    state["source_history"] = history
+    return state
 
 
 def _make_targets(repo_root: Path) -> list[dict[str, Any]]:
@@ -300,7 +411,7 @@ def audit_ci_graph(repo_root: Path) -> dict[str, Any]:
     ]
     generated_paths = {workflow["path"] for workflow in workflows}
     report = {
-        "schema_version": "1.0",
+        "schema_version": "1.1",
         "status": "pass" if render.status == "clean" else "fail",
         "subject": inventory["subject"],
         "repository_state": _repository_state(root),

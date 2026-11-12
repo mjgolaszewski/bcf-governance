@@ -42,7 +42,7 @@ def test_audit_retains_actual_requested_repository_status_and_files(tmp_path,dir
  root=repository(tmp_path/"actual")
  if dirty:(root/"source.py").write_text("VALUE=2\n")
  result=audit._repository_state(root)
- assert set(result)=={"available","committed_clean","status_entries","status_sha256"}
+ assert set(result)=={"available","committed_clean","status_entries","status_sha256","source_history"}
  assert result["available"] and result["committed_clean"] is not dirty
  assert bool(result["status_entries"]) is dirty
  assert audit._tracked(root,("*.py",))==["source.py"]
