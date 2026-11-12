@@ -384,6 +384,7 @@ def submit_candidate(
     """Prove and push only the exact immutable candidate that passed the train."""
 
     root = require_clean_candidate_root(repo_root, runner=runner)
+    _validate_authored_submission_inputs(root)
     context = resolve_local_pr_context(root, remote=remote, runner=runner, provider_api=provider_api)
     identity = _candidate_identity(root, context, runner=runner)
     progress = []
