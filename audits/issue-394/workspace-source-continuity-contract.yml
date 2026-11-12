@@ -77,3 +77,31 @@ audit_path_identity_source_verification:
     type: 394source
     statement: c0ed671d audit-paths.
   whole_requirement_advancement: false
+
+registered_source_history_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/ci_graph_audit.py
+  bounded_context: ci_authority
+  operation_side: query
+  scope: Registered Git worktrees and all local branch tips, exact commit/tree/branch,
+    ancestry and equal-tree distinct identities; dirty/untracked path observations
+    only. Two actual snapshot consumers capture and reauthenticate identities; no
+    source-byte custody or independent clone coverage.
+  migration: 'Audit report1.0 to1.1 is additive: existing top-level and repository
+    status fields retain meaning; repository_state.source_history is explicitly nonauthoritative.
+    NonGit legacy shape unchanged; old consumers can ignore new field. No CLI grammar
+    change.'
+  cases: 10
+  expected_before:
+    failures: 10
+    passes: 0
+  forbidden:
+  - automatic merge/delete
+  - remote mutation
+  - candidate Git programs
+  - claiming full workspace/source-byte custody
+  - transferring CI between equal-tree distinct commits
+  remaining: Independent clones, content custody, declared owner/remote checkpoint
+    and handoff/retirement gate remain open.
