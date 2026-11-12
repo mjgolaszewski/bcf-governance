@@ -164,7 +164,15 @@ def test_pack_manifest_carries_content_addressed_historical_retirements() -> Non
     relative = "scripts/_bcf_runtime/ci_github_release_qualification.py"
 
     assert payload["schema_version"] == "2.0"
-    assert not set(payload["files"]) & set(retirements)
+    ordinary_paths = {
+        path for path, entry in payload["files"].items()
+        if entry.get("installation_scope", "ordinary_adopter") != "self_authority"
+    }
+    assert not ordinary_paths & set(retirements)
+    for path in set(payload["files"]) & set(retirements):
+        entry = payload["files"][path]
+        assert entry["installation_scope"] == "self_authority"
+        assert entry["sha256"] in retirements[path]
     assert "7dff42728249979f34b887fe3e71174049d4937f7931ed0bb3d5c04ba4538a38" in (
         retirements[relative]
     )
