@@ -2076,3 +2076,26 @@ explicit_global_name_store_contract:
   - main and release/adopter mutations
   - manual generated workflow/authority/runtime edits
   - new authority from naming/annotations or candidate claims
+
+explicit_global_name_store_qualification:
+  report: audits/issue-394/explicit-global-name-store-source-controls.json
+  sha256: 0ab01f6a3e3f4fe6758207bde7c80bf69d385c723f99361ea09aca54e844fb43
+  subject: a9e182daa69a0f880e1113a94631fe6c08cd254e
+  previous_memory: P32 active; P33-P35 dormant. Non-call state mutation source diagnostic
+    942fc5d4:6causeFAIL/8PASS,6real mutation witnesses; repair/runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Global-name stores a9e182da guarded;42controlsPASS,4state
+    residuals and full runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 942fc5d4 state effect gap; repair open.
+  current_ledger:
+    type: 394source
+    statement: a9e182da globals guarded;4state open.
+  remaining_state_failures:
+  - test_effect_consumer_cannot_accept_undeclared_state_mutation[global-delete]
+  - test_effect_consumer_cannot_accept_undeclared_state_mutation[global-item]
+  - test_effect_consumer_cannot_accept_undeclared_state_mutation[parameter-item]
+  - test_effect_consumer_cannot_accept_undeclared_state_mutation[receiver-attribute]
+  whole_requirement_advancement: false

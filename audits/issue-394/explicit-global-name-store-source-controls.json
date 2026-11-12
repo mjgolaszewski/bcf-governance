@@ -1,0 +1,74 @@
+{
+  "authority": false,
+  "status": "explicit_global_name_store_source_controls_pass_four_state_residuals_open",
+  "subject": "a9e182daa69a0f880e1113a94631fe6c08cd254e",
+  "tree": "6ce069e7dc89d195c2af6b882de0a6f17322b049",
+  "controls_subject": "2eabe26ba7d4b7c0807259e128ee304069806c07",
+  "before": {
+    "tests": 42,
+    "failures": 24,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_non_call_before": {
+    "subject": "942fc5d4c81eb0f109be6b95ca8280ba8ec0b6a6",
+    "results": {
+      "tests": 14,
+      "failures": 6,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sha256": "622606866e0a5133a514dd5ade84fca543b671750170b08ff0590bdfab9ef2e6",
+    "rerun": false
+  },
+  "affected_after": {
+    "tests": 669,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_control_cases_passed": 42,
+  "ordinary_fresh_global_write_witnesses": 12,
+  "ordinary_fresh_scope_positive_witnesses": 3,
+  "required_remaining_failures": [
+    "test_effect_consumer_cannot_accept_undeclared_state_mutation[global-delete]",
+    "test_effect_consumer_cannot_accept_undeclared_state_mutation[global-item]",
+    "test_effect_consumer_cannot_accept_undeclared_state_mutation[parameter-item]",
+    "test_effect_consumer_cannot_accept_undeclared_state_mutation[receiver-attribute]"
+  ],
+  "remaining_failures_waived": false,
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_calls.py": "0c86e708ad41c9e4a7bc05d4d307db6c733e79c8c8d5eb298c63b00dc0ab8803",
+    "bcf_governance/tooling/semantic_operation_effects.py": "7610589ed1216518c212a0d2aedb2039fcda3bfafbb568ea9085a203a789e147"
+  },
+  "evidence_sha256": {
+    "before.xml": "61de3816b666dae07138a05c81d17ae7b039cbbb471008f6f107c651f1b9bd77",
+    "after.xml": "34a529ad5b3e0b3b4f97cd69ca4cac52b15c53f10afd471a6d91d77f511a72dd",
+    "architecture.xml": "e127672bd54c26fd3619ea4e7337388e2ccef7990172cf75cb9bbe1f7bad4e9b"
+  },
+  "typescript_cache": {
+    "archive_sha256": "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a",
+    "compiler_files": 140,
+    "lock_sha256": "53adf32fd78f77fac66cd058eb2e0b2b0a14bc342e99800fcb4a464fba33f3d7",
+    "network_requests": 0,
+    "node_executable_sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+    "node_version": "v22.23.2",
+    "status": "test_toolchain_checked",
+    "typescript_version": "6.0.3"
+  },
+  "scope": "Explicit global-name writes in the operation lexical body. Deferred nested bodies and root definition-time fields remain separate; eager nested defaults are retained. Existing shared effects consumer handles optional Python effects.",
+  "whole_requirement_advancement": false,
+  "full_native_or_installed_qualification": false,
+  "remaining": "Object/parameter/receiver/alias/nonlocal and remaining binding forms, complete source/class creation/runtime populations, deadlines/approved targets/adopters/custody; all82whole remain open."
+}
