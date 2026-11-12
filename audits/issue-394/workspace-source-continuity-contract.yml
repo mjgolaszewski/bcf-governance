@@ -539,3 +539,50 @@ augmented_assignment_verification:
     type: 394source
     statement: 349e6ed1 augassign.
   whole_requirement_advancement: false
+
+protocol_owner_extraction_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  bounded_context: tooling
+  architectural_layer: tooling
+  operation_side: query
+  scope: Move existing native-literal eligibility, protocol kind/version mapping and
+    implicit runtime protocol function into one focused semantic_python_protocols
+    module. Retain legacy method-identity imports as exact aliases; migrate the two
+    actual producer/effect-consumer imports to the sole owner. Class/method binding
+    logic remains in method-identity. No algorithm, public CLI or protocol change.
+  reason: Current method-identity791LOC is close to800cap; separate already-distinct
+    protocol responsibility before adding more grammar behavior.
+  owners:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_python_protocols.py
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  - governance/self-governance-policy.yml
+  characterization_first:
+    retained_report: audits/issue-394/augmented-assignment-verification.json
+    tested_subject: 349e6ed1baadf38175d861c0fc6f4f429ff2b24b
+    affected_passes: 1127
+    reuse_condition: Currente27c7325 is metadata-only successor; exact source hashes
+      and commit diff must establish unchanged implementation before reuse.
+    new_compatibility_control: Commit and pass one facade/real-consumer object-identity
+      control before extraction. Extracted declaration bytes must match exactly,
+      normalizing only trailing separator blank lines.
+  compatibility: Private helper __module__ points at sole new owner; legacy imports
+    remain exact aliases. Source/module custody hashes necessarily change and require
+    fresh evidence; old receipts cannot transfer to new commit identity.
+  installed_contexts: Existing2SDK-absent32case probes must pass unchanged through
+    canonical projection, including new module origins inside installed scripts.
+  forbidden_files:
+  - tests/fixtures/semantic-python-inventory-before-deconstruction.json
+  - tests/fixtures/semantic-python-inventory-source.txt
+  - protected/default branches and maintained adopter checkouts
+  forbidden:
+  - protocol behavior additions in this extraction
+  - duplicate implementation or version mapping
+  - new evaluator registry graph or receipt family
+  - runtime/phase waiver or acceptance advancement
+  exit: Declaration byte comparison, facade/consumer identity and full affected
+    matrix pass; old module shrinks belowcap and new module has2realconsumers. Keep
+    required strict-main block and82wholeOPEN; canonical pack/source gates accounted.
