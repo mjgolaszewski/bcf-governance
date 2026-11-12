@@ -2331,3 +2331,32 @@ nested_runtime_scope_diagnostic:
     owners; preserve source vs execution and lexical cell ownership, no second graph
     or name-based authority. Contract before production then affected qualified controls.
   whole_requirement_advancement: false
+
+lexical_function_context_contract:
+  authority: false
+  scope: Extend existing named runtime scope discovery and call/effect owners with
+    lexical source context; preserve stable top-level/class identities and legacy
+    facade. Definition presence is not execution; source eligibility is not runtime/release
+    authority.
+  requirements:
+  - Own-scope imports cannot leak from deferred bodies; inherited lexical imports
+    remain explicit.
+  - Source nested names and aliases resolve only through unambiguous lexical binding;
+    rebound/conditional/dynamic targets and callable escape block before port credit.
+  - Defaults/decorators and non-postponed annotations stay definition-eager; deferred
+    function/lambda bodies do not taint callers.
+  - Closed owned scalar-cell eligibility is restricted to whole synchronous literal-int
+    regions with no arguments, escapes, opaque operations or external calls. Contextless
+    nested entrypoints block; other nonlocal writes remain effects.
+  - Local class methods remain source-populated; implicit local class construction
+    remains unresolved.
+  - Every formal parameter slot, including varargs/varkw, participates in binding
+    observations.
+  controls: Retain18nested before9FAIL/9PASS. Commit51new controls first:40core before
+    with actual cause groups/16ordinary native witnesses;10forged scalar-eligibility
+    checks and1contextless nested entrypoint after. Full affected860 expectedPASS,40architecture
+    known required unresolved-effect block retained; canonical mirrors/manifests/lint/gov/pack/metadata/backup.
+  limits: This does not complete all CFG, closure/object/runtime identity, installed
+    profiles, independent whole lifecycle census, deadlines, approved targets, adopters
+    or custody. All82whole remain open.
+  whole_requirement_advancement: false
