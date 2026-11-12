@@ -57,6 +57,67 @@ def _normalized_return_fingerprint(
     ).hexdigest()
 
 
+def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
+    """Recognize only closed builtin values; names here were bound locally."""
+    if isinstance(node, ast.Constant):
+        return True
+    if isinstance(node, ast.Name):
+        return node.id in names
+    if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+        return all(_native_literal_value(value, names) for value in node.elts)
+    if isinstance(node, ast.Dict):
+        return all((key is None or _native_literal_value(key, names))
+                   and _native_literal_value(value, names)
+                   for key, value in zip(node.keys, node.values))
+    if isinstance(node, ast.Starred):
+        return _native_literal_value(node.value, names)
+    if isinstance(node, ast.Subscript):
+        return _native_literal_value(node.value, names) and _native_literal_value(node.slice, names)
+    if isinstance(node, ast.Slice):
+        return all(value is None or _native_literal_value(value, names)
+                   for value in (node.lower, node.upper, node.step))
+    return False
+
+
+def _closed_native_region(function: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str] | None:
+    """A linear, call-free literal region has no external container references."""
+    args = function.args
+    parameters = {arg.arg for arg in [*args.posonlyargs, *args.args, *args.kwonlyargs,
+                                      *([args.vararg] if args.vararg else []),
+                                      *([args.kwarg] if args.kwarg else [])]}
+    names: set[str] = set()
+    observed: set[str] = set()
+    def target(node: ast.AST) -> bool:
+        if isinstance(node, ast.Name):
+            if node.id in parameters:
+                return False
+            names.add(node.id)
+            observed.add(node.id)
+            return True
+        return isinstance(node, ast.Subscript) and _native_literal_value(node, names)
+    for statement in function.body:
+        if isinstance(statement, ast.Assign):
+            if not _native_literal_value(statement.value, names) or not all(target(value) for value in statement.targets):
+                return None
+        elif isinstance(statement, ast.AugAssign):
+            if not _native_literal_value(statement.target, names) or not _native_literal_value(statement.value, names):
+                return None
+        elif isinstance(statement, ast.Delete):
+            for value in statement.targets:
+                if not _native_literal_value(value, names):
+                    return None
+                if isinstance(value, ast.Name):
+                    names.remove(value.id)
+        elif isinstance(statement, ast.Return):
+            if statement.value is not None and not _native_literal_value(statement.value, names):
+                return None
+        elif isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant):
+            continue
+        elif not isinstance(statement, ast.Pass):
+            return None
+    return observed
+
+
 class _FunctionVisitor(ast.NodeVisitor):
     def __init__(
         self,
@@ -72,6 +133,10 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.call_contracts = call_contracts
         self._root_function = function
         self._track_global_stores = False
+        self._track_operation_stores = False
+        self._native_region = _closed_native_region(function)
+        self._source_stores: list[dict[str, Any]] = []
+        self._store_occurrences: dict[str, int] = {}
         self._global_store_effects: list[dict[str, Any]] = []
         self._global_names: set[str] = set()
         pending = list(function.body)
@@ -118,16 +183,19 @@ class _FunctionVisitor(ast.NodeVisitor):
                 "line": node.lineno, "column": node.col_offset,
             })
 
-    def _visit_scoped_fields(self, node: ast.AST, active_fields: set[str]) -> None:
+    def _visit_scoped_fields(self, node: ast.AST, active_fields: set[str], operation_fields: set[str]) -> None:
         previous = self._track_global_stores
+        operation_previous = self._track_operation_stores
         try:
             for field, value in ast.iter_fields(node):
                 self._track_global_stores = field in active_fields
+                self._track_operation_stores = field in operation_fields
                 for child in value if isinstance(value, list) else [value]:
                     if isinstance(child, ast.AST):
                         self.visit(child)
         finally:
             self._track_global_stores = previous
+            self._track_operation_stores = operation_previous
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
         if node is self._root_function:
@@ -135,7 +203,8 @@ class _FunctionVisitor(ast.NodeVisitor):
         else:
             self._record_global_binding(node.name, node)
             active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
-        self._visit_scoped_fields(node, active)
+        operation = {"body"} if node is self._root_function else ({field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_operation_stores else set())
+        self._visit_scoped_fields(node, active, operation)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802
         self.visit_FunctionDef(node)  # type: ignore[arg-type]
@@ -143,15 +212,41 @@ class _FunctionVisitor(ast.NodeVisitor):
     def visit_ClassDef(self, node: ast.ClassDef) -> None:  # noqa: N802
         self._record_global_binding(node.name, node)
         active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
-        self._visit_scoped_fields(node, active)
+        operation = {field for field, _ in ast.iter_fields(node)} if self._track_operation_stores else set()
+        self._visit_scoped_fields(node, active, operation)
 
     def visit_Lambda(self, node: ast.Lambda) -> None:  # noqa: N802
         active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
-        self._visit_scoped_fields(node, active)
+        operation = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_operation_stores else set()
+        self._visit_scoped_fields(node, active, operation)
 
     def visit_comprehension(self, node: ast.comprehension) -> None:
         active = {field for field, _ in ast.iter_fields(node) if field != "target"} if self._track_global_stores else set()
-        self._visit_scoped_fields(node, active)
+        operation = {field for field, _ in ast.iter_fields(node)} if self._track_operation_stores else set()
+        self._visit_scoped_fields(node, active, operation)
+
+    def visit_Subscript(self, node: ast.Subscript) -> None:  # noqa: N802
+        if self._track_operation_stores and isinstance(node.ctx, (ast.Store, ast.Del)):
+            digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+            occurrence = self._store_occurrences.get(digest, 0)
+            self._store_occurrences[digest] = occurrence + 1
+            local = self._native_region is not None and _native_literal_value(node, self._native_region)
+            observation = {
+                "authority": False, "execution_qualified": False, "caller": self.symbol,
+                "kind": "subscript_delete" if isinstance(node.ctx, ast.Del) else "subscript_store",
+                "phase": "operation_eager", "expression_sha256": digest, "occurrence": occurrence,
+                "line": node.lineno, "column": node.col_offset,
+                "end_line": node.end_lineno, "end_column": node.end_col_offset,
+                "disposition": "closed_native_literal_region" if local else "unresolved_object_binding",
+            }
+            self._source_stores.append(observation)
+            if not local:
+                self._global_store_effects.append({
+                    "kind": "unresolved", "target": "subscript", "scope": "object_binding",
+                    "line": node.lineno, "column": node.col_offset,
+                    "source_store_key": digest + ":" + str(occurrence),
+                })
+        self.generic_visit(node)
 
     def visit_Name(self, node: ast.Name) -> None:  # noqa: N802
         if isinstance(node.ctx, (ast.Store, ast.Del)):
@@ -346,6 +441,8 @@ class _FunctionVisitor(ast.NodeVisitor):
             "decorators": self.decorators,
             "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
         }
+        if self._source_stores:
+            result["source_store_observations"] = self._source_stores
         if self._global_store_effects:
             result["effects"] = self._global_store_effects
         return result

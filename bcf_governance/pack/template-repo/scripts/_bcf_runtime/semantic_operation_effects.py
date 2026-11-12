@@ -35,6 +35,63 @@ class SemanticOperationEffectError(ValueError):
 
 
 
+def _source_store_rows(function: dict[str, Any]) -> tuple[tuple[str, int, str], ...]:
+    """Validate neutral store observations and their unresolved effect pairing."""
+    def reject() -> None:
+        raise SemanticOperationEffectError("operation source store population is incompatible or ambiguous")
+
+    observations = function.get("source_store_observations", [])
+    effects = function.get("effects", [])
+    if not isinstance(observations, list) or not isinstance(effects, list):
+        reject()
+    marked = [effect for effect in effects if isinstance(effect, dict) and "source_store_key" in effect]
+    pairs: dict[str, dict[str, Any]] = {}
+    for effect in marked:
+        key = effect.get("source_store_key")
+        if not isinstance(key, str) or key in pairs or effect.get("kind") != "unresolved":
+            reject()
+        pairs[key] = effect
+    rows: list[tuple[str, int, str]] = []
+    seen: set[tuple[str, int]] = set()
+    unresolved: set[str] = set()
+    for row in observations:
+        if not isinstance(row, dict):
+            reject()
+        digest, occurrence = row.get("expression_sha256"), row.get("occurrence")
+        disposition = row.get("disposition")
+        if (row.get("authority") is not False or row.get("execution_qualified") is not False
+                or row.get("caller") != function.get("symbol")
+                or row.get("phase") != "operation_eager"
+                or row.get("kind") not in {"subscript_store", "subscript_delete"}
+                or not isinstance(digest, str) or len(digest) != 64
+                or any(value not in "0123456789abcdef" for value in digest)
+                or isinstance(occurrence, bool) or not isinstance(occurrence, int) or occurrence < 0
+                or disposition not in {"closed_native_literal_region", "unresolved_object_binding"}):
+            reject()
+        for field in ("line", "column", "end_line", "end_column"):
+            value = row.get(field)
+            if isinstance(value, bool) or not isinstance(value, int) or value < (0 if "column" in field else 1):
+                reject()
+        if (row["end_line"], row["end_column"]) <= (row["line"], row["column"]):
+            reject()
+        identity = (digest, occurrence)
+        if identity in seen:
+            reject()
+        seen.add(identity)
+        key = digest + ":" + str(occurrence)
+        if disposition == "unresolved_object_binding":
+            effect = pairs.get(key)
+            if effect is None or effect.get("scope") != "object_binding" or effect.get("line") != row["line"] or effect.get("column") != row["column"]:
+                reject()
+            unresolved.add(key)
+        elif key in pairs:
+            reject()
+        rows.append((digest, occurrence, disposition))
+    if set(pairs) != unresolved:
+        reject()
+    return tuple(rows)
+
+
 def source_operation_call_population(
     entrypoint: str, inventory: dict[str, Any], *, include_initialization: bool = False,
 ) -> dict[str, Any]:
@@ -79,6 +136,7 @@ def source_operation_call_population(
     classes = _construction_source_classes(inventory)
     initialization = _initialization_population(inventory, files) if include_initialization else {}
     calls: list[tuple[str, str, str, int, str]] = []
+    stores: list[tuple[str, str, int, str]] = []
     identities: set[tuple[str, str, int]] = set()
     visited: set[str] = set()
     pending = [entrypoint]
@@ -92,6 +150,7 @@ def source_operation_call_population(
             reject()
         if function.get("language", "python") != "python" or not isinstance(function.get("calls"), list):
             reject()
+        stores.extend((caller, *row) for row in _source_store_rows(function))
         for call in function["calls"]:
             if not isinstance(call, dict):
                 reject()
@@ -130,6 +189,9 @@ def source_operation_call_population(
         "calls": tuple(sorted(calls)),
         "unresolved_calls": sum(row[4] == "unresolved" for row in calls),
     }
+    if stores:
+        result["source_stores"] = tuple(sorted(stores))
+        result["unresolved_source_stores"] = sum(row[3] == "unresolved_object_binding" for row in stores)
     result.update(initialization)
     return result
 
@@ -372,6 +434,7 @@ def validated_operation_effect_inventory(
             continue
         visited.add((symbol, credit))
         function = functions[symbol]
+        _source_store_rows(function)
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
