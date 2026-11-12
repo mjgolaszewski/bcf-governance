@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "scoped_audit_path_identity_controls_pass_full_continuity_open",
+  "subject": "c0ed671d0ce9c3256b55b2f36c056935b8619ec3",
+  "tree": "0918a8e6764debbb50c6ec1564cd7e3aca7deec0",
+  "controls_subject": "2030d9b70530678f4ed3da004b2e07ace0e21626",
+  "causal_before": {
+    "tests": 6,
+    "failures": 5,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 227,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_audit.py": "86b5047b5b71dfeeb7d13118b2db5b640ff5fdc64b7ccb71a420a9e9c5bd8d5c"
+  },
+  "evidence_sha256": {
+    "before.xml": "eae5dc617f480b3efb5eed2f5c93ac0e798ba40ffa7f54891e9d271fc9d6b4bd",
+    "after.xml": "02e84efd7120cc326b2bb9ab2d4f09625d14df74611cf9f63386a0cd23f87c06",
+    "architecture.xml": "302fa457a0d291a6a2d598b8f0933e99e44c90f247b65a1636915eb17c06b525"
+  },
+  "scope": "Existing tracked-file audit uses NUL-delimited Git output, preserving legal UTF-8 newline/tab/quote/backslash/non-ASCII names; ordinary path and existing custody controls remain covered. No new registry, topology graph, caller flag, policy or authority. Full worktree/branch/dirty-source inventory, push/checkpoint/handoff/retirement dispositions remain unimplemented by this slice.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}

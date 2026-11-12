@@ -61,3 +61,19 @@ audit_source_path_inventory_contract:
     failures: 5
     passes: 1
   remaining: Full worktree, branch, checkpoint and handoff populations remain open.
+
+audit_path_identity_source_verification:
+  report: audits/issue-394/audit-path-identity-verification.json
+  sha256: 6741107ea8cf3bb18051f4815564a2a78db344208e2ecd920572f25ad1978226
+  subject: c0ed671d0ce9c3256b55b2f36c056935b8619ec3
+  previous_memory: P32 active; P33-P35 dormant. Audit source fa0d98fc guarded;6controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Audit source c0ed671d exactpaths;6controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: fa0d98fc audit.
+  current_ledger:
+    type: 394source
+    statement: c0ed671d audit-paths.
+  whole_requirement_advancement: false
