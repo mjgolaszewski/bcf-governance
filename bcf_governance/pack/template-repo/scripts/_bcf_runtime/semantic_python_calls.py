@@ -402,6 +402,9 @@ class _FunctionVisitor(ast.NodeVisitor):
         )
         if dispatch is not None:
             fact["method_dispatch"] = dispatch
+        target_origins = sorted(origin for origin in self._origins(node.func) if origin.startswith("parameter:"))
+        if target_origins and dispatch is None:
+            fact["runtime_target_origins"] = target_origins
         self.calls.append(fact)
         if name in self.local_types or (name[:1].isupper() and name not in PRIMITIVES):
             constructed = (

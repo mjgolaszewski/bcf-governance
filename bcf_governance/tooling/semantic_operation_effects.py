@@ -35,6 +35,20 @@ class SemanticOperationEffectError(ValueError):
 
 
 
+
+def _runtime_target_origins(call: dict[str, Any], function: dict[str, Any]) -> tuple[str, ...]:
+    """Parameter-derived runtime targets cannot supply source authority."""
+    if "runtime_target_origins" not in call:
+        return ()
+    origins = call["runtime_target_origins"]
+    parameters = function.get("parameters", {})
+    if (not isinstance(origins, list) or not origins or not isinstance(parameters, dict)
+            or any(not isinstance(value, str) or not value.startswith("parameter:")
+                   or value[len("parameter:"):] not in parameters for value in origins)
+            or len(set(origins)) != len(origins) or sorted(origins) != origins):
+        raise SemanticOperationEffectError("operation runtime target population is incompatible or ambiguous")
+    return tuple(origins)
+
 def _source_store_rows(function: dict[str, Any]) -> tuple[tuple[str, int, str], ...]:
     """Validate neutral store observations and their unresolved effect pairing."""
     def reject() -> None:
@@ -172,8 +186,10 @@ def source_operation_call_population(
             if identity in identities:
                 reject()
             identities.add(identity)
+            runtime_origins = _runtime_target_origins(call, function)
             resolved = (
                 callee in functions and call.get("dispatch_resolution") != "unresolved"
+                and not runtime_origins
                 and call.get("call_name") not in {"__import__", "eval", "exec", "<dynamic>"}
             )
             calls.append((caller, callee, expression, occurrence, "source" if resolved else "unresolved"))
@@ -460,6 +476,8 @@ def validated_operation_effect_inventory(
                 f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
             )
         for call in function.get("calls", []):
+            if _runtime_target_origins(call, function):
+                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime target at {symbol}")
             raw = str(call.get("called_symbol", ""))
             callee = _resolve_function(raw, functions)
             identity = ("function", callee) if callee is not None else ("call", raw)
