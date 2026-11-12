@@ -370,3 +370,34 @@ local_object_source_verification:
     type: 394source
     statement: de82e46f localobjs.
   whole_requirement_advancement: false
+
+operation_function_admission_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  bounded_context: tooling
+  architectural_layer: tooling
+  operation_side: query
+  owner: bcf_governance/tooling/semantic_authority_operations.py
+  scope: Reuse existing source-function population identity validator before operation
+    population discovery or language filtering. Ambiguous source rows cannot become
+    an empty accepted result or allocate a population resolver. Valid unique inputs
+    and strict runtime requirements retain their behavior.
+  expected_controls:
+    tests: 9
+    before_failures: 6
+    before_passes: 3
+  installed_contexts: Existing SDK-absent fresh/upgrade probe grows from10to11cases;
+    new case invokes protected-schema operation admission with actual parsed duplicate
+    source rows. This supersedes only future harness population expectation; historical
+    exact10case evidence remains historical, not new qualification.
+  forbidden_files:
+  - tests/fixtures/semantic-python-inventory-before-deconstruction.json
+  - tests/fixtures/semantic-python-inventory-source.txt
+  - protected/default branches and maintained adopter checkouts
+  forbidden:
+  - new function identity registry or evaluator
+  - using source-only mode to waive required runtime context
+  - main or phase progress based on typed admission
+  exit: Native boundary controls, affected existing admission/effect consumers and both
+    SDK-absent contexts pass; known strict main blocker remains explicit/unwaived.
