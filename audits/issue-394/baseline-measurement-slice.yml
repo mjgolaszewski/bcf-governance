@@ -89,3 +89,30 @@ matched_protocol_followup:
   - Match claims to exact source/profile/context populations; one pipeline or adopter cannot certify another.
   - Preserve authority false and execution_qualified false for observations; no scheduling, suppression, phase, controller or release authority follows.
   implementation_status: No matched-cohort collector or certification is implemented or asserted by this contract.
+
+scalar_identity_followup:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/operational_observations.py
+  scope: Use existing integer-millisecond predicate at capture consumption for observed
+    input/derived totals and local source/producer durations. Python bool/int and
+    float/int equality cannot authenticate scalar identity. A declared producer duration
+    cannot contradict the observation even when producer clock metadata is absent.
+  cases: 30
+  expected_before:
+    failures: 24
+    passes: 6
+  preserved_captures_sha256:
+    pr-421-attempt-1.json: f32b80d9b250365f043ef58b63c5060b50618bbe8e573f5a288da6c1ed72a2be
+    pr-426-attempt-1.json: 18844dc5428953574beb3f38d03a2c87f95348be76c0b76b046bc0201fc07158
+    reconcile-b976db49-attempt-1.json: fffab7429a879dec339c2920527e21c65679676e2692a20d8c34214ba5d2bb6b
+    reconcile-0e99bece-attempt-1.json: 405ed4165c257f047963a98503a50c4a970642489abaa90b32125c45c71d8902
+  forbidden:
+  - rewriting retained capture bytes
+  - changing historical timing outcomes
+  - matching unreviewed cohorts
+  - inventing targets
+  - percentile or authority certification
+  remaining: Matched cohort collection, reviewed/frozen protocol and independent target
+    approval remain open.
