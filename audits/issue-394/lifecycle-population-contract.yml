@@ -2001,3 +2001,30 @@ decorator_spelling_source_repair_qualification:
     type: 394source
     statement: 34d94c48 decorator guard; runtime open.
   whole_requirement_advancement: false
+
+non_call_state_mutation_source_contract:
+  scope: Existing function source facts and operation-effect consumer must account
+    for actual non-call state mutations; missing authority cannot become pure result.
+    Direct assignment/AugAssign/Delete/parameter/receiver effects remain distinct
+    from local scalar binding.
+  cases: 14
+  expected_before:
+    tests: 14
+    failures: 6
+    passed: 8
+  authority: false
+  production: No implementation yet. Diagnostic source controls plus ordinary fresh
+    isolated Python consumers only.
+  remaining: Captured/nonlocal/container aliases, implicit operators/descriptors,
+    complete runtime profiles and control-flow populations remain required.
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query analysis of source effects
+  target_modules:
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  forbidden_surfaces:
+  - main/default branch and maintained adopter repositories
+  - handwritten generated runtime mirrors/workflows/authority pins
+  - new registry/graph/evaluator/receipt family
+  - unqualified runtime purity or whole acceptance claims
