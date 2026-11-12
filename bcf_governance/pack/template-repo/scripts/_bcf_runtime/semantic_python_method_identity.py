@@ -146,7 +146,7 @@ def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
 
 
 # Version 1.1 adds explicit suspension/exception observations; legacy kinds stay 1.0.
-IMPLICIT_PROTOCOL_KIND_VERSIONS = {"await": "1.1", "exception": "1.1"}
+IMPLICIT_PROTOCOL_KIND_VERSIONS = {"await": "1.1", "exception": "1.1", "pattern_match": "1.1"}
 
 
 def implicit_runtime_protocols(
@@ -154,6 +154,11 @@ def implicit_runtime_protocols(
 ) -> tuple[str, ...]:
     """Retain unknown runtime dispatch in the existing source call population."""
     known = lambda value: _native_literal_value(value, native)
+    if isinstance(node, ast.Match):
+        patterns = (ast.MatchValue, ast.MatchSequence, ast.MatchMapping, ast.MatchClass)
+        active = any(any(isinstance(value, patterns) for value in ast.walk(case.pattern))
+                     or (case.guard is not None and not known(case.guard)) for case in node.cases)
+        return ("pattern_match",) if active else ()
     if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
         return () if id(node) in call_targets else ("attribute_read",)
     if isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load):

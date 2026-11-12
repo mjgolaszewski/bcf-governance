@@ -125,7 +125,8 @@
             "context_manager",
             "format",
             "await",
-            "exception"
+            "exception",
+            "pattern_match"
           ]
         },
         "expression_sha256": {
@@ -176,7 +177,8 @@
               "kind": {
                 "enum": [
                   "await",
-                  "exception"
+                  "exception",
+                  "pattern_match"
                 ]
               }
             }

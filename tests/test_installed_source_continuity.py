@@ -67,9 +67,23 @@ with tempfile.TemporaryDirectory(prefix="installed-source-continuity-") as direc
     except SemanticAuthorityError as error:assert "function population" in str(error) and "ambiguous" in str(error)
     else:raise AssertionError("installed filtered operation accepted ambiguous functions")
     cases.append("operation_function_identity_admission")
+    from _bcf_runtime.semantic_operation_effects import validate_operation_effects,SemanticOperationEffectError
+    pattern_cases=json.loads("{\"literal\":{\"prefix\":\"class Value:\\n    def __eq__(self,other):\\n        STATE.append(1)\\n        return True\\n\",\"body\":\"match value:\\n    case 1:\\n        return True\\n    case _:\\n        return False\",\"call\":\"query(Value())\"},\"sequence\":{\"prefix\":\"from collections.abc import Sequence\\nclass Value(Sequence):\\n    def __len__(self):\\n        STATE.append(1)\\n        return 1\\n    def __getitem__(self,index):\\n        if index==0:\\n            return 1\\n        raise IndexError\\n\",\"body\":\"match value:\\n    case [1]:\\n        return True\\n    case _:\\n        return False\",\"call\":\"query(Value())\"},\"mapping\":{\"prefix\":\"class Value(dict):\\n    def get(self,*args):\\n        STATE.append(1)\\n        return super().get(*args)\\n\",\"body\":\"match value:\\n    case {'a': 1}:\\n        return True\\n    case _:\\n        return False\",\"call\":\"query(Value(a=1))\"},\"class_attribute\":{\"prefix\":\"class Value:\\n    @property\\n    def item(self):\\n        STATE.append(1)\\n        return 1\\n\",\"body\":\"match value:\\n    case Value(item=1):\\n        return True\\n    case _:\\n        return False\",\"call\":\"query(Value())\"},\"guard\":{\"prefix\":\"class Value:\\n    def __bool__(self):\\n        STATE.append(1)\\n        return True\\n\",\"body\":\"match 0:\\n    case _ if value:\\n        return True\\n    case _:\\n        return False\",\"call\":\"query(Value())\"}}")
+    for name,row in pattern_cases.items():
+        path=base/("pattern-"+name+".py")
+        path.write_text("STATE=[]\n"+row["prefix"]+"def query(value):\n    "+row["body"].replace("\n","\n    ")+"\n")
+        facts=discover_python_source(base,files=[path],call_contracts_version="1.0")
+        symbol=path.name+"::query"
+        markers=[call["implicit_protocol"] for function in facts["functions"] if function["symbol"]==symbol for call in function["calls"] if call.get("implicit_protocol",{}).get("kind")=="pattern_match"]
+        assert len(markers)==1 and markers[0]["version"]=="1.1" and markers[0]["authority"] is False and markers[0]["execution_qualified"] is False
+        selected={"id":"pattern.query.v1","allowed_mutation_ports":[],"allowed_authority_ports":[],"non_authoritative_output_effects":[]}
+        try:validate_operation_effects(selected,symbol,facts)
+        except SemanticOperationEffectError as error:assert "unresolved effect" in str(error)
+        else:raise AssertionError("installed pattern dispatch escaped strict effect query")
+        cases.append("pattern_"+name)
 origins={name:str(Path(module.__file__).resolve()) for name,module in list(sys.modules.items()) if name.startswith("_bcf_runtime.") and getattr(module,"__file__",None)}
 assert origins and all(Path(value).is_relative_to(runtime) for value in origins.values())
-assert len(cases)==11 and len(set(cases))==11
+assert len(cases)==16 and len(set(cases))==16
 print(json.dumps({"source_package_absent":True,"cases":cases,"private_origins":origins,"authority":False,"retirement_authorized":False},sort_keys=True))
 '''
 
@@ -83,7 +97,7 @@ def exercise_installed_source_continuity(installed_consumer, isolated_python):
     assert result.returncode == 0, _record(result)
     actual = json.loads(result.stdout)
     assert actual["source_package_absent"] is True and actual["private_origins"]
-    assert len(actual["cases"]) == len(set(actual["cases"])) == 11
+    assert len(actual["cases"]) == len(set(actual["cases"])) == 16
     assert actual["authority"] is False and actual["retirement_authorized"] is False
     assert all(Path(value).is_relative_to(installed_consumer.resolve() / "scripts") for value in actual["private_origins"].values())
     return actual
