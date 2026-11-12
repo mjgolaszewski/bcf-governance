@@ -2206,3 +2206,19 @@ attribute_object_context_qualification:
     statement: c77bdd3e attr guarded.
   remaining_state_failures: []
   whole_requirement_advancement: false
+
+unresolved_callback_contract:
+  authority: false
+  scope: Unknown Python callable runtime targets cannot gain effect/authority classification
+    from names or declared port spelling. Direct parameter, alias, indexed callback
+    and parameter method; known source/local scalar positives; ordinary isolated native
+    write witnesses.
+  tests: 14
+  production_changed: false
+  diagnostic: Capture exact cause-specific acceptance failures; no errors/skips accepted.
+    Expected eight negative controls may fail; unexpected genuine rejection counts
+    are recorded, not relabeled green.
+  remaining: Repair through existing producer/resolver/effect owners then full affected
+    consumers/canonical projection/gates. Broader runtime identity/populations/deadlines/targets/adopters/custody
+    remain open.
+  whole_requirement_advancement: false
