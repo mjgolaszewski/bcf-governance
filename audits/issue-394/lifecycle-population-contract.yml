@@ -2437,3 +2437,28 @@ lexical_class_context_qualification:
     text exceeding previous entry length, after all declared scoped checks. Shorter
     text resolves only metadata; no behavioral rerun or production change.
   whole_requirement_advancement: false
+
+implicit_protocol_diagnostic_contract:
+  authority: false
+  scope: Diagnose missing implicit runtime protocol source effects through existing
+    effect/context owners, before any production correction.
+  profiles:
+  - dict_literal
+  - set_literal
+  - dict_comprehension
+  - set_comprehension
+  - list_comprehension
+  - for_iteration
+  - binary_operator
+  - truth_test
+  - context_manager
+  - formatting
+  - attribute_read
+  - subscript_read
+  cases: 28
+  production_changed: false
+  forbidden:
+  - name/annotation-based authority
+  - comprehension rewrite to conceal mutation
+  - parallel graph/evaluator/registry
+  - whole or installed closure from source/native diagnostic
