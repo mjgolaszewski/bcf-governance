@@ -134,6 +134,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/maintenance-release-lessons.yml
     - audits/issue-394/authored-control-admission-verification.json
     # a5d47731 canonical/governance/six-stage PASS; source/wheel/sdist core2086 each and profiles40/39/39 PASS; actual adopters/lifecycle/targets/custody open.
     - audits/issue-394/provider-main-ancestry-reconciliation.json
@@ -830,7 +831,8 @@ workitems:
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
-    evidence: []
+    evidence:
+    - audits/issue-394/maintenance-release-lessons.yml
   certification.custody:
     summary: Publish admitted exact bytes and independently verify immutable custody without rebuilding
     status: TODO
@@ -4756,3 +4758,11 @@ implementation_slices:
     - Installer closure has82 pure cases and canonical mirror/manifest PASS after2 actual template RED controls; required/actual installed/full-matrix gates pending. Extras remain independent; see project-installer-security-verification.yml.
 
 release_train_terminal_authority_followup: {"status": "IN_PROGRESS", "authority": false, "contract_commit": "a3b10cb7", "controls_commit": "66c824fd", "execution": "complete126_source_consumer_cases_passed_with_three_causal_predecessor_failures", "implementation": "declaration_query_and_two_provider_consumers_scoped_qualified_full_consumer_matrix_pending", "scope": "derive final train authority separately from successful active-phase closure", "next_action": "qualify actual intermediate-phase consumer and pure topology cohorts; retain missing predecessor-truth/installed/full-train obligations, canonical generation and broad gates", "acceptance_advance": false, "declaration_contract_commit": "8e37d1b8", "declaration_tests_commit": "a7445118", "query_cases_authored": 26, "retained_snapshot_correction": "consistent still-declared snapshots allowed; current DAG cycles and orphan phase owners remain blocking", "runtime_readiness": "UNQUALIFIED: five new provider reads have nominal retry/open/body components900s versus600s outer, with elapsed setup and complete sibling budget still unproved", "runtime_readiness_audit": "audits/issue-394/release-train-provider-budget-readiness.json"}
+
+maintenance_release_lessons:
+  report: audits/issue-394/maintenance-release-lessons.yml
+  sha256: 3ca597424b33ae175c495523c46cdf9dd5a338c8dba76bd8e99fc83bf77e695a
+  scope: High-level issue/compatibility intake from tagged notes, no code comparison/transplant
+    or authority/acceptance advancement
+  source_subject_before: b586bb44aa4306653a02824aaa4979b02d976fd7
+  whole_requirement_advancement: false

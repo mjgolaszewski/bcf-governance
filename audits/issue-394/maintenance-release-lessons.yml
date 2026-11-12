@@ -1,0 +1,153 @@
+document:
+  kind: maintenance_release_lessons
+  path: audits/issue-394/maintenance-release-lessons.yml
+  status: requirements_mapped_implementation_and_custody_not_asserted
+  authority: false
+  execution_qualified: false
+source:
+  url: https://raw.githubusercontent.com/mjgolaszewski/bcf-governance/v2.3.13/CHANGELOG.md
+  tag: v2.3.13
+  observation_date: '2026-11-12'
+  source_kind: tagged_release_notes_not_code_comparison
+  custody_verification: not_performed_by_this_intake
+  content_sha256: b91e58930701da346c022ccac8065fac785565d5e8eb7f4e395e4e23248dc284
+boundaries:
+- Preserve the existing Issue394 2.5.0 P32-P35 vision and dependency order.
+- No maintenance codebase merge, transplant, managed workflow change or main mutation.
+- Maintenance bugs before2.5 remain Closure-owned; this is 2.5 recurrence/compatibility
+  requirement intake.
+- Mapping a release lesson does not establish source incorporation, executable qualification,
+  installed adoption or acceptance closure.
+- Source-only observations remain non-authoritative; protected runtime/operation/Standard
+  acceptance and all82whole requirements remain independently open.
+- Known supported maintenance public contracts require explicit compatibility/migration
+  evidence before2.5 distribution; no compatibility follows from a newer version string.
+releases:
+- version: 2.3.5
+  problem: Prerequisite receipts could be taken from an older session; repeated gate
+    text exceeded context limits.
+  lesson: Bind every prerequisite to the current session before its consumer; compact
+    representation must preserve decoded contracts.
+  workitems:
+  - foundation.composition
+  - foundation.conformance
+  - foundation.submit-normalization
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.6
+  problem: Installer dependency closure did not fully bind Python/platform/groups/extras
+    and the exact installed set; maintenance history needed restoration independent
+    of 2.5.
+  lesson: Qualify dependency and installed inventories exactly; keep the 2.5 train
+    isolated until its own governed readiness.
+  workitems:
+  - foundation.admission
+  - foundation.residuals
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.7
+  problem: Authoritative reads needed explicit disjoint reachable ports and exact-base
+    effect-boundary migrations.
+  lesson: Treat supported read declarations as a compatibility requirement; source-resolved
+    bodies still require write/authority checks and aliases cannot gain permission.
+  workitems:
+  - foundation.composition
+  - foundation.conformance
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.8
+  problem: Atomic environment publication could break console launchers/cache custody;
+    project roots, native lint/typing and controller routing had incomplete supported-profile
+    coverage.
+  lesson: Test real launchers after fresh/upgrade/repeat publication, authenticate
+    warm reuse and source-root inventories, and keep controller/project runtimes distinct.
+  workitems:
+  - foundation.admission
+  - foundation.deadlines
+  - foundation.submit-normalization
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.9
+  problem: Ordinary consumers imported producer-only validation/authority infrastructure,
+    breaking portable runtime typing and capability boundaries.
+  lesson: Qualify installed consumers without supplier credentials or producer-only
+    modules; missing required capability must remain typed and fail closed.
+  workitems:
+  - foundation.conformance
+  - dormant.projection
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.10
+  problem: Workflow generation and serial-gate capture resolution could lose canonical
+    or adopter-owned semantics.
+  lesson: Preserve project shell bodies, action pins, reusable calls, preparation,
+    inherited permissions, environment ownership and step outcomes through canonical
+    regeneration.
+  workitems:
+  - foundation.composition
+  - foundation.deadlines
+  - dormant.projection
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.11
+  problem: Duplicate checks counted non-executable text; installed ownership depended
+    on supplier access; package prefixes and typed registration bindings needed exact
+    preservation.
+  lesson: Compare executable implementation, verify installation offline from pinned
+    bytes, and bind registration occurrences to actual lexical handlers/factories/directions
+    without treating counts as closure.
+  workitems:
+  - foundation.composition
+  - foundation.conformance
+  - dormant.shadow
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.12
+  problem: Policy parsing costs, framework CLI context classification, evidence XML/YAML
+    safety and command guidance diverged from actual consumers.
+  lesson: Measure real parser overhead, keep infrastructure and product source distinct
+    without exclusion loopholes, and qualify security/admission/docs against executing
+    consumers.
+  workitems:
+  - foundation.conformance
+  - foundation.baseline
+  - certification.benchmarks
+  - certification.distribution
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+- version: 2.3.13
+  source_heading: Unreleased, release target 2.3.13, in the v2.3.13-tagged changelog
+  problem: Initializers/generics/lambda/import/metadata identities, controller transition
+    baselines and recovery normalization, actual delegation, conditional registrations,
+    inherited configuration and representation-source bounds needed completion.
+  lesson: Keep all lifecycle and source contexts explicit, avoid stale-transition
+    downloads and name-based delegation authority, distinguish controller from project
+    Python, and qualify any schema/index migration transactionally.
+  workitems:
+  - foundation.admission
+  - foundation.composition
+  - foundation.conformance
+  - foundation.deadlines
+  - foundation.submit-normalization
+  - certification.distribution
+  - certification.custody
+  implementation_disposition: requirement_intake_only_not_assumed_integrated
+  whole_requirement_advancement: false
+metadata_disposition:
+  source_subject_before: b586bb44aa4306653a02824aaa4979b02d976fd7
+  memory_note: 'Maintenance2.3.5-13 lessons: audits/issue-394/maintenance-release-lessons.yml;
+    no code graft or incorporation/qualification claim; all82whole open.'
+  previous_source_note:
+    type: 394source
+    statement: 3f90a125 time.
+  current_source_note:
+    type: 394source
+    statement: b586bb44 maint.
+  requirements_unchanged: true
+  retirement_or_integration_clearance: false
