@@ -97,9 +97,23 @@ with tempfile.TemporaryDirectory(prefix="installed-source-continuity-") as direc
     facts=discover_python_source(base,files=[path],call_contracts_version="1.0")
     assert validate_operation_effects(selected,path.name+"::query",facts)==(0,0)
     cases.append("augassign_closed_owned_cell")
+
+    guard_cases=json.loads("{\"list___bool__\":{\"prefix\":\"class Value:\\n    def __bool__(self):\\n        STATE.append(1)\\n        return True\\n\",\"body\":\"return [item for item in (1,) if value]\",\"call\":\"query(Value())\"},\"list___len__\":{\"prefix\":\"class Value:\\n    def __len__(self):\\n        STATE.append(1)\\n        return 1\\n\",\"body\":\"return [item for item in (1,) if value]\",\"call\":\"query(Value())\"},\"set___bool__\":{\"prefix\":\"class Value:\\n    def __bool__(self):\\n        STATE.append(1)\\n        return True\\n\",\"body\":\"return {item for item in (1,) if value}\",\"call\":\"query(Value())\"},\"set___len__\":{\"prefix\":\"class Value:\\n    def __len__(self):\\n        STATE.append(1)\\n        return 1\\n\",\"body\":\"return {item for item in (1,) if value}\",\"call\":\"query(Value())\"},\"dict___bool__\":{\"prefix\":\"class Value:\\n    def __bool__(self):\\n        STATE.append(1)\\n        return True\\n\",\"body\":\"return {item: 1 for item in (1,) if value}\",\"call\":\"query(Value())\"},\"dict___len__\":{\"prefix\":\"class Value:\\n    def __len__(self):\\n        STATE.append(1)\\n        return 1\\n\",\"body\":\"return {item: 1 for item in (1,) if value}\",\"call\":\"query(Value())\"}}")
+    for name,row in guard_cases.items():
+        path=base/("guard-"+name+".py")
+        path.write_text("STATE=[]\n"+row["prefix"]+"def query(value):\n    "+row["body"].replace("\n","\n    ")+"\n")
+        facts=discover_python_source(base,files=[path],call_contracts_version="1.0");symbol=path.name+"::query"
+        markers=[call["implicit_protocol"] for function in facts["functions"] if function["symbol"]==symbol for call in function["calls"] if call.get("implicit_protocol",{}).get("kind")=="truth"]
+        assert len(markers)==1 and markers[0]["version"]=="1.0" and markers[0]["authority"] is False and markers[0]["execution_qualified"] is False
+        selected={"id":"guard.query.v1","allowed_mutation_ports":[],"allowed_authority_ports":[],"non_authoritative_output_effects":[]}
+        try:validate_operation_effects(selected,symbol,facts)
+        except SemanticOperationEffectError as error:assert "unresolved effect" in str(error)
+        else:raise AssertionError("installed comprehension guard escaped strict effect query")
+        cases.append("comprehension_guard_"+name)
+
 origins={name:str(Path(module.__file__).resolve()) for name,module in list(sys.modules.items()) if name.startswith("_bcf_runtime.") and getattr(module,"__file__",None)}
 assert origins and all(Path(value).is_relative_to(runtime) for value in origins.values())
-assert len(cases)==32 and len(set(cases))==32
+assert len(cases)==38 and len(set(cases))==38
 print(json.dumps({"source_package_absent":True,"cases":cases,"private_origins":origins,"authority":False,"retirement_authorized":False},sort_keys=True))
 '''
 
@@ -113,7 +127,7 @@ def exercise_installed_source_continuity(installed_consumer, isolated_python):
     assert result.returncode == 0, _record(result)
     actual = json.loads(result.stdout)
     assert actual["source_package_absent"] is True and actual["private_origins"]
-    assert len(actual["cases"]) == len(set(actual["cases"])) == 32
+    assert len(actual["cases"]) == len(set(actual["cases"])) == 38
     assert actual["authority"] is False and actual["retirement_authorized"] is False
     assert all(Path(value).is_relative_to(installed_consumer.resolve() / "scripts") for value in actual["private_origins"].values())
     return actual

@@ -272,6 +272,17 @@ class _FunctionVisitor(ast.NodeVisitor):
                 native = native | self._parent_scalar_cells
             for kind in implicit_runtime_protocols(node, native, self._call_target_attributes):
                 self._record_implicit_protocol(node.iter if isinstance(node, ast.comprehension) else node, kind)
+            if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp)):
+                bound = set(native)
+                for generator in node.generators:
+                    closed = not generator.is_async and _native_literal_value(generator.iter, bound)
+                    targets = {value.id for value in ast.walk(generator.target) if isinstance(value, ast.Name)}
+                    bound.difference_update(targets)
+                    if closed:
+                        bound.update(targets)
+                    for guard in generator.ifs:
+                        if not _native_literal_value(guard, bound):
+                            self._record_implicit_protocol(guard, "truth")
         return super().visit(node)
 
     def _record_implicit_protocol(self, node: ast.AST, kind: str) -> None:
