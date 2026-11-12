@@ -3,6 +3,7 @@ from __future__ import annotations
 import ast
 from copy import deepcopy
 import json
+import hashlib
 
 import pytest
 from pathlib import Path
@@ -62,6 +63,25 @@ def _pre_deconstruction_view(inventory, source):
     result['functions'] = []
     for row in inventory['functions']:
         actual = dict(row)
+        if row['symbol'] == 'model.py::Repository.__init__':
+            declaration = next(node for node in nodes.body if isinstance(node, ast.ClassDef) and node.name == 'Repository')
+            method = next(node for node in declaration.body if isinstance(node, ast.FunctionDef) and node.name == '__init__')
+            stores = [node for node in ast.walk(method) if isinstance(node, ast.Attribute) and isinstance(node.ctx, (ast.Store, ast.Del))]
+            assert len(stores) == 1
+            node = stores[0]
+            digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+            assert actual.pop('source_store_observations') == [{
+                'authority': False, 'execution_qualified': False, 'caller': row['symbol'],
+                'kind': 'attribute_store', 'phase': 'operation_eager',
+                'expression_sha256': digest, 'occurrence': 0,
+                'line': node.lineno, 'column': node.col_offset,
+                'end_line': node.end_lineno, 'end_column': node.end_col_offset,
+                'disposition': 'unresolved_object_binding',
+            }]
+            assert actual.pop('effects') == [{
+                'kind': 'unresolved', 'target': 'attribute', 'scope': 'object_binding',
+                'line': node.lineno, 'column': node.col_offset, 'source_store_key': digest + ':0',
+            }]
         if 'effect_unresolved' in actual and row.get('decorators') in (['classmethod'], ['staticmethod']):
             # New fail-closed uncertainty is checked before comparing the immutable old view.
             scope = row['symbol'].partition('::')[2].split('.')
@@ -147,3 +167,22 @@ def test_characterization_view_does_not_hide_unaccounted_changes(tmp_path, defec
     else:
         with pytest.raises(AssertionError):
             _pre_deconstruction_view(inventory, source)
+
+
+@pytest.mark.parametrize('defect', ('authority', 'span', 'local-disposition', 'drop-effect'))
+def test_characterization_attribute_additions_cannot_hide_forgery(tmp_path, defect):
+    source = _source(tmp_path)
+    inventory = deepcopy(resolve_python_imports(tmp_path, discover_python_source(tmp_path, files=[source])))
+    function = next(row for row in inventory['functions'] if row['symbol'] == 'model.py::Repository.__init__')
+    observations = function.get('source_store_observations', [])
+    assert observations, 'attribute source store observations omitted'
+    if defect == 'authority':
+        observations[0]['authority'] = True
+    elif defect == 'span':
+        observations[0]['column'] += 1
+    elif defect == 'local-disposition':
+        observations[0]['disposition'] = 'closed_native_literal_region'
+    else:
+        function['effects'] = []
+    with pytest.raises(AssertionError):
+        _pre_deconstruction_view(inventory, source)

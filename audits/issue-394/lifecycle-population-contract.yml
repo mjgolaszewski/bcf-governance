@@ -2153,3 +2153,32 @@ subscript_object_context_qualification:
   remaining_state_failures:
   - test_effect_consumer_cannot_accept_undeclared_state_mutation[receiver-attribute]
   whole_requirement_advancement: false
+
+attribute_object_store_contract:
+  status: contract_first_source_scope
+  authority: false
+  scope: Retain Python attribute Store/Del as neutral source observations and paired
+    unresolved effects through existing producer/population/effect owners. No constructor/init/self
+    spelling, annotation, or apparent allocation establishes object freshness.
+  interfaces:
+  - existing optional function source_store_observations
+  - existing effects object_binding/source_store_key
+  - existing source_operation_call_population
+  required_controls:
+  - receiver
+  - parameter
+  - alias
+  - delete
+  - augment
+  - descriptor
+  - constructor returns shared object
+  - init mutates another object
+  - both consumers reject forged authority/execution/local-attribute disposition
+  runtime: Ordinary isolated fresh CPython source consumers witness actual visible
+    mutation; source controls are not installed/runtime authority.
+  residuals:
+  - runtime object identity and context qualification
+  - unknown callbacks/nonlocal/implicit runtime effects
+  - complete independently discovered producer/consumer population
+  - approved targets/deadlines/adopter qualification/custody
+  whole_requirement_advancement: false
