@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "comprehension_guard_dispatch_controls_pass_runtime_context_open",
+  "subject": "28fa7ab4a11c4e2a6f530ad31e7cf16ba6792d9e",
+  "tree": "fe7bfeebf55121ea2ec2a8f61979a03fe0442b81",
+  "controls_subject": "3a24152b897744b28615d3bb70e59c063265ba34",
+  "causal_before": {
+    "tests": 24,
+    "failures": 15,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 1152,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_calls.py": "1b467f5271de0f3fddec70b2235a4793a5bf1d5edbb1d2fa0af20bc2a8974873"
+  },
+  "evidence_sha256": {
+    "before.xml": "a4eb02822b3b3ee7ec78065b59ce80d1d8ee5a0203bde814a19294d107fd6f53",
+    "after.xml": "4f46b90694e419ce23df77e442f3b8c84edd6ddac7bb52a4e93fafc76a0cf143",
+    "architecture.xml": "881efe51fd60229e66479ec0c16714c68652a19615e3cee32ffc5172704a7154"
+  },
+  "scope": "Existing source call visitor records each unknown eager list/set/dict comprehension guard as neutral truth1.0 at the actual guard span/hash/occurrence. Reuse native-literal proof for closed iterator bindings; preserve literal guards and pure bound iteration. Six fresh native bool/len consumers witness writes; no annotation/name/runtime qualification. Deferred generator semantics are unchanged and remain outside this bounded correction. No new protocol/schema/evaluator/registry/receipt family. Fresh and upgraded SDK-absent projected runtimes each execute38cases; all82whole requirements stayOPEN.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}

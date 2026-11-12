@@ -631,3 +631,19 @@ protocol_owner_extraction_verification:
   whole_requirement_advancement: false
 
 comprehension_guard_dispatch_contract: {"status":"contract_before_production","authority":false,"execution_qualified":false,"bounded_context":"tooling","architectural_layer":"tooling","operation_side":"query","owners":["bcf_governance/tooling/semantic_python_calls.py"],"diagnostic":{"subject":"a417eba29a8740f0e1a5cc00a8c9389a301887ca","tests":6,"intended_failures":6,"junit_sha256":"5e430af3eaa95308d9744948517ceef0f8507c6df8f977dc66764aa00bb9b0e8"},"scope":"Existing source call visitor records each unknown eager list/set/dict comprehension guard as neutral truth1.0 at the actual guard span/hash/occurrence. Reuse native-literal proof for closed iterator bindings; preserve literal guards and pure bound iteration. Six fresh native bool/len consumers witness writes; no annotation/name/runtime qualification. Deferred generator semantics are unchanged and remain outside this bounded correction. No new protocol/schema/evaluator/registry/receipt family. Fresh and upgraded SDK-absent projected runtimes each execute38cases; all82whole requirements stayOPEN.","verification":["24new controls with15expected causal failures and9native-literal positives","affected behavioral consumers,source association,metadata,port refusal","2SDK-absent contexts with38cases each","required architecture,lint,governance,pack"],"forbidden":["main/workflows/authority/policy edits","gate waiver or acceptance advancement","new registry/evaluator/runtime context authority","maintenance code transplant","immutable golden changes"],"remaining":["complete runtime/lifecycle conformance","known ci_commands.main required blocker","deadline populations,matched targets,adopters,custody"]}
+
+comprehension_guard_dispatch_verification:
+  report: audits/issue-394/comprehension-guard-dispatch-verification.json
+  sha256: 05cb80760e2bda5fed2ec661cfe64f4d220959c42af49be85c890bc4d0ecde2e
+  subject: 28fa7ab4a11c4e2a6f530ad31e7cf16ba6792d9e
+  previous_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  previous_ledger:
+    type: 394source
+    statement: a877cd32 protosplit.
+  current_ledger:
+    type: 394source
+    statement: 28fa7ab4 guards.
+  whole_requirement_advancement: false
