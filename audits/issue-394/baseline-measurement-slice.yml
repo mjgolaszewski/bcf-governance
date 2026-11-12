@@ -116,3 +116,20 @@ scalar_identity_followup:
   - percentile or authority certification
   remaining: Matched cohort collection, reviewed/frozen protocol and independent target
     approval remain open.
+
+timing_scalar_capture_qualification:
+  report: audits/issue-394/timing-capture-scalar-identity-verification.json
+  sha256: aa212dfe62fdbb52947f8d366093fa872a3304d9318a0f7633e157dc91aaa408
+  subject: 3f90a1253e01b8584983d11eccd081aa9c3fae4e
+  previous_memory: P32 active; P33-P35 dormant. Protocol contexts 1ab2e77c guarded;75scopePASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Timing scalars 3f90a125 guarded;30controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 1ab2e77c proto.
+  current_ledger:
+    type: 394source
+    statement: 3f90a125 time.
+  remaining_state_failures: []
+  whole_requirement_advancement: false

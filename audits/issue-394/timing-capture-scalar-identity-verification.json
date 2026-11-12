@@ -1,0 +1,54 @@
+{
+  "authority": false,
+  "status": "timing_capture_scalar_controls_pass_unmatched_baseline_open",
+  "subject": "3f90a1253e01b8584983d11eccd081aa9c3fae4e",
+  "tree": "62c1be5856a19595e5531c4f645340d921cda31a",
+  "controls_subject": "b28255135ad2ab6113055eec01b8f4319d5973b1",
+  "before_core": {
+    "tests": 30,
+    "failures": 24,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 150,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_capture_cases_passed": 30,
+  "retained_capture_sha256": {
+    "pr-421-attempt-1.json": "f32b80d9b250365f043ef58b63c5060b50618bbe8e573f5a288da6c1ed72a2be",
+    "pr-426-attempt-1.json": "18844dc5428953574beb3f38d03a2c87f95348be76c0b76b046bc0201fc07158",
+    "reconcile-b976db49-attempt-1.json": "fffab7429a879dec339c2920527e21c65679676e2692a20d8c34214ba5d2bb6b",
+    "reconcile-0e99bece-attempt-1.json": "405ed4165c257f047963a98503a50c4a970642489abaa90b32125c45c71d8902"
+  },
+  "required_remaining_failures": [],
+  "remaining_failures_waived": false,
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false,
+    "failure_text_sha256": "c5065b8783d99de4294291afa6ac4f0ed07db42f58d6b2a5af6908468b10b21b"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/operational_observations.py": "f482b321532bd4869e1cd363cf4a79b77ff31a2be7ecd11f6ee278279a8bc340"
+  },
+  "evidence_sha256": {
+    "before.xml": "b3d7ec34d94ed9d568f0dfa3b17d2b31e452741c8ca90aca719eb4f1cc8c8fb9",
+    "after.xml": "9796128b3303af0641b8d1161f6b5fa6d61176c651f8733fd8ce2fce882ce2a6",
+    "architecture.xml": "758f5305bfe5baa7f1e301d88a0c3f567d75b6d02e876b76026ef720072d99a5"
+  },
+  "scope": "Capture integrity only. Millisecond scalar types and producer/source declarations remain exact; original valid capture bytes preserved. Matched cohorts, frozen protocol, statistical treatment and target approval are not supplied.",
+  "observation_authority": false,
+  "observation_execution_qualified": false,
+  "whole_requirement_advancement": false,
+  "full_native_or_installed_qualification": false,
+  "remaining": "Full runtime binding/alias/closure/class/context profiles and lifecycle populations, deadlines/approved targets/adopters/custody; all82whole remain open."
+}
