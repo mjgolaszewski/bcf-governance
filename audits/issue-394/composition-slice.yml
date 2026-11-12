@@ -261,3 +261,19 @@ function_population_identity_contract:
   - claiming source population is runtime qualification
   remaining: Source census is not executable phase, alias, runtime binding or installed
     conformance.
+
+function_population_identity_source_verification:
+  report: audits/issue-394/function-population-identity-source-controls.json
+  sha256: a4c2a9a96472d1c1cc72640a74bdf53bc98ecd2fd1cc4d37cc6d81e787e822e5
+  subject: b236730190a7a5dc52187bcc7145e7e5ffeb5129
+  previous_memory: P32 active; P33-P35 dormant. Timing scalars 3f90a125 guarded;30controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Function identity b2367301 guarded;24controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: b586bb44 maint.
+  current_ledger:
+    type: 394source
+    statement: b2367301 ids.
+  whole_requirement_advancement: false
