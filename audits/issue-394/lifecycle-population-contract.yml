@@ -2189,3 +2189,20 @@ attribute_fixture_contract_correction:
     and exact16FAIL/8nativePASS before capture, rerun all30new controls; no production
     change or whole claim.
   source_subject: c77bdd3e2485896d8a319dae69a7b7503993f936
+
+attribute_object_context_qualification:
+  report: audits/issue-394/attribute-object-context-source-controls.json
+  sha256: c3da67802d0f2ad4e2a5cec299f216985f4fd832fc2d192b1c9ab78da77dfe68
+  subject: c77bdd3e2485896d8a319dae69a7b7503993f936
+  previous_memory: P32 active; P33-P35 dormant. Subscript contexts c83152e6 guarded;56controlsPASS,receiver/runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Attribute contexts c77bdd3e guarded;30controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: c83152e6 items guarded;attr open.
+  current_ledger:
+    type: 394source
+    statement: c77bdd3e attr guarded.
+  remaining_state_failures: []
+  whole_requirement_advancement: false
