@@ -2586,3 +2586,22 @@ implicit_grammar_diagnostic_contract:
   next_action: Independently qualify genuine failures; extend existing protocol capture/validation
     conservatively after a bounded production contract, preserve native literal positives
     and deferred execution distinctions.
+
+implicit_grammar_source_diagnostic:
+  report: audits/issue-394/implicit-runtime-grammar-source-diagnostic.json
+  sha256: 766b237fd8472b4392526c398561973d7f159571f18edaa35fc98d31771ee208
+  previous_memory: P32 active; P33-P35 dormant. Function identity b2367301 guarded;24controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Implicit-grammar diagnostic 9d8b39ac;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: b2367301 ids.
+  current_ledger:
+    type: 394source
+    statement: 9d8b39ac gram.
+  next_action: Use existing source/effect/context owners to close runtime protocol
+    population conservatively; reuse existing opaque-key/native binding controls.
+    Unknown context cannot gain authority, and no syntax rewrite may hide the same
+    effect. Full profiles and independent closure remain open.
+  whole_requirement_advancement: false

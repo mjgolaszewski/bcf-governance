@@ -1,0 +1,30 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "subject": "9d8b39ac1ad5ca2d2b31204afa6e019d87fff3b0",
+  "tree": "eb940b7f5f21e4c43ef1720e5179258e5193e65c",
+  "before": {
+    "tests": 20,
+    "failures": 9,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_failed_cases": [
+    "test_implicit_grammar_cannot_hide_shared_write[unary]",
+    "test_implicit_grammar_cannot_hide_shared_write[comparison]",
+    "test_implicit_grammar_cannot_hide_shared_write[containment]",
+    "test_implicit_grammar_cannot_hide_shared_write[boolean_expression]",
+    "test_implicit_grammar_cannot_hide_shared_write[starred_sequence]",
+    "test_implicit_grammar_cannot_hide_shared_write[unpack_assignment]",
+    "test_implicit_grammar_cannot_hide_shared_write[raised_class]",
+    "test_implicit_grammar_cannot_hide_shared_write[await_value]",
+    "test_implicit_grammar_cannot_hide_shared_write[delegated_generator]"
+  ],
+  "native_positive_cases": 10,
+  "source_positive_cases": 1,
+  "evidence_sha256": "d99b59741a4f612dd8734c4c2282dd76f8dd9811955144c8245a9b53000c702c",
+  "production_changed": false,
+  "whole_requirement_advancement": false,
+  "all_whole_requirements_open": 82,
+  "scope": "Ordinary unary/comparison/containment/boolean/starred/unpack/raise/await/delegated-generator consumers independently mutate controlled shared state, while source effect consumers must conservatively refuse missing runtime context. This is a diagnostic of missing effect population, not a new eligibility family or authority receipt."
+}
