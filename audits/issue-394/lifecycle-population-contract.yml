@@ -2462,3 +2462,22 @@ implicit_protocol_diagnostic_contract:
   - comprehension rewrite to conceal mutation
   - parallel graph/evaluator/registry
   - whole or installed closure from source/native diagnostic
+
+implicit_protocol_source_diagnostic:
+  report: audits/issue-394/implicit-runtime-protocol-source-diagnostic.json
+  sha256: 572cc409941158ef89f37fb0ce7464ad561acc369d3b3ceb4b7eaf8b7dd6ac2f
+  previous_memory: P32 active; P33-P35 dormant. Lexical contexts 11c7a769 guarded;20class+51lexicalPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Implicit-protocol diagnostic 863f78c0;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 11c7a769 lexical.
+  current_ledger:
+    type: 394source
+    statement: 863f78c0 proto.
+  next_action: Use existing source/effect/context owners to close runtime protocol
+    population conservatively; reuse existing opaque-key/native binding controls.
+    Unknown context cannot gain authority, and no syntax rewrite may hide the same
+    effect. Full profiles and independent closure remain open.
+  whole_requirement_advancement: false

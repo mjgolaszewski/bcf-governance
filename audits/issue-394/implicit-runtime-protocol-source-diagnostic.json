@@ -1,0 +1,33 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "subject": "863f78c084093e77a424a6fc3d5902e87e8594be",
+  "tree": "3c06dd0444cd2e2831d214a3cc800ba242eb881b",
+  "before": {
+    "tests": 28,
+    "failures": 12,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_failed_cases": [
+    "test_implicit_protocol_cannot_hide_shared_write[dict_literal]",
+    "test_implicit_protocol_cannot_hide_shared_write[set_literal]",
+    "test_implicit_protocol_cannot_hide_shared_write[dict_comprehension]",
+    "test_implicit_protocol_cannot_hide_shared_write[set_comprehension]",
+    "test_implicit_protocol_cannot_hide_shared_write[list_comprehension]",
+    "test_implicit_protocol_cannot_hide_shared_write[for_iteration]",
+    "test_implicit_protocol_cannot_hide_shared_write[binary_operator]",
+    "test_implicit_protocol_cannot_hide_shared_write[truth_test]",
+    "test_implicit_protocol_cannot_hide_shared_write[context_manager]",
+    "test_implicit_protocol_cannot_hide_shared_write[formatting]",
+    "test_implicit_protocol_cannot_hide_shared_write[attribute_read]",
+    "test_implicit_protocol_cannot_hide_shared_write[subscript_read]"
+  ],
+  "native_positive_cases": 14,
+  "source_positive_cases": 2,
+  "evidence_sha256": "64a10d16de341630a6f4bad3af2b02f2d109bfccc1b180bf3b25bd0a49bc2648",
+  "production_changed": false,
+  "whole_requirement_advancement": false,
+  "all_whole_requirements_open": 82,
+  "scope": "Ordinary implicit hash/iteration/operator/truth/context/format/attribute/subscript executions independently mutate controlled shared state, while source effect consumers must conservatively refuse missing runtime context. This is a diagnostic of missing effect population, not a new eligibility family or authority receipt."
+}
