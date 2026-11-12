@@ -1,0 +1,199 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "subject": "f9bc4b617bf8cb95f98126a4293bdea55366498f",
+  "tree": "342e496a1e1771fc55bc92197b57700eaa306b82",
+  "files": 1241,
+  "independent_named_declarations": 11527,
+  "independent_distinct_names": 11521,
+  "producer_function_rows": 11521,
+  "producer_distinct_names": 11521,
+  "producer_duplicate_symbols": {},
+  "source_duplicate_names": {
+    "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob": 3,
+    "bcf_governance/tooling/ci_authority_prospective_lanes.py::git_blob": 3,
+    "template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob": 3
+  },
+  "producer_only_symbols": [],
+  "independent_classes": 881,
+  "producer_classes": 881,
+  "class_difference": [],
+  "duplicate_declaration_accounts": [
+    {
+      "symbol": "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+      "source_declarations": [
+        {
+          "symbol": "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 30,
+          "definition_start_line": 29,
+          "column": 0,
+          "end_line": 32,
+          "end_column": 15,
+          "possible_typing_overload": true,
+          "lexical_parents": [],
+          "decorators": [
+            "overload"
+          ],
+          "ellipsis_stub": true
+        },
+        {
+          "symbol": "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 36,
+          "definition_start_line": 35,
+          "column": 0,
+          "end_line": 38,
+          "end_column": 22,
+          "possible_typing_overload": true,
+          "lexical_parents": [],
+          "decorators": [
+            "overload"
+          ],
+          "ellipsis_stub": true
+        },
+        {
+          "symbol": "bcf_governance/pack/template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 41,
+          "definition_start_line": 41,
+          "column": 0,
+          "end_line": 63,
+          "end_column": 5,
+          "possible_typing_overload": false,
+          "lexical_parents": [],
+          "decorators": [],
+          "ellipsis_stub": false
+        }
+      ],
+      "producer_rows": 1,
+      "source_syntax_disposition": "explicit_unshadowed_typing_overload_stubs_then_one_body",
+      "emitted_calls_within_one_body_span": true,
+      "runtime_binding_qualified": false,
+      "limits": "Source syntax and emitted call spans only; no decorator execution/import/runtime or complete body-effect proof."
+    },
+    {
+      "symbol": "bcf_governance/tooling/ci_authority_prospective_lanes.py::git_blob",
+      "source_declarations": [
+        {
+          "symbol": "bcf_governance/tooling/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 30,
+          "definition_start_line": 29,
+          "column": 0,
+          "end_line": 32,
+          "end_column": 15,
+          "possible_typing_overload": true,
+          "lexical_parents": [],
+          "decorators": [
+            "overload"
+          ],
+          "ellipsis_stub": true
+        },
+        {
+          "symbol": "bcf_governance/tooling/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 36,
+          "definition_start_line": 35,
+          "column": 0,
+          "end_line": 38,
+          "end_column": 22,
+          "possible_typing_overload": true,
+          "lexical_parents": [],
+          "decorators": [
+            "overload"
+          ],
+          "ellipsis_stub": true
+        },
+        {
+          "symbol": "bcf_governance/tooling/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 41,
+          "definition_start_line": 41,
+          "column": 0,
+          "end_line": 63,
+          "end_column": 5,
+          "possible_typing_overload": false,
+          "lexical_parents": [],
+          "decorators": [],
+          "ellipsis_stub": false
+        }
+      ],
+      "producer_rows": 1,
+      "source_syntax_disposition": "explicit_unshadowed_typing_overload_stubs_then_one_body",
+      "emitted_calls_within_one_body_span": true,
+      "runtime_binding_qualified": false,
+      "limits": "Source syntax and emitted call spans only; no decorator execution/import/runtime or complete body-effect proof."
+    },
+    {
+      "symbol": "template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+      "source_declarations": [
+        {
+          "symbol": "template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 30,
+          "definition_start_line": 29,
+          "column": 0,
+          "end_line": 32,
+          "end_column": 15,
+          "possible_typing_overload": true,
+          "lexical_parents": [],
+          "decorators": [
+            "overload"
+          ],
+          "ellipsis_stub": true
+        },
+        {
+          "symbol": "template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 36,
+          "definition_start_line": 35,
+          "column": 0,
+          "end_line": 38,
+          "end_column": 22,
+          "possible_typing_overload": true,
+          "lexical_parents": [],
+          "decorators": [
+            "overload"
+          ],
+          "ellipsis_stub": true
+        },
+        {
+          "symbol": "template-repo/scripts/_bcf_runtime/ci_authority_prospective_lanes.py::git_blob",
+          "file_sha256": "d2d746cd3a8359bfb5fa70219adee25f6cfe06368cc2e465e408947bb15f41b5",
+          "kind": "function",
+          "line": 41,
+          "definition_start_line": 41,
+          "column": 0,
+          "end_line": 63,
+          "end_column": 5,
+          "possible_typing_overload": false,
+          "lexical_parents": [],
+          "decorators": [],
+          "ellipsis_stub": false
+        }
+      ],
+      "producer_rows": 1,
+      "source_syntax_disposition": "explicit_unshadowed_typing_overload_stubs_then_one_body",
+      "emitted_calls_within_one_body_span": true,
+      "runtime_binding_qualified": false,
+      "limits": "Source syntax and emitted call spans only; no decorator execution/import/runtime or complete body-effect proof."
+    }
+  ],
+  "lambda_syntax_nodes": 1699,
+  "missing_standalone_definitions": [],
+  "limits": "Committed source vs canonical parser only, no native/installed/expanded-binding qualification. Missing symbols do not prove bodies unanalyzed. Parent-span calls are observations, never reachability or phase closure. Possible overloads are not automatically excluded.",
+  "status": "read_only_named_source_population_observation",
+  "collector_sha256": "4802d5e31dd90a22aa09fc24f063f201760e59e2072a252de4cdadf38abbe71b",
+  "raw_observation_sha256": "b0520796dce61014054528016bed9e329c43ae367c72c7d0cfa718b6b21ec5c5",
+  "whole_requirement_advancement": false,
+  "remaining": "1699anonymous lambda syntax nodes are counted only; runtime/closure/initialization/lifetime/native/protected/installed contexts and full lifecycle trace conformance remain open. No source-name census grants authority or behavior qualification."
+}

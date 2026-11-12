@@ -218,6 +218,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/named-source-population-accounting.json
     - tests/test_source_repository_environment.py
     - tests/test_source_comparison_environment.py
     - tests/test_lifecycle_recovery_composition.py
@@ -287,6 +288,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/named-source-population-accounting.json
     - tests/test_source_repository_environment.py
     - tests/test_source_comparison_environment.py
     - tests/test_lifecycle_recovery_composition.py
@@ -4765,4 +4767,14 @@ maintenance_release_lessons:
   scope: High-level issue/compatibility intake from tagged notes, no code comparison/transplant
     or authority/acceptance advancement
   source_subject_before: b586bb44aa4306653a02824aaa4979b02d976fd7
+  whole_requirement_advancement: false
+
+named_source_population_observation:
+  report: audits/issue-394/named-source-population-accounting.json
+  sha256: 9b59d82d577f2984c93896313b2df76af3059fd2b13a82ba561c789fb6bc47ad
+  subject: f9bc4b617bf8cb95f98126a4293bdea55366498f
+  authority: false
+  execution_qualified: false
+  scope: Complete committed named-source identity census only; no runtime, phase or
+    installed truth
   whole_requirement_advancement: false
