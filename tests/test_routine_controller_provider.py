@@ -45,6 +45,24 @@ TREE = "3" * 40
 MAIN = MainIdentity("1207503211", "main", NEW, TREE)
 
 
+def test_ordinary_runtime_missing_recovery_capability_fails_explicitly(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path,
+) -> None:
+    monkeypatch.setattr(provider, "verify_provider_workflow_authority", lambda *_a, **_k: None)
+    expired = GitHubAPIError(
+        "GitHub API GET /repos/owner/repo/actions/artifacts/11719527305/zip returned 410"
+    )
+    monkeypatch.setattr(provider, "resolve_effective_controller",
+                        lambda *_a, **_k: (_ for _ in ()).throw(expired))
+
+    def absent(*_args, **_kwargs):
+        raise ModuleNotFoundError("producer-only runtime omitted")
+
+    monkeypatch.setattr(provider, "import_module", absent)
+    with pytest.raises(GitHubControllerError, match="self-recovery authority runtime"):
+        provider.effective_controller_authority(object(), repository="owner/repo", repo_root=tmp_path)
+
+
 def test_prospective_normalization_only_handles_expired_transition_zip(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

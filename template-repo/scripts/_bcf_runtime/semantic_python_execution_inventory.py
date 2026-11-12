@@ -105,6 +105,11 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.return_fingerprints: list[str] = []
         self.return_annotation = _annotation(function.returns) if function else "untyped"
         self.receiver_attribute_mutations: set[str] = set()
+        self.receiver_rebound = bool(function and self.receiver and any(
+            isinstance(value, ast.Name) and value.id == self.receiver
+            and isinstance(value.ctx, (ast.Store, ast.Del))
+            for value in ast.walk(function)
+        ))
 
     def _record_receiver_attribute_target(self, target: ast.AST) -> None:
         self.receiver_attribute_mutations.update(
@@ -198,6 +203,10 @@ class _FunctionVisitor(ast.NodeVisitor):
             receiver=self.receiver,
             assignments=self.assignments,
         )
+        if (self.method_binding_kind == "class" and isinstance(node.func, ast.Name)
+                and node.func.id == self.receiver):
+            dispatch = {"kind": "class_constructor", "class_symbol": self.class_symbol,
+                        "receiver_rebound": self.receiver_rebound}
         if dispatch is not None:
             fact["method_dispatch"] = dispatch
         self.calls.append(fact)

@@ -1,0 +1,42 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF17 Hotfix Log
+  id: bcf-governance-phase-31-hotfix17
+  version: 1.0.0
+  generated_at_utc: '2026-11-12T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix17.yml
+hotfix:
+  id: P31-HF17
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 17
+  summary: Repair source-bound class construction and ordinary installed consumer
+    gate closure
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - Initial constructor characterization produced seven expected baseline failures.
+  - Source-bound class construction and refusal controls plus existing initializer and method regressions passed 85 cases.
+  - Actual immutable BDMCP69 full source discovery observes both requested canonical factories; not full consumer acceptance.
+  notes:
+  - record failing workflows, diagnosed root cause, remediation scope, and merge-back
+    status
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

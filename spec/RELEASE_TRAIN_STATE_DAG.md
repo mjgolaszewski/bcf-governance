@@ -2701,3 +2701,17 @@ pair, including version-derived projection; agents never hand-edit its pins.
 | Ordinary normalization candidate passes required protected qualification | Merge only the exact reviewed and qualified subject, then execute ordinary exact-main admission/certification with the independently proven installed controller. | Recovery approval or receipt cannot replace protected review, merge, exact-main evidence or public certification. No release authority exists before ordinary certification closes. |
 | Certified main and verified release bytes reach publication | Use ordinary isolated build/runtime verification, trusted collection and immutable publisher; verify exact assets and credential revocation. | Candidate-only assets, conflicting provider state, stale certification and publication without valid custody. |
 | Official assets are adopted by SDK/BDMCP | Qualify the actual maintained consumer cases through local installed runtime; preserve project source and unchanged signed SDK evidence. | Supplier-repository access as recurring CI, live Identity dependencies, hidden product failures or claiming complete SOIP from declared-family passes. |
+
+### P31-HF17 supported consumer construction and installation
+
+| Input state | Required transition or refusal | Downstream boundary |
+| --- | --- | --- |
+| Exact source-visible classmethod call | Bind declaring implementation separately from actual receiver class; retain call-site association | Construction inventory observes actual requested class, without claiming returned-type or effect purity |
+| Inherited classmethod | Bind the inherited implementation to the concrete receiver, preserving subclass behavior | Never replace product cls with a base class |
+| Rebound, escaped, custom constructor or unknown class binding | Retain explicit unresolved construction | No completeness or operation credit |
+| Ordinary installed runtime | Exclude prospective self-recovery capability and its self-authority dependencies | Strict installed lint/type remains required; no silent validation skip |
+| Missing recovery capability requested | Typed explicit refusal | No fallback certification, merge or publication authority |
+| Protected-base bootstrap migration | Qualify canonical atomic workflow/bootstrap/observer transition | No foreign framework token in recurring adopter CI; old-base trust cannot be supplied by candidate code |
+| Candidate qualification | One actual standard pipeline and consolidated review | Protected exact-main certification and independently verified immutable custody remain required |
+
+Returned-model serialization remains a separate source/provenance obligation: annotations, model names and model_dump spelling do not prove purity. Lexical-definition coverage and complete adopter SOIP are not inferred from the two repaired constructor observations. Deferred Identity/JIT source remains preserved and unqualified.

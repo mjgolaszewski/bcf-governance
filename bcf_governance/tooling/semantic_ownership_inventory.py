@@ -25,9 +25,11 @@ from .semantic_python_method_identity import (
     call_name as _call_name,
 )
 from .semantic_python_method_identity import (
+    call_reference,
     discover_class_facts,
     resolve_method_dispatch,
     runtime_function_scopes,
+    source_symbol,
 )
 from .semantic_python_method_identity import (
     root_name as _root_name,
@@ -210,6 +212,7 @@ def discover_python_source(
     endpoints: list[dict[str, Any]] = []
     import_rows: list[dict[str, Any]] = []
     class_rows: list[dict[str, Any]] = []
+    class_mutations: list[dict[str, Any]] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -235,6 +238,21 @@ def discover_python_source(
                 import_bindings=bindings_by_local,
             )
         )
+        for value in ast.walk(tree):
+            target = None
+            if isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del)):
+                target = value.value
+            elif (isinstance(value, ast.Call) and _call_name(value) in {"setattr", "delattr"}
+                  and value.args):
+                target = value.args[0]
+            elif isinstance(value, (ast.Assign, ast.AnnAssign, ast.Return)):
+                expression = value.value
+                if isinstance(expression, (ast.Name, ast.Attribute)):
+                    target = expression.value if isinstance(expression, ast.Attribute) else expression
+            if target is not None:
+                class_mutations.append({"path": relative, "line": getattr(value, "lineno", 0),
+                    "called_symbol": source_symbol(target, relative, imports),
+                    "import_reference": call_reference(target, bindings_by_local)})
         initializers.extend(discover_initializers(
             tree, path=relative, imports=imports, import_bindings=bindings_by_local,
             local_types=local_types, deferred_functions=functions,
@@ -269,6 +287,7 @@ def discover_python_source(
         "files": file_rows,
         "imports": import_rows,
         "classes": class_rows,
+        "class_binding_mutations": class_mutations,
         "types": sorted(types),
         "functions": functions,
         "initializers": initializers,
@@ -614,6 +633,18 @@ def resolve_python_imports(
             target = binding_target(path, binding, [str(value) for value in attributes])
             if target is not None:
                 fact["called_symbol"] = target
+    for mutation in resolved.get("class_binding_mutations", []):
+        reference = mutation.get("import_reference")
+        if isinstance(reference, dict) and isinstance(reference.get("binding"), dict):
+            target = binding_target(str(mutation["path"]), reference["binding"],
+                                    [str(value) for value in reference.get("attributes", [])])
+            if target is not None:
+                mutation["called_symbol"] = target
+        for class_row in resolved.get("classes", []):
+            if mutation["called_symbol"] == class_row["symbol"]:
+                class_row["closed_class_binding"] = False
+                class_row["local_class_binding"] = False
+    resolve_method_dispatch(resolved)
     known_types = set(resolved.get("types", []))
     plain_generics = {row["symbol"] for row in resolved.get("classes", [])
                       if row.get("plain_generic")}
@@ -629,7 +660,6 @@ def resolve_python_imports(
         for call in scope.get("calls", []):
             if call["called_symbol"] in known_types and (call["line"], call["called_symbol"]) not in existing:
                 scope["constructors"].append({**call, "constructed_symbol": call["called_symbol"]})
-    resolve_method_dispatch(resolved)
     resolved["constructors"] = [
         fact
         for function in [*resolved.get("functions", []), *resolved.get("initializers", [])]
