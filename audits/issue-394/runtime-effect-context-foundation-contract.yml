@@ -1,0 +1,148 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/runtime-effect-context-foundation-contract.yml
+issue:
+  body_sha256: 7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e
+  requirements:
+  - I01
+  - I05
+  - I21
+  - I23
+  - F02
+  - F05
+  - F06
+  - F07
+  - F08
+  - AC05
+  - AC16
+source:
+  commit: 38918dc4597e6fb7003dcf5f081d67de23555e1d
+  tree: 214c27a37afc84339d26655c98b6a5c51fe3f3a9
+status:
+  implementation_complete: false
+  runtime_qualified: false
+  whole_requirement_advancement: false
+  p32: active
+  p33_p35: dormant
+  open_whole_requirements: 82
+problem:
+  required_gate: tests.test_self_governance_contracts::test_cli_application_operations_are_closed_and_effect_safe
+  operation: governance.cli.ci.v1
+  entrypoint: bcf_governance/tooling/ci_commands.py::main
+  first_observed_site: interpreters[repository] = Path(path), original line439; unknown
+    runtime key hashing/assignment and invocation context
+  actual_limitation: Current semantic_operation_effects accepts only require_runtime_context
+    boolean. Neutral implicit-protocol markers must remain execution_qualified:false;
+    strict mode rejects them and no positive authenticated runtime-context qualifier
+    is implemented. Fixing one lexical site or turning source-only mode on cannot
+    qualify the operation.
+  historical_census_limit: cli-source-closure-observation.json crosses declared ports
+    and includes possible initialization. Its35421 unresolved calls/361stores are
+    historical source observations,not mandatory strict-operation failure counts.
+owners:
+- bcf_governance/tooling/semantic_python_calls.py
+- bcf_governance/tooling/semantic_python_method_identity.py
+- bcf_governance/tooling/semantic_operation_effects.py
+- bcf_governance/tooling/semantic_authority_operations.py
+- bcf_governance/tooling/semantic_authority_contracts.py
+- schemas/semantic-call-contracts.schema.json
+- governance/canonical-representations.yml
+- governance/application-operations.yml
+scope:
+- Recover and qualify missing existing source/proof context through existing owners
+  and contracts; no parallel graph,registry,evaluator,broker or receipt family.
+- Begin with the actual required CI entrypoint and every affected train transition's
+  necessary closure. Classify full declared operation contexts and alternate/recovery/terminal
+  paths before coding; private helpers are reached closure,not mandatory standalone
+  operations.
+- Preserve source observers as neutral potential populations; distinguish independently
+  derived executable context from source presence,test coverage and installed adoption.
+- Preserve current actual command/query/effect ports; unknown applicability expands
+  required proof,missing authority blocks.
+required_context_inputs:
+- Exact source commit/tree/member bytes,protected evaluator/policy origin and complete
+  declared source/call/store/constructor/initialization populations.
+- Actual operation trigger,profile,call-site span/digest/occurrence,caller/callee/receiver
+  and input origin; requested constructor and returned object identity remain distinct.
+- Pinned actual interpreter/stdlib/native/library implementation and environment ownership;
+  authenticate moving subjects at consumers.
+- All branch/alias/rebinding/decorator/metaclass/generated-init/callback/descriptor/native
+  and recovery alternatives necessary for that context.
+acceptance:
+- Independently discover reachable effect populations and verify both trace directions;
+  removing an obligation and its test together must still fail.
+- Bind positive qualification to exact authenticated context. Candidate rows,annotations,names,caller
+  booleans,observed zero callbacks or a green fixture cannot supply authority.
+- Keep unsupported Python/native/dynamic behavior typed unresolved and block incompatible
+  credit. Do not turn require_runtime_context off to satisfy required checks.
+- Use actual execution/control witnesses plus independent source/context completeness;
+  coverage observations alone cannot prove exclusion.
+- Reauthenticate context when consumed in prospective proof,installed runtimes and
+  protected provider/recovery boundaries.
+- Qualify unchanged CLI behavior,source/private/source-package/template parity and
+  required governance/architecture/semantic checks on exact subject; report any remaining
+  required block honestly.
+negative_controls:
+- Wrong/moved source or policy,forged context,different executable/library/candidate-supplied
+  authority.
+- Same spelling with custom hash/equality/truth/iteration/descriptor behavior; receiver
+  aliases,escaped callbacks and rewritten inputs.
+- Missing/extra/overlapping call/store/constructor rows,omitted edge+test pair,first-error
+  masking other reachable obligations.
+- Default-factory invocation versus supplied arguments,init=False/kwargs/overrides,post-init/property
+  validators and returned-model alias/serialization callbacks.
+- Genuinely local literal bindings and real ordinary CLI/profile paths preserve behavior;
+  unsupported alternatives remain explicit.
+evidence_retained:
+- audits/issue-394/comprehension-guard-dispatch-verification.json
+- audits/issue-394/protocol-owner-extraction-verification.json
+- audits/issue-394/cli-source-closure-observation.json
+- audits/issue-394/construction-current-owner-adoption-block.json
+- audits/issue-394/construction-protocol-source-population.json
+next_action: Freeze the context-qualified affected population and existing-primitive
+  mapping; commit bounded contract/independent controls before each implementation
+  slice. Obtain scoped independent foundation verification before P33 canonical activation.
+forbidden:
+- main/release/maintenance/adopter changes
+- Gate waiver,source-only-green substitution or default suppression activation
+- Native/builtin/library purity inferred from annotations or method/decorator spelling
+- Unrelated historical rewrite or compulsory new module/registry per concept
+- Predecessor bytes/custody changes or invented performance targets
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: contract_then_query
+historical_admission_disposition:
+  prior:
+    blocker: Attempt six accounted as noncertifying progress. Locked-project prior
+      proof retained. Bounded maintenance terminal correction source/private/native/architecture/declared-semantic
+      and exact c2d development archives/offline runtime independently qualified.
+      Full provider-selected adopter/profile/lifecycle/deadline and approved matched
+      targets remain open;82whole/38slices unchanged/P32active. See maintained-single-phase-terminal-verification.json.
+      GET86/lint/pack/governance/semantic pass; exact fixture then production commits
+      independently scoped-verified. Full lifecycle/deadline/distribution/adopter/target
+      custody remains open. See audits/issue-394/provider-error-retirement-baseline.yml.
+    unblock_condition: Complete admitted v2.3.4 source integration and existing canonical
+      execution path. Optional compatibility failures remain residuals under current
+      policy.
+  disposition: Historical authored source/terminal checks retained. Current blocker/unblock
+    summary supersedes their stale current-green implication,not their original scoped
+    evidence. Admission status/phase IDs and all82acceptance statuses unchanged.
+  issue_body_sha256_unchanged: 7ea5c215d63d58548406d5c51281eba8cef457286f216ebae3c3abf33534765e
+  prior_issue_updated_at: '2026-10-15T15:46:46Z'
+  current_issue_updated_at: '2026-10-16T07:50:24Z'
+coupled_ledger_disposition:
+  prior_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: P32 active; P33-P35 dormant. Required ci_commands.main runtime context
+    proof absent;82wholeOPEN. See runtime-effect-context-foundation-contract.yml.
+  prior_ledger:
+    type: 394source
+    statement: 28fa7ab4 guards.
+  current_ledger:
+    type: 394source
+    statement: 38918dc4 context-contract; runtimeOPEN.
+  status_advancement: false
