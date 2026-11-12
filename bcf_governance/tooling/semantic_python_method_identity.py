@@ -123,6 +123,12 @@ def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
         return True
     if isinstance(node, ast.Name):
         return node.id in names
+    if isinstance(node, ast.UnaryOp):
+        return _native_literal_value(node.operand, names)
+    if isinstance(node, ast.Compare):
+        return all(_native_literal_value(value, names) for value in [node.left, *node.comparators])
+    if isinstance(node, ast.BoolOp):
+        return all(_native_literal_value(value, names) for value in node.values)
     if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
         return all(_native_literal_value(value, names) for value in node.elts)
     if isinstance(node, ast.Dict):
@@ -137,6 +143,10 @@ def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
         return all(value is None or _native_literal_value(value, names)
                    for value in (node.lower, node.upper, node.step))
     return False
+
+
+# Version 1.1 adds explicit suspension/exception observations; legacy kinds stay 1.0.
+IMPLICIT_PROTOCOL_KIND_VERSIONS = {"await": "1.1", "exception": "1.1"}
 
 
 def implicit_runtime_protocols(
@@ -166,6 +176,24 @@ def implicit_runtime_protocols(
         return ("iteration",) if node.is_async or not known(node.iter) else ()
     if isinstance(node, (ast.For, ast.AsyncFor)):
         return ("iteration",) if isinstance(node, ast.AsyncFor) or not known(node.iter) else ()
+    if isinstance(node, ast.Starred) and isinstance(node.ctx, ast.Load):
+        return () if known(node.value) else ("iteration",)
+    if isinstance(node, ast.Assign) and any(isinstance(target, (ast.Tuple, ast.List)) for target in node.targets):
+        return () if known(node.value) else ("iteration",)
+    if isinstance(node, ast.YieldFrom):
+        return () if known(node.value) else ("iteration",)
+    if isinstance(node, ast.Await):
+        return ("await",)
+    if isinstance(node, ast.Raise) and node.exc is not None:
+        return () if known(node.exc) else ("exception",)
+    if isinstance(node, ast.UnaryOp):
+        return () if known(node.operand) else (("truth",) if isinstance(node.op, ast.Not) else ("operator",))
+    if isinstance(node, ast.Compare):
+        if all(isinstance(operator, (ast.Is, ast.IsNot)) for operator in node.ops):
+            return ()
+        return () if all(known(value) for value in [node.left, *node.comparators]) else ("operator",)
+    if isinstance(node, ast.BoolOp):
+        return () if all(known(value) for value in node.values[:-1]) else ("truth",)
     if isinstance(node, ast.BinOp):
         return () if known(node.left) and known(node.right) else ("operator",)
     if isinstance(node, (ast.If, ast.IfExp, ast.While, ast.Assert)):

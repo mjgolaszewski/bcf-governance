@@ -11,7 +11,7 @@ import json
 from jsonschema import Draft202012Validator
 from typing import Any
 
-from .semantic_python_method_identity import SOURCE_CONSTRUCTION_BODY_HOOKS
+from .semantic_python_method_identity import SOURCE_CONSTRUCTION_BODY_HOOKS, IMPLICIT_PROTOCOL_KIND_VERSIONS
 from .ci_github_authority import packaged_repo_root
 
 
@@ -48,10 +48,10 @@ def _implicit_protocol(call: dict[str, Any], caller: str) -> bool:
         "version", "authority", "execution_qualified", "kind", "expression_sha256", "occurrence"
     }:
         reject()
-    kinds = {"attribute_read", "subscript_read", "collection", "iteration", "operator", "truth", "context_manager", "format"}
+    kinds = {"attribute_read", "subscript_read", "collection", "iteration", "operator", "truth", "context_manager", "format", *IMPLICIT_PROTOCOL_KIND_VERSIONS}
     digest = marker["expression_sha256"]
     occurrence = marker["occurrence"]
-    if (marker["version"] != "1.0" or marker["authority"] is not False
+    if (not isinstance(marker["kind"], str) or marker["version"] != IMPLICIT_PROTOCOL_KIND_VERSIONS.get(marker["kind"], "1.0") or marker["authority"] is not False
             or marker["execution_qualified"] is not False or not isinstance(marker["kind"], str) or marker["kind"] not in kinds
             or not isinstance(digest, str) or len(digest) != 64
             or any(value not in "0123456789abcdef" for value in digest)

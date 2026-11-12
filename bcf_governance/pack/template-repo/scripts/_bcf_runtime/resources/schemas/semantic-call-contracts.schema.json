@@ -103,7 +103,10 @@
       ],
       "properties": {
         "version": {
-          "const": "1.0"
+          "enum": [
+            "1.0",
+            "1.1"
+          ]
         },
         "authority": {
           "const": false
@@ -120,7 +123,9 @@
             "operator",
             "truth",
             "context_manager",
-            "format"
+            "format",
+            "await",
+            "exception"
           ]
         },
         "expression_sha256": {
@@ -131,7 +136,53 @@
           "type": "integer",
           "minimum": 0
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "const": "1.0"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "attribute_read",
+                  "subscript_read",
+                  "collection",
+                  "iteration",
+                  "operator",
+                  "truth",
+                  "context_manager",
+                  "format"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "version": {
+                "const": "1.1"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "await",
+                  "exception"
+                ]
+              }
+            }
+          }
+        }
+      ]
     }
   },
   "type": "object",

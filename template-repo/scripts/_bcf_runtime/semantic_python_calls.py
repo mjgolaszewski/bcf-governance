@@ -18,7 +18,7 @@ from .semantic_python_method_identity import (
     method_binding,
     method_dispatch_reference,
     root_name as _root_name,
-    _native_literal_value,
+    _native_literal_value, IMPLICIT_PROTOCOL_KIND_VERSIONS,
     implicit_runtime_protocols,
     source_symbol,
 )
@@ -274,7 +274,7 @@ class _FunctionVisitor(ast.NodeVisitor):
             "argument_origins": sorted(self._origins(node)),
             "dispatch_resolution": "unresolved", "dispatch_port_eligible": False,
             "implicit_protocol": {
-                "version": "1.0", "authority": False, "execution_qualified": False,
+                "version": IMPLICIT_PROTOCOL_KIND_VERSIONS.get(kind, "1.0"), "authority": False, "execution_qualified": False,
                 "kind": kind, "expression_sha256": contract["expression_sha256"],
                 "occurrence": contract["occurrence"],
             },
