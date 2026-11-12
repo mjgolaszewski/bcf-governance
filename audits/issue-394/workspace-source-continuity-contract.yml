@@ -208,3 +208,19 @@ inert_source_filter_contract:
   remaining: Independent clone discovery, ignored-source population, preserved content
     and handoff/retirement gate, native full lifecycle and installed profiles remain
     open.
+
+inert_source_filter_source_verification:
+  report: audits/issue-394/inert-source-filter-verification.json
+  sha256: 8b62109c4bf013ec1da711a5174950a86c3f421a8f387959b125821a0d656e95
+  subject: a4085735dc0de1c00c5eee03662d8307584bf689
+  previous_memory: P32 active; P33-P35 dormant. Audit source ab22e717 byteobserved;11controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Audit source a4085735 inert;7controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: ab22e717 bytes.
+  current_ledger:
+    type: 394source
+    statement: a4085735 inert.
+  whole_requirement_advancement: false

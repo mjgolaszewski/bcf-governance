@@ -1,0 +1,43 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "inert_source_filter_controls_pass_full_context_and_custody_open",
+  "subject": "a4085735dc0de1c00c5eee03662d8307584bf689",
+  "tree": "e52213e22d054f297f1521a0a57ab31ed4053bb9",
+  "controls_subject": "71a1c43336e395fd4dbddc1719e6a2b4e5afe495",
+  "causal_before": {
+    "tests": 7,
+    "failures": 7,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 255,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_audit.py": "565d4dc503166fd146f55a8ec2fa53f160630bc6b73d55ee997080a3a2a69cd0",
+    "bcf_governance/tooling/semantic_source_paths.py": "af67128943a407b2d8e2b11f7e58bc767edb682fddca3e8a25d2c36a386a6634"
+  },
+  "evidence_sha256": {
+    "before.xml": "756738cd5195eb3139c1924295fd48e34b7d9cc248f542b1ca23fffcde1b76e4",
+    "after.xml": "d7ddfcb3bf9a63df2666c68aef939b2e5276fe35ed2a4ba998194262c73416df",
+    "architecture.xml": "ead275f6cba8772112cbe3a116136f59f8690620015ac0a68e8d29cfe02182df"
+  },
+  "scope": "Existing source reader refuses unqualified Git working-tree comparisons. Audit1.2 observes literal staged/index/working source identity using inert Git plumbing and descriptor reads, detects index-flag-hidden tracked changes, and blocks unresolved Gitlink contexts. Existing fsmonitor/external-diff/byte/custody controls remain affected. Full workspace, ignored-source discovery, actual preserved content and handoff/retirement custody remain open. No source execution, new registry, CLI grammar or authority change. No new registry, topology graph, caller flag, policy or authority. Full worktree/branch/dirty-source inventory, push/checkpoint/handoff/retirement dispositions remain unimplemented by this slice.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}
