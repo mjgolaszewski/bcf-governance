@@ -1,0 +1,18 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "implementation_complete": false,
+  "status": "contract_controls_only_intended_red",
+  "subject": "9a25047a1d95f8bb31331364a2c565e012321cb3",
+  "tree": "bc62c314832c4d72119ab25712c5adf272a1562d",
+  "causal_before": {
+    "tests": 4,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": "af88668ef263d50597a1920651dc4827d1e8eeb406818ac8ba59b82bc05c823c",
+  "test_sha256": "6ca5ed3dca2e5e789209e792b0f21fe61db90b6148de9f063bd61966e8e7bea5",
+  "contract_sha256": "626b37c5ef0f3d32c13731dbbf3bf8412db89ee1685497b01244e125bb736f7b",
+  "remaining": "Implement through existing traversal; qualify affected/private/installed consumers and required gates. Actual CI runtime context remains absent; all82 requirements OPEN, P32 active and P33-P35 dormant."
+}

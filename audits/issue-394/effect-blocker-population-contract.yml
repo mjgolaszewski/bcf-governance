@@ -45,3 +45,20 @@ population_limits:
   require independent complete populations and authenticated context.
 - Maintenance characterization at960 is not execution against this 2.5 subject. Do
   not infer adopted behavior from source presence or source-count diagnostics.
+
+controls_execution:
+  report: audits/issue-394/effect-blocker-population-controls.json
+  sha256: 98b9db125d7458a5f90c3e0d7489d29adc4fa3718486ac5c7c4b776c15210d56
+  subject: 9a25047a1d95f8bb31331364a2c565e012321cb3
+  previous_memory: P32 active; P33-P35 dormant. Required ci_commands.main runtime
+    context proof absent;82wholeOPEN. See runtime-effect-context-foundation-contract.yml.
+  current_memory: P32 active; P33-P35 dormant. Required ci_commands.main runtime context
+    proof absent;82wholeOPEN. Effect blocker diagnostics controls only; no implementation
+    or new qualification.
+  previous_ledger:
+    type: 394source
+    statement: 38918dc4 context-contract; runtimeOPEN.
+  current_ledger:
+    type: 394source
+    statement: 9a25047a diagnostics controls only; runtimeOPEN.
+  whole_requirement_advancement: false
