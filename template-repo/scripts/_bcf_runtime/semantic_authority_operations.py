@@ -32,6 +32,7 @@ def _validate_operation_semantics(operation: dict[str, Any]) -> str:
 def _validate_operations(
     repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any], *,
     consumer_owned_schema: bool = False, source_language: str | None = None,
+    require_runtime_context: bool = True,
 ) -> list[dict[str, Any]]:
     from .semantic_authority_contracts import (
         SemanticAuthorityError,
@@ -41,6 +42,8 @@ def _validate_operations(
     )
     from .semantic_operation_python import _inventory_source_subject
 
+    if not isinstance(require_runtime_context, bool) or (consumer_owned_schema and not require_runtime_context):
+        raise SemanticAuthorityError("required operations cannot waive runtime effect context")
     _schema(repo_root, "application-operations.schema.json", payload, consumer_owned=consumer_owned_schema)
     _validate_operation_structure(payload)
     try:
@@ -113,6 +116,7 @@ def _validate_operations(
             effect_ports = validated_operation_effect_inventory(
                 operation, str(function["symbol"]), inventory,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
+                require_runtime_context=require_runtime_context,
             )
         except SemanticOperationEffectError as exc:
             raise SemanticAuthorityError(str(exc)) from exc
@@ -125,4 +129,9 @@ def _validate_operations(
                 for role, kind, symbol in effect_ports
             ],
         })
+        if not require_runtime_context:
+            observations[-1].update(
+                effect_context_scope='source_only_runtime_unqualified',
+                unresolved_effect_context_count=sum(role == 'unresolved' for role, _, _ in effect_ports),
+            )
     return observations

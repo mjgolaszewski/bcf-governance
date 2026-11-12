@@ -1795,7 +1795,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_contracts.py": {
       "operation": "copy",
-      "sha256": "5be7c11431d4254f1ece32a772e41df2c7635b0c5ff919d97b748f82032aa1e9"
+      "sha256": "1088c391f7030bcc58f7c1422a4e352710d27fc733874c905711132da32e5566"
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",
@@ -1803,7 +1803,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_operations.py": {
       "operation": "copy",
-      "sha256": "956f34b50c89cff43621ac6efbc151f9057ade6e88f0729d4781bbb258d2c90d"
+      "sha256": "4862d0331827632291ec604f4239611550645b427ffb2f6c9e1ccbcbae962d61"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",
@@ -1815,7 +1815,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "8dc152318de2effa554de9321424ba139e752bb59a06ca3e65c3fda462d7d9d9"
+      "sha256": "6f3a6f45f7e9f6b294e3c663ef4a7e70e86a58f0fabe1a88e4766b9864536a7f"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",
@@ -1847,7 +1847,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_scan.py": {
       "operation": "copy",
-      "sha256": "c429d3eb20199d0308374c65ef0dc8565e2a41cc724d2272b3cd45b5bd8f5ffc"
+      "sha256": "872d458e3ee74f7db96cb92fe4a6676fa697eae8bb5feb4e53e1af5ae8162c15"
     },
     "scripts/_bcf_runtime/semantic_ownership_typescript.mjs": {
       "operation": "copy",

@@ -329,7 +329,8 @@ def _discover_ownership_inputs(repo_root: Path, *, python_only: bool = False):
 
 def validate_authored_semantic_ownership(repo_root: Path) -> dict[str, Any]:
     """Reject Python ownership/operation defects without complete toolchain proof."""
-    scope = dict(authority=False, execution_qualified=False, scope='authored_python_semantic_ownership_only')
+    scope = dict(authority=False, execution_qualified=False, scope='authored_python_semantic_ownership_only',
+                 effect_context_scope='source_only_runtime_unqualified')
     if not (repo_root / 'governance/canonical-representations.yml').is_file():
         return dict(scope, verdict='not_applicable')
     _, inventory, _, registry = _discover_ownership_inputs(repo_root.resolve(), python_only=True)
@@ -343,7 +344,7 @@ def validate_authored_semantic_ownership(repo_root: Path) -> dict[str, Any]:
     if (repo_root / OPERATIONS_PATH).is_file():
         try:
             operations['operation_observations'] = validate_application_operations(
-                repo_root, inventory, source_language='python',
+                repo_root, inventory, source_language='python', require_runtime_context=False,
             )
         except SemanticAuthorityError as exc:
             raise SemanticOwnershipRegistryError(

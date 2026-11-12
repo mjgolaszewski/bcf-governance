@@ -689,6 +689,7 @@ def validate_semantic_authority(
 
 def validate_application_operations(
     repo_root: Path, inventory: dict[str, Any], *, source_language: str | None = None,
+    require_runtime_context: bool = True,
 ) -> list[dict[str, Any]]:
     """Validate operations, optionally limiting source checks to Python facts."""
     if source_language is not None and source_language != "python":
@@ -698,7 +699,7 @@ def validate_application_operations(
         return []
     return _validate_operations(
         repo_root, load_application_operations(repo_root).raw, inventory,
-        source_language=source_language,
+        source_language=source_language, require_runtime_context=require_runtime_context,
     )
 
 

@@ -477,9 +477,11 @@ def validated_operation_effect_inventory(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
-    *, source_modules: tuple[str, ...] = (),
+    *, source_modules: tuple[str, ...] = (), require_runtime_context: bool = True,
 ) -> tuple[tuple[str, str, str], ...]:
-    """Trace and validate effects once, then expose immutable classified ports."""
+    """Trace effects; explicit source-only views retain unknown context as data."""
+    if not isinstance(require_runtime_context, bool):
+        raise SemanticOperationEffectError("runtime effect context requirement must be boolean")
     functions = {
         str(row["symbol"]): row for row in inventory.get("functions", [])
     }
@@ -505,6 +507,7 @@ def validated_operation_effect_inventory(
     }
     declared_ports = mutation_ports | authority_ports | non_authoritative_ports
     reached: set[tuple[str, str]] = set()
+    unresolved: set[tuple[str, str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
     pending = [(entrypoint, True), *((path + "::<module>", True) for path in source_modules if path + "::<module>" in functions)]
@@ -546,7 +549,12 @@ def validated_operation_effect_inventory(
             )
         for call in function.get("calls", []):
             if _implicit_protocol(call, symbol):
-                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime protocol at {symbol}")
+                if require_runtime_context:
+                    raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime protocol at {symbol}")
+                marker = call["implicit_protocol"]
+                identity = f"{symbol}:{marker['kind']}:{marker['expression_sha256']}:{marker['occurrence']}"
+                unresolved.add(("unresolved", "implicit_protocol", identity))
+                continue
             if _runtime_target_origins(call, function):
                 raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime target at {symbol}")
             raw = str(call.get("called_symbol", ""))
@@ -618,26 +626,28 @@ def validated_operation_effect_inventory(
             f"operation {operation['id']} has undeclared authority effects: "
             + ", ".join(sorted(authority))
         )
-    return tuple(sorted(
+    ports = {
         (classification, target_kind, symbol)
         for classification, ports in (
             ("mutation", mutation_ports), ("authority", authority_ports),
             ("observation", non_authoritative_ports),
         )
         for target_kind, symbol in ports & reached
-    ))
+    }
+    return tuple(sorted(ports | unresolved))
 
 
 def validate_operation_effects(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
-    *, source_modules: tuple[str, ...] = (),
+    *, source_modules: tuple[str, ...] = (), require_runtime_context: bool = True,
 ) -> tuple[int, int]:
-    """Preserve the existing validator counts and fail-closed effect semantics."""
+    """Count declared ports; opt-in source-only counts never certify runtime closure."""
 
     ports = validated_operation_effect_inventory(
         operation, entrypoint_symbol, inventory, source_modules=source_modules,
+        require_runtime_context=require_runtime_context,
     )
     return (
         sum(classification == "mutation" for classification, _, _ in ports),
