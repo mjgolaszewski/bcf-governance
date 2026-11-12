@@ -2047,3 +2047,32 @@ non_call_state_mutation_diagnostic:
     type: 394source
     statement: 942fc5d4 state effect gap; repair open.
   whole_requirement_advancement: false
+
+explicit_global_name_store_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query source-effect derivation
+  scope: Explicit global-name Store/Del and import/function/class binding in the operation's
+    own lexical body, with eager nested defaults and deferred bodies separated. Existing
+    Python fact producer and shared operation-effect consumer; no new graph/registry/receipt
+    or runtime purity authority.
+  target_modules:
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  new_controls: 42
+  expected_before:
+    tests: 42
+    failures: 24
+    passed: 18
+  existing_diagnostic_disposition: Repair global-name/global-augmented only. Global-item/global-delete/parameter-item/receiver-attribute
+    remain genuine open residual failures, never waived or called complete.
+  remaining: Object/alias/nonlocal/exception/pattern binding effects, class creation
+    and authenticated runtime/context/population closure remain open.
+  compatibility: Optional existing effects facts emitted only when needed; old fields/order
+    and ordinary local source behavior preserved. Existing neutral observations stay
+    authority:false; public CLI/status identities unchanged.
+  forbidden_surfaces:
+  - main and release/adopter mutations
+  - manual generated workflow/authority/runtime edits
+  - new authority from naming/annotations or candidate claims
