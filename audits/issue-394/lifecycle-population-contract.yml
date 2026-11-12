@@ -2222,3 +2222,21 @@ unresolved_callback_contract:
     consumers/canonical projection/gates. Broader runtime identity/populations/deadlines/targets/adopters/custody
     remain open.
   whole_requirement_advancement: false
+
+unresolved_callback_diagnostic:
+  report: audits/issue-394/unresolved-callback-source-diagnostic.json
+  sha256: 54dc04a7260ae1c05c6b4a6df8b7cd6265f8b1f4e2e0efb55ac940e38453128b
+  previous_memory: P32 active; P33-P35 dormant. Attribute contexts c77bdd3e guarded;30controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Callback diagnostic 05b9df9e;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: c77bdd3e attr guarded.
+  current_ledger:
+    type: 394source
+    statement: 05b9df9e callback gap.
+  next_action: Retain required failures; repair unknown target authority through existing
+    parser/resolver/effect owners after bounded contract, then affected consumer/gate
+    qualification. No port spelling can authenticate unknown runtime binding.
+  whole_requirement_advancement: false

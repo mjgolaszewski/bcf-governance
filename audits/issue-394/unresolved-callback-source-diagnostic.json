@@ -1,0 +1,26 @@
+{
+  "authority": false,
+  "subject": "05b9df9e97d1d994ac4e3ab22f1c9f34d75e6a2d",
+  "tree": "5933fdfed9026d6182fa5e4e8876b10963b1e781",
+  "before": {
+    "tests": 14,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "required_failed_cases": [
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[undeclared-callback]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[undeclared-callback-alias]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[undeclared-callback-container]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[undeclared-parameter-method]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[declared-port-callback]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[declared-port-callback-alias]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[declared-port-callback-container]",
+    "test_unknown_callback_target_cannot_be_accepted_or_declared_away[declared-port-parameter-method]"
+  ],
+  "failure_causes": "All failed controls genuinely accepted unknown runtime targets, no fixture errors/skips. Other cause-specific rejections and4ordinary fresh native writes/2known-source-local positives remain distinct.",
+  "evidence_sha256": "c252dbae43a1659c4ff470ee83924663305b4e191c0203d8b22e1ae02c2be018",
+  "production_changed": false,
+  "all_whole_requirements_open": 82,
+  "whole_requirement_advancement": false
+}
