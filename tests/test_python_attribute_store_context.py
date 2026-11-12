@@ -11,7 +11,7 @@ CASES = {"receiver":["class Service:\n    def query(self):\n        self.value =
 def inventory(tmp_path, source):
     path=tmp_path/"service.py"
     path.write_text(source)
-    return resolve_python_imports(tmp_path,discover_python_source(tmp_path,files=[path]))
+    return resolve_python_imports(tmp_path,discover_python_source(tmp_path,files=[path],call_contracts_version="1.0"))
 def operation():
     return {"id":"attribute-store.query.v1","allowed_mutation_ports":[],"allowed_authority_ports":[],"non_authoritative_output_effects":[]}
 @pytest.mark.parametrize("case",tuple(CASES))

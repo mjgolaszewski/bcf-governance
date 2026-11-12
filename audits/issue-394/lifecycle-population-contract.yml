@@ -2182,3 +2182,10 @@ attribute_object_store_contract:
   - complete independently discovered producer/consumer population
   - approved targets/deadlines/adopter qualification/custody
   whole_requirement_advancement: false
+
+attribute_fixture_contract_correction:
+  reason: New population fixture omitted required call_contracts_version=1.0;11after
+    failures at existing top-level guard. Correct fixture only; retain unchanged729PASS
+    and exact16FAIL/8nativePASS before capture, rerun all30new controls; no production
+    change or whole claim.
+  source_subject: c77bdd3e2485896d8a319dae69a7b7503993f936
