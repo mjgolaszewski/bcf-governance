@@ -6,7 +6,7 @@ import pytest
 from bcf_governance.tooling import ci_authority_submit as submit
 from bcf_governance.tooling.local_pr import ProspectiveValidationError
 CASES={
- "phase":({"plans/product-spec.yml":{"execution_phases":[{"phase_id":"P1","build_block":"a"}]},"plans/build-plan.yml":{"phase_sequence":[{"phase_id":"P2","build_block":"a"}]},"plans/phase-ledger.yml":{},"MEMORY.yml":{}},"same phase identities"),
+ "phase":({"plans/product-spec.yml":{"execution_phases":[{"phase_id":"P1","build_block":"a"}]},"plans/build-plan.yml":{"phase_sequence":[{"phase_id":"P2","build_block":"a"}]},"plans/phase-ledger.yml":{"hotfix_lane":{"default_mode":"full","modes":{"lite":{"allowed_when":["fixture"]},"full":{"required_when":["fixture"]}},"open_records":[],"remediation_history":[]}},"MEMORY.yml":{}},"same phase identities"),
  "deadline":({"governance/gate-contracts.yml":{"execution_policy":{"default_timeout_seconds":True}}},"gate execution timeout policy is invalid"),
  "controls":({"governance/gate-contracts.yml":{"gates":{}}},"authored control registry requires governance-profile.yml"),
 }

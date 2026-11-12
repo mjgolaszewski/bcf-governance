@@ -176,3 +176,38 @@ pre_provider_authored_admission_contract:
   - claiming source population is runtime qualification
   remaining: Source census is not executable phase, alias, runtime binding or installed
     conformance.
+
+pre_provider_authored_admission_causal_fixture_followup:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/ci_authority_submit.py
+  scope: Reuse the existing pure authored input validator after clean-subject admission
+    but before provider context discovery. Preserve its original normalization consuming-boundary
+    validation and ordinary valid/unbound behavior. Phase-catalog contradiction, invalid
+    timeout policy and incomplete control registry must fail before avoidable provider
+    discovery, lease, reconciliation or proof. No new policy, evaluator, caller-selected
+    intent, cache, token, flags or authority.
+  cases: 8
+  expected_before:
+    failures: 3
+    passes: 5
+  retained_initial_fixture_baseline:
+    subject: c728b16ce933caf832cace2b3e994f83304a51ea
+    failures: 4
+    passes: 4
+    extra_failure: phase fixture omitted required hotfix_lane before reaching intended
+      phase catalogue mismatch
+    disposition: complete required hotfix-lane metadata; retain original precise mismatch
+      assertion and actual validator
+  fixture_scope: Existing title-only unit fixture already stubs normalization and
+    intentionally omits phase catalogs; explicitly stub authored admission in that
+    one title test, retaining the title assertion. All eight new real-Git controls
+    exercise the actual authored validator without mocking it.
+  forbidden:
+  - provider discovery for already available authored contradictions
+  - skipping consuming-boundary revalidation
+  - editing characterization goldens
+  - claiming source population is runtime qualification
+  remaining: Source census is not executable phase, alias, runtime binding or installed
+    conformance.
