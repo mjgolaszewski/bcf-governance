@@ -62,11 +62,12 @@ def _source_store_rows(function: dict[str, Any]) -> tuple[tuple[str, int, str], 
         if (row.get("authority") is not False or row.get("execution_qualified") is not False
                 or row.get("caller") != function.get("symbol")
                 or row.get("phase") != "operation_eager"
-                or row.get("kind") not in {"subscript_store", "subscript_delete"}
+                or row.get("kind") not in {"subscript_store", "subscript_delete", "attribute_store", "attribute_delete"}
                 or not isinstance(digest, str) or len(digest) != 64
                 or any(value not in "0123456789abcdef" for value in digest)
                 or isinstance(occurrence, bool) or not isinstance(occurrence, int) or occurrence < 0
-                or disposition not in {"closed_native_literal_region", "unresolved_object_binding"}):
+                or disposition not in {"closed_native_literal_region", "unresolved_object_binding"}
+                or (row.get("kind", "").startswith("attribute_") and disposition != "unresolved_object_binding")):
             reject()
         for field in ("line", "column", "end_line", "end_column"):
             value = row.get(field)

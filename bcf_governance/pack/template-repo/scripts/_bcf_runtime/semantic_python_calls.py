@@ -225,15 +225,14 @@ class _FunctionVisitor(ast.NodeVisitor):
         operation = {field for field, _ in ast.iter_fields(node)} if self._track_operation_stores else set()
         self._visit_scoped_fields(node, active, operation)
 
-    def visit_Subscript(self, node: ast.Subscript) -> None:  # noqa: N802
+    def _record_object_store(self, node: ast.Subscript | ast.Attribute, *, local: bool) -> None:
         if self._track_operation_stores and isinstance(node.ctx, (ast.Store, ast.Del)):
             digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
             occurrence = self._store_occurrences.get(digest, 0)
             self._store_occurrences[digest] = occurrence + 1
-            local = self._native_region is not None and _native_literal_value(node, self._native_region)
             observation = {
                 "authority": False, "execution_qualified": False, "caller": self.symbol,
-                "kind": "subscript_delete" if isinstance(node.ctx, ast.Del) else "subscript_store",
+                "kind": ("subscript" if isinstance(node, ast.Subscript) else "attribute") + ("_delete" if isinstance(node.ctx, ast.Del) else "_store"),
                 "phase": "operation_eager", "expression_sha256": digest, "occurrence": occurrence,
                 "line": node.lineno, "column": node.col_offset,
                 "end_line": node.end_lineno, "end_column": node.end_col_offset,
@@ -242,10 +241,17 @@ class _FunctionVisitor(ast.NodeVisitor):
             self._source_stores.append(observation)
             if not local:
                 self._global_store_effects.append({
-                    "kind": "unresolved", "target": "subscript", "scope": "object_binding",
+                    "kind": "unresolved", "target": "subscript" if isinstance(node, ast.Subscript) else "attribute", "scope": "object_binding",
                     "line": node.lineno, "column": node.col_offset,
                     "source_store_key": digest + ":" + str(occurrence),
                 })
+    def visit_Subscript(self, node: ast.Subscript) -> None:  # noqa: N802
+        local = self._native_region is not None and _native_literal_value(node, self._native_region)
+        self._record_object_store(node, local=local)
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:  # noqa: N802
+        self._record_object_store(node, local=False)
         self.generic_visit(node)
 
     def visit_Name(self, node: ast.Name) -> None:  # noqa: N802
