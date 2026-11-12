@@ -462,3 +462,19 @@ pattern_dispatch_contract:
   exit:21controls and affected consumers pass with exact required known-main blocker
     retained; both SDK-absent16case contexts pass; source/pack/schema parity generated
     canonically. Runtime/type/population/lifecycle completeness remain open.
+
+pattern_dispatch_verification:
+  report: audits/issue-394/pattern-dispatch-verification.json
+  sha256: c54ba69e1209ea3de4b904e2abf74ca39b8bc3a8da83f361764dc9e7e12fcf0f
+  subject: 935ad1dc3a2d544dcb30d95952bb619c243ec6ca
+  previous_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  previous_ledger:
+    type: 394source
+    statement: fa030da1 funcadmit.
+  current_ledger:
+    type: 394source
+    statement: 935ad1dc pattern.
+  whole_requirement_advancement: false

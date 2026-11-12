@@ -1,0 +1,43 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "pattern_dispatch_controls_pass_runtime_context_open",
+  "subject": "935ad1dc3a2d544dcb30d95952bb619c243ec6ca",
+  "tree": "2b2770c5518b11d81b893b6b258557b6210c042e",
+  "controls_subject": "5bdcebdf456046656a4ef033d85a0d929696145e",
+  "causal_before": {
+    "tests": 21,
+    "failures": 16,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 1076,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "5f03ffd270d06493dcdda5dbd3395999e8c46a2b6adcdaf4a213eb553701cd8e",
+    "schemas/semantic-call-contracts.schema.json": "52f857e0304931ddd949f5c24bcf1343c29d614070928f2b9ae2c4d0360e557e"
+  },
+  "evidence_sha256": {
+    "before.xml": "177ca63baf50f2d7d09a4bcc7ae8c55d2dba72c1f0d4eb9b8dd17737c09996c7",
+    "after.xml": "c615c819c8bade648e159351c511aa37ca259c336814c572216011787e790b36",
+    "architecture.xml": "18b6464fd501fa793ddaa9703b73e5edccb64bd81d0dbb09e1e5cda4b0270edb"
+  },
+  "scope": "Existing neutral implicit protocol owner emits one marker1.1 pattern_match edge for dispatch-capable Match patterns or unknown guards; protected schema and existing consumers enforce kind/version, refuse port credit, retain source-only unknowns and strict runtime block. Five native fixtures independently wrote state before correction. Capture/singleton/literal guards preserve no-dispatch behavior. Pattern dispatch remains conservative for known-literal subjects; no context qualification or blanket runtime claim. SDK-absent fresh/upgrade each execute16cases through projected runtime. Immutable goldens unchanged; no new graph, registry, evaluator, CLI or receipt family.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}
