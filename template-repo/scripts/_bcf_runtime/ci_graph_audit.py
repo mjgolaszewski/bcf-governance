@@ -19,8 +19,8 @@ from .semantic_source_paths import _source_git
 
 
 def _tracked(repo_root: Path, patterns: tuple[str, ...]) -> list[str]:
-    result = _source_git(repo_root, "ls-files", "--", *patterns)
-    return sorted(line for line in result.stdout.decode("utf-8").splitlines() if line) if result.returncode == 0 else []
+    result = _source_git(repo_root, "ls-files", "-z", "--", *patterns)
+    return sorted(line for line in result.stdout.decode("utf-8").split("\0") if line) if result.returncode == 0 else []
 
 
 def _repository_state(repo_root: Path) -> dict[str, Any]:

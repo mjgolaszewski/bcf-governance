@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_audit.py": {
       "operation": "copy",
-      "sha256": "57ace66774c1a8fa378e2c28997bce0f3b35436ae162d845678aad8480b8a40a"
+      "sha256": "86b5047b5b71dfeeb7d13118b2db5b640ff5fdc64b7ccb71a420a9e9c5bd8d5c"
     },
     "scripts/_bcf_runtime/ci_graph_authority_policy.py": {
       "operation": "copy",
