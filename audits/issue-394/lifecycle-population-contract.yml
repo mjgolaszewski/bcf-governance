@@ -2552,3 +2552,37 @@ effect_observation_scope_qualification:
     statement: 1ab2e77c proto.
   remaining_state_failures: []
   whole_requirement_advancement: false
+
+implicit_grammar_diagnostic_contract:
+  authority: false
+  execution_qualified: false
+  workitem: P32-P0-04
+  owner: home:bcf-governance:bcf-394-ironwatch
+  canonical_owners:
+  - semantic_python_method_identity.py
+  - semantic_python_calls.py
+  - semantic_operation_effects.py
+  scope: Independent ordinary CPython witnesses for remaining implicit grammar dispatch;
+    do not treat prior finite corpus as complete runtime effect population.
+  families:
+  - unary
+  - comparison
+  - containment
+  - boolean_expression
+  - starred_sequence
+  - unpack_assignment
+  - raised_class
+  - await_value
+  - delegated_generator
+  expected_before:
+    tests: 20
+    failures: 9
+    passes: 11
+  forbidden:
+  - production changes in diagnostic
+  - waiving strict runtime binding
+  - new evaluator or receipt family
+  - whole advancement
+  next_action: Independently qualify genuine failures; extend existing protocol capture/validation
+    conservatively after a bounded production contract, preserve native literal positives
+    and deferred execution distinctions.
