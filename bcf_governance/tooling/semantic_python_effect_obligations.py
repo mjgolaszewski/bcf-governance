@@ -1,0 +1,241 @@
+"""Neutral retained-write and implicit-execution facts for Python scopes.
+
+Copyright 2026 Michael Golaszewski.
+Licensed under the MIT License.
+"""
+from __future__ import annotations
+
+import ast
+from typing import Any
+
+from .semantic_python_method_identity import root_name
+
+_MUTATORS = {
+    "add", "append", "clear", "difference_update", "discard", "extend",
+    "insert", "intersection_update", "pop", "popitem", "remove", "reverse",
+    "setdefault", "sort", "symmetric_difference_update", "update",
+    "__delitem__", "__setitem__",
+}
+
+
+def _scope_nodes(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.AST]:
+    """Do not attribute an uninvoked nested definition's body to its parent."""
+    result: list[ast.AST] = []
+    pending: list[ast.AST] = list(function.body)
+    while pending:
+        node = pending.pop()
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+            continue
+        result.append(node)
+        pending.extend(ast.iter_child_nodes(node))
+    return result
+
+
+def extend_python_effect_facts(
+    tree: ast.Module, function: ast.FunctionDef | ast.AsyncFunctionDef,
+    fact: dict[str, Any], path: str,
+) -> None:
+    """Record effects and callback obligations without granting runtime authority.
+
+    A callback edge is an obligation to inspect its body, never evidence that
+    the constructed object is detached or that a third-party decorator is pure.
+    """
+    nodes = _scope_nodes(function)
+    parameters = {
+        argument.arg for argument in [*function.args.posonlyargs, *function.args.args,
+                                     *function.args.kwonlyargs]
+    }
+    retained = {name for node in nodes if isinstance(node, (ast.Global, ast.Nonlocal))
+                for name in node.names}
+    local_names = {node.id for node in nodes if isinstance(node, ast.Name)
+                   and isinstance(node.ctx, (ast.Store, ast.Del))} - retained
+    stores: dict[str, int] = {}
+    for node in nodes:
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            stores[node.id] = stores.get(node.id, 0) + 1
+    classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
+    instances: dict[str, str] = {}
+    fresh_containers: set[str] = set()
+    effects: list[dict[str, Any]] = []
+    obligations: list[dict[str, Any]] = []
+
+    def write(node: ast.AST, target: str) -> None:
+        row = {"kind": "write", "line": getattr(node, "lineno", 0), "target": target}
+        if row not in effects:
+            effects.append(row)
+
+    def class_of(value: ast.AST) -> str | None:
+        if isinstance(value, ast.Call) and isinstance(value.func, ast.Name):
+            return value.func.id if value.func.id in classes else None
+        if isinstance(value, ast.Name):
+            return instances.get(value.id)
+        return None
+
+    def callback(node: ast.AST, owner: str, name: str) -> None:
+        cls = classes[owner]
+        methods = [member for member in cls.body
+                   if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                   and member.name == name]
+        if not methods:
+            return
+        fact["calls"].append({"caller": fact["symbol"],
+            "called_symbol": f"{path}::{owner}.{name}", "call_name": name,
+            "line": getattr(node, "lineno", 0), "implicit_callback": True})
+
+    for node in nodes:
+        if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            if isinstance(node.value, (ast.List, ast.Dict, ast.Set)):
+                fresh_containers.update(target.id for target in targets
+                    if isinstance(target, ast.Name) and stores.get(target.id) == 1)
+            owner = class_of(node.value)
+            if owner:
+                for target in targets:
+                    if isinstance(target, ast.Name):
+                        instances[target.id] = owner
+    for node in nodes:
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            if node.id in retained:
+                write(node, node.id)
+        if isinstance(node, (ast.Attribute, ast.Subscript)) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            root = root_name(node)
+            if root in parameters or root in retained or root not in local_names:
+                write(node, ast.unparse(node))
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Attribute) and node.func.attr in _MUTATORS:
+                root = root_name(node.func.value)
+                if (not isinstance(node.func.value, ast.Name)
+                        or root not in fresh_containers or root in parameters or root in retained):
+                    write(node, ast.unparse(node.func))
+            owner = class_of(node)
+            if owner:
+                callback(node, owner, "__new__")
+                callback(node, owner, "__init__")
+                cls = classes[owner]
+                # A generated initializer can invoke __post_init__. Until its
+                # decorator/binding is qualified, this remains an obligation.
+                if cls.decorator_list:
+                    callback(node, owner, "__post_init__")
+            if isinstance(node.func, ast.Name) and node.func.id in {"str", "repr", "bool", "len"} and node.args:
+                owner = class_of(node.args[0])
+                if owner:
+                    callback(node, owner, {"str": "__str__", "repr": "__repr__",
+                        "bool": "__bool__", "len": "__len__"}[node.func.id])
+        if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
+            owner = class_of(node.value)
+            if owner and any(isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                             and member.name == node.attr and any(
+                                 isinstance(decorator, ast.Name) and decorator.id == "property"
+                                 for decorator in member.decorator_list)
+                             for member in classes[owner].body):
+                callback(node, owner, node.attr)
+        if isinstance(node, ast.comprehension):
+            for condition in node.ifs:
+                owner = class_of(condition)
+                if owner:
+                    names = {member.name for member in classes[owner].body
+                             if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))}
+                    callback(condition, owner, "__bool__" if "__bool__" in names else "__len__")
+    fact["effects"] = effects
+    fact["implicit_effect_obligations"] = obligations
+    body = list(function.body)
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        body = body[1:]
+    if (len(body) == 1 and isinstance(body[0], ast.Return)
+            and isinstance(body[0].value, ast.Call) and isinstance(body[0].value.func, ast.Name)
+            and body[0].value.func.id in classes):
+        fact["direct_fresh_return"] = f"{path}::{body[0].value.func.id}"
+    parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
+    escaped = set()
+    for node in nodes:
+        if not isinstance(node, ast.Name) or not isinstance(node.ctx, ast.Load):
+            continue
+        parent = parents.get(id(node))
+        grandparent = parents.get(id(parent))
+        if not (isinstance(parent, ast.Attribute) and parent.value is node
+                and isinstance(parent.ctx, ast.Load) and isinstance(grandparent, ast.Call)
+                and grandparent.func is parent):
+            escaped.add(node.id)
+    fact["call_result_bindings"] = [
+        {"local": target.id, "line": node.value.lineno}
+        for node in nodes if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+        for target in node.targets if isinstance(target, ast.Name) and stores.get(target.id) == 1
+        and target.id not in retained and target.id not in parameters
+        and target.id not in escaped
+    ]
+
+
+def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
+    """Bind constructor obligations after neutral imports have exact identities.
+
+    This deliberately uses the existing closed-binding proof. A spelling,
+    annotation or classmethod's return type cannot qualify a dynamic model.
+    """
+    classes = {str(row["symbol"]): row for row in inventory.get("classes", [])}
+    functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
+    for function in inventory.get("functions", []):
+        for call in function.get("calls", []):
+            reference = call.get("method_dispatch", {})
+            if reference.get("kind") != "receiver_alias":
+                continue
+            bindings = [binding for binding in function.get("call_result_bindings", [])
+                        if binding["local"] == reference.get("receiver_root")]
+            if len(bindings) != 1:
+                continue
+            if bindings[0]["line"] >= call.get("line", 0):
+                continue
+            producers = [producer for producer in function["calls"]
+                         if producer.get("line") == bindings[0]["line"]
+                         and producer.get("dispatch_resolution") == "exact_same_instance"]
+            if len(producers) != 1:
+                continue
+            producer = functions.get(str(producers[0]["called_symbol"]), {})
+            subject = str(producer.get("direct_fresh_return", ""))
+            cls = classes.get(subject, {})
+            if not cls.get("closed_class_binding") or producer.get("effect_unresolved") or producer.get("unresolved"):
+                continue
+            targets = [method for method in cls.get("methods", [])
+                       if method["name"] == reference.get("method")
+                       and method["binding"] == "instance" and not method.get("decorators")]
+            if len(targets) != 1:
+                continue
+            if any(str(scope.get("class_symbol", "")) == subject and
+                   (reference.get("method") in scope.get("receiver_attribute_mutations", [])
+                    or "*" in scope.get("receiver_attribute_mutations", []))
+                   for scope in functions.values()):
+                continue
+            previous_symbol = call.get("called_symbol")
+            call["called_symbol"] = targets[0]["symbol"]
+            call["dispatch_resolution"] = "exact_fresh_source_record"
+            function["effect_unresolved"] = [failure for failure in function.get("effect_unresolved", [])
+                if not (failure.get("line") == call.get("line")
+                        and failure.get("called_symbol") == previous_symbol
+                        and failure.get("dispatch_kind") == "receiver_alias")]
+        callbacks: list[dict[str, Any]] = []
+        for call in function.get("calls", []):
+            subjects = {str(call.get("called_symbol", ""))}
+            subjects.update(str(binding["constructed_symbol"])
+                for binding in call.get("class_constructor_bindings", []))
+            for subject in subjects & classes.keys():
+                cls = classes[subject]
+                if not cls.get("closed_class_binding"):
+                    obligation = {"kind": "unqualified_constructor_callbacks",
+                                  "line": call.get("line"), "class_symbol": subject}
+                    if obligation not in function.setdefault("implicit_effect_obligations", []):
+                        function["implicit_effect_obligations"].append(obligation)
+                names = {str(method["name"]): str(method["symbol"])
+                         for method in cls.get("methods", [])}
+                if cls.get("closed_class_binding"):
+                    for field, factory in (cls.get("dataclass_default_factories") or {}).items():
+                        callbacks.append({"caller": function["symbol"],
+                            "called_symbol": factory, "call_name": factory.rsplit("::", 1)[-1],
+                            "line": call.get("line"), "implicit_callback": True,
+                            "dataclass_field": field})
+                for name in ("__new__", "__init__", "__post_init__"):
+                    if name in names:
+                        callbacks.append({"caller": function["symbol"],
+                            "called_symbol": names[name], "call_name": name,
+                            "line": call.get("line"), "implicit_callback": True})
+        for callback in callbacks:
+            if callback not in function["calls"]:
+                function["calls"].append(callback)

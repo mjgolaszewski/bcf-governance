@@ -1,0 +1,42 @@
+{
+  "status": "unqualified maintained repair checkpoint; not release-ready",
+  "baseline": "96016062f37f1f681d854c613cdf7da5062f25e7",
+  "accepted_scope_bus_cursor": 43008,
+  "initial_causal_characterization": {
+    "tests": 16,
+    "failed": 15,
+    "passed": 1,
+    "unsafe_acceptances": 13,
+    "safe_refusals": 2,
+    "runtime_witnesses": "all succeeded; Pydantic2.13.4/core2.46.4 immutable consumer interpreter"
+  },
+  "implemented_slice": [
+    "neutral retained-state write facts and local implicit callback edges",
+    "source-resolved cross-module constructor obligations",
+    "stable local standard-dataclass factory callback identities; callback bodies remain effect obligations",
+    "narrow unescaped one-assignment source-fresh record result binding; actual self/member/mixed aliases still refuse"
+  ],
+  "focused_qualification_manifest": "external owner staging focused-source-manifest.json",
+  "broader_diagnostic": {
+    "passed": 267,
+    "failed": 16,
+    "interrupted": true,
+    "qualification": false,
+    "cause": "new retained/borrowed-write obligations and unqualified constructors make governance.cli.ci.v1 fail before derived assertions; complete invocation ownership/freshness proof is not implemented",
+    "evidence": "external owner staging semantic-r5.xml and broader-diagnostic-summary.json"
+  },
+  "remaining": [
+    "qualify fresh-owned versus borrowed values across complete invocation arguments; do not whitelist names or declaration flags",
+    "complete supported dataclass postinit/property/model validation/serialization contracts against frozen consumer source",
+    "Pydantic causal test dependency must be explicit in ordinary CI; witness environment currently provided by scheduler",
+    "ordinary Lite adopt/apply/check roundtrip repair and old protected-base bootstrap transition",
+    "full acceptance pipeline, actual consumer checks, consolidated review, maintenance artifact reconciliation"
+  ],
+  "authority": {
+    "runtime_context_delivered": false,
+    "controller_change": false,
+    "merge": false,
+    "publication": false,
+    "consumer_install_window": false
+  }
+}

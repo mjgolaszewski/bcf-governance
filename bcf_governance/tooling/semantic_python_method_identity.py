@@ -9,6 +9,8 @@ from __future__ import annotations
 import ast
 from typing import Any
 
+from .semantic_python_dataclass_contracts import dataclass_default_factories
+
 _OVERLOAD_DECORATORS = {
     "typing::module.overload",
     "typing::overload",
@@ -149,6 +151,7 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
     """Prove the local class binding; subclass closure is checked after imports."""
     if (node.bases and not allow_bases) or node.keywords:
         return False
+    factories = dataclass_default_factories(node, tree, path, imports)
     for member in node.body:
         if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
             if member.name in {"__new__", "__init__", "__post_init__", "__setattr__",
@@ -159,7 +162,11 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                 return False
         if isinstance(member, (ast.Assign, ast.AnnAssign)):
             default_value = member.value
-            if default_value is not None and not all(
+            qualified_field = (
+                isinstance(member, ast.AnnAssign) and isinstance(default_value, ast.Call)
+                and factories is not None and bool(node.decorator_list)
+            )
+            if default_value is not None and not qualified_field and not all(
                 isinstance(value, (ast.Constant, ast.Tuple, ast.Load, ast.UnaryOp, ast.UAdd, ast.USub))
                 for value in ast.walk(default_value)
             ):
@@ -297,6 +304,7 @@ def discover_class_facts(
                 "closed_class_binding": _closed_class_binding(node, tree, path, imports),
                 "local_class_binding": _closed_class_binding(node, tree, path, imports, allow_bases=True),
                 "methods": methods,
+                "dataclass_default_factories": dataclass_default_factories(node, tree, path, imports),
                 "class_decorators": sorted(
                     ast.unparse(value) for value in node.decorator_list
                 ),
@@ -416,6 +424,7 @@ def method_dispatch_reference(
                 "kind": "receiver_alias",
                 "class_symbol": class_symbol,
                 "method": function.attr,
+                "receiver_root": root,
             }
     if isinstance(function, ast.Name):
         origins = assignments.get(function.id, {f"local:{function.id}"})
