@@ -1,0 +1,57 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "local_object_source_controls_pass_runtime_context_open",
+  "subject": "de82e46f6af17292474964bf9dbb4234d0c439d6",
+  "tree": "6e041a6f930489ae9df883a0a6442b364f584020",
+  "controls_subject": "1b2918e2aa144daf92defdcdf062f4ee27e807da",
+  "causal_before": {
+    "tests": 4,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_passes_reused": {
+    "tests": 259,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "initial_affected_run": {
+    "tests": 261,
+    "failures": 0,
+    "errors": 2,
+    "skipped": 0
+  },
+  "installed_source_contexts": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "evidence_reuse_subject": "de82e46f6af17292474964bf9dbb4234d0c439d6",
+  "fixture_failure_disposition": "Initial 259 cases passed;2SDK-absent setup errors from inherited16MiB per-file limit. Exact source unchanged; rerun only those2 with128MiB per-file fixture limit and unchanged16MiB aggregate log cap. Separate executions, not a single261PASS run.",
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_source_paths.py": "76f882f105bcf6a297058c643e14c0c9052957c6aded22b60ae7a0fa1ce76f5c"
+  },
+  "evidence_sha256": {
+    "before.xml": "d56977555cb0fe58dac897b9aef5d116f6b35b102c71721588a67651f9240386",
+    "initial_after.xml": "be5a441d823e673a945a6ac5b9b676433c5a95f307e013de5f4f364a71f0a28a",
+    "installed.xml": "f85281c71215f0a0f777858e0a6c55517a90028262449be1c2945c03601574ba",
+    "architecture.xml": "de14377e70b878eb8e03ed2c3e2cbdc262586a550bb3edaf379c03782f246c10"
+  },
+  "scope": "Existing source-Git environment strips ambient settings and enforces no lazy fetch and no allowed transport protocols. Four real-Git fixtures witness candidate helper execution before correction; missing blob/tree objects remain unresolved after correction. Present object reads and existing source/audit/SDK-absent consumer tests remain required. No acquisition owner, CLI grammar, registry, evaluator, policy, runtime authority or semantic-gate change. Full workspace source custody and lifecycle conformance remain open.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}

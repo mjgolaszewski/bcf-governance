@@ -354,3 +354,19 @@ local_only_source_object_contract:
   - query-triggered authenticated acquisition
   - treating source observations as runtime or provider authority
   - phase, release, custody or full-workspace advancement
+
+local_object_source_verification:
+  report: audits/issue-394/local-object-source-verification.json
+  sha256: d90ca016a66e2c95324eb852cc27440dcf4edd1c47c491c671f52a2281f2f168
+  subject: de82e46f6af17292474964bf9dbb4234d0c439d6
+  previous_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  previous_ledger:
+    type: 394source
+    statement: a0704980 semantic/build blocked.
+  current_ledger:
+    type: 394source
+    statement: de82e46f localobjs.
+  whole_requirement_advancement: false
