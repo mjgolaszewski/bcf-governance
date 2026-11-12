@@ -1,0 +1,33 @@
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/workspace-source-continuity-contract.yml
+  status: planned
+  authority: false
+workitem: P32-P0-03
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+scope: Safe Git-source query prerequisite only. Complete workspace/worktree/branch/dirty-source/checkpoint/retirement
+  populations remain open.
+
+audit_source_git_custody_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/ci_graph_audit.py
+  scope: Use existing semantic_source_paths._source_git in both existing audit Git
+    readers. Disable repository-configured programs/replacement and ambient Git repository
+    context; preserve requested-root status/tracked-file shapes, real dirtiness and
+    non-Git behavior. This is safe source-query custody, not full worktree/history
+    inventory, publication or retirement authority.
+  cases: 6
+  expected_before:
+    failures: 3
+    passes: 3
+  forbidden:
+  - executing candidate fsmonitor in audit
+  - ambient foreign repository substitution
+  - editing characterization goldens
+  - claiming source population is runtime qualification
+  remaining: Source census is not executable phase, alias, runtime binding or installed
+    conformance.
