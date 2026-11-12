@@ -2507,3 +2507,31 @@ implicit_protocol_repair_contract:
     runtime applicability and lifecycle populations remain open. No annotation-based
     authority, no syntax rewrite workaround, no whole advancement.
   whole_requirement_advancement: false
+
+effect_observation_scope_contract:
+  before_subject: 0bece4cde523c8cefd3f53aedc097e8aa63a3336
+  scope: Separate existing authored non-authoritative source catalog/preflight from
+    runtime-context validation. Explicit source-only view retains unknown implicit
+    calls as unresolved effect_ports; unknown nodes never earn declared-port credit.
+    Default validators remain strict. Consumer-owned protected validation cannot select
+    source-only, regardless of candidate data.
+  interfaces: Add typed require_runtime_context=True keyword to existing validators
+    and facade. Only existing authored source-only query opts out, returns source_only_runtime_unqualified
+    plus unresolved counts and authority/execution false. No new evaluator, graph,
+    registry or receipt family; no execution permission from counts.
+  cause_controls: Global-write and constructor-omission controls use explicit source-only
+    view to isolate their named detectors with exact old error assertions. Keep strict
+    refusal controls and original933929PASS/4FAIL. Source-only component/context positives
+    retain original forms plus strict-refusal assertions; benign runtime support remains
+    unqualified.
+  new_controls:
+    neutral_unknown_no_ambient_downgrade: 1
+    typed_scope: 8
+    known_write_still_blocks: 1
+    marker_forgery_in_source_only: 12
+    authored_scope_and_protected_refusal: 3
+  before: One authored-view control fails for unresolved runtime protocol before source-only
+    stage support. Existing diagnostic/raw failures and four native same-source context
+    trials retained without rerun.
+  whole_requirement_advancement: false
+  runtime_benign_context_support: OPEN; not implemented or waived by source-only view

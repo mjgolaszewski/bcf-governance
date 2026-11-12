@@ -215,11 +215,13 @@ def test_declared_component_port_is_reached_but_alias_cannot_conceal_source(
     component_port = (
         "backend/src/demo/service.py::self.store.save"
     )
-    assert _validate(
-        component_inventory,
-        "query",
-        _operation(allowed_mutation_ports=[component_port]),
-    ) == (1, 0)
+    declared = _operation(allowed_mutation_ports=[component_port])
+    entrypoint = "backend/src/demo/service.py::Service.query"
+    # Source catalog credit is distinct from runtime binding qualification.
+    assert validate_operation_effects(declared, entrypoint, component_inventory,
+                                      require_runtime_context=False) == (1, 0)
+    with pytest.raises(SemanticOperationEffectError, match="unresolved effect runtime protocol"):
+        validate_operation_effects(declared, entrypoint, component_inventory)
 
     alias_inventory = _inventory(
         tmp_path / "alias",

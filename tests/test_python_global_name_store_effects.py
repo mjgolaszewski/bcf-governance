@@ -56,7 +56,7 @@ def test_effect_consumer_rejects_explicit_global_store(tmp_path, case):
     body, _ = CASES[case]
     inventory = _inventory(tmp_path, PREFIX + "def query():\n" + body)
     with pytest.raises(SemanticOperationEffectError, match="undeclared write"):
-        validate_operation_effects(_operation(), "service.py::query", inventory)
+        validate_operation_effects(_operation(), "service.py::query", inventory, require_runtime_context=False)
 
 
 def _run(tmp_path, source, marker):

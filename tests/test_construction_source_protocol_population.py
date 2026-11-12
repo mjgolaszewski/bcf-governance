@@ -197,7 +197,10 @@ def test_joint_class_edge_and_observation_omission_still_rejects(tmp_path, consu
     _replace_observation(inventory, observation)
     assert any(row["symbol"] == body for row in inventory["functions"]), "independent function body erased by control"
     with pytest.raises(SemanticOperationEffectError, match="construction source"):
-        _consume(consumer, inventory)
+        if consumer == "effect":
+            validate_operation_effects(_operation(), "service.py::query", inventory, require_runtime_context=False)
+        else:
+            _consume(consumer, inventory)
 
 @pytest.mark.parametrize("consumer", ("effect", "population"))
 def test_joint_inherited_class_and_body_observation_omission_rejects(tmp_path, consumer):

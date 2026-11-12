@@ -24,7 +24,7 @@ def test_independent_ast_protocol_edge_reaches_existing_source_population(tmp_pa
     assert population["unresolved_calls"]==1
     assert len(population["calls"])==1
     assert population["calls"][0][2]==digest
-@pytest.mark.parametrize("consumer",("population","effects"))
+@pytest.mark.parametrize("consumer",("population","effects","source-only"))
 @pytest.mark.parametrize("defect",("authority","execution","version","kind","digest","occurrence","eligible","resolution","callee","caller","marker","contract"))
 def test_forged_implicit_protocol_cannot_be_credited_as_a_port(tmp_path,consumer,defect):
     facts=inventory(tmp_path)
@@ -45,4 +45,4 @@ def test_forged_implicit_protocol_cannot_be_credited_as_a_port(tmp_path,consumer
     else:row["call_contract"]["arguments"]=[{"kind":"positional","slot":0,"expression_sha256":"a"*64}]
     with pytest.raises(SemanticOperationEffectError,match="implicit protocol population"):
         if consumer=="population":source_operation_call_population("service.py::query",facts)
-        else:validate_operation_effects(operation(),"service.py::query",facts)
+        else:validate_operation_effects(operation(),"service.py::query",facts,require_runtime_context=consumer!="source-only")

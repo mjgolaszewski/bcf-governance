@@ -332,7 +332,11 @@ def test_authored_query_accepts_exact_declared_local_effect(inputs, monkeypatch)
     root, facts = _authored_query_inputs(inputs, monkeypatch, source_text=_SCOPED_SOURCE, local_port=True)
     report = scan.validate_authored_semantic_ownership(root)
     assert report['authority'] is False and report['execution_qualified'] is False
-    assert report['operation_observations'] == owner.validate_application_operations(root, facts)
+    assert report['operation_observations'] == owner.validate_application_operations(root, facts, require_runtime_context=False)
+    assert report['effect_context_scope'] == 'source_only_runtime_unqualified'
+    assert report['operation_observations'][0]['unresolved_effect_context_count'] == 1
+    with pytest.raises(owner.SemanticAuthorityError, match='unresolved effect runtime protocol'):
+        owner.validate_application_operations(root, facts)
     assert report['operation_observations'][0]['authority_effect_count'] == 0
 
 
@@ -408,3 +412,30 @@ def test_authored_python_catalog_scope_uses_discovered_source_facts(inputs, monk
             with pytest.raises(owner.SemanticAuthorityError):
                 owner.validate_application_operations(root, facts)
     assert facts == before
+
+def test_authored_source_view_preserves_unqualified_protocol_data(inputs, monkeypatch):
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+    root, facts = _authored_query_inputs(inputs, monkeypatch, source_text=_SCOPED_SOURCE, local_port=True)
+    report = scan.validate_authored_semantic_ownership(root)
+    assert report["authority"] is False and report["execution_qualified"] is False
+    assert report["effect_context_scope"] == "source_only_runtime_unqualified"
+    observation = report["operation_observations"][0]
+    assert observation["effect_context_scope"] == "source_only_runtime_unqualified"
+    assert observation["unresolved_effect_context_count"] == 1
+    assert any(port["classification"] == "unresolved" for port in observation["effect_ports"])
+
+def test_required_factory_cannot_reuse_authored_source_only_context(inputs, monkeypatch):
+    import hashlib
+    from bcf_governance.tooling import semantic_ownership_scan as scan
+    root, facts = _authored_query_inputs(inputs, monkeypatch, source_text=_SCOPED_SOURCE, local_port=True)
+    assert scan.validate_authored_semantic_ownership(root)["execution_qualified"] is False
+    digest = hashlib.sha256((root/"governance/application-operations.yml").read_bytes()).hexdigest()
+    with pytest.raises(owner.SemanticAuthorityError, match="unresolved effect runtime protocol"):
+        owner.required_application_operation_population(root, facts, expected_registry_sha256=digest)
+
+def test_consumer_owned_validation_cannot_select_source_only_mode(inputs, monkeypatch):
+    from bcf_governance.tooling.semantic_authority_operations import _validate_operations
+    root, facts = _authored_query_inputs(inputs, monkeypatch, source_text=_SCOPED_SOURCE, local_port=True)
+    payload = yaml.safe_load((root/"governance/application-operations.yml").read_text())
+    with pytest.raises(owner.SemanticAuthorityError, match="required operations cannot waive runtime effect context"):
+        _validate_operations(root, payload, facts, consumer_owned_schema=True, require_runtime_context=False)
