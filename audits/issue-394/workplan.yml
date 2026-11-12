@@ -218,6 +218,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/operation-function-admission-verification.json
+    - audits/issue-394/cli-source-closure-observation.json
     - audits/issue-394/local-object-source-verification.json
     - audits/issue-394/workspace-source-continuity-contract.yml
     - audits/issue-394/audit-source-git-custody-verification.json
@@ -297,6 +299,8 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/operation-function-admission-verification.json
+    - audits/issue-394/cli-source-closure-observation.json
     - audits/issue-394/local-object-source-verification.json
     - audits/issue-394/workspace-source-continuity-contract.yml
     - audits/issue-394/audit-source-git-custody-verification.json

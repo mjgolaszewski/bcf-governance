@@ -401,3 +401,19 @@ operation_function_admission_contract:
   - main or phase progress based on typed admission
   exit: Native boundary controls, affected existing admission/effect consumers and both
     SDK-absent contexts pass; known strict main blocker remains explicit/unwaived.
+
+operation_function_admission_verification:
+  report: audits/issue-394/operation-function-admission-verification.json
+  sha256: 4247290abb40c8a3fae9a64b8ea8da56dfcc9b40efc0babd4db656ab554f961c
+  subject: fa030da1c63c2436509d2cbe3bdbe104e375d41c
+  previous_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  previous_ledger:
+    type: 394source
+    statement: de82e46f localobjs.
+  current_ledger:
+    type: 394source
+    statement: fa030da1 funcadmit.
+  whole_requirement_advancement: false

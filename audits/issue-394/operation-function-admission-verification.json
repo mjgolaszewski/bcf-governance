@@ -1,0 +1,48 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "operation_function_admission_controls_pass_runtime_context_open",
+  "subject": "fa030da1c63c2436509d2cbe3bdbe104e375d41c",
+  "tree": "e1806dc8ec002b9310e190d345dfba96958a22c1",
+  "controls_subject": "4f413be724ac239f2cbfef8ce76ee2917eb96489",
+  "causal_before": {
+    "tests": 9,
+    "failures": 6,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 81,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_authority_operations.py": "d1c5b4d2a4ca518616f85fa041302f19f24fd0768fa0ef75ba988dda26c92cdd"
+  },
+  "evidence_sha256": {
+    "before.xml": "fc872f23cab9797961ae0f4752a614ce74bad4b42d9f7572629e57856af11749",
+    "after.xml": "6a8617eac83b7d5ce78c3953a6618c5715fd2aee0fde94ee3f02791c8e0f377a",
+    "architecture.xml": "c8ef5f25e94a05175c0521b41d636a64a723679464e63027e223a3d1a58bbcfb"
+  },
+  "scope": "Existing outer operation validator reuses canonical function population identity validation before discovery/filtering. No new registry, evaluator, source-only waiver or acceptance. Nine new controls and SDK-absent11case fresh/upgrade contexts; historical main runtime-effect blocker remains. Affected API module retains one exact known strict-main failure, with separate required architecture failure for same cause.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open.",
+  "source_closure_observation": {
+    "report": "audits/issue-394/cli-source-closure-observation.json",
+    "sha256": "0c4949d66b04933d81a1bfc36dbfcca1f2db26b4d73049f56ec8c9feef5d58dd",
+    "subject": "c335d40373e4e9a0c28128b876a149d56b119fe1",
+    "whole_requirement_advancement": false
+  }
+}

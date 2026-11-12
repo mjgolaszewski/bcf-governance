@@ -1,0 +1,212 @@
+{
+  "authority": false,
+  "completeness_qualified": false,
+  "elapsed_seconds": 110.28455418700469,
+  "execution_qualified": false,
+  "implicit_protocol_kinds": {
+    "attribute_read": 2367,
+    "collection": 376,
+    "context_manager": 36,
+    "exception": 2001,
+    "format": 1320,
+    "iteration": 2003,
+    "operator": 3722,
+    "subscript_read": 3761,
+    "truth": 6882
+  },
+  "population_keys": [
+    "authority",
+    "calls",
+    "completeness_qualified",
+    "execution_qualified",
+    "functions",
+    "module_initializers",
+    "scope",
+    "source_files",
+    "source_stores",
+    "unresolved_calls",
+    "unresolved_source_stores"
+  ],
+  "query_error": null,
+  "raw_sha256": "a50b9958192004d1fe41a5d9c97d6cf7dd0baeeac3753793bf2f5d23d5c09106",
+  "reachable_functions": 946,
+  "scope": "Existing source-only call population over exact committed Python inputs, including declared possible initialization observations. No native/consumer/callable/runtime completeness or authority; strict semantic gate unchanged.",
+  "source_calls": 37627,
+  "source_classes": 881,
+  "source_files": 1250,
+  "source_functions": 11588,
+  "source_stores": 361,
+  "subject": {
+    "commit_sha": "c335d40373e4e9a0c28128b876a149d56b119fe1",
+    "tree_sha": "eb6fff5b3c367badbd31393382155d4c75398224"
+  },
+  "unresolved_callers_top20": [
+    [
+      "bcf_governance/tooling/governance_truth.py::derive_truth",
+      534
+    ],
+    [
+      "bcf_governance/tooling/ci_graph_contracts.py::_validate_workflows",
+      447
+    ],
+    [
+      "bcf_governance/tooling/ci_commands.py::main",
+      327
+    ],
+    [
+      "bcf_governance/tooling/governance_truth_support.py::finding_report",
+      326
+    ],
+    [
+      "bcf_governance/tooling/ci_graph_execution.py::job_execution_issues",
+      317
+    ],
+    [
+      "bcf_governance/tooling/local_pr.py::_run_prospective_train",
+      301
+    ],
+    [
+      "bcf_governance/tooling/interpreter_locked_project.py::compile_locked_project",
+      298
+    ],
+    [
+      "bcf_governance/tooling/controller_custody_prospective.py::validate_controller_custody_chain",
+      277
+    ],
+    [
+      "bcf_governance/tooling/ci_graph_audit.py::_source_history_snapshot",
+      248
+    ],
+    [
+      "bcf_governance/tooling/semantic_operation_effects.py::validated_operation_effect_inventory",
+      242
+    ],
+    [
+      "bcf_governance/tooling/ci_graph_storage.py::_validate_publishers",
+      221
+    ],
+    [
+      "bcf_governance/tooling/ci_recovery_frontier.py::compile_recovery_frontier",
+      220
+    ],
+    [
+      "bcf_governance/tooling/semantic_operation_effects.py::_construction_source_targets",
+      219
+    ],
+    [
+      "bcf_governance/tooling/release_adopter_qualification.py::qualify_release",
+      212
+    ],
+    [
+      "bcf_governance/tooling/candidate_provider_recovery.py::execute_candidate_provider_recovery",
+      210
+    ],
+    [
+      "bcf_governance/tooling/governance_install/runtime_custody.py::inspect_runtime_custody",
+      205
+    ],
+    [
+      "bcf_governance/tooling/governance_validation/evidence_contracts.py::_validate_gate_contract_registry",
+      201
+    ],
+    [
+      "bcf_governance/tooling/truth_workflow_graph.py::workflow_gate_issues",
+      201
+    ],
+    [
+      "bcf_governance/tooling/semantic_ownership_inventory.py::discover_python_source",
+      200
+    ],
+    [
+      "bcf_governance/tooling/prior_evidence_receipts.py::materialize_transport_material",
+      199
+    ]
+  ],
+  "unresolved_calls": 35421,
+  "unresolved_nonprotocol_targets_top20": [
+    [
+      "bcf_governance/tooling/ci_graph_errors.py::CIGraphError",
+      261
+    ],
+    [
+      "bcf_governance/tooling/ci_github_identity.py::GitHubControllerError",
+      223
+    ],
+    [
+      "bcf_governance/tooling/evidence_execution.py::EvidenceError",
+      121
+    ],
+    [
+      "pathlib::Path",
+      114
+    ],
+    [
+      "bcf_governance/tooling/local_pr_context.py::ProspectiveValidationError",
+      97
+    ],
+    [
+      "hashlib::module.sha256",
+      82
+    ],
+    [
+      "bcf_governance/tooling/truth_receipts.py::isinstance",
+      80
+    ],
+    [
+      "hashlib::module.hexdigest",
+      72
+    ],
+    [
+      "bcf_governance/tooling/interpreter_environment_plan.py::InterpreterEnvironmentError",
+      68
+    ],
+    [
+      "re::module.fullmatch",
+      60
+    ],
+    [
+      "json::module.loads",
+      60
+    ],
+    [
+      "bcf_governance/tooling/ci_authority_certification.py::str",
+      58
+    ],
+    [
+      "bcf_governance/tooling/ci_authority_pins.py::CIAuthorityPinError",
+      55
+    ],
+    [
+      "bcf_governance/tooling/ci_authority_contracts.py::CIAuthorityContractError",
+      54
+    ],
+    [
+      "bcf_governance/tooling/semantic_operation_effects.py::isinstance",
+      52
+    ],
+    [
+      "bcf_governance/tooling/semantic_python_method_identity.py::isinstance",
+      48
+    ],
+    [
+      "bcf_governance/tooling/truth_receipts.py::receipt.get",
+      48
+    ],
+    [
+      "bcf_governance/tooling/evidence_planning.py::isinstance",
+      44
+    ],
+    [
+      "bcf_governance/tooling/governance_truth_support.py::isinstance",
+      44
+    ],
+    [
+      "bcf_governance/tooling/ci_authority_certification.py::CICertificationError",
+      43
+    ]
+  ],
+  "unresolved_source_stores": 361,
+  "whole_requirement_advancement": false,
+  "crosses_declared_ports": true,
+  "population_limits": "Discovered Python source bodies and possible initialization only; dynamic targets, native behavior, runtime rebinding, non-Python consumers and complete lifecycle remain unqualified. Unresolved through-port counts are not counts of mandatory strict-operation blockers."
+}
