@@ -554,3 +554,4 @@ next_work:
 - "Pre-provider admission source630244a30807d9300081ce6ed0c6877c18e2144b:8real-Git controlsPASS after3premature-provider FAIL/5PASS; affected232casesPASS. Existing normalization revalidation and strict runtime/main block retained; architecture39PASS/1required block, lint/governance/packPASS. Full train/82whole open."
 - "Contract-first CI audit source custody:6real-Git controls,3expected native-monitor/ambient-source failures and3legacy positives; no full source-continuity or runtime authority claim."
 - "Audit Git sourcefa0d98fc4160006b20e16b08532ab4c338f42ebf:6real-Git controlsPASS after3genuine native-monitor/ambient-source FAIL/3PASS; affected221casesPASS. Architecture39PASS/1same required main block; lint/governance/packPASS. Full source-continuity/runtime/lifecycle and82whole open."
+- "Contract-first CI audit path identity:6real-Git filename controls; plain-name positive and5quoted/delimited UTF-8 cases; full continuity open."

@@ -47,3 +47,17 @@ audit_source_git_custody_source_verification:
     type: 394source
     statement: fa0d98fc audit.
   whole_requirement_advancement: false
+
+audit_source_path_inventory_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/ci_graph_audit.py
+  scope: Preserve exact UTF-8 filenames in the existing tracked-file audit query via
+    Git NUL-delimited output; no new return shape, CLI, registry, publication or retirement
+    authority. Non-UTF8 admission policy remains unchanged.
+  cases: 6
+  expected_before:
+    failures: 5
+    passes: 1
+  remaining: Full worktree, branch, checkpoint and handoff populations remain open.
