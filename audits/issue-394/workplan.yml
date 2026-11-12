@@ -218,6 +218,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/protocol-owner-extraction-verification.json
     - audits/issue-394/augmented-assignment-verification.json
     - audits/issue-394/pattern-dispatch-verification.json
     - audits/issue-394/operation-function-admission-verification.json
@@ -301,6 +302,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/protocol-owner-extraction-verification.json
     - audits/issue-394/augmented-assignment-verification.json
     - audits/issue-394/pattern-dispatch-verification.json
     - audits/issue-394/operation-function-admission-verification.json

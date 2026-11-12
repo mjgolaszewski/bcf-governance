@@ -1,0 +1,70 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "protocol_owner_extraction_characterized_runtime_context_open",
+  "subject": "a877cd324d142bacbb178fdfd2f6ec56f1848130",
+  "tree": "04c2c10ccbb5cb8a33ee18184bc5dfaafb5b8dcb",
+  "controls_subject": "394d4b13e0dde6e62ec7cbc090a241f6f28034c3",
+  "causal_before": {
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "fresh_consumer_after": {
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_full_matrix": {
+    "tests": 1128,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_full_matrix_subject": "f58a5befa01f79ee1dd62b0d17ceac3ae5eea4b7",
+  "previous_architecture": {
+    "tests": 40,
+    "failures": 25,
+    "errors": 0,
+    "skipped": 0
+  },
+  "disposition": "Unnecessary policy classification edit caused24new CI graph value digest failures. Restore exact original policy and use existing ownership prefix; no value/authority/workflow rebind. Full1128PASS retained at f58a5bef;3fresh facade/SDK contexts separately rerun after filename/import restoration. Required known-main block remains unwaived.",
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "a4fe99eeb6d4768d46483d414c2596477b41eee6dd9d6204885eae59ef1cc3fc",
+    "bcf_governance/tooling/semantic_python_calls.py": "82373dcfe53616d9b82fc05857a36cbf2ade56bcc57ee942e201de63f20c4b7b",
+    "bcf_governance/tooling/semantic_operation_effects.py": "176943b8941487c4c71cce536f380ab7f3debfad1bca4ebdc6cc584a6a36c72f",
+    "governance/self-governance-policy.yml": "2f3b07affc65d9505bc29950ee8098ca1e419f49ab9b3c7ce9bb95be12c40363",
+    "bcf_governance/tooling/semantic_ownership_protocols.py": "e5b1fe1066c41adffc62e0390ae70708f87b081778ba6bf66196d993bdaacec2"
+  },
+  "evidence_sha256": {
+    "before.xml": "f4d8dd20d2dfc34d91affa9dfacef26f3505005dbfc6929d0f3ea6782bc336b1",
+    "retained_full_matrix.xml": "735ffdf7ff7c1d311d576f599d2a78549b12c480feff611165a4d818e7e29442",
+    "prior_architecture.xml": "a9a3bd4537ee0f562da8fa13f02fc864c26aaa3f9967142b6fb950197cfa75f6",
+    "fresh_consumer.xml": "0f625a4f8dfc8a300570e55763bd9e5eb03bebe9ab86ccd5f14045662382e58c",
+    "architecture.xml": "bd521c70b5d2280478f5e71e3b4dce9001051425440820532346d9b7eaf96c00"
+  },
+  "scope": "Behavior-preserving extraction under existing semantic_ownership_ namespace. Declaration bytes unchanged; legacy facade and two actual consumers share exact imported objects. Original policy restored byte-for-byte. Retain1128PASS source baseline at f58a5bef with raw hash;3fresh facade/SDK-absent contexts separately pass after filename/import repair. No CI digest/workflow/authority rebind, new policy, evaluator, mapping copy, protocol, kind, schema, CLI or runtime authority.",
+  "extracted_declaration_sha256": "ec506d2a81b4a87c7195ae4ce98c9c1ce12861f334960e56486b01354ffdde31",
+  "retained_baseline_subject": "f58a5befa01f79ee1dd62b0d17ceac3ae5eea4b7",
+  "retained_baseline_affected": {
+    "tests": 1128,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}

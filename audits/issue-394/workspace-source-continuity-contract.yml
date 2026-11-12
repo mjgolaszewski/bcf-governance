@@ -613,3 +613,19 @@ protocol_owner_namespace_repair_contract:
   - new policy or trust rule
   - main/adopter/release changes
   - gate waiver or phase progress
+
+protocol_owner_extraction_verification:
+  report: audits/issue-394/protocol-owner-extraction-verification.json
+  sha256: 203ba25a10229c48818cda22dd8c0ffbfb61bc1e213230490ef9c269b599b640
+  subject: a877cd324d142bacbb178fdfd2f6ec56f1848130
+  previous_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  current_memory: 'P32 active; P33-P35 dormant. Semantic/build blocked: governance.cli.ci.v1
+    ci_commands.main unresolved runtime effects;82whole open.'
+  previous_ledger:
+    type: 394source
+    statement: 349e6ed1 augassign.
+  current_ledger:
+    type: 394source
+    statement: a877cd32 protosplit.
+  whole_requirement_advancement: false
