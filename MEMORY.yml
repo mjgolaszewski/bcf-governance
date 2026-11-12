@@ -20,7 +20,7 @@ memory_retention_policy:
   stale_entry_handling: [mark_deprecated_before_removal, preserve_replacement_reference_when_available]
 environment_facts:
   current_repo_state:
-  - "P31-HF17 targets 2.3.14. Class construction and managed CI repair in progress; actual immutable BDMCP69 constructor observation passed, not full consumer or release acceptance. Preserve deferred Identity/JIT and unique source."
+  - "P31-HF17 targets 2.3.14. Class construction and managed CI repair implemented; fresh installed typing/lint and actual immutable BDMCP69 constructor observation passed. Native full CI and release custody remain pending; not full consumer acceptance. Preserve deferred Identity/JIT and unique source."
   - "P31-HF16 merged PR444 at e9a612308f1a4df29db8b66058fcec776d587540 after native and hosted qualification. Installed669a453f rejected its consumed normalization transition; recovery build/install/probes and noncertifying receipt42944248839 passed. Machine-generated ordinary normalization is prepared; protected merge, exact-main certification and immutable2.3.13 custody remain pending."
   - "P31-HF16 full consumer scan exposed initializer precision gaps after earlier focused qualification. Source-proven generic calls, deferred lambdas and exact fallback/metadata aliases now retain ownership; revised installed/full release qualification remains required."
   - "P31-HF16 targets 2.3.13: inventory executable initializer construction with exact identities and fail-closed import coverage; transport calls require actual inward definitions or closed technical helpers, never name-substring exemptions; retain module branch/loop limits and qualify actual adopters."
