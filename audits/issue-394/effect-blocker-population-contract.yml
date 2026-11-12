@@ -1,0 +1,47 @@
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/effect-blocker-population-contract.yml
+status: planned_before_production
+authority: false
+execution_qualified: false
+subject: bcb3ed47648bd70873218ed9c00b24c2b4e00857
+bounded_context: ci_authority
+layer: tooling
+operation_side: query
+owners:
+- bcf_governance/tooling/semantic_operation_effects.py
+- bcf_governance/tooling/semantic_authority_operations.py
+scope: Reuse existing strict operation traversal. Preserve original exception type
+  and first failure string; attach sorted detached neutral effect_obligations tuples
+  (caller,kind,source_identity,reason) for every admitted reachable source blocker
+  up to declared ports. Invalid inventory still aborts, unknown dynamic/native paths
+  stay unresolved, constructor-only paths earn no direct port credit. No second graph/registry/receipt
+  or positive runtime qualifier.
+first_packet: Contract + 4 causal controls only; standard pytest before production,
+  expected 3 intended FAIL / 1 PASS; no product behavior claim. Commit bounded contract/tests
+  and back up exact feature head.
+future_required: Material implementation, source/private/installed parity and all
+  affected/required checks; strict CI runtime block remains unwaived.
+forbidden:
+- main/workflows/authority/release/maintenance/adopter changes
+- source-only green or missing authority waived
+- runtime/completeness/phase acceptance from diagnostics
+- immutable golden modifications
+architectural_layer: tooling
+expected_tests:
+- 'tests/test_semantic_effect_blocker_population.py: four causal controls'
+- 'scripts/validate_governance_yaml.py: metadata/schema alignment only'
+forbidden_files:
+- governance/ci-authority.yml
+- governance/self-governance-policy.yml
+- .github/workflows
+- immutable golden inventory fixtures
+population_limits:
+- Collect blockers recognized by the existing strict traversal; this diagnostic change
+  does not certify that every real effect has a detector.
+- Unknown native/library/borrowed-receiver behavior and initialization execution still
+  require independent complete populations and authenticated context.
+- Maintenance characterization at960 is not execution against this 2.5 subject. Do
+  not infer adopted behavior from source presence or source-count diagnostics.
