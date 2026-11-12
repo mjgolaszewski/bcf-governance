@@ -96,10 +96,10 @@ documents:
   canonical_topic_owner: docs/MAINTAINING.md
   topic_role: canonical
   before_sha256: e6e9d39c5990e9ea3830ac57d8ba33b3377d00b58235bc052e2bf97d1c7b2573
-  after_sha256: e6e9d39c5990e9ea3830ac57d8ba33b3377d00b58235bc052e2bf97d1c7b2573
+  after_sha256: 504defccf42696b0494171d9b07d24c3a1e71c30c01bafb4c8b324f8ca1e64cb
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
-  disposition: retained
+  - removed superseded controller runbooks and retained only routine transition and dormant self-recovery boundaries
+  disposition: revised
 - path: docs/RELIABILITY_MODEL.md
   audience: BCF adopters and maintainers
   canonical_topic_owner: docs/RELIABILITY_MODEL.md

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import shutil
 from collections.abc import Callable, Iterable, Mapping
 from copy import deepcopy
@@ -29,12 +30,14 @@ def retire_self_authority_pack_surfaces(
     entries: Mapping[str, Mapping[str, Any]],
     reject_destination: Callable[[Path, Path], None],
     prune_empty_parents: Callable[[Path, Path], None],
+    excluded_paths: frozenset[str] = frozenset(),
+    retired_files: Mapping[str, tuple[str, ...]] | None = None,
 ) -> list[Path]:
     """Remove only exact pack-owned destinations now classified as self-only."""
 
     removed: list[Path] = []
     for value, entry in sorted(entries.items()):
-        if entry.get("installation_scope") != "self_authority":
+        if value in excluded_paths or entry.get("installation_scope") != "self_authority":
             continue
         relative = Path(value)
         reject_destination(target_root, relative)
@@ -43,6 +46,9 @@ def retire_self_authority_pack_surfaces(
             continue
         if not destination.is_file():
             raise ValueError(f"self-only pack destination is not a file: {value}")
+        allowed = {str(entry["sha256"]), *(retired_files or {}).get(value, ())}
+        if hashlib.sha256(destination.read_bytes()).hexdigest() not in allowed:
+            raise ValueError(f"self-only pack destination has unexplained bytes: {value}")
         destination.unlink()
         prune_empty_parents(target_root, destination)
         removed.append(destination)

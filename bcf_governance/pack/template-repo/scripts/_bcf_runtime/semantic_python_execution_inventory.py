@@ -206,7 +206,8 @@ class _FunctionVisitor(ast.NodeVisitor):
             receiver=self.receiver,
             assignments=self.assignments,
         )
-        if ((self.method_binding_kind == "class" or self.decorators)
+        if (self.class_symbol is not None
+                and (self.method_binding_kind == "class" or self.decorators)
                 and self.receiver is not None and isinstance(node.func, ast.Name)
                 and (node.func.id == self.receiver
                      or f"parameter:{self.receiver}" in self.assignments.get(node.func.id, set()))):

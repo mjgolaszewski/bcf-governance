@@ -1152,7 +1152,7 @@
     },
     "scripts/_bcf_runtime/governance_install/pack_manifest.py": {
       "operation": "copy",
-      "sha256": "17d5ab4760ab6c5093e8a5dfbed45e1a4165454e325deed7560d6b29c3869289"
+      "sha256": "794bfff3a3c316fdc7b97a59e8261c6f947d91d8b601d3458a7ea590f78693fa"
     },
     "scripts/_bcf_runtime/governance_install/phase.py": {
       "operation": "copy",
@@ -1192,7 +1192,7 @@
     },
     "scripts/_bcf_runtime/governance_install/upgrade.py": {
       "operation": "copy",
-      "sha256": "f4b0732a5d09a1e0c453ff5adfd267bb935a538feed4ccd76b4cc3a74bd83263"
+      "sha256": "8252b4dad8339ced04a08a578437e20e100444e4b8a37aad2424d46c2c3b63e2"
     },
     "scripts/_bcf_runtime/governance_install/validation.py": {
       "operation": "copy",
@@ -1348,7 +1348,7 @@
     },
     "scripts/_bcf_runtime/install_governance_pack.py": {
       "operation": "copy",
-      "sha256": "8a339e83343a0b85e144d3df36aabc82c8ae14cc3c480381e81c2ec9148cd076"
+      "sha256": "504b195a054285735fbd50d9b17921f4767bc95fae35060638f856d8b1665f3d"
     },
     "scripts/_bcf_runtime/interpreter_contract_projection.py": {
       "operation": "copy",
@@ -1697,7 +1697,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_execution_inventory.py": {
       "operation": "copy",
-      "sha256": "5127483d8b57ffb6655e6db3f4044d84a324db683773b2b2b1450f0ecea474f4"
+      "sha256": "33f018d7adf46207c834653c1b66fbe4314dacbd4fb29d11798f7a5c5882558f"
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
@@ -1838,11 +1838,28 @@
     "schemas/authored-phase-state-result.schema.json": [
       "72518be5539a7a50fc411ba0ed44c219cc651b61af5048d42b6c37c10b07d92c"
     ],
+    "schemas/break-glass-recovery-policy.schema.json": [
+      "3818b878dd8e72b690473635a3bef8042271a8f0f2b446080df0aa7fadbff06d",
+      "4a1ce466c678a8f942fdb0c35488a757d7065a60aa8141de7f43ace12963ed40"
+    ],
+    "schemas/break-glass-recovery-receipt.schema.json": [
+      "8bee9623787b9ba1c463f329f02fdc282756dca2542f6876f52768a0713be323",
+      "e7fafb062a2c98118ff93b0419eca9327670a27e3c42aedac77f5ff8450b0453"
+    ],
     "schemas/ci-lifecycle-composition.schema.json": [
       "85781ff360710fcee8924ac2a4b65f6715adfcf47863b8d609839524f5458e13",
       "cfd6e50884c972f976c95079114538b8bd8cc3c2a4ed315889a16b7964cc1f4e",
       "dc1e233ec3483f648cb26abd5b4a548933cdab41684516951213a2ac4e5f43ba",
       "e7036bdeac25937aab951a66f7a00a6d42c7e9ba464c4ddc0fd70908e214c515"
+    ],
+    "schemas/product-certification.schema.json": [
+      "75ed050652b6139d1aaedfdf6d68e2663b4dc15bf66a3b698254015564d5d8e9"
+    ],
+    "schemas/product-parity.schema.json": [
+      "899a19c5de7c25b372c213df4044947ef923e64b217ff14fa88427d333910ce0"
+    ],
+    "schemas/recovery-reentry-authorization.schema.json": [
+      "a4f3699ed4cb9dfb5f5b48246cfcc823313051cc228f951c1efa14bfa6bea4be"
     ],
     "schemas/release-train-backtrace.schema.json": [
       "02c08e72c64911cd99303ae6cbe1da5bbf2f8ca5db8677ddf6d63171b38b90b9",
@@ -1850,11 +1867,27 @@
       "cc6372de5926cbe0e484f0233c14c6fab81f9d46292dd7ae4ed67f43935656a0",
       "edaa652bcc34ace5d01ea1a87c8a92e1749dce5dcf4841261dab9a33db28ef16"
     ],
+    "schemas/self-authority-overlays.schema.json": [
+      "1df494b1dbc5b23bf4c276325386cb71782ec004c6b28a018e2fdf3bffd0f6f3",
+      "843254d52bedd054330129f6685520568d1c03fbad7973ce7fc689c442d46825"
+    ],
     "schemas/semantic-call-contracts.schema.json": [
       "e812ce939497056f4551e70a9773cb4d44da11348645493f0ea2846c034db149"
     ],
     "schemas/semantic-initialization-contracts.schema.json": [
       "ef58f8d9eef278a28a22a02995a022896c86402a03cee54df231aba18dc4dc9c"
+    ],
+    "scripts/_bcf_runtime/break_glass_recovery.py": [
+      "3acd164665510f649c0ad19c89fa807b2acf1c7f0d742f2000e3fccc39a24eae",
+      "61e877c210dc23b5d27c5e637cad887a72aba8b54607ea351b3d155a5fe53c22",
+      "73138d4076a23f69c76101a28c78064e5fc6e0fa47fc94ec9627e07dd9613d0c",
+      "8057d7b54c0fd55620dffdfc359ba8c747ce333f14967a7143216c504d8f41d0",
+      "b801a8090471277f4725f80fb266fc27ed99461bf69c58c85c4de213ae5f694b",
+      "fa5d02f716c8c1f61db8e6d43938bddd08f0c75a8708e94b509d243891d01b4b"
+    ],
+    "scripts/_bcf_runtime/break_glass_reentry.py": [
+      "c75e9ecddeade7f1f1365e5a59fad573f0d44ca15dea21f15656df96d8763452",
+      "e20c22b403ed8859f4afa8b27a3d801537a93ecc453d36b8c76344efe9e7e431"
     ],
     "scripts/_bcf_runtime/ci_authority_prospective_truth.py": [
       "9e942c9c712a2d5ec675f7d87431cb3acd5f25a2d801373bc33c0407b25c4e99"
@@ -1922,6 +1955,22 @@
       "398ec7b9b0b39f399ed8ff3314d2708f538c3ff0fa382af10e3fdb871fe58481",
       "cfe82ffce75fd4fd4a4d1a159d09f280341b02c4a07a277a85952d4017d860c1"
     ],
+    "scripts/_bcf_runtime/governance_validation/product_certification.py": [
+      "625d35068778462c169f4b28a908c3dc33465996768b5c03dced479ddcb1cec1",
+      "6ab81e3c8e42744dbe0ce0251bfe5fa61abb7d15e96637caa61e5e6f3d4ab39c",
+      "8fcc5cf6f5bbc2e57a957d1fe4e3c11059a53c8b240036aaf4b8574f6ac52e18",
+      "ec6331d60bec94f61f7401fb7455fc19edf6b847e38f2350572b44b8de8b781c"
+    ],
+    "scripts/_bcf_runtime/governance_validation/product_parity.py": [
+      "a38bdffe49eeefd6622363a34b46d1e3997c128734f1e074f7bdb4fab55d8054"
+    ],
+    "scripts/_bcf_runtime/governance_validation/self_authority_dispatch.py": [
+      "8976cebe52689edda44710ec693b0374712b1bcc524b374a3bdadc24b16b39ce"
+    ],
+    "scripts/_bcf_runtime/governance_validation/self_authority_overlays.py": [
+      "250e37ab512df68677ce475aa53ff82a7f6df8e79d6dd14a651aaf18dfb90d76",
+      "6daa5d88622ec9a57d7f4e5f8e923cb7d1d3642a2fa3680836244ff8081e17dc"
+    ],
     "scripts/_bcf_runtime/local_producer_workspaces.py": [
       "52df9dbf284cb63579e2c84f51593c389aae2793af93f553dfc6a9213cdd0d63",
       "66eb6327cd06676537c7cb3edbbc4ae43caab1f8f0b8f0019619439bbb0ebed0"
@@ -1931,6 +1980,9 @@
     ],
     "scripts/_bcf_runtime/prospective_telemetry.py": [
       "dd87a27ed69ac0aadd88afc7d3e88e25fe3934086d1059a7fa7a977defdd53c7"
+    ],
+    "scripts/_bcf_runtime/routine_controller_prospective.py": [
+      "73dee152c9fc4136026796c36e399f61e0e58d08a3b5a4c692a4a22bfee262c6"
     ],
     "scripts/_bcf_runtime/semantic_authority_operations.py": [
       "4bc8c8f73742dec26f18cbf7dbe19083c9a99f94d49a0efc933fbb045c9e164d",

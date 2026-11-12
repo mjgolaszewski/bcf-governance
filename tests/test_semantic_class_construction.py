@@ -234,3 +234,16 @@ def test_class_parameter_alias_cannot_hide_behind_a_resolved_constructor(tmp_pat
     assert any(row["kind"] == "unresolved_class_constructor"
                and row["symbol"] == "models.py::Record.from_payload"
                for row in value["unresolved"])
+
+
+def test_unknown_standalone_callback_is_not_invented_as_a_class_receiver(tmp_path: Path) -> None:
+    value = _inventory(tmp_path,
+        "def identity(function):\n    return function\n"
+        "@identity\ndef invoke(callback):\n    return callback()\n")
+    assert not value["constructors"]
+    assert not any(row["kind"] == "unresolved_class_constructor"
+                   for row in value["unresolved"])
+    operation = {"id": "invoke.v1", "allowed_mutation_ports": [],
+                 "allowed_authority_ports": [], "non_authoritative_output_effects": []}
+    with pytest.raises(SemanticOperationEffectError, match="unresolved"):
+        validate_operation_effects(operation, "models.py::invoke", value)
