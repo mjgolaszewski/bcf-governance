@@ -23,6 +23,48 @@ def _tracked(repo_root: Path, patterns: tuple[str, ...]) -> list[str]:
     return sorted(line for line in result.stdout.decode("utf-8").split("\0") if line) if result.returncode == 0 else []
 
 
+def _worktree_source_digest(root: Path, relative: str) -> dict[str, Any]:
+    """Hash one Git-reported path without following leaf or parent symlinks."""
+    import os
+    import stat
+
+    path = Path(relative)
+    if path.is_absolute() or not path.parts or ".." in path.parts:
+        raise ValueError("source byte observation path escapes its worktree")
+    if any(not hasattr(os, flag) for flag in ("O_DIRECTORY", "O_NOFOLLOW", "O_NONBLOCK")):
+        raise ValueError("safe source-byte descriptor observation is unsupported")
+    if os.open not in os.supports_dir_fd or os.stat not in os.supports_dir_fd or os.stat not in os.supports_follow_symlinks:
+        raise ValueError("rooted source-byte descriptor observation is unsupported")
+    directory_flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_NONBLOCK
+    descriptor = os.open(root, directory_flags)
+    try:
+        for part in path.parts[:-1]:
+            child = os.open(part, directory_flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+        try:
+            source = os.open(path.name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=descriptor)
+        except FileNotFoundError:
+            return dict(kind="deleted")
+        with os.fdopen(source, "rb") as stream:
+            before = os.fstat(stream.fileno())
+            if not stat.S_ISREG(before.st_mode):
+                raise ValueError("source byte observation requires a regular file")
+            digest = hashlib.sha256()
+            for block in iter(lambda: stream.read(65536), b""):
+                digest.update(block)
+            after = os.fstat(stream.fileno())
+            current = os.stat(path.name, dir_fd=descriptor, follow_symlinks=False)
+        identities = [(value.st_dev, value.st_ino, value.st_mode, value.st_nlink,
+                       value.st_size, value.st_mtime_ns, value.st_ctime_ns)
+                      for value in (before, after, current)]
+        if identities[0] != identities[1] or identities[1] != identities[2]:
+            raise ValueError("source bytes changed during descriptor observation")
+        return dict(kind="regular", size=after.st_size, sha256=digest.hexdigest())
+    finally:
+        os.close(descriptor)
+
+
 def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
     """Observe registered Git identities; source bytes and clone coverage are separate."""
     identity = _source_git(repo_root, "rev-parse", "HEAD", "HEAD^{tree}")
@@ -82,7 +124,9 @@ def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
         peer_branch = _source_git(path, "symbolic-ref", "-q", "HEAD")
         status = _source_git(path, "status", "--porcelain=v1", "-z", "--untracked-files=all")
         untracked = _source_git(path, "ls-files", "-z", "--others", "--exclude-standard", "--")
-        if any(value.returncode for value in (observed, peer_common, status, untracked)) or peer_branch.returncode not in (0, 1):
+        modified = _source_git(path, "ls-files", "-z", "--modified", "--deleted", "--")
+        indexed = _source_git(path, "diff", "--cached", "--raw", "--no-ext-diff", "--no-textconv", "--no-renames", "--abbrev=40", "-z", "HEAD", "--")
+        if any(value.returncode for value in (observed, peer_common, status, untracked, modified, indexed)) or peer_branch.returncode not in (0, 1):
             row["unresolved"] = "registered_checkout_read_unavailable"
             continue
         peer_identity = observed.stdout.decode("ascii").splitlines()
@@ -94,6 +138,43 @@ def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
             continue
         if any(re.fullmatch(r"[a-f0-9]{40}", value) is None for value in peer_identity):
             raise ValueError("registered checkout subject is not exact")
+        index_versions = {}
+        records = indexed.stdout.split(b"\0")
+        if records[-1] != b"" or len(records[:-1]) % 2:
+            raise ValueError("index source-version records are malformed")
+        for offset in range(0, len(records) - 1, 2):
+            fields = records[offset].decode("ascii").split()
+            name = records[offset + 1].decode("utf-8")
+            if (len(fields) != 5 or not fields[0].startswith(":")
+                    or re.fullmatch(r"[a-f0-9]{40}", fields[3]) is None or fields[4] not in {"A", "M", "D", "T"}):
+                raise ValueError("index source-version identity is ambiguous")
+            if name in index_versions:
+                raise ValueError("index source-version path is duplicated")
+            if fields[4] == "D":
+                index_versions[name] = dict(kind="deleted")
+                continue
+            if fields[1] not in {"100644", "100755"}:
+                raise ValueError("index source observation requires regular source blobs")
+            blob = _source_git(path, "cat-file", "blob", fields[3])
+            if blob.returncode:
+                raise ValueError("index source blob is unavailable")
+            object_hash = hashlib.sha1(usedforsecurity=False)
+            object_hash.update(("blob " + str(len(blob.stdout)) + "\0").encode("ascii"))
+            object_hash.update(blob.stdout)
+            if object_hash.hexdigest() != fields[3]:
+                raise ValueError("index source blob bytes contradict their object identity")
+            index_versions[name] = dict(kind="regular", mode=fields[1], blob_oid=fields[3],
+                                        size=len(blob.stdout), sha256=hashlib.sha256(blob.stdout).hexdigest())
+        changed_paths = sorted({value.decode("utf-8") for value in modified.stdout.split(b"\0") if value}
+                               | index_versions.keys())
+        working_versions = {name: _worktree_source_digest(path, name) for name in changed_paths}
+        untracked_versions = {value.decode("utf-8"): _worktree_source_digest(path, value.decode("utf-8"))
+                              for value in untracked.stdout.split(b"\0") if value}
+        if any(value["kind"] != "regular" for value in untracked_versions.values()):
+            raise ValueError("untracked source disappeared during byte observation")
+        row["source_byte_observations"] = dict(scope="git_reported_index_and_worktree_changes",
+                                               index=index_versions, working=working_versions,
+                                               untracked=untracked_versions)
         row.update(available=True, tree_sha=peer_identity[1],
                    status_entries=sorted(value.decode("utf-8") for value in status.stdout.split(b"\0") if value),
                    untracked_paths=sorted(value.decode("utf-8") for value in untracked.stdout.split(b"\0") if value))
