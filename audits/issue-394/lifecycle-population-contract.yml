@@ -2660,3 +2660,20 @@ async_context_source_fixture_contract:
   - repeating unchanged1038passing cases for bookkeeping
   remaining: Benign runtime profiles and full installed/lifecycle context qualification
     remain open.
+
+implicit_grammar_source_verification:
+  report: audits/issue-394/implicit-runtime-grammar-source-controls.json
+  sha256: 7fa6a1e3100176b8447a0af44584a4aa5d5f851910861704c37d966c031148f2
+  production_subject: 40c966f36b8b404eae39dbaf19a3457234130c53
+  fixture_subject: 6cf8a4004811d55f51082b857aa4ff7f6e9527fe
+  previous_memory: P32 active; P33-P35 dormant. Implicit-grammar diagnostic 9d8b39ac;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Grammar40c966f3 guarded;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 9d8b39ac gram.
+  current_ledger:
+    type: 394source
+    statement: 40c966f3 gram.
+  whole_requirement_advancement: false

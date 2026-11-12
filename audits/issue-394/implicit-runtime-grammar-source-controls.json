@@ -1,0 +1,62 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "scoped_grammar_controls_and_async_source_context_pass_runtime_profiles_open",
+  "production_subject": "40c966f36b8b404eae39dbaf19a3457234130c53",
+  "production_tree": "6f510d1629771c0a6f6c9e6a520ea24ab0bbb25a",
+  "fixture_subject": "6cf8a4004811d55f51082b857aa4ff7f6e9527fe",
+  "new_metadata_before": {
+    "tests": 25,
+    "failures": 21,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_affected_at_production": {
+    "tests": 1039,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_passing_cases": 1038,
+  "changed_context_cases": {
+    "tests": 30,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_native_receiver_contexts": 2,
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_method_identity.py": "da6aa558f465fc5fcb16a820f9a46f8ae25aad6bac4822b0255c7927a70c788d",
+    "bcf_governance/tooling/semantic_python_calls.py": "5b1494fedfbbe475050da2a13f418ccf6e887a0f22a9e8d212191f8f51888d52",
+    "bcf_governance/tooling/semantic_operation_effects.py": "5332e67a96d7c122102c5943850ba2731b16a168779c6ed0f891f16032743c24",
+    "schemas/semantic-call-contracts.schema.json": "475374825e63baddb46ef678967b980c82ead4ab046759ded663e4431dc1bda4"
+  },
+  "retained_evidence_sha256": {
+    "before.xml": "a5d0ae167f57d9a68b46d778227259e7827e6576ffe2635fd8bbfda625dfbd4d",
+    "after.xml": "103b38009d6972bc8756222bb90de57600ddc14f68b8a6f729ee65fbd1353c3e"
+  },
+  "new_evidence_sha256": {
+    "context.xml": "2dc3685f4a55d3aed32b84b700f0dfe771b76b1976601d9412bacbad5ec991ae",
+    "architecture.xml": "cb4d533537541557bf7d9a2dc088a7c7335f092178e711ae341121abe8378826"
+  },
+  "retained_behavioral_baseline": {
+    "subject": "9d8b39ac1ad5ca2d2b31204afa6e019d87fff3b0",
+    "tests": 20,
+    "failures": 9,
+    "passes": 11
+  },
+  "scope": "All nine qualified grammar gaps and25new metadata controls passed at unchanged production subject; retain1038passing cases without rerunning. Corrected async fixture preserves method identity/source-only observation plus strict runtime refusal. Two ordinary native contexts differ while Service source is identical. This is separate retained and changed execution evidence, not one1041case green run. Marker1.0 remains compatible; new1.1 await/exception markers and crossed-version refusal are scoped source controls.",
+  "whole_requirement_advancement": false,
+  "remaining": "Known ci main effect block, authenticated benign/native/runtime/installed context profiles and complete lifecycle/language populations, deadlines, baseline protocol/targets, adopters and custody;82whole open."
+}
