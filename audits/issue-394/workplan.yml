@@ -218,6 +218,14 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/workspace-source-continuity-contract.yml
+    - audits/issue-394/audit-source-git-custody-verification.json
+    - audits/issue-394/audit-path-identity-verification.json
+    - audits/issue-394/registered-source-history-verification.json
+    - audits/issue-394/source-byte-observation-verification.json
+    - audits/issue-394/inert-source-filter-verification.json
+    - audits/issue-394/installed-source-continuity-verification.json
+    - audits/issue-394/local-import-reference-verification.json
     - audits/issue-394/named-source-population-accounting.json
     - tests/test_source_repository_environment.py
     - tests/test_source_comparison_environment.py
@@ -288,6 +296,14 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/workspace-source-continuity-contract.yml
+    - audits/issue-394/audit-source-git-custody-verification.json
+    - audits/issue-394/audit-path-identity-verification.json
+    - audits/issue-394/registered-source-history-verification.json
+    - audits/issue-394/source-byte-observation-verification.json
+    - audits/issue-394/inert-source-filter-verification.json
+    - audits/issue-394/installed-source-continuity-verification.json
+    - audits/issue-394/local-import-reference-verification.json
     - audits/issue-394/named-source-population-accounting.json
     - tests/test_source_repository_environment.py
     - tests/test_source_comparison_environment.py
