@@ -224,3 +224,40 @@ inert_source_filter_source_verification:
     type: 394source
     statement: a4085735 inert.
   whole_requirement_advancement: false
+
+installed_source_continuity_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: .github/scripts/verify_installed_consumer.py
+  bounded_context: ci_authority
+  operation_side: qualification_query
+  scope: Extend existing canonical installed-consumer harness with same10native source-continuity
+    cases on fresh/pre-upgrade/upgraded SDK-absent private runtimes for exact wheel
+    and sdist. Reuse ordinary consumer fixtures and canonical build/runtime verifier,
+    no alternate installer/evaluator/receipt.
+  cases:
+  - plain_clean
+  - exact_path
+  - registered_peer
+  - staged_working
+  - clean_filter_required_false
+  - clean_filter_required_true
+  - hidden_assume-unchanged
+  - hidden_skip-worktree
+  - gitlink_block
+  - equal_tree_distinct_commits
+  independence: Source fixture proves native inputs, isolated -I probe imports only
+    installed private namespace; verifier recomputes existing archive/source/evidence
+    mappings and checks exact case population. Source/native detector and installed
+    observations remain distinct.
+  forbidden:
+  - network install
+  - SDK import in private probe
+  - main/adopter/release mutation
+  - semantic or architecture waiver
+  - fullworkspace/custody/phase claim
+  exit: Two source-fixture contexts pass, required source gates accounted for, exact
+    dev distribution built once only if semantic gate passes; canonical wheel/sdist
+    fresh-upgrade evidence must contain exact10case populations. Otherwise retain
+    typed blocker without build/publication.
