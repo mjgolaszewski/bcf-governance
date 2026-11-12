@@ -167,6 +167,20 @@ def _source_store_rows(function: dict[str, Any]) -> tuple[tuple[str, int, str], 
     return tuple(rows)
 
 
+def _source_function_population(inventory: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Reject ambiguous function identities before any consumer resolves a root."""
+    functions: dict[str, dict[str, Any]] = {}
+    rows = inventory.get("functions")
+    if not isinstance(rows, list):
+        raise SemanticOperationEffectError("operation source function population is incompatible or ambiguous")
+    for row in rows:
+        symbol = row.get("symbol") if isinstance(row, dict) else None
+        if not isinstance(symbol, str) or not symbol or symbol in functions:
+            raise SemanticOperationEffectError("operation source function population is incompatible or ambiguous")
+        functions[symbol] = row
+    return functions
+
+
 def source_operation_call_population(
     entrypoint: str, inventory: dict[str, Any], *, include_initialization: bool = False,
 ) -> dict[str, Any]:
@@ -189,14 +203,9 @@ def source_operation_call_population(
         raise SemanticOperationEffectError("initialization population option must be boolean")
     if inventory.get("call_contracts_version") != "1.0" or inventory.get("authority") is not False:
         reject()
-    functions: dict[str, dict[str, Any]] = {}
-    if not isinstance(inventory.get("functions"), list) or not isinstance(inventory.get("files"), list):
+    functions = _source_function_population(inventory)
+    if not isinstance(inventory.get("files"), list):
         reject()
-    for function in inventory["functions"]:
-        symbol = function.get("symbol") if isinstance(function, dict) else None
-        if not isinstance(symbol, str) or not symbol or symbol in functions:
-            reject()
-        functions[symbol] = function
     if not isinstance(entrypoint, str) or entrypoint not in functions:
         reject()
     files: dict[str, str] = {}
@@ -482,9 +491,7 @@ def validated_operation_effect_inventory(
     """Trace effects; explicit source-only views retain unknown context as data."""
     if not isinstance(require_runtime_context, bool):
         raise SemanticOperationEffectError("runtime effect context requirement must be boolean")
-    functions = {
-        str(row["symbol"]): row for row in inventory.get("functions", [])
-    }
+    functions = _source_function_population(inventory)
     classes = _construction_source_classes(inventory)
     entrypoint = _resolve_function(entrypoint_symbol, functions)
     if entrypoint is None:
