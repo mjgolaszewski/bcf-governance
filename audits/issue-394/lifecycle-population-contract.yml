@@ -2099,3 +2099,30 @@ explicit_global_name_store_qualification:
   - test_effect_consumer_cannot_accept_undeclared_state_mutation[parameter-item]
   - test_effect_consumer_cannot_accept_undeclared_state_mutation[receiver-attribute]
   whole_requirement_advancement: false
+
+subscript_object_store_contract:
+  authority: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query source-effect observation and validation
+  target_modules:
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  scope: Subscript Store/Del syntax in operation and eager class/default context;
+    neutral observations through existing source population plus exact unresolved-effect
+    pairing in both consumers. Only whole linear closed native literal regions qualify
+    as local; no parameter/type-label freshness or constructor-name exemption.
+  controls:
+    total: 56
+    before_core: 48
+    expected_before_core_failures: 24
+    expected_before_core_passes: 24
+    fresh_native_contexts: 16
+    forgery_after: 8
+  remaining: Receiver attributes, method/callback effects, nonlocal and remaining
+    binding/context populations, full runtime/installed/adopter qualification remain
+    open.
+  compatibility: Optional additive source_store_observations/source_stores in existing
+    neutral inventory; no CLI/status or authority-family change. Empty legacy populations
+    unchanged. Both observation authority and execution_qualified remain false.
+  no_new_registry_graph_evaluator_or_receipt_family: true
