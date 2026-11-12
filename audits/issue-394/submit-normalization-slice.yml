@@ -149,3 +149,30 @@ standalone_authored_preflight_correction:
   - tests.test_reconcile_governance::test_reconcile_authored_phase_rejects_before_runtime_or_shadow
   - tests.test_reconcile_governance::test_reconcile_authored_release_rejects_before_runtime_or_shadow
   forbidden: [new state evaluator, bypassing authored contradictions, manual generated hashes, provider mutation]
+
+pre_provider_authored_admission_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/ci_authority_submit.py
+  scope: Reuse the existing pure authored input validator after clean-subject admission
+    but before provider context discovery. Preserve its original normalization consuming-boundary
+    validation and ordinary valid/unbound behavior. Phase-catalog contradiction, invalid
+    timeout policy and incomplete control registry must fail before avoidable provider
+    discovery, lease, reconciliation or proof. No new policy, evaluator, caller-selected
+    intent, cache, token, flags or authority.
+  cases: 8
+  expected_before:
+    failures: 3
+    passes: 5
+  fixture_scope: Existing title-only unit fixture already stubs normalization and
+    intentionally omits phase catalogs; explicitly stub authored admission in that
+    one title test, retaining the title assertion. All eight new real-Git controls
+    exercise the actual authored validator without mocking it.
+  forbidden:
+  - provider discovery for already available authored contradictions
+  - skipping consuming-boundary revalidation
+  - editing characterization goldens
+  - claiming source population is runtime qualification
+  remaining: Source census is not executable phase, alias, runtime binding or installed
+    conformance.

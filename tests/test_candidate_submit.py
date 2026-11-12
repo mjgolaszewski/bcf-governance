@@ -221,6 +221,8 @@ def test_submit_derives_phase_title_for_parallel_todo_progress(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     _state(monkeypatch)
+    # This unit fixture intentionally omits authored catalogs; admission is tested on real Git roots.
+    monkeypatch.setattr(submit, "_validate_authored_submission_inputs", lambda *_a: None)
     monkeypatch.setattr(
         submit,
         "_canonical_inputs",
