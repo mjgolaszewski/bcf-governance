@@ -2295,3 +2295,21 @@ callback_runtime_target_qualification:
     statement: 2554c808 target guard.
   remaining_state_failures: []
   whole_requirement_advancement: false
+
+nested_runtime_scope_contract:
+  authority: false
+  scope: Independently discover named runtime definitions and called-body effects
+    across lexical nesting without conflating deferred bodies or wholly owned operation
+    cells with external writes.
+  controls: 18controls:4explicit Python qualname populations,4called shared mutation
+    rejections,4fresh native write witnesses,3pure contexts and3native pure witnesses.
+    Actual failures recorded by cause, no errors/skips; contract/tests before production.
+  interfaces: Extend existing function scope, call identities, context-qualified population/effect
+    owners only. Preserve current top-level/class identities; any unavoidable public
+    grammar requires explicit migration. No parallel graph/registry/evaluator/receipt.
+  not_authority: Source definition presence is not execution or runtime authority;
+    uncalled definition bodies cannot taint eager caller. Called nested bodies and
+    escaping/rebound/unknown closures require explicit conservative accounting.
+  residuals: Complete lifetime/binding/context profiles, installation/adopters/deadlines/approved
+    targets/custody and82whole stay open.
+  whole_requirement_advancement: false
