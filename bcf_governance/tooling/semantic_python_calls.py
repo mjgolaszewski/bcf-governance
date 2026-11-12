@@ -529,8 +529,13 @@ class _FunctionVisitor(ast.NodeVisitor):
             fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
         if not isinstance(node.func, (ast.Name, ast.Attribute)):
             fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
-        if reference is not None and reference.get("local") in self._ambiguous_imports:
-            fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
+        if reference is not None:
+            import_line = reference.get("binding", {}).get("line")
+            future_local = (type(import_line) is int and getattr(self._root_function, 'lineno', 0) <= node.lineno < import_line
+                            <= (getattr(self._root_function, 'end_lineno', 0) or 0))
+            if reference.get("local") in self._ambiguous_imports or future_local:
+                fact.pop("import_reference", None)
+                fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
         escaped = set().union(*(self._origins(value) for value in [*node.args, *[keyword.value for keyword in node.keywords]]))
         if any(value.startswith("lexical_function:") for value in escaped):
             self._global_store_effects.append({"kind": "unresolved", "target": "lexical_callable_escape",
