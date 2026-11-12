@@ -19,7 +19,10 @@ def _source_git_environment() -> dict[str, str]:
         name: value for name, value in os.environ.items()
         if not name.startswith("GIT_")
     }
-    environment.update(GIT_OPTIONAL_LOCKS="0", GIT_TERMINAL_PROMPT="0")
+    environment.update(
+        GIT_OPTIONAL_LOCKS="0", GIT_TERMINAL_PROMPT="0",
+        GIT_NO_LAZY_FETCH="1", GIT_ALLOW_PROTOCOL="",
+    )
     return environment
 
 
