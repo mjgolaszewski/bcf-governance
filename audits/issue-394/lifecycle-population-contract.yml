@@ -2393,3 +2393,28 @@ lexical_causal_fixture_qualification:
     errors: 0
     skipped: 0
   whole_requirement_advancement: false
+
+lexical_class_population_contract:
+  source_subject: 020dcbb8fa300ee307fad68ee05933e39a76d76a
+  observed_missing_method_rows: 107
+  observed_missing_class_owners: 66
+  scope: Extend existing source class/method discovery and type projection to lexical,
+    conditional and nested class declarations; exact qualified identities through
+    two real consumers of one source-class helper. Existing missing/ambiguous population
+    rejection remains. No class_symbol deletion, runtime-construction credit, parallel
+    registry or evaluator.
+  before_core_cases: 16
+  after_cases: 20
+  profiles:
+  - module
+  - local
+  - conditional-local
+  - nested-local
+  - nested-module
+  - conditional-module
+  - method-local
+  - nested-function
+  controls: Explicit independently authored class/method populations; source-population
+    neutral consumers; both source/effect consumers reject omitted class/type rows.
+    Whole runtime and binding/population contexts remain open.
+  whole_requirement_advancement: false
