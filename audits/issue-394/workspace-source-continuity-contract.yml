@@ -478,3 +478,48 @@ pattern_dispatch_verification:
     type: 394source
     statement: 935ad1dc pattern.
   whole_requirement_advancement: false
+
+augmented_assignment_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  bounded_context: tooling
+  architectural_layer: tooling
+  operation_side: query
+  owners:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_ownership_inventory.py
+  scope: Unknown AugAssign target/value retains existing operator1.0 protocol edge;
+    all13operator forms and ordinary/reflected fallback remain runtime-unqualified.
+    No new protocol kind/schema/registry or source-selected runtime authority.
+  preserved_closed_frame: Reuse existing whole-parent literal-int scalar-cell proof
+    through actual direct parent/child AST identity for AugAssign only. Thread private
+    parent AST through existing source factory; no public fact or caller flag accepts
+    a type annotation or supplied eligibility set. Escaping callbacks, opaque calls,
+    parameters, decorators, defaults and unclosed frames cannot qualify.
+  native_before:
+    subject: 0c5df0f3a80124358b4833b4b2a96b7e443792bb
+    cases: 15
+    missed_effects: 15
+    raw_sha256: bfb2101316eed4cbb38a000613bf48222801c8c06cf4bc35563beb1f0bee282d
+  controls:
+    tests: 51
+    expected_before_failures: 36
+    expected_before_passes: 15
+    populations: [native_in_place_and_fallback_writes, AST_operator_census, exact_span, neutral_marker, source_only_unknowns, wrong_version, forged_port, closed_literals, private_cell, escaping_cell]
+  installed_contexts: Existing SDK-absent fresh/upgrade probe grows16to32cases, adding
+    all15augmented dispatch cases and closed-parent cell compatibility. Historical16case
+    evidence remains historical; wheel/sdist qualification still blocked.
+  forbidden_files:
+  - tests/fixtures/semantic-python-inventory-before-deconstruction.json
+  - tests/fixtures/semantic-python-inventory-source.txt
+  - protected/default branches and maintained adopter checkouts
+  forbidden:
+  - unknown object or callback inheriting native scalar eligibility
+  - extending private-cell proof from class names annotations or candidate flags
+  - new evaluator graph registry or receipt family
+  - strict-main waiver or phase progress
+  exit:51controls and affected consumer population pass, including closed/escaped cells
+    and both SDK-absent32case contexts. Required known main runtime block remains
+    unwaived; canonical pack generation and source gates accounted for.
