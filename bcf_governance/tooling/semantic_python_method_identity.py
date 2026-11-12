@@ -9,7 +9,7 @@ from __future__ import annotations
 import ast
 from typing import Any
 
-from .semantic_python_protocols import (
+from .semantic_ownership_protocols import (
     _native_literal_value as _native_literal_value,
     IMPLICIT_PROTOCOL_KIND_VERSIONS as IMPLICIT_PROTOCOL_KIND_VERSIONS,
     implicit_runtime_protocols as implicit_runtime_protocols,

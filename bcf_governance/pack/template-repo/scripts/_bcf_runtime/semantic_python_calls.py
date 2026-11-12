@@ -22,7 +22,7 @@ from .semantic_python_method_identity import (
 )
 
 
-from .semantic_python_protocols import (
+from .semantic_ownership_protocols import (
     _native_literal_value, IMPLICIT_PROTOCOL_KIND_VERSIONS, implicit_runtime_protocols,
 )
 

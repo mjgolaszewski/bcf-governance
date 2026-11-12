@@ -12,7 +12,7 @@ from jsonschema import Draft202012Validator
 from typing import Any
 
 from .semantic_python_method_identity import SOURCE_CONSTRUCTION_BODY_HOOKS
-from .semantic_python_protocols import IMPLICIT_PROTOCOL_KIND_VERSIONS
+from .semantic_ownership_protocols import IMPLICIT_PROTOCOL_KIND_VERSIONS
 from .ci_github_authority import packaged_repo_root
 
 
