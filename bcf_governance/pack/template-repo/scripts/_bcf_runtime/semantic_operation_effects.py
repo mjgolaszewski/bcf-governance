@@ -36,6 +36,40 @@ class SemanticOperationEffectError(ValueError):
 
 
 
+def _implicit_protocol(call: dict[str, Any], caller: str) -> bool:
+    """Validate versioned neutral observations before any port can be credited."""
+    marker = call.get("implicit_protocol")
+    implicit = str(call.get("called_symbol", "")).startswith("python-implicit::")
+    if marker is None and not implicit:
+        return False
+    def reject() -> None:
+        raise SemanticOperationEffectError("operation implicit protocol population is incompatible or ambiguous")
+    if not isinstance(marker, dict) or set(marker) != {
+        "version", "authority", "execution_qualified", "kind", "expression_sha256", "occurrence"
+    }:
+        reject()
+    kinds = {"attribute_read", "subscript_read", "collection", "iteration", "operator", "truth", "context_manager", "format"}
+    digest = marker["expression_sha256"]
+    occurrence = marker["occurrence"]
+    if (marker["version"] != "1.0" or marker["authority"] is not False
+            or marker["execution_qualified"] is not False or not isinstance(marker["kind"], str) or marker["kind"] not in kinds
+            or not isinstance(digest, str) or len(digest) != 64
+            or any(value not in "0123456789abcdef" for value in digest)
+            or isinstance(occurrence, bool) or not isinstance(occurrence, int) or occurrence < 0
+            or call.get("caller") != caller or call.get("call_name") != "<implicit>"
+            or call.get("called_symbol") != "python-implicit::" + marker["kind"]
+            or call.get("dispatch_resolution") != "unresolved"
+            or call.get("dispatch_port_eligible") is not False):
+        reject()
+    contract = call.get("call_contract")
+    if contract is not None and (not isinstance(contract, dict)
+            or contract.get("expression_sha256") != digest
+            or contract.get("occurrence") != occurrence or contract.get("authority") is not False
+            or contract.get("arguments") != []):
+        reject()
+    return True
+
+
 def _runtime_target_origins(call: dict[str, Any], function: dict[str, Any]) -> tuple[str, ...]:
     """Parameter-derived runtime targets cannot supply source authority."""
     if "runtime_target_origins" not in call:
@@ -196,6 +230,7 @@ def source_operation_call_population(
         for call in function["calls"]:
             if not isinstance(call, dict):
                 reject()
+            implicit = _implicit_protocol(call, caller)
             callee = call.get("called_symbol")
             fact = call.get("call_contract")
             if not isinstance(fact, dict):
@@ -215,7 +250,7 @@ def source_operation_call_population(
             identities.add(identity)
             runtime_origins = _runtime_target_origins(call, function)
             resolved = (
-                callee in functions and call.get("dispatch_resolution") != "unresolved"
+                callee in functions and not implicit and call.get("dispatch_resolution") != "unresolved"
                 and not runtime_origins
                 and call.get("call_name") not in {"__import__", "eval", "exec", "<dynamic>"}
             )
@@ -510,6 +545,8 @@ def validated_operation_effect_inventory(
                 f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
             )
         for call in function.get("calls", []):
+            if _implicit_protocol(call, symbol):
+                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime protocol at {symbol}")
             if _runtime_target_origins(call, function):
                 raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect runtime target at {symbol}")
             raw = str(call.get("called_symbol", ""))

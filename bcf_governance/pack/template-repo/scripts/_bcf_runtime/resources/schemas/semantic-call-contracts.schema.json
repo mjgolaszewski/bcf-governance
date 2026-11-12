@@ -89,6 +89,49 @@
           }
         }
       }
+    },
+    "implicit_protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "authority",
+        "execution_qualified",
+        "kind",
+        "expression_sha256",
+        "occurrence"
+      ],
+      "properties": {
+        "version": {
+          "const": "1.0"
+        },
+        "authority": {
+          "const": false
+        },
+        "execution_qualified": {
+          "const": false
+        },
+        "kind": {
+          "enum": [
+            "attribute_read",
+            "subscript_read",
+            "collection",
+            "iteration",
+            "operator",
+            "truth",
+            "context_manager",
+            "format"
+          ]
+        },
+        "expression_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "occurrence": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
     }
   },
   "type": "object",
@@ -131,6 +174,9 @@
               "properties": {
                 "call_contract": {
                   "$ref": "#/$defs/call_contract"
+                },
+                "implicit_protocol": {
+                  "$ref": "#/$defs/implicit_protocol"
                 }
               }
             }

@@ -434,7 +434,7 @@
     },
     "schemas/semantic-call-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "e812ce939497056f4551e70a9773cb4d44da11348645493f0ea2846c034db149"
+      "sha256": "ca1212725dff13bedc7efb82a0432eaf533d3632f0758b3927abd86a7de025a0"
     },
     "schemas/semantic-families.schema.json": {
       "operation": "copy",
@@ -1711,7 +1711,7 @@
     },
     "scripts/_bcf_runtime/resources/schemas/semantic-call-contracts.schema.json": {
       "operation": "copy",
-      "sha256": "e812ce939497056f4551e70a9773cb4d44da11348645493f0ea2846c034db149"
+      "sha256": "ca1212725dff13bedc7efb82a0432eaf533d3632f0758b3927abd86a7de025a0"
     },
     "scripts/_bcf_runtime/resources/schemas/semantic-families.schema.json": {
       "operation": "copy",
@@ -1815,7 +1815,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "6326c482902cc80cebd21ce4039e6df54ce6fe0f126b5cc3cf167914e20b9a90"
+      "sha256": "8dc152318de2effa554de9321424ba139e752bb59a06ca3e65c3fda462d7d9d9"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",
@@ -1863,11 +1863,11 @@
     },
     "scripts/_bcf_runtime/semantic_python_calls.py": {
       "operation": "copy",
-      "sha256": "525aae34086dfbad8d06d216e1cfc4bf35b802229485d7aa659013a422d2a980"
+      "sha256": "e3f5c4e0ea3744eed3e0e44b1c5a521ec2a5f6bdc6260d53495fa3ed4e0dd0b5"
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
-      "sha256": "6fe558ff4db4d5dfc201ffc014ae499b8f26a7b59d6fef636e1e47c775242051"
+      "sha256": "001071b514a42c8753b1aebb5ac94ba5e83573d80a7742a25189ca67bd20eecb"
     },
     "scripts/_bcf_runtime/semantic_source_discovery.py": {
       "operation": "copy",

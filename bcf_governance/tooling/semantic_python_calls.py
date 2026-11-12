@@ -18,6 +18,8 @@ from .semantic_python_method_identity import (
     method_binding,
     method_dispatch_reference,
     root_name as _root_name,
+    _native_literal_value,
+    implicit_runtime_protocols,
     source_symbol,
 )
 
@@ -55,28 +57,6 @@ def _normalized_return_fingerprint(
     return hashlib.sha256(
         ast.dump(normalized, annotate_fields=False, include_attributes=False).encode()
     ).hexdigest()
-
-
-def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
-    """Recognize only closed builtin values; names here were bound locally."""
-    if isinstance(node, ast.Constant):
-        return True
-    if isinstance(node, ast.Name):
-        return node.id in names
-    if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
-        return all(_native_literal_value(value, names) for value in node.elts)
-    if isinstance(node, ast.Dict):
-        return all((key is None or _native_literal_value(key, names))
-                   and _native_literal_value(value, names)
-                   for key, value in zip(node.keys, node.values))
-    if isinstance(node, ast.Starred):
-        return _native_literal_value(node.value, names)
-    if isinstance(node, ast.Subscript):
-        return _native_literal_value(node.value, names) and _native_literal_value(node.slice, names)
-    if isinstance(node, ast.Slice):
-        return all(value is None or _native_literal_value(value, names)
-                   for value in (node.lower, node.upper, node.step))
-    return False
 
 
 def _closed_native_region(function: ast.FunctionDef | ast.AsyncFunctionDef) -> set[str] | None:
@@ -199,6 +179,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         self._closure_parameters = context.get('closure_parameters', {})
         self._ambiguous_imports = set(context.get('ambiguous_imports', []))
         self._postponed_annotations = postponed_annotations
+        self._call_target_attributes = {id(node.func) for node in ast.walk(function) if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute)}
         self._owned_scalar_cells = _closed_owned_scalar_cells(function) if self.lexical_parent is None else None
         self._root_function = function
         self._track_global_stores = False
@@ -276,6 +257,31 @@ class _FunctionVisitor(ast.NodeVisitor):
         finally:
             self._track_global_stores = previous
             self._track_operation_stores = operation_previous
+
+    def visit(self, node: ast.AST) -> Any:
+        if self._track_operation_stores:
+            for kind in implicit_runtime_protocols(node, self._native_region or set(), self._call_target_attributes):
+                self._record_implicit_protocol(node.iter if isinstance(node, ast.comprehension) else node, kind)
+        return super().visit(node)
+
+    def _record_implicit_protocol(self, node: ast.AST, kind: str) -> None:
+        contract = self._source_call_contract(node)
+        contract['arguments'] = []
+        fact = {
+            "caller": self.symbol, "called_symbol": "python-implicit::" + kind,
+            "call_name": "<implicit>", "line": node.lineno, "column": node.col_offset,
+            "end_line": node.end_lineno, "end_column": node.end_col_offset,
+            "argument_origins": sorted(self._origins(node)),
+            "dispatch_resolution": "unresolved", "dispatch_port_eligible": False,
+            "implicit_protocol": {
+                "version": "1.0", "authority": False, "execution_qualified": False,
+                "kind": kind, "expression_sha256": contract["expression_sha256"],
+                "occurrence": contract["occurrence"],
+            },
+        }
+        if self.call_contracts:
+            fact["call_contract"] = contract
+        self.calls.append(fact)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
         if node is self._root_function:
@@ -433,7 +439,7 @@ class _FunctionVisitor(ast.NodeVisitor):
             )
         self.generic_visit(node)
 
-    def _source_call_contract(self, node: ast.Call) -> dict[str, Any]:
+    def _source_call_contract(self, node: ast.AST) -> dict[str, Any]:
         """Observe syntax only; hashes are identities, not secret redaction proofs."""
         def digest(expression: ast.AST) -> str:
             return hashlib.sha256(
@@ -444,13 +450,13 @@ class _FunctionVisitor(ast.NodeVisitor):
         occurrence = self.call_occurrences.get(expression_sha256, 0)
         self.call_occurrences[expression_sha256] = occurrence + 1
         arguments: list[dict[str, Any]] = []
-        for slot, argument in enumerate(node.args):
+        for slot, argument in enumerate(getattr(node, 'args', [])):
             arguments.append({
                 "kind": "starred" if isinstance(argument, ast.Starred) else "positional",
                 "slot": slot,
                 "expression_sha256": digest(argument),
             })
-        for slot, keyword in enumerate(node.keywords):
+        for slot, keyword in enumerate(getattr(node, 'keywords', [])):
             arguments.append({
                 "kind": "keyword" if keyword.arg is not None else "double_starred",
                 "slot": keyword.arg if keyword.arg is not None else slot,

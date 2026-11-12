@@ -117,6 +117,66 @@ def _source_class_scopes(tree: ast.Module) -> list[tuple[ast.ClassDef, str, str 
     return rows
 
 
+def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
+    """Recognize only closed builtin values; names here were bound locally."""
+    if isinstance(node, ast.Constant):
+        return True
+    if isinstance(node, ast.Name):
+        return node.id in names
+    if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+        return all(_native_literal_value(value, names) for value in node.elts)
+    if isinstance(node, ast.Dict):
+        return all((key is None or _native_literal_value(key, names))
+                   and _native_literal_value(value, names)
+                   for key, value in zip(node.keys, node.values))
+    if isinstance(node, ast.Starred):
+        return _native_literal_value(node.value, names)
+    if isinstance(node, ast.Subscript):
+        return _native_literal_value(node.value, names) and _native_literal_value(node.slice, names)
+    if isinstance(node, ast.Slice):
+        return all(value is None or _native_literal_value(value, names)
+                   for value in (node.lower, node.upper, node.step))
+    return False
+
+
+def implicit_runtime_protocols(
+    node: ast.AST, native: set[str], call_targets: set[int],
+) -> tuple[str, ...]:
+    """Retain unknown runtime dispatch in the existing source call population."""
+    known = lambda value: _native_literal_value(value, native)
+    if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load):
+        return () if id(node) in call_targets else ("attribute_read",)
+    if isinstance(node, ast.Subscript) and isinstance(node.ctx, ast.Load):
+        return () if known(node) else ("subscript_read",)
+    if isinstance(node, ast.Dict):
+        unknown = any(not known(value if key is None else key)
+                      for key, value in zip(node.keys, node.values))
+        return ("collection",) if unknown else ()
+    if isinstance(node, ast.Set):
+        return ("collection",) if any(not known(value) for value in node.elts) else ()
+    if isinstance(node, (ast.DictComp, ast.SetComp)):
+        bound = set(native)
+        for generator in node.generators:
+            if generator.is_async or not known(generator.iter):
+                return ("collection",)
+            bound.update(value.id for value in ast.walk(generator.target) if isinstance(value, ast.Name))
+        key = node.key if isinstance(node, ast.DictComp) else node.elt
+        return () if _native_literal_value(key, bound) else ("collection",)
+    if isinstance(node, ast.comprehension):
+        return ("iteration",) if node.is_async or not known(node.iter) else ()
+    if isinstance(node, (ast.For, ast.AsyncFor)):
+        return ("iteration",) if isinstance(node, ast.AsyncFor) or not known(node.iter) else ()
+    if isinstance(node, ast.BinOp):
+        return () if known(node.left) and known(node.right) else ("operator",)
+    if isinstance(node, (ast.If, ast.IfExp, ast.While, ast.Assert)):
+        return () if known(node.test) else ("truth",)
+    if isinstance(node, (ast.With, ast.AsyncWith)):
+        return ("context_manager",)
+    if isinstance(node, ast.FormattedValue):
+        return () if known(node.value) and (node.format_spec is None or known(node.format_spec)) else ("format",)
+    return ()
+
+
 def runtime_function_contexts(
     tree: ast.Module, *, path: str, imports: dict[str, str],
 ) -> tuple[list[dict[str, Any]], list[str]]:
