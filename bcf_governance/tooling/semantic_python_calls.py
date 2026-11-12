@@ -18,9 +18,12 @@ from .semantic_python_method_identity import (
     method_binding,
     method_dispatch_reference,
     root_name as _root_name,
-    _native_literal_value, IMPLICIT_PROTOCOL_KIND_VERSIONS,
-    implicit_runtime_protocols,
     source_symbol,
+)
+
+
+from .semantic_python_protocols import (
+    _native_literal_value, IMPLICIT_PROTOCOL_KIND_VERSIONS, implicit_runtime_protocols,
 )
 
 
