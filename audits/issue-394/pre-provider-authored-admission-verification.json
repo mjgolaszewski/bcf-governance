@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "scoped_pre_provider_authored_admission_controls_pass_full_train_open",
+  "subject": "630244a30807d9300081ce6ed0c6877c18e2144b",
+  "tree": "181a7bab5b51125e5ea4678a6f4baa1833b407f6",
+  "controls_subject": "2c61799bee162c5647f523b5c2183dce2082c205",
+  "causal_before": {
+    "tests": 8,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 232,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_authority_submit.py": "b0ce65c34537054049b3c82c1487fdc28c1cb68ed457f0ef9a26aa61a9b69c53"
+  },
+  "evidence_sha256": {
+    "before.xml": "1ad1aec59926a748065090ba6655e68068d5fba5beb7b83b514f29419236ef3a",
+    "after.xml": "061cace185f8064889206b335265f3b94f0b401ad6975665a2a11a3de080a5c6",
+    "architecture.xml": "7632463dbe2106c9a7ac0cdb1bae4db594ee3dd8410e27d433c63eff86a14af8"
+  },
+  "scope": "Existing authored-source validation moves before avoidable provider context discovery after clean-subject admission. Real Git fixtures bind phase/catalog, deadline-policy and control-registry causes, preserve valid discovery, dirty precedence and existing normalization revalidation. No new context, authority, cache, selector or CLI surface. No time/percentile claim from local test elapsed.",
+  "whole_requirement_advancement": false,
+  "remaining": "Known ci main runtime effect block, complete runtime/lifecycle populations and independent conformance, real deadline bounds, matched baseline protocol/targets, adopters and custody; all82whole open."
+}

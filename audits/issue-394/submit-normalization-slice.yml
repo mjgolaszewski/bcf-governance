@@ -211,3 +211,19 @@ pre_provider_authored_admission_causal_fixture_followup:
   - claiming source population is runtime qualification
   remaining: Source census is not executable phase, alias, runtime binding or installed
     conformance.
+
+pre_provider_authored_admission_verification:
+  report: audits/issue-394/pre-provider-authored-admission-verification.json
+  sha256: 14b2af8c7146aa7dee8c7d8ecbf2c07d52cf4b9b3a7220244b0685619f1a5220
+  subject: 630244a30807d9300081ce6ed0c6877c18e2144b
+  previous_memory: P32 active; P33-P35 dormant. Named sourcef9bc4b61 accounted;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Early admission 630244a3 guarded;8controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: f9bc4b61 names.
+  current_ledger:
+    type: 394source
+    statement: 630244a3 early.
+  whole_requirement_advancement: false
