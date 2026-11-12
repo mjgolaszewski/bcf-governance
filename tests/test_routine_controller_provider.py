@@ -13,6 +13,7 @@ import yaml
 
 from bcf_governance.tooling import (
     ci_controller_provider,
+    routine_controller_capabilities,
 )
 from bcf_governance.tooling import (
     routine_controller_materialization as materialization,
@@ -58,7 +59,7 @@ def test_ordinary_runtime_missing_recovery_capability_fails_explicitly(
     def absent(*_args, **_kwargs):
         raise ModuleNotFoundError("producer-only runtime omitted")
 
-    monkeypatch.setattr(provider, "import_module", absent)
+    monkeypatch.setattr(routine_controller_capabilities, "import_module", absent)
     with pytest.raises(GitHubControllerError, match="self-recovery authority runtime"):
         provider.effective_controller_authority(object(), repository="owner/repo", repo_root=tmp_path)
 

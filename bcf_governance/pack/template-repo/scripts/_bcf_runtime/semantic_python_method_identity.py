@@ -159,7 +159,10 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                 return False
         if isinstance(member, (ast.Assign, ast.AnnAssign)):
             default_value = member.value
-            if default_value is not None and not isinstance(default_value, ast.Constant):
+            if default_value is not None and not all(
+                isinstance(value, (ast.Constant, ast.Tuple, ast.Load, ast.UnaryOp, ast.UAdd, ast.USub))
+                for value in ast.walk(default_value)
+            ):
                 return False
             if isinstance(member, ast.AnnAssign) and any(
                 isinstance(value, ast.Call) for value in ast.walk(member.annotation)

@@ -21,6 +21,7 @@ execution_evidence:
   - Source-bound class construction and refusal controls plus existing initializer and method regressions passed 85 cases.
   - Actual immutable BDMCP69 full source discovery observes both requested canonical factories; not full consumer acceptance.
   notes:
+  - Preserve existing provider characterization while extracting only the optional recovery capability boundary; provider reached 806 lines and is returned below the unchanged 800-line cap. No CLI or authority behavior changes.
   - record failing workflows, diagnosed root cause, remediation scope, and merge-back
     status
 closeout_requirements:

@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import re
 from collections.abc import Mapping
-from importlib import import_module
 from pathlib import Path
 from typing import Any
 
@@ -66,6 +65,7 @@ from .routine_controller_callback import (
     validate_active_outcome,
     validate_no_transition_outcome,
 )
+from .routine_controller_capabilities import authenticate_optional_normalization
 from .routine_controller_decision import (
     ControllerTransitionClass,
     RoutineDecision,
@@ -402,21 +402,7 @@ def effective_controller_authority(
         )
         if repo_root is None or not (expired_transition_bytes or disconnected_chain):
             raise
-        try:
-            capability = import_module(".routine_controller_prospective", package=__package__)
-        except ModuleNotFoundError as missing:
-            raise GitHubControllerError(
-                "prospective normalization requires the self-recovery authority runtime"
-            ) from missing
-        authenticate = getattr(capability, "prospective_normalized_controller_authority", None)
-        if not callable(authenticate):
-            raise GitHubControllerError("prospective normalization capability is malformed") from exc
-        result = authenticate(api, repository=repository, repo_root=repo_root)
-        if (not isinstance(result, dict)
-                or set(result) != {"controller_commit_sha", "controller_bundle_sha256"}
-                or not all(isinstance(value, str) for value in result.values())):
-            raise GitHubControllerError("prospective normalization authority is malformed") from exc
-        return {str(key): str(value) for key, value in result.items()}
+        return authenticate_optional_normalization(api, repository=repository, repo_root=repo_root)
     return {
         "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
         "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],
