@@ -171,6 +171,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         call_contracts: bool = False,
         lexical_context: dict[str, Any] | None = None,
         postponed_annotations: bool = False,
+        lexical_parent_function: ast.FunctionDef | ast.AsyncFunctionDef | None = None,
     ) -> None:
         self.call_contracts = call_contracts
         context = lexical_context or {}
@@ -185,6 +186,9 @@ class _FunctionVisitor(ast.NodeVisitor):
         self._track_global_stores = False
         self._track_operation_stores = False
         self._native_region = _closed_native_region(function)
+        self._parent_scalar_cells = set(_closed_owned_scalar_cells(lexical_parent_function) or ()) if (
+            lexical_parent_function is not None and any(child is function for child in lexical_parent_function.body)
+        ) else set()
         self._source_stores: list[dict[str, Any]] = []
         self._store_occurrences: dict[str, int] = {}
         self._global_store_effects: list[dict[str, Any]] = []
@@ -260,7 +264,10 @@ class _FunctionVisitor(ast.NodeVisitor):
 
     def visit(self, node: ast.AST) -> Any:
         if self._track_operation_stores:
-            for kind in implicit_runtime_protocols(node, self._native_region or set(), self._call_target_attributes):
+            native = self._native_region or set()
+            if isinstance(node, ast.AugAssign):
+                native = native | self._parent_scalar_cells
+            for kind in implicit_runtime_protocols(node, native, self._call_target_attributes):
                 self._record_implicit_protocol(node.iter if isinstance(node, ast.comprehension) else node, kind)
         return super().visit(node)
 

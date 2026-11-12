@@ -81,9 +81,25 @@ with tempfile.TemporaryDirectory(prefix="installed-source-continuity-") as direc
         except SemanticOperationEffectError as error:assert "unresolved effect" in str(error)
         else:raise AssertionError("installed pattern dispatch escaped strict effect query")
         cases.append("pattern_"+name)
+    augassign_cases=json.loads("{\"add\":{\"prefix\":\"class Value:\\n    def __iadd__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value += 1\\nreturn value\",\"call\":\"query(Value())\"},\"sub\":{\"prefix\":\"class Value:\\n    def __isub__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value -= 1\\nreturn value\",\"call\":\"query(Value())\"},\"mul\":{\"prefix\":\"class Value:\\n    def __imul__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value *= 1\\nreturn value\",\"call\":\"query(Value())\"},\"matmul\":{\"prefix\":\"class Value:\\n    def __imatmul__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value @= 1\\nreturn value\",\"call\":\"query(Value())\"},\"truediv\":{\"prefix\":\"class Value:\\n    def __itruediv__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value /= 1\\nreturn value\",\"call\":\"query(Value())\"},\"floordiv\":{\"prefix\":\"class Value:\\n    def __ifloordiv__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value //= 1\\nreturn value\",\"call\":\"query(Value())\"},\"mod\":{\"prefix\":\"class Value:\\n    def __imod__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value %= 1\\nreturn value\",\"call\":\"query(Value())\"},\"pow\":{\"prefix\":\"class Value:\\n    def __ipow__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value **= 1\\nreturn value\",\"call\":\"query(Value())\"},\"lshift\":{\"prefix\":\"class Value:\\n    def __ilshift__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value <<= 1\\nreturn value\",\"call\":\"query(Value())\"},\"rshift\":{\"prefix\":\"class Value:\\n    def __irshift__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value >>= 1\\nreturn value\",\"call\":\"query(Value())\"},\"bitand\":{\"prefix\":\"class Value:\\n    def __iand__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value &= 1\\nreturn value\",\"call\":\"query(Value())\"},\"bitxor\":{\"prefix\":\"class Value:\\n    def __ixor__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value ^= 1\\nreturn value\",\"call\":\"query(Value())\"},\"bitor\":{\"prefix\":\"class Value:\\n    def __ior__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value |= 1\\nreturn value\",\"call\":\"query(Value())\"},\"fallback_add\":{\"prefix\":\"class Value:\\n    def __add__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"value += 1\\nreturn value\",\"call\":\"query(Value())\"},\"reflected_add\":{\"prefix\":\"class Value:\\n    def __radd__(self,other):\\n        STATE.append(1)\\n        return self\\n\",\"body\":\"left=1\\nleft += value\\nreturn left\",\"call\":\"query(Value())\"}}")
+    for name,row in augassign_cases.items():
+        path=base/("augassign-"+name+".py")
+        path.write_text("STATE=[]\n"+row["prefix"]+"def query(value):\n    "+row["body"].replace("\n","\n    ")+"\n")
+        facts=discover_python_source(base,files=[path],call_contracts_version="1.0");symbol=path.name+"::query"
+        markers=[call["implicit_protocol"] for function in facts["functions"] if function["symbol"]==symbol for call in function["calls"] if call.get("implicit_protocol",{}).get("kind")=="operator"]
+        assert len(markers)==1 and markers[0]["version"]=="1.0" and markers[0]["authority"] is False and markers[0]["execution_qualified"] is False
+        selected={"id":"augassign.query.v1","allowed_mutation_ports":[],"allowed_authority_ports":[],"non_authoritative_output_effects":[]}
+        try:validate_operation_effects(selected,symbol,facts)
+        except SemanticOperationEffectError as error:assert "unresolved effect" in str(error)
+        else:raise AssertionError("installed augmented assignment escaped strict effect query")
+        cases.append("augassign_"+name)
+    path=base/"owned-cell.py";path.write_text("def query():\n    value=0\n    def action():\n        nonlocal value\n        value+=1\n    action()\n    return value\n")
+    facts=discover_python_source(base,files=[path],call_contracts_version="1.0")
+    assert validate_operation_effects(selected,path.name+"::query",facts)==(0,0)
+    cases.append("augassign_closed_owned_cell")
 origins={name:str(Path(module.__file__).resolve()) for name,module in list(sys.modules.items()) if name.startswith("_bcf_runtime.") and getattr(module,"__file__",None)}
 assert origins and all(Path(value).is_relative_to(runtime) for value in origins.values())
-assert len(cases)==16 and len(set(cases))==16
+assert len(cases)==32 and len(set(cases))==32
 print(json.dumps({"source_package_absent":True,"cases":cases,"private_origins":origins,"authority":False,"retirement_authorized":False},sort_keys=True))
 '''
 
@@ -97,7 +113,7 @@ def exercise_installed_source_continuity(installed_consumer, isolated_python):
     assert result.returncode == 0, _record(result)
     actual = json.loads(result.stdout)
     assert actual["source_package_absent"] is True and actual["private_origins"]
-    assert len(actual["cases"]) == len(set(actual["cases"])) == 16
+    assert len(actual["cases"]) == len(set(actual["cases"])) == 32
     assert actual["authority"] is False and actual["retirement_authorized"] is False
     assert all(Path(value).is_relative_to(installed_consumer.resolve() / "scripts") for value in actual["private_origins"].values())
     return actual

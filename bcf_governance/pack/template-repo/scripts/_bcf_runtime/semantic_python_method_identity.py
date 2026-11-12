@@ -199,6 +199,8 @@ def implicit_runtime_protocols(
         return () if all(known(value) for value in [node.left, *node.comparators]) else ("operator",)
     if isinstance(node, ast.BoolOp):
         return () if all(known(value) for value in node.values[:-1]) else ("truth",)
+    if isinstance(node, ast.AugAssign):
+        return () if known(node.target) and known(node.value) else ("operator",)
     if isinstance(node, ast.BinOp):
         return () if known(node.left) and known(node.right) else ("operator",)
     if isinstance(node, (ast.If, ast.IfExp, ast.While, ast.Assert)):

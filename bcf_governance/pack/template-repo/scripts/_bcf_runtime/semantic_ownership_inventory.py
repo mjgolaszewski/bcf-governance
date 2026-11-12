@@ -304,6 +304,7 @@ def discover_python_source(
             isinstance(node, ast.ImportFrom) and node.module == "__future__"
             and any(alias.name == "annotations" for alias in node.names) for node in tree.body
         )
+        lexical_parent_functions = {relative + "::" + row["qualified_name"]: row["function"] for row in scopes}
         lexical_imports: dict[str, dict[str, Any]] = {}
         lexical_import_ambiguity: dict[str, set[str]] = {}
         for context in scopes:
@@ -320,6 +321,7 @@ def discover_python_source(
                 local_types=local_types, class_name=context["class_name"], function=member,
                 call_contracts=call_contracts_version is not None,
                 lexical_context=context, postponed_annotations=postponed_annotations,
+                lexical_parent_function=lexical_parent_functions.get(context["lexical_parent"]),
             )
             visitor.visit(member)
             functions.append(visitor.facts())
