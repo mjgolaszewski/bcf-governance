@@ -51,8 +51,11 @@ def _worktree_source_digest(root: Path, relative: str) -> dict[str, Any]:
             if not stat.S_ISREG(before.st_mode):
                 raise ValueError("source byte observation requires a regular file")
             digest = hashlib.sha256()
+            object_hash = hashlib.sha1(usedforsecurity=False)
+            object_hash.update(("blob " + str(before.st_size) + "\0").encode("ascii"))
             for block in iter(lambda: stream.read(65536), b""):
                 digest.update(block)
+                object_hash.update(block)
             after = os.fstat(stream.fileno())
             current = os.stat(path.name, dir_fd=descriptor, follow_symlinks=False)
         identities = [(value.st_dev, value.st_ino, value.st_mode, value.st_nlink,
@@ -60,9 +63,79 @@ def _worktree_source_digest(root: Path, relative: str) -> dict[str, Any]:
                       for value in (before, after, current)]
         if identities[0] != identities[1] or identities[1] != identities[2]:
             raise ValueError("source bytes changed during descriptor observation")
-        return dict(kind="regular", size=after.st_size, sha256=digest.hexdigest())
+        return dict(kind="regular", size=after.st_size, sha256=digest.hexdigest(),
+                    blob_oid=object_hash.hexdigest(), mode="100755" if after.st_mode & stat.S_IXUSR else "100644")
     finally:
         os.close(descriptor)
+
+
+def _inert_worktree_status(root: Path) -> dict[str, Any]:
+    """Compare literal file identities without Git working-tree conversion programs."""
+    indexed = _source_git(root, "ls-files", "--stage", "-z")
+    staged = _source_git(root, "diff", "--cached", "--raw", "--no-ext-diff", "--no-textconv",
+                         "--no-renames", "--abbrev=40", "-z", "HEAD", "--")
+    untracked = _source_git(root, "ls-files", "-z", "--others", "--exclude-standard", "--")
+    if any(result.returncode for result in (indexed, staged, untracked)):
+        raise ValueError("inert worktree index inventory is unavailable")
+    index_entries = {}
+    for record in indexed.stdout.split(b"\0"):
+        if not record:
+            continue
+        metadata, separator, raw_path = record.partition(b"\t")
+        fields = metadata.decode("ascii").split()
+        if (not separator or len(fields) != 3 or fields[0] not in {"100644", "100755"}
+                or fields[2] != "0" or re.fullmatch(r"[a-f0-9]{40}", fields[1]) is None):
+            raise ValueError("inert worktree comparison requires resolved regular index entries")
+        name = raw_path.decode("utf-8")
+        if name in index_entries:
+            raise ValueError("inert worktree index path is duplicated")
+        index_entries[name] = dict(mode=fields[0], blob_oid=fields[1])
+    staged_states = {}
+    index_versions = {}
+    records = staged.stdout.split(b"\0")
+    if records[-1] != b"" or len(records[:-1]) % 2:
+        raise ValueError("inert staged source inventory is malformed")
+    for offset in range(0, len(records) - 1, 2):
+        fields = records[offset].decode("ascii").split()
+        name = records[offset + 1].decode("utf-8")
+        if (len(fields) != 5 or not fields[0].startswith(":") or fields[4] not in {"A", "M", "D", "T"}
+                or re.fullmatch(r"[a-f0-9]{40}", fields[3]) is None or name in staged_states):
+            raise ValueError("inert staged source identity is ambiguous")
+        staged_states[name] = fields[4]
+        if fields[4] == "D":
+            index_versions[name] = dict(kind="deleted")
+            continue
+        if fields[1] not in {"100644", "100755"}:
+            raise ValueError("inert staged source requires regular blobs")
+        blob = _source_git(root, "cat-file", "blob", fields[3])
+        if blob.returncode:
+            raise ValueError("inert staged source blob is unavailable")
+        check = hashlib.sha1(usedforsecurity=False)
+        check.update(("blob " + str(len(blob.stdout)) + "\0").encode("ascii"))
+        check.update(blob.stdout)
+        if check.hexdigest() != fields[3]:
+            raise ValueError("inert staged source blob identity differs")
+        index_versions[name] = dict(kind="regular", mode=fields[1], blob_oid=fields[3],
+                                    size=len(blob.stdout), sha256=hashlib.sha256(blob.stdout).hexdigest())
+    working = {}
+    entries = []
+    for name in sorted(index_entries.keys() | staged_states.keys()):
+        actual = _worktree_source_digest(root, name)
+        expected = index_entries.get(name)
+        dirty = expected is not None and (actual["kind"] == "deleted"
+                 or actual["blob_oid"] != expected["blob_oid"] or actual["mode"] != expected["mode"])
+        if dirty or name in staged_states:
+            working[name] = actual
+        left = staged_states.get(name, " ")
+        right = ("D" if actual["kind"] == "deleted" else "M") if dirty else " "
+        if left != " " or right != " ":
+            entries.append(left + right + " " + name)
+    others = sorted(value.decode("utf-8") for value in untracked.stdout.split(b"\0") if value)
+    if len(set(others)) != len(others) or set(others) & index_entries.keys():
+        raise ValueError("inert untracked source population is ambiguous")
+    entries.extend("?? " + name for name in others)
+    return dict(status_entries=sorted(entries), untracked_paths=others,
+                index_versions=index_versions, working_versions=working)
 
 
 def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
@@ -122,11 +195,9 @@ def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
         observed = _source_git(path, "rev-parse", "HEAD", "HEAD^{tree}")
         peer_common = _source_git(path, "rev-parse", "--git-common-dir")
         peer_branch = _source_git(path, "symbolic-ref", "-q", "HEAD")
-        status = _source_git(path, "status", "--porcelain=v1", "-z", "--untracked-files=all")
+        status = _inert_worktree_status(path)
         untracked = _source_git(path, "ls-files", "-z", "--others", "--exclude-standard", "--")
-        modified = _source_git(path, "ls-files", "-z", "--modified", "--deleted", "--")
-        indexed = _source_git(path, "diff", "--cached", "--raw", "--no-ext-diff", "--no-textconv", "--no-renames", "--abbrev=40", "-z", "HEAD", "--")
-        if any(value.returncode for value in (observed, peer_common, status, untracked, modified, indexed)) or peer_branch.returncode not in (0, 1):
+        if any(value.returncode for value in (observed, peer_common, untracked)) or peer_branch.returncode not in (0, 1):
             row["unresolved"] = "registered_checkout_read_unavailable"
             continue
         peer_identity = observed.stdout.decode("ascii").splitlines()
@@ -138,45 +209,17 @@ def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
             continue
         if any(re.fullmatch(r"[a-f0-9]{40}", value) is None for value in peer_identity):
             raise ValueError("registered checkout subject is not exact")
-        index_versions = {}
-        records = indexed.stdout.split(b"\0")
-        if records[-1] != b"" or len(records[:-1]) % 2:
-            raise ValueError("index source-version records are malformed")
-        for offset in range(0, len(records) - 1, 2):
-            fields = records[offset].decode("ascii").split()
-            name = records[offset + 1].decode("utf-8")
-            if (len(fields) != 5 or not fields[0].startswith(":")
-                    or re.fullmatch(r"[a-f0-9]{40}", fields[3]) is None or fields[4] not in {"A", "M", "D", "T"}):
-                raise ValueError("index source-version identity is ambiguous")
-            if name in index_versions:
-                raise ValueError("index source-version path is duplicated")
-            if fields[4] == "D":
-                index_versions[name] = dict(kind="deleted")
-                continue
-            if fields[1] not in {"100644", "100755"}:
-                raise ValueError("index source observation requires regular source blobs")
-            blob = _source_git(path, "cat-file", "blob", fields[3])
-            if blob.returncode:
-                raise ValueError("index source blob is unavailable")
-            object_hash = hashlib.sha1(usedforsecurity=False)
-            object_hash.update(("blob " + str(len(blob.stdout)) + "\0").encode("ascii"))
-            object_hash.update(blob.stdout)
-            if object_hash.hexdigest() != fields[3]:
-                raise ValueError("index source blob bytes contradict their object identity")
-            index_versions[name] = dict(kind="regular", mode=fields[1], blob_oid=fields[3],
-                                        size=len(blob.stdout), sha256=hashlib.sha256(blob.stdout).hexdigest())
-        changed_paths = sorted({value.decode("utf-8") for value in modified.stdout.split(b"\0") if value}
-                               | index_versions.keys())
-        working_versions = {name: _worktree_source_digest(path, name) for name in changed_paths}
+        index_versions = status["index_versions"]
+        working_versions = status["working_versions"]
         untracked_versions = {value.decode("utf-8"): _worktree_source_digest(path, value.decode("utf-8"))
                               for value in untracked.stdout.split(b"\0") if value}
         if any(value["kind"] != "regular" for value in untracked_versions.values()):
             raise ValueError("untracked source disappeared during byte observation")
-        row["source_byte_observations"] = dict(scope="git_reported_index_and_worktree_changes",
+        row["source_byte_observations"] = dict(scope="git_known_index_and_worktree_changes",
                                                index=index_versions, working=working_versions,
                                                untracked=untracked_versions)
         row.update(available=True, tree_sha=peer_identity[1],
-                   status_entries=sorted(value.decode("utf-8") for value in status.stdout.split(b"\0") if value),
+                   status_entries=status["status_entries"],
                    untracked_paths=sorted(value.decode("utf-8") for value in untracked.stdout.split(b"\0") if value))
     if not roots or len({row["path"] for row in roots}) != len(roots):
         raise ValueError("registered worktree population is empty or duplicated")
@@ -197,15 +240,16 @@ def _source_history_snapshot(repo_root: Path) -> dict[str, Any]:
 
 
 def _repository_state(repo_root: Path) -> dict[str, Any]:
-    result = _source_git(repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
-    if result.returncode:
+    try:
+        result = _inert_worktree_status(repo_root)
+    except (OSError, ValueError, UnicodeError):
         return {"available": False, "committed_clean": False}
-    entries = sorted(value.decode("utf-8") for value in result.stdout.split(b"\0") if value)
+    entries = result["status_entries"]
     state = {
         "available": True,
         "committed_clean": not entries,
         "status_entries": entries,
-        "status_sha256": hashlib.sha256(result.stdout).hexdigest(),
+        "status_sha256": hashlib.sha256(json.dumps(entries, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest(),
     }
     history = dict(schema_version="1.0", authority=False, execution_qualified=False,
                    scope="registered_git_worktrees_and_local_branch_tips", full_workspace_inventory=False,
@@ -214,13 +258,13 @@ def _repository_state(repo_root: Path) -> dict[str, Any]:
     try:
         captured = _source_history_snapshot(repo_root)
         consuming = _source_history_snapshot(repo_root)
-        current_status = _source_git(repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
-        stable = captured == consuming and current_status.returncode == 0 and current_status.stdout == result.stdout
+        current_status = _inert_worktree_status(repo_root)
+        stable = captured == consuming and current_status == result
         history.update(captured, identity_observation_stable=stable,
                        available=stable and all(row["available"] for row in captured["worktrees"]))
         if not stable:
             history["unresolved"] = "registered_source_identity_moved_during_capture"
-        if current_status.returncode or current_status.stdout != result.stdout:
+        if current_status != result:
             state.update(available=False, committed_clean=False)
     except (OSError, ValueError, UnicodeError) as exc:
         history["unresolved"] = type(exc).__name__ + ": " + str(exc)
@@ -492,7 +536,7 @@ def audit_ci_graph(repo_root: Path) -> dict[str, Any]:
     ]
     generated_paths = {workflow["path"] for workflow in workflows}
     report = {
-        "schema_version": "1.1",
+        "schema_version": "1.2",
         "status": "pass" if render.status == "clean" else "fail",
         "subject": inventory["subject"],
         "repository_state": _repository_state(root),

@@ -724,7 +724,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_audit.py": {
       "operation": "copy",
-      "sha256": "dd8fb344f24ebea5a9a8cfc07933e22a8a5bd132e0793f883fe704c29636209a"
+      "sha256": "565d4dc503166fd146f55a8ec2fa53f160630bc6b73d55ee997080a3a2a69cd0"
     },
     "scripts/_bcf_runtime/ci_graph_authority_policy.py": {
       "operation": "copy",
@@ -1875,7 +1875,7 @@
     },
     "scripts/_bcf_runtime/semantic_source_paths.py": {
       "operation": "copy",
-      "sha256": "8cc6e1ac0b2ef1dece6d2b371f6e3cf114d8f47909b466f748392561a0d2d283"
+      "sha256": "af67128943a407b2d8e2b11f7e58bc767edb682fddca3e8a25d2c36a386a6634"
     },
     "scripts/_bcf_runtime/semantic_typescript_effects.mjs": {
       "operation": "copy",

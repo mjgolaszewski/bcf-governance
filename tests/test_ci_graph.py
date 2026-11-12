@@ -3533,7 +3533,7 @@ def test_bcf_ci_authority_audit_reports_the_complete_effective_graph() -> None:
     expected_job_count = sum(len(workflow["jobs"]) for workflow in compiled.workflows)
 
     assert report["status"] == "pass"
-    assert report["schema_version"] == "1.1"
+    assert report["schema_version"] == "1.2"
     assert report["repository_state"]["source_history"]["authority"] is False
     assert report["repository_state"]["source_history"]["retirement_authorized"] is False
     assert report["repository_state"]["available"] is True

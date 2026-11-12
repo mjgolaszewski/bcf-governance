@@ -28,7 +28,7 @@ def observations(root):
 
 def test_source_byte_reader_observes_regular_bytes_without_changes(tmp_path):
     root=repository(tmp_path/"active");before=(root/"source.py").read_bytes()
-    assert reader()(root,"source.py")=={"kind":"regular","size":len(before),"sha256":hashlib.sha256(before).hexdigest()}
+    assert reader()(root,"source.py")=={"kind":"regular","size":len(before),"sha256":hashlib.sha256(before).hexdigest(),"blob_oid":git(root,"hash-object","--no-filters","--","source.py"),"mode":"100644"}
     assert (root/"source.py").read_bytes()==before
 
 @pytest.mark.parametrize("kind",("leaf","parent","escape"))
@@ -55,7 +55,7 @@ def test_source_observations_retain_index_and_restored_working_copy(tmp_path):
     root=repository(tmp_path/"active");(root/"source.py").write_text("VALUE=2\n");git(root,"add","source.py");staged=git(root,"rev-parse",":source.py")
     (root/"source.py").write_text("VALUE=1\n")
     result=observations(root)
-    assert result["scope"]=="git_reported_index_and_worktree_changes"
+    assert result["scope"]=="git_known_index_and_worktree_changes"
     assert result["index"]["source.py"]["blob_oid"]==staged
     assert result["index"]["source.py"]["sha256"]==hashlib.sha256(b"VALUE=2\n").hexdigest()
     assert result["working"]["source.py"]["sha256"]==hashlib.sha256(b"VALUE=1\n").hexdigest()
@@ -64,7 +64,7 @@ def test_source_observations_retain_index_and_restored_working_copy(tmp_path):
 def test_source_observations_retain_untracked_content(tmp_path):
     root=repository(tmp_path/"active");(root/"unique.py").write_text("UNIQUE=4\n")
     result=observations(root)
-    assert result["untracked"]["unique.py"]=={"kind":"regular","size":9,"sha256":hashlib.sha256(b"UNIQUE=4\n").hexdigest()}
+    assert result["untracked"]["unique.py"]=={"kind":"regular","size":9,"sha256":hashlib.sha256(b"UNIQUE=4\n").hexdigest(),"blob_oid":git(root,"hash-object","--no-filters","--","unique.py"),"mode":"100644"}
     assert result["index"]==result["working"]=={}
 
 def test_source_observations_retain_deletion_separately_from_committed_tree(tmp_path):

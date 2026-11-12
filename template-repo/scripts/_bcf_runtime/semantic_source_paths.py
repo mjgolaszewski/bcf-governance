@@ -24,7 +24,14 @@ def _source_git_environment() -> dict[str, str]:
 
 
 def _source_git(repo_root: Path, *arguments: str) -> subprocess.CompletedProcess[bytes]:
-    """Read source facts without executing repository-configured Git programs."""
+    """Read source facts; refuse Git operations that execute working-tree conversions."""
+    if (not arguments or arguments[0] == "status"
+            or (arguments[0] == "ls-files" and any(flag in arguments for flag in ("--modified", "--deleted", "-m", "-d")))
+            or (arguments[0] == "diff" and not all(flag in arguments for flag in
+                ("--cached", "--no-ext-diff", "--no-textconv")))):
+        return subprocess.CompletedProcess(
+            ["git", *arguments], 2, b"", b"source_git_unqualified_worktree_comparison",
+        )
     return run_admitted_command(
         [
             "git", "--no-replace-objects", "-c", f"core.hooksPath={os.devnull}",
