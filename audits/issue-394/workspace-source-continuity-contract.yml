@@ -121,3 +121,33 @@ registered_source_history_source_verification:
     type: 394source
     statement: aa2807e1 registered.
   whole_requirement_advancement: false
+
+source_byte_observation_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/ci_graph_audit.py
+  bounded_context: ci_authority
+  operation_side: query
+  scope: Hash Git-reported changed working and untracked regular files using rooted
+    descriptor traversal, no parent/leaf symlinks or blocking FIFO; preserve exact
+    staged blob identities separately from working versions. Two actual byte-reader
+    consumers serve tracked changes and untracked files. Existing two snapshot consumers
+    detect same-status byte movement.
+  compatibility: Additive optional source_byte_observations in existing audit1.1 source-history
+    query; source_byte_custody remains unresolved. Git ignored/assume-unchanged/skip-worktree
+    coverage, content preservation and whole workspace census are not claimed. No
+    CLI or authority change.
+  cases: 11
+  expected_before:
+    failures: 10
+    passes: 1
+  forbidden:
+  - source execution
+  - configured external diff/text conversion
+  - following source symlinks
+  - blocking FIFO
+  - automatic merge/delete
+  - claiming hash observations preserve bytes or authorize retirement
+  remaining: Independent workspace discovery, complete source population, preserved
+    content custody and handoff/retirement gate remain open.

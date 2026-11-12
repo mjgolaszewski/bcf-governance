@@ -558,3 +558,4 @@ next_work:
 - "Audit Git pathsc0ed671d0ce9c3256b55b2f36c056935b8619ec3:6real-Git controlsPASS after5genuine path-identity FAIL/1PASS; affected227casesPASS. Architecture39PASS/1same required main block; lint/governance/packPASS. Full source-continuity/runtime/lifecycle and82whole open."
 - "Contract-first registered source-history query:10real-Git population/ancestry/moving-source/nonmutation controls; additive audit1.1, source bytes and independent clones remain unresolved."
 - "Registered source historyaa2807e17084dfc8d2ded3bf01fc3935cbf88299:10real-Git controlsPASS after10genuine missing-population FAIL; affected237casesPASS. Architecture39PASS/1same required main block; lint/governance/packPASS. Full source-continuity/runtime/lifecycle and82whole open."
+- "Contract-first source-byte query:11controls, expected10missing-byte/movement failures plus1native external-diff positive; staged/working versions distinct, custody and full workspace unresolved."
