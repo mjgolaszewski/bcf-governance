@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "scoped_audit_source_custody_controls_pass_full_continuity_open",
+  "subject": "fa0d98fc4160006b20e16b08532ab4c338f42ebf",
+  "tree": "56a488f93df98765d1f385788895c16fb57716f5",
+  "controls_subject": "0daf44ff49d5948a6cf5430c3ed03965b90ef3bb",
+  "causal_before": {
+    "tests": 6,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 221,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_audit.py": "57ace66774c1a8fa378e2c28997bce0f3b35436ae162d845678aad8480b8a40a"
+  },
+  "evidence_sha256": {
+    "before.xml": "ff63ba220f4891d8447df5b6924e5eb012f5994c50b99898c489287131a1db03",
+    "after.xml": "e3faf813329846228537773db951ecfbcabde32d3b63fe65cbddb1e9cc33ae3a",
+    "architecture.xml": "d8ce391d59b34892aacc95e4ec7a8e2b45365bab6ae5965a4308cff4b0faa971"
+  },
+  "scope": "Two existing audit helpers reuse the existing hardened Git source reader; real native fsmonitor witness and ambient foreign-repository controls preserve legacy status/tracked-file/nongit shapes. No new registry, topology graph, caller flag, policy or authority. Full worktree/branch/dirty-source inventory, push/checkpoint/handoff/retirement dispositions remain unimplemented by this slice.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}

@@ -31,3 +31,19 @@ audit_source_git_custody_contract:
   - claiming source population is runtime qualification
   remaining: Source census is not executable phase, alias, runtime binding or installed
     conformance.
+
+audit_source_git_custody_source_verification:
+  report: audits/issue-394/audit-source-git-custody-verification.json
+  sha256: b233c61fd832a8aa8ca8969ac57ddd44a6b5c1fca01dfc5682f48a94ea961f91
+  subject: fa0d98fc4160006b20e16b08532ab4c338f42ebf
+  previous_memory: P32 active; P33-P35 dormant. Early admission 630244a3 guarded;8controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Audit source fa0d98fc guarded;6controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 630244a3 early.
+  current_ledger:
+    type: 394source
+    statement: fa0d98fc audit.
+  whole_requirement_advancement: false
