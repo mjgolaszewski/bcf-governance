@@ -2271,3 +2271,10 @@ runtime_target_characterization_followup:
     Rerun18characterization+11unsupported-dispatch cases, retain762unchangedPASS;
     no full791rerun.
   whole_requirement_advancement: false
+
+runtime_target_characterization_followup:
+  source_subject: 2554c808a52350d69884a6f5e50540fd233acefc
+  reason: Include own function decorator lines in independent AST declaration containment.
+    Prior assignment-origin and diagnostic correction retained; all11method cases
+    PASS. Test-only/no production or golden edit; rerun18char,retain773PASS,no791rerun.
+  whole_requirement_advancement: false

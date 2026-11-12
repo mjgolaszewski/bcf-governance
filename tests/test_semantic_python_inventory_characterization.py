@@ -46,7 +46,7 @@ def _pre_deconstruction_view(inventory, source):
             assert len(declarations) == 1
             members = declarations[0].body
         declarations = [node for node in members if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
-                        and node.name == owner.split('.')[-1] and node.lineno <= span[0] <= node.end_lineno]
+                        and node.name == owner.split('.')[-1] and min([node.lineno, *(value.lineno for value in node.decorator_list)]) <= span[0] <= node.end_lineno]
         assert len(declarations) == 1
         declaration = declarations[0]
         parameters = {arg.arg for arg in declaration.args.posonlyargs + declaration.args.args + declaration.args.kwonlyargs}
