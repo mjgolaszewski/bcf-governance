@@ -51,7 +51,7 @@ def test_producer_retains_explicit_global_store(tmp_path, case):
                and effect.get("scope") == "global" for effect in function.get("effects", [])), "explicit global binding omitted from source effects"
 
 
-@pytest.mark.parametrize("case", tuple(CASES))
+@pytest.mark.parametrize("case", tuple(case for case in CASES if case not in {"class-binding", "nested-default"}))
 def test_effect_consumer_rejects_explicit_global_store(tmp_path, case):
     body, _ = CASES[case]
     inventory = _inventory(tmp_path, PREFIX + "def query():\n" + body)
@@ -87,3 +87,17 @@ def test_lexical_scope_preserves_local_and_deferred_behavior(tmp_path, case):
 @pytest.mark.parametrize("case", tuple(POSITIVE))
 def test_fresh_consumer_separates_definition_and_operation(tmp_path, case):
     _run(tmp_path, PREFIX + POSITIVE[case] + "\nstate = 0\nassert query() == 1\nassert state == 0\n", "local-definition-boundary-witnessed")
+
+@pytest.mark.parametrize("case,target", [("class-binding", "local_class_construction"), ("nested-default", "definition_evaluation")])
+def test_definition_eager_uncertainty_blocks_without_losing_global_store(tmp_path, case, target):
+    body, _ = CASES[case]
+    inventory = _inventory(tmp_path, PREFIX + "def query():\n" + body)
+    function = next(row for row in inventory["functions"] if row["symbol"] == "service.py::query")
+    assert any(effect.get("kind") == "write" and effect.get("target") == "state"
+               and effect.get("scope") == "global" for effect in function["effects"])
+    unresolved = [effect for effect in function["effects"] if effect.get("kind") == "unresolved"]
+    assert len(unresolved) == 1
+    assert unresolved[0]["target"] == target
+    assert unresolved[0]["scope"] == "definition_eager"
+    with pytest.raises(SemanticOperationEffectError, match=r"^operation global-name\.query\.v1 contains an unresolved effect at service\.py::query$"):
+        validate_operation_effects(_operation(), "service.py::query", inventory)

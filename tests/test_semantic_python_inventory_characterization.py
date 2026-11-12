@@ -72,6 +72,10 @@ def _pre_deconstruction_view(inventory, source):
             expected_origins = []
         if expected_origins:
             assert actual.pop('runtime_target_origins') == expected_origins
+            if isinstance(expression.func, ast.Name):
+                assert expression.func.id in parameters
+                assert actual.pop('dispatch_resolution') == 'unresolved'
+                assert actual.pop('dispatch_port_eligible') is False
         else:
             assert 'runtime_target_origins' not in actual
         for key in ('column', 'end_line', 'end_column'):

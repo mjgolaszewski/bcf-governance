@@ -2375,3 +2375,21 @@ lexical_tooling_disposition:
     before evidence.
   production_subject_pending: true
   whole_requirement_advancement: false
+
+lexical_causal_fixture_qualification:
+  source_subject: 6399f2a1aa4c9531bc1db949a0b3155bea29d42b
+  historical_fixture_changed: false
+  production_changed: false
+  characterization: Independently verify formal-parameter call AST, retained runtime
+    origins and exact noneligible unresolved dispatch fields before removing only
+    these additive fields from the immutable historical view.
+  global_cases: Separate class-binding/nested-default require both original global
+    state write facts and exact definition-eager uncertainty; exact unresolved rejection
+    is distinct from resolved-write enforcement. Other ten retain undeclared-write
+    requirement.
+  previous_after:
+    tests: 860
+    failures: 3
+    errors: 0
+    skipped: 0
+  whole_requirement_advancement: false
