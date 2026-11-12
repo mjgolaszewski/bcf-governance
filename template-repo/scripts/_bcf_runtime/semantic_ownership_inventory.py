@@ -284,20 +284,17 @@ def discover_python_source(
             initializers.append(initialization_facts(tree, path=relative))
         file_rows.append({"path": relative, "sha256": hashlib.sha256(raw).hexdigest()})
         local_types = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
-        types.extend(f"{relative}::{name}" for name in sorted(local_types))
         endpoints.extend(_endpoint_facts(tree, relative))
         imports = _imports(tree, module_index, _module_name(repo_root, path))
         bindings = _import_bindings(tree)
         import_rows.append({"path": relative, "bindings": bindings})
         bindings_by_local = {str(value["local"]): value for value in bindings}
-        class_rows.extend(
-            discover_class_facts(
-                tree,
-                path=relative,
-                imports=imports,
-                import_bindings=bindings_by_local,
-            )
+        source_classes = discover_class_facts(
+            tree, path=relative, imports=imports,
+            import_bindings=bindings_by_local,
         )
+        class_rows.extend(source_classes)
+        types.extend(row["symbol"] for row in source_classes)
         scopes, missing = runtime_function_contexts(tree, path=relative, imports=imports)
         if missing:
             raise SemanticInventoryError(

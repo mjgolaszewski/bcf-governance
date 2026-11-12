@@ -95,11 +95,42 @@ def runtime_function_scopes(
     return result, missing
 
 
+def _source_class_scopes(tree: ast.Module) -> list[tuple[ast.ClassDef, str, str | None]]:
+    """Enumerate source class identities, including deferred lexical definitions."""
+    rows: list[tuple[ast.ClassDef, str, str | None]] = []
+
+    def visit(node: ast.AST, prefix: str, parent: str | None) -> None:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            qualified = prefix + node.name
+            for child in node.body:
+                visit(child, qualified + ".<locals>.", qualified)
+        elif isinstance(node, ast.ClassDef):
+            qualified = prefix + node.name
+            rows.append((node, qualified, parent))
+            for child in node.body:
+                visit(child, qualified + ".", parent)
+        elif not isinstance(node, ast.Lambda):
+            for child in ast.iter_child_nodes(node):
+                visit(child, prefix, parent)
+
+    visit(tree, "", None)
+    return rows
+
+
 def runtime_function_contexts(
     tree: ast.Module, *, path: str, imports: dict[str, str],
 ) -> tuple[list[dict[str, Any]], list[str]]:
     """Extend existing runtime scopes with neutral lexical identity and bindings."""
     outer, missing = runtime_function_scopes(tree, path=path, imports=imports)
+    old_classes = {name for name, _ in outer if name is not None}
+    for declaration, qualified, parent in _source_class_scopes(tree):
+        if parent is not None or qualified in old_classes:
+            continue
+        methods = [node for node in declaration.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
+        runtime = [node for node in methods if not any(source_symbol(value, path, imports) in _OVERLOAD_DECORATORS for value in node.decorator_list)]
+        missing.extend(path + "::" + qualified + "." + name for name in sorted(
+            {node.name for node in methods} - {node.name for node in runtime}))
+        outer.append((qualified, runtime))
     contexts: list[dict[str, Any]] = []
 
     def children(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[tuple[ast.FunctionDef | ast.AsyncFunctionDef, bool]]:
@@ -263,9 +294,7 @@ def discover_class_facts(
 ) -> list[dict[str, Any]]:
     """Collect neutral class/method facts during the existing AST pass."""
     rows: list[dict[str, Any]] = []
-    for node in tree.body:
-        if not isinstance(node, ast.ClassDef):
-            continue
+    for node, qualified, _ in _source_class_scopes(tree):
         bases: list[dict[str, Any]] = []
         for base in node.bases:
             fact: dict[str, Any] = {
@@ -295,7 +324,7 @@ def discover_class_facts(
             methods.append(
                 {
                     "name": member.name,
-                    "symbol": f"{path}::{node.name}.{member.name}",
+                    "symbol": f"{path}::{qualified}.{member.name}",
                     "binding": kind,
                     "receiver": receiver,
                     "decorators": sorted(ast.unparse(value) for value in member.decorator_list),
@@ -303,7 +332,7 @@ def discover_class_facts(
             )
         rows.append(
             {
-                "symbol": f"{path}::{node.name}",
+                "symbol": f"{path}::{qualified}",
                 "bases": bases,
                 "methods": methods,
                 "class_decorators": sorted(
