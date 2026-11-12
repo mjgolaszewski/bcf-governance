@@ -1815,7 +1815,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "9231dc8101c891bc7e4664bccd2a3f80b84dc034344dd28c5c999309b2eda7cc"
+      "sha256": "6326c482902cc80cebd21ce4039e6df54ce6fe0f126b5cc3cf167914e20b9a90"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",
@@ -1835,7 +1835,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_inventory.py": {
       "operation": "copy",
-      "sha256": "6c90dbed2f920346bd57733277445378599192e1cb21e7059dc428fb6b564200"
+      "sha256": "968170332929a621bf3ce725499291754f9c996a48801606d4577377b809cdfd"
     },
     "scripts/_bcf_runtime/semantic_ownership_reference.py": {
       "operation": "copy",
@@ -1863,11 +1863,11 @@
     },
     "scripts/_bcf_runtime/semantic_python_calls.py": {
       "operation": "copy",
-      "sha256": "5f79c2d7b8f95c3ed35d7c9940a29d0ae4f5eeb15338abc53c8bad201f2c4786"
+      "sha256": "525aae34086dfbad8d06d216e1cfc4bf35b802229485d7aa659013a422d2a980"
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
-      "sha256": "caf3d64923731d23b13d108b9d65f8e4282a9df6d4e31d1f51cd1297ab459f44"
+      "sha256": "5c2d9fa6deeab7bb950479718cc467e8b2faab77e9ec6c1dd02a0a78dd77826c"
     },
     "scripts/_bcf_runtime/semantic_source_discovery.py": {
       "operation": "copy",

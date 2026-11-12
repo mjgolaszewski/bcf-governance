@@ -2360,3 +2360,18 @@ lexical_function_context_contract:
     profiles, independent whole lifecycle census, deadlines, approved targets, adopters
     or custody. All82whole remain open.
   whole_requirement_advancement: false
+
+lexical_tooling_disposition:
+  before_subject: b102f82a9e4f3edf30fcd87c67c18ee816d0a3c8
+  before:
+    tests: 40
+    failures: 20
+    errors: 0
+    skipped: 0
+  unexpected_stage: unregistered extra I-only Ruff normalization unavailable in pinned
+    test env
+  resolution: Omit that extra step; preserve required canonical AST/whitespace lint
+    and all behavioral/governance/package gates. No tool install, no rerun of valid
+    before evidence.
+  production_subject_pending: true
+  whole_requirement_advancement: false

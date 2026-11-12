@@ -42,12 +42,38 @@ def _runtime_target_origins(call: dict[str, Any], function: dict[str, Any]) -> t
         return ()
     origins = call["runtime_target_origins"]
     parameters = function.get("parameters", {})
+    closures = function.get("closure_parameters", {})
+    if not isinstance(closures, dict):
+        raise SemanticOperationEffectError("operation runtime target population is incompatible or ambiguous")
+    if isinstance(parameters, dict):
+        parameters = {**closures, **parameters}
     if (not isinstance(origins, list) or not origins or not isinstance(parameters, dict)
             or any(not isinstance(value, str) or not value.startswith("parameter:")
                    or value[len("parameter:"):] not in parameters for value in origins)
             or len(set(origins)) != len(origins) or sorted(origins) != origins):
         raise SemanticOperationEffectError("operation runtime target population is incompatible or ambiguous")
     return tuple(origins)
+
+def _lexical_scalar_cells(function: dict[str, Any]) -> tuple[str, ...]:
+    """Validate neutral eligibility for one closed literal-int parent frame."""
+    if "lexical_scalar_region" not in function:
+        return ()
+    row = function["lexical_scalar_region"]
+    if not isinstance(row, dict):
+        raise SemanticOperationEffectError("operation lexical scalar region is incompatible or ambiguous")
+    cells = row.get("cells")
+    digest = row.get("expression_sha256")
+    if (set(row) != {"authority", "execution_qualified", "owner", "expression_sha256", "cells"}
+            or row.get("authority") is not False or row.get("execution_qualified") is not False
+            or row.get("owner") != function.get("symbol") or function.get("lexical_parent") is not None
+            or function.get("parameters") or not isinstance(digest, str) or len(digest) != 64
+            or any(value not in "0123456789abcdef" for value in digest)
+            or not isinstance(cells, list) or not cells
+            or any(not isinstance(value, str) or not value.isidentifier() for value in cells)
+            or cells != sorted(set(cells))):
+        raise SemanticOperationEffectError("operation lexical scalar region is incompatible or ambiguous")
+    return tuple(cells)
+
 
 def _source_store_rows(function: dict[str, Any]) -> tuple[tuple[str, int, str], ...]:
     """Validate neutral store observations and their unresolved effect pairing."""
@@ -165,6 +191,7 @@ def source_operation_call_population(
             reject()
         if function.get("language", "python") != "python" or not isinstance(function.get("calls"), list):
             reject()
+        _lexical_scalar_cells(function)
         stores.extend((caller, *row) for row in _source_store_rows(function))
         for call in function["calls"]:
             if not isinstance(call, dict):
@@ -427,6 +454,8 @@ def validated_operation_effect_inventory(
         raise SemanticOperationEffectError(
             f"operation {operation['id']} entrypoint is absent from the shared source inventory"
         )
+    if functions[entrypoint].get("lexical_parent") is not None:
+        raise SemanticOperationEffectError("operation contains an unresolved effect lexical invocation context")
     mutation_ports = {
         _port_identity(str(value), functions)
         for value in operation["allowed_mutation_ports"]
@@ -452,12 +481,17 @@ def validated_operation_effect_inventory(
         visited.add((symbol, credit))
         function = functions[symbol]
         _source_store_rows(function)
+        _lexical_scalar_cells(function)
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
                 pending.append((module, credit))
         for effect in function.get("effects", []):
             target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
+            if (effect.get("kind") == "write" and effect.get("scope") == "nonlocal"
+                    and function.get("lexical_parent") == entrypoint
+                    and effect.get("target") in _lexical_scalar_cells(functions[entrypoint])):
+                continue
             if effect.get("kind") == "write":
                 writes.add(target)
             elif effect.get("kind") == "authority":

@@ -95,6 +95,109 @@ def runtime_function_scopes(
     return result, missing
 
 
+def runtime_function_contexts(
+    tree: ast.Module, *, path: str, imports: dict[str, str],
+) -> tuple[list[dict[str, Any]], list[str]]:
+    """Extend existing runtime scopes with neutral lexical identity and bindings."""
+    outer, missing = runtime_function_scopes(tree, path=path, imports=imports)
+    contexts: list[dict[str, Any]] = []
+
+    def children(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[tuple[ast.FunctionDef | ast.AsyncFunctionDef, bool]]:
+        found = []
+        pending: list[tuple[ast.AST, bool]] = [(node, True) for node in function.body]
+        while pending:
+            node, direct = pending.pop(0)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                found.append((node, direct))
+            elif not isinstance(node, (ast.ClassDef, ast.Lambda)):
+                pending.extend((child, False) for child in ast.iter_child_nodes(node))
+        return found
+
+    def local_classes(function: ast.FunctionDef | ast.AsyncFunctionDef, qualified: str) -> list[tuple[ast.ClassDef, str]]:
+        found: list[tuple[ast.ClassDef, str]] = []
+        pending: list[tuple[ast.AST, str]] = [(node, qualified + '.<locals>.') for node in function.body]
+        while pending:
+            node, prefix = pending.pop(0)
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                continue
+            if isinstance(node, ast.ClassDef):
+                target = prefix + node.name
+                found.append((node, target))
+                pending.extend((child, target + '.') for child in node.body)
+            else:
+                pending.extend((child, prefix) for child in ast.iter_child_nodes(node))
+        return found
+
+    def add(function: ast.FunctionDef | ast.AsyncFunctionDef, class_name: str | None,
+            qualified: str, parent: str | None, inherited: dict[str, Any],
+            captured_parameters: dict[str, str | None]) -> None:
+        declared = children(function)
+        names = {node.name for node, _ in declared} | set(inherited)
+        pending = list(function.body)
+        shadows: set[str] = set()
+        assigned: set[str] = set()
+        while pending:
+            node = pending.pop()
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                continue
+            if isinstance(node, ast.ClassDef):
+                if node.name in names:
+                    shadows.add(node.name)
+                continue
+            if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+                assigned.add(node.id)
+                if node.id in names:
+                    shadows.add(node.id)
+            if isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar)) and node.name:
+                assigned.add(node.name)
+                if node.name in names:
+                    shadows.add(node.name)
+            if isinstance(node, ast.MatchMapping) and node.rest:
+                assigned.add(node.rest)
+                if node.rest in names:
+                    shadows.add(node.rest)
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                shadows.update((alias.asname or alias.name.split('.')[0]) for alias in node.names if (alias.asname or alias.name.split('.')[0]) in names)
+            pending.extend(ast.iter_child_nodes(node))
+        bindings = {name: {**value, 'ambiguous': value['ambiguous'] or name in shadows}
+                    for name, value in inherited.items()}
+        runtime = []
+        overloads: set[str] = set()
+        for node, direct in declared:
+            target = qualified + '.<locals>.' + node.name
+            if any(source_symbol(value, path, imports) in _OVERLOAD_DECORATORS for value in node.decorator_list):
+                overloads.add(node.name)
+                continue
+            runtime.append((node, target))
+            ambiguous = (not direct or node.name in shadows
+                         or sum(other.name == node.name for other, _ in declared if not any(source_symbol(value, path, imports) in _OVERLOAD_DECORATORS for value in other.decorator_list)) != 1)
+            bindings[node.name] = {'symbol': path + '::' + target,
+                                   'ambiguous': ambiguous, 'line': node.lineno}
+        missing.extend(path + '::' + qualified + '.<locals>.' + name
+                       for name in sorted(overloads - {node.name for node, _ in runtime}))
+        contexts.append({'class_name': class_name, 'qualified_name': qualified,
+                         'lexical_parent': parent, 'function': function,
+                         'bindings': bindings, 'closure_parameters': captured_parameters, 'assigned_names': sorted(assigned)})
+        parameters = dict(captured_parameters)
+        parameters.update({arg.arg: None for arg in [*function.args.posonlyargs, *function.args.args,
+                                                    *function.args.kwonlyargs,
+                                                    *([function.args.vararg] if function.args.vararg else []),
+                                                    *([function.args.kwarg] if function.args.kwarg else [])]})
+        for node, target in runtime:
+            add(node, None, target, path + '::' + qualified, bindings, parameters)
+        for local_class, target in local_classes(function, qualified):
+            methods = [node for node in local_class.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))]
+            runtime_methods = [node for node in methods if not any(source_symbol(value, path, imports) in _OVERLOAD_DECORATORS for value in node.decorator_list)]
+            for method in runtime_methods:
+                add(method, target, target + '.' + method.name, path + '::' + qualified, bindings, parameters)
+
+    for class_name, members in outer:
+        for function in members:
+            qualified = (class_name + '.' if class_name else '') + function.name
+            add(function, class_name, qualified, None, {}, {})
+    return contexts, missing
+
+
 def call_name(node: ast.Call) -> str:
     """Return the direct lexical call name, or a closed dynamic marker."""
     if isinstance(node.func, ast.Name):

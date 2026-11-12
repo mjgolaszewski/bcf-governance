@@ -118,6 +118,66 @@ def _closed_native_region(function: ast.FunctionDef | ast.AsyncFunctionDef) -> s
     return observed
 
 
+def _closed_owned_scalar_cells(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[str] | None:
+    """Recognize only a whole closed, synchronous literal-int cell region."""
+    args = function.args
+    if (not isinstance(function, ast.FunctionDef) or function.decorator_list or function.returns
+            or args.posonlyargs or args.args or args.kwonlyargs or args.vararg or args.kwarg
+            or args.defaults or args.kw_defaults or getattr(function, "type_params", [])):
+        return None
+    cells: set[str] = set()
+    children: set[str] = set()
+    shared: set[str] = set()
+
+    def integer(node: ast.AST | None) -> bool:
+        return isinstance(node, ast.Constant) and type(node.value) is int
+
+    for statement in function.body:
+        if isinstance(statement, ast.Assign):
+            if (len(statement.targets) != 1 or not isinstance(statement.targets[0], ast.Name)
+                    or not integer(statement.value) or statement.targets[0].id in cells | children):
+                return None
+            cells.add(statement.targets[0].id)
+        elif isinstance(statement, ast.FunctionDef):
+            child_args = statement.args
+            if (statement.name in cells | children or statement.decorator_list or statement.returns
+                    or child_args.posonlyargs or child_args.args or child_args.kwonlyargs
+                    or child_args.vararg or child_args.kwarg or child_args.defaults
+                    or child_args.kw_defaults or getattr(statement, "type_params", [])):
+                return None
+            nonlocals = {name for node in statement.body if isinstance(node, ast.Nonlocal) for name in node.names}
+            if not nonlocals <= cells:
+                return None
+            for node in statement.body:
+                if isinstance(node, ast.Nonlocal):
+                    continue
+                if (isinstance(node, ast.AugAssign) and isinstance(node.target, ast.Name)
+                        and node.target.id in nonlocals and isinstance(node.op, (ast.Add, ast.Sub))
+                        and integer(node.value)):
+                    continue
+                if (isinstance(node, ast.Assign) and len(node.targets) == 1
+                        and isinstance(node.targets[0], ast.Name) and node.targets[0].id in nonlocals
+                        and integer(node.value)):
+                    continue
+                if isinstance(node, ast.Return) and (node.value is None or integer(node.value)):
+                    continue
+                if isinstance(node, ast.Pass):
+                    continue
+                return None
+            shared.update(nonlocals)
+            children.add(statement.name)
+        elif isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Call):
+            call = statement.value
+            if not isinstance(call.func, ast.Name) or call.func.id not in children or call.args or call.keywords:
+                return None
+        elif isinstance(statement, ast.Return):
+            if not integer(statement.value) and not (isinstance(statement.value, ast.Name) and statement.value.id in cells):
+                return None
+        else:
+            return None
+    return sorted(shared) if shared else None
+
+
 class _FunctionVisitor(ast.NodeVisitor):
     def __init__(
         self,
@@ -129,8 +189,17 @@ class _FunctionVisitor(ast.NodeVisitor):
         class_name: str | None,
         function: ast.FunctionDef | ast.AsyncFunctionDef,
         call_contracts: bool = False,
+        lexical_context: dict[str, Any] | None = None,
+        postponed_annotations: bool = False,
     ) -> None:
         self.call_contracts = call_contracts
+        context = lexical_context or {}
+        self.lexical_parent = context.get('lexical_parent')
+        self._lexical_bindings = context.get('bindings', {})
+        self._closure_parameters = context.get('closure_parameters', {})
+        self._ambiguous_imports = set(context.get('ambiguous_imports', []))
+        self._postponed_annotations = postponed_annotations
+        self._owned_scalar_cells = _closed_owned_scalar_cells(function) if self.lexical_parent is None else None
         self._root_function = function
         self._track_global_stores = False
         self._track_operation_stores = False
@@ -139,6 +208,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         self._store_occurrences: dict[str, int] = {}
         self._global_store_effects: list[dict[str, Any]] = []
         self._global_names: set[str] = set()
+        self._nonlocal_names: set[str] = set()
         pending = list(function.body)
         while pending:
             node = pending.pop()
@@ -146,6 +216,8 @@ class _FunctionVisitor(ast.NodeVisitor):
                 continue
             if isinstance(node, ast.Global):
                 self._global_names.update(node.names)
+            if isinstance(node, ast.Nonlocal):
+                self._nonlocal_names.update(node.names)
             pending.extend(ast.iter_child_nodes(node))
         self.call_occurrences: dict[str, int] = {}
         self.path = path
@@ -156,18 +228,22 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.method_binding_kind, self.receiver = method_binding(function)
         self.decorators = sorted(ast.unparse(value) for value in function.decorator_list)
         suffix = f"{class_name}.{function.name}" if class_name else function.name
-        self.symbol = f"{path}::{suffix}"
+        self.symbol = path + "::" + context.get("qualified_name", suffix)
         arguments = [
             *function.args.posonlyargs,
             *function.args.args,
             *function.args.kwonlyargs,
+            *([function.args.vararg] if function.args.vararg else []),
+            *([function.args.kwarg] if function.args.kwarg else []),
         ]
         self.parameters = {
             argument.arg: _annotation(argument.annotation) for argument in arguments
         }
         self.assignments = {
-            name: {f"parameter:{name}"} for name in self.parameters
+            name: {f"parameter:{name}"} for name in {**self._closure_parameters, **self.parameters}
         }
+        for name, binding in self._lexical_bindings.items():
+            self.assignments.setdefault(name, {'lexical_function:' + binding['symbol']})
         self.calls: list[dict[str, Any]] = []
         self.constructors: list[dict[str, Any]] = []
         self.normalizations: list[dict[str, Any]] = []
@@ -177,9 +253,9 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.receiver_attribute_mutations: set[str] = set()
 
     def _record_global_binding(self, name: str, node: ast.stmt | ast.expr) -> None:
-        if self._track_global_stores and name in self._global_names:
+        if self._track_global_stores and name in self._global_names | self._nonlocal_names:
             self._global_store_effects.append({
-                "kind": "write", "target": name, "scope": "global",
+                "kind": "write", "target": name, "scope": "global" if name in self._global_names else "nonlocal",
                 "line": node.lineno, "column": node.col_offset,
             })
 
@@ -188,6 +264,10 @@ class _FunctionVisitor(ast.NodeVisitor):
         operation_previous = self._track_operation_stores
         try:
             for field, value in ast.iter_fields(node):
+                if field == 'body' and isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)) and node is not self._root_function:
+                    continue
+                if self._postponed_annotations and field == 'returns' and isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
                 self._track_global_stores = field in active_fields
                 self._track_operation_stores = field in operation_fields
                 for child in value if isinstance(value, list) else [value]:
@@ -202,14 +282,28 @@ class _FunctionVisitor(ast.NodeVisitor):
             active = {"body"}
         else:
             self._record_global_binding(node.name, node)
+        if node is not self._root_function:
+            annotations = [arg.annotation for arg in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs, *([node.args.vararg] if node.args.vararg else []), *([node.args.kwarg] if node.args.kwarg else [])]]
+            if (node.decorator_list or getattr(node, "type_params", [])
+                    or (not self._postponed_annotations and any(value is not None for value in [*annotations, node.returns]))
+                    or any(value is not None and not _native_literal_value(value, set()) for value in [*node.args.defaults, *node.args.kw_defaults])):
+                self._global_store_effects.append({"kind": "unresolved", "target": "definition_evaluation",
+                                                  "scope": "definition_eager", "line": node.lineno, "column": node.col_offset})
             active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
         operation = {"body"} if node is self._root_function else ({field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_operation_stores else set())
         self._visit_scoped_fields(node, active, operation)
+
+    def visit_arg(self, node: ast.arg) -> None:
+        if node.annotation is not None and not self._postponed_annotations:
+            self.visit(node.annotation)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802
         self.visit_FunctionDef(node)  # type: ignore[arg-type]
 
     def visit_ClassDef(self, node: ast.ClassDef) -> None:  # noqa: N802
+        if self._track_operation_stores:
+            self._global_store_effects.append({"kind": "unresolved", "target": "local_class_construction",
+                                              "scope": "definition_eager", "line": node.lineno, "column": node.col_offset})
         self._record_global_binding(node.name, node)
         active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
         operation = {field for field, _ in ast.iter_fields(node)} if self._track_operation_stores else set()
@@ -279,6 +373,14 @@ class _FunctionVisitor(ast.NodeVisitor):
             self.receiver_attribute_mutations.add(target.attr)
 
     def _resolved_symbol(self, call: ast.Call) -> str:
+        if isinstance(call.func, ast.Name):
+            binding = self._lexical_bindings.get(call.func.id)
+            if binding is not None:
+                return str(binding["symbol"])
+            origins = self.assignments.get(call.func.id, set())
+            targets = {value[len("lexical_function:"):] for value in origins if value.startswith("lexical_function:")}
+            if len(targets) == 1 and len(origins) == 1:
+                return next(iter(targets))
         return source_symbol(call.func, self.path, self.imports)
 
     def _origins(self, node: ast.AST) -> set[str]:
@@ -405,6 +507,28 @@ class _FunctionVisitor(ast.NodeVisitor):
         target_origins = sorted(origin for origin in self._origins(node.func) if origin.startswith("parameter:"))
         if target_origins and dispatch is None:
             fact["runtime_target_origins"] = target_origins
+        if isinstance(node.func, ast.Name):
+            binding = self._lexical_bindings.get(node.func.id)
+            origins = self.assignments.get(node.func.id, set())
+            targets = {value[len("lexical_function:"):] for value in origins if value.startswith("lexical_function:")}
+            if binding is not None or targets:
+                fact.pop("import_reference", None)
+                if (binding is not None and binding["ambiguous"]) or len(targets) != 1 or len(origins) != 1:
+                    fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
+                else:
+                    fact.update(called_symbol=next(iter(targets)), dispatch_resolution="source_lexical")
+        if (isinstance(node.func, ast.Name) and node.func.id in self.assignments
+                and not any(value.startswith("lexical_function:") for value in self.assignments[node.func.id])
+                and dispatch is None):
+            fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
+        if not isinstance(node.func, (ast.Name, ast.Attribute)):
+            fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
+        if reference is not None and reference.get("local") in self._ambiguous_imports:
+            fact.update(dispatch_resolution="unresolved", dispatch_port_eligible=False)
+        escaped = set().union(*(self._origins(value) for value in [*node.args, *[keyword.value for keyword in node.keywords]]))
+        if any(value.startswith("lexical_function:") for value in escaped):
+            self._global_store_effects.append({"kind": "unresolved", "target": "lexical_callable_escape",
+                                              "scope": "operation_eager", "line": node.lineno, "column": node.col_offset})
         self.calls.append(fact)
         if name in self.local_types or (name[:1].isupper() and name not in PRIMITIVES):
             constructed = (
@@ -450,6 +574,15 @@ class _FunctionVisitor(ast.NodeVisitor):
             "decorators": self.decorators,
             "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
         }
+        if self.lexical_parent is not None:
+            result["lexical_parent"] = self.lexical_parent
+            result["closure_parameters"] = dict(self._closure_parameters)
+        if self._owned_scalar_cells:
+            result["lexical_scalar_region"] = {
+                "authority": False, "execution_qualified": False, "owner": self.symbol,
+                "expression_sha256": hashlib.sha256(ast.dump(self._root_function, include_attributes=False).encode()).hexdigest(),
+                "cells": self._owned_scalar_cells,
+            }
         if self._source_stores:
             result["source_store_observations"] = self._source_stores
         if self._global_store_effects:

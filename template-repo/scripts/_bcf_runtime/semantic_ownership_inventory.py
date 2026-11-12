@@ -20,7 +20,8 @@ from .semantic_python_method_identity import (
     extend_constructor_effect_obligations,
     resolve_method_dispatch,
     root_name as _root_name,
-    runtime_function_scopes,
+    runtime_function_scopes as runtime_function_scopes,
+    runtime_function_contexts,
 )
 from .semantic_python_annotation_identity import (
     annotation_text as _annotation,
@@ -90,7 +91,15 @@ def _import_bindings(
 ) -> list[dict[str, Any]]:
     """Retain neutral import syntax for source-root resolution after discovery."""
     bindings: list[dict[str, Any]] = []
-    nodes = ast.walk(tree) if recursive else tree.body
+    nodes: list[ast.AST] = list(tree.body)
+    if recursive:
+        pending: list[ast.AST] = list(tree.body)
+        nodes = []
+        while pending:
+            node = pending.pop(0)
+            nodes.append(node)
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+                pending.extend(ast.iter_child_nodes(node))
     for node in nodes:
         if isinstance(node, ast.Import):
             for alias in node.names:
@@ -289,31 +298,34 @@ def discover_python_source(
                 import_bindings=bindings_by_local,
             )
         )
-        scopes, missing = runtime_function_scopes(
-            tree, path=relative, imports=imports
-        )
+        scopes, missing = runtime_function_contexts(tree, path=relative, imports=imports)
         if missing:
             raise SemanticInventoryError(
-                "Python overload declarations require one runtime implementation: "
-                + ", ".join(missing)
+                "Python overload declarations require one runtime implementation: " + ", ".join(missing)
             )
-        for class_name, members in scopes:
-            for member in members:
-                local_bindings = {
-                    str(value["local"]): value
-                    for value in _import_bindings(member, recursive=True)
-                }
-                visitor = FunctionVisitor(
-                    path=relative,
-                    imports=imports,
-                    import_bindings={**bindings_by_local, **local_bindings},
-                    local_types=local_types,
-                    class_name=class_name,
-                    function=member,
-                    call_contracts=call_contracts_version is not None,
-                )
-                visitor.visit(member)
-                functions.append(visitor.facts())
+        postponed_annotations = any(
+            isinstance(node, ast.ImportFrom) and node.module == "__future__"
+            and any(alias.name == "annotations" for alias in node.names) for node in tree.body
+        )
+        lexical_imports: dict[str, dict[str, Any]] = {}
+        lexical_import_ambiguity: dict[str, set[str]] = {}
+        for context in scopes:
+            member = context["function"]
+            inherited_bindings = lexical_imports.get(context["lexical_parent"], {})
+            own_imports = _import_bindings(member, recursive=True)
+            local_bindings = {**inherited_bindings, **{str(value["local"]): value for value in own_imports}}
+            lexical_imports[relative + "::" + context["qualified_name"]] = local_bindings
+            context["ambiguous_imports"] = sorted(lexical_import_ambiguity.get(context["lexical_parent"], set()) | {name for name in local_bindings if name in context["assigned_names"] or sum(value["local"] == name for value in own_imports) > 1})
+            lexical_import_ambiguity[relative + "::" + context["qualified_name"]] = set(context["ambiguous_imports"])
+            visitor = FunctionVisitor(
+                path=relative, imports=imports,
+                import_bindings={**bindings_by_local, **local_bindings},
+                local_types=local_types, class_name=context["class_name"], function=member,
+                call_contracts=call_contracts_version is not None,
+                lexical_context=context, postponed_annotations=postponed_annotations,
+            )
+            visitor.visit(member)
+            functions.append(visitor.facts())
     inventory = {
         "language": "python",
         "files": file_rows,
