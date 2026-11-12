@@ -27,6 +27,7 @@ def _source(root: Path) -> Path:
 def _pre_deconstruction_view(inventory, source):
     """Validate additive facts independently, then preserve every historical field."""
     nodes = ast.parse(source.read_text())
+    call_nodes = {(node.lineno, node.col_offset, node.end_lineno, node.end_col_offset): node for node in ast.walk(nodes) if isinstance(node, ast.Call)}
     spans = {
         (node.lineno, node.col_offset, node.end_lineno, node.end_col_offset)
         for node in ast.walk(nodes) if isinstance(node, ast.Call)
@@ -35,7 +36,29 @@ def _pre_deconstruction_view(inventory, source):
 
     def fact_view(fact):
         actual = dict(fact)
-        assert (actual['line'], actual['column'], actual['end_line'], actual['end_column']) in spans
+        span = (actual['line'], actual['column'], actual['end_line'], actual['end_column'])
+        assert span in spans
+        expression = call_nodes[span]
+        owner = actual['caller'].partition('::')[2]
+        members = nodes.body
+        for name in owner.split('.')[:-1]:
+            declarations = [node for node in members if isinstance(node, ast.ClassDef) and node.name == name]
+            assert len(declarations) == 1
+            members = declarations[0].body
+        declarations = [node for node in members if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                        and node.name == owner.split('.')[-1] and node.lineno <= span[0] <= node.end_lineno]
+        assert len(declarations) == 1
+        declaration = declarations[0]
+        parameters = {arg.arg for arg in declaration.args.posonlyargs + declaration.args.args + declaration.args.kwonlyargs}
+        targets = {node.id for node in ast.walk(expression.func) if isinstance(node, ast.Name)}
+        expected_origins = sorted('parameter:' + name for name in targets & parameters)
+        # The immutable fixture's self-method dispatch remains with the existing owner.
+        if owner.startswith('Repository.') and 'self' in targets:
+            expected_origins = []
+        if expected_origins:
+            assert actual.pop('runtime_target_origins') == expected_origins
+        else:
+            assert 'runtime_target_origins' not in actual
         for key in ('column', 'end_line', 'end_column'):
             actual.pop(key)
         if 'construction_effect_observation' in actual:
@@ -185,4 +208,23 @@ def test_characterization_attribute_additions_cannot_hide_forgery(tmp_path, defe
     else:
         function['effects'] = []
     with pytest.raises(AssertionError):
+        _pre_deconstruction_view(inventory, source)
+
+
+@pytest.mark.parametrize('defect', ('erasure', 'wrong-parameter', 'duplicate', 'empty'))
+def test_characterization_runtime_target_origins_cannot_hide_changes(tmp_path, defect):
+    source = _source(tmp_path)
+    inventory = deepcopy(resolve_python_imports(tmp_path, discover_python_source(tmp_path, files=[source])))
+    function = next(row for row in inventory['functions'] if row['symbol'] == 'model.py::Repository.from_root')
+    call = function['calls'][0]
+    assert call.get('runtime_target_origins') == ['parameter:cls'], 'runtime target origins omitted'
+    if defect == 'erasure':
+        del call['runtime_target_origins']
+    elif defect == 'wrong-parameter':
+        call['runtime_target_origins'] = ['parameter:root']
+    elif defect == 'duplicate':
+        call['runtime_target_origins'] *= 2
+    else:
+        call['runtime_target_origins'] = []
+    with pytest.raises((AssertionError, KeyError)):
         _pre_deconstruction_view(inventory, source)

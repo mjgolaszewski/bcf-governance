@@ -2240,3 +2240,25 @@ unresolved_callback_diagnostic:
     parser/resolver/effect owners after bounded contract, then affected consumer/gate
     qualification. No port spelling can authenticate unknown runtime binding.
   whole_requirement_advancement: false
+
+callback_runtime_target_contract:
+  authority: false
+  scope: Retain parameter-derived runtime callable target origins through existing
+    parser and consumers; unknown target cannot become source authority or declared-port
+    credit. Preserve existing method-dispatch owner's decisions; no name/type annotation
+    authority.
+  producer: Optional runtime_target_origins on existing call facts; derives solely
+    from existing parameter/alias origins in target expression when existing method
+    dispatch has no reference. Conservative source observation only, no execution
+    claim.
+  consumers: Both existing source population and effect owner validate nonempty sorted
+    unique parameter origins. Unknown targets remain unresolved even when symbol matches
+    source/import; effect owner blocks before declared ports.
+  controls: Retain original14controls8FAIL/6PASS incl4nativewrite witnesses. Commit14new
+    producer/consumer controls and4immutable-characterization tamper checks first;
+    expected14new failures before production. Run affected791,40architecture and canonical/gov/lint/package
+    gates; no runtime/whole assertion.
+  residuals: Returned/escaped/nonlocal/import dynamics, runtime object/binding identity,
+    independently discovered whole population, deadlines/targets/adopters/custody
+    remain open.
+  whole_requirement_advancement: false
