@@ -2605,3 +2605,34 @@ implicit_grammar_source_diagnostic:
     Unknown context cannot gain authority, and no syntax rewrite may hide the same
     effect. Full profiles and independent closure remain open.
   whole_requirement_advancement: false
+
+implicit_grammar_repair_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owners:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - bcf_governance/tooling/semantic_python_calls.py
+  - bcf_governance/tooling/semantic_operation_effects.py
+  - schemas/semantic-call-contracts.schema.json
+  scope: Capture qualified unary/comparison/containment/boolean/starred/unpack/raise/await/yield-from
+    gaps through existing implicit call population. Keep legacy kinds at marker1.0,
+    add explicit await/exception marker1.1 with source/schema/effect consumers rejecting
+    cross-version relabeling. Closed literals, identity comparisons, untested final
+    boolean operands and deferred lambda bodies retain their actual source semantics;
+    unknown runtime context stays unqualified.
+  new_cases: 25
+  expected_before:
+    failures: 21
+    passes: 4
+  retained_behavioral_baseline:
+    subject: 9d8b39ac1ad5ca2d2b31204afa6e019d87fff3b0
+    failures: 9
+    passes: 11
+  forbidden:
+  - classifying unknown dispatch as pure
+  - caller selected marker-version authority
+  - editing characterization goldens
+  - claiming source population is runtime qualification
+  remaining: Source census is not executable phase, alias, runtime binding or installed
+    conformance.
