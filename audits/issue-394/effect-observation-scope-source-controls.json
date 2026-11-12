@@ -1,0 +1,79 @@
+{
+  "authority": false,
+  "status": "source_observation_scope_controls_pass_runtime_profiles_open",
+  "subject": "1ab2e77cfd64396ca66f4c7dc2112add4e8b4162",
+  "tree": "ef8de1964b9a11fcccb1de43497e40481070b433",
+  "controls_subject": "56316678bdd65061f4ca37b7a272c9c12623d919",
+  "before_core": {
+    "tests": 1,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "targeted_after": {
+    "tests": 75,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 958,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "new_scope_cases_passed": 25,
+  "retained_prior_matrix": {
+    "results": {
+      "tests": 933,
+      "failures": 4,
+      "errors": 0,
+      "skipped": 0
+    },
+    "sha256": "f249ca1df45912a8e150067d19a1b3dc5fc8ad360a7098651f4ca4fd5e6160f6",
+    "rerun": false
+  },
+  "retained_native_contexts_sha256": "e7016b3d0a484e88c1bb31d4c0abbd80d81f13a3e701195f1216e8070fb6775e",
+  "benign_runtime_context_support": "OPEN; source-only counts are not runtime qualification",
+  "required_remaining_failures": [],
+  "remaining_failures_waived": false,
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false,
+    "failure_text_sha256": "c5065b8783d99de4294291afa6ac4f0ed07db42f58d6b2a5af6908468b10b21b"
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_operation_effects.py": "6f3a6f45f7e9f6b294e3c663ef4a7e70e86a58f0fabe1a88e4766b9864536a7f",
+    "bcf_governance/tooling/semantic_authority_operations.py": "4862d0331827632291ec604f4239611550645b427ffb2f6c9e1ccbcbae962d61",
+    "bcf_governance/tooling/semantic_authority_contracts.py": "1088c391f7030bcc58f7c1422a4e352710d27fc733874c905711132da32e5566",
+    "bcf_governance/tooling/semantic_ownership_scan.py": "872d458e3ee74f7db96cb92fe4a6676fa697eae8bb5feb4e53e1af5ae8162c15"
+  },
+  "evidence_sha256": {
+    "before.xml": "d74317fbd5ee0f4c4f3f5ea110e70b6b229ea93b11977de73c9a38e3bfb8b627",
+    "after.xml": "5cefbfbf3216ee30c99f81b2e6edae8dedb0af4bec0ba64923a0e570a88861af",
+    "architecture.xml": "a09b1772a8fc0d9f0420878e7c952c755a51fb5e5ff389738df30b888c4dac58"
+  },
+  "typescript_cache": {
+    "archive_sha256": "33cd0ee1beaa8c9e9d15a9da836c62ddea4c34a42d7c2d349dbc80d94165d22a",
+    "compiler_files": 140,
+    "lock_sha256": "53adf32fd78f77fac66cd058eb2e0b2b0a14bc342e99800fcb4a464fba33f3d7",
+    "network_requests": 0,
+    "node_executable_sha256": "3517c2df0b2f8cd7f422b4b8450ef81c6889f08eb03e281d6de9079b15e6a327",
+    "node_version": "v22.23.2",
+    "status": "test_toolchain_checked",
+    "typescript_version": "6.0.3"
+  },
+  "scope": "Explicit source-only observations retain unresolved contexts and counts as data. Default and protected consumers remain strict; known undeclared writes and forged markers still reject in source-only view. No context execution authorized. Full benign/native/runtime profiles remain open.",
+  "observation_authority": false,
+  "observation_execution_qualified": false,
+  "whole_requirement_advancement": false,
+  "full_native_or_installed_qualification": false,
+  "remaining": "Full runtime binding/alias/closure/class/context profiles and lifecycle populations, deadlines/approved targets/adopters/custody; all82whole remain open."
+}

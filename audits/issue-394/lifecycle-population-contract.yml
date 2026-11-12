@@ -2535,3 +2535,20 @@ effect_observation_scope_contract:
     trials retained without rerun.
   whole_requirement_advancement: false
   runtime_benign_context_support: OPEN; not implemented or waived by source-only view
+
+effect_observation_scope_qualification:
+  report: audits/issue-394/effect-observation-scope-source-controls.json
+  sha256: 5df78edc1fa90429192f6f1ae5b859e36fb29ea5a3df4c8257cbbeb534146b0b
+  subject: 1ab2e77cfd64396ca66f4c7dc2112add4e8b4162
+  previous_memory: P32 active; P33-P35 dormant. Implicit-protocol diagnostic 863f78c0;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Protocol contexts 1ab2e77c guarded;75scopePASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 863f78c0 proto.
+  current_ledger:
+    type: 394source
+    statement: 1ab2e77c proto.
+  remaining_state_failures: []
+  whole_requirement_advancement: false
