@@ -317,3 +317,40 @@ local_import_reference_source_verification:
     type: 394source
     statement: b85b3571 importref.
   whole_requirement_advancement: false
+
+local_only_source_object_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/semantic_source_paths.py
+  bounded_context: tooling
+  architectural_layer: tooling
+  concern: ci_authority_source_observations
+  operation_side: query
+  scope: Existing source queries may read only locally available Git objects. Missing
+    promisor objects remain unresolved; queries must not acquire objects or launch
+    repository-configured transport programs. Authenticated source acquisition
+    remains outside this query and with its existing owner.
+  native_diagnostic:
+    cases: 4
+    population: missing blob/tree crossed with ordinary/hostile ambient Git settings
+    witness: Reset private helper marker before ordinary Git and before source query.
+    forbidden: External network or nonfixture object removal.
+  proposed_correction_if_confirmed:
+    environment: Strip ambient Git settings then enforce no lazy fetch and no allowed transport protocols.
+    compatibility: Preserve local-object reads and existing local/unbound query admission.
+  required_controls:
+  - Ordinary Git executes the private helper for the missing object.
+  - Source query cannot execute helper, even with hostile ambient overrides.
+  - Missing object is not fabricated, fetched, or classified clean.
+  - Config, existing source and missing-object state remain unchanged.
+  - Locally available object reads and existing affected consumers pass.
+  forbidden_files:
+  - tests/fixtures/semantic-python-inventory-before-deconstruction.json
+  - tests/fixtures/semantic-python-inventory-source.txt
+  - protected/default branches and maintained adopter checkouts
+  forbidden:
+  - relaxing strict semantic architecture gate
+  - query-triggered authenticated acquisition
+  - treating source observations as runtime or provider authority
+  - phase, release, custody or full-workspace advancement
