@@ -1335,7 +1335,7 @@
     },
     "scripts/_bcf_runtime/operational_observations.py": {
       "operation": "copy",
-      "sha256": "c24a451e4b18a29086bf0cd0dafe63a31d6e70dab460bafed886821271b3a311"
+      "sha256": "f482b321532bd4869e1cd363cf4a79b77ff31a2be7ecd11f6ee278279a8bc340"
     },
     "scripts/_bcf_runtime/ordinary_protection_projection.py": {
       "operation": "copy",

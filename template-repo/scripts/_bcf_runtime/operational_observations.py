@@ -446,6 +446,11 @@ def validate_timing_capture(repo_root: Path, raw: str | bytes) -> dict[str, Any]
         for node in (capture, capture.get('document', {}), capture.get('producer', {}), observation):
             if not isinstance(node, dict) or ('authority' in node and node['authority'] is not False):
                 reject("cannot claim authority")
+        for field in ('start_ms', 'end_ms', 'elapsed_ms', 'execution_union_ms',
+                      'execution_sum_ms', 'external_wait_union_ms', 'uncovered_ms'):
+            _timing_milliseconds(observation[field])
+        if observation['cpu_ms'] != 'unknown':
+            _timing_milliseconds(observation['cpu_ms'])
         source = capture.get('source_snapshot', capture.get('producer'))
         if not isinstance(source, dict):
             reject("source representation is missing")
@@ -469,9 +474,14 @@ def validate_timing_capture(repo_root: Path, raw: str | bytes) -> dict[str, Any]
                         reject("local repository identity disagrees with observation")
             if observation['subject'] != {'commit_sha': source['commit_sha'], 'tree_sha': source['tree_sha']}:
                 reject("source subject disagrees with observation")
+            _timing_milliseconds(source['elapsed_ms'])
             if source['clock_id'] != observation['clock_id'] or source['elapsed_ms'] != observation['elapsed_ms']:
                 reject("source clock or duration disagrees with observation")
             producer = capture.get('producer', {})
+            if 'elapsed_ms' in producer:
+                _timing_milliseconds(producer['elapsed_ms'])
+                if producer['elapsed_ms'] != observation['elapsed_ms']:
+                    reject("producer duration disagrees with observation")
             if 'clock_id' in producer and any(producer.get(key) != source.get(key) for key in
                     ('commit_sha', 'tree_sha', 'clock_id', 'elapsed_ms', 'stdout_sha256', 'stderr_sha256')):
                 reject("producer and source capture facts disagree")
