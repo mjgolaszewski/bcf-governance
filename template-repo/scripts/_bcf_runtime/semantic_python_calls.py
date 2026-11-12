@@ -70,6 +70,18 @@ class _FunctionVisitor(ast.NodeVisitor):
         call_contracts: bool = False,
     ) -> None:
         self.call_contracts = call_contracts
+        self._root_function = function
+        self._track_global_stores = False
+        self._global_store_effects: list[dict[str, Any]] = []
+        self._global_names: set[str] = set()
+        pending = list(function.body)
+        while pending:
+            node = pending.pop()
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)):
+                continue
+            if isinstance(node, ast.Global):
+                self._global_names.update(node.names)
+            pending.extend(ast.iter_child_nodes(node))
         self.call_occurrences: dict[str, int] = {}
         self.path = path
         self.imports = imports
@@ -98,6 +110,63 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.return_fingerprints: list[str] = []
         self.return_annotation = _annotation(function.returns)
         self.receiver_attribute_mutations: set[str] = set()
+
+    def _record_global_binding(self, name: str, node: ast.stmt | ast.expr) -> None:
+        if self._track_global_stores and name in self._global_names:
+            self._global_store_effects.append({
+                "kind": "write", "target": name, "scope": "global",
+                "line": node.lineno, "column": node.col_offset,
+            })
+
+    def _visit_scoped_fields(self, node: ast.AST, active_fields: set[str]) -> None:
+        previous = self._track_global_stores
+        try:
+            for field, value in ast.iter_fields(node):
+                self._track_global_stores = field in active_fields
+                for child in value if isinstance(value, list) else [value]:
+                    if isinstance(child, ast.AST):
+                        self.visit(child)
+        finally:
+            self._track_global_stores = previous
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:  # noqa: N802
+        if node is self._root_function:
+            active = {"body"}
+        else:
+            self._record_global_binding(node.name, node)
+            active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
+        self._visit_scoped_fields(node, active)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:  # noqa: N802
+        self.visit_FunctionDef(node)  # type: ignore[arg-type]
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:  # noqa: N802
+        self._record_global_binding(node.name, node)
+        active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
+        self._visit_scoped_fields(node, active)
+
+    def visit_Lambda(self, node: ast.Lambda) -> None:  # noqa: N802
+        active = {field for field, _ in ast.iter_fields(node) if field != "body"} if self._track_global_stores else set()
+        self._visit_scoped_fields(node, active)
+
+    def visit_comprehension(self, node: ast.comprehension) -> None:
+        active = {field for field, _ in ast.iter_fields(node) if field != "target"} if self._track_global_stores else set()
+        self._visit_scoped_fields(node, active)
+
+    def visit_Name(self, node: ast.Name) -> None:  # noqa: N802
+        if isinstance(node.ctx, (ast.Store, ast.Del)):
+            self._record_global_binding(node.id, node)
+        self.generic_visit(node)
+
+    def visit_Import(self, node: ast.Import) -> None:  # noqa: N802
+        for alias in node.names:
+            self._record_global_binding(alias.asname or alias.name.split(".")[0], node)
+        self.generic_visit(node)
+
+    def visit_ImportFrom(self, node: ast.ImportFrom) -> None:  # noqa: N802
+        for alias in node.names:
+            self._record_global_binding(alias.asname or alias.name, node)
+        self.generic_visit(node)
 
     def _record_receiver_attribute_target(self, target: ast.AST) -> None:
         if (
@@ -264,7 +333,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def facts(self) -> dict[str, Any]:
-        return {
+        result = {
             "symbol": self.symbol,
             "parameters": self.parameters,
             "return_annotation": self.return_annotation,
@@ -277,6 +346,9 @@ class _FunctionVisitor(ast.NodeVisitor):
             "decorators": self.decorators,
             "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
         }
+        if self._global_store_effects:
+            result["effects"] = self._global_store_effects
+        return result
 
 
 class _InitializationVisitor(ast.NodeVisitor):

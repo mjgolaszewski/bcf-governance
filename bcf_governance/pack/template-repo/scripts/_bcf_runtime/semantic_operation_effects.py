@@ -376,14 +376,14 @@ def validated_operation_effect_inventory(
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
                 pending.append((module, credit))
-            for effect in function.get("effects", []):
-                target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
-                if effect.get("kind") == "write":
-                    writes.add(target)
-                elif effect.get("kind") == "authority":
-                    authority.add(target)
-                else:
-                    raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+        for effect in function.get("effects", []):
+            target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
+            if effect.get("kind") == "write":
+                writes.add(target)
+            elif effect.get("kind") == "authority":
+                authority.add(target)
+            else:
+                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
         if function.get("unresolved"):
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
