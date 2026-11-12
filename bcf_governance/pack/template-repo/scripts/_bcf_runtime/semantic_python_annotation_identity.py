@@ -108,3 +108,79 @@ def resolve_annotation_identities(
     AnnotationVisitor().visit(expression)
     identities.discard("")
     return sorted(identities)
+
+
+def _annotation(node: ast.expr | None) -> str:
+    if node is None:
+        return "untyped"
+    try:
+        return ast.unparse(node)
+    except (AttributeError, ValueError):
+        return "unresolved"
+
+
+
+def _imports(
+    tree: ast.Module, module_index: dict[str, str], current_module: str
+) -> dict[str, str]:
+    resolved: dict[str, str] = {}
+    for node in tree.body:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                local = alias.asname or alias.name.split(".", 1)[0]
+                resolved[local] = f"{module_index.get(alias.name, alias.name)}::module"
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            import_module = node.module
+            if node.level:
+                package = current_module.split(".")[:-1]
+                retained = len(package) - node.level + 1
+                import_module = ".".join(
+                    [*package[:retained], *node.module.split(".")]
+                )
+            module = module_index.get(import_module, import_module)
+            for alias in node.names:
+                resolved[alias.asname or alias.name] = f"{module}::{alias.name}"
+    return resolved
+
+
+
+def _import_bindings(
+    tree: ast.Module | ast.FunctionDef | ast.AsyncFunctionDef,
+    *,
+    recursive: bool = False,
+) -> list[dict[str, Any]]:
+    """Retain neutral import syntax for source-root resolution after discovery."""
+    bindings: list[dict[str, Any]] = []
+    nodes = ast.walk(tree) if recursive else tree.body
+    for node in nodes:
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                bindings.append(
+                    {
+                        "kind": "import",
+                        "local": alias.asname or alias.name.split(".", 1)[0],
+                        "module": (
+                            alias.name
+                            if alias.asname is not None
+                            else alias.name.split(".", 1)[0]
+                        ),
+                        "aliased": alias.asname is not None,
+                        "line": node.lineno,
+                    }
+                )
+        elif isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if alias.name == "*":
+                    continue
+                bindings.append(
+                    {
+                        "kind": "from",
+                        "local": alias.asname or alias.name,
+                        "module": node.module or "",
+                        "member": alias.name,
+                        "level": node.level,
+                        "line": node.lineno,
+                    }
+                )
+    return bindings
+

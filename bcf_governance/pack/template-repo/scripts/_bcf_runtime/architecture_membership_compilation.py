@@ -6,6 +6,7 @@ This module is not yet wired into either production architecture reader.
 """
 from __future__ import annotations
 
+import ast
 from dataclasses import dataclass, field
 import hashlib
 import os
@@ -17,10 +18,13 @@ from .architecture_candidate_membership import (
 from .architecture_effective_membership import (
     MemberClassification, MembershipProjection, _reduce_membership,
 )
-from .architecture_native_inventory import NativeSourceInventory, build_native_inventory
+from .architecture_native_inventory import NativeSourceInventory, _committed, build_native_inventory
 from .architecture_policy_input import _read, load_architecture_mapping
 from .architecture_release_membership import ReleaseMembership, authenticate_release_membership
-from .architecture_source_components import SourceComponentError, parse_source_components
+from .architecture_source_components import SourceComponent, SourceComponentError, parse_source_components
+from .semantic_ownership_inventory import discover_python_source, resolve_python_imports
+from .semantic_ownership_registry import REGISTRY_PATH, SCHEMA_PATH, load_registry
+from .semantic_operation_effects import SemanticOperationEffectError, _sdk_decoder_shape
 from .governance_install.release_custody import ReleaseProvider
 
 
@@ -35,12 +39,106 @@ class NativeReleaseInputs:
 
 
 @dataclass(frozen=True)
+class FunctionRoleObservation:
+    selector: str
+    profile: str
+    member_sha256: str
+    sdk_lexical_binding: str
+    constructor_lexical_binding: str
+    sdk_type_identity: str
+    constructor_identity: str
+    semantic_inputs: tuple[tuple[str, str], ...] = ()
+    qualification: str = "PROVENANCE_AND_OPERATION_WITNESS_REQUIRED"
+    authority: bool = False
+    raw_findings_retained: bool = True
+
+
+def _derive_function_role_observations(
+    native: NativeSourceInventory, components: tuple[SourceComponent, ...],
+) -> tuple[FunctionRoleObservation, ...]:
+    """Join shape and neutral source bindings without granting a valid role."""
+    requests = tuple(request for component in components for request in component.function_contracts)
+    if not requests:
+        return ()
+    facts = discover_python_source(native.root, files=[native.root / member.path for member in native.members])
+    expected = tuple((member.path, member.sha256) for member in native.members)
+    if tuple((row["path"], row["sha256"]) for row in facts["files"]) != expected:
+        raise SourceComponentError("function roles: semantic population differs from native members")
+    members = {member.path: member for member in native.members}
+    lexical: dict[str, tuple[str, str]] = {}
+    for request in requests:
+        rows = [row for row in facts["functions"] if row["symbol"] == request.selector]
+        if len(rows) != 1:
+            raise SourceComponentError("function roles: selector is absent or ambiguous in independent inventory")
+        path, _, qualified = request.selector.partition("::")
+        member = members[path]
+        if hashlib.sha256(member.raw).hexdigest() != member.sha256:
+            raise SourceComponentError("function roles: native member bytes differ from digest")
+        tree = ast.parse(member.raw, filename=path)
+        parts = qualified.split(".")
+        scope = tree.body
+        if len(parts) == 2:
+            classes = [node for node in scope if isinstance(node, ast.ClassDef) and node.name == parts[0]]
+            if len(classes) != 1:
+                raise SourceComponentError("function roles: class is absent or ambiguous")
+            if classes[0].bases or classes[0].keywords or classes[0].decorator_list:
+                raise SourceComponentError("function roles: unsupported class inheritance/metaclass/decorator")
+            scope = classes[0].body
+        elif len(parts) != 1:
+            raise SourceComponentError("function roles: unsupported nested selector scope")
+        definitions = [node for node in scope if isinstance(node, ast.FunctionDef) and node.name == parts[-1]]
+        if len(definitions) != 1:
+            raise SourceComponentError("function roles: runtime function shape is absent or ambiguous")
+        try:
+            lexical[request.selector] = _sdk_decoder_shape(definitions[0])
+        except SemanticOperationEffectError as error:
+            raise SourceComponentError(f"function roles: {error}") from error
+
+    # Reuse the sole semantic registry's import-root interpretation if present.
+    # Its presence cannot hide members or replace an independently discovered role.
+    semantic_inputs: list[tuple[str, str]] = []
+    import_roots = (".",)
+    if os.path.lexists(native.root / REGISTRY_PATH):
+        commit = dict(native.subject).get("commit_sha")
+        if not isinstance(commit, str):
+            raise SourceComponentError("function roles: exact committed subject required")
+        for relative in (REGISTRY_PATH, SCHEMA_PATH):
+            raw = _read(native.root / relative)
+            _committed(native.root, commit, relative.as_posix(), raw)
+            semantic_inputs.append((relative.as_posix(), hashlib.sha256(raw).hexdigest()))
+        import_roots = load_registry(native.root).python_import_roots
+    resolved = resolve_python_imports(
+        native.root, facts, import_roots,
+        reference_requests={request.selector: lexical[request.selector] for request in requests},
+    )
+    observations: list[FunctionRoleObservation] = []
+    for request in requests:
+        rows = [row for row in resolved["functions"] if row["symbol"] == request.selector]
+        if len(rows) != 1:
+            raise SourceComponentError("function roles: resolved selector is absent or ambiguous")
+        sdk, constructor = lexical[request.selector]
+        bindings = rows[0]["requested_reference_symbols"]
+        if bindings.get(sdk) != [request.sdk_type] or bindings.get(constructor) != [request.constructor]:
+            raise SourceComponentError("function roles: requested identity contradicts source binding")
+        path = request.selector.partition("::")[0]
+        observations.append(FunctionRoleObservation(
+            request.selector, request.profile, members[path].sha256, sdk, constructor,
+            request.sdk_type, request.constructor, tuple(semantic_inputs),
+        ))
+    for relative, digest in semantic_inputs:
+        if hashlib.sha256(_read(native.root / relative)).hexdigest() != digest:
+            raise SourceComponentError("function roles: semantic import context moved during compilation")
+    return tuple(observations)
+
+
+@dataclass(frozen=True)
 class EffectiveSourceInventory:
     native: NativeSourceInventory
     projection: MembershipProjection | None
     release: ReleaseMembership | None
     scope: str = "Fresh in-process observation; no cached, installed or release acceptance by itself."
     candidate: CandidateMembership | None = None
+    function_roles: tuple[FunctionRoleObservation, ...] = ()
 
 
 def _refuse(detail: str) -> None:
@@ -81,6 +179,7 @@ def _build_effective_inventory(root: Path, *,
     release = None
     candidate = None
     projection = None
+    components: tuple[SourceComponent, ...] = ()
     if "source_component_ownership" in architecture:
         if candidate_inputs is not None:
             candidate = qualify_candidate_membership(root, candidate_inputs)
@@ -110,6 +209,7 @@ def _build_effective_inventory(root: Path, *,
                                         managed_lock_sha256=release.lock_sha256 if release else None,
                                         candidate_qualification_sha256=(
                                             candidate.qualification_sha256 if candidate else None))
+    function_roles = _derive_function_role_observations(native, components)
     if hashlib.sha256(_read(config)).hexdigest() != native.config_sha256:
         _refuse("configuration changed during native compilation")
     fresh = build_native_inventory(root)
@@ -122,7 +222,7 @@ def _build_effective_inventory(root: Path, *,
     if candidate is not None:
         if qualify_candidate_membership(root, candidate_inputs) != candidate:
             _refuse("candidate context changed during compilation")
-    return EffectiveSourceInventory(native, projection, release, candidate=candidate)
+    return EffectiveSourceInventory(native, projection, release, candidate=candidate, function_roles=function_roles)
 
 
 def build_effective_inventory(root: Path, *,

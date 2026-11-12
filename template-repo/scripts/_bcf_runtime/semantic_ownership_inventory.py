@@ -10,19 +10,25 @@ import ast
 import copy
 import hashlib
 from pathlib import Path, PurePosixPath
+from collections.abc import Mapping
 from typing import Any
 
 from .semantic_python_annotation_identity import (
+    _annotation,
+    _import_bindings,
+    _imports,
     external_import_identity,
     resolve_annotation_identities,
 )
 from .semantic_python_method_identity import (
     bound_method_origins,
     discover_class_facts,
+    extend_constructor_effect_obligations,
     method_binding,
     method_dispatch_reference,
     receiver_attribute_targets,
     resolve_method_dispatch,
+    resolve_typed_receiver_candidates,
     runtime_function_scopes,
     source_symbol,
 )
@@ -73,79 +79,6 @@ def tracked_python_files(repo_root: Path, *, allow_empty: bool = False) -> list[
         error=SemanticInventoryError,
         allow_empty=allow_empty,
     )
-
-
-def _annotation(node: ast.expr | None) -> str:
-    if node is None:
-        return "untyped"
-    try:
-        return ast.unparse(node)
-    except (AttributeError, ValueError):
-        return "unresolved"
-
-
-def _imports(
-    tree: ast.Module, module_index: dict[str, str], current_module: str
-) -> dict[str, str]:
-    resolved: dict[str, str] = {}
-    for node in tree.body:
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                local = alias.asname or alias.name.split(".", 1)[0]
-                resolved[local] = f"{module_index.get(alias.name, alias.name)}::module"
-        elif isinstance(node, ast.ImportFrom) and node.module:
-            import_module = node.module
-            if node.level:
-                package = current_module.split(".")[:-1]
-                retained = len(package) - node.level + 1
-                import_module = ".".join(
-                    [*package[:retained], *node.module.split(".")]
-                )
-            module = module_index.get(import_module, import_module)
-            for alias in node.names:
-                resolved[alias.asname or alias.name] = f"{module}::{alias.name}"
-    return resolved
-
-
-def _import_bindings(
-    tree: ast.Module | ast.FunctionDef | ast.AsyncFunctionDef,
-    *,
-    recursive: bool = False,
-) -> list[dict[str, Any]]:
-    """Retain neutral import syntax for source-root resolution after discovery."""
-    bindings: list[dict[str, Any]] = []
-    nodes = ast.walk(tree) if recursive else tree.body
-    for node in nodes:
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                bindings.append(
-                    {
-                        "kind": "import",
-                        "local": alias.asname or alias.name.split(".", 1)[0],
-                        "module": (
-                            alias.name
-                            if alias.asname is not None
-                            else alias.name.split(".", 1)[0]
-                        ),
-                        "aliased": alias.asname is not None,
-                        "line": node.lineno,
-                    }
-                )
-        elif isinstance(node, ast.ImportFrom):
-            for alias in node.names:
-                if alias.name == "*":
-                    continue
-                bindings.append(
-                    {
-                        "kind": "from",
-                        "local": alias.asname or alias.name,
-                        "module": node.module or "",
-                        "member": alias.name,
-                        "level": node.level,
-                        "line": node.lineno,
-                    }
-                )
-    return bindings
 
 
 def _module_name(repo_root: Path, path: Path) -> str:
@@ -242,6 +175,31 @@ def _normalized_return_fingerprint(
     ).hexdigest()
 
 
+def _neutral_expression_flow(node: ast.expr | None) -> dict[str, Any]:
+    """Retain source syntax and coordinates; no expression is evaluated."""
+    if node is None:
+        return {"kind": "unknown", "reason": "absent"}
+    row: dict[str, Any] = {
+        "kind": "unknown", "line": node.lineno, "column": node.col_offset,
+        "end_line": node.end_lineno, "end_column": node.end_col_offset,
+    }
+    if isinstance(node, ast.Name):
+        row.update(kind="name", name=node.id)
+    elif isinstance(node, ast.Attribute):
+        row.update(kind="attribute", name=node.attr, receiver=_neutral_expression_flow(node.value))
+    elif isinstance(node, ast.Call):
+        row.update(kind="call", function=_neutral_expression_flow(node.func))
+    elif isinstance(node, ast.Await):
+        row.update(kind="await", value=_neutral_expression_flow(node.value))
+    elif isinstance(node, (ast.Tuple, ast.List)):
+        row.update(kind="sequence", items=[_neutral_expression_flow(item) for item in node.elts])
+    elif isinstance(node, ast.Constant) and node.value is None:
+        row.update(kind="none")
+    else:
+        row["reason"] = type(node).__name__
+    return row
+
+
 class _FunctionVisitor(ast.NodeVisitor):
     def __init__(
         self,
@@ -273,6 +231,8 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.assignments = {
             name: {f"parameter:{name}"} for name in self.parameters
         }
+        # Neutral syntax from this same admitted AST population; never dispatch authority.
+        self.assignment_facts: list[dict[str, Any]] = []
         self.calls: list[dict[str, Any]] = []
         self.constructors: list[dict[str, Any]] = []
         self.normalizations: list[dict[str, Any]] = []
@@ -297,6 +257,15 @@ class _FunctionVisitor(ast.NodeVisitor):
         return origins
 
     def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
+        self.assignment_facts.append({
+            "targets": [ast.unparse(target) for target in node.targets],
+            "target_flows": [_neutral_expression_flow(target) for target in node.targets],
+            "value_flow": _neutral_expression_flow(node.value),
+            "value": ast.unparse(node.value),
+            "line": node.lineno,
+            "column": node.col_offset,
+            "annotation": None,
+        })
         origins = bound_method_origins(
             node.value,
             class_symbol=self.class_symbol,
@@ -310,6 +279,15 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
+        self.assignment_facts.append({
+            "targets": [ast.unparse(node.target)],
+            "target_flows": [_neutral_expression_flow(node.target)],
+            "value_flow": _neutral_expression_flow(node.value),
+            "value": ast.unparse(node.value) if node.value is not None else None,
+            "line": node.lineno,
+            "column": node.col_offset,
+            "annotation": _annotation(node.annotation),
+        })
         self._record_receiver_attribute_target(node.target)
         if isinstance(node.target, ast.Name) and node.value is not None:
             origins = bound_method_origins(
@@ -361,6 +339,15 @@ class _FunctionVisitor(ast.NodeVisitor):
             "called_symbol": symbol,
             "call_name": name,
             "line": node.lineno,
+            "column": node.col_offset,
+            "end_line": node.end_lineno,
+            "end_column": node.end_col_offset,
+            "receiver_flow": (
+                _neutral_expression_flow(node.func.value) if isinstance(node.func, ast.Attribute) else None
+            ),
+            "receiver_expression": (
+                ast.unparse(node.func.value) if isinstance(node.func, ast.Attribute) else None
+            ),
             "argument_origins": sorted(self._origins(node)),
         }
         reference = _call_reference(node.func, self.import_bindings)
@@ -411,12 +398,15 @@ class _FunctionVisitor(ast.NodeVisitor):
             "symbol": self.symbol,
             "parameters": self.parameters,
             "return_annotation": self.return_annotation,
+            "assignment_facts": self.assignment_facts,
             "return_fingerprints": sorted(set(self.return_fingerprints)),
             "calls": self.calls,
             "constructors": self.constructors,
             "normalizations": self.normalizations,
             "unresolved": self.unresolved,
             "class_symbol": self.class_symbol,
+            "method_binding": self.method_binding_kind,
+            "receiver_parameter": self.receiver,
             "decorators": self.decorators,
             "receiver_attribute_mutations": sorted(self.receiver_attribute_mutations),
         }
@@ -632,6 +622,7 @@ def resolve_python_imports(
     repo_root: Path,
     inventory: dict[str, Any],
     import_roots: tuple[str, ...] = (".",),
+    *, reference_requests: Mapping[str, tuple[str, ...]] | None = None,
 ) -> dict[str, Any]:
     """Resolve neutral import facts against exact, declared source roots.
 
@@ -756,6 +747,11 @@ def resolve_python_imports(
         function["return_annotation_symbols"] = annotation_identities(
             path, function.get("return_annotation")
         )
+        if reference_requests is not None:
+            function["requested_reference_symbols"] = {
+                name: annotation_identities(path, name)
+                for name in reference_requests.get(str(function["symbol"]), ())
+            }
         for collection in ("calls", "constructors"):
             for fact in function.get(collection, []):
                 reference = fact.get("import_reference")
@@ -789,6 +785,8 @@ def resolve_python_imports(
             if target is not None:
                 fact["called_symbol"] = target
     resolve_method_dispatch(resolved)
+    resolve_typed_receiver_candidates(resolved)
+    extend_constructor_effect_obligations(resolved)
     resolved["constructors"] = [
         fact
         for function in resolved.get("functions", [])

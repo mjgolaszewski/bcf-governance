@@ -32,6 +32,14 @@ class CandidatePackBinding:
 
 
 @dataclass(frozen=True)
+class FunctionContractRequest:
+    selector: str
+    profile: str
+    sdk_type: str
+    constructor: str
+
+
+@dataclass(frozen=True)
 class SourceComponent:
     id: str
     layer: str
@@ -40,6 +48,7 @@ class SourceComponent:
     members: tuple[tuple[str, str], ...]
     managed_pack: ManagedPackBinding | CandidatePackBinding | None
     context_authority: ContextSelector
+    function_contracts: tuple[FunctionContractRequest, ...] = ()
 
 
 def _mapping(value: object, fields: set[str], label: str) -> dict[str, object]:
@@ -97,7 +106,7 @@ def _context_binding(value: object, label: str) -> ContextSelector:
 def _managed_binding(value: object, label: str, version: str) -> ManagedPackBinding | CandidatePackBinding | None:
     if value is None:
         return None
-    if version == "1.1":
+    if version in ("1.1", "1.2"):
         binding = _mapping(value, {"kind", "path", "sha256"}, label)
         path = _path(binding["path"], f"{label}.path")
         digest = _digest(binding["sha256"], f"{label}.sha256")
@@ -116,6 +125,42 @@ def _managed_binding(value: object, label: str, version: str) -> ManagedPackBind
     )
 
 
+def _function_contracts(
+    value: object, members: tuple[tuple[str, str], ...], label: str,
+) -> tuple[FunctionContractRequest, ...]:
+    """Parse requests only; identities and declarations never establish authority."""
+    if not isinstance(value, list) or not value:
+        raise SourceComponentError(f"{label}: nonempty function contracts required")
+    paths = {path for path, _ in members}
+    selectors: set[str] = set()
+    result: list[FunctionContractRequest] = []
+    for index, item in enumerate(value):
+        current = f"{label}[{index}]"
+        row = _mapping(item, {"selector", "profile", "sdk_type", "constructor"}, current)
+        selector = _text(row["selector"], f"{current}.selector")
+        path, separator, function = selector.partition("::")
+        if not separator or _path(path, f"{current}.selector") not in paths:
+            raise SourceComponentError(f"{current}: selector outside exact component members")
+        if not function or not all(part.isidentifier() for part in function.split(".")):
+            raise SourceComponentError(f"{current}: exact qualified function selector required")
+        if selector in selectors:
+            raise SourceComponentError(f"{current}: duplicate function selector")
+        selectors.add(selector)
+        if row["profile"] != "sdk_principal_decoder.v1":
+            raise SourceComponentError(f"{current}: unsupported function profile")
+        identities: list[str] = []
+        for field in ("sdk_type", "constructor"):
+            identity = _text(row[field], f"{current}.{field}")
+            module, delimiter, symbol = identity.partition("::")
+            if not delimiter or not module or not symbol or not all(
+                part.isidentifier() for part in symbol.split(".")
+            ):
+                raise SourceComponentError(f"{current}.{field}: source-qualified identity required")
+            identities.append(identity)
+        result.append(FunctionContractRequest(selector, "sdk_principal_decoder.v1", identities[0], identities[1]))
+    return tuple(result)
+
+
 def parse_source_components(
     architecture: Mapping[str, object], *, reader_supported: bool,
 ) -> tuple[SourceComponent, ...]:
@@ -131,7 +176,7 @@ def parse_source_components(
         raise SourceComponentError("source_component_ownership: unsupported native consumer")
     declaration = _mapping(architecture["source_component_ownership"],
                            {"version", "components"}, "source_component_ownership")
-    if declaration["version"] not in ("1.0", "1.1"):
+    if declaration["version"] not in ("1.0", "1.1", "1.2"):
         raise SourceComponentError("source_component_ownership: unsupported version")
     components = declaration["components"]
     if not isinstance(components, list) or not components:
@@ -144,8 +189,11 @@ def parse_source_components(
     result: list[SourceComponent] = []
     for index, value in enumerate(components):
         label = f"source_component_ownership.components[{index}]"
-        component = _mapping(value, {"id", "layer", "context", "rationale", "members",
-                                     "managed_pack", "context_authority"}, label)
+        fields = {"id", "layer", "context", "rationale", "members",
+                  "managed_pack", "context_authority"}
+        if declaration["version"] == "1.2" and isinstance(value, dict) and "function_contracts" in value:
+            fields.add("function_contracts")
+        component = _mapping(value, fields, label)
         identifier = _text(component["id"], f"{label}.id")
         if identifier in identifiers:
             raise SourceComponentError(f"{label}: duplicate component id")
@@ -172,5 +220,9 @@ def parse_source_components(
             members=tuple(sorted(admitted)),
             managed_pack=_managed_binding(component["managed_pack"], f"{label}.managed_pack", declaration["version"]),
             context_authority=_context_binding(component["context_authority"], f"{label}.context_authority"),
+            function_contracts=(
+                _function_contracts(component["function_contracts"], tuple(admitted), f"{label}.function_contracts")
+                if "function_contracts" in component else ()
+            ),
         ))
     return tuple(result)

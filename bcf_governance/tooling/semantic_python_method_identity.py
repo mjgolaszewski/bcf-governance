@@ -168,12 +168,18 @@ def discover_class_facts(
             bases.append(fact)
         methods = []
         class_rebindings: set[str] = set()
+        descriptor_bindings: set[str] = set()
         for member in node.body:
             if isinstance(member, (ast.Assign, ast.AnnAssign)):
                 targets = member.targets if isinstance(member, ast.Assign) else [member.target]
                 class_rebindings.update(
                     target.id for target in targets if isinstance(target, ast.Name)
                 )
+                value = member.value
+                if value is not None and not isinstance(value, ast.Constant):
+                    descriptor_bindings.update(
+                        target.id for target in targets if isinstance(target, ast.Name)
+                    )
             if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
             kind, receiver = method_binding(member)
@@ -195,6 +201,7 @@ def discover_class_facts(
                     ast.unparse(value) for value in node.decorator_list
                 ),
                 "class_rebindings": sorted(class_rebindings),
+                "descriptor_bindings": sorted(descriptor_bindings),
                 "metaclass_keywords": sorted(
                     keyword.arg or "**" for keyword in node.keywords
                 ),
@@ -467,3 +474,243 @@ def receiver_attribute_targets(target: ast.AST, receiver: str | None) -> set[str
     ):
         return {target.attr}
     return set()
+
+
+def resolve_typed_receiver_candidates(inventory: dict[str, Any]) -> None:
+    """Derive neutral type candidates; preserve every existing dispatch decision.
+
+    An annotation, lexical import or protocol return is not runtime provenance.
+    These rows cannot be consumed as read-port/effect authority.
+    """
+    function_rows, class_rows = inventory.get("functions", []), inventory.get("classes", [])
+    functions = {str(row["symbol"]): row for row in function_rows}
+    classes = {str(row["symbol"]): row for row in class_rows}
+    if len(functions) != len(function_rows) or len(classes) != len(class_rows):
+        inventory["typed_receiver_observation_errors"] = ["ambiguous source symbols"]
+        return
+    fields: dict[tuple[str, str], set[str]] = {}
+
+    def method_targets(model: str, name: str, seen: frozenset[str] = frozenset()) -> set[str]:
+        if model in seen or model.startswith("<"):
+            return set()
+        target = model + "." + name
+        row = classes.get(model)
+        if row is None:
+            return {target}
+        targets = {target} if target in functions else set()
+        for base in row.get("bases", []):
+            identity = base.get("called_symbol")
+            if isinstance(identity, str):
+                targets.update(method_targets(identity, name, seen | {model}))
+        return targets
+
+    def initial_types(function: dict[str, Any]) -> dict[str, set[str]]:
+        result = {
+            str(name): set(identities) or {"<unknown>"}
+            for name, identities in function.get("parameter_annotation_symbols", {}).items()
+        }
+        owner, receiver = function.get("class_symbol"), function.get("receiver_parameter")
+        if isinstance(owner, str) and isinstance(receiver, str) and function.get("method_binding") == "instance":
+            result[receiver] = {"<instance:" + owner + ">"}
+        return result
+
+    def value_types(
+        expression: dict[str, Any], environment: dict[str, set[str]],
+        owner: str | None, calls: dict[tuple[int, int, int | None, int | None], list[dict[str, Any]]],
+    ) -> set[str]:
+        kind = expression.get("kind")
+        if kind == "name":
+            return environment.get(str(expression.get("name")), {"<unknown>"})
+        if kind == "none":
+            return {"<none>"}
+        if kind == "await":
+            return value_types(expression["value"], environment, owner, calls)
+        if kind == "attribute":
+            receiver = expression.get("receiver", {})
+            if owner is not None and value_types(receiver, environment, owner, calls) == {"<instance:" + owner + ">"}:
+                field = fields.get((owner, str(expression.get("name"))))
+                if field is not None:
+                    return field
+            return {"<unknown>"}
+        if kind == "call":
+            rows = calls.get((expression.get("line"), expression.get("column"), expression.get("end_line"), expression.get("end_column")), [])
+            if len(rows) != 1:
+                return {"<unknown>"}
+            call = rows[0]
+            target = str(call.get("called_symbol", ""))
+            if target in classes:
+                return {target}
+            candidates = {target} if target in functions else set()
+            receiver = call.get("receiver_flow")
+            if isinstance(receiver, dict):
+                models = value_types(receiver, environment, owner, calls)
+                for model in models:
+                    candidates.update(method_targets(model, str(call.get("call_name", ""))))
+            result: set[str] = set()
+            for candidate in candidates:
+                function = functions.get(candidate)
+                if function is None:
+                    result.add("<unknown>")
+                else:
+                    result.update(function.get("return_annotation_symbols", []) or ["<unknown>"])
+            return result or {"<unknown>"}
+        return {"<unknown>"}
+
+    def call_index(function: dict[str, Any]) -> dict[tuple[int, int, int | None, int | None], list[dict[str, Any]]]:
+        result: dict[tuple[int, int, int | None, int | None], list[dict[str, Any]]] = {}
+        for call in function.get("calls", []):
+            line, column = call.get("line"), call.get("column")
+            if isinstance(line, int) and isinstance(column, int):
+                result.setdefault((line, column, call.get("end_line"), call.get("end_column")), []).append(call)
+        return result
+
+    def bind_target(
+        target: dict[str, Any], value: dict[str, Any], environment: dict[str, set[str]],
+        owner: str | None, calls: dict[tuple[int, int, int | None, int | None], list[dict[str, Any]]],
+        receiver: str | None,
+    ) -> None:
+        kind = target.get("kind")
+        if kind == "sequence" and value.get("kind") == "sequence":
+            targets, values = target.get("items", []), value.get("items", [])
+            if len(targets) == len(values):
+                for member, item in zip(targets, values, strict=True):
+                    bind_target(member, item, environment, owner, calls, receiver)
+                return
+        types = value_types(value, environment, owner, calls)
+        if kind == "name":
+            name = str(target.get("name"))
+            environment[name] = environment.get(name, set()) | types
+        elif kind == "attribute" and owner is not None:
+            root = target.get("receiver", {})
+            if root.get("kind") == "name" and root.get("name") == receiver:
+                key = owner, str(target.get("name"))
+                fields[key] = fields.get(key, set()) | types
+
+    # Constructor annotations are neutral candidates, never a concrete wiring proof.
+    for symbol, function in functions.items():
+        owner = function.get("class_symbol")
+        if not symbol.endswith(".__init__") or not isinstance(owner, str) or function.get("method_binding") != "instance":
+            continue
+        environment = initial_types(function)
+        parameters = list(function.get("parameters", {}))
+        receiver = parameters[0] if parameters else None
+        calls = call_index(function)
+        for assignment in function.get("assignment_facts", []):
+            value = assignment.get("value_flow", {"kind": "unknown"})
+            for target in assignment.get("target_flows", []):
+                bind_target(target, value, environment, owner, calls, receiver)
+
+    for function in functions.values():
+        environment = initial_types(function)
+        owner = function.get("class_symbol")
+        calls = call_index(function)
+        assignments = sorted(function.get("assignment_facts", []), key=lambda row: (row["line"], row["column"]))
+        for call in function.get("calls", []):
+            receiver = call.get("receiver_flow")
+            if not isinstance(receiver, dict):
+                continue
+            local = {name: set(identities) for name, identities in environment.items()}
+            position = call.get("line", -1), call.get("column", -1)
+            for assignment in assignments:
+                if (assignment["line"], assignment["column"]) >= position:
+                    break
+                for target in assignment.get("target_flows", []):
+                    # Method-local assignments never establish cross-method field authority.
+                    if target.get("kind") in {"name", "sequence"}:
+                        bind_target(target, assignment.get("value_flow", {"kind": "unknown"}), local, None, calls, None)
+            models = value_types(receiver, local, owner, calls)
+            targets: set[str] = set()
+            for model in models:
+                targets.update(method_targets(model, str(call.get("call_name", ""))))
+            call["typed_receiver_observation"] = {
+                "models": sorted(models), "method_candidates": sorted(targets),
+                "authority": False,
+                "qualification": "CONTROL_FLOW_RUNTIME_PROVENANCE_AND_OPERATION_WITNESS_REQUIRED",
+            }
+
+
+def extend_constructor_effect_obligations(inventory: dict[str, Any]) -> None:
+    """Add source-visible construction obligations without resolving runtime types.
+
+    Candidate targets can only expand the existing effect traversal. Decorated,
+    external, cyclic or rebound constructors retain explicit missing provenance.
+    These observations never change dispatch decisions or grant decoder authority.
+    """
+    class_rows = inventory.get("classes", [])
+    function_rows = inventory.get("functions", [])
+    classes = {str(row["symbol"]): row for row in class_rows}
+    functions = {str(row["symbol"]): row for row in function_rows}
+    ambiguous = len(classes) != len(class_rows) or len(functions) != len(function_rows)
+    lifecycle = {"__new__", "__init__", "__post_init__", "__setattr__"}
+    interception = {"__getattribute__", "__getattr__", "__get__", "__set__", "__delete__"}
+
+    def closure(symbol: str, seen: frozenset[str]) -> tuple[set[str], set[str], set[str]]:
+        if symbol in seen:
+            return set(), {symbol + ":cyclic_hierarchy"}, {symbol}
+        row = classes.get(symbol)
+        if row is None:
+            return set(), {symbol + ":external_class_provenance_required"}, {symbol}
+        targets: set[str] = set()
+        missing: set[str] = set()
+        population = {symbol}
+        if row.get("class_decorators"):
+            missing.add(symbol + ":decorated_class_runtime_provenance_required")
+        if row.get("metaclass_keywords"):
+            missing.add(symbol + ":metaclass_runtime_provenance_required")
+        if row.get("descriptor_bindings"):
+            missing.add(symbol + ":class_attribute_descriptor_provenance_required")
+        rebound = set(row.get("class_rebindings", []))
+        if rebound & (lifecycle | interception):
+            missing.add(symbol + ":lifecycle_binding_rebound")
+        for method in row.get("methods", []):
+            name = str(method.get("name", ""))
+            decorators = set(method.get("decorators", []))
+            if name not in lifecycle | interception and not decorators:
+                continue
+            target = str(method.get("symbol", ""))
+            if target in functions:
+                targets.add(target)
+            else:
+                missing.add(target + ":source_body_missing")
+            if name in interception:
+                missing.add(target + ":descriptor_runtime_provenance_required")
+            if decorators - {"staticmethod", "classmethod"}:
+                missing.add(target + ":decorator_runtime_provenance_required")
+        for base in row.get("bases", []):
+            target = base.get("called_symbol")
+            if not isinstance(target, str) or not target:
+                missing.add(symbol + ":base_identity_missing")
+                continue
+            inherited, errors, identities = closure(target, seen | {symbol})
+            targets.update(inherited)
+            missing.update(errors)
+            population.update(identities)
+        return targets, missing, population
+
+    for function in function_rows:
+        call_sites: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
+        for call in function.get("calls", []):
+            call_sites.setdefault((call.get("line"), call.get("column"), call.get("end_line"), call.get("end_column")), []).append(call)
+        for constructor in function.get("constructors", []):
+            target = str(constructor.get("constructed_symbol", ""))
+            candidates, missing, population = closure(target, frozenset())
+            if ambiguous:
+                missing.add("ambiguous_source_symbol_population")
+            observation = {
+                "authority": False,
+                "source_class_resolved": target in classes,
+                "class_candidates": sorted(population),
+                "function_candidates": sorted(candidates),
+                "unresolved": sorted(missing),
+                "qualification": "SOURCE_OBLIGATIONS_ONLY_RUNTIME_PROVENANCE_REQUIRED",
+            }
+            constructor["construction_effect_observation"] = observation
+            sites = call_sites.get((constructor.get("line"), constructor.get("column"), constructor.get("end_line"), constructor.get("end_column")), [])
+            if len(sites) == 1 and sites[0].get("called_symbol") == constructor.get("called_symbol"):
+                sites[0]["construction_effect_observation"] = observation
+            elif sites:
+                for call in sites:
+                    call["construction_effect_observation"] = {
+                        **observation,
+                        "unresolved": sorted(missing | {"contradictory_constructor_site"}),
+                    }

@@ -313,6 +313,173 @@
                   }
                 }
               }
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "version",
+                "components"
+              ],
+              "properties": {
+                "version": {
+                  "const": "1.2"
+                },
+                "components": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "id",
+                      "layer",
+                      "context",
+                      "rationale",
+                      "members",
+                      "managed_pack",
+                      "context_authority"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "layer": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "context": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "rationale": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "members": {
+                        "type": "object",
+                        "minProperties": 1,
+                        "additionalProperties": {
+                          "type": "string",
+                          "minLength": 64,
+                          "maxLength": 64,
+                          "pattern": "^[0-9a-f]{64}$"
+                        }
+                      },
+                      "managed_pack": {
+                        "oneOf": [
+                          {
+                            "type": "null"
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "kind",
+                              "path",
+                              "sha256"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "const": "authenticated_release"
+                              },
+                              "path": {
+                                "const": "governance/bcf-runtime-lock.json"
+                              },
+                              "sha256": {
+                                "type": "string",
+                                "pattern": "^[0-9a-f]{64}$",
+                                "minLength": 64,
+                                "maxLength": 64
+                              }
+                            }
+                          },
+                          {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "kind",
+                              "path",
+                              "sha256"
+                            ],
+                            "properties": {
+                              "kind": {
+                                "const": "candidate_qualification"
+                              },
+                              "path": {
+                                "const": "governance/bcf-candidate-qualification.json"
+                              },
+                              "sha256": {
+                                "type": "string",
+                                "pattern": "^[0-9a-f]{64}$",
+                                "minLength": 64,
+                                "maxLength": 64
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      "context_authority": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "kind",
+                          "version",
+                          "selector"
+                        ],
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "independently_inferred_inventory",
+                              "qualified_package_metadata_context",
+                              "maintained_native_context_contract"
+                            ]
+                          },
+                          "version": {
+                            "const": "1.0"
+                          },
+                          "selector": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "function_contracts": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "selector",
+                            "profile",
+                            "sdk_type",
+                            "constructor"
+                          ],
+                          "properties": {
+                            "selector": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "profile": {
+                              "const": "sdk_principal_decoder.v1"
+                            },
+                            "sdk_type": {
+                              "type": "string",
+                              "minLength": 1
+                            },
+                            "constructor": {
+                              "type": "string",
+                              "minLength": 1
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           ]
         },
