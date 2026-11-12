@@ -417,3 +417,48 @@ operation_function_admission_verification:
     type: 394source
     statement: fa030da1 funcadmit.
   whole_requirement_advancement: false
+
+pattern_dispatch_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  bounded_context: tooling
+  architectural_layer: tooling
+  operation_side: query
+  owners:
+  - bcf_governance/tooling/semantic_python_method_identity.py
+  - schemas/semantic-call-contracts.schema.json
+  scope: Existing implicit-protocol call population retains one neutral whole-Match
+    observation when value/sequence/mapping/class patterns or an unknown guard may
+    dispatch. Capture-only, singleton identity and literal guards retain no-dispatch
+    behavior. This does not establish subject type or actual runtime binding.
+  compatibility: Add pattern_match under marker1.1 through existing kind/version owner
+    and schema; all prior marker versions/bytes remain unchanged. Old consumers must
+    reject an unknown kind rather than infer coverage. Dynamic-pattern observations
+    remain conservative even for literal subjects until qualified native proofs exist.
+  native_before:
+    subject: 8c9ec42d56d09ac0b475b31c07cac910145dd7f9
+    tests: 5
+    missed_effects: 5
+    raw_sha256: cdf76006362ed2d1e10d17e681f466a7d8582dd83dda5cb16e0499bafb94784d
+    mechanisms: [equality, sequence, mapping_get, class_attribute, guard_truth]
+  controls:
+    tests: 21
+    expected_before_failures: 16
+    expected_before_passes: 5
+    populations: [native_writes, exact_AST_span, neutral_versioned_edge, source_only_unknowns, wrong_version, forged_port, capture_singleton_literal_guard]
+  installed_contexts: Existing SDK-absent fresh/upgrade probe grows11to16cases; five
+    new pattern emit/strict-reject cases use real projected runtime. Historical
+    exact11case evidence remains historical; wheel/sdist qualification stays blocked.
+  forbidden_files:
+  - tests/fixtures/semantic-python-inventory-before-deconstruction.json
+  - tests/fixtures/semantic-python-inventory-source.txt
+  - protected/default branches and maintained adopter checkouts
+  forbidden:
+  - parallel detector graph registry or receipt family
+  - accepting a candidate-selected pattern type as runtime authority
+  - allowing observation markers to grant declared ports
+  - runtime gate waiver or phase progress
+  exit:21controls and affected consumers pass with exact required known-main blocker
+    retained; both SDK-absent16case contexts pass; source/pack/schema parity generated
+    canonically. Runtime/type/population/lifecycle completeness remain open.
