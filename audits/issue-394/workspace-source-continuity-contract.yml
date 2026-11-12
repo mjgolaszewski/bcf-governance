@@ -151,3 +151,19 @@ source_byte_observation_contract:
   - claiming hash observations preserve bytes or authorize retirement
   remaining: Independent workspace discovery, complete source population, preserved
     content custody and handoff/retirement gate remain open.
+
+source_byte_observation_source_verification:
+  report: audits/issue-394/source-byte-observation-verification.json
+  sha256: 66ca3be795bf3f9ae0a5c9f29e56ecf9c933e8ea458a2ae672ff391d38721623
+  subject: ab22e717a0b63939615830bc6378fae105e18476
+  previous_memory: P32 active; P33-P35 dormant. Audit source aa2807e1 registered;10controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Audit source ab22e717 byteobserved;11controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: aa2807e1 registered.
+  current_ledger:
+    type: 394source
+    statement: ab22e717 bytes.
+  whole_requirement_advancement: false

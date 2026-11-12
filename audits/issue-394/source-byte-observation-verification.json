@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "source_byte_observation_controls_pass_preservation_and_complete_population_open",
+  "subject": "ab22e717a0b63939615830bc6378fae105e18476",
+  "tree": "17f4439ca66cb309541cc5126ef970908e6af502",
+  "controls_subject": "e6c65f5807912935087338e1c44df4f5eee1a60a",
+  "causal_before": {
+    "tests": 11,
+    "failures": 10,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 248,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/ci_graph_audit.py": "dd8fb344f24ebea5a9a8cfc07933e22a8a5bd132e0793f883fe704c29636209a"
+  },
+  "evidence_sha256": {
+    "before.xml": "188d0f02d6ae11d2b9e8ff59c74b56b49b7c4562e60a92f751b43836126c2649",
+    "after.xml": "08d5c1a4298a2d0bd4215f0f78257adc905b2bb3a769995b7c687be4cd43d6b0",
+    "architecture.xml": "d53fc0853591db5b2da4dff95e3892d8250398030cc471df0658a993e1f560e4"
+  },
+  "scope": "Existing audit source-history query retains Git-reported changed staged blobs separately from rooted descriptor-hashed working and untracked regular files. Native external diff is disabled; symlinks/FIFO are refused; two snapshots detect same-status byte movement. SHA256 observations are not byte preservation or complete source population. Ignored/index-flag hidden sources, independent workspace inventory, actual preserved content and handoff/retirement custody remain open. No CLI grammar or authority change. No new registry, topology graph, caller flag, policy or authority. Full worktree/branch/dirty-source inventory, push/checkpoint/handoff/retirement dispositions remain unimplemented by this slice.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}
