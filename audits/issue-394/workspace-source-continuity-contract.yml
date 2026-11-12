@@ -269,3 +269,35 @@ installed_source_continuity_source_verification:
   semantic_exit_code: 1
   distribution_executed: false
   whole_requirement_advancement: false
+
+local_import_reference_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  owner: bcf_governance/tooling/semantic_python_calls.py
+  bounded_context: ci_authority
+  operation_side: query
+  scope: Do not retain a fabricated singleton import_reference for already ambiguous
+    local imports or a local import declared after its call. Keep unresolved dispatch
+    and no port eligibility. Module-level late binding and ordinary unique local imports
+    retain source references; no new dominance/runtime proof or callable authority.
+  cases: 14
+  expected_before:
+    failures: 8
+    passes: 6
+  forbidden:
+  - guessing last spelling as runtime binding
+  - whitelisting environment_api
+  - source-only flag as runtime authority
+  - editing immutable characterization goldens
+  - phase or main progress
+  remaining: Control-flow/runtime import provenance,258main protocol observations,unresolved
+    store and complete operation/lifecycle source closure remain open.
+
+diagnostic_42678_disposition:
+  raw_sha256: 1baa04885afc256ce1a4b46542c7b62a7e0052c83077ac8faf3fb94c7054015b
+  correction: Private derived summary read source_stores instead of producer source_store_observations.
+    Preserve original; raw canonical main row has1unresolved subscript store at439,
+    not zero.376calls/258protocol rows/3explicit unresolved environment_api calls
+    remain observations only.
+  whole_requirement_advancement: false
