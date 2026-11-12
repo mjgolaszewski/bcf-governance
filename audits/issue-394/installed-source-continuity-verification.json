@@ -1,0 +1,40 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "subject": "1202712ffc03a53b49a88c7c17074e37a99311c1",
+  "tree": "2d809efb0f5ab8c836aa23505e097b8df65db8fb",
+  "controls_subject": "8315fbbd6b631e5074ea2e88c95124227f7842b9",
+  "installed_source_contexts": {
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "cases_each": 10,
+  "unchanged_sdk_evidence_reused": {
+    "report": "audits/issue-394/inert-source-filter-verification.json",
+    "subject": "a4085735dc0de1c00c5eee03662d8307584bf689",
+    "affected_after": {
+      "tests": 255,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "exact_source_sha256": {
+      "bcf_governance/tooling/ci_graph_audit.py": "565d4dc503166fd146f55a8ec2fa53f160630bc6b73d55ee997080a3a2a69cd0",
+      "bcf_governance/tooling/semantic_source_paths.py": "af67128943a407b2d8e2b11f7e58bc767edb682fddca3e8a25d2c36a386a6634"
+    }
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block_waived": false,
+  "semantic_exit_code": 1,
+  "semantic_sha256": "32d02fad191bfb67174c3a55a26985e804b83cfe7ae09741e58b1d504a6cd040",
+  "distribution_runtime": null,
+  "remaining": "Independent whole lifecycle/native/full profile/adopter authority, complete workspace discovery, preserved content, approved targets and release custody remain open;82whole unchanged.",
+  "whole_requirement_advancement": false
+}

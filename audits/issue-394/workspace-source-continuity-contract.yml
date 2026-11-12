@@ -261,3 +261,11 @@ installed_source_continuity_contract:
     dev distribution built once only if semantic gate passes; canonical wheel/sdist
     fresh-upgrade evidence must contain exact10case populations. Otherwise retain
     typed blocker without build/publication.
+
+installed_source_continuity_source_verification:
+  report: audits/issue-394/installed-source-continuity-verification.json
+  sha256: c85bbc99cfc266c44546eb13f65397cb72d52b8bb1050f0640157380e8f64037
+  subject: 1202712ffc03a53b49a88c7c17074e37a99311c1
+  semantic_exit_code: 1
+  distribution_executed: false
+  whole_requirement_advancement: false
