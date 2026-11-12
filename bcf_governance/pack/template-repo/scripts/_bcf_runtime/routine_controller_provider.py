@@ -65,6 +65,7 @@ from .routine_controller_callback import (
     validate_active_outcome,
     validate_no_transition_outcome,
 )
+from .routine_controller_capabilities import authenticate_optional_normalization
 from .routine_controller_decision import (
     ControllerTransitionClass,
     RoutineDecision,
@@ -401,11 +402,7 @@ def effective_controller_authority(
         )
         if repo_root is None or not (expired_transition_bytes or disconnected_chain):
             raise
-        from .routine_controller_prospective import prospective_normalized_controller_authority
-
-        return prospective_normalized_controller_authority(
-            api, repository=repository, repo_root=repo_root
-        )
+        return authenticate_optional_normalization(api, repository=repository, repo_root=repo_root)
     return {
         "controller_commit_sha": pin["BCF_BOOTSTRAP_COMMIT_SHA"],
         "controller_bundle_sha256": pin["BCF_BOOTSTRAP_WHEEL_SHA256"],

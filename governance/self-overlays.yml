@@ -38,6 +38,7 @@ overlays:
   - schemas/recovery-reentry-authorization.schema.json
   - scripts/_bcf_runtime/break_glass_recovery.py
   - scripts/_bcf_runtime/break_glass_reentry.py
+  - scripts/_bcf_runtime/routine_controller_prospective.py
   adopter_alternative: adopter_owned_recovery_authority
 - id: self-repository-authority
   authority_kind: self_authority

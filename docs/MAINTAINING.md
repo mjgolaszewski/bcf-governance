@@ -22,6 +22,8 @@ in [CI authority](CI_AUTHORITY.md).
 - `.github/workflows/*.yml` are generated projections and have no independent
   semantic authority.
 
+Pack retirement is scoped to ordinary adopters. A source file retained only for self-authority can therefore also carry exact retirement digests for ordinary installations. These digests come from authenticated historical ordinary inventories and the current authenticated self-only file. Ordinary active/retired collisions and unexplained destination bytes remain errors; consumer-preserved files remain preserved.
+
 Do not patch generated copies independently. After changing packaged tooling or
 the template, synchronize and regenerate the checksummed pack manifests:
 

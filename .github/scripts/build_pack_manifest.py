@@ -5,19 +5,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import shutil
 import subprocess
 import sys
-
+from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bcf_governance.tooling.pack_installation_scope import (
-    self_authority_pack_surfaces,
-)
 
 
 GENERATED_PATHS = {
@@ -130,6 +126,8 @@ def _historical_retirements(active: set[str]) -> dict[str, list[str]]:
 
 
 def build(template_root: Path) -> dict[str, object]:
+    from bcf_governance.tooling.pack_installation_scope import self_authority_pack_surfaces
+
     self_only = self_authority_pack_surfaces(REPO_ROOT)
     files = {
         path.relative_to(template_root).as_posix(): {
@@ -165,6 +163,13 @@ def build(template_root: Path) -> dict[str, object]:
         and "__pycache__" not in path.parts
         and path.suffix != ".pyc"
     }
+    retirements = _historical_retirements({
+        path for path, entry in files.items()
+        if entry.get("installation_scope", "ordinary_adopter") == "ordinary_adopter"
+    })
+    for path, entry in files.items():
+        if entry.get("installation_scope") == "self_authority":
+            retirements[path] = sorted({*retirements.get(path, []), str(entry["sha256"])})
     return {
         "schema_version": "2.0",
         "files": files,
@@ -173,7 +178,7 @@ def build(template_root: Path) -> dict[str, object]:
             {"path_template": "plans/phase-{NN}-workitems.yml", "operation": "generate"},
             {"path_template": "phases/phase-{NN}-log.yml", "operation": "generate"},
         ],
-        "retired_files": _historical_retirements(set(files)),
+        "retired_files": retirements,
     }
 
 

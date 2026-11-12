@@ -144,6 +144,62 @@ def method_binding(
     return "instance", arguments[0].arg if arguments else None
 
 
+def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
+                          imports: dict[str, str], *, allow_bases: bool = False) -> bool:
+    """Prove the local class binding; subclass closure is checked after imports."""
+    if (node.bases and not allow_bases) or node.keywords:
+        return False
+    for member in node.body:
+        if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            if member.name in {"__new__", "__init__", "__post_init__", "__setattr__",
+                               "__getattr__", "__getattribute__"}:
+                return False
+            if any(isinstance(decorator, ast.Name) and decorator.id == "property"
+                   for decorator in member.decorator_list):
+                return False
+        if isinstance(member, (ast.Assign, ast.AnnAssign)):
+            default_value = member.value
+            if default_value is not None and not all(
+                isinstance(value, (ast.Constant, ast.Tuple, ast.Load, ast.UnaryOp, ast.UAdd, ast.USub))
+                for value in ast.walk(default_value)
+            ):
+                return False
+            if isinstance(member, ast.AnnAssign) and any(
+                isinstance(value, ast.Call) for value in ast.walk(member.annotation)
+            ):
+                return False
+    for decorator in node.decorator_list:
+        target = decorator.func if isinstance(decorator, ast.Call) else decorator
+        if source_symbol(target, path, imports) not in {
+            "dataclasses::dataclass", "dataclasses::module.dataclass",
+        }:
+            return False
+        if isinstance(decorator, ast.Call) and (
+            decorator.args or any(keyword.arg is None
+                or not isinstance(keyword.value, ast.Constant)
+                or not isinstance(keyword.value.value, bool)
+                for keyword in decorator.keywords)
+        ):
+            return False
+    for value in ast.walk(tree):
+        if isinstance(value, ast.arg) and value.arg in {node.name, "classmethod"}:
+            return False
+        if isinstance(value, ast.Name) and isinstance(value.ctx, (ast.Store, ast.Del)):
+            if value.id in {node.name, "classmethod", *imports}:
+                return False
+        if isinstance(value, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            if value is not node and value.name in {node.name, "classmethod"}:
+                return False
+        if (isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del))
+                and root_name(value) == node.name):
+            return False
+        if (isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"}
+                and value.args and isinstance(value.args[0], ast.Name)
+                and value.args[0].id == node.name):
+            return False
+    return "classmethod" not in imports
+
+
 def discover_class_facts(
     tree: ast.Module,
     *,
@@ -238,6 +294,8 @@ def discover_class_facts(
                 "symbol": f"{path}::{node.name}",
                 **({"plain_generic": True} if plain_generic else {}),
                 "bases": bases,
+                "closed_class_binding": _closed_class_binding(node, tree, path, imports),
+                "local_class_binding": _closed_class_binding(node, tree, path, imports, allow_bases=True),
                 "methods": methods,
                 "class_decorators": sorted(
                     ast.unparse(value) for value in node.decorator_list
@@ -416,11 +474,85 @@ def _hierarchy_sensitive_classes(classes: dict[str, dict[str, Any]]) -> set[str]
     return sensitive
 
 
+def _class_constructor_bindings(
+    function: dict[str, Any], classes: dict[str, dict[str, Any]],
+    calls: list[tuple[dict[str, Any], int, dict[str, Any]]],
+) -> list[dict[str, Any]]:
+    """Bind inherited class methods only at exact source-visible class calls."""
+    method = str(function["symbol"]).rsplit(".", 1)[-1]
+    owner = str(function.get("class_symbol", ""))
+    result: list[dict[str, Any]] = []
+    for caller, occurrence, call in calls:
+        bound, separator, called_method = str(call.get("called_symbol", "")).rpartition(".")
+        reference = call.get("method_dispatch")
+        instance_binding = isinstance(reference, dict)
+        if isinstance(reference, dict):
+            bound = str(reference.get("class_symbol", ""))
+            called_method = str(reference.get("method", ""))
+        if called_method != method or bound not in classes:
+            continue
+        ancestry: set[str] = set()
+        pending = [bound]
+        while pending:
+            candidate = pending.pop()
+            if candidate in ancestry:
+                continue
+            ancestry.add(candidate)
+            pending.extend(str(base.get("called_symbol", ""))
+                           for base in classes.get(candidate, {}).get("bases", []))
+        if owner not in ancestry:
+            continue
+        current = bound
+        visited: set[str] = set()
+        outcome = "unresolved"
+        while not instance_binding and current in classes and current not in visited:
+            visited.add(current)
+            row = classes[current]
+            if not row.get("local_class_binding"):
+                break
+            definitions = [entry for entry in row.get("methods", []) if entry["name"] == method]
+            if definitions:
+                if current == owner and len(definitions) == 1:
+                    outcome = "resolved"
+                    result.append({"constructed_symbol": bound,
+                                   "binding_caller": caller["symbol"],
+                                   "binding_line": call.get("line"),
+                                   "binding_occurrence": occurrence,
+                                   "factory_implementation": function["symbol"]})
+                elif current != owner:
+                    outcome = "different_implementation"
+                break
+            bases = row.get("bases", [])
+            if len(bases) != 1:
+                break
+            current = str(bases[0].get("called_symbol", ""))
+        if outcome == "unresolved":
+            failure = {"kind": "unresolved_class_constructor", "symbol": caller["symbol"],
+                       "line": call.get("line"), "called_symbol": call.get("called_symbol"),
+                       "factory_implementation": function["symbol"]}
+            if failure not in caller.setdefault("unresolved", []):
+                caller["unresolved"].append(failure)
+            call["dispatch_resolution"] = "unresolved"
+            call["dispatch_port_eligible"] = False
+    return result
+
+
 def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
     """Resolve safe same-instance calls and mark every ambiguous form fail-closed."""
     classes = {str(row["symbol"]): row for row in inventory.get("classes", [])}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     sensitive = _hierarchy_sensitive_classes(classes)
+    constructor_calls: dict[str, list[tuple[dict[str, Any], int, dict[str, Any]]]] = {}
+    for caller in functions.values():
+        for occurrence, call in enumerate(caller.get("calls", [])):
+            reference = call.get("method_dispatch")
+            if isinstance(reference, dict):
+                bound = str(reference.get("class_symbol", ""))
+                method = str(reference.get("method", ""))
+            else:
+                bound, _, method = str(call.get("called_symbol", "")).rpartition(".")
+            if bound in classes:
+                constructor_calls.setdefault(method, []).append((caller, occurrence, call))
     method_facts = {
         str(method["symbol"]): method
         for row in classes.values()
@@ -455,6 +587,31 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
             kind = str(reference.get("kind", "unknown"))
             class_symbol = str(reference.get("class_symbol", ""))
             method = str(reference.get("method", ""))
+            if kind == "class_constructor":
+                class_fact = classes.get(class_symbol, {})
+                bindings = _class_constructor_bindings(
+                    function, classes, constructor_calls.get(str(function["symbol"]).rsplit(".", 1)[-1], [])
+                )
+                if (reference.get("standard_classmethod") is True
+                        and not reference.get("receiver_rebound") and not custom_function_decorators
+                        and class_fact.get("closed_class_binding")
+                        and bindings):
+                    call["class_constructor_bindings"] = bindings
+                    call["dispatch_resolution"] = "exact_bound_class_constructor"
+                    for binding in bindings:
+                        fact = {**call, **binding}
+                        if fact not in function.setdefault("constructors", []):
+                            function["constructors"].append(fact)
+                    continue
+                failure = {"kind": "unresolved_class_constructor",
+                           "symbol": function["symbol"], "line": call.get("line"),
+                           "called_symbol": call.get("called_symbol")}
+                if failure not in function.setdefault("unresolved", []):
+                    function["unresolved"].append(failure)
+                call["dispatch_resolution"] = "unresolved"
+                call["dispatch_port_eligible"] = False
+                failures.append({**failure, "port_eligible": False})
+                continue
             target = f"{class_symbol}.{method}"
             target_fact = method_facts.get(target, {})
             decorators = {

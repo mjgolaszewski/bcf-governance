@@ -95,7 +95,8 @@ def load_pack_manifest(
         raise ValueError("pack manifest retired_files must be a mapping")
     for raw_path, raw_digests in raw_retirements.items():
         retired_relative = _safe_relative(raw_path).as_posix()
-        if retired_relative in entries:
+        if (retired_relative in entries
+                and entries[retired_relative].get("installation_scope", "ordinary_adopter") != "self_authority"):
             raise ValueError(f"pack manifest path is both active and retired: {retired_relative}")
         if (
             not isinstance(raw_digests, list)

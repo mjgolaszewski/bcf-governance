@@ -1,0 +1,50 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF17 Hotfix Log
+  id: bcf-governance-phase-31-hotfix17
+  version: 1.0.0
+  generated_at_utc: '2026-11-12T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix17.yml
+hotfix:
+  id: P31-HF17
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 17
+  summary: Repair source-bound class construction and ordinary installed consumer
+    gate closure
+execution_evidence:
+  planned_commands:
+  - bcf ci submit --repo-root .
+  executed_commands:
+  - Recovery isolated strict13-to14 trial refused atomically before writes because new self-only prospective module lacked ordinary-scope retirement;active8fe unchanged. New decoder/successor cases reproduced two failures before correction.
+  - Scoped retirement derives exact historical ordinary bytes plus authenticated current self-only bytes;ordinary active/retired overlap and unexplained bytes remain refused,consumer-preserved paths survive secondary self cleanup. Focused scope/installer controls passed9cases;49constructor/custody controls passed before final added callback scope guard. New complete qualification required.
+  - Own native validation2772 was cancelled after646.38seconds for a newly found unresolved-subclass population gap; owned processes exited and original fence was independently free before source mutation. Partial gate output is not full qualification.
+  - New causal negative reproduced a supported base call hiding an unsupported subclass call. Corrected call-site failures, escaped/reflected factories, instance bindings, fake decorators and receiver aliases now retain explicit unresolved sites.128focused cases,strict typing and lint pass; material source changed,so fresh qualification must repeat.
+  - Fresh isolated wheel and ordinary Lite install passed; all335 private runtime and wrapper modules plus project package marker passed strict typing (336 files) and Ruff with GitHub credentials absent.
+  - Installed wheel observed both actual BDMCP factories across1925 source files; five adoption cycles passed with0remote Actions runs.
+  - Native submission stopped in cheap closure admission because this implementation record was still planned; implementation is authored completed, while full required CI and custody remain unqualified.
+  - Initial constructor characterization produced seven expected baseline failures.
+  - Source-bound class construction and refusal controls plus existing initializer and method regressions passed 85 cases.
+  - Actual immutable BDMCP69 full source discovery observes both requested canonical factories; not full consumer acceptance.
+  notes:
+  - Preserve existing provider characterization while extracting only the optional recovery capability boundary; provider reached 806 lines and is returned below the unchanged 800-line cap. No CLI or authority behavior changes.
+  - record failing workflows, diagnosed root cause, remediation scope, and merge-back
+    status
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

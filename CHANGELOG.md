@@ -6,7 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.13`
+Release target: `2.3.14`
+
+### Fixed
+
+- Observe source-bound classmethod construction, preserving exact base and inherited subclass bindings; report unsupported bindings explicitly rather than silently omitting construction.
+- Keep prospective recovery normalization in the self-authority installation scope and refuse absent recovery capabilities explicitly in ordinary consumers.
+- Correct portable native architecture import ordering.
+
+## [2.3.13] - 2026-11-11
 
 ### Fixed
 

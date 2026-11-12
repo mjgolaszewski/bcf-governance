@@ -478,6 +478,8 @@ def _upgrade_pack(args: argparse.Namespace, target_root: Path) -> InstallResult:
         entries=entries,
         reject_destination=_reject_symlink_destination,
         prune_empty_parents=_prune_empty_parents,
+        excluded_paths=args.release_custody.excluded_paths,
+        retired_files=args.pack_manifest.retired_files,
     )
     upgrade_paths = UPGRADE_REFRESH_PATHS + (
         UPGRADE_RESET_OPTION_PATHS if args.reset_options else ()
