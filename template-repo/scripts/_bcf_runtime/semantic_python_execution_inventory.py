@@ -85,6 +85,9 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.class_symbol = f"{path}::{class_name}" if class_name else None
         self.method_binding_kind, self.receiver = method_binding(function) if function else ("static", None)
         self.decorators = sorted(ast.unparse(value) for value in function.decorator_list) if function else []
+        self.standard_classmethod = bool(function and len(function.decorator_list) == 1
+            and isinstance(function.decorator_list[0], ast.Name)
+            and function.decorator_list[0].id == "classmethod")
         suffix = f"{class_name}.{function.name}" if class_name and function else function.name if function else ""
         self.symbol = initializer_symbol or f"{path}::{suffix}"
         arguments = [
@@ -203,10 +206,13 @@ class _FunctionVisitor(ast.NodeVisitor):
             receiver=self.receiver,
             assignments=self.assignments,
         )
-        if (self.method_binding_kind == "class" and isinstance(node.func, ast.Name)
-                and node.func.id == self.receiver):
+        if ((self.method_binding_kind == "class" or self.decorators)
+                and self.receiver is not None and isinstance(node.func, ast.Name)
+                and (node.func.id == self.receiver
+                     or f"parameter:{self.receiver}" in self.assignments.get(node.func.id, set()))):
             dispatch = {"kind": "class_constructor", "class_symbol": self.class_symbol,
-                        "receiver_rebound": self.receiver_rebound}
+                        "receiver_rebound": self.receiver_rebound or node.func.id != self.receiver,
+                        "standard_classmethod": self.standard_classmethod}
         if dispatch is not None:
             fact["method_dispatch"] = dispatch
         self.calls.append(fact)

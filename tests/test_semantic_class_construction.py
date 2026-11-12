@@ -4,6 +4,10 @@ from pathlib import Path
 
 import pytest
 
+from bcf_governance.tooling.semantic_operation_effects import (
+    SemanticOperationEffectError,
+    validate_operation_effects,
+)
 from bcf_governance.tooling.semantic_ownership_inventory import (
     discover_python_source,
     resolve_python_imports,
@@ -140,4 +144,93 @@ def test_dataclass_default_factory_requires_explicit_source_obligation(tmp_path:
         "    @classmethod\n"
         "    def from_payload(cls, payload):\n        return cls()\n")
     assert any(row["kind"] == "unresolved_class_constructor"
+               for row in value["unresolved"])
+
+
+def test_resolved_base_call_cannot_hide_unsupported_subclass_call(tmp_path: Path) -> None:
+    value = _inventory(tmp_path,
+        "class Record:\n"
+        "    @classmethod\n"
+        "    def from_payload(cls, payload):\n        return cls()\n"
+        "class Meta(type):\n    pass\n"
+        "class Child(Record, metaclass=Meta):\n    pass\n"
+        "def good_decode(payload):\n    return Record.from_payload(payload)\n"
+        "def bad_decode(payload):\n    return Child.from_payload(payload)\n")
+    assert any(row["constructed_symbol"] == "models.py::Record"
+               for row in value["constructors"])
+    assert any(row["kind"] == "unresolved_class_constructor"
+               and row["symbol"] == "models.py::bad_decode"
+               for row in value["unresolved"])
+    operation = {"id": "decode.v1", "authoritative_read": True,
+                 "allowed_read_ports": ["models.py::Child.from_payload"],
+                 "allowed_mutation_ports": [], "allowed_authority_ports": [],
+                 "non_authoritative_output_effects": []}
+    with pytest.raises(SemanticOperationEffectError, match="unresolved"):
+        validate_operation_effects(operation, "models.py::bad_decode", value)
+
+
+@pytest.mark.parametrize("expression", [
+    "Record.from_payload.__func__(Record, payload)",
+    "getattr(Record, 'from_payload')(payload)",
+    "consume(Record.from_payload, payload)",
+])
+def test_escaped_factory_does_not_disappear_beside_a_direct_call(
+    tmp_path: Path, expression: str,
+) -> None:
+    value = _inventory(tmp_path,
+        "class Record:\n"
+        "    @classmethod\n"
+        "    def from_payload(cls, payload):\n        return cls()\n"
+        "def direct(payload):\n    return Record.from_payload(payload)\n"
+        f"def indirect(payload):\n    return {expression}\n")
+    assert any(row["kind"] == "unresolved_class_constructor"
+               for row in value["unresolved"])
+
+
+@pytest.mark.parametrize("decorator", ["Fake.classmethod", "alias"])
+def test_classmethod_spelling_cannot_substitute_for_builtin_binding(
+    tmp_path: Path, decorator: str,
+) -> None:
+    value = _inventory(tmp_path,
+        "alias = classmethod\n"
+        "class Fake:\n    pass\n"
+        "class Record:\n"
+        f"    @{decorator}\n"
+        "    def from_payload(cls, payload):\n        return cls()\n"
+        "def direct(payload):\n    return Record.from_payload(payload)\n")
+    assert not any(row["caller"] == "models.py::Record.from_payload"
+                   for row in value["constructors"])
+    assert any(row["kind"] == "unresolved_class_constructor"
+               for row in value["unresolved"])
+
+
+@pytest.mark.parametrize("instance_first", [False, True])
+def test_instance_binding_cannot_borrow_an_independent_class_call(
+    tmp_path: Path, instance_first: bool,
+) -> None:
+    factory = "    @classmethod\n    def from_payload(cls, payload):\n        return cls()\n"
+    instance = "    def decode(self, payload):\n        return self.from_payload(payload)\n"
+    value = _inventory(tmp_path, "class Record:\n"
+        + (instance + factory if instance_first else factory + instance)
+        + "def direct(payload):\n    return Record.from_payload(payload)\n")
+    assert any(row["constructed_symbol"] == "models.py::Record"
+               for row in value["constructors"])
+    assert any(row["kind"] == "unresolved_class_constructor"
+               and row["symbol"] == "models.py::Record.decode"
+               for row in value["unresolved"])
+
+
+def test_class_parameter_alias_cannot_hide_behind_a_resolved_constructor(tmp_path: Path) -> None:
+    value = _inventory(tmp_path,
+        "class Record:\n"
+        "    @classmethod\n"
+        "    def from_payload(cls, payload):\n"
+        "        alias = cls\n"
+        "        if payload:\n            return cls()\n"
+        "        return alias()\n"
+        "def direct(payload):\n    return Record.from_payload(payload)\n")
+    assert any(row["constructed_symbol"] == "models.py::Record"
+               for row in value["constructors"])
+    assert any(row["kind"] == "unresolved_class_constructor"
+               and row["symbol"] == "models.py::Record.from_payload"
                for row in value["unresolved"])
