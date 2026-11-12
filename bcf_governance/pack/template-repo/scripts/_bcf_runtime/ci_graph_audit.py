@@ -6,7 +6,6 @@ import hashlib
 import json
 from pathlib import Path
 import re
-import subprocess
 from typing import Any
 
 from .ci_graph_contracts import CompiledCIGraph, validate_ci_graph
@@ -16,26 +15,16 @@ from .ci_graph_routing import routing_audit
 from .ci_graph_timeouts import INTERPRETER_PROBE_TIMEOUT_SECONDS, gate_deadline_contract, gate_cleanup_timeout_seconds
 from .ci_graph_yaml import load_yaml_path
 from .evidence_gate_contracts import expected_evidence_kinds
+from .semantic_source_paths import _source_git
 
 
 def _tracked(repo_root: Path, patterns: tuple[str, ...]) -> list[str]:
-    result = subprocess.run(
-        ["git", "ls-files", "--", *patterns],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    return sorted(line for line in result.stdout.splitlines() if line) if result.returncode == 0 else []
+    result = _source_git(repo_root, "ls-files", "--", *patterns)
+    return sorted(line for line in result.stdout.decode("utf-8").splitlines() if line) if result.returncode == 0 else []
 
 
 def _repository_state(repo_root: Path) -> dict[str, Any]:
-    result = subprocess.run(
-        ["git", "status", "--porcelain=v1", "-z", "--untracked-files=all"],
-        cwd=repo_root,
-        capture_output=True,
-        check=False,
-    )
+    result = _source_git(repo_root, "status", "--porcelain=v1", "-z", "--untracked-files=all")
     if result.returncode:
         return {"available": False, "committed_clean": False}
     entries = sorted(value.decode("utf-8") for value in result.stdout.split(b"\0") if value)
