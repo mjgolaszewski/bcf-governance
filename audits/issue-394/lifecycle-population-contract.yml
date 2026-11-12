@@ -2028,3 +2028,22 @@ non_call_state_mutation_source_contract:
   - handwritten generated runtime mirrors/workflows/authority pins
   - new registry/graph/evaluator/receipt family
   - unqualified runtime purity or whole acceptance claims
+
+non_call_state_mutation_diagnostic:
+  report: audits/issue-394/non-call-state-mutation-source-diagnostic.json
+  sha256: a5c48a01015b6d0897ad4afb2a246f0679304a0f8cc18b49f9e257d13255b70e
+  subject: 942fc5d4c81eb0f109be6b95ca8280ba8ec0b6a6
+  previous_memory: P32 active; P33-P35 dormant. Decorator spelling source authority
+    34d94c48 repaired;613cases supported (603retained+10corrected), whole-operation
+    provenance blocked. Runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Non-call state mutation source diagnostic
+    942fc5d4:6causeFAIL/8PASS,6real mutation witnesses; repair/runtime binding/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 34d94c48 decorator guard; runtime open.
+  current_ledger:
+    type: 394source
+    statement: 942fc5d4 state effect gap; repair open.
+  whole_requirement_advancement: false
