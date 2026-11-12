@@ -57,9 +57,19 @@ with tempfile.TemporaryDirectory(prefix="installed-source-continuity-") as direc
     second=git(root,"rev-parse","HEAD");assert first!=second
     history=audit._repository_state(root)["source_history"]
     assert any(row["tree_sha"]==tree and row["commits"]==sorted([first,second]) for row in history["same_tree_distinct_commits"]);cases.append("equal_tree_distinct_commits")
+    from _bcf_runtime.semantic_authority_contracts import _validate_operations,SemanticAuthorityError
+    from _bcf_runtime.semantic_ownership_inventory import discover_python_source
+    source=base/"operation.py";source.write_text("def query():\n    return 1\n")
+    inventory=discover_python_source(base,files=[source])
+    inventory["functions"].append(dict(inventory["functions"][0]))
+    operation_payload=json.loads("{\"schema_version\":\"1.0\",\"document\":{\"kind\":\"application_operation_registry\",\"id\":\"fixture-operations\",\"version\":\"1.0.0\",\"status\":\"active\",\"path\":\"governance/application-operations.yml\"},\"populations\":[{\"id\":\"fixture\",\"adapter\":\"typescript_exports\",\"source\":\"fixture.ts\",\"symbol\":\"exports\",\"public_only\":true,\"tsconfig\":\"tsconfig.json\",\"package_lock\":\"package-lock.json\",\"node_executable\":\"node\"}],\"operations\":[{\"id\":\"fixture.query.v1\",\"population\":\"fixture\",\"population_key\":\"query\",\"family\":\"fixture\",\"bounded_context\":\"tooling\",\"entrypoints\":[\"service.py::query\"],\"semantic_kind\":\"query\",\"authoritative_read\":false,\"authoritative_mutation\":false,\"authority_conferral\":false,\"produces_projection\":false,\"model_callable\":false,\"allowed_mutation_ports\":[],\"allowed_authority_ports\":[],\"non_authoritative_output_effects\":[]}],\"migrations\":[]}")
+    try:_validate_operations(Path.cwd(),operation_payload,inventory,source_language="python",consumer_owned_schema=True)
+    except SemanticAuthorityError as error:assert "function population" in str(error) and "ambiguous" in str(error)
+    else:raise AssertionError("installed filtered operation accepted ambiguous functions")
+    cases.append("operation_function_identity_admission")
 origins={name:str(Path(module.__file__).resolve()) for name,module in list(sys.modules.items()) if name.startswith("_bcf_runtime.") and getattr(module,"__file__",None)}
 assert origins and all(Path(value).is_relative_to(runtime) for value in origins.values())
-assert len(cases)==10 and len(set(cases))==10
+assert len(cases)==11 and len(set(cases))==11
 print(json.dumps({"source_package_absent":True,"cases":cases,"private_origins":origins,"authority":False,"retirement_authorized":False},sort_keys=True))
 '''
 
@@ -73,7 +83,7 @@ def exercise_installed_source_continuity(installed_consumer, isolated_python):
     assert result.returncode == 0, _record(result)
     actual = json.loads(result.stdout)
     assert actual["source_package_absent"] is True and actual["private_origins"]
-    assert len(actual["cases"]) == len(set(actual["cases"])) == 10
+    assert len(actual["cases"]) == len(set(actual["cases"])) == 11
     assert actual["authority"] is False and actual["retirement_authorized"] is False
     assert all(Path(value).is_relative_to(installed_consumer.resolve() / "scripts") for value in actual["private_origins"].values())
     return actual

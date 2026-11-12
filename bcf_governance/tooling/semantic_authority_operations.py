@@ -41,6 +41,7 @@ def _validate_operations(
         SemanticOperationEffectError,
     )
     from .semantic_operation_python import _inventory_source_subject
+    from .semantic_operation_effects import _source_function_population
 
     if not isinstance(require_runtime_context, bool) or (consumer_owned_schema and not require_runtime_context):
         raise SemanticAuthorityError("required operations cannot waive runtime effect context")
@@ -48,9 +49,9 @@ def _validate_operations(
     _validate_operation_structure(payload)
     try:
         source_subject = _inventory_source_subject(inventory)
+        functions = _source_function_population(inventory)
     except ValueError as exc:
         raise SemanticAuthorityError(str(exc)) from exc
-    functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     python_sources = {
         str(row["path"]) for row in inventory.get("files", [])
         if str(row["path"]).endswith(".py")
