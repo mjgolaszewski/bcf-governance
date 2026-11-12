@@ -1,0 +1,42 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "status": "local_import_reference_controls_pass_runtime_context_open",
+  "subject": "b85b3571d7b52e6eab4740ac120bd9b60f0fa408",
+  "tree": "50e998f1d8e7cf9e7a4cad3297d40df3628ba4ca",
+  "controls_subject": "6645c5fd9a7909895a3448052559c25580184b98",
+  "causal_before": {
+    "tests": 14,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "affected_after": {
+    "tests": 1053,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 40,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_block": {
+    "test": "test_cli_application_operations_are_closed_and_effect_safe",
+    "blocking": true,
+    "waived": false
+  },
+  "source_sha256": {
+    "bcf_governance/tooling/semantic_python_calls.py": "ee72d0391f7c4668aab7d8f9e21618d8bf555b0bb3130412a5d1504aa65760bf"
+  },
+  "evidence_sha256": {
+    "before.xml": "1876b368a5dba49d47a7eff064526fa3bb994b6110924d220fb975885643346c",
+    "after.xml": "3ff978efbb33bce34250467630b97b5ca94d41f63eb6afaa1df5a1a853a516e3",
+    "architecture.xml": "f034ae0edef032d2b12cdaf4ea9a698b0ac846660d65d118c23cf4b10e77725e"
+  },
+  "scope": "Existing source-call producer omits fabricated singleton references for ambiguous or future function-local imports and keeps dispatch unresolved/no port credit. Unique ordinary imports and module-level late binding retain references. This does not provide dominance, runtime callable/import provenance, native profile, operation or lifecycle qualification. Immutable goldens remain unchanged; no new registry, CLI grammar, evaluator flag, authority or main change. No new registry, topology graph, caller flag, policy or authority. Full worktree/branch/dirty-source inventory, push/checkpoint/handoff/retirement dispositions remain unimplemented by this slice.",
+  "whole_requirement_advancement": false,
+  "remaining": "Complete source continuity and actual runtime/lifecycle conformance, known ci main effect block, real deadlines, matched baseline/targets, adopters and custody;82whole open."
+}

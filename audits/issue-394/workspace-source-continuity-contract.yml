@@ -301,3 +301,19 @@ diagnostic_42678_disposition:
     not zero.376calls/258protocol rows/3explicit unresolved environment_api calls
     remain observations only.
   whole_requirement_advancement: false
+
+local_import_reference_source_verification:
+  report: audits/issue-394/local-import-reference-verification.json
+  sha256: 46c8c4a62f3f51b1e98d7f389e404b3ba5f7584563ea0a92d9443831fef128f0
+  subject: b85b3571d7b52e6eab4740ac120bd9b60f0fa408
+  previous_memory: P32 active; P33-P35 dormant. Installed source 1202712f partial;runtime/populations/deadlines/targets/adopters/custody
+    open.
+  current_memory: P32 active; P33-P35 dormant. Audit source b85b3571 importref;14controlsPASS,runtime/populations/deadlines/targets/adopters/custody
+    open.
+  previous_ledger:
+    type: 394source
+    statement: 1202712f installed.
+  current_ledger:
+    type: 394source
+    statement: b85b3571 importref.
+  whole_requirement_advancement: false
