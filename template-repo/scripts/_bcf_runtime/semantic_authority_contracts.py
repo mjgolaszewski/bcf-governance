@@ -64,6 +64,8 @@ MUTATING_KINDS = {"command", "execution", "event_handler"}
 class SemanticAuthorityError(ValueError):
     """Raised when a blocking semantic-authority contract is incomplete."""
 
+    operation_failures: tuple[str, ...] = ()
+
 
 @dataclass(frozen=True)
 class SemanticAuthorityEvaluation:
@@ -525,6 +527,7 @@ def _validate_operations(
     classified: dict[tuple[str, str], str] = {}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
+    operation_failures: list[str] = []
     for operation in payload["operations"]:
         population_id = str(operation["population"])
         key = str(operation["population_key"])
@@ -577,7 +580,8 @@ def _validate_operations(
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
+            operation_failures.append(str(exc))
+            continue
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
             "write_effect_count": write_count, "authority_effect_count": authority_count,
@@ -590,6 +594,12 @@ def _validate_operations(
     )
     if missing:
         raise SemanticAuthorityError("unclassified public application operations: " + ", ".join(missing))
+    if operation_failures:
+        omitted = max(0, len(operation_failures) - 32)
+        suffix = f"; {omitted} additional failing operations omitted" if omitted else ""
+        error = SemanticAuthorityError("; ".join(operation_failures[:32]) + suffix)
+        error.operation_failures = tuple(operation_failures)
+        raise error
     return observations
 
 

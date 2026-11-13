@@ -184,7 +184,8 @@ def validate_operation_effects(
                 reject(f"operation {operation['id']} contains an unresolved effect at {symbol}")
         resolved_mutator_sites = {(call.get('line'), call.get('column'))
             for call in function.get('calls', [])
-            if _resolve_function(str(call.get('called_symbol', '')), functions) is not None}
+            if call.get('call_name') in {'setattr', 'delattr'}
+            and _resolve_function(str(call.get('called_symbol', '')), functions) is not None}
         remaining_obligations = [item for item in function.get('implicit_effect_obligations', [])
             if not (item.get('binding_source') == 'constructor_initializer_frame' and
                     (item.get('line'), item.get('column'), item.get('class_symbol'))

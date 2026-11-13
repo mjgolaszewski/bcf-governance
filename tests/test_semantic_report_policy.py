@@ -76,3 +76,36 @@ def test_neutral_cache_does_not_reuse_declared_port_authority(tmp_path):
     assert validate_operation_effects(command, 'consumer.py::read', facts, _origin_cache=cache) == (1, 0)
     with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
         validate_operation_effects(OPERATION, 'consumer.py::read', facts, _origin_cache=cache)
+
+
+def test_native_operation_batch_keeps_both_independent_failures(tmp_path):
+    import copy
+    import shutil
+
+    from bcf_governance.tooling.semantic_authority_contracts import (
+        SemanticAuthorityError,
+        _validate_operations,
+    )
+    from bcf_governance.tooling.semantic_ownership_inventory import (
+        discover_python_source,
+        resolve_python_imports,
+    )
+    from tests.test_semantic_authority import REPO_ROOT, _yaml
+    source = tmp_path / 'api.py'
+    source.write_text("from pathlib import Path\n__all__=['first','second']\ndef first(): Path('out').write_text('data')\ndef second(): publish_receipt()\n")
+    (tmp_path / 'schemas').mkdir()
+    shutil.copyfile(REPO_ROOT / 'schemas/application-operations.schema.json', tmp_path / 'schemas/application-operations.schema.json')
+    payload = _yaml('governance/application-operations.yml')
+    base = copy.deepcopy(payload['operations'][0])
+    payload['populations'] = [{'id':'api','adapter':'python_module_exports','source':'api.py','symbol':'__all__','public_only':True}]
+    payload['operations'] = [{**base,'id':name+'.v1','population':'api','population_key':name,
+        'entrypoints':['api.py::'+name],'semantic_kind':'query','authoritative_read':True,
+        'authoritative_mutation':False,'authority_conferral':False,'allowed_mutation_ports':[],
+        'allowed_authority_ports':[],'allowed_read_ports':[],'non_authoritative_output_effects':[]}
+        for name in ('first','second')]
+    facts = resolve_python_imports(tmp_path, discover_python_source(tmp_path, [source]), ('.',))
+    with pytest.raises(SemanticAuthorityError) as raised:
+        _validate_operations(tmp_path, payload, facts)
+    assert len(raised.value.operation_failures) == 2
+    assert any('undeclared write effects' in row for row in raised.value.operation_failures)
+    assert any('undeclared authority effects' in row for row in raised.value.operation_failures)
