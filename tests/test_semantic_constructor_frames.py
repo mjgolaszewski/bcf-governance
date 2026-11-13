@@ -94,3 +94,43 @@ def test_fresh_receiver_does_not_close_unknown_input_protocols(tmp_path, declara
     assert witness(path) == [1, 2]
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION, "consumer.py::read", facts)
+
+
+@pytest.mark.parametrize("signature", ["def __del__(self, extra): pass", "async def __del__(self): pass"])
+def test_invalid_noop_finalizer_is_not_pure(tmp_path, signature):
+    path, facts = inventory(tmp_path, "class Record:\n " + signature + "\ndef read():\n Record()\n return 0\n")
+    assert witness(path) == [0, 0]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, "consumer.py::read", facts)
+
+
+def test_class_alias_cannot_replace_fresh_allocation(tmp_path):
+    path, facts = inventory(tmp_path, """
+        class Record:
+            def __init__(self,value): self.value=value
+        EXISTING=object.__new__(Record)
+        EXISTING.value=0
+        Alias=Record
+        Alias.__new__=staticmethod(lambda cls,*args:EXISTING)
+        def read():
+            before=EXISTING.value
+            Record(7)
+            return before,EXISTING.value
+    """)
+    assert witness(path) == [[0, 7], [7, 7]]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, "consumer.py::read", facts)
+
+
+def test_native_initializer_precedes_later_source_mixin(tmp_path):
+    path, facts = inventory(tmp_path, """
+        EVENTS=[]
+        class Mixin:
+            def __init__(self): EVENTS.append(7)
+        class Record(ValueError, Mixin): pass
+        def read():
+            Record()
+            return len(EVENTS)
+    """)
+    assert witness(path) == [0, 0]
+    assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)

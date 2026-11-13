@@ -37,11 +37,14 @@ def _trivial_finalizer(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool
     body = list(function.body)
     if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
         body = body[1:]
-    return function.name == "__del__" and not function.decorator_list and all(
+    return (isinstance(function, ast.FunctionDef)
+        and len([*function.args.posonlyargs, *function.args.args]) == 1
+        and not function.args.kwonlyargs and not function.args.vararg and not function.args.kwarg
+        and function.name == "__del__" and not function.decorator_list and all(
         isinstance(node, ast.Pass) or isinstance(node, ast.Return) and (
             node.value is None or isinstance(node.value, ast.Constant) and node.value.value is None
         ) for node in body
-    )
+    ))
 
 
 def container_builtin_names(tree: ast.Module) -> list[str]:

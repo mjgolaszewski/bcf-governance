@@ -219,6 +219,13 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                 for keyword in decorator.keywords)
         ):
             return False
+    class_aliases = {node.name}
+    assignments = [value for value in ast.walk(tree) if isinstance(value, (ast.Assign, ast.AnnAssign))]
+    for _ in range(len(assignments) + 1):
+        for assignment in assignments:
+            if isinstance(assignment.value, ast.Name) and assignment.value.id in class_aliases:
+                targets = assignment.targets if isinstance(assignment, ast.Assign) else [assignment.target]
+                class_aliases.update(target.id for target in targets if isinstance(target, ast.Name))
     for value in ast.walk(tree):
         if isinstance(value, ast.arg) and value.arg in {node.name, "classmethod", "staticmethod", "property"}:
             return False
@@ -229,11 +236,11 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
             if value is not node and value.name in {node.name, "classmethod", "staticmethod", "property"}:
                 return False
         if (isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del))
-                and root_name(value) == node.name):
+                and root_name(value) in class_aliases):
             return False
         if (isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"}
                 and value.args and isinstance(value.args[0], ast.Name)
-                and value.args[0].id == node.name):
+                and value.args[0].id in class_aliases):
             return False
     return not ({"classmethod", "staticmethod", "property"} & imports.keys())
 

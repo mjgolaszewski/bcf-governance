@@ -146,8 +146,18 @@ def constructor_callback_closures(classes: dict[str, dict[str, Any]]) -> dict[st
             for sequence in sequences:
                 if sequence[0] == candidate:
                     sequence.pop(0)
+        native_owners = {'builtins::' + value.__name__ for value in _SIMPLE_EXCEPTIONS}
+        initializer_selected = False
+        native_initializer = None
         for owner in mro:
+            if not initializer_selected and owner in native_owners:
+                native_initializer = owner + '.__init__'
+                initializer_selected = True
             for method in classes.get(owner, {}).get('methods', []):
+                if method['name'] == '__init__':
+                    if initializer_selected:
+                        continue
+                    initializer_selected = True
                 methods.setdefault(str(method['name']), method)
         initializer = methods.get('__init__')
         initializer_owner = str(initializer['symbol']).rsplit('.', 1)[0] if initializer else ''
@@ -156,11 +166,12 @@ def constructor_callback_closures(classes: dict[str, dict[str, Any]]) -> dict[st
         for owner in following:
             if any(method['name'] == '__init__' for method in classes.get(owner, {}).get('methods', [])):
                 break
-            if owner == 'builtins::BaseException':
-                super_initializer = 'builtins::BaseException.__init__'
+            if owner in native_owners:
+                super_initializer = owner + '.__init__'
                 break
         value = {'mro': mro, 'methods': methods, 'initializer': initializer,
-                 'initializer_owner': initializer_owner, 'super_initializer': super_initializer}
+                 'initializer_owner': initializer_owner, 'super_initializer': super_initializer,
+                 'native_initializer': native_initializer}
         active.remove(symbol)
         cache[symbol] = value
         return value

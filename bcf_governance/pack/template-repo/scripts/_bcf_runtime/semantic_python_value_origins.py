@@ -145,9 +145,12 @@ def value_origins(
                     and node.func.value.func.id == 'super' and not node.func.value.args
                     and not node.func.value.keywords and not keywords
                     and 'super' in row.get('unshadowed_container_builtins', [])
-                    and env.get('$constructor_super') == 'builtins::BaseException.__init__'
+                    and env.get('$constructor_super') in {
+                        'builtins::' + name + '.__init__'
+                        for name in ('BaseException', 'Exception', 'ValueError', 'RuntimeError')
+                    }
                     and function.args.args and env.get(function.args.args[0].arg, '').startswith('new-object:')):
-                contextual_calls[site] = 'builtins::BaseException.__init__'
+                contextual_calls[site] = env['$constructor_super']
                 return SCALAR
             spec = fact.get('source_constructor_frame', {})
             if (spec.get('native_exception_initializer') and (*site, spec.get('subject')) in constructor_inputs):

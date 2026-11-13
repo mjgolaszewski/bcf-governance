@@ -24,8 +24,10 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 177 affected/pack tests pass without skips; strict typing passes for six touched modules and lint passes. Framework-only
+  - 181 affected/pack tests pass without skips; strict typing passes for six touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
+  - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
+    now pass. Exact native initializer labels preserve distinct wrapper identity.
   - Four source initializer cases first failed despite successful runtime witnesses; nine initial constructor controls and
     two added iterator/hash callback controls now pass. Requested class identity remains separate from callback frames and
     returned identity.
@@ -35,10 +37,6 @@ execution_evidence:
     runtime-lock authentication. Normal source finalization is required; no manual workflow pin repair was performed.
   - Supported reconcile requires the new files to be staged/authenticated before current semantic evaluation.
   - Nonliteral constructor input and actual caller provenance remain unqualified.
-  - Native exception wrapper identity must remain distinct from equivalent BaseException initializer effects.
-  - Source/native mixed MRO initializer precedence requires additional qualification.
-  - No-op finalizer classification needs callable-signature and async qualification.
-  - Constructor namespace closure must reject allocator mutation through class aliases.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results
     are recorded in audits/maintained-consumer-contracts-checkpoint-2026-11-13.json.
