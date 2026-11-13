@@ -40,3 +40,11 @@ def test_known_retained_write_rejects_in_ordinary_body(tmp_path, policy):
     _, facts = inventory(tmp_path, "EVENTS=[]\ndef read():\n EVENTS.append(7)\n return 7")
     with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
         validate_operation_effects(OPERATION, 'consumer.py::read', facts, unresolved_dynamic_policy=policy)
+
+
+def test_source_callback_uncertainty_remains_observed_in_report(tmp_path):
+    _, facts = inventory(tmp_path, "class Probe:\n def __format__(self,spec): return f'{spec}'\ndef read(): return f'{Probe()}'")
+    assert validate_operation_effects(OPERATION, 'consumer.py::read', facts, unresolved_dynamic_policy='report') == (0, 0)
+    assert any(row['qualified'] is False for row in facts['unresolved'])
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)

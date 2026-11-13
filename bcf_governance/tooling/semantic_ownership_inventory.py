@@ -252,10 +252,10 @@ def discover_python_source(
             escaped_member = None
             if isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del)):
                 target = value.value
-            elif (isinstance(value, ast.Call) and _call_name(value) in {"setattr", "delattr"}
+            elif (isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"setattr", "delattr"}
                   and value.args):
                 target = value.args[0]
-            elif (isinstance(value, ast.Call) and _call_name(value) in {"getattr", "vars"}
+            elif (isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"getattr", "vars"}
                   and value.args):
                 target = value.args[0]
                 selector = value.args[1] if len(value.args) > 1 else None

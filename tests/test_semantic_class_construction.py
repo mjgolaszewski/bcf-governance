@@ -247,3 +247,14 @@ def test_unknown_standalone_callback_is_not_invented_as_a_class_receiver(tmp_pat
                  "allowed_authority_ports": [], "non_authoritative_output_effects": []}
     with pytest.raises(SemanticOperationEffectError, match="unresolved"):
         validate_operation_effects(operation, "models.py::invoke", value)
+
+
+@pytest.mark.parametrize('setter,closed', [('foreign.setattr', True), ('setattr', False)])
+def test_attribute_method_name_is_not_builtin_rebinding(tmp_path, setter, closed):
+    facts = _inventory(tmp_path,
+        "class Record:\n @classmethod\n def from_payload(cls, value): return cls()\n"
+        "def unrelated(foreign):\n " + setter + "(Record, 'from_payload', lambda value: value)\n"
+        "def decode(value): return Record.from_payload(value)\n")
+    record = next(row for row in facts['classes'] if row['symbol'] == 'models.py::Record')
+    assert record['closed_class_binding'] is closed
+    assert bool([row for row in facts['constructors'] if row['caller'] == 'models.py::Record.from_payload']) is closed

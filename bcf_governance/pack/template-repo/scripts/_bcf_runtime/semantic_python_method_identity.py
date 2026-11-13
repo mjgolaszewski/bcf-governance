@@ -190,7 +190,7 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                 for value in ast.walk(member):
                     if isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del)) and root_name(value) in aliases:
                         return False
-                    if isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"} and value.args and isinstance(value.args[0], ast.Name) and value.args[0].id in aliases:
+                    if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"setattr", "delattr"} and value.args and isinstance(value.args[0], ast.Name) and value.args[0].id in aliases:
                         return False
         if isinstance(member, (ast.Assign, ast.AnnAssign)):
             default_value = member.value
@@ -241,7 +241,7 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
         if (isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del))
                 and root_name(value) in class_aliases):
             return False
-        if (isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"}
+        if (isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"setattr", "delattr"}
                 and value.args and isinstance(value.args[0], ast.Name)
                 and value.args[0].id in class_aliases):
             return False
@@ -309,7 +309,7 @@ def discover_class_facts(
                 if (isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del))
                         and root_name(value) == node.name):
                     plain_generic = False
-                if (isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"}
+                if (isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"setattr", "delattr"}
                         and value.args and isinstance(value.args[0], ast.Name)
                         and value.args[0].id == node.name):
                     plain_generic = False

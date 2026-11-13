@@ -123,7 +123,7 @@ def validate_operation_effects(
             continue
         visited.add((symbol, arguments, callback_required))
         function = functions[symbol]
-        report_new = unresolved_dynamic_policy == 'report' and not callback_required
+        report_new = unresolved_dynamic_policy == 'report'
         def report_observation(kind: str, line: object, target: object = '', symbol: str = symbol) -> None:
             observation = {'kind': kind, 'symbol': symbol, 'line': line,
                            'target': target, 'operation': operation['id'], 'qualified': False}
@@ -193,17 +193,23 @@ def validate_operation_effects(
             )
         if any((item.get('line'), item.get('called_symbol')) not in contextual_sites
                for item in function.get('unresolved', [])):
-            reject(
-                f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
-            )
+            if report_new and callback_required:
+                report_observation('unresolved_callback_execution', 0)
+            else:
+                reject(
+                    f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
+                )
         if any(
             failure.get("port_eligible") is not True
             and (failure.get('line'), failure.get('called_symbol')) not in contextual_sites
             for failure in function.get("effect_unresolved", [])
         ):
-            reject(
-                f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-            )
+            if report_new and callback_required:
+                report_observation('unresolved_callback_execution', 0)
+            else:
+                reject(
+                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+                )
         for call in function.get("calls", []):
             if (call.get('line'), call.get('column')) in origins.get('native_reads', {}):
                 # Proven exact native receiver/argument protocols are reads.
@@ -222,9 +228,12 @@ def validate_operation_effects(
                 and contextual is None
             )
             if hard_dispatch_failure:
-                reject(
-                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-                )
+                if report_new and callback_required:
+                    report_observation('unresolved_callback_dispatch', call.get('line'), raw)
+                else:
+                    reject(
+                        f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+                    )
             name = str(call.get("call_name", ""))
             receiver = raw.rsplit("::", 1)[-1].rsplit(".replace", 1)[0]
             file_replace = name == "replace" and (
