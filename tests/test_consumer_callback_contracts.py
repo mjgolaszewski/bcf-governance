@@ -326,9 +326,7 @@ def test_borrowed_mutation_cannot_be_laundered_through_a_local(tmp_path, source)
 
 @pytest.mark.parametrize("hook", ["validator", "serializer"])
 def test_pydantic_callbacks_cannot_hide_writes(tmp_path, hook):
-    interpreter = os.environ.get("BCF_PYDANTIC_TEST_PYTHON")
-    if interpreter is None:
-        pytest.skip("explicit immutable Pydantic witness interpreter required")
+    interpreter = os.environ.get("BCF_PYDANTIC_TEST_PYTHON", sys.executable)
     if hook == "validator":
         body = " @model_validator(mode='after')\n def validate_value(self):\n  COUNTER.append(self.value)\n  return self\n"
     else:

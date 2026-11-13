@@ -173,13 +173,13 @@ def runtime_model_binding(root: Path) -> dict[str, Any] | None:
             return None
         if importlib.metadata.entry_points(group="pydantic"):
             return None
-        expected = Path(distribution.locate_file("pydantic/__init__.py")).resolve(strict=True)
+        expected = Path(str(distribution.locate_file("pydantic/__init__.py"))).resolve(strict=True)
         spec = importlib.util.find_spec("pydantic")
         if spec is None or spec.origin is None or Path(spec.origin).resolve(strict=True) != expected:
             return None
         from pydantic import BaseModel, Field
 
-        meta = type(BaseModel)
+        meta: Any = type(BaseModel)
         if meta.__getattribute__ is not type.__getattribute__ or meta.__call__ is not type.__call__:
             return None
         events: list[str] = []
@@ -264,7 +264,7 @@ def qualify_model_bindings(root: Path, inventory: dict[str, Any]) -> None:
             row["closed_class_binding"] = True
             row["local_class_binding"] = True
             row["library_model_binding"] = json.loads(json.dumps(binding))
-            callbacks = []
+            callbacks: list[dict[str, Any]] = []
             current = symbol
             visited = set()
             while current in classes and current not in visited:

@@ -1,0 +1,45 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF18 Hotfix Log
+  id: bcf-governance-phase-31-hotfix18
+  version: 1.0.0
+  generated_at_utc: '2026-11-13T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix18.yml
+hotfix:
+  id: P31-HF18
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 18
+  summary: Qualify supported constructor callbacks, model inputs and caller ownership
+    without weakening ordinary adopter gates
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest tests/test_consumer_callback_contracts.py tests/test_semantic_model_binding.py
+    tests/test_semantic_method_effects.py
+  - .venv/bin/bcf ci submit --repo-root .
+  executed_commands: []
+  notes:
+  - Frozen acceptance reviewed once; implementation sequence and remaining blockers
+    are in audits/maintained-consumer-contracts-plan-2026-11-13.json.
+  - Constructor identity diagnostics and partial test results are not complete source/effect
+    qualification or release custody.
+  - Unknown inputs, validators, serializers, overrides and true aliases remain blocked;
+    preserve source and deferred identity work.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

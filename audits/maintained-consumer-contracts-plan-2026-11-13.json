@@ -1,0 +1,124 @@
+{
+  "status": "single pending repair and qualification plan; not executed acceptance",
+  "owner": "home:bcf-governance:closure-engine",
+  "active_checkout": ".",
+  "branch": "repair/maintained-consumer-contracts",
+  "remote": "https://github.com/mjgolaszewski/bcf-governance.git",
+  "checkpoint": "cd0f9535ac7556113a2d1e48abfef89b6cb35460",
+  "acceptance_scope": {
+    "frozen_at_bus_cursor": 43008,
+    "product_source_subject": "24441be1576efb86fe9a942a9bf5709599daf3dc",
+    "product_modules": 800,
+    "source_inventory_sha256": "059585fc610b1c96a0bd7ea9986a899cb95f9fa6403d70ef9633615e6cb39644",
+    "supplement_sha256": "9ca899fcd1a35402aa197ccc516d01c9ce953b1764cb7d41f1a5ddd63004d06d",
+    "final_profile": "Standard-v3 declared_families_blocking",
+    "controller_or_app_activation": false,
+    "independent_work_preserved": "2.5 branch, deferred identity/JIT origin archive, current SDK and source pins"
+  },
+  "current_evidence_limits": {
+    "constructor_identity_only": "800 unchanged modules,837classes,3561functions,0constructor refusals in qualified product interpreter",
+    "focused_tests": "127PASS0skip on current source behavior; normal native-owned command terminal/EOF/reap",
+    "typing": "3REDs remain; source candidate unqualified",
+    "package_parity": "new module and follow-up source projections not yet reconciled",
+    "broader_semantic_diagnostic": "16 failures after267passes,interrupted; not full-suite acceptance",
+    "general_input_or_invocation_capability": "not delivered by maintained or2.5 work",
+    "installation_window": false
+  },
+  "repair_sequence": [
+    {
+      "id": "source-conformance",
+      "scope": "Fix3typing issues,normalize imports,explicit runtime dependency declaration,mirror runtime/manifest,canonical HF17 plan/workitems/log/MEMORY reconciliation",
+      "required_change": "Pydantic tests default to the ordinary test interpreter after dependency installation; no external SDK path or skip requirement in ordinary CI",
+      "checks": [
+        "targeted Ruff/mypy",
+        "affected unit tests",
+        "pack parity and standalone packaged imports",
+        "canonical governance/source/dependency declaration checks"
+      ],
+      "boundary": "source-conformant checkpoint only; no install or release credit"
+    },
+    {
+      "id": "value-origin-and-ownership",
+      "scope": "One bounded static value-origin pass feeding the existing effect traversal; no new executing/JIT backend",
+      "required_change": [
+        "Ordered facts for allocation,assignment,parameters,call arguments,iteration,returns and retained-state writes",
+        "Substitute actual caller argument/receiver origins at source-resolved calls",
+        "Distinguish a fresh root from fresh children,shallow copies,retained globals,nonlocals and escaped aliases",
+        "Keep unresolved parameters and unknown producers borrowed; no annotation/name-based purity",
+        "Preserve exact authority/mutation/read/non-authoritative port boundaries and callback obligations"
+      ],
+      "causal_checks": [
+        "fresh local collection/helper positive",
+        "same helper on retained or borrowed state negative",
+        "shallow copy containing borrowed child negative",
+        "reassignment/escape/builtin shadowing negative",
+        "existing global/comprehension/property/error/model write controls"
+      ],
+      "real_gate": "governance.cli.ci.v1 and other existing semantic operations must conform without broad function exemptions or new declaration booleans"
+    },
+    {
+      "id": "parser-model-and-bound-producer-effects",
+      "scope": "Complete the actual supported constructor/model/producer contracts within the frozen source population",
+      "required_change": [
+        "Bind qualified parser/library mechanics to the normal declared dependency/runtime input",
+        "Trace generated dataclass defaults/post-init and actual property/coercion/truth callbacks",
+        "Trace Pydantic validators,factories,serializers,inherited effective configuration and callback return identity",
+        "Differentiate model construction,model_validate and model_dump; preserve true self/member/mixed/retained aliases",
+        "Qualify actual File/PG producer plus parser/input path and concrete source composition binding before treating returned models as detached",
+        "Keep custom Mapping,str subclasses,override producers,custom schema hooks and unknown input universes blocked",
+        "Qualify complete public transport closure including ASGI routes,middleware,webhook/lifespan/error coercion; private helper reachability remains part of its operation"
+      ],
+      "actual_consumer_checks": [
+        "PrincipalOwner/ExportIndex valid and hostile input behavior",
+        "SessionState omitted factory invocation count and refresh/ensure-fresh obligations",
+        "pending authorization-code dump/revalidation and true alias controls",
+        "public proposal model/callback behavior",
+        "all frozen declared public populations and transport closures"
+      ],
+      "boundary": "0constructor refusals alone cannot discharge this stage"
+    },
+    {
+      "id": "ordinary-protection-roundtrip",
+      "scope": "Repair real adopt/apply/check consistency for fresh Lite and explicit PR Lite graphs while retaining Standard protected-base publisher rules",
+      "required_change": [
+        "event-aware native PR producer selection",
+        "exact native terminal job/context with GitHubActions15368 for Lite",
+        "retain explicit trusted checks publisher ownership for Standard/self"
+      ],
+      "checks": [
+        "real CLI apply then check on fresh default Lite",
+        "same with valid explicit PR/exact-main wrapper",
+        "wrong context/app/producer/ambiguous owner negative controls",
+        "Standard-v3 no-controller promotion and provider proposal parity"
+      ],
+      "boundary": "Lite is staging; final Standard3 requirements remain mandatory"
+    }
+  ],
+  "single_final_pipeline": {
+    "executor": "Closure for framework; Recovery owns bounded consumer execution; Aster retains SDK executor remit",
+    "scheduler": "Recovery original dev65/inode4359676 fence; custodian cleanup priority",
+    "source_requirement": "one clean pushed exact candidate commit; immutable qualification inputs; reuse only unchanged valid evidence",
+    "automated_stages": [
+      "canonical source reconciliation and structural/governance/lint/type checks",
+      "build exact candidate once and fresh isolated normal dependency installation/pip check",
+      "complete required framework suite and security/SBOM/dependency gates",
+      "ordinary managed installation and real prior-version upgrade with runtime/pack integrity",
+      "actual SDK/BDMCP affected behavior and hostile effect/alias/input controls",
+      "full native/source/effect operation acceptance and complete Standard3 required populations",
+      "normal hosted required CI with exact-source/provenance/provider protection gates"
+    ],
+    "dependency_boundary": "ordinary framework CI uses generic Pydantic/model fixtures and normal declared dependencies; no live Identity service or shared SDK checkout required",
+    "review": "one consolidated review of the final change and actual CI results; reopen for material change/failure only",
+    "authority": "qualification is not signing,merge,trust or publication authority; follow ordinary verified release/controller machinery only after required acceptance",
+    "rotation": "canonical machinery decides successor rotation from exact trusted source inputs; no manual pin edits,history substitution or break-glass inference"
+  },
+  "consumer_handoff": {
+    "standard3_without_controller": "existing apply_standard_pr_evaluator projects protected-base finalizer and fresh-hosted publisher using own github.token; ordinary protection context bcf/pr-certification,Actions15368; qualify actual promotion and all19currently deferred gates",
+    "protected_base_bridge": "Recovery proposal43103 from exactd226 uses already-custodied official2.3.14 input;235product paths unchanged; strict install/capture is not trust acceptance. Complete source/provenance/budget/native/bootstrap positive+negative checks and independent review before any owner-authorized main transition",
+    "independence": "recurring adopted validation uses pinned local runtime/assets; no foreign BCF repository/token/provider lookup",
+    "installation_boundary": "all required CI gates clear and a documented ordinary path to custody; no inference from source-only checkpoints",
+    "custody": "exact immutable assets,normal attestation/release verification,ordinary controller continuity,credential cleanup and final independently verified handoff"
+  },
+  "execution_budget_correction": "Each next owned command must derive its maximum body from the allocation's monotonic deadline and refuse a start beyond it. Source/cleanup handback is explicit; normal success does not qualify a different guard-cancellation path.",
+  "canonical_hotfix": "P31-HF18"
+}

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import textwrap
 
 import pytest
@@ -13,9 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def observe(root: Path, source: str, *, fake: bool = False):
-    interpreter = os.environ.get('BCF_PYDANTIC_TEST_PYTHON')
-    if not interpreter:
-        pytest.skip('explicit qualified product interpreter required for dependency mechanics')
+    interpreter = os.environ.get('BCF_PYDANTIC_TEST_PYTHON', sys.executable)
     (root / 'pyproject.toml').write_text('[project]\nname="binding-fixture"\nversion="1"\nrequires-python=">=3.12"\ndependencies=["pydantic==2.13.4"]\n')
     (root / 'models.py').write_text(textwrap.dedent(source))
     if fake:
