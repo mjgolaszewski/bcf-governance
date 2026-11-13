@@ -294,3 +294,15 @@ def test_call_only_factory_handle_does_not_hide_source_write(tmp_path):
     facts = _inventory(tmp_path, "from pathlib import Path\nclass Record:\n @classmethod\n def from_payload(cls):\n  Path('out').write_text('data')\n  return cls()\ndef read():\n constructor=Record.from_payload\n return constructor()\n")
     with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
         validate_operation_effects(OPERATION, 'models.py::read', facts, experimental_protocols=False)
+
+
+@pytest.mark.parametrize('mutate', [False, True])
+def test_class_alias_fixed_point_keeps_reverse_chains_and_unrelated_assignments(tmp_path, mutate):
+    source = "class Record:\n @classmethod\n def from_payload(cls): return cls()\n"
+    source += ''.join(f'unrelated_{index}={index}\n' for index in range(60))
+    if mutate:
+        source += "def change():\n third=second\n second=first\n first=Record\n setattr(third, 'from_payload', lambda: None)\n"
+    source += "def read(): return Record.from_payload()\n"
+    facts = _inventory(tmp_path, source)
+    record = next(row for row in facts['classes'] if row['symbol'] == 'models.py::Record')
+    assert record['closed_class_binding'] is not mutate

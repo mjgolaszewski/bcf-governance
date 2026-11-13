@@ -52,16 +52,17 @@ def _trivial_finalizer(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool
 
 def container_builtin_names(tree: ast.Module) -> list[str]:
     """Derive stable builtin lexical identities once per source module."""
+    nodes = tuple(ast.walk(tree))
     bindings = {
-        node.id for node in ast.walk(tree)
+        node.id for node in nodes
         if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))
     }
-    bindings.update(node.name for node in ast.walk(tree)
+    bindings.update(node.name for node in nodes
                     if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)))
-    bindings.update(node.arg for node in ast.walk(tree) if isinstance(node, ast.arg))
+    bindings.update(node.arg for node in nodes if isinstance(node, ast.arg))
     bindings.update(node.asname or node.name.split(".")[0]
-                    for node in ast.walk(tree) if isinstance(node, ast.alias))
-    bindings.update(node.name for node in ast.walk(tree)
+                    for node in nodes if isinstance(node, ast.alias))
+    bindings.update(node.name for node in nodes
                     if isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar))
                     and node.name)
     reflective = any(
@@ -71,7 +72,7 @@ def container_builtin_names(tree: ast.Module) -> list[str]:
         }
         or isinstance(node, ast.Import) and any(alias.name == "builtins" for alias in node.names)
         or isinstance(node, ast.ImportFrom) and node.module == "builtins"
-        for node in ast.walk(tree)
+        for node in nodes
     )
     return sorted(
         {"len", "list", "tuple", "dict", "set", "bool", "super",

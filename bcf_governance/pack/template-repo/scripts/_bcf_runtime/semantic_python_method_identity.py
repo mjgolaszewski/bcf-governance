@@ -166,7 +166,8 @@ def method_binding(
 
 def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                           imports: dict[str, str], *, allow_bases: bool = False,
-                          model_defaults: bool = False, allow_init: bool = False) -> bool:
+                          model_defaults: bool = False, allow_init: bool = False,
+                          module_nodes: tuple[ast.AST, ...] | None = None) -> bool:
     """Prove the local class binding; subclass closure is checked after imports."""
     if (node.bases and not allow_bases) or node.keywords:
         return False
@@ -189,11 +190,15 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
             kind, receiver = method_binding(member)
             if kind == "class" and receiver:
                 aliases = {receiver}
+                member_nodes = tuple(ast.walk(member))
                 for _ in range(len(member.body) + 1):
-                    for value in ast.walk(member):
+                    previous_alias_count = len(aliases)
+                    for value in member_nodes:
                         if isinstance(value, ast.Assign) and isinstance(value.value, ast.Name) and value.value.id in aliases:
                             aliases.update(target.id for target in value.targets if isinstance(target, ast.Name))
-                for value in ast.walk(member):
+                    if len(aliases) == previous_alias_count:
+                        break
+                for value in member_nodes:
                     if isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del)) and root_name(value) in aliases:
                         return False
                     if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in {"setattr", "delattr"} and value.args and isinstance(value.args[0], ast.Name) and value.args[0].id in aliases:
@@ -229,13 +234,17 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
         ):
             return False
     class_aliases = {node.name}
-    assignments = [value for value in ast.walk(tree) if isinstance(value, (ast.Assign, ast.AnnAssign))]
+    module_nodes = tuple(ast.walk(tree)) if module_nodes is None else module_nodes
+    assignments = [value for value in module_nodes if isinstance(value, (ast.Assign, ast.AnnAssign))]
     for _ in range(len(assignments) + 1):
+        previous_alias_count = len(class_aliases)
         for assignment in assignments:
             if isinstance(assignment.value, ast.Name) and assignment.value.id in class_aliases:
                 targets = assignment.targets if isinstance(assignment, ast.Assign) else [assignment.target]
                 class_aliases.update(target.id for target in targets if isinstance(target, ast.Name))
-    for value in ast.walk(tree):
+        if len(class_aliases) == previous_alias_count:
+            break
+    for value in module_nodes:
         if isinstance(value, ast.arg) and value.arg in {node.name, "classmethod", "staticmethod", "property"}:
             return False
         if isinstance(value, ast.Name) and isinstance(value.ctx, (ast.Store, ast.Del)):
@@ -264,6 +273,7 @@ def discover_class_facts(
     """Collect neutral class/method facts during the existing AST pass."""
     rows: list[dict[str, Any]] = []
     builtin_bases = builtin_constructor_bases(tree)
+    module_nodes = tuple(ast.walk(tree))
     for node in tree.body:
         if not isinstance(node, ast.ClassDef):
             continue
@@ -351,12 +361,12 @@ def discover_class_facts(
                 "symbol": f"{path}::{node.name}",
                 **({"plain_generic": True} if plain_generic else {}),
                 "bases": bases,
-                "closed_class_binding": _closed_class_binding(node, tree, path, imports),
-                "local_class_binding": _closed_class_binding(node, tree, path, imports, allow_bases=True),
+                "closed_class_binding": _closed_class_binding(node, tree, path, imports, module_nodes=module_nodes),
+                "local_class_binding": _closed_class_binding(node, tree, path, imports, allow_bases=True, module_nodes=module_nodes),
                 "constructor_local_binding": constructor_declaration_shape(node, tree) and _closed_class_binding(
-                    node, tree, path, imports, allow_bases=True, allow_init=True),
+                    node, tree, path, imports, allow_bases=True, allow_init=True, module_nodes=module_nodes),
                 "model_local_binding": _closed_class_binding(node, tree, path, imports,
-                    allow_bases=True, model_defaults=True),
+                    allow_bases=True, model_defaults=True, module_nodes=module_nodes),
                 "literal_enum_shape": literal_enum_shape(node, imports),
                 "standard_dataclass_declaration": any(source_symbol(
                     decorator.func if isinstance(decorator, ast.Call) else decorator, path, imports)
