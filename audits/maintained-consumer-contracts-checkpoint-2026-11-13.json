@@ -33,8 +33,15 @@
     }
   },
   "canonical_reconcile": {
-    "status": "blocked_before_current_semantic_evaluation",
-    "stage": "new_file_ownership_staging"
+    "status": "red",
+    "tested_commit": "34573ffbe916f6b4d6440da2214fa8248e47e0d4",
+    "stage": "semantic-lock",
+    "native_terminal_eof_reap": true,
+    "failures": [
+      "ci_commands.py::main GitHubAPI:321 input binding",
+      "ci_commands.py::main GitHubAPI:345 input binding",
+      "ci_commands.py::main ProspectiveValidationError:425 input binding"
+    ]
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -52,9 +59,8 @@
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Supported reconcile requires the new files to be staged/authenticated before current semantic evaluation.",
-    "Nonliteral constructor input and actual caller provenance remain unqualified.",
-    "Complete framework, consumer, ordinary-protection and release gates remain open."
+    "Actual constructor caller-input provenance remains unqualified at the three canonical sites.",
+    "Complete framework, frozen800 consumer, ordinary-protection and release gates remain open."
   ],
   "source_ready": false
 }
