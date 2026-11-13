@@ -593,3 +593,29 @@ def test_conditional_scalar_guard_does_not_dominate_sibling_format(tmp_path):
     assert witness(path)==[1,2]
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+def test_action_pin_native_boundary_preserves_pins_and_rejects_protocols():
+    from bcf_governance.tooling.ci_github_actions import ACTION_PINS, action_pin
+    events=[]
+    class Foreign(str):
+        def __hash__(self):
+            events.append('hash')
+            return super().__hash__()
+        def __eq__(self,other):
+            events.append('eq')
+            return super().__eq__(other)
+        def __format__(self,spec):
+            events.append('format')
+            return 'foreign'
+    assert action_pin('checkout')==ACTION_PINS['checkout']
+    assert action_pin('checkout',ACTION_PINS['checkout'])==ACTION_PINS['checkout']
+    with pytest.raises(ValueError):
+        action_pin(Foreign('checkout'))
+    with pytest.raises(ValueError):
+        action_pin('checkout',Foreign('foreign'))
+    assert events==[]
+    with pytest.raises(ValueError,match='unknown GitHub action pin: missing'):
+        action_pin('missing')
+    with pytest.raises(ValueError,match='unregistered immutable source'):
+        action_pin('checkout','foreign')

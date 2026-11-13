@@ -1,8 +1,9 @@
 {
   "status": "unqualified",
-  "base_commit": "816a624ea0043355ba0895fdd72c495a9329533f",
+  "base_commit": "3211b67f4d5689fc8248d95d80eb787a4437d4f3",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
+    "bcf_governance/tooling/ci_github_actions.py": "1aef7e242d41c4d43d6d6bf24ef527dbefadfcf8a154766ca75814c6fcc9fbae",
     "bcf_governance/tooling/ci_authority_pins.py": "0903861b80fc0e1f0f073602c1304171fc775735b19ed37254a59b93981c0627",
     "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
     "bcf_governance/tooling/local_execution_admission.py": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366",
@@ -70,18 +71,18 @@
     "bcf_governance/tooling/ci_graph_commands.py": "2668ad48d9cbc1c507c8198c589d585f6f174023598efd927d71c9f8400f0915",
     "tests/test_semantic_value_origins.py": "0e0262af154a5778475e5934fbce74103f6c5486c918c7e82eba6ab24ebc42ba",
     "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
-    "tests/test_semantic_constructor_frames.py": "8e1e952d1a7fd3d4a6c4878699f2c5739ac65d529597fd62fc319e2bd88c5324",
+    "tests/test_semantic_constructor_frames.py": "b7c710c00d2eab055f5c775d7cf327129b8bbc8994d4acf7dfa9180f7b391e96",
     "tests/test_native_projection_output.py": "d5578b80cdd822668c64bffa330c46ed298c958f0ee7ec405f83985cebf3e2b9",
     "tests/test_semantic_authority.py": "d5d75b62767572eb281c636dfc8a16143329fa59c6cc439965cde93b2a7d9c5f"
   },
   "affected_tests": {
-    "passed": 363,
+    "passed": 364,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
     "consumer_sdk_required": false
   },
-  "strict_typing_files_passed": 65,
+  "strict_typing_files_passed": 66,
   "lint": "pass",
   "runtime_pack_projection": "pass",
   "unused_property_causal_control": {
@@ -95,7 +96,7 @@
   },
   "canonical_reconcile": {
     "status": "pending_replay_after_provenance_change",
-    "previous_result": "provider_workflow_ids_unqualified_format_callback_79_89"
+    "previous_result": "action_pin_unqualified_format_callback_49_51"
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -106,14 +107,14 @@
   "constructor_frames": {
     "initial_false_refusals": 4,
     "initial_correct_denials": 5,
-    "current_controls_passed": 60
+    "current_controls_passed": 61
   },
   "finalizer_controls": {
     "unsafe_acceptances_observed": 2,
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Actual supported canonical replay remains pending after loop-local native scalar guard repair; previous replay refused provider_workflow_ids formatting at lines 79 and 89.",
+    "Actual canonical replay on3211b67 cleared provider_workflow_ids but refused action_pin formatting at lines49/51; native2415033 exit1/EOF/reap/FDclosed. Both allocated replays exhausted. Current action-pin admission repair has focused evidence only.",
     "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
     "Complete framework, consumer, ordinary-protection and release gates remain open."
   ],

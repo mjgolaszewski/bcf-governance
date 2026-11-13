@@ -37,6 +37,10 @@ ACTION_COMPATIBILITY_PINS = MappingProxyType({
 def action_pin(action_id: str, source_pin: str | None = None) -> str:
     """Return one closed, immutable action source identity."""
 
+    if type(action_id) is not str:
+        raise ValueError("GitHub action identity must be a native string")
+    if source_pin is not None and type(source_pin) is not str:
+        raise ValueError("GitHub action source pin must be a native string")
     try:
         default = (
             ACTION_PINS[action_id] if action_id in ACTION_PINS
