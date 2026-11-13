@@ -1,18 +1,18 @@
 {
   "status": "unqualified",
-  "base_commit": "5306498177f4426139aaa6431dd0f5366f1aa0dc",
+  "base_commit": "9972f9abfa8b0377973425bbf43c68caad533b5a",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
-    "bcf_governance/tooling/semantic_python_dataclass_contracts.py": "3438a3172bc29b573b13ca814e4dc664684fb3cc0f6da1b8d0a593961926a3a6",
+    "bcf_governance/tooling/semantic_python_dataclass_contracts.py": "f440cd7de09cbc8d2f6408ed73da023d480cffc24f63e1ac50c15cafef5a6145",
     "bcf_governance/tooling/ci_github_actions.py": "1aef7e242d41c4d43d6d6bf24ef527dbefadfcf8a154766ca75814c6fcc9fbae",
     "bcf_governance/tooling/ci_authority_pins.py": "0903861b80fc0e1f0f073602c1304171fc775735b19ed37254a59b93981c0627",
     "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
     "bcf_governance/tooling/local_execution_admission.py": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366",
     "bcf_governance/tooling/ci_github_api.py": "2910fdc3d16bb616ff136259542a8d725f7810a19d354a85ef24358b629d90a6",
-    "bcf_governance/tooling/semantic_python_value_origins.py": "d055a85e698b2bc12136cfcbeaf7643cf2262f5179e4664e538a5f4eaeed5adf",
-    "bcf_governance/tooling/semantic_operation_effects.py": "0e7240bb2c8895fe77489a6b934e48a455d8b8c5aad46dcfaf7f2f18d624b6db",
-    "bcf_governance/tooling/semantic_python_effect_obligations.py": "ac1fbb2d3b5bca937fa20a4bc8bc2e5eb46475610b87bf60bc750ef9e53f6cf6",
-    "bcf_governance/tooling/semantic_ownership_inventory.py": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251",
+    "bcf_governance/tooling/semantic_python_value_origins.py": "7f826d8706972ffc579366cfd06cc21727911807e8a31c8da79292171a582f2c",
+    "bcf_governance/tooling/semantic_operation_effects.py": "5a6dc2b9a95ce8f410fe56ead0b9a8bc335a3009993933c2f64ea0cdf5f8a60b",
+    "bcf_governance/tooling/semantic_python_effect_obligations.py": "30b1eba6765d4966e747a0432c6d95706f3836484a7d2bf9c0e6d9b079d4f2f4",
+    "bcf_governance/tooling/semantic_ownership_inventory.py": "8761d753d32b9f72dc42556dda8a064ccaa53c2100e22cb363b1cfc173af8020",
     "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "8fa0489b32341782cabf786437fddf377b56bf11ed367b010bef5ef08c8f99f0",
     "bcf_governance/tooling/semantic_python_method_identity.py": "122728676261048dd65aacf6a54ac004bdbad5e0d9f0293991406961773ac9ac",
     "bcf_governance/tooling/operational_observations.py": "18b067df865e19c8c1f20214bcea60c2bd164ce11c40b6214d2127b15c7d19a1",
@@ -76,10 +76,11 @@
     "tests/test_native_projection_output.py": "d5578b80cdd822668c64bffa330c46ed298c958f0ee7ec405f83985cebf3e2b9",
     "tests/test_semantic_producer_origins.py": "f2b6b1b11c60ad410f5ac28270fe6436b458bba12798b932bca9b0e1561e9ecf",
     "tests/test_semantic_native_containers.py": "4315b34159e613d6f9c697b2c4bd0a23f235a8f7a8f10a33ee87ecf1db243642",
+    "tests/test_semantic_generated_copies.py": "60b44bb8c54a7cff63c686970524569fc3cf73d71311aa22e7bd54b2999fe866",
     "tests/test_semantic_authority.py": "d5d75b62767572eb281c636dfc8a16143329fa59c6cc439965cde93b2a7d9c5f"
   },
   "affected_tests": {
-    "passed": 414,
+    "passed": 424,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
@@ -163,5 +164,24 @@
     "native configuration parser and registered callback/loader identity with unchanged YAML behavior",
     "decoded native tree/scalar/container result provenance independent of parsing effects",
     "dataclasses.replace unchanged/changed-field allocation, real reader association, init/post-init/factory and retained alias effects"
-  ]
+  ],
+  "generated_copy_controls": {
+    "passed": 10,
+    "nominal_candidates_grant_purity": false,
+    "runtime_frame": "actual source-produced closed generated record; keyword protocol mutation invalidates receiver proof",
+    "unsupported_hooks": "init/post-init/default-factory/init=False and changed library binding remain refused",
+    "ownership_policy": "unregistered copy allocations remain subject to existing owner policy; no automatic exemption"
+  },
+  "supplemental_actual_consumer_copy_controls": {
+    "passed": 4,
+    "source_fixture_parent": "5942a6a044bec84037c4c50cf65078bb25bcff31",
+    "baseline": "conformant",
+    "unregistered_unchanged_copy": "unauthorized_constructor",
+    "unregistered_changed_copy": "unauthorized_constructor",
+    "actual_reader_changed_copy": "unauthorized_constructor",
+    "full_operation_acceptance": false,
+    "full800_acceptance": false
+  },
+  "parser_decoded_tree_contract": "OPEN",
+  "current_refinement_canonical_replayed": false
 }

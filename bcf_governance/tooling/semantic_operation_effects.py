@@ -155,6 +155,8 @@ def validate_operation_effects(
             if not (item.get('binding_source') == 'constructor_initializer_frame' and
                     (item.get('line'), item.get('column'), item.get('class_symbol'))
                     in origins['constructor_inputs'])
+            and not (item.get('kind') == 'unqualified_generated_copy_binding' and
+                     (item.get('line'), item.get('column'), item.get('class_symbol')) in origins.get('generated_copies', set()))
             and not (item.get('kind') == 'unqualified_format_callback' and
                      (item.get('line'), item.get('column')) in origins['format_inputs'])]
         if remaining_obligations:

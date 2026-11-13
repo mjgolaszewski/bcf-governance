@@ -350,6 +350,11 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
             subjects = {str(call.get("called_symbol", ""))}
             subjects.update(str(binding["constructed_symbol"])
                 for binding in call.get("class_constructor_bindings", []))
+            for subject in call.get('generated_copy_candidates', []):
+                function.setdefault('implicit_effect_obligations', []).append({
+                    'kind': 'unqualified_generated_copy_binding', 'line': call.get('line'),
+                    'column': call.get('column'), 'class_symbol': subject})
+            subjects.update(call.get('generated_copy_candidates', []))
             for subject in subjects & classes.keys():
                 cls = classes[subject]
                 closure = constructor_closures.get(subject)

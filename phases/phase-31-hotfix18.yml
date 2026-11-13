@@ -24,6 +24,13 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
+  - 'Generated-copy discovery now records nominal source candidates without granting effect purity. A runtime copy frame requires
+    actual source-produced closed generated-record identity; keyword protocol mutation invalidates the receiver proof. Existing
+    owner rules still reject unregistered allocations. Ten copy controls pass, including actual changed values/readers and
+    init/default-factory/post-init/init=False/library-rebinding negatives. Four supplemental native controls on the real5942
+    owner/class/reader fixture pass: baseline conforms; unchanged, changed and actual-reader copy competitors reject. This
+    is ownership and source-call association only, not full operation/full800 acceptance. Parser/decoded-tree qualification
+    remains OPEN; current source has no canonical replay credit.'
   - 'Nine added native-container controls pass: actual get/view/destructuring values, escaped view and foreign append fixed-point
     denials, mutable child invalidation, single-fstring/str/repr subclass-result boundaries and unrelated source-port reachability.
     Native protocol proofs preserve neutral call identity and grant no source port reachability. Loop iterations reset optimistic
@@ -44,7 +51,7 @@ execution_evidence:
   - Generic dominating local scalar producers now survive unsupported surrounding try flow. The positive control first failed
     with three format obligations, then passed. Latest assignment, lexical scope and recursive cycle checks prevent stale
     name proofs; nested nonlocal replacement remains refused. Returned record fields are not qualified by this change.
-  - 414 affected/pack tests pass without skips; strict typing passes for 67 touched modules and lint passes. Framework-only
+  - 424 affected/pack tests pass without skips; strict typing passes for 67 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.

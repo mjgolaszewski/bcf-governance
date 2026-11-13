@@ -48,7 +48,7 @@ def value_origins(
     unknown. No project code is imported or executed to obtain these facts.
     """
     empty: dict[str, Any] = {"writes": set(), "calls": {}, "return": UNKNOWN,
-                             "constructor_inputs": set(), "implicit_calls": {}, "contextual_calls": {}, "native_reads": {}, "format_inputs": set()}
+                             "constructor_inputs": set(), "implicit_calls": {}, "contextual_calls": {}, "native_reads": {}, "generated_copies": set(), "format_inputs": set()}
     row = functions.get(symbol, {})
     source = row.get("python_value_source")
     if not source or symbol in active or len(active) >= 24:
@@ -81,6 +81,8 @@ def value_origins(
     facts = {(call.get("line"), call.get("column")): call
              for call in row.get("calls", []) if not call.get("implicit_callback")}
     retained = False
+    mutation_epoch = 0
+    generated_copies: set[tuple[Any, ...]] = set()
     degraded = False
     unsupported_condition = False
     initializer_protocol_unknown = False
@@ -92,14 +94,16 @@ def value_origins(
             field_counts[item.attr] = field_counts.get(item.attr, 0) + 1
 
     def invalidate() -> None:
-        nonlocal retained
+        nonlocal retained, mutation_epoch
+        mutation_epoch += 1
         retained = True
         for name, origin in list(env.items()):
             if origin in OWNED or origin.startswith('new-object:') or origin in {'native', 'native_view'} or origin.startswith('record:'):
                 env[name] = UNKNOWN
 
     def degrade() -> None:
-        nonlocal degraded
+        nonlocal degraded, mutation_epoch
+        mutation_epoch += 1
         degraded = True
         for name, origin in list(env.items()):
             if origin in CONTAINERS:
@@ -163,9 +167,23 @@ def value_origins(
             fact = facts.get(site, {})
             callee = str(fact.get("called_symbol", ""))
             values = [expression(value) for value in node.args]
+            positional_epoch = mutation_epoch
             keywords = {keyword.arg: expression(keyword.value)
                         for keyword in node.keywords if keyword.arg is not None}
             target = functions.get(callee, {})
+            if (fact.get('generated_copy_profiles') and len(values) == 1 and values[0].startswith('record:')
+                    and positional_epoch == mutation_epoch and not any(isinstance(value, ast.Starred) for value in node.args)
+                    and all(keyword.arg is not None for keyword in node.keywords)):
+                original = json.loads(values[0].removeprefix('record:'))
+                profile = fact['generated_copy_profiles'].get(original['subject'])
+                if profile is not None:
+                    field_names = {field['name'] for field in profile['fields']}
+                    if keywords.keys() <= field_names and original['fields'].keys() == field_names:
+                        changed = {**original['fields'], **keywords}
+                        if any(value == UNKNOWN for value in changed.values()):
+                            changed = {name: UNKNOWN for name in changed}
+                        generated_copies.add((*site, original['subject']))
+                        return 'record:' + json.dumps({'subject': original['subject'], 'fields': changed}, sort_keys=True)
             record_spec = fact.get('source_record_fields')
             if (record_spec and not any(isinstance(value, ast.Starred) for value in node.args)
                     and all(keyword.arg is not None for keyword in node.keywords)):
@@ -412,6 +430,7 @@ def value_origins(
                 base_formats = set(format_inputs)
                 base_inputs, base_implicit, base_contextual = set(constructor_inputs), dict(implicit_calls), dict(contextual_calls)
                 base_native_reads = dict(native_reads)
+                base_generated_copies = set(generated_copies)
                 # The ownership lattice loses precision at joins; three rounds
                 # cover owned -> shallow -> unknown. Publish only the final
                 # fixed-point observation, never optimistic first-iteration sites.
@@ -447,6 +466,8 @@ def value_origins(
                     contextual_calls.update(base_contextual)
                     native_reads.clear()
                     native_reads.update(base_native_reads)
+                    generated_copies.clear()
+                    generated_copies.update(base_generated_copies)
                     statements(statement.body, loop_depth + 1)
                     joined = {name: _join(before.get(name, UNKNOWN), env.get(name, UNKNOWN))
                               for name in before.keys() | env.keys()}
@@ -476,5 +497,5 @@ def value_origins(
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     return {"writes": safe, "calls": calls, "return": returned,
             "retained": retained, "degraded": degraded, 'constructor_inputs': constructor_inputs,
-            'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'native_reads': native_reads, 'format_inputs': format_inputs,
+            'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'native_reads': native_reads, 'generated_copies': generated_copies, 'format_inputs': format_inputs,
             'initializer_protocol_unknown': initializer_protocol_unknown}

@@ -690,6 +690,8 @@ def resolve_python_imports(
                 pending.extend(str(base.get("called_symbol", "")) for base in class_row.get("bases", []))
     qualify_model_bindings(repo_root, resolved)
     resolve_method_dispatch(resolved)
+    from .semantic_python_dataclass_contracts import discover_generated_copies
+    discover_generated_copies(resolved)
     resolve_python_implicit_effects(resolved)
     known_types = set(resolved.get("types", []))
     plain_generics = {row["symbol"] for row in resolved.get("classes", [])
