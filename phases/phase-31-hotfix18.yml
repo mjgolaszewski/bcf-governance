@@ -24,7 +24,7 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 181 affected/pack tests pass without skips; strict typing passes for six touched modules and lint passes. Framework-only
+  - 186 affected/pack tests pass without skips; strict typing passes for six touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -33,9 +33,10 @@ execution_evidence:
     returned identity.
   - Actual retained finalizer writes and unraisable stderr output were silently accepted before repair; both are now refused
     while a plain no-op finalizer is accepted.
-  - Current supported reconcile stopped before semantic evaluation because new helper/mirror/test files require staging or
-    runtime-lock authentication. Normal source finalization is required; no manual workflow pin repair was performed.
-  - Supported reconcile requires the new files to be staged/authenticated before current semantic evaluation.
+  - Actual previous canonical reconcile reached three input-binding failures. New bounded caller provenance accepts source-produced
+    scalars and owned containers; borrowed protocol and later escaped argument controls remain denied. No current canonical
+    pass claim.
+  - Actual injectable provider inputs and generated error messages still require canonical source qualification.
   - Nonliteral constructor input and actual caller provenance remain unqualified.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results

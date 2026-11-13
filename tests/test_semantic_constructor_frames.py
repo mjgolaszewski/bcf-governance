@@ -134,3 +134,64 @@ def test_native_initializer_precedes_later_source_mixin(tmp_path):
     """)
     assert witness(path) == [0, 0]
     assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)
+
+
+@pytest.mark.parametrize("argument", ["source()", "value"])
+def test_source_produced_scalar_reaches_initializer_frame(tmp_path, argument):
+    path, facts = inventory(tmp_path, """
+        def source(): return 'ok'
+        class Record:
+            def __init__(self,value):
+                if not value: raise ValueError('empty')
+                self.value=value
+        def read():
+            value=source()
+            return Record(ARGUMENT).value
+    """.replace('ARGUMENT', argument))
+    assert witness(path) == ['ok', 'ok']
+    assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)
+
+
+def test_unknown_producer_truth_callback_is_not_a_scalar_annotation(tmp_path):
+    path, facts = inventory(tmp_path, """
+        EVENTS=[]
+        class Probe:
+            def __bool__(self):
+                EVENTS.append(7)
+                return True
+        PROBE=Probe()
+        def source() -> str: return PROBE
+        class Record:
+            def __init__(self,value):
+                if not value: raise ValueError('empty')
+                self.value=value
+        def read():
+            Record(source())
+            return len(EVENTS)
+    """)
+    assert witness(path) == [1, 2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, "consumer.py::read", facts)
+
+
+@pytest.mark.parametrize('escaped', [False, True])
+def test_constructor_argument_ownership_cannot_survive_a_later_escape_argument(tmp_path, escaped):
+    path, facts = inventory(tmp_path, """
+        KEPT=[]
+        def retain(value):
+            KEPT.append(value)
+            return 0
+        class Record:
+            def __init__(self,box,unused): box.append(7)
+        def read():
+            box=[]
+            Record(box,SECOND)
+            return len(box)
+    """.replace('SECOND', 'retain(box)' if escaped else '0'))
+    assert witness(path) == [1, 1]
+    operation = {**OPERATION, 'allowed_mutation_ports': ['consumer.py::retain'] if escaped else []}
+    if escaped:
+        with pytest.raises(SemanticOperationEffectError):
+            validate_operation_effects(operation, 'consumer.py::read', facts)
+    else:
+        assert validate_operation_effects(operation, 'consumer.py::read', facts) == (0, 0)

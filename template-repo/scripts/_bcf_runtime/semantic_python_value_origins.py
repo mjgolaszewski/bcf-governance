@@ -8,7 +8,10 @@ import ast
 import hashlib
 from typing import Any
 
-from .semantic_python_constructor_callbacks import literal_constructor_frames
+from .semantic_python_constructor_callbacks import (
+    literal_constructor_frames,
+    native_exception_binding,
+)
 
 # Only exact source-allocated builtin containers qualify for structural writes.
 # Borrowed children never inherit the parent's ownership.
@@ -153,6 +156,31 @@ def value_origins(
                 contextual_calls[site] = env['$constructor_super']
                 return SCALAR
             spec = fact.get('source_constructor_frame', {})
+            if (spec and not retained and not any(isinstance(value, ast.Starred) for value in node.args)
+                    and all(keyword.arg is not None for keyword in node.keywords)
+                    and all(value in CONTAINERS | {SCALAR} for value in [*values, *keywords.values()])):
+                initializer = spec.get('initializer')
+                declaration_source = functions.get(str(initializer), {}).get('python_value_source')
+                if declaration_source:
+                    declaration = ast.parse(declaration_source).body[0]
+                    if isinstance(declaration, ast.FunctionDef):
+                        parameters = [*declaration.args.posonlyargs, *declaration.args.args]
+                        if parameters and not declaration.args.vararg and not declaration.args.kwarg:
+                            bound = {parameters[0].arg: 'new-object:' + spec['subject'],
+                                     '$constructor_owner': spec['initializer_owner'],
+                                     '$constructor_super': spec.get('super_initializer') or ''}
+                            bound.update((parameter.arg, value) for parameter, value in
+                                         zip(parameters[1:], values, strict=False))
+                            bound.update(keywords)
+                            defaults = parameters[-len(declaration.args.defaults):] if declaration.args.defaults else []
+                            for parameter, default in zip(defaults, declaration.args.defaults, strict=True):
+                                bound.setdefault(parameter.arg, SCALAR if isinstance(default, ast.Constant) else UNKNOWN)
+                            for parameter, keyword_default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True):
+                                bound.setdefault(parameter.arg, SCALAR if isinstance(keyword_default, ast.Constant) else UNKNOWN)
+                            implicit_calls[(*site, initializer)] = tuple(sorted(bound.items()))
+                            constructor_inputs.add((*site, spec['subject']))
+                elif spec.get('native_exception_initializer'):
+                    constructor_inputs.add((*site, spec['subject']))
             if (spec.get('native_exception_initializer') and (*site, spec.get('subject')) in constructor_inputs):
                 return UNKNOWN
             if (isinstance(node.func, ast.Name)
@@ -160,6 +188,9 @@ def value_origins(
                     and not any(isinstance(value, ast.Starred) for value in node.args)
                     and all(keyword.arg is not None for keyword in node.keywords)):
                 name = node.func.id
+                if (native_exception_binding(name) and not keywords
+                        and all(value in CONTAINERS | {SCALAR} for value in values)):
+                    return UNKNOWN
                 if name in {"len", "bool"} and len(values) == 1 and not keywords:
                     if values[0] in OWNED | {SCALAR}:
                         return SCALAR

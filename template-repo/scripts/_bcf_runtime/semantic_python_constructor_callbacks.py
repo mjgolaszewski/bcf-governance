@@ -15,6 +15,18 @@ _FORBIDDEN = {"__new__", "__getattr__", "__getattribute__", "__setattr__",
 _SIMPLE_EXCEPTIONS = {BaseException, Exception, ValueError, RuntimeError}
 
 
+def native_exception_binding(name: str) -> bool:
+    """Bind an exact reviewed CPython native constructor, not an annotation."""
+    value = getattr(builtins, name, None)
+    return (sys.implementation.name == 'cpython' and (3, 11) <= sys.version_info[:2] <= (3, 14)
+            and type(value) is type and value in _SIMPLE_EXCEPTIONS
+            and value.__module__ == 'builtins' and value.__name__ == name
+            and isinstance(value.__new__, BuiltinFunctionType)
+            and value.__new__.__qualname__ == name + '.__new__'
+            and isinstance(value.__dict__.get('__init__'), WrapperDescriptorType)
+            and value.__dict__['__init__'].__objclass__ is value)
+
+
 def builtin_constructor_bases(tree: ast.Module) -> dict[str, list[str]]:
     """Bind only unshadowed native exception slots, never arbitrary libraries."""
     nodes = list(ast.walk(tree))
