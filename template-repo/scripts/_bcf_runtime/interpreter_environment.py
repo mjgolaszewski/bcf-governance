@@ -266,6 +266,8 @@ def _legacy_interpreter_environment(
                 "legacy interpreter graph must declare one Python minor"
             )
         python_minor = next(iter(python_minors))
+    if python_minor is not None and type(python_minor) is not str:
+        raise InterpreterEnvironmentError("legacy interpreter Python minor must be a plain string")
     return InterpreterEnvironmentPlan(
         requirements=tuple(requirements),
         requires_python=f"=={python_minor}.*" if python_minor is not None else None,

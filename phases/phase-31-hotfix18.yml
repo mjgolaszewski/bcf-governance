@@ -24,7 +24,7 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 342 affected/pack tests pass without skips; strict typing passes for 61 touched modules and lint passes. Framework-only
+  - 347 affected/pack tests pass without skips; strict typing passes for 61 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -33,17 +33,18 @@ execution_evidence:
     returned identity.
   - Actual retained finalizer writes and unraisable stderr output were silently accepted before repair; both are now refused
     while a plain no-op finalizer is accepted.
-  - Dominating exact builtin scalar guards prove only stable function-local values. Shadowing, non-dominating guards, later
-    reassignment and implicit-global replacement remain denied; a prototype global-caching acceptance was reproduced and fixed.
-    Async initializers are refused after actual unawaited-coroutine warning reproduction. Optional native winerror storage
-    is checked when present, with current-host native OS-field callback negatives. New native-message boundary reads real
-    native exception storage and validates formatter identity and all native args/OS fields before rendering. Unknown formatters
-    and argument protocols are rejected without callbacks. Caught source overrides, subclasses, imported callbacks and native
-    argument hooks are traced. Actual previous canonical reconcile reached three input-binding failures. GitHubAPI now validates
-    exact string inputs before invoking their protocols. Initial exact builtin type guards qualify source frames; shadowed
-    guards stay refused. Formatting result identity is separate from callback effects, including direct formatted outputs.
-    A sole-use local literal dict can prove its exact loop keys; borrowed and escaped inputs stay unqualified. No current
-    canonical pass claim.
+  - Dominating exact builtin scalar guards, including nullable unions formed only by same-value negative identity tests, prove
+    stable function-local values. Legacy optional Python-minor behavior remains None or its actual native string. Shadowing,
+    non-dominating guards, later reassignment and implicit-global replacement remain denied; a prototype global-caching acceptance
+    was reproduced and fixed. Async initializers are refused after actual unawaited-coroutine warning reproduction. Optional
+    native winerror storage is checked when present, with current-host native OS-field callback negatives. New native-message
+    boundary reads real native exception storage and validates formatter identity and all native args/OS fields before rendering.
+    Unknown formatters and argument protocols are rejected without callbacks. Caught source overrides, subclasses, imported
+    callbacks and native argument hooks are traced. Actual previous canonical reconcile reached three input-binding failures.
+    GitHubAPI now validates exact string inputs before invoking their protocols. Initial exact builtin type guards qualify
+    source frames; shadowed guards stay refused. Formatting result identity is separate from callback effects, including direct
+    formatted outputs. A sole-use local literal dict can prove its exact loop keys; borrowed and escaped inputs stay unqualified.
+    No current canonical pass claim.
   - Actual supported canonical replay remains pending after dominating native scalar proof and native storage completeness
     repair.
   - Complete source callback closure and actual consumer constructor qualification remain unqualified.

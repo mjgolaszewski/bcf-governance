@@ -1,6 +1,6 @@
 {
   "status": "unqualified",
-  "base_commit": "887ac82cea4af4f0cdc9fecf5d2aa64594bb391f",
+  "base_commit": "8cdd6bba42b245afb03b5d6f4ca1242f7de8cd1f",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
     "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
@@ -10,7 +10,7 @@
     "bcf_governance/tooling/semantic_operation_effects.py": "51aaba9c7fac1389a34a357967b3aed7ec6e22df4acd67c0c2e06146fc346820",
     "bcf_governance/tooling/semantic_python_effect_obligations.py": "e45b46a145e2cea545ef47e5a0db918048b3a19b163abf1965e2672717848a05",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251",
-    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "65d19a9b134974396b7421b7020c538ec38c9182220d588d5f010b00ca76b25c",
+    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "f9073514e9408994bc50633120865b55668ad051b6e26b0fc155823191fdfb3f",
     "bcf_governance/tooling/semantic_python_method_identity.py": "0fcbb058aa986638586adc6d4741218b993d5a0fbc768e600733a49742c67905",
     "bcf_governance/tooling/operational_observations.py": "18b067df865e19c8c1f20214bcea60c2bd164ce11c40b6214d2127b15c7d19a1",
     "bcf_governance/tooling/controller_custody_prospective.py": "353f8b7230bc8f9e1ce1384679b2967c0249ec87695b6f7a065e22bfac68661d",
@@ -41,7 +41,7 @@
     "bcf_governance/tooling/ci_github_release_api.py": "b4b21804496e22cd239f5eac2c265f0de1dfa55ab0ec516aaf2d9caa120a7a4b",
     "bcf_governance/tooling/evidence_workitem_lifecycle.py": "e9b4e63ece074ff8f069288baa9cb21b9b1a923e5777a30f16368df9963349af",
     "bcf_governance/tooling/evidence_planning.py": "91eb65c4b99eabe1bd3af067bb0fd5ecfd865d62afdfd213cfc98492eeafe0ee",
-    "bcf_governance/tooling/interpreter_environment.py": "218ef3cf8a574cfebedc439f36d7c1e8bdfe71298e0e613ff3208a22cd41c6b6",
+    "bcf_governance/tooling/interpreter_environment.py": "79b001bc36d5c5de21f052723d10b6151275088b589d5011eac406164b0ad7dd",
     "bcf_governance/tooling/ci_graph_values.py": "f436c5e8322ccdb39cbeeea21b8e46e5763530401ecaa5251392ab8211447708",
     "bcf_governance/tooling/local_pr.py": "2c2f29a7162ca162b8b5173abadf28c86998f2b05d5b7184e5b8f2218378ca29",
     "bcf_governance/tooling/semantic_ownership_registry.py": "065ae4839a2a79d7784688b7092179c202d6f11eedb4eeaa201f5ec9b609b61b",
@@ -66,10 +66,10 @@
     "bcf_governance/tooling/interpreter_dependency_sources.py": "4144ebcd8c42d2d1f74c56bf726fed573a3deb8c18dbee6e0253b23dc894a1e7",
     "tests/test_semantic_value_origins.py": "0e0262af154a5778475e5934fbce74103f6c5486c918c7e82eba6ab24ebc42ba",
     "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
-    "tests/test_semantic_constructor_frames.py": "293d295b0cd7ff5dd22e1f270fe431552ee7b8ac4b3a618e58647510c683e867"
+    "tests/test_semantic_constructor_frames.py": "ecdd2578d0b5bebcd7d992054c3f1fc676c45f993f2661d7fde767ded92a4d43"
   },
   "affected_tests": {
-    "passed": 342,
+    "passed": 347,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
@@ -100,7 +100,7 @@
   "constructor_frames": {
     "initial_false_refusals": 4,
     "initial_correct_denials": 5,
-    "current_controls_passed": 53
+    "current_controls_passed": 58
   },
   "finalizer_controls": {
     "unsafe_acceptances_observed": 2,

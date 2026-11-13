@@ -195,19 +195,38 @@ def constructor_callback_closures(classes: dict[str, dict[str, Any]]) -> dict[st
     return {symbol: value for symbol, value in cache.items() if value is not None}
 
 
-def exact_scalar_guard(statement: ast.AST) -> str | None:
-    """Recognize only exact, callback-free builtin type identity admission."""
+def scalar_guard_parts(statement: ast.AST) -> tuple[str, set[str]] | None:
+    """Read only callback-free negative identity tests of the same value."""
     if not isinstance(statement, ast.If) or statement.orelse or not statement.body or not isinstance(statement.body[-1], ast.Raise):
         return None
     test = statement.test
-    if (isinstance(test, ast.Compare) and len(test.ops) == 1
-            and isinstance(test.ops[0], ast.IsNot) and len(test.comparators) == 1
-            and isinstance(test.comparators[0], ast.Name) and test.comparators[0].id in {'str', 'int', 'float', 'complex', 'bool', 'bytes'}
-            and isinstance(test.left, ast.Call) and isinstance(test.left.func, ast.Name)
-            and test.left.func.id == 'type' and len(test.left.args) == 1
-            and not test.left.keywords and isinstance(test.left.args[0], ast.Name)):
-        return test.left.args[0].id
-    return None
+    parts = test.values if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.And) else [test]
+    name: str | None = None
+    native_types: set[str] = set()
+    for part in parts:
+        if not (isinstance(part, ast.Compare) and len(part.ops) == 1
+                and isinstance(part.ops[0], ast.IsNot) and len(part.comparators) == 1):
+            return None
+        left, right = part.left, part.comparators[0]
+        if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
+            current = left.id
+        elif (isinstance(right, ast.Name) and right.id in {'str', 'int', 'float', 'complex', 'bool', 'bytes'}
+              and isinstance(left, ast.Call) and isinstance(left.func, ast.Name)
+              and left.func.id == 'type' and len(left.args) == 1 and not left.keywords
+              and isinstance(left.args[0], ast.Name)):
+            current = left.args[0].id
+            native_types.add(right.id)
+        else:
+            return None
+        if name is not None and name != current:
+            return None
+        name = current
+    return (name, native_types) if name is not None and native_types else None
+
+
+def exact_scalar_guard(statement: ast.AST) -> str | None:
+    parts = scalar_guard_parts(statement)
+    return parts[0] if parts is not None else None
 
 
 def initial_scalar_guards(function: ast.AST, builtin_names: list[str]) -> set[str]:
@@ -220,13 +239,10 @@ def initial_scalar_guards(function: ast.AST, builtin_names: list[str]) -> set[st
     for statement in function.body:
         if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant) and isinstance(statement.value.value, str):
             continue
-        name = exact_scalar_guard(statement)
-        if (name is None or name not in parameters or not isinstance(statement, ast.If)
-                or not isinstance(statement.test, ast.Compare)
-                or not isinstance(statement.test.comparators[0], ast.Name)
-                or statement.test.comparators[0].id not in builtin_names):
+        parts = scalar_guard_parts(statement)
+        if parts is None or parts[0] not in parameters or not parts[1] <= set(builtin_names):
             break
-        guarded.add(name)
+        guarded.add(parts[0])
     return guarded
 
 
@@ -255,9 +271,8 @@ def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: l
                 guard = function.body[guard_index]
                 if exact_scalar_guard(guard) != value.id:
                     continue
-                assert isinstance(guard, ast.If) and isinstance(guard.test, ast.Compare)
-                admitted_type = guard.test.comparators[0]
-                if not isinstance(admitted_type, ast.Name) or admitted_type.id not in (builtin_names or []):
+                parts = scalar_guard_parts(guard)
+                if parts is None or not parts[1] <= set(builtin_names or []):
                     continue
                 local = value.id in arguments or any(
                     isinstance(binding, ast.Assign) and any(isinstance(target, ast.Name) and target.id == value.id

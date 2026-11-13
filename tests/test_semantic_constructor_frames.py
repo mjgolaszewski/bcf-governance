@@ -521,3 +521,42 @@ def test_async_initializer_does_not_get_a_synchronous_fresh_receiver_contract(tm
     assert result.stdout.strip()=='7' and 'was never awaited' in result.stderr
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+@pytest.mark.parametrize('expression', ["'ok'",'None'])
+def test_nullable_native_scalar_admission_preserves_both_values(tmp_path,expression):
+    path,facts=inventory(tmp_path,"""
+        def read():
+            try: pass
+            except ValueError: pass
+            value=EXPRESSION
+            if value is not None and type(value) is not str: raise ValueError('native')
+            return f'value {value}'
+    """.replace('EXPRESSION',expression))
+    assert witness(path)==(['value ok','value ok'] if expression!="None" else ['value None','value None'])
+    assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+@pytest.mark.parametrize('condition',[
+    "type(value) is not str and other is not None",
+    "type(value) is not str and value is None",
+    "type(value) is not str and False",
+])
+def test_nullable_guard_requires_the_same_value_and_a_complete_native_admission(tmp_path,condition):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Probe:
+            def __format__(self,spec):
+                EVENTS.append(7)
+                return 'message'
+        PROBE=Probe()
+        def read():
+            value=PROBE
+            other=None
+            if CONDITION: raise ValueError('native')
+            result=f'value {value}'
+            return len(EVENTS)
+    """.replace('CONDITION',condition))
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
