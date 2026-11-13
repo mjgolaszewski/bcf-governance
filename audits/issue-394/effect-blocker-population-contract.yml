@@ -221,3 +221,22 @@ implementation_qualification_contract:
     - tests/test_semantic_typescript_review.py
     limit: This test population is not complete runtime/effect population authority;
       independent lifecycle and detector completeness remain open.
+
+implementation_attempt_disposition:
+  report: audits/issue-394/effect-blocker-baseline-resource-block.json
+  sha256: 33ab5b4d82087f395fc14ba9348be6062fce1f4b3cb555b9941110d946372508
+  subject: 508ee15585e18a5fbd25120915b51fcc3f4996b1
+  status: preproduction_baseline_memory_block
+  production_applied: false
+  previous_memory: P32 active; P33-P35 dormant. Required ci_commands.main runtime
+    context proof absent;82wholeOPEN. Effect blocker diagnostics controls only; no
+    implementation or new qualification.
+  current_memory: 'P32 active; P33-P35 dormant. Diagnostics production unapplied:
+    consumer baseline exceeded1GiB; runtime context absent,82wholeOPEN. See effect-blocker-baseline-resource-block.json.'
+  previous_ledger:
+    type: 394source
+    statement: 9a25047a diagnostics controls only; runtimeOPEN.
+  current_ledger:
+    type: 394source
+    statement: 508ee155 baseline memory block; runtimeOPEN.
+  whole_requirement_advancement: false

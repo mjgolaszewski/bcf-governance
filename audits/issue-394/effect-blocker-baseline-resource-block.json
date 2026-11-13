@@ -1,0 +1,38 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "implementation_complete": false,
+  "status": "preproduction_consumer_baseline_interrupted_by_resource_ceiling",
+  "subject": "508ee15585e18a5fbd25120915b51fcc3f4996b1",
+  "tree": "c9f487e90fdf705147b4877e4702a65f99d75b90",
+  "additional_causal_before": {
+    "tests": 5,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "causal_junit_sha256": "0dabd82d2d1fb674cd3c6b857fe9dc66c19c0c178bc2e40147f4513ded8d98a4",
+  "baseline": {
+    "terminal_junit_available": false,
+    "result": "incomplete_not_qualification",
+    "partial_stdout_sha256": "253267e34d3a8974b183317c215248b1c099138a11097fb72cd607f70aa82519"
+  },
+  "resource": {
+    "observed_peak_rss_bytes": 1079173120,
+    "admitted_rss_ceiling_bytes": 1073741824,
+    "guard": "sampled_parent_closure_rss_bound"
+  },
+  "custody": {
+    "normal_receipt_missing": true,
+    "reconciled": true,
+    "raw_result_sha256": "f6fb3f16479e1132b2b44f4c174fc5cb12d4c49096c043bf1ba084eb6fa9971e",
+    "reconciliation_sha256": "6200599bdfc61b7b13a063a24a70c7f9b1bc71124c594597780ece433b6eacb0",
+    "disposition": "Pinned helper success-only cancellation recovery and independent kernel identity/descriptor/fence observations; original raw result unchanged."
+  },
+  "production_changed": false,
+  "installed_probe_changed": false,
+  "retry_started": false,
+  "whole_requirement_advancement": false,
+  "next_action": "Repair cancellation receipt propagation and fixed600s launcher budget; compile a memory-sound consumer baseline before a newly allocated retry. Reuse unchanged valid causal controls; no partial baseline credit. Runtime context absent; all82wholeOPEN, P32 active/P33-P35 dormant."
+}
