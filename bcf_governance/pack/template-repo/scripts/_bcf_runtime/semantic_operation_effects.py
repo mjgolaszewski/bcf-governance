@@ -172,6 +172,9 @@ def validate_operation_effects(
                 if (effect.get("line"), effect.get("target")) not in origins["writes"]:
                     legacy = [effect.get('kind'), effect.get('line'), effect.get('target')]
                     root = str(effect.get('target', '')).split('.', 1)[0].split('[', 1)[0]
+                    if not experimental_protocols and root in function.get('private_container_roots', []):
+                        report_observation('unqualified_container_element_protocols', effect.get('line'), effect.get('target'))
+                        continue
                     mandatory = (callback_required or symbol.endswith('.__init__')
                         or root in function.get('external_write_roots', [])
                         or 'legacy_effect_sites' not in function or legacy in function['legacy_effect_sites'])

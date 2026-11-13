@@ -130,3 +130,16 @@ def test_stable_contract_does_not_waive_legacy_dynamic_call(tmp_path):
     _, facts = inventory(tmp_path, "def read(): return eval('1')")
     with pytest.raises(SemanticOperationEffectError, match='unresolved dynamic call'):
         validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False)
+
+
+def test_stable_callback_worklist_has_private_outer_identity(tmp_path):
+    _, facts = inventory(tmp_path, "from dataclasses import dataclass\n@dataclass\nclass Probe:\n def __post_init__(self):\n  pending=[1]\n  while pending: pending.pop()\ndef read(): return Probe()")
+    assert validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False) == (0, 0)
+    assert any(row['qualified'] is False for row in facts['effect_proof_observations'])
+
+
+def test_stable_callback_worklist_escape_still_rejects_after_declared_port(tmp_path):
+    _, facts = inventory(tmp_path, "from dataclasses import dataclass\nRETAINED=[]\ndef retain(value): RETAINED.append(value)\n@dataclass\nclass Probe:\n def __post_init__(self):\n  pending=[1]\n  retain(pending)\n  while pending: pending.pop()\ndef read(): return Probe()")
+    command = {**OPERATION, 'allowed_mutation_ports':['consumer.py::retain']}
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(command, 'consumer.py::read', facts, experimental_protocols=False)

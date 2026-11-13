@@ -1645,7 +1645,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "2ecb5d60509a5f30c63b1263eca5790f9e7b762393b0770270ed69db92caf4b2"
+      "sha256": "ab9cbd8d82a0b8c9929795e19f31b9989cc58afccc16a61441273adbaaa397ff"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",
@@ -1713,7 +1713,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_effect_obligations.py": {
       "operation": "copy",
-      "sha256": "23d5b85d5f17af476e39c92d678fb141681fa26e8142217a70248274c057a042"
+      "sha256": "c1813b3cbbb7ea5f066799c2458403e37f8be8d74a83ff556bd5027033808faf"
     },
     "scripts/_bcf_runtime/semantic_python_execution_inventory.py": {
       "operation": "copy",

@@ -29,7 +29,7 @@ execution_evidence:
     from legacy unresolved flows; operation rows explicitly disclaim full execution qualification. Actual source callback
     writes, explicit IO/authority and legacy dynamic/receiver/port failures remain mandatory. Scope is only what Recovery
     requires to publish BDMCP; broader experimental work remains reachable on repair/maintained-consumer-contracts at 7761979c601171651ab601849cbdec44d183ee8d.'
-  - 430 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
+  - 432 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
     native reconciliation, current consumer acceptance and standard release pipeline remain pending.
   - Unknown implicit callbacks remain explicitly unresolved under existing report policy and reject under fail_closed. Source-known
     reached writes reject in both modes; explicit effect and dynamic-call failures remain mandatory.

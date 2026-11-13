@@ -79,6 +79,65 @@ def container_builtin_names(tree: ast.Module) -> list[str]:
     ) if "*" not in bindings and not reflective else []
 
 
+def private_container_write_roots(function: ast.FunctionDef | ast.AsyncFunctionDef, builtin_names: list[str]) -> set[str]:
+    """Prove outer-container locality without claiming element protocol purity."""
+    nodes = _scope_nodes(function)
+    parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
+    stores: dict[str, int] = {}
+    for node in nodes:
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            stores[node.id] = stores.get(node.id, 0) + 1
+    excluded = {argument.arg for argument in [*function.args.posonlyargs, *function.args.args, *function.args.kwonlyargs]}
+    excluded.update(name for node in nodes if isinstance(node, (ast.Global, ast.Nonlocal)) for name in node.names)
+    if any(isinstance(node, ast.Name) and node.id in {'locals','globals','vars','eval','exec','__builtins__','__import__'} for node in nodes):
+        return set()
+    result = set()
+    methods = {'list': {'append','pop','extend','clear','insert','remove','reverse'},
+               'set': {'add','pop','discard','remove','clear'},
+               'dict': {'pop','popitem','update','setdefault','clear','get','items','keys','values'}}
+    for statement in nodes:
+        if not isinstance(statement, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+        if len(targets) != 1 or not isinstance(targets[0], ast.Name):
+            continue
+        name = targets[0].id
+        if name in excluded or stores.get(name) != 1:
+            continue
+        value = statement.value
+        kind = 'list' if isinstance(value, (ast.List, ast.ListComp)) else 'set' if isinstance(value, (ast.Set, ast.SetComp)) else 'dict' if isinstance(value, (ast.Dict, ast.DictComp)) else None
+        if isinstance(value, ast.Call) and isinstance(value.func, ast.Name) and value.func.id in methods and value.func.id in builtin_names:
+            kind = value.func.id
+        if kind is None:
+            continue
+        safe = True
+        for use in nodes:
+            if not (isinstance(use, ast.Name) and use.id == name and isinstance(use.ctx, ast.Load)):
+                continue
+            parent = parents.get(id(use))
+            if isinstance(parent, ast.Attribute) and parent.value is use:
+                call = parents.get(id(parent))
+                if isinstance(call, ast.Call) and call.func is parent and parent.attr in methods[kind]:
+                    continue
+            if isinstance(parent, ast.Subscript) and parent.value is use:
+                continue
+            if isinstance(parent, (ast.For, ast.comprehension)) and parent.iter is use:
+                continue
+            if isinstance(parent, (ast.If, ast.While)) and parent.test is use:
+                continue
+            if isinstance(parent, ast.UnaryOp) and isinstance(parent.op, ast.Not):
+                continue
+            if (isinstance(parent, ast.Call) and isinstance(parent.func, ast.Name)
+                    and parent.func.id in {'len','bool'} and parent.func.id in builtin_names
+                    and len(parent.args) == 1 and not parent.keywords):
+                continue
+            safe = False
+            break
+        if safe:
+            result.add(name)
+    return result
+
+
 def extend_python_effect_facts(
     tree: ast.Module, function: ast.FunctionDef | ast.AsyncFunctionDef,
     fact: dict[str, Any], path: str, *, builtin_names: list[str],
@@ -96,6 +155,7 @@ def extend_python_effect_facts(
         and isinstance(statement.value, (ast.List, ast.Dict, ast.Set, ast.Tuple, ast.ListComp, ast.DictComp, ast.SetComp))
         for target in (statement.targets if isinstance(statement, ast.Assign) else [statement.target])
         if isinstance(target, ast.Name)})
+    fact["private_container_roots"] = sorted(private_container_write_roots(function, builtin_names))
     fact["trivial_finalizer"] = _trivial_finalizer(function)
     fact["python_value_source"] = ast.unparse(function)
     fact["python_value_shape_sha256"] = hashlib.sha256(
