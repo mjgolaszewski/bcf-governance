@@ -1729,7 +1729,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_model_binding.py": {
       "operation": "copy",
-      "sha256": "4a66db442147dcc0ebc5779d81f67ea718f34226d65cff8286212b597e0c4ade"
+      "sha256": "3d669a49adef9ea04403bab2ffe5150317e2fc2ad11dc6b894d544d572d47163"
     },
     "scripts/_bcf_runtime/semantic_python_receiver_provenance.py": {
       "operation": "copy",

@@ -177,7 +177,8 @@ def runtime_model_binding(root: Path) -> dict[str, Any] | None:
         spec = importlib.util.find_spec("pydantic")
         if spec is None or spec.origin is None or Path(spec.origin).resolve(strict=True) != expected:
             return None
-        from pydantic import BaseModel, Field
+        pydantic = importlib.import_module("pydantic")
+        BaseModel, Field = pydantic.BaseModel, pydantic.Field
 
         meta: Any = type(BaseModel)
         if meta.__getattribute__ is not type.__getattribute__ or meta.__call__ is not type.__call__:
