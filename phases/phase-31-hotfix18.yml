@@ -4,7 +4,7 @@ document:
   id: bcf-governance-phase-31-hotfix18
   version: 1.0.0
   generated_at_utc: '2026-11-13T00:00:00Z'
-  status: planned
+  status: completed
   path: phases/phase-31-hotfix18.yml
 hotfix:
   id: P31-HF18
@@ -24,22 +24,27 @@ execution_evidence:
   - bcf environment apply --repo-root .
   - bcf reconcile --repo-root . --apply
   notes:
-  - 'Publication boundary43480: native operation validation preserves the published explicit-effect contract and does not
-    impose experimental general protocol/format/retained-write inference. Diagnostic unknowns remain unqualified and separate
-    from legacy unresolved flows; operation rows explicitly disclaim full execution qualification. Actual source callback
-    writes, explicit IO/authority and legacy dynamic/receiver/port failures remain mandatory. Scope is only what Recovery
-    requires to publish BDMCP; broader experimental work remains reachable on repair/maintained-consumer-contracts at 7761979c601171651ab601849cbdec44d183ee8d.'
-  - 456 focused controls pass without skips; lint, strict typing of 15 modules and mirrored pack projection pass. Complete
-    native reconciliation, current consumer acceptance and standard release pipeline remain pending.
-  - Unknown implicit callbacks remain explicitly unresolved under existing report policy and reject under fail_closed. Source-known
-    reached writes reject in both modes; explicit effect and dynamic-call failures remain mandatory.
-  - Normalization receiver identity comes from actual source constructor results, not parameter annotations or lookup selector
-    taint. Unknown, reassigned and annotation-only receivers remain conservative.
-  - Neutral origin frames are cached only within one fixed inventory and exact argument frame, bounded to8192entries. Operation
-    ports, policy and acceptance decisions are recalculated. Changed-source alias, strict/report and declared-port isolation
-    controls pass. Previous456s canonical timeout has no acceptance credit.
-  - No release custody or safe installation claim. Existing governance, security, ownership, callback, alias and signed SDK
-    boundaries remain required. Deferred Identity/JIT and experimental 2.5 inputs are preserved.
+  - P31-HF18 implementation is authored completed for SDK/BDMCP publication compatibility only. Completed means implementation
+    ready for validation; verified, closed and release custody remain computed by required native evidence. Deferred general
+    protocol/format/retained-write experiments remain preserved on repair/maintained-consumer-contracts at 7761979c601171651ab601849cbdec44d183ee8d.
+    No ordinary-protection repair is claimed.
+  - 456 focused tests passed without skips; strict typing of 15 source modules, lint and mirrored pack projection passed.
+    Native self reconciliation passed. Fresh wheel build/install, ordinary installed runtime Ruff/strict typing passed without
+    requiring optional Pydantic.
+  - Installed candidate wheel SHA256 5b84179374d9b6fe21eab249ef4ec58c0984f356244991e355b6c5e44c42f947 from b76b2955e0de39c5ec244ab04786e5c7b00d7b14
+    qualified BDMCP b1f85c1376f45d4745f7969247f35834edc6a741 in an isolated native upgrade clone. Current-profile native preflight
+    passed all 24 phases; ownership had zero violations; all 138 operation contracts and 115-family structure passed; 398
+    consumer controls passed without skips. Standard-v3 activation is deferred to Recovery, not waived.
+  - Publication boundary43480 preserves published explicit effects and mandatory known callback/global writes, legacy dynamic/receiver
+    failures and real effect ports. New diagnostic uncertainty and producer-work exhaustion remain unqualified; strict experimental
+    fail_closed rejects exhausted inference. Executed branching DAG, hidden global-write and borrowed-field alias-write negatives
+    pass. Initializer obligations still fail closed.
+  - Neutral frame facts are scoped to one fixed inventory and exact arguments, capped8192 entries; operation permissions and
+    decisions are recalculated. Producer exploration is bounded64 expansions per frame and returns explicit unknown on exhaustion.
+    Diagnostic duplicate indexing and immutable AST reuse preserve observations and operation identity.
+  - Full required native CI, consolidated review, normal merge/controller custody and release publication remain pending.
+    The earlier native submission stopped before tests because this hotfix was still authored planned; this status correction
+    adds no passing full-CI or publication claim. Deferred Identity/JIT source remains preserved.
 closeout_requirements:
   claims:
     required_suites_green:
