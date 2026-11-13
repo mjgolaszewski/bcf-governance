@@ -88,8 +88,14 @@
     }
   },
   "canonical_reconcile": {
-    "status": "pending_replay_after_provenance_change",
-    "previous_result": "three_unqualified_constructor_input_bindings"
+    "status": "red",
+    "tested_commit": "52a3a23fa76832b4cdd9af3d952142f78568e4c2",
+    "stage": "semantic-lock",
+    "native_terminal_eof_reap": true,
+    "failures": [
+      "ci_commands.py::_print:291 unqualified_format_callback key",
+      "ci_commands.py::_print:291 unqualified_format_callback value"
+    ]
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -107,9 +113,8 @@
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Actual supported canonical replay remains pending after dominating native scalar proof and native storage completeness repair.",
-    "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
-    "Complete framework, consumer, ordinary-protection and release gates remain open."
+    "Native CLI projection mapping/loop-value formatting callback closure remains unqualified at the actual _print boundary.",
+    "Complete framework, frozen800 consumer, ordinary-protection and release gates remain open."
   ],
   "source_ready": false
 }
