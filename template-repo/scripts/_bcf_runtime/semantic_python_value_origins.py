@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import json
 from typing import Any
 
 from .semantic_python_constructor_callbacks import (
@@ -66,7 +67,7 @@ def value_origins(
     initializer_frame = (function.name == '__init__' and
                          env.get('$constructor_owner') == row.get('class_symbol'))
     # Protocol-driven and unbounded control flow remains unsupported.
-    if any(isinstance(node, (ast.AsyncFor, ast.While, ast.Try,
+    if any(isinstance(node, (ast.AsyncFor, ast.While,
                             ast.TryStar, ast.With, ast.AsyncWith, ast.Match,
                             ast.Global, ast.Nonlocal, ast.Yield, ast.YieldFrom,
                             ast.Break, ast.Continue))
@@ -92,7 +93,7 @@ def value_origins(
         nonlocal retained
         retained = True
         for name, origin in list(env.items()):
-            if origin in OWNED or origin.startswith('new-object:') or origin == 'native':
+            if origin in OWNED or origin.startswith('new-object:') or origin == 'native' or origin.startswith('record:'):
                 env[name] = UNKNOWN
 
     def degrade() -> None:
@@ -111,9 +112,13 @@ def value_origins(
         if isinstance(node, (ast.Attribute, ast.Subscript)):
             receiver = expression(node.value)
             key = expression(node.slice) if isinstance(node, ast.Subscript) else SCALAR
+            if isinstance(node, ast.Attribute) and receiver.startswith('record:'):
+                record = json.loads(receiver.removeprefix('record:'))
+                return str(record['fields'].get(node.attr, UNKNOWN))
             if receiver in CONTAINERS | {SCALAR, 'native'} and key in CONTAINERS | {SCALAR, 'native'}:
                 return 'native'
             initializer_protocol_unknown |= initializer_frame
+            invalidate()
             return UNKNOWN
         if isinstance(node, ast.JoinedStr):
             for part in node.values:
@@ -125,6 +130,7 @@ def value_origins(
             if operands and all(value in CONTAINERS | {SCALAR, 'native'} for value in operands):
                 return SCALAR if isinstance(node, (ast.UnaryOp, ast.Compare, ast.JoinedStr)) else 'native'
             initializer_protocol_unknown |= initializer_frame
+            invalidate()
             return UNKNOWN
         if isinstance(node, ast.FormattedValue):
             value = expression(node.value)
@@ -155,6 +161,23 @@ def value_origins(
             keywords = {keyword.arg: expression(keyword.value)
                         for keyword in node.keywords if keyword.arg is not None}
             target = functions.get(callee, {})
+            record_spec = fact.get('source_record_fields')
+            if (record_spec and not any(isinstance(value, ast.Starred) for value in node.args)
+                    and all(keyword.arg is not None for keyword in node.keywords)):
+                fields = record_spec['fields']
+                positional = [field for field in fields if not field['kw_only']]
+                field_names = {field['name'] for field in fields}
+                if (len(fields) <= 64 and len(values) <= len(positional) and keywords.keys() <= field_names
+                        and not (set(field['name'] for field in positional[:len(values)]) & keywords.keys())):
+                    bound_fields = {field['name']: value for field, value in zip(positional, values, strict=False)}
+                    bound_fields.update(keywords)
+                    for field in fields:
+                        if field['name'] not in bound_fields and field['has_default']:
+                            bound_fields[field['name']] = SCALAR if field['default_scalar'] else UNKNOWN
+                    if bound_fields.keys() == field_names:
+                        if retained or any(value == UNKNOWN for value in [*values, *keywords.values()]):
+                            bound_fields = {name: UNKNOWN for name in bound_fields}
+                        return 'record:' + json.dumps({'subject': record_spec['subject'], 'fields': bound_fields}, sort_keys=True)
             if (initializer_frame and isinstance(node.func, ast.Attribute) and node.func.attr == '__init__'
                     and isinstance(node.func.value, ast.Call) and isinstance(node.func.value.func, ast.Name)
                     and node.func.value.func.id == 'super' and not node.func.value.args
@@ -335,6 +358,37 @@ def value_origins(
                     env.update(right)
                 else:
                     return False
+            elif isinstance(statement, ast.Try):
+                before = dict(env)
+                paths = []
+                if statements(statement.body, loop_depth) and statements(statement.orelse, loop_depth):
+                    paths.append(dict(env))
+                for handler in statement.handlers:
+                    # An exception may occur after any prefix of the try body.
+                    # Borrowed/partially produced bindings cannot inherit its
+                    # optimistic successful path facts.
+                    env.clear()
+                    env.update({name: UNKNOWN for name in before.keys() | env.keys()})
+                    if handler.name is not None:
+                        env[handler.name] = UNKNOWN
+                    expression(handler.type)
+                    if statements(handler.body, loop_depth):
+                        paths.append(dict(env))
+                env.clear()
+                if paths:
+                    merged = paths[0]
+                    for path in paths[1:]:
+                        merged = {name: _join(merged.get(name, UNKNOWN), path.get(name, UNKNOWN))
+                                  for name in merged.keys() | path.keys()}
+                    env.update(merged)
+                if statement.finalbody:
+                    # Finally also executes on uncaught exceptions and after a
+                    # pending return. Never retain a pre-finally object proof.
+                    env.update({name: UNKNOWN for name in env})
+                    returns[:] = [UNKNOWN for _ in returns]
+                    statements(statement.finalbody, loop_depth)
+                if not paths:
+                    return False
             elif isinstance(statement, ast.For):
                 iterator = expression(statement.iter)
                 if iterator not in OWNED or loop_depth >= 3:
@@ -378,8 +432,12 @@ def value_origins(
         return True
     admitted = initial_scalar_guards(function, row.get('unshadowed_container_builtins', []))
     statements(function.body)
+    returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     if unsupported_condition:
-        return {**empty, "retained": True, 'initializer_protocol_unknown': initializer_frame}
+        # An exact generated-record result does not purify a condition, call or
+        # getter. Its field values remain borrowed unless separately proven.
+        return {**empty, "return": returned if returned.startswith('record:') else UNKNOWN,
+                "retained": True, 'initializer_protocol_unknown': initializer_frame}
     # Falling through or returning different origins cannot prove fresh output.
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     return {"writes": safe, "calls": calls, "return": returned,

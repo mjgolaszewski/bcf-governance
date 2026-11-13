@@ -104,6 +104,17 @@ def validate_operation_effects(
     # The function-name population is fixed for this one fresh validation.
     # Reuse only lookup answers, never source observations or acceptance results.
     resolved_calls: dict[str, str | None] = {}
+    diagnostics: list[str] = []
+    diagnostic_count = 0
+
+    def reject(message: str) -> None:
+        nonlocal diagnostic_count
+        diagnostic_count += 1
+        # Keep ordinary validation output bounded even for a large source graph.
+        # Every failure still prevents acceptance, including omitted details.
+        if len(diagnostics) < 32:
+            diagnostics.append(message[:2048])
+
     while pending:
         symbol, arguments = pending.pop()
         if (symbol, arguments) in visited:
@@ -123,7 +134,7 @@ def validate_operation_effects(
             return cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
 
         if origins.get('initializer_protocol_unknown'):
-            raise SemanticOperationEffectError(
+            reject(
                 f"operation {operation['id']} contains an unqualified initializer runtime protocol at {symbol}"
             )
         if function.get("language") == "typescript":
@@ -138,7 +149,7 @@ def validate_operation_effects(
             elif effect.get("kind") == "authority":
                 authority.add(target)
             else:
-                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+                reject(f"operation {operation['id']} contains an unresolved effect at {symbol}")
         remaining_obligations = [item for item in function.get('implicit_effect_obligations', [])
             if not (item.get('binding_source') == 'constructor_initializer_frame' and
                     (item.get('line'), item.get('column'), item.get('class_symbol'))
@@ -150,12 +161,12 @@ def validate_operation_effects(
                 f"{item.get('kind')}:{item.get('class_symbol', '')}:{item.get('line')}"
                 for item in remaining_obligations
             )
-            raise SemanticOperationEffectError(
+            reject(
                 f"operation {operation['id']} contains unqualified implicit execution at {symbol}: {obligations}"
             )
         if any((item.get('line'), item.get('called_symbol')) not in contextual_sites
                for item in function.get('unresolved', [])):
-            raise SemanticOperationEffectError(
+            reject(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
             )
         if any(
@@ -163,7 +174,7 @@ def validate_operation_effects(
             and (failure.get('line'), failure.get('called_symbol')) not in contextual_sites
             for failure in function.get("effect_unresolved", [])
         ):
-            raise SemanticOperationEffectError(
+            reject(
                 f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
             )
         for call in function.get("calls", []):
@@ -179,7 +190,7 @@ def validate_operation_effects(
                 and contextual is None
             )
             if hard_dispatch_failure:
-                raise SemanticOperationEffectError(
+                reject(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
             name = str(call.get("call_name", ""))
@@ -203,7 +214,7 @@ def validate_operation_effects(
             if identity in read_ports:
                 reached.add(identity)
                 if known_write or known_authority:
-                    raise SemanticOperationEffectError(
+                    reject(
                         f"operation {operation['id']} read port has a write or authority effect: {raw}"
                     )
                 # A read declaration never conceals a source-resolved body.
@@ -215,7 +226,7 @@ def validate_operation_effects(
                 reached.add(identity)
                 continue
             if call.get("dispatch_resolution") == "unresolved" and contextual is None:
-                raise SemanticOperationEffectError(
+                reject(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
             if call.get("language") == "typescript":
@@ -238,17 +249,21 @@ def validate_operation_effects(
     missing = declared_ports - reached
     if missing:
         rendered = ", ".join(sorted(value for _, value in missing))
-        raise SemanticOperationEffectError(
+        reject(
             f"operation {operation['id']} declares unreachable effect ports: {rendered}"
         )
     if writes:
-        raise SemanticOperationEffectError(
+        reject(
             f"operation {operation['id']} has undeclared write effects: "
             + ", ".join(sorted(writes))
         )
     if authority:
-        raise SemanticOperationEffectError(
+        reject(
             f"operation {operation['id']} has undeclared authority effects: "
             + ", ".join(sorted(authority))
         )
+    if diagnostics:
+        omitted = diagnostic_count - len(diagnostics)
+        suffix = f"; {omitted} additional failure observations omitted" if omitted else ""
+        raise SemanticOperationEffectError("; ".join(diagnostics) + suffix)
     return len(mutation_ports & reached), len(authority_ports & reached)

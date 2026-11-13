@@ -1,19 +1,20 @@
 {
   "status": "unqualified",
-  "base_commit": "ef97b706f9cfa2aa52e85635b1030de7bfd8e55e",
+  "base_commit": "c1a4d05a27123bca36fab785aae489ca54bb9bcf",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
+    "bcf_governance/tooling/semantic_python_dataclass_contracts.py": "3438a3172bc29b573b13ca814e4dc664684fb3cc0f6da1b8d0a593961926a3a6",
     "bcf_governance/tooling/ci_github_actions.py": "1aef7e242d41c4d43d6d6bf24ef527dbefadfcf8a154766ca75814c6fcc9fbae",
     "bcf_governance/tooling/ci_authority_pins.py": "0903861b80fc0e1f0f073602c1304171fc775735b19ed37254a59b93981c0627",
     "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
     "bcf_governance/tooling/local_execution_admission.py": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366",
     "bcf_governance/tooling/ci_github_api.py": "2910fdc3d16bb616ff136259542a8d725f7810a19d354a85ef24358b629d90a6",
-    "bcf_governance/tooling/semantic_python_value_origins.py": "01250828950d425112ef315db62fd01149d7b0698d8994dadf7593ba514feaac",
-    "bcf_governance/tooling/semantic_operation_effects.py": "51aaba9c7fac1389a34a357967b3aed7ec6e22df4acd67c0c2e06146fc346820",
-    "bcf_governance/tooling/semantic_python_effect_obligations.py": "e45b46a145e2cea545ef47e5a0db918048b3a19b163abf1965e2672717848a05",
+    "bcf_governance/tooling/semantic_python_value_origins.py": "35114317bea894000c680abae4c05c78d6166f72492dab4c618bb32b6c79263c",
+    "bcf_governance/tooling/semantic_operation_effects.py": "a22bcd974a63426f7d321ddaff5ed39a7cd6821e9e8d1dc72815c58ce6631c26",
+    "bcf_governance/tooling/semantic_python_effect_obligations.py": "ac1fbb2d3b5bca937fa20a4bc8bc2e5eb46475610b87bf60bc750ef9e53f6cf6",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251",
     "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "8fa0489b32341782cabf786437fddf377b56bf11ed367b010bef5ef08c8f99f0",
-    "bcf_governance/tooling/semantic_python_method_identity.py": "0fcbb058aa986638586adc6d4741218b993d5a0fbc768e600733a49742c67905",
+    "bcf_governance/tooling/semantic_python_method_identity.py": "122728676261048dd65aacf6a54ac004bdbad5e0d9f0293991406961773ac9ac",
     "bcf_governance/tooling/operational_observations.py": "18b067df865e19c8c1f20214bcea60c2bd164ce11c40b6214d2127b15c7d19a1",
     "bcf_governance/tooling/controller_custody_prospective.py": "353f8b7230bc8f9e1ce1384679b2967c0249ec87695b6f7a065e22bfac68661d",
     "bcf_governance/tooling/release_adopter_qualification.py": "9e0993c66f925d62bf39ef7e1d99cf047bb5b91427e5f3e6d4e1d7d15d5b4eba",
@@ -32,7 +33,7 @@
     "bcf_governance/tooling/governance_profiles.py": "fb291c99ec9338832370797df749c041f76006928e411774ac6b9d53c1175a10",
     "bcf_governance/tooling/self_workflow_contracts.py": "9979aed000b6642ca5e32016ac1fa3d2e3cc8649235fcfee1da9273bf381097c",
     "bcf_governance/tooling/prospective_candidate_identity.py": "2480424d663425a3b68d507c80d57063b20a97f728ba21c2cedc39fbcdda688c",
-    "bcf_governance/tooling/ci_graph_contracts.py": "be20ba45fef24352a054278904b5ece342091c254652de39e17b319f91882303",
+    "bcf_governance/tooling/ci_graph_contracts.py": "bd5636b7298433cd791e24a75caf16d89ffd62e164d52ec2a47a01bbacfe68e1",
     "bcf_governance/tooling/evidence_storage_github_releases.py": "da39c4c58c999a9ab5a1169d6b8ebd07a15fddbde64551069d18db291c727301",
     "bcf_governance/tooling/ci_graph_post_merge.py": "77f67084c4271da9cae3e8a3c0e447491f5e50b5e5625226872f93d8f660806a",
     "bcf_governance/tooling/semantic_adoption_diagnostics.py": "2af7e53869263a53a639df9226bb1ab90ccc3a4a42d6ce7ad3a1ea920927f947",
@@ -73,16 +74,17 @@
     "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
     "tests/test_semantic_constructor_frames.py": "e156093f4dfb69ad0a3782ee0f8dd897222e013edea22af9b4cc35910e696463",
     "tests/test_native_projection_output.py": "d5578b80cdd822668c64bffa330c46ed298c958f0ee7ec405f83985cebf3e2b9",
+    "tests/test_semantic_producer_origins.py": "f2b6b1b11c60ad410f5ac28270fe6436b458bba12798b932bca9b0e1561e9ecf",
     "tests/test_semantic_authority.py": "d5d75b62767572eb281c636dfc8a16143329fa59c6cc439965cde93b2a7d9c5f"
   },
   "affected_tests": {
-    "passed": 367,
+    "passed": 405,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
     "consumer_sdk_required": false
   },
-  "strict_typing_files_passed": 66,
+  "strict_typing_files_passed": 67,
   "lint": "pass",
   "runtime_pack_projection": "pass",
   "unused_property_causal_control": {
@@ -114,9 +116,31 @@
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715 exit1/EOF/reap/FDclosed. Current local scalar-producer repair has focused evidence only; returned-record fields remain unqualified. All allocated replays exhausted.",
+    "Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715 exit1/EOF/reap/FDclosed. Current coherent record producer, guarded scalar boundary and bounded diagnostic batch has focused evidence only; one new43374 replay is pending. Broader graph checks remain RED25/512, including stale generated policy value digest and source subprocess import context; no manual pin update.",
     "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
     "Complete framework, consumer, ordinary-protection and release gates remain open."
   ],
-  "source_ready": false
+  "source_ready": false,
+  "producer_controls": {
+    "passed": 19,
+    "annotation_purity": false,
+    "generated_record_slice": "closed non-inherited standard dataclasses without custom init, post-init or factories",
+    "unknown_protocol_arguments": "all field value facts remain unknown after opaque evaluation or borrowed input uncertainty",
+    "unsafe_acceptance_reproduced": "unrelated borrowed getter argument; actual witness1/2; corrected before saving"
+  },
+  "ordinary_diagnostics": {
+    "maximum_details": 32,
+    "maximum_detail_characters": 2048,
+    "omitted_failures_still_reject": true
+  },
+  "expanded_graph_checks": {
+    "passed": 512,
+    "failed": 25,
+    "qualified": false,
+    "reasons": [
+      "stale generated policy value-source digest",
+      "source subprocess import path missing"
+    ],
+    "manual_pin_updates": false
+  }
 }

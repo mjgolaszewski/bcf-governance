@@ -24,10 +24,19 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
+  - 'Coherent producer batch: ordinary diagnostics retain all rejections and declared-port traversal while reporting up to32
+    independent details; extra failures still reject. Actual generated-record fields bind source constructor arguments/defaults;
+    annotations never provide value facts. The bounded CPython3.11-3.14 slice excludes inheritance, factories, post-init,
+    custom initialization and uncertain positional signatures. Exception paths join conservatively; finally invalidates pending
+    object returns. Opaque protocols, aliases and borrowed inputs invalidate field facts. An actual unrelated getter acceptance
+    was reproduced by witness1/2 and refused after repair; helper-return, property, alias, finally, producer-write and authority
+    negatives pass. The trusted-controller boundary retains actual native executable/installed identity values and rejects
+    foreign formatters. Expanded graph tests remain25FAIL/512PASS before native reconciliation, with stale generated policy
+    digest and source subprocess context failures recorded; no pin hand-edit or fullCI credit.'
   - Generic dominating local scalar producers now survive unsupported surrounding try flow. The positive control first failed
     with three format obligations, then passed. Latest assignment, lexical scope and recursive cycle checks prevent stale
     name proofs; nested nonlocal replacement remains refused. Returned record fields are not qualified by this change.
-  - 367 affected/pack tests pass without skips; strict typing passes for 66 touched modules and lint passes. Framework-only
+  - 405 affected/pack tests pass without skips; strict typing passes for 67 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -52,8 +61,9 @@ execution_evidence:
     local literal dict can prove its exact loop keys; borrowed and escaped inputs stay unqualified. No current canonical pass
     claim.
   - Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715
-    exit1/EOF/reap/FDclosed. Current local scalar-producer repair has focused evidence only; returned-record fields remain
-    unqualified. All allocated replays exhausted.
+    exit1/EOF/reap/FDclosed. Current coherent record producer, guarded scalar boundary and bounded diagnostic batch has focused
+    evidence only; one new43374 replay is pending. Broader graph checks remain RED25/512, including stale generated policy
+    value digest and source subprocess import context; no manual pin update.
   - Complete source callback closure and actual consumer constructor qualification remain unqualified.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results

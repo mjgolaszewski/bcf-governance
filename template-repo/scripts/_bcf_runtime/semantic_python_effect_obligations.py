@@ -361,6 +361,11 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                         "super_initializer": closure["super_initializer"],
                         "native_exception_initializer": initializer is None and 'builtins::BaseException' in closure['mro'],
                     }
+                if (cls.get("closed_class_binding") and cls.get("standard_dataclass_declaration")
+                        and cls.get("generated_record_fields") is not None
+                        and call.get("called_symbol") == subject):
+                    call["source_record_fields"] = {"subject": subject,
+                                                    "fields": cls["generated_record_fields"]}
                 if cls.get("library_model_binding"):
                     function.setdefault("implicit_effect_obligations", []).append({
                         "kind": "unqualified_library_model_effects", "line": call.get("line"),

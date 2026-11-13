@@ -13,7 +13,10 @@ from .semantic_python_constructor_callbacks import (
     builtin_constructor_bases,
     constructor_declaration_shape,
 )
-from .semantic_python_dataclass_contracts import dataclass_default_factories
+from .semantic_python_dataclass_contracts import (
+    dataclass_default_factories,
+    generated_record_fields,
+)
 from .semantic_python_model_binding import (
     literal_enum_shape,
     model_declaration_shape,
@@ -356,6 +359,7 @@ def discover_class_facts(
                 "model_schema_references": _model_schema_references(node, tree, path, imports, import_bindings),
                 "methods": methods,
                 "dataclass_default_factories": dataclass_default_factories(node, tree, path, imports),
+                "generated_record_fields": generated_record_fields(node, tree, imports),
                 "class_decorators": sorted(
                     ast.unparse(value) for value in node.decorator_list
                 ),

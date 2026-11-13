@@ -706,7 +706,9 @@ def _trusted_controller(
 ) -> tuple[str, str, ControllerLifecycle, tuple[tuple[str, str], ...]]:
     contract = graph["trusted_controller"]
     if contract["kind"] == "executable":
-        executable = str(contract["executable"])
+        executable = contract["executable"]
+        if type(executable) is not str:
+            raise CIGraphError("trusted controller executable must be a native string")
         lifecycle = ControllerLifecycle(
             ControllerLifecycleState.ORDINARY_CURRENT, executable, executable
         )
@@ -721,7 +723,10 @@ def _trusted_controller(
     lifecycle = resolve_controller_lifecycle(repo_root, runner_security)
     path = repo_root / relative
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
-    control_root = f'"$RUNNER_TOOL_CACHE"/bcf-governance/{lifecycle.installed_commit}'
+    installed_commit = lifecycle.installed_commit
+    if type(installed_commit) is not str:
+        raise CIGraphError("installed controller identity must be a native string")
+    control_root = f'"$RUNNER_TOOL_CACHE"/bcf-governance/{installed_commit}'
     executable = f"{control_root}/bin/bcf"
     check = f"test -d {control_root}\ntest ! -L {control_root}\ntest -x {executable}"
     return executable, check, lifecycle, ((relative, digest),)
