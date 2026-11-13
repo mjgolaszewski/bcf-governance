@@ -178,6 +178,8 @@ def evaluate_discovery(
                 caller = str(fact.get("caller", ""))
                 if caller not in relevant or caller in declared:
                     continue
+                if fact.get('source_receiver_subjects') and entry.canonical_symbol not in fact['source_receiver_subjects']:
+                    continue
                 parameter_derived = bool(
                     fact.get("parameter_origins")
                     or fact.get("downstream_of_parameter") is True

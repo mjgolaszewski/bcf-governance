@@ -16,6 +16,11 @@ from .semantic_python_annotation_identity import (
     external_import_identity,
     resolve_annotation_identities,
 )
+from .semantic_python_effect_obligations import (
+    container_builtin_names,
+    extend_python_effect_facts,
+    resolve_python_implicit_effects,
+)
 from .semantic_python_execution_inventory import (
     _annotation,
     _FunctionVisitor,
@@ -34,6 +39,7 @@ from .semantic_python_method_identity import (
 from .semantic_python_method_identity import (
     root_name as _root_name,
 )
+from .semantic_python_model_binding import literal_type_aliases, qualify_model_bindings
 from .semantic_source_paths import candidate_source_files
 
 
@@ -213,6 +219,7 @@ def discover_python_source(
     import_rows: list[dict[str, Any]] = []
     class_rows: list[dict[str, Any]] = []
     class_mutations: list[dict[str, Any]] = []
+    literal_aliases: list[str] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -230,6 +237,7 @@ def discover_python_source(
         bindings = _import_bindings(tree)
         import_rows.append({"path": relative, "bindings": bindings})
         bindings_by_local = {str(value["local"]): value for value in bindings}
+        literal_aliases.extend(literal_type_aliases(tree, relative, imports))
         class_rows.extend(
             discover_class_facts(
                 tree,
@@ -279,6 +287,7 @@ def discover_python_source(
                 "Python overload declarations require one runtime implementation: "
                 + ", ".join(missing)
             )
+        builtin_names = container_builtin_names(tree)
         for class_name, members in scopes:
             for member in members:
                 local_bindings = {
@@ -295,12 +304,15 @@ def discover_python_source(
                 )
                 for statement in member.body:
                     visitor.visit(statement)
-                functions.append(visitor.facts())
+                fact = visitor.facts()
+                extend_python_effect_facts(tree, member, fact, relative, builtin_names=builtin_names)
+                functions.append(fact)
     return {
         "language": "python",
         "files": file_rows,
         "imports": import_rows,
         "classes": class_rows,
+        "literal_type_aliases": sorted(literal_aliases),
         "class_binding_mutations": class_mutations,
         "types": sorted(types),
         "functions": functions,
@@ -611,6 +623,10 @@ def resolve_python_imports(
         function["return_annotation_symbols"] = annotation_identities(
             path, function.get("return_annotation")
         )
+        for read in function.get('caught_protocol_reads', []):
+            read['caught_type_symbols'] = sorted({symbol
+                for expression in read.get('caught_type_expressions', [])
+                for symbol in annotation_identities(path, expression)})
         for collection in ("calls", "constructors"):
             for fact in function.get(collection, []):
                 reference = fact.get("import_reference")
@@ -636,7 +652,7 @@ def resolve_python_imports(
                     fact["constructed_symbol"] = target
     for class_row in resolved.get("classes", []):
         path = str(class_row["symbol"]).split("::", 1)[0]
-        for fact in class_row.get("bases", []):
+        for fact in [*class_row.get("bases", []), *class_row.get("model_schema_references", [])]:
             reference = fact.get("import_reference")
             if not isinstance(reference, dict):
                 continue
@@ -672,7 +688,13 @@ def resolve_python_imports(
                 class_row["local_class_binding"] = False
             if escaped is not None:
                 pending.extend(str(base.get("called_symbol", "")) for base in class_row.get("bases", []))
+    qualify_model_bindings(repo_root, resolved)
     resolve_method_dispatch(resolved)
+    from .semantic_python_dataclass_contracts import discover_generated_copies
+    discover_generated_copies(resolved)
+    resolve_python_implicit_effects(resolved)
+    from .semantic_python_receiver_provenance import resolve_normalization_receivers
+    resolve_normalization_receivers(resolved)
     known_types = set(resolved.get("types", []))
     plain_generics = {row["symbol"] for row in resolved.get("classes", [])
                       if row.get("plain_generic")}

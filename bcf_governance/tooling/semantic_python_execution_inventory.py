@@ -101,6 +101,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.assignments = {
             name: {f"parameter:{name}"} for name in self.parameters
         }
+        self.result_sources = {name: {'parameter:' + name} for name in self.parameters}
         self.calls: list[dict[str, Any]] = []
         self.constructors: list[dict[str, Any]] = []
         self.normalizations: list[dict[str, Any]] = []
@@ -129,6 +130,19 @@ class _FunctionVisitor(ast.NodeVisitor):
                 origins.update(self.assignments.get(child.id, {f"local:{child.id}"}))
         return origins
 
+    def _result_sources(self, node: ast.AST) -> set[str]:
+        if isinstance(node, ast.Await):
+            return self._result_sources(node.value)
+        if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Attribute) and node.func.attr in NORMALIZERS:
+                return self._result_sources(node.func.value)
+            return {f"call:{node.lineno}:{node.col_offset}"}
+        if isinstance(node, ast.Attribute):
+            return self._result_sources(node.value)
+        if isinstance(node, ast.Name):
+            return set(self.result_sources.get(node.id, {'unknown:' + node.id}))
+        return {'unknown:expression'}
+
     def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
         origins = bound_method_origins(
             node.value,
@@ -140,6 +154,7 @@ class _FunctionVisitor(ast.NodeVisitor):
             self._record_receiver_attribute_target(target)
             if isinstance(target, ast.Name):
                 self.assignments[target.id] = self.assignments.get(target.id, set()) | origins
+                self.result_sources.setdefault(target.id, set()).update(self._result_sources(node.value))
         self.generic_visit(node)
 
     def visit_AnnAssign(self, node: ast.AnnAssign) -> None:  # noqa: N802
@@ -194,6 +209,13 @@ class _FunctionVisitor(ast.NodeVisitor):
             "called_symbol": symbol,
             "call_name": name,
             "line": node.lineno,
+            "column": node.col_offset,
+            "literal_arguments": all(
+                isinstance(value, (ast.Constant, ast.Tuple, ast.List, ast.Dict, ast.Set,
+                                   ast.UnaryOp, ast.UAdd, ast.USub, ast.Load))
+                for argument in [*node.args, *(keyword.value for keyword in node.keywords)]
+                for value in ast.walk(argument)
+            ) and all(keyword.arg is not None for keyword in node.keywords),
             "argument_origins": sorted(self._origins(node)),
         }
         reference = _call_reference(node.func, self.import_bindings)
@@ -232,6 +254,7 @@ class _FunctionVisitor(ast.NodeVisitor):
                 {
                     **fact,
                     "receiver_root": root,
+                    'receiver_result_sources': sorted(self._result_sources(node.func.value)),
                     "receiver_annotation": self.parameters.get(root or ""),
                     "parameter_origins": parameter_origins,
                 }

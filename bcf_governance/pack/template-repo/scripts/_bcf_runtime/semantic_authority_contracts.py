@@ -495,7 +495,8 @@ def _validate_operation_structure(
 
 
 def _validate_operations(
-    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any]
+    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any],
+    *, unresolved_dynamic_policy: str = "fail_closed",
 ) -> list[dict[str, Any]]:
     _schema(repo_root, "application-operations.schema.json", payload)
     populations = payload["populations"]
@@ -571,6 +572,7 @@ def _validate_operations(
         try:
             write_count, authority_count = validate_operation_effects(
                 operation, str(function["symbol"]), inventory,
+                unresolved_dynamic_policy=unresolved_dynamic_policy,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:
@@ -736,7 +738,7 @@ def validate_semantic_authority(
         else []
     )
     operation_observations = (
-        _validate_operations(repo_root, operations, inventory)
+        _validate_operations(repo_root, operations, inventory, unresolved_dynamic_policy=registry.unresolved_dynamic_policy)
         if validate_operations and "application_operation_inventory" in enabled
         else []
     )
@@ -773,5 +775,6 @@ def validate_application_operations(
     if states["application_operation_inventory"] not in {"advisory", "blocking"}:
         return []
     return _validate_operations(
-        repo_root, load_application_operations(repo_root).raw, inventory
+        repo_root, load_application_operations(repo_root).raw, inventory,
+        unresolved_dynamic_policy=load_registry(repo_root).unresolved_dynamic_policy,
     )

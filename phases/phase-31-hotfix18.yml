@@ -1,0 +1,53 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF18 Hotfix Log
+  id: bcf-governance-phase-31-hotfix18
+  version: 1.0.0
+  generated_at_utc: '2026-11-13T00:00:00Z'
+  status: planned
+  path: phases/phase-31-hotfix18.yml
+hotfix:
+  id: P31-HF18
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 18
+  summary: Repair current BDMCP constructor, callback and receiver provenance while preserving existing report and fail-closed
+    policies
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest tests/test_consumer_callback_contracts.py tests/test_semantic_model_binding.py tests/test_semantic_method_effects.py
+  - .venv/bin/bcf ci submit --repo-root .
+  executed_commands:
+  - python -m pytest tests/test_semantic_value_origins.py tests/test_consumer_callback_contracts.py -q
+  - python -m mypy bcf_governance/tooling/semantic_python_value_origins.py bcf_governance/tooling/semantic_operation_effects.py
+    bcf_governance/tooling/semantic_python_effect_obligations.py
+  - bcf environment apply --repo-root .
+  - bcf reconcile --repo-root . --apply
+  notes:
+  - Scope is only what Recovery requires to publish BDMCP; broader experimental work remains reachable on repair/maintained-consumer-contracts
+    at 7761979c601171651ab601849cbdec44d183ee8d.
+  - 415 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
+    native reconciliation, current consumer acceptance and standard release pipeline remain pending.
+  - Unknown implicit callbacks remain explicitly unresolved under existing report policy and reject under fail_closed. Source-known
+    reached writes reject in both modes; explicit effect and dynamic-call failures remain mandatory.
+  - Normalization receiver identity comes from actual source constructor results, not parameter annotations or lookup selector
+    taint. Unknown, reassigned and annotation-only receivers remain conservative.
+  - No release custody or safe installation claim. Existing governance, security, ownership, callback, alias and signed SDK
+    boundaries remain required. Deferred Identity/JIT and experimental 2.5 inputs are preserved.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml

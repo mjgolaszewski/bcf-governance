@@ -6,7 +6,9 @@ Licensed under the MIT License.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
+
+from .semantic_python_value_origins import value_origins
 
 WRITE_CALLS = {
     "chmod", "mkdir", "rename", "rmdir", "symlink_to", "touch", "unlink",
@@ -58,9 +60,11 @@ def validate_operation_effects(
     operation: dict[str, Any],
     entrypoint_symbol: str,
     inventory: dict[str, Any],
-    *, source_modules: tuple[str, ...] = (),
+    *, source_modules: tuple[str, ...] = (), unresolved_dynamic_policy: str = "fail_closed",
 ) -> tuple[int, int]:
     """Trace one entrypoint and require all effects to cross declared ports."""
+    if unresolved_dynamic_policy not in {'report', 'fail_closed'}:
+        raise SemanticOperationEffectError('unsupported unresolved dynamic policy')
     functions = {
         str(row["symbol"]): row for row in inventory.get("functions", [])
     }
@@ -97,42 +101,112 @@ def validate_operation_effects(
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
-    pending = [entrypoint, *(path + "::<module>" for path in source_modules if path + "::<module>" in functions)]
-    visited: set[str] = set()
+    pending: list[tuple[str, tuple[tuple[str, str], ...], bool]] = [(entrypoint, (), False), *((path + "::<module>", (), False) for path in source_modules if path + "::<module>" in functions)]
+    visited: set[tuple[str, tuple[tuple[str, str], ...], bool]] = set()
     # The function-name population is fixed for this one fresh validation.
     # Reuse only lookup answers, never source observations or acceptance results.
     resolved_calls: dict[str, str | None] = {}
+    diagnostics: list[str] = []
+    diagnostic_count = 0
+
+    def reject(message: str) -> None:
+        nonlocal diagnostic_count
+        diagnostic_count += 1
+        # Keep ordinary validation output bounded even for a large source graph.
+        # Every failure still prevents acceptance, including omitted details.
+        if len(diagnostics) < 32:
+            diagnostics.append(message[:2048])
+
     while pending:
-        symbol = pending.pop()
-        if symbol in visited:
+        symbol, arguments, callback_required = pending.pop()
+        if (symbol, arguments, callback_required) in visited:
             continue
-        visited.add(symbol)
+        visited.add((symbol, arguments, callback_required))
         function = functions[symbol]
+        report_new = unresolved_dynamic_policy == 'report' and not callback_required
+        def report_observation(kind: str, line: object, target: object = '', symbol: str = symbol) -> None:
+            observation = {'kind': kind, 'symbol': symbol, 'line': line,
+                           'target': target, 'operation': operation['id'], 'qualified': False}
+            if observation not in inventory.setdefault('unresolved', []):
+                inventory['unresolved'].append(observation)
+        origins = value_origins(symbol, functions, arguments)
+        contextual_sites = {
+            (call.get('line'), call.get('called_symbol')) for call in function.get('calls', [])
+            if (call.get('line'), call.get('column')) in origins['contextual_calls']
+            or (call.get('line'), call.get('column')) in origins.get('native_reads', {})
+        }
+
+        def caller_arguments(call: dict[str, Any], context: dict[str, Any] = origins) -> tuple[tuple[str, str], ...]:
+            frame = call.get('constructor_frame_origin')
+            if frame:
+                return cast(tuple[tuple[str, str], ...], context['implicit_calls'].get((frame['line'], frame['column'], frame['target']), ()))
+            return cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
+
+        if origins.get('initializer_protocol_unknown'):
+            reject(
+                f"operation {operation['id']} contains an unqualified initializer runtime protocol at {symbol}"
+            )
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
-                pending.append(module)
-            for effect in function.get("effects", []):
-                target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
-                if effect.get("kind") == "write":
-                    writes.add(target)
-                elif effect.get("kind") == "authority":
-                    authority.add(target)
-                else:
-                    raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
-        if function.get("unresolved"):
-            raise SemanticOperationEffectError(
+                pending.append((module, (), callback_required))
+        for effect in function.get("effects", []):
+            target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
+            if effect.get("kind") == "write":
+                if (effect.get("line"), effect.get("target")) not in origins["writes"]:
+                    legacy = [effect.get('kind'), effect.get('line'), effect.get('target')]
+                    root = str(effect.get('target', '')).split('.', 1)[0].split('[', 1)[0]
+                    if (report_new and 'legacy_effect_sites' in function
+                            and legacy not in function['legacy_effect_sites']
+                            and root in function.get('lexically_allocated_containers', [])):
+                        report_observation('unqualified_container_ownership', effect.get('line'), effect.get('target'))
+                    else:
+                        writes.add(target)
+            elif effect.get("kind") == "authority":
+                authority.add(target)
+            else:
+                reject(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+        remaining_obligations = [item for item in function.get('implicit_effect_obligations', [])
+            if not (item.get('binding_source') == 'constructor_initializer_frame' and
+                    (item.get('line'), item.get('column'), item.get('class_symbol'))
+                    in origins['constructor_inputs'])
+            and not (item.get('kind') == 'unqualified_generated_copy_binding' and
+                     (item.get('line'), item.get('column'), item.get('class_symbol')) in origins.get('generated_copies', set()))
+            and not (item.get('kind') == 'unqualified_format_callback' and
+                     (item.get('line'), item.get('column')) in origins['format_inputs'])]
+        if report_new:
+            for item in remaining_obligations:
+                report_observation(str(item.get('kind')), item.get('line'), item.get('class_symbol', ''))
+            remaining_obligations = []
+        if remaining_obligations:
+            obligations = ", ".join(
+                f"{item.get('kind')}:{item.get('class_symbol', '')}:{item.get('line')}"
+                for item in remaining_obligations
+            )
+            reject(
+                f"operation {operation['id']} contains unqualified implicit execution at {symbol}: {obligations}"
+            )
+        if any((item.get('line'), item.get('called_symbol')) not in contextual_sites
+               for item in function.get('unresolved', [])):
+            reject(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
             )
         if any(
             failure.get("port_eligible") is not True
+            and (failure.get('line'), failure.get('called_symbol')) not in contextual_sites
             for failure in function.get("effect_unresolved", [])
         ):
-            raise SemanticOperationEffectError(
+            reject(
                 f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
             )
         for call in function.get("calls", []):
-            raw = str(call.get("called_symbol", ""))
+            if (call.get('line'), call.get('column')) in origins.get('native_reads', {}):
+                # Proven exact native receiver/argument protocols are reads.
+                # Preserve the neutral call identity; this proof neither
+                # fabricates a callee nor reaches a declared source port.
+                continue
+            contextual = origins['contextual_calls'].get((call.get('line'), call.get('column')))
+            raw = str(contextual or call.get("called_symbol", ""))
             if raw not in resolved_calls:
                 resolved_calls[raw] = _resolve_function(raw, functions)
             callee = resolved_calls[raw]
@@ -140,9 +214,10 @@ def validate_operation_effects(
             hard_dispatch_failure = (
                 call.get("dispatch_resolution") == "unresolved"
                 and call.get("dispatch_port_eligible") is not True
+                and contextual is None
             )
             if hard_dispatch_failure:
-                raise SemanticOperationEffectError(
+                reject(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
             name = str(call.get("call_name", ""))
@@ -166,19 +241,19 @@ def validate_operation_effects(
             if identity in read_ports:
                 reached.add(identity)
                 if known_write or known_authority:
-                    raise SemanticOperationEffectError(
+                    reject(
                         f"operation {operation['id']} read port has a write or authority effect: {raw}"
                     )
                 # A read declaration never conceals a source-resolved body.
                 # Unsupported receiver aliases have already failed above.
                 if callee is not None:
-                    pending.append(callee)
+                    pending.append((callee, caller_arguments(call), callback_required or bool(call.get("implicit_callback"))))
                 continue
             if identity in declared_ports:
                 reached.add(identity)
                 continue
-            if call.get("dispatch_resolution") == "unresolved":
-                raise SemanticOperationEffectError(
+            if call.get("dispatch_resolution") == "unresolved" and contextual is None:
+                reject(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
             if call.get("language") == "typescript":
@@ -187,7 +262,7 @@ def validate_operation_effects(
                 if call.get("authority_effect") is True:
                     authority.add(raw)
                 if callee is not None:
-                    pending.append(callee)
+                    pending.append((callee, (), callback_required))
                 continue
             if known_write:
                 writes.add(raw)
@@ -197,21 +272,25 @@ def validate_operation_effects(
             # Module boundaries are organizational, not effect boundaries; a
             # query cannot conceal a write in an imported helper.
             if callee is not None:
-                pending.append(callee)
+                pending.append((callee, caller_arguments(call), callback_required or bool(call.get("implicit_callback"))))
     missing = declared_ports - reached
     if missing:
         rendered = ", ".join(sorted(value for _, value in missing))
-        raise SemanticOperationEffectError(
+        reject(
             f"operation {operation['id']} declares unreachable effect ports: {rendered}"
         )
     if writes:
-        raise SemanticOperationEffectError(
+        reject(
             f"operation {operation['id']} has undeclared write effects: "
             + ", ".join(sorted(writes))
         )
     if authority:
-        raise SemanticOperationEffectError(
+        reject(
             f"operation {operation['id']} has undeclared authority effects: "
             + ", ".join(sorted(authority))
         )
+    if diagnostics:
+        omitted = diagnostic_count - len(diagnostics)
+        suffix = f"; {omitted} additional failure observations omitted" if omitted else ""
+        raise SemanticOperationEffectError("; ".join(diagnostics) + suffix)
     return len(mutation_ports & reached), len(authority_ports & reached)

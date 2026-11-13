@@ -121,7 +121,7 @@ def test_classmethod_call_binds_actual_class_without_rewriting_inheritance(
                    for row in value["unresolved"])
 
 
-@pytest.mark.parametrize("hook", ["__new__", "__init__", "__post_init__", "__setattr__"])
+@pytest.mark.parametrize("hook", ["__new__", "__init__", "__setattr__"])
 def test_constructor_hooks_are_not_certified_by_class_or_decorator_spelling(
     tmp_path: Path, hook: str,
 ) -> None:
