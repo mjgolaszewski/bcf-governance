@@ -62,6 +62,7 @@ def validate_operation_effects(
     inventory: dict[str, Any],
     *, source_modules: tuple[str, ...] = (), unresolved_dynamic_policy: str = "fail_closed",
     _origin_cache: dict[tuple[int, str, tuple[tuple[str, str], ...]], dict[str, Any]] | None = None,
+    experimental_protocols: bool = True,
 ) -> tuple[int, int]:
     """Trace one entrypoint and require all effects to cross declared ports."""
     if unresolved_dynamic_policy not in {'report', 'fail_closed'}:
@@ -125,12 +126,13 @@ def validate_operation_effects(
             continue
         visited.add((symbol, arguments, callback_required))
         function = functions[symbol]
-        report_new = unresolved_dynamic_policy == 'report'
+        report_new = unresolved_dynamic_policy == 'report' or not experimental_protocols
         def report_observation(kind: str, line: object, target: object = '', symbol: str = symbol) -> None:
             observation = {'kind': kind, 'symbol': symbol, 'line': line,
                            'target': target, 'operation': operation['id'], 'qualified': False}
-            if observation not in inventory.setdefault('unresolved', []):
-                inventory['unresolved'].append(observation)
+            collection = 'unresolved' if experimental_protocols else 'effect_proof_observations'
+            if observation not in inventory.setdefault(collection, []):
+                inventory[collection].append(observation)
         # Neutral frame facts are independent of ports and operation policy.
         # The caller owns this bounded cache for one fixed inventory only.
         origin_key = (id(inventory), symbol, arguments)
@@ -170,7 +172,12 @@ def validate_operation_effects(
                 if (effect.get("line"), effect.get("target")) not in origins["writes"]:
                     legacy = [effect.get('kind'), effect.get('line'), effect.get('target')]
                     root = str(effect.get('target', '')).split('.', 1)[0].split('[', 1)[0]
-                    if (unresolved_dynamic_policy == 'report' and 'legacy_effect_sites' in function
+                    mandatory = (callback_required or symbol.endswith('.__init__')
+                        or root in function.get('external_write_roots', [])
+                        or 'legacy_effect_sites' not in function or legacy in function['legacy_effect_sites'])
+                    if not experimental_protocols and not mandatory:
+                        report_observation('unqualified_container_ownership', effect.get('line'), effect.get('target'))
+                    elif (unresolved_dynamic_policy == 'report' and 'legacy_effect_sites' in function
                             and legacy not in function['legacy_effect_sites']
                             and root not in function.get('external_write_roots', [])
                             and (not callback_required or root in function.get('lexically_allocated_containers', [])
@@ -197,9 +204,13 @@ def validate_operation_effects(
             and not (item.get('kind') == 'unqualified_format_callback' and
                      (item.get('line'), item.get('column')) in origins['format_inputs'])]
         if report_new:
+            mandatory_obligations = []
             for item in remaining_obligations:
-                report_observation(str(item.get('kind')), item.get('line'), item.get('class_symbol', ''))
-            remaining_obligations = []
+                if not experimental_protocols and item.get('kind') == 'unqualified_attribute_mutator':
+                    mandatory_obligations.append(item)
+                else:
+                    report_observation(str(item.get('kind')), item.get('line'), item.get('class_symbol', ''))
+            remaining_obligations = mandatory_obligations
         if remaining_obligations:
             obligations = ", ".join(
                 f"{item.get('kind')}:{item.get('class_symbol', '')}:{item.get('line')}"
@@ -210,7 +221,7 @@ def validate_operation_effects(
             )
         if any((item.get('line'), item.get('called_symbol')) not in contextual_sites
                for item in function.get('unresolved', [])):
-            if report_new and callback_required:
+            if unresolved_dynamic_policy == 'report' and callback_required:
                 report_observation('unresolved_callback_execution', 0)
             else:
                 reject(
@@ -221,7 +232,7 @@ def validate_operation_effects(
             and (failure.get('line'), failure.get('called_symbol')) not in contextual_sites
             for failure in function.get("effect_unresolved", [])
         ):
-            if report_new and callback_required:
+            if unresolved_dynamic_policy == 'report' and callback_required:
                 report_observation('unresolved_callback_execution', 0)
             else:
                 reject(
@@ -245,7 +256,7 @@ def validate_operation_effects(
                 and contextual is None
             )
             if hard_dispatch_failure:
-                if report_new and callback_required:
+                if unresolved_dynamic_policy == 'report' and callback_required:
                     report_observation('unresolved_callback_dispatch', call.get('line'), raw)
                 else:
                     reject(
@@ -284,7 +295,7 @@ def validate_operation_effects(
                 reached.add(identity)
                 continue
             if call.get("dispatch_resolution") == "unresolved" and contextual is None:
-                if report_new and callback_required:
+                if unresolved_dynamic_policy == 'report' and callback_required:
                     report_observation('unresolved_callback_dispatch', call.get('line'), raw)
                 else:
                     reject(

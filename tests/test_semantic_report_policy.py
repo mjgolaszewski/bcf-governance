@@ -109,3 +109,24 @@ def test_native_operation_batch_keeps_both_independent_failures(tmp_path):
     assert len(raised.value.operation_failures) == 2
     assert any('undeclared write effects' in row for row in raised.value.operation_failures)
     assert any('undeclared authority effects' in row for row in raised.value.operation_failures)
+
+
+def test_stable_contract_reports_new_protocol_inference_without_purity_claim(tmp_path):
+    _, facts = inventory(tmp_path, "def read(value): return f'{value}'")
+    assert validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False) == (0, 0)
+    assert any(row['qualified'] is False for row in facts['effect_proof_observations'])
+    assert not facts['unresolved']
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
+def test_stable_contract_still_rejects_actual_source_callback_write(tmp_path):
+    _, facts = inventory(tmp_path, "EVENTS=[]\nclass Probe:\n def __format__(self,spec):\n  EVENTS.append(7)\n  return 'foreign'\ndef read(): return f'{Probe()}'")
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False)
+
+
+def test_stable_contract_does_not_waive_legacy_dynamic_call(tmp_path):
+    _, facts = inventory(tmp_path, "def read(): return eval('1')")
+    with pytest.raises(SemanticOperationEffectError, match='unresolved dynamic call'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False)

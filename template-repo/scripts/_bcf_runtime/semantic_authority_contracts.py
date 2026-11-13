@@ -576,7 +576,7 @@ def _validate_operations(
         try:
             write_count, authority_count = validate_operation_effects(
                 operation, str(function["symbol"]), inventory,
-                unresolved_dynamic_policy=unresolved_dynamic_policy, _origin_cache=origin_cache,
+                unresolved_dynamic_policy=unresolved_dynamic_policy, _origin_cache=origin_cache, experimental_protocols=False,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:
@@ -585,6 +585,7 @@ def _validate_operations(
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
             "write_effect_count": write_count, "authority_effect_count": authority_count,
+            "execution_qualified": False, "effect_contract": "published-explicit-effects-v1",
         })
     missing = sorted(
         f"{population_id}:{key}"
