@@ -108,6 +108,7 @@ def extend_python_effect_facts(
             stores[node.id] = stores.get(node.id, 0) + 1
     classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
     instances: dict[str, str] = {}
+    scope_parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
     effects: list[dict[str, Any]] = []
     obligations: list[dict[str, Any]] = []
     for node in nodes:
@@ -125,15 +126,29 @@ def extend_python_effect_facts(
         if isinstance(value, ast.Call) and isinstance(value.func, ast.Name):
             return value.func.id if value.func.id in classes else None
         if isinstance(value, ast.Name):
+            current: ast.AST | None = value
+            while current is not None:
+                if (isinstance(current, ast.ExceptHandler) and current.name == value.id
+                        and isinstance(current.type, ast.Name) and current.type.id in classes
+                        and not stores.get(value.id)):
+                    return current.type.id
+                current = scope_parents.get(id(current))
             return instances.get(value.id)
         return None
 
-    def callback(node: ast.AST, owner: str, name: str) -> None:
+    def callback(node: ast.AST, owner: str, name: str, seen: frozenset[str] = frozenset()) -> None:
+        if owner in seen:
+            obligations.append({"kind": "unqualified_protocol_inheritance_cycle", "line": getattr(node, "lineno", 0)})
+            return
         cls = classes[owner]
         methods = [member for member in cls.body
                    if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
                    and member.name == name]
         if not methods:
+            if name in {'__str__', '__repr__', '__bool__', '__len__'}:
+                for base in cls.bases:
+                    if isinstance(base, ast.Name) and base.id in classes:
+                        callback(node, base.id, name, seen | {owner})
             return
         edge = {"caller": fact["symbol"],
             "called_symbol": f"{path}::{owner}.{name}", "call_name": name,

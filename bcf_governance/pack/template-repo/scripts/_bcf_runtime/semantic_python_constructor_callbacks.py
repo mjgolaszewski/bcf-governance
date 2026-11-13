@@ -283,9 +283,9 @@ def literal_constructor_frames(
         target = spec.get('initializer')
         declaration = functions.get(str(target), {}).get('python_value_source')
         if not declaration:
-            if call.get('literal_arguments') or all(static_scalar_expression(value, function)
-                    for value in [*node.args, *(keyword.value for keyword in node.keywords)]):
-                inputs.add((*site, spec['subject']))
+            # Qualified native initialization stores borrowed references; it
+            # does not inspect their protocols or confer ownership on them.
+            inputs.add((*site, spec['subject']))
             continue
         parsed = ast.parse(declaration).body[0]
         if not isinstance(parsed, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -308,9 +308,8 @@ def literal_constructor_frames(
             bound.setdefault(parameter.arg, 'scalar' if isinstance(default, ast.Constant) else 'unknown')
         for parameter, keyword_default in zip(parsed.args.kwonlyargs, parsed.args.kw_defaults, strict=True):
             bound.setdefault(parameter.arg, 'scalar' if isinstance(keyword_default, ast.Constant) else 'unknown')
-        guarded = initial_scalar_guards(parsed, functions.get(str(target), {}).get('unshadowed_container_builtins', []))
-        if any(value == 'unknown' and name not in guarded for name, value in bound.items()):
-            continue
+        # Unknown inputs stay borrowed. The actual initializer is visited
+        # under this frame and must independently qualify every protocol/use.
         inputs.add((*site, spec['subject']))
         frames[(*site, target)] = tuple(sorted(bound.items()))
     return inputs, frames

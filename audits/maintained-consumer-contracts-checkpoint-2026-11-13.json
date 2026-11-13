@@ -1,21 +1,21 @@
 {
   "status": "unqualified",
-  "base_commit": "f103b7bf95cf8dad8cb28b61c3ea80f16994de9b",
+  "base_commit": "4e414b48713fe8d8f95bb4cdfd91b351a41dd411",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
     "bcf_governance/tooling/ci_github_api.py": "39861e7d324dbd6994c65330294f3b736c156e6be0b5f421940e09a0487f8e5f",
     "bcf_governance/tooling/semantic_python_value_origins.py": "0c70b20dba270f35542c4939a2d8cfdfe22f9ae96cfac36541fe1e92b3c18d8e",
     "bcf_governance/tooling/semantic_operation_effects.py": "51aaba9c7fac1389a34a357967b3aed7ec6e22df4acd67c0c2e06146fc346820",
-    "bcf_governance/tooling/semantic_python_effect_obligations.py": "86267ea5c17376af2191808d5bc673cc2ee47f05f9987fe002a3316b60dc6f6f",
+    "bcf_governance/tooling/semantic_python_effect_obligations.py": "f3ded51ec74bb10e0b4b87e64772b803fef1bdd97ee7be8a9db9a75e4bdf56ae",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "308cf0ff125486403a73588db7d8e7a61912273f7b36ea035282c20b3b6974de",
-    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "e420de47ac1b48e424a7fb1c9eaae0037d7526abd90f84a53ac989ca3290b764",
+    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "a84674f2433316678a30345ced7277566dfbf89ca0c35dfd4e1695c6cf96d6bd",
     "bcf_governance/tooling/semantic_python_method_identity.py": "0fcbb058aa986638586adc6d4741218b993d5a0fbc768e600733a49742c67905",
     "tests/test_semantic_value_origins.py": "0e0262af154a5778475e5934fbce74103f6c5486c918c7e82eba6ab24ebc42ba",
     "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
-    "tests/test_semantic_constructor_frames.py": "4adb6f3476ddce3c4a14bc7f817016a34c7400e48a8ae7cca07332f887db9573"
+    "tests/test_semantic_constructor_frames.py": "7110f1c2327d8bedee26a1b4695dfffc5c9cb76ec906bc6ae245c43a79efdccf"
   },
   "affected_tests": {
-    "passed": 317,
+    "passed": 320,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
@@ -34,15 +34,8 @@
     }
   },
   "canonical_reconcile": {
-    "status": "red",
-    "tested_commit": "6ec5ff0eb07aa67634706cda73bc881fcc28fd49",
-    "stage": "semantic-lock",
-    "native_terminal_eof_reap": true,
-    "failures": [
-      "local_execution_admission.py::ensure_local_project_python LocalExecutionAdmissionError:155 input binding",
-      "local_execution_admission.py::ensure_local_project_python LocalExecutionAdmissionError:165 input binding",
-      "local_execution_admission.py::ensure_local_project_python LocalExecutionAdmissionError:183 input binding"
-    ]
+    "status": "pending_replay_after_provenance_change",
+    "previous_result": "three_unqualified_constructor_input_bindings"
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -53,15 +46,16 @@
   "constructor_frames": {
     "initial_false_refusals": 4,
     "initial_correct_denials": 5,
-    "current_controls_passed": 28
+    "current_controls_passed": 31
   },
   "finalizer_controls": {
     "unsafe_acceptances_observed": 2,
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Actual constructor caller-input provenance remains unqualified for str(exc) at the three newly reached canonical sites.",
-    "Complete framework, frozen800 consumer, ordinary-protection and release gates remain open."
+    "Caught exception subclasses, imported callbacks and native argument formatting require further causal qualification.",
+    "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
+    "Complete framework, consumer, ordinary-protection and release gates remain open."
   ],
   "source_ready": false
 }

@@ -300,3 +300,42 @@ def test_direct_formatted_output_does_not_hide_callback_writes(tmp_path):
     assert witness(path)==[1,2]
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+@pytest.mark.parametrize('inspects', [False, True])
+def test_borrowed_input_identity_is_not_a_constructor_callback(tmp_path, inspects):
+    source="""
+        STATE=[]
+        class Record:
+            def __init__(self,value):
+                ACTION
+                self.value=value
+        def read():
+            Record(STATE)
+            return len(STATE)
+    """.replace('ACTION','value.append(7)' if inspects else 'pass')
+    path,facts=inventory(tmp_path,source)
+    assert witness(path)==([1,2] if inspects else [0,0])
+    if inspects:
+        with pytest.raises(SemanticOperationEffectError):
+            validate_operation_effects(OPERATION,'consumer.py::read',facts)
+    else:
+        assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+def test_caught_custom_exception_string_callback_remains_an_effect(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Error(ValueError):
+            def __str__(self):
+                EVENTS.append(7)
+                return 'message'
+        class Wrapper(ValueError):pass
+        def read():
+            try: raise Error('bad')
+            except Error as exc: Wrapper(str(exc))
+            return len(EVENTS)
+    """)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
