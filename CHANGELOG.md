@@ -1701,7 +1701,7 @@ Published as an immutable GitHub release from exact certified merge
   truthfulness reports, exact-tree invalidation, finding accounting, and
   evidence semantic mutants.
 
-[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.9...HEAD
+[Unreleased]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.15...HEAD
 [2.3.9]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.8...v2.3.9
 [2.3.8]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.7...v2.3.8
 [2.3.7]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.6...v2.3.7
@@ -1731,3 +1731,5 @@ Published as an immutable GitHub release from exact certified merge
 [0.6.1]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/mjgolaszewski/bcf-governance/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/mjgolaszewski/bcf-governance/releases/tag/v0.5.0
+[2.3.15]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.14...v2.3.15
+[2.3.14]: https://github.com/mjgolaszewski/bcf-governance/compare/v2.3.13...v2.3.14
