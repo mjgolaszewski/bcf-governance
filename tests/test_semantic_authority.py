@@ -783,8 +783,9 @@ def test_operation_effect_change_requires_exact_base_migration() -> None:
     )
 
 
+@pytest.mark.parametrize("port_field", ["allowed_mutation_ports", "non_authoritative_output_effects"])
 def test_operation_migration_registration_derives_exact_base_digests(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, port_field: str
 ) -> None:
     base = "2" * 40
     previous = {
@@ -798,7 +799,8 @@ def test_operation_migration_registration_derives_exact_base_digests(
         "allowed_mutation_ports": ["module.py::one"],
         "allowed_authority_ports": [],
     }
-    current = {**previous, "allowed_mutation_ports": ["module.py::one", "module.py::all"]}
+    previous[port_field] = ["module.py::one"]
+    current = {**previous, port_field: ["module.py::one", "module.py::all"]}
     registry = tmp_path / "governance" / "application-operations.yml"
     registry.parent.mkdir()
     registry.write_text(

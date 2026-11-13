@@ -1,0 +1,9 @@
+schema_version: "1.0"
+owner: phases/phase-31-hotfix18.yml
+status: source_only_unqualified
+operation: governance.cli.ci.v1
+effect: non_authoritative_stdout_projection
+input_contract: native_snapshot_and_validated_standard_enum_representation
+authority_conferral: false
+consumer_input: frozen-consumer-input-1a5-20261113-v1
+reason: Seal supported values before stdout; reject user Mapping, formatter, repr and metadata hooks; preserve legacy enum output.

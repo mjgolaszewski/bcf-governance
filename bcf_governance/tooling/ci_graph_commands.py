@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 from .ci_graph_audit import audit_ci_graph
@@ -13,6 +12,7 @@ from .ci_graph_import import check_workflow_inventory, write_workflow_inventory
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
 from .ci_graph_render import apply_ci_graph, check_ci_graph, diff_ci_graph
 from .governance_install.ci_graph import reconcile_trusted_controller_runtime_topology
+from .native_projection_output import write_native_projection
 
 
 def add_graph_parser(
@@ -50,11 +50,7 @@ def add_graph_parser(
 
 
 def _print(payload: dict[str, object], output_format: str) -> None:
-    if output_format == "json":
-        print(json.dumps(payload, sort_keys=True))
-        return
-    for key, value in payload.items():
-        print(f"{key}: {value}")
+    write_native_projection(payload, output_format)
 
 
 def run_graph_command(args: argparse.Namespace) -> None:

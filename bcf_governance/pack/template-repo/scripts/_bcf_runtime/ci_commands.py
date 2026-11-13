@@ -52,6 +52,7 @@ from .local_pr_context import (
     LocalPRError,
     run_local_pr_validation,
 )
+from .native_projection_output import write_native_projection
 from .ordinary_protection_projection import (
     apply_ordinary_protection_projection,
     project_ordinary_protection,
@@ -284,11 +285,7 @@ def _parser() -> argparse.ArgumentParser:
 
 
 def _print(payload: Mapping[str, object], output_format: str) -> None:
-    if output_format == "json":
-        print(json.dumps(payload, sort_keys=True))
-    else:
-        for key, value in payload.items():
-            print(f"{key}: {value}")
+    write_native_projection(payload, output_format)
 
 
 def main(

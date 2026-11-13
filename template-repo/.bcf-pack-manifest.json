@@ -612,7 +612,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "cb6814edcb7731530b26187bfedccf9c9121b00c10bbbf1de334c45c23dc866a"
+      "sha256": "5fc90f0ef9aaa43b9dfdb3b53eee8aa7eb8dc454c28e86048a2a74cb4219a205"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
@@ -784,7 +784,7 @@
     },
     "scripts/_bcf_runtime/ci_graph_commands.py": {
       "operation": "copy",
-      "sha256": "3eed5ae1e71435be74ca66ac6ec1d7fe908282d60c086df518e5af220fa2ea77"
+      "sha256": "2668ad48d9cbc1c507c8198c589d585f6f174023598efd927d71c9f8400f0915"
     },
     "scripts/_bcf_runtime/ci_graph_compatibility.py": {
       "operation": "copy",
@@ -1406,6 +1406,14 @@
       "operation": "copy",
       "sha256": "0a0606ba63715f58ff364d3f53e54cd735d849e98e0bdf2eb743b1cf58d75335"
     },
+    "scripts/_bcf_runtime/native_projection_output.py": {
+      "operation": "copy",
+      "sha256": "cbf8d8900f581697091505373289a678f2d01c73c88fc5665c0afe5e32f31d82"
+    },
+    "scripts/_bcf_runtime/native_protocol_slots.py": {
+      "operation": "copy",
+      "sha256": "2468c1b09e14cee808677f4034e232773ea68c755b2e977c79a2ccb774b124e5"
+    },
     "scripts/_bcf_runtime/negative_control_execution.py": {
       "operation": "copy",
       "sha256": "71f34b4afc5b87bba96da0cbf5e95e6bee46aaa8006f59564418bc679b5960d0"
@@ -1629,7 +1637,7 @@
     },
     "scripts/_bcf_runtime/semantic_authority_migrations.py": {
       "operation": "copy",
-      "sha256": "65312429d0b87cea46e04afb6230a535c8173b0d85fdb9af5e8f7badf5f0bffa"
+      "sha256": "6e364c5bb7339855305ce472959407921cad830bcb0dd2b9f6763e22e3326f53"
     },
     "scripts/_bcf_runtime/semantic_derivations.py": {
       "operation": "copy",
