@@ -6,6 +6,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations
 
+import json
 from typing import Any, cast
 
 from .semantic_python_value_origins import value_origins
@@ -63,6 +64,7 @@ def validate_operation_effects(
     *, source_modules: tuple[str, ...] = (), unresolved_dynamic_policy: str = "fail_closed",
     _origin_cache: dict[tuple[int, str, tuple[tuple[str, str], ...]], dict[str, Any]] | None = None,
     experimental_protocols: bool = True,
+    _observation_keys: dict[str, set[str]] | None = None,
 ) -> tuple[int, int]:
     """Trace one entrypoint and require all effects to cross declared ports."""
     if unresolved_dynamic_policy not in {'report', 'fail_closed'}:
@@ -120,6 +122,7 @@ def validate_operation_effects(
             diagnostics.append(message[:2048])
 
     origin_cache = {} if _origin_cache is None else _origin_cache
+    observation_keys = {} if _observation_keys is None else _observation_keys
     while pending:
         symbol, arguments, callback_required = pending.pop()
         if (symbol, arguments, callback_required) in visited:
@@ -131,8 +134,13 @@ def validate_operation_effects(
             observation = {'kind': kind, 'symbol': symbol, 'line': line,
                            'target': target, 'operation': operation['id'], 'qualified': False}
             collection = 'unresolved' if experimental_protocols else 'effect_proof_observations'
-            if observation not in inventory.setdefault(collection, []):
-                inventory[collection].append(observation)
+            rows = inventory.setdefault(collection, [])
+            if collection not in observation_keys:
+                observation_keys[collection] = {json.dumps(row, sort_keys=True) for row in rows}
+            key = json.dumps(observation, sort_keys=True)
+            if key not in observation_keys[collection]:
+                observation_keys[collection].add(key)
+                rows.append(observation)
         # Neutral frame facts are independent of ports and operation policy.
         # The caller owns this bounded cache for one fixed inventory only.
         origin_key = (id(inventory), symbol, arguments)

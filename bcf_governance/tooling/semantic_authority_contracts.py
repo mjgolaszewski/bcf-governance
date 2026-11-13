@@ -528,6 +528,7 @@ def _validate_operations(
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
     operation_failures: list[str] = []
+    observation_keys: dict[str, set[str]] = {}
     for operation in payload["operations"]:
         population_id = str(operation["population"])
         key = str(operation["population_key"])
@@ -576,7 +577,7 @@ def _validate_operations(
         try:
             write_count, authority_count = validate_operation_effects(
                 operation, str(function["symbol"]), inventory,
-                unresolved_dynamic_policy=unresolved_dynamic_policy, _origin_cache=origin_cache, experimental_protocols=False,
+                unresolved_dynamic_policy=unresolved_dynamic_policy, _origin_cache=origin_cache, experimental_protocols=False, _observation_keys=observation_keys,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:

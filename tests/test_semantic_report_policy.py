@@ -148,3 +148,16 @@ def test_stable_callback_worklist_escape_still_rejects_after_declared_port(tmp_p
 def test_private_set_membership_does_not_escape_its_outer_container(tmp_path):
     _, facts = inventory(tmp_path, "from dataclasses import dataclass\n@dataclass\nclass Probe:\n def __post_init__(self):\n  ordinals=set()\n  for ordinal in (1,2):\n   if ordinal in ordinals: raise ValueError('duplicate')\n   ordinals.add(ordinal)\ndef read(): return Probe()")
     assert validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False) == (0, 0)
+
+
+def test_observation_index_preserves_existing_rows_and_operation_identity(tmp_path):
+    _, facts = inventory(tmp_path, "def read(value): return f'{value}'")
+    index = {}
+    for operation in (OPERATION, OPERATION, {**OPERATION, 'id': 'other.read.v1'}):
+        assert validate_operation_effects(operation, 'consumer.py::read', facts,
+            experimental_protocols=False, _observation_keys=index) == (0, 0)
+    observations = list(facts['effect_proof_observations'])
+    assert {row['operation'] for row in observations} == {OPERATION['id'], 'other.read.v1'}
+    assert all(row['qualified'] is False for row in observations)
+    validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False)
+    assert facts['effect_proof_observations'] == observations
