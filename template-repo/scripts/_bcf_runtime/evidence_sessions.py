@@ -23,6 +23,7 @@ from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     active_planned_session_version,
 )
+from .exception_messages import native_exception_message
 
 SESSION_FILENAME = "evidence-session.json"
 SESSION_ID_BYTES = 16
@@ -212,7 +213,7 @@ def _manifest_payload(
             else "1.0"
         )
     except EvidenceSessionSchemaError as exc:
-        raise EvidenceError(str(exc)) from exc
+        raise EvidenceError(native_exception_message(exc)) from exc
     payload = {
         "schema_version": session_version,
         "session_id": session_id,

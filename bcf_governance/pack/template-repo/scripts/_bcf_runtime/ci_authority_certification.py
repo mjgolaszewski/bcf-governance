@@ -39,6 +39,7 @@ from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     load_evidence_session_schema,
 )
+from .exception_messages import native_exception_message
 
 
 class CICertificationError(ValueError):
@@ -265,13 +266,13 @@ def _merged_authority_input(
     try:
         validate_ci_contract(repo_root, "authority", authority)
     except CIAuthorityContractError as exc:
-        raise CICertificationError(str(exc)) from exc
+        raise CICertificationError(native_exception_message(exc)) from exc
     snapshot_map: dict[str, dict[str, Any]] = {}
     for snapshot in snapshots:
         try:
             validate_ci_contract(repo_root, "provider_snapshot", snapshot)
         except CIAuthorityContractError as exc:
-            raise CICertificationError(str(exc)) from exc
+            raise CICertificationError(native_exception_message(exc)) from exc
         producer_id = str(snapshot["producer_id"])
         if producer_id in snapshot_map:
             raise CICertificationError(f"duplicate raw snapshot for producer {producer_id}")
@@ -389,7 +390,7 @@ def normalize_ci_certification(
             stage=CertificationStage.NORMALIZED,
         )
     except AuthorityContractError as exc:
-        raise CICertificationError(str(exc)) from exc
+        raise CICertificationError(native_exception_message(exc)) from exc
     if evaluation.admission_ordinal is None:
         raise CICertificationError("certification cannot be normalized without an admission")
     selected = next(
@@ -493,7 +494,7 @@ def normalize_ci_certification(
     try:
         validate_ci_contract(repo_root, "certification", report)
     except CIAuthorityContractError as exc:
-        raise CICertificationError(str(exc)) from exc
+        raise CICertificationError(native_exception_message(exc)) from exc
     return report
 
 
@@ -516,7 +517,7 @@ def load_authenticated_snapshots(
         try:
             validate_ci_contract(repo_root, "provider_snapshot", payload)
         except CIAuthorityContractError as exc:
-            raise CICertificationError(str(exc)) from exc
+            raise CICertificationError(native_exception_message(exc)) from exc
         if payload["producer_id"] != descriptor["producer_id"]:
             raise CICertificationError("raw snapshot descriptor producer mismatch")
         if payload["authentication"]["captured_at"] != descriptor["authenticated_at"]:
@@ -536,7 +537,7 @@ def _verify_session(
     try:
         session_schema = load_evidence_session_schema(repo_root, payload)
     except EvidenceSessionSchemaError as exc:
-        raise CICertificationError(str(exc)) from exc
+        raise CICertificationError(native_exception_message(exc)) from exc
     session_errors = sorted(
         Draft202012Validator(session_schema).iter_errors(payload),
         key=lambda error: ([str(value) for value in error.absolute_path], error.message),
@@ -590,7 +591,7 @@ def verify_ci_certification(
         validate_ci_contract(repo_root, "authority", authority)
         validate_ci_contract(repo_root, "certification", certification)
     except CIAuthorityContractError as exc:
-        raise CICertificationError(str(exc)) from exc
+        raise CICertificationError(native_exception_message(exc)) from exc
     snapshots = load_authenticated_snapshots(repo_root, certification_path, certification)
     _verify_session(repo_root, session_manifest_path, certification)
     truth_descriptor = certification.get("governance_truth")
@@ -622,7 +623,7 @@ def verify_ci_certification(
                     },
                 )
             except EvaluationScopeError as exc:
-                raise CICertificationError(str(exc)) from exc
+                raise CICertificationError(native_exception_message(exc)) from exc
     expected = normalize_ci_certification(
         repo_root,
         authority=authority,
@@ -650,7 +651,7 @@ def verify_ci_certification(
             stage=CertificationStage.TRUTH_VERIFIED,
         )
     except AuthorityContractError as exc:
-        raise CICertificationError(str(exc)) from exc
+        raise CICertificationError(native_exception_message(exc)) from exc
     return CertificationVerification(
         status="pass" if evaluation.state is AuthorityState.CERTIFIED else "fail",
         computed_state=evaluation.state.value,

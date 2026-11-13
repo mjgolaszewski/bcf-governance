@@ -9,6 +9,7 @@ from urllib.parse import quote, urlencode
 
 from .ci_github_errors import GitHubAPIError
 from .ci_github_values import GitHubValueError, positive_id, sha
+from .exception_messages import native_exception_message
 from .release_versions import ReleaseVersionError, parse_release_tag
 
 
@@ -116,7 +117,7 @@ class GitHubReleaseAPIMixin:
         try:
             numeric = positive_id(release_id, field="release ID")
         except GitHubValueError as exc:
-            raise GitHubAPIError(str(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
         base = upload_url.split("{", 1)[0]
         expected = (
             f"https://uploads.github.com/repos/{self._repository(repository)}"
@@ -134,7 +135,7 @@ class GitHubReleaseAPIMixin:
         try:
             numeric = positive_id(release_id, field="release ID")
         except GitHubValueError as exc:
-            raise GitHubAPIError(str(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
         value = self._request(
             "PATCH",
             f"/repos/{self._repository(repository)}/releases/{numeric}",
@@ -148,7 +149,7 @@ class GitHubReleaseAPIMixin:
         try:
             exact_sha = sha(tag_object_sha, field="tag object SHA")
         except GitHubValueError as exc:
-            raise GitHubAPIError(str(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
         value = self._request(
             "GET",
             f"/repos/{self._repository(repository)}/git/tags/{exact_sha}",

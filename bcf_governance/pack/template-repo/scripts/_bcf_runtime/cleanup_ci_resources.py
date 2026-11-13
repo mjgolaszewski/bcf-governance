@@ -16,6 +16,7 @@ from .evidence_session_cleanup import (
     apply_session_cleanup,
     plan_session_cleanup,
 )
+from .exception_messages import native_exception_message
 
 LABEL_KEY = "io.bcf-governance.ci-run"
 RUN_ID_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{5,127}$")
@@ -162,7 +163,7 @@ def main(argv: list[str] | None = None) -> None:
             _confirm(args.yes)
             remove_resources(resources)
     except (RuntimeError, ValueError, SessionCleanupError) as exc:
-        raise SystemExit(str(exc)) from exc
+        raise SystemExit(native_exception_message(exc)) from exc
     payload = {
         "status": "changed" if args.apply and resources else "actionable" if resources else "clean",
         "run_id": args.run_id,

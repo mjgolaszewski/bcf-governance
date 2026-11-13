@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
+from .exception_messages import native_exception_message
 from .local_pr_context import (
     ProspectiveValidationError,
     Runner,
@@ -30,7 +31,7 @@ def canonical_prospective_inputs(
         evaluation = post_merge_evaluation(validate_ci_graph(root).graph)
         authored_candidate_title(root, mode=evaluation.mode, target=evaluation.target)
     except CIGraphError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     return {
         "semantic_intent": evaluation.mode,
         "evaluation_target": evaluation.target,

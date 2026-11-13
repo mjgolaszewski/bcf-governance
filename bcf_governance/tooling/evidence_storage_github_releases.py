@@ -11,6 +11,7 @@ from .ci_github_api import GitHubAPIError
 from .evidence_storage_contracts import EvidenceStorageError, parse_utc
 from .evidence_storage_github_api import GitHubEvidenceAPI
 from .evidence_storage_manifests import MANIFEST_NAME
+from .exception_messages import native_exception_message
 
 
 def file_sha256(path: Path) -> str:
@@ -263,7 +264,7 @@ def publish_release_assets(
     try:
         release = api.evidence_release_by_tag(repository, tag)
     except GitHubAPIError as exc:
-        if "returned 404" not in str(exc):
+        if "returned 404" not in native_exception_message(exc):
             raise
         release = _find_publication_release(writer, repository, tag)
         if release is None:
@@ -275,7 +276,7 @@ def publish_release_assets(
                     body=body,
                 )
             except GitHubAPIError as create_exc:
-                if "returned 422" not in str(create_exc):
+                if "returned 422" not in native_exception_message(create_exc):
                     raise
                 release = _find_publication_release(writer, repository, tag)
                 if release is None:
@@ -302,7 +303,7 @@ def publish_release_assets(
                     maximum_bytes=int(contract["provider"]["max_asset_bytes"]),
                 )
             except GitHubAPIError as upload_exc:
-                if "returned 422" not in str(upload_exc):
+                if "returned 422" not in native_exception_message(upload_exc):
                     raise
                 observed = writer.evidence_release_by_id(repository, release_id, tag=tag)
                 observed_assets = _publication_assets(observed, expected, complete=False)
@@ -319,7 +320,7 @@ def publish_release_assets(
             try:
                 writer.publish_release(repository, release_id)
             except GitHubAPIError as publish_exc:
-                if "returned 422" not in str(publish_exc):
+                if "returned 422" not in native_exception_message(publish_exc):
                     raise
                 # A concurrent publisher may have made the release immutable.
                 # The ordinary reader below must still prove its exact final state.

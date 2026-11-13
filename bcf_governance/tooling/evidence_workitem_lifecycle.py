@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml
 
+from .exception_messages import native_exception_message
 from .truth_reporting import eligible_receipts
 
 DEPENDENCY_PREFIX = "requires-workitem-closure:"
@@ -255,7 +256,7 @@ def workitem_observation(
     try:
         validate_workitem_dependencies(entries)
     except WorkitemContractError as exc:
-        structural_issues.append(str(exc))
+        structural_issues.append(native_exception_message(exc))
 
     closed_ids: set[str] = set()
     reports: list[dict[str, Any]] = []

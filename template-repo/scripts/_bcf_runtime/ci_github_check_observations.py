@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .ci_github_values import GitHubValueError, positive_id, repository
+from .exception_messages import native_exception_message
 
 
 class GitHubCheckObservationMixin:
@@ -30,7 +31,7 @@ class GitHubCheckObservationMixin:
             exact_repository = repository(repository_name)
             numeric = positive_id(check_run_id, field="check run ID")
         except GitHubValueError as exc:
-            raise ValueError(str(exc)) from exc
+            raise ValueError(native_exception_message(exc)) from exc
         value = self._request(
             "GET",
             f"/repos/{exact_repository}/check-runs/"

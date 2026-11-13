@@ -39,6 +39,7 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_bounded_target_successor,
 )
+from .exception_messages import native_exception_message
 from .governance_validation.authored_phase_state import validate_authored_phase_state
 from .governance_validation.ci_state_matrix import validate_ci_state_matrix
 from .governance_validation.preflight_diagnostics import write_preflight_diagnostic
@@ -166,7 +167,7 @@ def _git_state(repo_root: Path) -> dict[str, Any]:
     try:
         return _inspect_git_state(repo_root)
     except RepositoryContextError as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
 
 
 def _syntax_checks(repo_root: Path) -> dict[str, int]:
@@ -287,14 +288,14 @@ def _interpreter_requirements(repo_root: Path, python: Path) -> dict[str, Any]:
         if plan is not None:
             verify_interpreter_environment_projection(plan)
     except InterpreterEnvironmentError as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
     if plan is None:
         return {}
     identity = _interpreter_identity(python)
     try:
         versions = probe_interpreter_environment(plan, python)
     except InterpreterEnvironmentError as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
     return {
         "identity": identity,
         "versions": {str(key): str(value) for key, value in sorted(versions.items())},
@@ -352,7 +353,7 @@ def _self_controller(
             alternate_lane=ordinary_alternate_lane_available,
         )
     except ControllerPreflightError as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
 
 
 def _required_gates(repo_root: Path) -> list[str]:
@@ -394,7 +395,7 @@ def _negative_control_targets(repo_root: Path) -> int:
         scheduled = validator()
         return declared + int(scheduled)
     except (NegativeControlPreflightError, RuntimeError) as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
 
 
 def _semantic_ownership(repo_root: Path) -> dict[str, Any]:
@@ -429,7 +430,7 @@ def _pack_manifest(repo_root: Path) -> dict[str, Any]:
         if interpreter is not None:
             verify_interpreter_environment_projection(interpreter)
     except (InterpreterEnvironmentError, ValueError) as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
     return {
         "applicable": True,
         "file_count": len(entries),
@@ -522,7 +523,7 @@ def run_preflight(
             subject_commit="PREFLIGHT",
         )
     except ValueError as exc:
-        raise PreflightError(str(exc)) from exc
+        raise PreflightError(native_exception_message(exc)) from exc
     if scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION:
         try:
             step(
@@ -532,7 +533,7 @@ def run_preflight(
                 ),
             )
         except WorkitemContractError as exc:
-            raise PreflightError(str(exc)) from exc
+            raise PreflightError(native_exception_message(exc)) from exc
     syntax = step("syntax", lambda: _syntax_checks(repo_root))
     exposure = step("exposure", lambda: _exposure_scan(repo_root))
     interpreter = step(

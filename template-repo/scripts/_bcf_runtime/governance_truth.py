@@ -27,6 +27,7 @@ from .evidence_plan_scope import truth_scope_projection
 from .evidence_planning import load_claim_model
 from .evidence_reuse_attestations import compose_local_reuse
 from .evidence_workitem_lifecycle import workitem_observation
+from .exception_messages import native_exception_message
 from .governance_evidence import (
     bundle_digest,
     expected_evidence_kinds,
@@ -280,7 +281,7 @@ def derive_truth(
             contract_version=contract_version,
         )
     except ReceiptError as exc:
-        raise TruthfulnessError(str(exc)) from exc
+        raise TruthfulnessError(native_exception_message(exc)) from exc
     claim_model = load_claim_model(repo_root) if contract_version == "3.0" else None
     session_plan = (
         current_session_plan(evidence_dir, current)
@@ -351,7 +352,7 @@ def derive_truth(
             subject_commit=str(current["commit_sha"]),
         )
     except EvaluationScopeError as exc:
-        raise TruthfulnessError(str(exc)) from exc
+        raise TruthfulnessError(native_exception_message(exc)) from exc
     scoped_gate_ids, session_scope_issues = truth_scope_projection(
         repo_root, session_plan, evaluation_mode=evaluation_mode,
         evaluation_target=evaluation_target, enabled=contract_version == "3.0",
@@ -618,7 +619,7 @@ def derive_truth(
                     "applicability": "enabled",
                     "status": "fail",
                     "computed_state": "invalid",
-                    "reasons": [str(exc)],
+                    "reasons": [native_exception_message(exc)],
                 }
             if ci_certification.get("status") != "pass":
                 truth_issues.append("ci_certification_not_verified")

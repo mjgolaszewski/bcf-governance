@@ -40,6 +40,7 @@ from .ci_github_values import (
 from .ci_github_values import (
     workflow_reference as _provider_workflow_reference,
 )
+from .exception_messages import native_exception_message
 from .provider_read import ProviderReadAttempt
 
 
@@ -95,8 +96,8 @@ class GitHubAPI(
             )
         except GitHubTransportError as exc:
             if exc.status_code in {409, 422}:
-                raise GitHubAPIConflictError(str(exc)) from exc
-            raise GitHubAPIError(str(exc)) from exc
+                raise GitHubAPIConflictError(native_exception_message(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
 
     def _request_bytes(
         self,
@@ -116,7 +117,7 @@ class GitHubAPI(
                 observations=self._provider_read_observations,
             )
         except GitHubTransportError as exc:
-            raise GitHubAPIError(str(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
 
     def _upload_bytes(
         self, url: str, *, payload: bytes, media_type: str
@@ -161,7 +162,7 @@ class GitHubAPI(
         try:
             return _provider_repository(repository)
         except GitHubValueError as exc:
-            raise GitHubAPIError(str(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
 
     def repository(self, repository: str) -> dict[str, Any]:
         value = self._request("GET", f"/repos/{self._repository(repository)}")
@@ -434,7 +435,7 @@ class GitHubAPI(
                 name_prefix=name_prefix,
             )
         except ArtifactInventoryError as exc:
-            raise GitHubAPIError(str(exc)) from exc
+            raise GitHubAPIError(native_exception_message(exc)) from exc
 
     def artifact_bytes(
         self,
@@ -679,18 +680,18 @@ def _positive_id(value: object, *, field: str) -> str:
     try:
         return _provider_positive_id(value, field=field)
     except GitHubValueError as exc:
-        raise GitHubAPIError(str(exc)) from exc
+        raise GitHubAPIError(native_exception_message(exc)) from exc
 
 
 def _workflow_reference(value: object) -> str:
     try:
         return _provider_workflow_reference(value)
     except GitHubValueError as exc:
-        raise GitHubAPIError(str(exc)) from exc
+        raise GitHubAPIError(native_exception_message(exc)) from exc
 
 
 def _sha(value: object, *, field: str) -> str:
     try:
         return _provider_sha(value, field=field)
     except GitHubValueError as exc:
-        raise GitHubAPIError(str(exc)) from exc
+        raise GitHubAPIError(native_exception_message(exc)) from exc

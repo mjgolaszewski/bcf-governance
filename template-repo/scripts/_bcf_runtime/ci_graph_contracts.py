@@ -49,6 +49,7 @@ from .ci_graph_timeouts import validate_component_job_timeouts, validate_gate_jo
 from .ci_graph_values import CIGraphValueError, resolve_graph_values
 from .ci_graph_workflow_run import WorkflowRunTopologyError, validate_workflow_run_depth
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .exception_messages import native_exception_message
 
 GRAPH_PATH = Path("governance/ci-graph.yml")
 EXTENSION_ROOT = Path("governance/ci-extensions")
@@ -144,7 +145,7 @@ def _load_extensions(
         try:
             payload = load_yaml_path(path)
         except GraphYAMLError as exc:
-            raise CIGraphError(str(exc)) from exc
+            raise CIGraphError(native_exception_message(exc)) from exc
         _validate_schema(payload, schema, relative)
         if payload["extension"]["id"] != reference["id"]:
             raise CIGraphError(f"CI graph extension ID mismatch: {relative}")
@@ -407,7 +408,7 @@ def _validate_workflows(graph: dict[str, Any]) -> None:
     try:
         validate_workflow_run_depth(workflows)
     except WorkflowRunTopologyError as exc:
-        raise CIGraphError(str(exc), kind="event", identifier="workflow_run") from exc
+        raise CIGraphError(native_exception_message(exc), kind="event", identifier="workflow_run") from exc
     workflow_ids = [item["id"] for item in workflows]
     paths = [item["path"] for item in workflows]
     if len(set(workflow_ids)) != len(workflow_ids) or len(set(paths)) != len(paths):
@@ -659,7 +660,7 @@ def _validate_required_gate_ownership(repo_root: Path, graph: dict[str, Any]) ->
     try:
         profile = load_yaml_path(profile_path)
     except GraphYAMLError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     profile_contract_version = str(profile.get("profile_contract_version", "1.0"))
     if profile_contract_version not in {"2.0", "3.0"}:
         return
@@ -713,7 +714,7 @@ def _trusted_controller(
     try:
         payload, relative = load_graph_controller_policy(repo_root, graph)
     except TrustedControllerPolicyError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     runner_security = payload.get("runner_security")
     if not isinstance(runner_security, dict):
         raise CIGraphError("self-governance policy lacks runner_security")
@@ -734,7 +735,7 @@ def validate_ci_graph(
     try:
         graph = load_yaml_path(path)
     except GraphYAMLError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     graph_schema = _schema(repo_root, GRAPH_SCHEMA_PATH)
     _validate_schema(graph, graph_schema, graph_path.as_posix())
     extensions, digests = _load_extensions(repo_root, graph)
@@ -743,7 +744,7 @@ def validate_ci_graph(
     try:
         composed, value_inputs = resolve_graph_values(repo_root, composed)
     except CIGraphValueError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     _validate_schema(composed, graph_schema, "composed CI graph")
     _validate_step_components(composed)
     storage_inputs, storage_contract = validate_evidence_storage(repo_root, composed)

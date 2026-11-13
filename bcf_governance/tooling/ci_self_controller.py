@@ -30,6 +30,7 @@ from .ci_graph_controller_lifecycle import (
 )
 from .ci_graph_locks import apply_ci_graph_locks, check_ci_graph_locks
 from .ci_graph_render import apply_ci_graph, check_ci_graph
+from .exception_messages import native_exception_message
 
 PIN_KEYS = (
     "BCF_BOOTSTRAP_ARTIFACT_ID",
@@ -565,7 +566,7 @@ def project_self_controller_pin(
         rendered = apply_ci_graph(root) if apply else check_ci_graph(root)
         changed.update(rendered.changed_paths)
     except CIGraphError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
     ordered = tuple(sorted(changed))
     return SelfControllerProjection("changed" if ordered else "clean", ordered)
 
@@ -593,7 +594,7 @@ def verify_self_controller_projection(repo_root: Path) -> int:
     try:
         compiled = validate_ci_graph(root)
     except CIGraphError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
     return 1 + sum(
         1
         for workflow in compiled.workflows

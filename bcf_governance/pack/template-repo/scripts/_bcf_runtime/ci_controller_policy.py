@@ -11,6 +11,7 @@ import yaml
 from jsonschema import Draft202012Validator
 
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .exception_messages import native_exception_message
 
 POLICY_PATH = "governance/trusted-controller-policy.yml"
 POLICY_SCHEMA = "schemas/trusted-controller-policy.schema.json"
@@ -102,7 +103,7 @@ def load_installed_controller_policy(repo_root: Path) -> dict[str, Any]:
     try:
         payload = load_yaml_path(repo_root / POLICY_PATH)
     except GraphYAMLError as exc:
-        raise TrustedControllerPolicyError(str(exc)) from exc
+        raise TrustedControllerPolicyError(native_exception_message(exc)) from exc
     return validate_installed_controller_policy(repo_root, payload)
 
 
@@ -117,7 +118,7 @@ def load_graph_controller_policy(
     try:
         payload = load_yaml_path(repo_root / relative)
     except GraphYAMLError as exc:
-        raise TrustedControllerPolicyError(str(exc)) from exc
+        raise TrustedControllerPolicyError(native_exception_message(exc)) from exc
     if relative == POLICY_PATH:
         payload = validate_installed_controller_policy(repo_root, payload)
     return payload, relative

@@ -19,6 +19,7 @@ from typing import Any
 
 import yaml
 
+from .exception_messages import native_exception_message
 from .interpreter_dependency_sources import (
     InterpreterDependencySourceError,
     close_installer_requirement,
@@ -230,7 +231,7 @@ def _legacy_interpreter_environment(
             requirements, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
         )
     except InterpreterDependencySourceError as exc:
-        raise InterpreterEnvironmentError(str(exc)) from exc
+        raise InterpreterEnvironmentError(native_exception_message(exc)) from exc
     graph_path = root / "governance/ci-graph.yml"
     python_minor: str | None = None
     if graph_path.is_symlink():
@@ -305,7 +306,7 @@ def derive_interpreter_environment(
                 installer_requirement=PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
             )
         except InterpreterDependencySourceError as exc:
-            raise InterpreterEnvironmentError(str(exc)) from exc
+            raise InterpreterEnvironmentError(native_exception_message(exc)) from exc
         return InterpreterEnvironmentPlan(
             requirements=source.requirements,
             requires_python=source.requires_python,
@@ -376,7 +377,7 @@ def derive_interpreter_environment(
             requirements, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
         )
     except InterpreterDependencySourceError as exc:
-        raise InterpreterEnvironmentError(str(exc)) from exc
+        raise InterpreterEnvironmentError(native_exception_message(exc)) from exc
     normalized = [_normalized_name(value) for value in requirements]
     if len(set(normalized)) != len(requirements):
         raise InterpreterEnvironmentError(
@@ -441,7 +442,7 @@ def verify_interpreter_environment_projection(
                     installer_requirement=PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT,
                 ).sha256
             except InterpreterDependencySourceError as exc:
-                raise InterpreterEnvironmentError(str(exc)) from exc
+                raise InterpreterEnvironmentError(native_exception_message(exc)) from exc
         else:
             try:
                 observed_source_sha256 = hashlib.sha256(
@@ -518,7 +519,7 @@ def materialize_interpreter_environment(
     try:
         base_python = select_materialization_base(plan.requires_python, base_python)
     except PythonRuntimeSelectionError as exc:
-        raise InterpreterEnvironmentError(str(exc)) from exc
+        raise InterpreterEnvironmentError(native_exception_message(exc)) from exc
     if plan.source_kind == "locked_project":
         verify_locked_runtime(plan, base_python, PROJECT_ENVIRONMENT_INSTALLER_REQUIREMENT)
     try:

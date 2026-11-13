@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from ..exception_messages import native_exception_message
 from ..interpreter_contract_projection import (
     InterpreterContractProjectionError,
     project_interpreter_contract,
@@ -74,7 +75,7 @@ def _validate_gate_contract_registry(
                 gates, interpreter, default_if_required=False
             )
     except InterpreterContractProjectionError as exc:
-        raise GovernanceValidationError(str(exc)) from exc
+        raise GovernanceValidationError(native_exception_message(exc)) from exc
     if isinstance(interpreter, dict):
         source = interpreter.get("dependency_source")
         if source is not None:
@@ -194,7 +195,7 @@ def _validate_gate_contract_registry(
                     except YAMLMutationPathError as exc:
                         issue = (
                             "untyped-yaml-mutation"
-                            if "byte_level_reason" in str(exc)
+                            if "byte_level_reason" in native_exception_message(exc)
                             else "invalid-mutation-mode"
                         )
                         mutation_issues.append(f"{control.get('id')}:{issue}")

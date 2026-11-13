@@ -15,6 +15,7 @@ from .ci_self_controller import (
     validate_controller_installation,
     validate_controller_pin,
 )
+from .exception_messages import native_exception_message
 from .routine_controller_rotation import controller_policy_digest
 
 SELF_ROTATION_POLICY_PATHS = (
@@ -34,7 +35,7 @@ def source_policy(
             schema_root=packaged_repo_root(),
         )
     except TrustedControllerPolicyError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
     return payload, paths or SELF_ROTATION_POLICY_PATHS
 
 

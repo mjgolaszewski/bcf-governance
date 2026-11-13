@@ -9,6 +9,7 @@ from typing import Any
 
 from .ci_graph_contracts import GRAPH_PATH, CIGraphError
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path, render_yaml
+from .exception_messages import native_exception_message
 from .governance_install.transaction import apply_transaction
 
 
@@ -29,7 +30,7 @@ def _locked_graph(repo_root: Path) -> tuple[dict[str, Any], tuple[str, ...]]:
     try:
         graph = load_yaml_path(repo_root / GRAPH_PATH)
     except GraphYAMLError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     changed: list[str] = []
     for reference in graph.get("extensions", []):
         relative = str(reference["path"])

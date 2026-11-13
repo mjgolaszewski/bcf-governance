@@ -16,6 +16,7 @@ from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     active_planned_session_version,
 )
+from .exception_messages import native_exception_message
 from .install_governance_pack import UPGRADE_PROJECT_OWNED_PATHS
 from .release_versions import ReleaseVersionError, parse_release_version
 
@@ -149,7 +150,7 @@ def validate_public_contracts(repo_root: Path) -> PublicContractInventory:
     try:
         parse_release_version(version)
     except ReleaseVersionError as exc:
-        raise PublicContractError(str(exc)) from exc
+        raise PublicContractError(native_exception_message(exc)) from exc
     if package["version"] != version:
         raise PublicContractError("public package version differs from bcf_governance._version")
     pyproject = tomllib.loads((repo_root / "pyproject.toml").read_text(encoding="utf-8"))
@@ -185,7 +186,7 @@ def validate_public_contracts(repo_root: Path) -> PublicContractInventory:
     try:
         active_planned_session_version(repo_root)
     except EvidenceSessionSchemaError as exc:
-        raise PublicContractError(str(exc)) from exc
+        raise PublicContractError(native_exception_message(exc)) from exc
 
     graph = registry["ci_graph"]
     graph_payload = _mapping(_safe_path(repo_root, graph["canonical_path"]), yaml_document=True)

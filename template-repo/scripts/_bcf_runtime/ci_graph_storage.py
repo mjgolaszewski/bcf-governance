@@ -12,6 +12,7 @@ from .evidence_storage_contracts import (
     EvidenceStorageError,
     load_storage_contract_path,
 )
+from .exception_messages import native_exception_message
 
 
 def _overlaps(first: str, second: str) -> bool:
@@ -257,7 +258,7 @@ def validate_evidence_storage(
     try:
         contract = load_storage_contract_path(repo_root, path)
     except EvidenceStorageError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     _validate_artifacts(graph, contract)
     _validate_publishers(graph, contract)
     return ((CONTRACT_PATH.as_posix(), digest),), contract

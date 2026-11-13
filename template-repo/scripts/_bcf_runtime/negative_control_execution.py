@@ -10,6 +10,7 @@ from typing import Any
 
 from .evidence_gate_contracts import _gate_contract
 from .evidence_xml import read_evidence_xml
+from .exception_messages import native_exception_message
 from .test_manifests import (
     OracleManifestIndex,
     PytestSelectorMap,
@@ -86,7 +87,7 @@ def _pytest_selector(
     try:
         return selector_map.selector_for(value)
     except TestManifestError as exc:
-        raise NegativeControlCommandError(str(exc)) from exc
+        raise NegativeControlCommandError(native_exception_message(exc)) from exc
 
 
 def negative_control_command(
@@ -170,7 +171,7 @@ def resolve_negative_control_oracle(
             )
             cache[gate_id] = selector_map
     except TestManifestError as exc:
-        raise NegativeControlCommandError(str(exc)) from exc
+        raise NegativeControlCommandError(native_exception_message(exc)) from exc
     return NegativeControlOracleExecution(gate_id, contract, selector_map)
 
 

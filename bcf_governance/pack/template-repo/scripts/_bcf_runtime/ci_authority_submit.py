@@ -21,6 +21,7 @@ from .ci_github_values import GitHubValueError, remote_repository
 from .ci_graph_contracts import validate_ci_graph
 from .ci_graph_post_merge import authored_candidate_title, post_merge_evaluation
 from .ci_recovery_frontier import protected_merge_frontier, submission_frontier
+from .exception_messages import native_exception_message
 from .github_protection import load_protection
 from .local_pr import (
     CandidateIdentity,
@@ -162,7 +163,7 @@ def _canonical_inputs(
             base_sha=context.base_sha,
         )
     except GitHubControllerError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     protection_path = repo_root / "governance/github-protection.yml"
     protection_sha256 = (
         _direct_protection_identity(
@@ -303,7 +304,7 @@ def submit_candidate(
             root, mode=authority.mode, target=authority.target
         )
     except ValueError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     recovery_identity = {
         "repository": authority.repository,
         "base_sha": identity.base_sha,

@@ -45,6 +45,7 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_evaluation_authored_ready,
 )
+from .exception_messages import native_exception_message
 from .governance_truth import TruthfulnessError, derive_truth
 from .local_execution_admission import (
     LocalExecutionAdmissionError,
@@ -166,7 +167,7 @@ def _validate_train_telemetry(repo_root: Path, telemetry: dict[str, Any]) -> Non
     try:
         validate_train_telemetry(repo_root, telemetry)
     except ProspectiveTelemetryError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
 
 
 def _run_prospective_train(
@@ -235,7 +236,7 @@ def _run_prospective_train(
                 base_sha=context.base_sha,
             )
         except GitHubControllerError as exc:
-            raise ProspectiveValidationError(str(exc)) from exc
+            raise ProspectiveValidationError(native_exception_message(exc)) from exc
     try:
         requested_scope = evaluation_scope(
             semantic_intent,
@@ -247,7 +248,7 @@ def _run_prospective_train(
             root, intent=requested_scope.intent.value, target=requested_scope.target_id
         )
     except (EvaluationScopeError, WorkitemContractError) as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     try:
         emit("fixed_point", "started")
         reconcile_started = time.monotonic_ns()
@@ -273,7 +274,7 @@ def _run_prospective_train(
         EvidenceError,
     ) as exc:
         fail_stage("fixed_point")
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     expected_target = (
         requested_scope.target_id
         if requested_scope.intent is EvaluationIntent.WORKITEM_CERTIFICATION
@@ -305,13 +306,13 @@ def _run_prospective_train(
             candidate_tree=identity.tree_sha,
         )
     except ProspectiveLaneError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     authority_applicability = None
     if custody_state == "ordinary_executable_controller":
         try:
             authority_applicability = ordinary_authority_applicability(policy_identity)
         except ProspectiveLaneError as exc:
-            raise ProspectiveValidationError(str(exc)) from exc
+            raise ProspectiveValidationError(native_exception_message(exc)) from exc
     verify_provider_authority = repository is not None and (
         custody_state != "ordinary_executable_controller"
         or authority_applicability == "provider_verification_required"
@@ -351,7 +352,7 @@ def _run_prospective_train(
                 emit("preflight", "complete")
             except (PreflightError, EvidenceError) as exc:
                 fail_stage("preflight")
-                raise ProspectiveValidationError(str(exc)) from exc
+                raise ProspectiveValidationError(native_exception_message(exc)) from exc
         if preflight.get("status") != "pass":
             raise ProspectiveValidationError("canonical PR preflight did not pass")
         controller = preflight.get("self_controller")
@@ -488,7 +489,7 @@ def _run_prospective_train(
                 root, validate_ci_graph(root).graph, producers
             )
         except (CIGraphError, ValueError) as exc:
-            raise ProspectiveValidationError(str(exc)) from exc
+            raise ProspectiveValidationError(native_exception_message(exc)) from exc
         bundle_identity = None
         bundle_manifest = None
         bundle_reused = False
@@ -522,7 +523,7 @@ def _run_prospective_train(
                 else:
                     bundle_reused = True
             except LocalProofBundleError as exc:
-                raise ProspectiveValidationError(str(exc)) from exc
+                raise ProspectiveValidationError(native_exception_message(exc)) from exc
         session = None
         if session_root is None:
             try:
@@ -536,7 +537,7 @@ def _run_prospective_train(
                 )
                 session_root = session.root
             except EvidenceError as exc:
-                raise ProspectiveValidationError(str(exc)) from exc
+                raise ProspectiveValidationError(native_exception_message(exc)) from exc
         try:
             emit("evidence", "started")
             evidence_started = time.monotonic_ns()
@@ -570,7 +571,7 @@ def _run_prospective_train(
             emit("evidence", "complete")
         except (EvidenceError, TruthfulnessError, LocalProofBundleError) as exc:
             fail_stage("evidence")
-            raise ProspectiveValidationError(str(exc)) from exc
+            raise ProspectiveValidationError(native_exception_message(exc)) from exc
         if pr_truth.get("merge_eligibility") != "eligible":
             raise ProspectiveValidationError("local PR truth is not merge eligible")
         boundaries.append(
@@ -613,14 +614,14 @@ def _run_prospective_train(
             emit("bounded_truth", "complete")
         except TruthfulnessError as exc:
             fail_stage("bounded_truth")
-            raise ProspectiveValidationError(str(exc)) from exc
+            raise ProspectiveValidationError(native_exception_message(exc)) from exc
         subject = {"commit_sha": identity.commit_sha, "tree_sha": identity.tree_sha}
         try:
             proposition = validate_exact_main_truth_payload(
                 bounded_truth, subject=subject
             )
         except GitHubControllerError as exc:
-            raise ProspectiveValidationError(str(exc)) from exc
+            raise ProspectiveValidationError(native_exception_message(exc)) from exc
         proposition_sha256 = hashlib.sha256(
             json.dumps(proposition, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
@@ -630,7 +631,7 @@ def _run_prospective_train(
                     root, identity=bundle_identity, source=session_root
                 )
             except LocalProofBundleError as exc:
-                raise ProspectiveValidationError(str(exc)) from exc
+                raise ProspectiveValidationError(native_exception_message(exc)) from exc
         boundaries.extend(
             [{
                 "id": "bounded_or_phase_truth",
@@ -753,7 +754,7 @@ def run_prospective_train(
             repo_root.resolve(), intent=requested_scope.intent.value, target=requested_scope.target_id
         )
     except (EvaluationScopeError, WorkitemContractError) as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc
     try:
         with local_gate_lease(subject_commit):
             try:
@@ -761,14 +762,14 @@ def run_prospective_train(
                 graph = compiled_graph.graph
                 lane = post_merge_evaluation(graph).lane
             except CIGraphError as exc:
-                raise ProspectiveValidationError(str(exc)) from exc
+                raise ProspectiveValidationError(native_exception_message(exc)) from exc
             try:
                 validate_direct_protection_prospective(
                     provider_api, repo_root=repo_root, repository=repository,
                     lane=lane, remote=remote, runner=runner,
                 )
             except GitHubControllerError as exc:
-                raise ProspectiveValidationError(str(exc)) from exc
+                raise ProspectiveValidationError(native_exception_message(exc)) from exc
             admission = validate_local_toolchain(
                 repo_root.resolve(),
                 python_executable,
@@ -796,4 +797,4 @@ def run_prospective_train(
             result["local_execution_admission"] = admission.as_dict()
             return result
     except LocalExecutionAdmissionError as exc:
-        raise ProspectiveValidationError(str(exc)) from exc
+        raise ProspectiveValidationError(native_exception_message(exc)) from exc

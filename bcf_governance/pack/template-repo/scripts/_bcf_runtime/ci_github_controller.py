@@ -47,6 +47,7 @@ from .ci_github_identity import (
     positive_int as _positive,
 )
 from .ci_github_status import publish as _publish
+from .exception_messages import native_exception_message
 
 
 @dataclass(frozen=True)
@@ -425,7 +426,7 @@ def environment_api(
     try:
         return GitHubAPI(token=token, api_url=api_url)
     except GitHubAPIError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
 
 
 def result_dict(value: KickoffResult | FinalizeResult) -> dict[str, Any]:

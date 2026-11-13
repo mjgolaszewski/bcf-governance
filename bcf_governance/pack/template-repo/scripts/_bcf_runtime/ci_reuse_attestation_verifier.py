@@ -20,6 +20,7 @@ from .evidence_session_schema import (
     EvidenceSessionSchemaError,
     load_evidence_session_schema,
 )
+from .exception_messages import native_exception_message
 from .prior_evidence_transport import _archive_files
 from .provider_reuse_closure import trusted_main_claim_context
 
@@ -162,7 +163,7 @@ def verify_same_admission_reuse(
     try:
         planned = planned_reuse(session)
     except EvidenceError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
     if planned != {
         value["claim"]["claim_id"]: value["source_receipt"]["evidence_id"]
         for value in expected if value["decision"] == "reuse_admitted"

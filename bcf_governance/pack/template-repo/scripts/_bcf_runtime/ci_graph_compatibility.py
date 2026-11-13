@@ -10,6 +10,7 @@ from .ci_graph_environment_placement import validate_environment_placement
 from .ci_graph_errors import CIGraphError
 from .ci_graph_permission_projection import validate_permission_projection
 from .ci_graph_step_outcomes import validate_deferred_step_failures
+from .exception_messages import native_exception_message
 
 
 def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
@@ -61,4 +62,4 @@ def validate_compatibility_declarations(graph: dict[str, Any]) -> None:
             try:
                 action_pin(component["action"], component.get("source_pin"))
             except ValueError as exc:
-                raise CIGraphError(str(exc)) from exc
+                raise CIGraphError(native_exception_message(exc)) from exc

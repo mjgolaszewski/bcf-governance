@@ -24,7 +24,7 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 331 affected/pack tests pass without skips; strict typing passes for nine touched modules and lint passes. Framework-only
+  - 331 affected/pack tests pass without skips; strict typing passes for 60 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.

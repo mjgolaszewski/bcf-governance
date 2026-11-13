@@ -9,6 +9,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from .exception_messages import native_exception_message
 from .semantic_authority_contracts import (
     SemanticAuthorityError,
     _load_yaml,
@@ -36,13 +37,13 @@ def validate_adoption_repository(
         families = _load_yaml(repo_root / "governance/semantic-families.yml")
         _validate_families(repo_root, families, registry, inventory)
     except SemanticAuthorityError as exc:
-        blockers.append(("semantic_family_completeness", str(exc)))
+        blockers.append(("semantic_family_completeness", native_exception_message(exc)))
 
     try:
         operations = _load_yaml(repo_root / "governance/application-operations.yml")
         _validate_operations(repo_root, operations, inventory)
     except SemanticAuthorityError as exc:
-        blockers.append(("application_operation_inventory", str(exc)))
+        blockers.append(("application_operation_inventory", native_exception_message(exc)))
 
     provenance = None
     try:
@@ -50,13 +51,13 @@ def validate_adoption_repository(
         if families is not None:
             _validate_secondary_coverage(families, registry, provenance)
     except SemanticAuthorityError as exc:
-        blockers.append(("representation_provenance", str(exc)))
+        blockers.append(("representation_provenance", native_exception_message(exc)))
 
     if families is not None and operations is not None:
         try:
             validate_exact_base_migrations(repo_root, families, operations, registry)
         except SemanticMigrationError as exc:
-            blockers.append(("semantic_migration", str(exc)))
+            blockers.append(("semantic_migration", native_exception_message(exc)))
 
     if blockers:
         details = "; ".join(f"[{kind}] {message}" for kind, message in blockers)

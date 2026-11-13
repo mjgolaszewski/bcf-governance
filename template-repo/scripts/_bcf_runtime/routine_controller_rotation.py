@@ -17,6 +17,7 @@ from jsonschema import Draft202012Validator
 from .ci_authority_contracts import authority_role_jobs, authority_role_workflow
 from .ci_authority_pins import compiled_workflow_jobs
 from .ci_github_identity import GitHubControllerError, MainIdentity
+from .exception_messages import native_exception_message
 
 SCHEMA = Path("schemas/controller-transition.schema.json")
 _SHA = re.compile(r"^[a-f0-9]{40}$")
@@ -206,7 +207,7 @@ def classify_provider_callback_topology(
                 ),
             )
         except RoutineCallbackTopologyError as exc:
-            raise GitHubControllerError(str(exc)) from exc
+            raise GitHubControllerError(native_exception_message(exc)) from exc
 
 
 def prospective_no_transition_topology(repo_root: Path) -> str:

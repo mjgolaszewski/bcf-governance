@@ -15,6 +15,7 @@ from .application_assurance_graph import (
 )
 from .evidence_gate_contracts import _TEST_POLICY_NAMES
 from .evidence_planning import parse_claim_model, receipt_producing_legacy_gates
+from .exception_messages import native_exception_message
 from .interpreter_contract_projection import (
     InterpreterContractProjectionError,
     project_profile_interpreter_contract,
@@ -400,7 +401,7 @@ def load_contract(
                     pack_gate_catalog=template_catalog,
                 )
             except ApplicationAssuranceGraphError as exc:
-                raise ProfileContractError(str(exc)) from exc
+                raise ProfileContractError(native_exception_message(exc)) from exc
             raw_gates = projection["gates"]
             configured_claim_model = projection["claim_model"]
             gate_catalog = {**template_catalog, **projection["gate_catalog"]}
@@ -414,7 +415,7 @@ def load_contract(
                     template_catalog, payload, raw_gates
                 )
             except ApplicationAssuranceGraphError as exc:
-                raise ProfileContractError(str(exc)) from exc
+                raise ProfileContractError(native_exception_message(exc)) from exc
             targets.update(
                 str(value["target"])
                 for value in payload.get("gate_catalog", {}).values()
@@ -474,7 +475,7 @@ def load_contract(
             gates, configured_interpreter_contract, contract_version
         )
     except InterpreterContractProjectionError as exc:
-        raise ProfileContractError(str(exc)) from exc
+        raise ProfileContractError(native_exception_message(exc)) from exc
     if profile == "regulated":
         keys = provenance.get("trusted_verifier_keys")
         authorities = provenance.get("permitted_risk_authorities")

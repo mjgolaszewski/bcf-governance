@@ -17,6 +17,7 @@ from .evidence_workitem_lifecycle import (
     WorkitemContractError,
     validate_workitem_dependencies,
 )
+from .exception_messages import native_exception_message
 
 _SHA = re.compile(r"^[a-f0-9]{40}$")
 _TERMINAL = frozenset({"complete", "failed"})
@@ -175,7 +176,7 @@ def lifecycle_projection(repo_root: Path) -> dict[str, Any]:
     try:
         validate_workitem_dependencies(workitems)
     except WorkitemContractError as exc:
-        raise OperationalObservationError(str(exc)) from exc
+        raise OperationalObservationError(native_exception_message(exc)) from exc
     ids = [item.get("id") for item in workitems if isinstance(item, dict)]
     if len(ids) != len(workitems) or any(not isinstance(value, str) for value in ids):
         raise OperationalObservationError("active workitem identity is invalid")

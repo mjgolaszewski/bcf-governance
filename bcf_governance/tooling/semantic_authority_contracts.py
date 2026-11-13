@@ -15,6 +15,7 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from .exception_messages import native_exception_message
 from .semantic_authority_migrations import (
     SemanticMigrationError,
     validate_exact_base_migrations,
@@ -453,7 +454,7 @@ def _typescript_population(repo_root: Path, population: dict[str, Any], inventor
     try:
         return discover_typescript_population(repo_root, population, inventory=inventory)
     except TypeScriptOperationPopulationError as exc:
-        raise SemanticAuthorityError(str(exc)) from exc
+        raise SemanticAuthorityError(native_exception_message(exc)) from exc
 
 
 def _discover_population(repo_root: Path, population: dict[str, Any], inventory: dict[str, Any] | None = None) -> dict[str, str]:
@@ -510,7 +511,7 @@ def _validate_operations(
             try:
                 entries, bound = discover_typed_registrations(repo_root, row, inventory)
             except TypedRegistrationError as exc:
-                raise SemanticAuthorityError(str(exc)) from exc
+                raise SemanticAuthorityError(native_exception_message(exc)) from exc
             discovered[str(row["id"])] = entries
             inventory["functions"].extend(bound)
             typed_bindings.update({item["symbol"]: item["registration_binding"] for item in bound})
@@ -574,7 +575,7 @@ def _validate_operations(
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
+            raise SemanticAuthorityError(native_exception_message(exc)) from exc
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
             "write_effect_count": write_count, "authority_effect_count": authority_count,
@@ -596,7 +597,7 @@ def collect_representation_provenance(
     try:
         result = collect_provenance(repo_root, registry, inventory)
     except SemanticDerivationError as exc:
-        raise SemanticAuthorityError(str(exc)) from exc
+        raise SemanticAuthorityError(native_exception_message(exc)) from exc
     return RepresentationProvenance(
         projection_outputs=result.projection_outputs,
         derived_count=result.derived_count,
@@ -668,7 +669,7 @@ def validate_semantic_contract_structure(repo_root: Path, registry: Registry) ->
         try:
             validate_exact_base_migrations(repo_root, families, operations, registry)
         except SemanticMigrationError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
+            raise SemanticAuthorityError(native_exception_message(exc)) from exc
     return {
         "families": len(families["families"]),
         "operations": len(operations["operations"]),

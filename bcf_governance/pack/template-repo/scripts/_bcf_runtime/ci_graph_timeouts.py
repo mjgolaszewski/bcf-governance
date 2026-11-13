@@ -7,6 +7,7 @@ from typing import Any
 
 from .ci_graph_errors import CIGraphError
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .exception_messages import native_exception_message
 
 LEGACY_GATE_TIMEOUT_SECONDS = 1800
 LEGACY_HEADROOM_SECONDS = 60
@@ -21,7 +22,7 @@ def gate_timeout_contract(repo_root: Path) -> tuple[int, dict[str, int]]:
     try:
         registry = load_yaml_path(path)
     except GraphYAMLError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     policy = registry.get("execution_policy", {})
     default = policy.get("default_timeout_seconds", LEGACY_GATE_TIMEOUT_SECONDS)
     gates = registry.get("gates", {})

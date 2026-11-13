@@ -9,6 +9,7 @@ from typing import cast
 
 from ..ci_graph_contracts import CIGraphError, validate_ci_graph
 from ..ci_graph_render import check_ci_graph
+from ..exception_messages import native_exception_message
 from ..public_contracts import PublicContractError, validate_public_contracts
 from ..semantic_authority_contracts import (
     SemanticAuthorityError,
@@ -155,7 +156,7 @@ def validate_repo_root(
             semantic_registry = load_semantic_ownership_registry(repo_root)
             validate_semantic_contract_structure(repo_root, semantic_registry)
         except (SemanticOwnershipRegistryError, SemanticAuthorityError) as exc:
-            raise GovernanceValidationError(str(exc)) from exc
+            raise GovernanceValidationError(native_exception_message(exc)) from exc
     test_tombstones_path = _validate_test_tombstones(repo_root, schema_cache)
 
     _validate_schema(repo_root, schema_cache, agents, schema_name="agents.schema.json", context="AGENTS.yml")
@@ -233,14 +234,14 @@ def validate_repo_root(
         try:
             validate_public_contracts(repo_root)
         except PublicContractError as exc:
-            raise GovernanceValidationError(str(exc)) from exc
+            raise GovernanceValidationError(native_exception_message(exc)) from exc
     ci_graph_path = repo_root / "governance/ci-graph.yml"
     if ci_graph_path.exists():
         try:
             validate_ci_graph(repo_root)
             graph_parity = check_ci_graph(repo_root)
         except CIGraphError as exc:
-            raise GovernanceValidationError(str(exc)) from exc
+            raise GovernanceValidationError(native_exception_message(exc)) from exc
         if graph_parity.status != "clean":
             raise GovernanceValidationError(
                 "generated CI workflow drift: " + ", ".join(graph_parity.changed_paths)

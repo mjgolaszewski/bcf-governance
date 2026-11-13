@@ -38,6 +38,7 @@ from .evidence_scheduling import (
     invalidate_dependency_reuse,
     validate_group_dependencies,
 )
+from .exception_messages import native_exception_message
 
 INVALIDATION_BY_CLASS = {
     "subject": ("subject_dependency_changed",),
@@ -116,7 +117,7 @@ def parse_claim_model(payload: object) -> dict[str, Any]:
     try:
         validate_group_dependencies(groups)
     except ValueError as exc:
-        raise EvidenceError(str(exc)) from exc
+        raise EvidenceError(native_exception_message(exc)) from exc
     if grouped != claim_ids:
         raise EvidenceError("every claim must belong to exactly one execution group")
     if any(count != 1 for count in membership.values()):

@@ -21,6 +21,7 @@ from .evidence_workitem_lifecycle import (
     validate_workitem_dependencies,
     workitem_predecessors,
 )
+from .exception_messages import native_exception_message
 from .governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
     release_authority_enabled,
@@ -210,7 +211,7 @@ def authored_post_merge_scope(repo_root: Path) -> tuple[str, str | None]:
     try:
         validate_workitem_dependencies(workitems)
     except WorkitemContractError as exc:
-        raise CIGraphError(str(exc)) from exc
+        raise CIGraphError(native_exception_message(exc)) from exc
     statuses = {str(item.get("id")): item.get("status") for item in workitems}
     if any(value not in {"TODO", "IN_PROGRESS", "BLOCKED", "DONE"} for value in statuses.values()):
         raise CIGraphError("post-merge workitem status is invalid")

@@ -18,6 +18,7 @@ from .ci_graph_defaults import build_reference_ci_graph
 from .ci_graph_post_merge import post_merge_evaluation
 from .ci_graph_yaml import render_yaml
 from .controller_custody import compile_controller_custody
+from .exception_messages import native_exception_message
 from .governance_install.ci_graph import (
     exact_main_controller_artifact_condition,
     project_trusted_controller_management,
@@ -386,7 +387,7 @@ def validate_controller_custody_chain(
             release_enabled=release_authority_enabled(dict(graph)),
         )
     except RuntimeError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
     if (
         graph.get("conditions", {}).get(build_condition)
         != expected_build_condition

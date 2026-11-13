@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ..exception_messages import native_exception_message
 from ..governance_install.runtime_custody import (
     CANDIDATE_QUALIFICATION_PATH,
     RUNTIME_LOCK_PATH,
@@ -26,7 +27,7 @@ def validate_runtime_custody(repo_root: Path) -> None:
     try:
         snapshot = inspect_runtime_custody(repo_root)
     except RuntimeCustodyError as exc:
-        raise GovernanceValidationError(str(exc)) from exc
+        raise GovernanceValidationError(native_exception_message(exc)) from exc
     runtime_version = executing_runtime_version()
     if snapshot.version != runtime_version:
         raise GovernanceValidationError(

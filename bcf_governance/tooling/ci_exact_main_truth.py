@@ -12,6 +12,7 @@ from typing import Any
 from .ci_github_artifacts import provider_artifact_reference, resolve_role_artifact
 from .ci_github_identity import GitHubControllerError, MainIdentity, exact_sha
 from .evaluation_scope import EvaluationScopeError, validate_certified_proposition
+from .exception_messages import native_exception_message
 
 _MAX_ARCHIVE = 2_000_000
 _REPORT_NAME = "truth-report.json"
@@ -45,7 +46,7 @@ def validate_exact_main_truth_payload(
     try:
         return validate_certified_proposition(report, subject=subject)
     except EvaluationScopeError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
 
 
 def authenticated_exact_main_truth(

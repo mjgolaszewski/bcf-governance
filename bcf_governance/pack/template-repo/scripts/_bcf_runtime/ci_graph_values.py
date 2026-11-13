@@ -8,6 +8,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path
+from .exception_messages import native_exception_message
 
 SOURCE_PATTERN = re.compile(
     r"\{source:([A-Za-z0-9][A-Za-z0-9._-]*):([A-Za-z0-9][A-Za-z0-9._-]*(?:\.[A-Za-z0-9][A-Za-z0-9._-]*)*)\}"
@@ -26,7 +27,7 @@ def declared_graph_value_source_paths(
     try:
         graph = load_yaml_path(repo_root / graph_path)
     except GraphYAMLError as exc:
-        raise CIGraphValueError(str(exc)) from exc
+        raise CIGraphValueError(native_exception_message(exc)) from exc
     sources = graph.get("value_sources")
     if not isinstance(sources, dict):
         raise CIGraphValueError("CI graph value_sources must be an object")
@@ -84,7 +85,7 @@ def resolve_graph_values(
         try:
             loaded[source_id] = load_yaml_path(path)
         except GraphYAMLError as exc:
-            raise CIGraphValueError(str(exc)) from exc
+            raise CIGraphValueError(native_exception_message(exc)) from exc
         inputs.append((relative, digest))
 
     def resolve(value: Any) -> Any:

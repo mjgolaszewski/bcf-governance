@@ -13,6 +13,7 @@ from jsonschema import Draft202012Validator
 
 from .ci_graph_contracts import CIGraphError
 from .ci_graph_yaml import GraphYAMLError, load_yaml_path, render_yaml
+from .exception_messages import native_exception_message
 from .governance_install.transaction import apply_transaction
 
 INVENTORY_PATH = Path("governance/ci-workflow-inventory.yml")
@@ -138,7 +139,7 @@ def inventory_github_workflows(repo_root: Path) -> dict[str, Any]:
             try:
                 raw = load_yaml_path(path)
             except GraphYAMLError as exc:
-                raise CIGraphError(str(exc)) from exc
+                raise CIGraphError(native_exception_message(exc)) from exc
             jobs = raw.get("jobs")
             if not isinstance(jobs, dict) or not jobs:
                 raise CIGraphError(f"workflow has no exact job inventory: {path.relative_to(repo_root)}")

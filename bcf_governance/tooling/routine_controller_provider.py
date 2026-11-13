@@ -54,6 +54,7 @@ from .controller_transition_provider_custody import (
 from .controller_transition_provider_custody import (
     receipt_from_zip as _receipt_from_zip,
 )
+from .exception_messages import native_exception_message
 from .prior_evidence_transport import (
     _archive_files,
     authenticate_merged_pull,
@@ -241,7 +242,7 @@ def _active_receipts(
                 ),
             )
         except RoutineRotationError as exc:
-            raise GitHubControllerError(str(exc)) from exc
+            raise GitHubControllerError(native_exception_message(exc)) from exc
         if not follows_normalization:
             continue
         if artifact.get("expired") is not False:
@@ -394,10 +395,10 @@ def effective_controller_authority(
         expired_transition_bytes = isinstance(exc, GitHubAPIError) and bool(
             re.fullmatch(
                 r"GitHub API GET /repos/[^/]+/[^/]+/actions/artifacts/[0-9]+/zip returned 410",
-                str(exc),
+                native_exception_message(exc),
             )
         )
-        disconnected_chain = isinstance(exc, RoutineRotationError) and str(exc) == (
+        disconnected_chain = isinstance(exc, RoutineRotationError) and native_exception_message(exc) == (
             "active controller transition chain is disconnected"
         )
         if repo_root is None or not (expired_transition_bytes or disconnected_chain):

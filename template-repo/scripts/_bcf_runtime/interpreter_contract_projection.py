@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from .exception_messages import native_exception_message
 from .interpreter_environment_plan import InterpreterEnvironmentError
 from .interpreter_locked_project import normalize_locked_project_contract
 
@@ -79,7 +80,7 @@ def project_interpreter_contract(
         try:
             return {"locked_project": normalize_locked_project_contract(declared["locked_project"])}
         except InterpreterEnvironmentError as exc:
-            raise InterpreterContractProjectionError(str(exc)) from exc
+            raise InterpreterContractProjectionError(native_exception_message(exc)) from exc
     if "dependency_source" in declared:
         if set(declared) != {"dependency_source"}:
             raise InterpreterContractProjectionError(

@@ -22,6 +22,7 @@ from .bootstrap.contracts import ChildProcessEnvironment
 from .bootstrap.environment import child_process_environment as _default_child_process_environment
 from .ci_github_identity import GitHubControllerError
 from .ci_github_values import GitHubValueError, remote_repository
+from .exception_messages import native_exception_message
 from .local_execution_admission import ensure_local_project_python
 from .release_adopter_sources import (
     AdopterSourceError,
@@ -71,7 +72,7 @@ def _release_assets(
         version = release_asset_version(paths).value
         return version, exact_assets(paths), checksum_declared_assets(paths)
     except GitHubControllerError as exc:
-        raise ReleaseQualificationError(str(exc)) from exc
+        raise ReleaseQualificationError(native_exception_message(exc)) from exc
 
 
 _EXACT_RELEASE_PROBE = r"""
@@ -556,7 +557,7 @@ def qualify_release(
                     )
                 require_adopter_profile(destination, source)
             except AdopterSourceError as exc:
-                raise ReleaseQualificationError(str(exc)) from exc
+                raise ReleaseQualificationError(native_exception_message(exc)) from exc
             _run(
                 [
                     "git", "checkout", "-B", f"qualification/bcf-{version}",

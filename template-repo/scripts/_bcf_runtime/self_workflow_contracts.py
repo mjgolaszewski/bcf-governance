@@ -9,6 +9,7 @@ import yaml
 
 from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_render import check_ci_graph
+from .exception_messages import native_exception_message
 
 
 class SelfWorkflowContractError(ValueError):
@@ -59,7 +60,7 @@ def validate_self_workflow_contracts(repo_root: Path) -> int:
         compiled = validate_ci_graph(root)
         parity = check_ci_graph(root)
     except CIGraphError as exc:
-        raise SelfWorkflowContractError(str(exc)) from exc
+        raise SelfWorkflowContractError(native_exception_message(exc)) from exc
     if parity.status != "clean":
         raise SelfWorkflowContractError(
             "generated workflow parity drifted: " + ", ".join(parity.changed_paths)

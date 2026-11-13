@@ -17,6 +17,7 @@ import yaml
 
 from .bootstrap.contracts import ComparisonSettings
 from .bootstrap.environment import comparison_settings as _default_comparison_settings
+from .exception_messages import native_exception_message
 from .semantic_locking import atomic_write, prepend_compact_list_rows
 from .semantic_ownership_layout import RegistryLayoutError, expand_sources
 from .semantic_ownership_registry import Registry
@@ -187,7 +188,7 @@ def _git_registry(repo_root: Path, base_sha: str) -> dict[str, Any] | None:
     try:
         expanded, _ = expand_sources(repo_root, root, reader=read, check_orphans=False)
     except RegistryLayoutError as exc:
-        raise SemanticMigrationError(str(exc)) from exc
+        raise SemanticMigrationError(native_exception_message(exc)) from exc
     return expanded
 
 

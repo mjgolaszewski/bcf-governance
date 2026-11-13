@@ -14,6 +14,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from .exception_messages import native_exception_message
 from .semantic_authority_commands import main as authority_main
 from .semantic_authority_contracts import (
     SemanticAuthorityError,
@@ -415,7 +416,7 @@ def main(argv: list[str] | None = None) -> None:
                 {
                     "semantic_id": "governance.architecture-verdict.v1",
                     "kind": "analysis_infrastructure_failure",
-                    "diagnostic": str(exc),
+                    "diagnostic": native_exception_message(exc),
                     "blocking": True,
                 }
             ],

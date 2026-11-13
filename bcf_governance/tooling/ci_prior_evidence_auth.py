@@ -12,6 +12,7 @@ from .ci_github_authority import packaged_repo_root
 from .ci_github_identity import GitHubControllerError, MainIdentity
 from .controller_custody import authority_identity, validate_controller_custody
 from .evidence_execution import EvidenceError
+from .exception_messages import native_exception_message
 from .prior_evidence_receipts import _transport_schema, materialize_transport_material
 from .prior_evidence_transport import _archive_files
 
@@ -130,6 +131,6 @@ def authenticate_prior_transport(
             {"commit_sha": main.checkout_sha, "tree_sha": main.tree_sha},
         )
     except EvidenceError as exc:
-        raise GitHubControllerError(str(exc)) from exc
+        raise GitHubControllerError(native_exception_message(exc)) from exc
     _validate_source_references(manifest, files)
     return AuthenticatedPriorTransport(artifact, manifest, files)

@@ -10,6 +10,7 @@ from typing import Any
 import yaml
 from jsonschema import Draft202012Validator
 
+from ..exception_messages import native_exception_message
 from ..pack_installation_scope import (
     PackInstallationScopeError,
     self_authority_pack_surfaces,
@@ -92,7 +93,7 @@ def validate_self_authority_overlays(repo_root: Path) -> dict[str, tuple[str, ..
     try:
         self_only = self_authority_pack_surfaces(root)
     except PackInstallationScopeError as exc:
-        raise SelfAuthorityOverlayError(str(exc)) from exc
+        raise SelfAuthorityOverlayError(native_exception_message(exc)) from exc
 
     for overlay_id, overlay in by_id.items():
         extension_ids = tuple(_sequence(overlay.get("graph_extensions"), f"{overlay_id}.graph_extensions"))

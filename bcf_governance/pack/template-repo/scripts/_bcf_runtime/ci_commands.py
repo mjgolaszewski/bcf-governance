@@ -37,6 +37,7 @@ from .ci_graph_contracts import CIGraphError, validate_ci_graph
 from .ci_graph_controller_lifecycle import recovery_builder_route
 from .ci_graph_render import apply_ci_graph, check_ci_graph
 from .ci_self_controller import project_self_controller_pin
+from .exception_messages import native_exception_message
 from .governance_install.release_custody import ReleaseCustodyError
 from .governance_install.runtime_custody import RuntimeCustodyError
 from .local_execution_admission import (
@@ -602,4 +603,4 @@ def main(
         RuntimeCapacityError,
         TrustedControllerCompatibilityError,
     ) as exc:
-        raise SystemExit(str(exc)) from exc
+        raise SystemExit(native_exception_message(exc)) from exc

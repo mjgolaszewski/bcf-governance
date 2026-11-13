@@ -16,6 +16,7 @@ from ..ci_graph_defaults import build_reference_ci_graph
 from ..ci_graph_execution import CANDIDATE_MATERIALIZATION_ROOT
 from ..ci_graph_render import apply_ci_graph
 from ..ci_graph_yaml import load_yaml_path, render_yaml
+from ..exception_messages import native_exception_message
 
 
 def _command(argv: list[str], *, environment: dict[str, str] | None = None) -> dict[str, Any]:
@@ -173,7 +174,7 @@ def apply_trusted_controller_management(
     try:
         policy = validate_installed_controller_policy(target_root, raw)
     except TrustedControllerPolicyError as exc:
-        raise RuntimeError(str(exc)) from exc
+        raise RuntimeError(native_exception_message(exc)) from exc
     runner = policy["runner_security"]
     if runner["trusted_labels"] != trusted_labels:
         raise RuntimeError(

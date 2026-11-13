@@ -8,6 +8,7 @@ from typing import Any
 
 import yaml
 
+from ..exception_messages import native_exception_message
 from ..negative_control_execution import (
     NegativeControlCommandError,
     test_node_oracle_lane,
@@ -35,7 +36,7 @@ def stale_negative_control_oracles(repo_root: Path) -> list[str]:
     try:
         manifest_index = oracle_manifest_index(repo_root)
     except TestManifestError as exc:
-        raise NegativeControlPreflightError(str(exc)) from exc
+        raise NegativeControlPreflightError(native_exception_message(exc)) from exc
     stale_oracles: list[str] = []
     for gate_id, gate in gates.items():
         controls = gate.get("negative_controls") if isinstance(gate, dict) else None
