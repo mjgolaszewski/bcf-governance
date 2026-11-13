@@ -26,12 +26,15 @@ execution_evidence:
   notes:
   - Scope is only what Recovery requires to publish BDMCP; broader experimental work remains reachable on repair/maintained-consumer-contracts
     at 7761979c601171651ab601849cbdec44d183ee8d.
-  - 423 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
+  - 426 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
     native reconciliation, current consumer acceptance and standard release pipeline remain pending.
   - Unknown implicit callbacks remain explicitly unresolved under existing report policy and reject under fail_closed. Source-known
     reached writes reject in both modes; explicit effect and dynamic-call failures remain mandatory.
   - Normalization receiver identity comes from actual source constructor results, not parameter annotations or lookup selector
     taint. Unknown, reassigned and annotation-only receivers remain conservative.
+  - Neutral origin frames are cached only within one fixed inventory and exact argument frame, bounded to8192entries. Operation
+    ports, policy and acceptance decisions are recalculated. Changed-source alias, strict/report and declared-port isolation
+    controls pass. Previous450s canonical timeout has no acceptance credit.
   - No release custody or safe installation claim. Existing governance, security, ownership, callback, alias and signed SDK
     boundaries remain required. Deferred Identity/JIT and experimental 2.5 inputs are preserved.
 closeout_requirements:

@@ -61,6 +61,7 @@ def validate_operation_effects(
     entrypoint_symbol: str,
     inventory: dict[str, Any],
     *, source_modules: tuple[str, ...] = (), unresolved_dynamic_policy: str = "fail_closed",
+    _origin_cache: dict[tuple[int, str, tuple[tuple[str, str], ...]], dict[str, Any]] | None = None,
 ) -> tuple[int, int]:
     """Trace one entrypoint and require all effects to cross declared ports."""
     if unresolved_dynamic_policy not in {'report', 'fail_closed'}:
@@ -117,6 +118,7 @@ def validate_operation_effects(
         if len(diagnostics) < 32:
             diagnostics.append(message[:2048])
 
+    origin_cache = {} if _origin_cache is None else _origin_cache
     while pending:
         symbol, arguments, callback_required = pending.pop()
         if (symbol, arguments, callback_required) in visited:
@@ -129,14 +131,23 @@ def validate_operation_effects(
                            'target': target, 'operation': operation['id'], 'qualified': False}
             if observation not in inventory.setdefault('unresolved', []):
                 inventory['unresolved'].append(observation)
-        origins = value_origins(symbol, functions, arguments)
+        # Neutral frame facts are independent of ports and operation policy.
+        # The caller owns this bounded cache for one fixed inventory only.
+        origin_key = (id(inventory), symbol, arguments)
+        origins = origin_cache.get(origin_key)
+        if origins is None:
+            origins = value_origins(symbol, functions, arguments)
+            if len(origin_cache) < 8192:
+                origin_cache[origin_key] = origins
         contextual_sites = {
             (call.get('line'), call.get('called_symbol')) for call in function.get('calls', [])
             if (call.get('line'), call.get('column')) in origins['contextual_calls']
             or (call.get('line'), call.get('column')) in origins.get('native_reads', {})
         }
 
-        def caller_arguments(call: dict[str, Any], context: dict[str, Any] = origins) -> tuple[tuple[str, str], ...]:
+        frame_context: dict[str, Any] = origins
+
+        def caller_arguments(call: dict[str, Any], context: dict[str, Any] = frame_context) -> tuple[tuple[str, str], ...]:
             frame = call.get('constructor_frame_origin')
             if frame:
                 return cast(tuple[tuple[str, str], ...], context['implicit_calls'].get((frame['line'], frame['column'], frame['target']), ()))

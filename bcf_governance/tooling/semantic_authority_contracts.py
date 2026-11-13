@@ -521,6 +521,7 @@ def _validate_operations(
                 if row["adapter"] == "typescript_exports"
                 else _discover_population(repo_root, row)
             )
+    origin_cache: dict[tuple[int, str, tuple[tuple[str, str], ...]], dict[str, Any]] = {}
     classified: dict[tuple[str, str], str] = {}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
@@ -572,7 +573,7 @@ def _validate_operations(
         try:
             write_count, authority_count = validate_operation_effects(
                 operation, str(function["symbol"]), inventory,
-                unresolved_dynamic_policy=unresolved_dynamic_policy,
+                unresolved_dynamic_policy=unresolved_dynamic_policy, _origin_cache=origin_cache,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:

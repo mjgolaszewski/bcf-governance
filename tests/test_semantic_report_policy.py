@@ -48,3 +48,31 @@ def test_source_callback_uncertainty_remains_observed_in_report(tmp_path):
     assert any(row['qualified'] is False for row in facts['unresolved'])
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
+def test_neutral_cache_does_not_reuse_report_acceptance_in_strict_mode(tmp_path):
+    _, facts = inventory(tmp_path, "def read(value): return f'{value}'")
+    cache = {}
+    assert validate_operation_effects(OPERATION, 'consumer.py::read', facts,
+        unresolved_dynamic_policy='report', _origin_cache=cache) == (0, 0)
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts, _origin_cache=cache)
+
+
+def test_neutral_cache_does_not_hide_new_source_alias_escape(tmp_path):
+    source = "EVENTS=[]\ndef read():\n items=[]\n items.append(7)\n return len(items)"
+    _, first = inventory(tmp_path, source)
+    cache = {}
+    assert validate_operation_effects(OPERATION, 'consumer.py::read', first, _origin_cache=cache) == (0, 0)
+    _, changed = inventory(tmp_path, source.replace('items=[]', 'items=EVENTS'))
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', changed, _origin_cache=cache)
+
+
+def test_neutral_cache_does_not_reuse_declared_port_authority(tmp_path):
+    _, facts = inventory(tmp_path, "from pathlib import Path\ndef persist(): Path('output').write_text('data')\ndef read(): persist()")
+    cache = {}
+    command = {**OPERATION, 'id': 'command.v1', 'allowed_mutation_ports': ['consumer.py::persist']}
+    assert validate_operation_effects(command, 'consumer.py::read', facts, _origin_cache=cache) == (1, 0)
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts, _origin_cache=cache)
