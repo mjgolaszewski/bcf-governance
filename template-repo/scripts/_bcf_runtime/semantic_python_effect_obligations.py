@@ -72,7 +72,7 @@ def container_builtin_names(tree: ast.Module) -> list[str]:
     )
     return sorted(
         {"len", "list", "tuple", "dict", "set", "bool", "super",
-         "BaseException", "Exception", "ValueError", "RuntimeError"} - bindings
+         "BaseException", "Exception", "ValueError", "RuntimeError", "type", "str"} - bindings
     ) if "*" not in bindings and not reflective else []
 
 
@@ -110,6 +110,11 @@ def extend_python_effect_facts(
     instances: dict[str, str] = {}
     effects: list[dict[str, Any]] = []
     obligations: list[dict[str, Any]] = []
+    for node in nodes:
+        if isinstance(node, ast.FormattedValue):
+            obligations.append({'kind': 'unqualified_format_callback',
+                                'line': node.value.lineno, 'column': node.value.col_offset})
+
 
     def write(node: ast.AST, target: str) -> None:
         row = {"kind": "write", "line": getattr(node, "lineno", 0), "target": target}

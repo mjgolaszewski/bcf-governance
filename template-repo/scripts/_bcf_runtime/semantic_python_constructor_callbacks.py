@@ -193,6 +193,79 @@ def constructor_callback_closures(classes: dict[str, dict[str, Any]]) -> dict[st
     return {symbol: value for symbol, value in cache.items() if value is not None}
 
 
+def exact_scalar_guard(statement: ast.AST) -> str | None:
+    """Recognize only exact, callback-free builtin type identity admission."""
+    if not isinstance(statement, ast.If) or statement.orelse or not statement.body or not isinstance(statement.body[-1], ast.Raise):
+        return None
+    test = statement.test
+    if (isinstance(test, ast.Compare) and len(test.ops) == 1
+            and isinstance(test.ops[0], ast.IsNot) and len(test.comparators) == 1
+            and isinstance(test.comparators[0], ast.Name) and test.comparators[0].id == 'str'
+            and isinstance(test.left, ast.Call) and isinstance(test.left.func, ast.Name)
+            and test.left.func.id == 'type' and len(test.left.args) == 1
+            and not test.left.keywords and isinstance(test.left.args[0], ast.Name)):
+        return test.left.args[0].id
+    return None
+
+
+def initial_scalar_guards(function: ast.AST, builtin_names: list[str]) -> set[str]:
+    """Exact runtime type admission before any user-value protocol is invoked."""
+    if not isinstance(function, ast.FunctionDef) or not {'type', 'str'} <= set(builtin_names):
+        return set()
+    guarded = set()
+    for statement in function.body:
+        if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant) and isinstance(statement.value.value, str):
+            continue
+        name = exact_scalar_guard(statement)
+        if name is None:
+            break
+        guarded.add(name)
+    return guarded
+
+
+def static_scalar_expression(value: ast.AST, function: ast.AST) -> bool:
+    """Literal scalars and exact keys from a private, unaliased literal dict."""
+    if isinstance(value, ast.Constant):
+        return True
+    if isinstance(value, ast.JoinedStr):
+        return all(isinstance(part, ast.Constant) or isinstance(part, ast.FormattedValue)
+                   and static_scalar_expression(part.value, function)
+                   and (part.format_spec is None or static_scalar_expression(part.format_spec, function))
+                   for part in value.values)
+    if not isinstance(value, ast.Name):
+        return False
+    nodes = list(ast.walk(function))
+    if any(isinstance(node, (ast.Global, ast.Nonlocal)) or isinstance(node, ast.Name)
+           and node.id in {'exec', 'eval', 'globals', 'locals', 'vars'} for node in nodes):
+        return False
+    stores = [node for node in nodes if isinstance(node, ast.Name)
+              and node.id == value.id and isinstance(node.ctx, (ast.Store, ast.Del))]
+    if len(stores) != 1:
+        return False
+    for loop in nodes:
+        if not (isinstance(loop, ast.For) and isinstance(loop.target, ast.Tuple)
+                and len(loop.target.elts) == 2 and loop.target.elts[0] is stores[0]
+                and isinstance(loop.iter, ast.Call) and not loop.iter.args and not loop.iter.keywords
+                and isinstance(loop.iter.func, ast.Attribute) and loop.iter.func.attr == 'items'
+                and isinstance(loop.iter.func.value, ast.Name)):
+            continue
+        mapping = loop.iter.func.value
+        accesses = [node for node in nodes if isinstance(node, ast.Name) and node.id == mapping.id]
+        assignments = [node for node in nodes if isinstance(node, ast.Assign)
+                       and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)
+                       and node.targets[0].id == mapping.id and isinstance(node.value, ast.Dict)]
+        if len(accesses) != 2 or len(assignments) != 1:
+            continue
+        assignment = assignments[0]
+        assert isinstance(assignment.value, ast.Dict)
+        if assignment.lineno >= loop.lineno or any(not isinstance(key, ast.Constant) for key in assignment.value.keys):
+            continue
+        # This proof is lexical to this loop, never a function-wide name grant.
+        if any(node is value for node in ast.walk(loop)):
+            return True
+    return False
+
+
 def literal_constructor_frames(
     row: dict[str, Any], function: ast.AST, positions: dict[int, list[int]],
     functions: dict[str, dict[str, Any]],
@@ -205,12 +278,14 @@ def literal_constructor_frames(
         spec = call.get('source_constructor_frame')
         site = (call.get('line'), call.get('column'))
         node = sites.get(site)
-        if not spec or not isinstance(node, ast.Call) or not call.get('literal_arguments'):
+        if not spec or not isinstance(node, ast.Call) or any(isinstance(arg, ast.Starred) for arg in node.args) or any(keyword.arg is None for keyword in node.keywords):
             continue
-        inputs.add((*site, spec['subject']))
         target = spec.get('initializer')
         declaration = functions.get(str(target), {}).get('python_value_source')
         if not declaration:
+            if call.get('literal_arguments') or all(static_scalar_expression(value, function)
+                    for value in [*node.args, *(keyword.value for keyword in node.keywords)]):
+                inputs.add((*site, spec['subject']))
             continue
         parsed = ast.parse(declaration).body[0]
         if not isinstance(parsed, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -219,7 +294,10 @@ def literal_constructor_frames(
         if not parameters:
             continue
         def origin(value: ast.AST) -> str:
-            return type(value).__name__.lower() if isinstance(value, (ast.List, ast.Tuple, ast.Set, ast.Dict)) else 'scalar'
+            if isinstance(value, ast.JoinedStr) and static_scalar_expression(value, function):
+                return 'scalar'
+            return (type(value).__name__.lower() if isinstance(value, (ast.List, ast.Tuple, ast.Set, ast.Dict))
+                    else 'scalar') if all(isinstance(part, (ast.Constant, ast.List, ast.Tuple, ast.Set, ast.Dict, ast.Load, ast.UnaryOp, ast.USub, ast.UAdd)) for part in ast.walk(value)) else 'unknown'
         bound = {parameters[0].arg: 'new-object:' + spec['subject'],
                  '$constructor_owner': spec['initializer_owner'],
                  '$constructor_super': spec.get('super_initializer') or ''}
@@ -230,5 +308,9 @@ def literal_constructor_frames(
             bound.setdefault(parameter.arg, 'scalar' if isinstance(default, ast.Constant) else 'unknown')
         for parameter, keyword_default in zip(parsed.args.kwonlyargs, parsed.args.kw_defaults, strict=True):
             bound.setdefault(parameter.arg, 'scalar' if isinstance(keyword_default, ast.Constant) else 'unknown')
+        guarded = initial_scalar_guards(parsed, functions.get(str(target), {}).get('unshadowed_container_builtins', []))
+        if any(value == 'unknown' and name not in guarded for name, value in bound.items()):
+            continue
+        inputs.add((*site, spec['subject']))
         frames[(*site, target)] = tuple(sorted(bound.items()))
     return inputs, frames

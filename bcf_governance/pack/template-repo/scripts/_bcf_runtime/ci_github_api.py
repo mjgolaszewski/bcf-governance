@@ -56,6 +56,10 @@ class GitHubAPI(
     """Small JSON-only client whose token is supplied by the trusted workflow."""
 
     def __init__(self, *, token: str, api_url: str = "https://api.github.com") -> None:
+        if type(token) is not str:
+            raise GitHubAPIError("trusted GitHub token must be a plain string")
+        if type(api_url) is not str:
+            raise GitHubAPIError("GitHub API URL must be a plain string")
         if not token:
             raise GitHubAPIError("trusted GitHub token is required")
         if not api_url.startswith("https://"):

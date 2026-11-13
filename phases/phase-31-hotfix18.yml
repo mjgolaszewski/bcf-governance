@@ -24,7 +24,7 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 186 affected/pack tests pass without skips; strict typing passes for six touched modules and lint passes. Framework-only
+  - 317 affected/pack tests pass without skips; strict typing passes for seven touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -33,11 +33,12 @@ execution_evidence:
     returned identity.
   - Actual retained finalizer writes and unraisable stderr output were silently accepted before repair; both are now refused
     while a plain no-op finalizer is accepted.
-  - Actual previous canonical reconcile reached three input-binding failures. New bounded caller provenance accepts source-produced
-    scalars and owned containers; borrowed protocol and later escaped argument controls remain denied. No current canonical
-    pass claim.
-  - Actual injectable provider inputs and generated error messages still require canonical source qualification.
-  - Nonliteral constructor input and actual caller provenance remain unqualified.
+  - Actual previous canonical reconcile reached three input-binding failures. GitHubAPI now validates exact string inputs
+    before invoking their protocols. Initial exact builtin type guards qualify source frames; shadowed guards stay refused.
+    Formatting result identity is separate from callback effects, including direct formatted outputs. A sole-use local literal
+    dict can prove its exact loop keys; borrowed and escaped inputs stay unqualified. No current canonical pass claim.
+  - Canonical replay of exact runtime admission and formatting callback closure remains pending.
+  - Complete source callback closure and actual consumer constructor qualification remain unqualified.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results
     are recorded in audits/maintained-consumer-contracts-checkpoint-2026-11-13.json.

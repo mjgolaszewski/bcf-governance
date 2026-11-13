@@ -142,7 +142,9 @@ def validate_operation_effects(
         remaining_obligations = [item for item in function.get('implicit_effect_obligations', [])
             if not (item.get('binding_source') == 'constructor_initializer_frame' and
                     (item.get('line'), item.get('column'), item.get('class_symbol'))
-                    in origins['constructor_inputs'])]
+                    in origins['constructor_inputs'])
+            and not (item.get('kind') == 'unqualified_format_callback' and
+                     (item.get('line'), item.get('column')) in origins['format_inputs'])]
         if remaining_obligations:
             obligations = ", ".join(
                 f"{item.get('kind')}:{item.get('class_symbol', '')}:{item.get('line')}"

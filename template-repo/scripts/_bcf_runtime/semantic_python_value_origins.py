@@ -9,8 +9,11 @@ import hashlib
 from typing import Any
 
 from .semantic_python_constructor_callbacks import (
+    exact_scalar_guard,
+    initial_scalar_guards,
     literal_constructor_frames,
     native_exception_binding,
+    static_scalar_expression,
 )
 
 # Only exact source-allocated builtin containers qualify for structural writes.
@@ -43,7 +46,7 @@ def value_origins(
     unknown. No project code is imported or executed to obtain these facts.
     """
     empty: dict[str, Any] = {"writes": set(), "calls": {}, "return": UNKNOWN,
-                             "constructor_inputs": set(), "implicit_calls": {}, "contextual_calls": {}}
+                             "constructor_inputs": set(), "implicit_calls": {}, "contextual_calls": {}, "format_inputs": set()}
     row = functions.get(symbol, {})
     source = row.get("python_value_source")
     if not source or symbol in active or len(active) >= 24:
@@ -56,7 +59,9 @@ def value_origins(
     sites = iter(row.get("python_value_sites", []))
     positions = {id(node): next(sites, [0, 0]) for node in ast.walk(function)}
     constructor_inputs, implicit_calls = literal_constructor_frames(row, function, positions, functions)
-    empty.update(constructor_inputs=constructor_inputs, implicit_calls=implicit_calls)
+    format_inputs = {tuple(positions[id(node.value)]) for node in ast.walk(function)
+                     if isinstance(node, ast.FormattedValue) and static_scalar_expression(node.value, function)}
+    empty.update(constructor_inputs=constructor_inputs, implicit_calls=implicit_calls, format_inputs=format_inputs)
     env = dict(arguments)
     initializer_frame = (function.name == '__init__' and
                          env.get('$constructor_owner') == row.get('class_symbol'))
@@ -110,7 +115,11 @@ def value_origins(
                 return 'native'
             initializer_protocol_unknown |= initializer_frame
             return UNKNOWN
-        if isinstance(node, (ast.UnaryOp, ast.BinOp, ast.Compare, ast.BoolOp, ast.JoinedStr)):
+        if isinstance(node, ast.JoinedStr):
+            for part in node.values:
+                expression(part)
+            return SCALAR
+        if isinstance(node, (ast.UnaryOp, ast.BinOp, ast.Compare, ast.BoolOp)):
             operands = [expression(child) for child in ast.iter_child_nodes(node)
                         if isinstance(child, ast.expr)]
             if operands and all(value in CONTAINERS | {SCALAR, 'native'} for value in operands):
@@ -120,6 +129,9 @@ def value_origins(
         if isinstance(node, ast.FormattedValue):
             value = expression(node.value)
             if value in CONTAINERS | {SCALAR, 'native'}:
+                format_inputs.add(tuple(positions[id(node.value)]))
+                if node.format_spec is not None:
+                    expression(node.format_spec)
                 return SCALAR
             initializer_protocol_unknown |= initializer_frame
             return UNKNOWN
@@ -298,6 +310,12 @@ def value_origins(
                 expression(statement.cause)
                 return False
             elif isinstance(statement, ast.If):
+                guard = exact_scalar_guard(statement)
+                guarded_name = guard if guard in admitted else None
+                if guarded_name is not None:
+                    statements(statement.body, loop_depth)
+                    env[guarded_name] = SCALAR
+                    continue
                 if expression(statement.test) != SCALAR:
                     unsupported_condition = True
                 before = dict(env)
@@ -358,6 +376,7 @@ def value_origins(
                 if initializer_frame:
                     unsupported_condition = True
         return True
+    admitted = initial_scalar_guards(function, row.get('unshadowed_container_builtins', []))
     statements(function.body)
     if unsupported_condition:
         return {**empty, "retained": True, 'initializer_protocol_unknown': initializer_frame}
@@ -365,5 +384,5 @@ def value_origins(
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     return {"writes": safe, "calls": calls, "return": returned,
             "retained": retained, "degraded": degraded, 'constructor_inputs': constructor_inputs,
-            'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls,
+            'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'format_inputs': format_inputs,
             'initializer_protocol_unknown': initializer_protocol_unknown}

@@ -195,3 +195,108 @@ def test_constructor_argument_ownership_cannot_survive_a_later_escape_argument(t
             validate_operation_effects(operation, 'consumer.py::read', facts)
     else:
         assert validate_operation_effects(operation, 'consumer.py::read', facts) == (0, 0)
+
+
+@pytest.mark.parametrize('shadowed', [False, True])
+def test_exact_runtime_string_admission_precedes_unknown_protocol(tmp_path, shadowed):
+    source="""
+        EVENTS=[]
+        class Probe:
+            def __bool__(self):
+                EVENTS.append(7)
+                return True
+        PROBE=Probe()
+        SHADOW
+        class Record:
+            def __init__(self,value):
+                if type(value) is not str: raise ValueError('string required')
+                if not value: raise ValueError('empty')
+                self.value=value
+        def read():
+            try: Record(PROBE)
+            except ValueError: pass
+            return len(EVENTS)
+    """.replace('SHADOW', 'def type(value): return str' if shadowed else '')
+    path,facts=inventory(tmp_path,source)
+    assert witness(path) == ([1,2] if shadowed else [0,0])
+    if shadowed:
+        with pytest.raises(SemanticOperationEffectError):
+            validate_operation_effects(OPERATION,'consumer.py::read',facts)
+    else:
+        assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+def test_github_client_rejects_protocol_objects_before_inspecting_them():
+    from bcf_governance.tooling.ci_github_api import GitHubAPI, GitHubAPIError
+    events=[]
+    class Probe(str):
+        def __bool__(self):
+            events.append('bool')
+            return True
+        def startswith(self,*args):
+            events.append('startswith')
+            return True
+        def rstrip(self,*args):
+            events.append('rstrip')
+            return 'https://example.test'
+    with pytest.raises(GitHubAPIError):
+        GitHubAPI(token=Probe('token'))
+    with pytest.raises(GitHubAPIError):
+        GitHubAPI(token='token',api_url=Probe('https://example.test'))
+    assert events==[]
+    GitHubAPI(token='token',api_url='https://example.test/')
+
+
+@pytest.mark.parametrize('conversion', ['', '!s', '!r'])
+def test_message_formatting_callback_is_not_hidden_by_string_result(tmp_path,conversion):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Probe:
+            def __format__(self,spec):
+                EVENTS.append(7)
+                return 'ok'
+            def __str__(self):
+                EVENTS.append(7)
+                return 'ok'
+            def __repr__(self):
+                EVENTS.append(7)
+                return 'ok'
+        PROBE=Probe()
+        class Error(ValueError):pass
+        def read():
+            Error(f'message {PROBECONVERSION}')
+            return len(EVENTS)
+    """.replace('PROBECONVERSION','PROBE'+conversion))
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+def test_private_literal_dictionary_keys_produce_a_safe_message(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        class Error(ValueError):pass
+        def read():
+            supplied={'first':object(), 'second':object()}
+            for key,value in supplied.items():
+                Error(f'bad {key}')
+            return 7
+    """)
+    assert witness(path)==[7,7]
+    assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+def test_direct_formatted_output_does_not_hide_callback_writes(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Probe:
+            def __format__(self,spec):
+                EVENTS.append(7)
+                return 'ok'
+        PROBE=Probe()
+        def read():
+            message=f'{PROBE}'
+            return len(EVENTS)
+    """)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
