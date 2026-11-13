@@ -272,9 +272,12 @@ def validate_operation_effects(
                 reached.add(identity)
                 continue
             if call.get("dispatch_resolution") == "unresolved" and contextual is None:
-                reject(
-                    f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
-                )
+                if report_new and callback_required:
+                    report_observation('unresolved_callback_dispatch', call.get('line'), raw)
+                else:
+                    reject(
+                        f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
+                    )
             if call.get("language") == "typescript":
                 if call.get("effect") == "write":
                     writes.add(raw)
