@@ -208,6 +208,9 @@ def extend_python_effect_facts(
         if isinstance(node, (ast.Attribute, ast.Subscript)) and isinstance(node.ctx, (ast.Store, ast.Del)):
             write(node, ast.unparse(node))
         if isinstance(node, ast.Call):
+            if isinstance(node.func, ast.Attribute) and node.func.attr in {'setattr', 'delattr'}:
+                obligations.append({'kind': 'unqualified_attribute_mutator',
+                                    'line': node.lineno, 'column': node.col_offset})
             if isinstance(node.func, ast.Attribute) and node.func.attr in _MUTATORS:
                 write(node, ast.unparse(node.func))
             owner = class_of(node)

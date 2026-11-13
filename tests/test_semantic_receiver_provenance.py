@@ -1,4 +1,6 @@
 """Vendor record normalization is not normalization of a request selector."""
+from textwrap import dedent
+
 import pytest
 
 from bcf_governance.tooling.semantic_ownership_scan import evaluate_discovery
@@ -43,3 +45,15 @@ def test_annotations_aliases_and_nonconstructing_factories_do_not_hide_request_n
     '''.replace('BODY',body))
     result=evaluate_discovery(facts,registry())
     assert any(item['kind']=='downstream_normalization' for item in result['violations'])
+
+
+def test_injected_dispatch_map_get_does_not_normalize_lookup_key(tmp_path):
+    _, facts = inventory(tmp_path, dedent(BASE) + "\nclass Handler:\n def __init__(self, operations): self.operations=operations\n def read(self, record: Record): return self.operations.get(record.value, None)\n")
+    result = evaluate_discovery(facts, registry())
+    assert not [row for row in result['violations'] if row['kind'] == 'downstream_normalization']
+
+
+def test_canonical_receiver_method_and_parameter_alias_still_normalize(tmp_path):
+    _, facts = inventory(tmp_path, dedent(BASE) + "\ndef read(record: Record):\n alias=record\n return alias.value.get('key', 'default')\n")
+    result = evaluate_discovery(facts, registry())
+    assert any(row['kind'] == 'downstream_normalization' for row in result['violations'])

@@ -6,7 +6,15 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.14`
+Release target: `2.3.15`
+
+### Fixed
+
+- Preserve existing unresolved-report policy while enforcing strict callback and constructor effects for fail-closed consumers.
+- Distinguish source-bound constructors and foreign setter methods from builtin class rebinding; reject reached unknown mutators.
+- Associate downstream normalization with its actual receiver, preserving request aliases and separating dispatch-map lookup keys and vendor record values.
+
+## [2.3.14] - 2026-11-12
 
 ### Fixed
 

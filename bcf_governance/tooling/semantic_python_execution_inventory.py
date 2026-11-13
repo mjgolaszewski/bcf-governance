@@ -254,6 +254,8 @@ class _FunctionVisitor(ast.NodeVisitor):
                 {
                     **fact,
                     "receiver_root": root,
+                    "method_receiver_parameter": self.receiver,
+                    "method_receiver_class": self.class_symbol,
                     'receiver_result_sources': sorted(self._result_sources(node.func.value)),
                     "receiver_annotation": self.parameters.get(root or ""),
                     "parameter_origins": parameter_origins,

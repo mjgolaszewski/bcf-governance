@@ -258,3 +258,10 @@ def test_attribute_method_name_is_not_builtin_rebinding(tmp_path, setter, closed
     record = next(row for row in facts['classes'] if row['symbol'] == 'models.py::Record')
     assert record['closed_class_binding'] is closed
     assert bool([row for row in facts['constructors'] if row['caller'] == 'models.py::Record.from_payload']) is closed
+
+
+def test_reached_foreign_setter_is_unqualified_execution(tmp_path):
+    from tests.test_consumer_callback_contracts import OPERATION
+    facts = _inventory(tmp_path, "class Record:\n @classmethod\n def from_payload(cls,value): return cls()\ndef read(foreign):\n foreign.setattr(Record,'from_payload',lambda value:value)\n return Record.from_payload(7)\n")
+    with pytest.raises(SemanticOperationEffectError, match='unqualified_attribute_mutator'):
+        validate_operation_effects(OPERATION, 'models.py::read', facts)

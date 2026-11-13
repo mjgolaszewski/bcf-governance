@@ -181,7 +181,10 @@ def evaluate_discovery(
                 if fact.get('source_receiver_subjects') and entry.canonical_symbol not in fact['source_receiver_subjects']:
                     continue
                 parameter_derived = bool(
-                    fact.get("parameter_origins")
+                    [origin for origin in fact.get("parameter_origins", [])
+                     if not (origin == 'parameter:' + str(fact.get('method_receiver_parameter'))
+                             and fact.get('method_receiver_class')
+                             and fact['method_receiver_class'] != entry.canonical_symbol)]
                     or fact.get("downstream_of_parameter") is True
                 )
                 if parameter_derived:

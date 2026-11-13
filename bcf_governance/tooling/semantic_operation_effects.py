@@ -171,12 +171,17 @@ def validate_operation_effects(
                 authority.add(target)
             else:
                 reject(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+        resolved_mutator_sites = {(call.get('line'), call.get('column'))
+            for call in function.get('calls', [])
+            if _resolve_function(str(call.get('called_symbol', '')), functions) is not None}
         remaining_obligations = [item for item in function.get('implicit_effect_obligations', [])
             if not (item.get('binding_source') == 'constructor_initializer_frame' and
                     (item.get('line'), item.get('column'), item.get('class_symbol'))
                     in origins['constructor_inputs'])
             and not (item.get('kind') == 'unqualified_generated_copy_binding' and
                      (item.get('line'), item.get('column'), item.get('class_symbol')) in origins.get('generated_copies', set()))
+            and not (item.get('kind') == 'unqualified_attribute_mutator' and
+                     (item.get('line'), item.get('column')) in resolved_mutator_sites)
             and not (item.get('kind') == 'unqualified_format_callback' and
                      (item.get('line'), item.get('column')) in origins['format_inputs'])]
         if report_new:
