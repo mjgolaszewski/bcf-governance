@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def observe(root: Path, source: str, *, fake: bool = False):
     interpreter = os.environ.get('BCF_PYDANTIC_TEST_PYTHON', sys.executable)
-    (root / 'pyproject.toml').write_text('[project]\nname="binding-fixture"\nversion="1"\nrequires-python=">=3.12"\ndependencies=["pydantic==2.13.4"]\n')
+    (root / 'pyproject.toml').write_text('[project]\nname="binding-fixture"\nversion="1"\nrequires-python=">=3.11"\ndependencies=["pydantic==2.13.4"]\n')
     (root / 'models.py').write_text(textwrap.dedent(source))
     if fake:
         (root / 'pydantic.py').write_text('class BaseModel:\n pass\nraise RuntimeError("must not import project source")\n')
