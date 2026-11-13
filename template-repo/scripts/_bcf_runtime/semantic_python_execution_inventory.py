@@ -66,6 +66,51 @@ def _normalized_return_fingerprint(
     ).hexdigest()
 
 
+def direct_attribute_call_aliases(function: ast.FunctionDef | ast.AsyncFunctionDef) -> dict[str, ast.Attribute]:
+    """Bind one local attribute handle used exclusively as a direct call target."""
+    nodes = list(ast.walk(function))
+    if any(isinstance(node, ast.Name) and node.id in {
+        'globals', 'locals', 'vars', 'eval', 'exec', '__builtins__', '__import__'
+    } for node in nodes):
+        return {}
+    parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
+    stores = Counter(node.id for node in nodes if isinstance(node, ast.Name)
+                     and isinstance(node.ctx, (ast.Store, ast.Del)))
+    locals_ = set(stores) | {node.arg for node in nodes if isinstance(node, ast.arg)}
+    locals_.update(node.name for node in nodes if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)))
+    locals_.update(node.asname or node.name.split('.')[0] for node in nodes if isinstance(node, ast.alias))
+    excluded = {name for node in nodes if isinstance(node, (ast.Global, ast.Nonlocal)) for name in node.names}
+    result = {}
+    for statement in nodes:
+        if not isinstance(statement, (ast.Assign, ast.AnnAssign)):
+            continue
+        targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
+        value = statement.value
+        if (len(targets) != 1 or not isinstance(targets[0], ast.Name)
+                or not isinstance(value, ast.Attribute) or not isinstance(value.value, ast.Name)
+                or value.value.id in locals_):
+            continue
+        name = targets[0].id
+        if stores[name] != 1 or name in excluded:
+            continue
+        uses = [node for node in nodes if isinstance(node, ast.Name) and node.id == name and isinstance(node.ctx, ast.Load)]
+        safe = bool(uses)
+        for use in uses:
+            parent = parents.get(id(use))
+            if not isinstance(parent, ast.Call) or parent.func is not use:
+                safe = False
+                break
+            current: ast.AST = parent
+            while current is not function and id(current) in parents:
+                current = parents[id(current)]
+                if isinstance(current, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)) and current is not function:
+                    safe = False
+                    break
+        if safe:
+            result[name] = value
+    return result
+
+
 class _FunctionVisitor(ast.NodeVisitor):
     def __init__(
         self,
@@ -104,6 +149,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         self.result_sources = {name: {'parameter:' + name} for name in self.parameters}
         self.calls: list[dict[str, Any]] = []
         self.constructors: list[dict[str, Any]] = []
+        self.attribute_call_aliases = direct_attribute_call_aliases(function) if function else {}
         self.normalizations: list[dict[str, Any]] = []
         self.unresolved: list[dict[str, Any]] = []
         self.return_fingerprints: list[str] = []
@@ -121,7 +167,8 @@ class _FunctionVisitor(ast.NodeVisitor):
         )
 
     def _resolved_symbol(self, call: ast.Call) -> str:
-        return source_symbol(call.func, self.path, self.imports)
+        selector = self.attribute_call_aliases.get(call.func.id) if isinstance(call.func, ast.Name) else None
+        return source_symbol(selector if selector is not None else call.func, self.path, self.imports)
 
     def _origins(self, node: ast.AST) -> set[str]:
         origins: set[str] = set()
@@ -218,7 +265,8 @@ class _FunctionVisitor(ast.NodeVisitor):
             ) and all(keyword.arg is not None for keyword in node.keywords),
             "argument_origins": sorted(self._origins(node)),
         }
-        reference = _call_reference(node.func, self.import_bindings)
+        selector = self.attribute_call_aliases.get(node.func.id) if isinstance(node.func, ast.Name) else None
+        reference = _call_reference(selector if selector is not None else node.func, self.import_bindings)
         if reference is not None:
             fact["import_reference"] = reference
         dispatch = method_dispatch_reference(
@@ -237,6 +285,9 @@ class _FunctionVisitor(ast.NodeVisitor):
                         "receiver_rebound": self.receiver_rebound or node.func.id != self.receiver,
                         "standard_classmethod": self.standard_classmethod}
         if dispatch is not None:
+            if dispatch.get("kind") == "class_or_static_receiver":
+                dispatch["standard_classmethod"] = self.method_binding_kind == "class" and self.standard_classmethod
+                dispatch["receiver_rebound"] = self.receiver_rebound
             fact["method_dispatch"] = dispatch
         self.calls.append(fact)
         if name in self.local_types or (name[:1].isupper() and name not in PRIMITIVES):

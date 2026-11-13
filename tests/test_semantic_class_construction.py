@@ -265,3 +265,32 @@ def test_reached_foreign_setter_is_unqualified_execution(tmp_path):
     facts = _inventory(tmp_path, "class Record:\n @classmethod\n def from_payload(cls,value): return cls()\ndef read(foreign):\n foreign.setattr(Record,'from_payload',lambda value:value)\n return Record.from_payload(7)\n")
     with pytest.raises(SemanticOperationEffectError, match='unqualified_attribute_mutator'):
         validate_operation_effects(OPERATION, 'models.py::read', facts)
+
+
+def test_nested_classmethod_forwarding_preserves_requested_subclass(tmp_path):
+    facts = _inventory(tmp_path, "class Record:\n @classmethod\n def _new(cls): return cls()\n @classmethod\n def from_payload(cls): return cls._new()\nclass Child(Record): pass\ndef read(): return Child.from_payload()\n")
+    assert any(row['caller'] == 'models.py::Record._new' and row['constructed_symbol'] == 'models.py::Child' for row in facts['constructors'])
+    assert not facts['unresolved']
+    outer = next(row for row in facts['functions'] if row['symbol'] == 'models.py::Record.from_payload')
+    assert any(call.get('called_symbol') == 'models.py::Record._new' and call.get('dispatch_resolution') == 'exact_bound_class_forwarding' for call in outer['calls'])
+
+
+def test_local_call_only_handle_in_context_retains_real_factory(tmp_path):
+    facts = _inventory(tmp_path, "from contextlib import nullcontext\nclass Record:\n @classmethod\n def from_payload(cls): return cls()\ndef read():\n with nullcontext():\n  constructor=Record.from_payload\n  return constructor()\n")
+    assert not facts['unresolved']
+    assert any(row['caller'] == 'models.py::Record.from_payload' and row['constructed_symbol'] == 'models.py::Record' for row in facts['constructors'])
+    root = next(row for row in facts['functions'] if row['symbol'] == 'models.py::read')
+    assert any(call.get('called_symbol') == 'models.py::Record.from_payload' for call in root['calls'])
+
+
+@pytest.mark.parametrize('change', ['sink(constructor)', 'constructor=lambda: None'])
+def test_escaped_or_reassigned_bound_handle_stays_unresolved(tmp_path, change):
+    facts = _inventory(tmp_path, "class Record:\n @classmethod\n def from_payload(cls): return cls()\ndef read():\n constructor=Record.from_payload\n "+change+"\n return Record.from_payload()\n")
+    assert any(row['kind'] == 'unresolved_class_constructor' for row in facts['unresolved'])
+
+
+def test_call_only_factory_handle_does_not_hide_source_write(tmp_path):
+    from tests.test_consumer_callback_contracts import OPERATION
+    facts = _inventory(tmp_path, "from pathlib import Path\nclass Record:\n @classmethod\n def from_payload(cls):\n  Path('out').write_text('data')\n  return cls()\ndef read():\n constructor=Record.from_payload\n return constructor()\n")
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(OPERATION, 'models.py::read', facts, experimental_protocols=False)

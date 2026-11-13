@@ -9,6 +9,12 @@ from __future__ import annotations
 import ast
 from typing import Any
 
+from .semantic_python_class_construction import (
+    class_constructor_bindings as _class_constructor_bindings,
+)
+from .semantic_python_class_construction import (
+    resolve_class_receiver_forwarding,
+)
 from .semantic_python_constructor_callbacks import (
     builtin_constructor_bases,
     constructor_declaration_shape,
@@ -563,69 +569,6 @@ def _hierarchy_sensitive_classes(classes: dict[str, dict[str, Any]]) -> set[str]
     return sensitive
 
 
-def _class_constructor_bindings(
-    function: dict[str, Any], classes: dict[str, dict[str, Any]],
-    calls: list[tuple[dict[str, Any], int, dict[str, Any]]],
-) -> list[dict[str, Any]]:
-    """Bind inherited class methods only at exact source-visible class calls."""
-    method = str(function["symbol"]).rsplit(".", 1)[-1]
-    owner = str(function.get("class_symbol", ""))
-    result: list[dict[str, Any]] = []
-    for caller, occurrence, call in calls:
-        bound, separator, called_method = str(call.get("called_symbol", "")).rpartition(".")
-        reference = call.get("method_dispatch")
-        instance_binding = isinstance(reference, dict)
-        if isinstance(reference, dict):
-            bound = str(reference.get("class_symbol", ""))
-            called_method = str(reference.get("method", ""))
-        if called_method != method or bound not in classes:
-            continue
-        ancestry: set[str] = set()
-        pending = [bound]
-        while pending:
-            candidate = pending.pop()
-            if candidate in ancestry:
-                continue
-            ancestry.add(candidate)
-            pending.extend(str(base.get("called_symbol", ""))
-                           for base in classes.get(candidate, {}).get("bases", []))
-        if owner not in ancestry:
-            continue
-        current = bound
-        visited: set[str] = set()
-        outcome = "unresolved"
-        while not instance_binding and current in classes and current not in visited:
-            visited.add(current)
-            row = classes[current]
-            if not row.get("local_class_binding"):
-                break
-            definitions = [entry for entry in row.get("methods", []) if entry["name"] == method]
-            if definitions:
-                if current == owner and len(definitions) == 1:
-                    outcome = "resolved"
-                    result.append({"constructed_symbol": bound,
-                                   "binding_caller": caller["symbol"],
-                                   "binding_line": call.get("line"),
-                                   "binding_occurrence": occurrence,
-                                   "factory_implementation": function["symbol"]})
-                elif current != owner:
-                    outcome = "different_implementation"
-                break
-            bases = row.get("bases", [])
-            if len(bases) != 1:
-                break
-            current = str(bases[0].get("called_symbol", ""))
-        if outcome == "unresolved":
-            failure = {"kind": "unresolved_class_constructor", "symbol": caller["symbol"],
-                       "line": call.get("line"), "called_symbol": call.get("called_symbol"),
-                       "factory_implementation": function["symbol"]}
-            if failure not in caller.setdefault("unresolved", []):
-                caller["unresolved"].append(failure)
-            call["dispatch_resolution"] = "unresolved"
-            call["dispatch_port_eligible"] = False
-    return result
-
-
 def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
     """Resolve safe same-instance calls and mark every ambiguous form fail-closed."""
     classes = {str(row["symbol"]): row for row in inventory.get("classes", [])}
@@ -642,6 +585,7 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
                 bound, _, method = str(call.get("called_symbol", "")).rpartition(".")
             if bound in classes:
                 constructor_calls.setdefault(method, []).append((caller, occurrence, call))
+    resolve_class_receiver_forwarding(functions, classes, constructor_calls)
     method_facts = {
         str(method["symbol"]): method
         for row in classes.values()
@@ -680,10 +624,12 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
             kind = str(reference.get("kind", "unknown"))
             class_symbol = str(reference.get("class_symbol", ""))
             method = str(reference.get("method", ""))
+            if call.get("dispatch_resolution") == "exact_bound_class_forwarding":
+                continue
             if kind == "class_constructor":
                 class_fact = classes.get(class_symbol, {})
                 bindings = _class_constructor_bindings(
-                    function, classes, constructor_calls.get(str(function["symbol"]).rsplit(".", 1)[-1], [])
+                    function, classes, constructor_calls.get(str(function["symbol"]).rsplit(".", 1)[-1], []), constructor_calls
                 )
                 if (reference.get("standard_classmethod") is True
                         and not reference.get("receiver_rebound") and not custom_function_decorators

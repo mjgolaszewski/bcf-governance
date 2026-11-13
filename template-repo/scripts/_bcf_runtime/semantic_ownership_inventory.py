@@ -247,6 +247,10 @@ def discover_python_source(
             )
         )
         parents = {id(child): parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
+        from .semantic_python_execution_inventory import direct_attribute_call_aliases
+        local_call_alias_sites = {id(selector) for scope in ast.walk(tree)
+            if isinstance(scope, (ast.FunctionDef, ast.AsyncFunctionDef))
+            for selector in direct_attribute_call_aliases(scope).values()}
         for value in ast.walk(tree):
             target = None
             escaped_member = None
@@ -261,6 +265,8 @@ def discover_python_source(
                 selector = value.args[1] if len(value.args) > 1 else None
                 escaped_member = selector.value if isinstance(selector, ast.Constant) and isinstance(selector.value, str) else "*"
             elif isinstance(value, ast.Attribute) and isinstance(value.ctx, ast.Load):
+                if id(value) in local_call_alias_sites:
+                    continue
                 parent = parents.get(id(value))
                 if not (isinstance(parent, ast.Call) and parent.func is value):
                     target = value.value
