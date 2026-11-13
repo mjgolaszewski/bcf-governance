@@ -24,7 +24,10 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 364 affected/pack tests pass without skips; strict typing passes for 66 touched modules and lint passes. Framework-only
+  - Generic dominating local scalar producers now survive unsupported surrounding try flow. The positive control first failed
+    with three format obligations, then passed. Latest assignment, lexical scope and recursive cycle checks prevent stale
+    name proofs; nested nonlocal replacement remains refused. Returned record fields are not qualified by this change.
+  - 367 affected/pack tests pass without skips; strict typing passes for 66 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -48,8 +51,9 @@ execution_evidence:
     refused. Formatting result identity is separate from callback effects, including direct formatted outputs. A sole-use
     local literal dict can prove its exact loop keys; borrowed and escaped inputs stay unqualified. No current canonical pass
     claim.
-  - Actual canonical replay on3211b67 cleared provider_workflow_ids but refused action_pin formatting at lines49/51; native2415033
-    exit1/EOF/reap/FDclosed. Both allocated replays exhausted. Current action-pin admission repair has focused evidence only.
+  - Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715
+    exit1/EOF/reap/FDclosed. Current local scalar-producer repair has focused evidence only; returned-record fields remain
+    unqualified. All allocated replays exhausted.
   - Complete source callback closure and actual consumer constructor qualification remain unqualified.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results

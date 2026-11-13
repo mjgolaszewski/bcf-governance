@@ -246,14 +246,17 @@ def initial_scalar_guards(function: ast.AST, builtin_names: list[str]) -> set[st
     return guarded
 
 
-def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: list[str] | None = None) -> bool:
+def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: list[str] | None = None, _seen: frozenset[int] = frozenset()) -> bool:
     """Literal scalars and exact keys from a private, unaliased literal dict."""
+    if id(value) in _seen:
+        return False
+    _seen = _seen | {id(value)}
     if isinstance(value, ast.Constant):
         return True
     if isinstance(value, ast.JoinedStr):
         return all(isinstance(part, ast.Constant) or isinstance(part, ast.FormattedValue)
-                   and static_scalar_expression(part.value, function, builtin_names)
-                   and (part.format_spec is None or static_scalar_expression(part.format_spec, function, builtin_names))
+                   and static_scalar_expression(part.value, function, builtin_names, _seen)
+                   and (part.format_spec is None or static_scalar_expression(part.format_spec, function, builtin_names, _seen))
                    for part in value.values)
     if not isinstance(value, ast.Name):
         return False
@@ -270,7 +273,7 @@ def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: l
     if not any(node is value for node in nodes):
         return False
     if any(isinstance(node, (ast.Global, ast.Nonlocal)) or isinstance(node, ast.Name)
-           and node.id in {'exec', 'eval', 'globals', 'locals', 'vars'} for node in nodes):
+           and node.id in {'exec', 'eval', 'globals', 'locals', 'vars'} for node in ast.walk(function)):
         return False
     if isinstance(function, ast.FunctionDef) and 'type' in (builtin_names or []):
         arguments = {arg.arg for arg in [*function.args.posonlyargs, *function.args.args,
@@ -295,6 +298,34 @@ def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: l
                         if local and not rebound:
                             return True
                     break
+    # Prove a local producer from its actual dominating assignment, never
+    # from its annotation or an earlier binding with the same spelling.
+    for parent in nodes:
+        for _, field in ast.iter_fields(parent):
+            if not isinstance(field, list) or not field or not all(isinstance(item, ast.stmt) for item in field):
+                continue
+            for index, statement in enumerate(field):
+                if not any(node is value for node in scoped_nodes(statement)):
+                    continue
+                for binding in reversed(field[:index]):
+                    stores_here = [node for node in scoped_nodes(binding) if isinstance(node, ast.Name)
+                                   and node.id == value.id and isinstance(node.ctx, (ast.Store, ast.Del))]
+                    if not stores_here:
+                        continue
+                    producer = None
+                    if (isinstance(binding, ast.Assign) and len(binding.targets) == 1
+                            and isinstance(binding.targets[0], ast.Name) and binding.targets[0].id == value.id):
+                        producer = binding.value
+                    elif (isinstance(binding, ast.AnnAssign) and isinstance(binding.target, ast.Name)
+                          and binding.target.id == value.id):
+                        producer = binding.value
+                    if producer is not None and not any(
+                        isinstance(node, ast.Name) and node.id == value.id and isinstance(node.ctx, (ast.Store, ast.Del))
+                        for node in scoped_nodes(statement)
+                    ) and static_scalar_expression(producer, function, builtin_names, _seen):
+                        return True
+                    break
+                break
     stores = [node for node in nodes if isinstance(node, ast.Name)
               and node.id == value.id and isinstance(node.ctx, (ast.Store, ast.Del))]
     if len(stores) != 1:

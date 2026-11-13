@@ -1709,7 +1709,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_constructor_callbacks.py": {
       "operation": "copy",
-      "sha256": "89d72961fbc66f17f8767ec0bfe665716d0bc8e97e43725f9376702c26970184"
+      "sha256": "8fa0489b32341782cabf786437fddf377b56bf11ed367b010bef5ef08c8f99f0"
     },
     "scripts/_bcf_runtime/semantic_python_dataclass_contracts.py": {
       "operation": "copy",

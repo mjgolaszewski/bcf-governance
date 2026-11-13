@@ -619,3 +619,63 @@ def test_action_pin_native_boundary_preserves_pins_and_rejects_protocols():
         action_pin('missing')
     with pytest.raises(ValueError,match='unregistered immutable source'):
         action_pin('checkout','foreign')
+
+
+def test_guarded_local_scalar_projection_survives_unsupported_try(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        def read():
+            try: pass
+            except ValueError: pass
+            commit='actual'
+            if type(commit) is not str: raise ValueError('native')
+            root=f'cache/{commit}'
+            executable=f'{root}/bin/bcf'
+            return f'test {root}: {executable}'
+    """)
+    assert witness(path)==['test cache/actual: cache/actual/bin/bcf']*2
+    assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+def test_scalar_projection_reassignment_does_not_inherit_prior_binding(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Probe:
+            def __format__(self,spec):
+                EVENTS.append(7)
+                return 'message'
+        PROBE=Probe()
+        def read():
+            try: pass
+            except ValueError: pass
+            value='native'
+            result=f'value {value}'
+            result=PROBE
+            rendered=f'value {result}'
+            return len(EVENTS)
+    """)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+def test_nested_nonlocal_replacement_invalidates_local_scalar_guard(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Probe:
+            def __format__(self,spec):
+                EVENTS.append(7)
+                return 'message'
+        PROBE=Probe()
+        def read():
+            value='native'
+            def replace():
+                nonlocal value
+                value=PROBE
+            if type(value) is not str: raise ValueError('native')
+            replace()
+            rendered=f'value {value}'
+            return len(EVENTS)
+    """)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
