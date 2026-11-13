@@ -10,9 +10,9 @@ import hashlib
 import importlib.metadata
 import importlib.util
 import json
-from pathlib import Path
 import sys
 import tomllib
+from pathlib import Path
 from typing import Any
 
 from packaging.requirements import InvalidRequirement, Requirement

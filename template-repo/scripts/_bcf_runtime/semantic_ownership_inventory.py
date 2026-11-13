@@ -38,6 +38,7 @@ from .semantic_python_method_identity import (
 from .semantic_python_method_identity import (
     root_name as _root_name,
 )
+from .semantic_python_model_binding import literal_type_aliases, qualify_model_bindings
 from .semantic_source_paths import candidate_source_files
 
 
@@ -217,6 +218,7 @@ def discover_python_source(
     import_rows: list[dict[str, Any]] = []
     class_rows: list[dict[str, Any]] = []
     class_mutations: list[dict[str, Any]] = []
+    literal_aliases: list[str] = []
     for path in paths:
         relative = _relative(repo_root, path)
         raw = path.read_bytes()
@@ -234,6 +236,7 @@ def discover_python_source(
         bindings = _import_bindings(tree)
         import_rows.append({"path": relative, "bindings": bindings})
         bindings_by_local = {str(value["local"]): value for value in bindings}
+        literal_aliases.extend(literal_type_aliases(tree, relative, imports))
         class_rows.extend(
             discover_class_facts(
                 tree,
@@ -307,6 +310,7 @@ def discover_python_source(
         "files": file_rows,
         "imports": import_rows,
         "classes": class_rows,
+        "literal_type_aliases": sorted(literal_aliases),
         "class_binding_mutations": class_mutations,
         "types": sorted(types),
         "functions": functions,
@@ -642,7 +646,7 @@ def resolve_python_imports(
                     fact["constructed_symbol"] = target
     for class_row in resolved.get("classes", []):
         path = str(class_row["symbol"]).split("::", 1)[0]
-        for fact in class_row.get("bases", []):
+        for fact in [*class_row.get("bases", []), *class_row.get("model_schema_references", [])]:
             reference = fact.get("import_reference")
             if not isinstance(reference, dict):
                 continue
@@ -678,6 +682,7 @@ def resolve_python_imports(
                 class_row["local_class_binding"] = False
             if escaped is not None:
                 pending.extend(str(base.get("called_symbol", "")) for base in class_row.get("bases", []))
+    qualify_model_bindings(repo_root, resolved)
     resolve_method_dispatch(resolved)
     resolve_python_implicit_effects(resolved)
     known_types = set(resolved.get("types", []))

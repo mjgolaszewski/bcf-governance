@@ -204,6 +204,8 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
             cls = classes.get(subject, {})
             if not cls.get("closed_class_binding") or producer.get("effect_unresolved") or producer.get("unresolved"):
                 continue
+            if cls.get("library_model_binding"):
+                continue
             if any(method["name"] == "__post_init__" or method.get("decorators") == ["property"]
                    for method in cls.get("methods", [])):
                 continue
@@ -257,6 +259,10 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                 for binding in call.get("class_constructor_bindings", []))
             for subject in subjects & classes.keys():
                 cls = classes[subject]
+                if cls.get("library_model_binding"):
+                    function.setdefault("implicit_effect_obligations", []).append({
+                        "kind": "unqualified_library_model_effects", "line": call.get("line"),
+                        "class_symbol": subject})
                 if not cls.get("closed_class_binding"):
                     obligation = {"kind": "unqualified_constructor_callbacks",
                                   "line": call.get("line"), "class_symbol": subject}
@@ -264,7 +270,7 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                         function["implicit_effect_obligations"].append(obligation)
                 names = {str(method["name"]): str(method["symbol"])
                          for method in cls.get("methods", [])}
-                has_hooks = "__post_init__" in names or any(
+                has_hooks = ("__post_init__" in names and cls.get("standard_dataclass_declaration")) or any(
                     method.get("decorators") == ["property"] for method in cls.get("methods", []))
                 if has_hooks and (not call.get("literal_arguments") or cls.get("dataclass_default_factories")):
                     function.setdefault("implicit_effect_obligations", []).append({
@@ -277,6 +283,8 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                             "line": call.get("line"), "implicit_callback": True,
                             "dataclass_field": field})
                 for name in ("__new__", "__init__", "__post_init__"):
+                    if name == "__post_init__" and not cls.get("standard_dataclass_declaration"):
+                        continue
                     if name in names:
                         callbacks.append({"caller": function["symbol"],
                             "called_symbol": names[name], "call_name": name,

@@ -10,7 +10,11 @@ import ast
 from typing import Any
 
 from .semantic_python_dataclass_contracts import dataclass_default_factories
-from .semantic_python_model_binding import literal_enum_shape, model_declaration_shape, model_default_shape
+from .semantic_python_model_binding import (
+    literal_enum_shape,
+    model_declaration_shape,
+    model_default_shape,
+)
 
 _OVERLOAD_DECORATORS = {
     "typing::module.overload",
