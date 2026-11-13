@@ -2715,3 +2715,23 @@ pair, including version-derived projection; agents never hand-edit its pins.
 | Candidate qualification | One actual standard pipeline and consolidated review | Protected exact-main certification and independently verified immutable custody remain required |
 
 Returned-model serialization remains a separate source/provenance obligation: annotations, model names and model_dump spelling do not prove purity. Lexical-definition coverage and complete adopter SOIP are not inferred from the two repaired constructor observations. Deferred Identity/JIT source remains preserved and unqualified.
+
+### P31-HF18 bounded BDMCP publication compatibility
+
+The 2.3.15 version registry and exact self-governance tooling membership change
+the CI graph input digests. The native reconciler owns all generated workflow
+headers and the paired authority projection; no publication or recovery edge is
+added by this maintenance release.
+
+| Input state | Required transition or refusal | Downstream boundary |
+| --- | --- | --- |
+| Version and source-context membership change | Reconcile graph inputs, generated workflows and authority together | Same-candidate state coverage; no manual pins or authority escalation |
+| Ordinary installed runtime or declared development environment | Keep Pydantic optional at runtime; provision the pinned model-test dependency through the dev group | Fresh installation and standard CI must succeed without a private interpreter override or live Identity |
+| Source-visible class construction and bounded producer traversal | Preserve concrete receiver identity; reject known unauthorized writes; mark exhausted or unresolved effect proof unqualified | Nominal model identity and diagnostic observations never confer execution authority |
+| Maintained explicit operation contracts | Validate actual imported source, reachable ports and known callback effects | No whole-method purity waiver or experimental protocol inference as stable release authority |
+| Exact current BDMCP qualification | Reuse unchanged runtime/consumer evidence for native preflight, ownership, 138 operation contracts and 398 behavior controls | Staged Standard migration remains separate; selected consumer tests cannot replace full framework CI |
+| Complete standard CI and consolidated review | Qualify the exact candidate before protected integration | Normal controller rotation, exact-main certification and immutable release custody remain mandatory |
+
+Deferred Identity/JIT and general protocol inference remain preserved experimental
+work. Recovery receipts, if ever needed for a broken controller, remain
+noncertifying and cannot authorize their own successor or this release.
