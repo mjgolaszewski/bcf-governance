@@ -1637,7 +1637,7 @@
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",
-      "sha256": "5cb0bbe87e1d0632c60ba977b0cfcadb6f59c25ba9135382f7042cb37ec756e3"
+      "sha256": "3879ce88ed844172e1e43482f7d3bc611fcba05e50c2e8b52c3aa03b0e3e389a"
     },
     "scripts/_bcf_runtime/semantic_operation_python.py": {
       "operation": "copy",
@@ -1695,13 +1695,17 @@
       "operation": "copy",
       "sha256": "8da2ea6958d5c6bc10d33c3fbde2db588ff7f42cfc4c594aebd57c1c3605bef9"
     },
+    "scripts/_bcf_runtime/semantic_python_constructor_callbacks.py": {
+      "operation": "copy",
+      "sha256": "5b761ae2af9873b642300195a15f97dee97ce123f988e9c528e570d7760a2d80"
+    },
     "scripts/_bcf_runtime/semantic_python_dataclass_contracts.py": {
       "operation": "copy",
       "sha256": "568736376623e4cb2980405bcf34078bf2620a3c1be1beca5c3cd83c4aa0557d"
     },
     "scripts/_bcf_runtime/semantic_python_effect_obligations.py": {
       "operation": "copy",
-      "sha256": "901bd3c7496fac7e562dbc0613515e900052ad95062431c5882b741789e86a07"
+      "sha256": "eed2abc08580a1ce2a48d5451098ecb3791f8c65d70a837288b969016c054bda"
     },
     "scripts/_bcf_runtime/semantic_python_execution_inventory.py": {
       "operation": "copy",
@@ -1709,7 +1713,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_method_identity.py": {
       "operation": "copy",
-      "sha256": "2be0e05b08673ece72c6e1ed7296f11f7795e6d8990ad83e5bb38787dd5f7e31"
+      "sha256": "94fee530ac7b8d7ac24ec69474ca3137a6189ff4c9c9f8a0f080a6444c8b61b1"
     },
     "scripts/_bcf_runtime/semantic_python_model_binding.py": {
       "operation": "copy",
@@ -1717,7 +1721,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_value_origins.py": {
       "operation": "copy",
-      "sha256": "f65b589001ab83af4006d86df1455866c6216b54574c54a5c79f29edb832b3ac"
+      "sha256": "723af715efd8ea97a8966d1e38bb05c70a7cde11e21552f8b4e233abb4602253"
     },
     "scripts/_bcf_runtime/semantic_source_discovery.py": {
       "operation": "copy",

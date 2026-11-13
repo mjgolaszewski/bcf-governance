@@ -60,6 +60,44 @@ def test_unrelated_property_is_only_executed_when_read(tmp_path, read_property):
         assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)
 
 
+@pytest.mark.parametrize("writes", [False, True])
+def test_constructed_source_finalizer_effect_is_not_silently_accepted(tmp_path, writes):
+    source = """
+        EVENTS=[]
+        class Record:
+            def __del__(self):
+                BODY
+        def read():
+            Record()
+            return len(EVENTS)
+    """.replace("BODY", "EVENTS.append(7)" if writes else "pass")
+    path, facts = inventory(tmp_path, source)
+    assert witness(path) == ([1, 2] if writes else [0, 0])
+    if writes:
+        with pytest.raises(SemanticOperationEffectError):
+            validate_operation_effects(OPERATION, "consumer.py::read", facts)
+    else:
+        assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)
+
+
+def test_finalizer_exception_has_an_observed_unraisable_output_effect(tmp_path):
+    path, facts = inventory(tmp_path, """
+        class Record:
+            def __del__(self):
+                1 / 0
+        def read():
+            Record()
+            return 0
+    """)
+    script = "import runpy; n=runpy.run_path(" + repr(str(path)) + "); n['read'](); n['read']()"
+    result = subprocess.run([sys.executable, "-I", "-B", "-c", script],
+        cwd=tmp_path, env={"PATH": os.defpath, "LANG": "C.UTF-8"},
+        capture_output=True, text=True, check=True, timeout=10)
+    assert result.stderr.count("ZeroDivisionError") == 2
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, "consumer.py::read", facts)
+
+
 @pytest.mark.parametrize("source,expected", [
     ("COUNTER=0\ndef read():\n global COUNTER\n COUNTER += 1\n return COUNTER\n", [1, 2]),
     ("STATE=[1,2]\ndef read():\n STATE.clear()\n return len(STATE)\n", [0, 0]),

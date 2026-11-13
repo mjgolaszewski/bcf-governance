@@ -1,23 +1,26 @@
 {
   "status": "unqualified",
-  "base_commit": "94910222399aa155628a9120b6c2738d13e205cc",
+  "base_commit": "13b8947dc996d8310474ee43b3b8d6b2690b0f77",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
-    "bcf_governance/tooling/semantic_python_value_origins.py": "f65b589001ab83af4006d86df1455866c6216b54574c54a5c79f29edb832b3ac",
-    "bcf_governance/tooling/semantic_operation_effects.py": "5cb0bbe87e1d0632c60ba977b0cfcadb6f59c25ba9135382f7042cb37ec756e3",
-    "bcf_governance/tooling/semantic_python_effect_obligations.py": "901bd3c7496fac7e562dbc0613515e900052ad95062431c5882b741789e86a07",
+    "bcf_governance/tooling/semantic_python_value_origins.py": "723af715efd8ea97a8966d1e38bb05c70a7cde11e21552f8b4e233abb4602253",
+    "bcf_governance/tooling/semantic_operation_effects.py": "3879ce88ed844172e1e43482f7d3bc611fcba05e50c2e8b52c3aa03b0e3e389a",
+    "bcf_governance/tooling/semantic_python_effect_obligations.py": "eed2abc08580a1ce2a48d5451098ecb3791f8c65d70a837288b969016c054bda",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "308cf0ff125486403a73588db7d8e7a61912273f7b36ea035282c20b3b6974de",
+    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "5b761ae2af9873b642300195a15f97dee97ce123f988e9c528e570d7760a2d80",
+    "bcf_governance/tooling/semantic_python_method_identity.py": "94fee530ac7b8d7ac24ec69474ca3137a6189ff4c9c9f8a0f080a6444c8b61b1",
     "tests/test_semantic_value_origins.py": "0e0262af154a5778475e5934fbce74103f6c5486c918c7e82eba6ab24ebc42ba",
-    "tests/test_consumer_callback_contracts.py": "a7754aaaa22f480af4490d959f65804aa1fbae95ecb14ae954797243986aaef0"
+    "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
+    "tests/test_semantic_constructor_frames.py": "2c377e5e750e2c67e625899c6d6944e65fbbd7b5648a088f02bcc5ec462c7b0d"
   },
   "affected_tests": {
-    "passed": 163,
+    "passed": 177,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
     "consumer_sdk_required": false
   },
-  "strict_typing_files_passed": 4,
+  "strict_typing_files_passed": 6,
   "lint": "pass",
   "runtime_pack_projection": "pass",
   "unused_property_causal_control": {
@@ -30,19 +33,32 @@
     }
   },
   "canonical_reconcile": {
-    "status": "failed",
-    "stage": "semantic-lock",
-    "remaining_constructor_callback_classes": [
-      "bcf_governance/tooling/ci_github_api.py::GitHubAPI",
-      "bcf_governance/tooling/ci_graph_errors.py::CIGraphError",
-      "bcf_governance/tooling/local_pr_context.py::ProspectiveValidationError",
-      "bcf_governance/tooling/release_adopter_qualification.py::ReleaseQualificationError"
-    ]
+    "status": "blocked_before_current_semantic_evaluation",
+    "stage": "new_file_ownership_staging"
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
   "full_ci_passed": false,
   "safe_consumer_install_window": false,
   "execution_qualified": false,
-  "release_custody": false
+  "release_custody": false,
+  "constructor_frames": {
+    "initial_false_refusals": 4,
+    "initial_correct_denials": 5,
+    "current_controls_passed": 11
+  },
+  "finalizer_controls": {
+    "unsafe_acceptances_observed": 2,
+    "current_controls_passed": 3
+  },
+  "remaining_implementation": [
+    "Supported reconcile requires the new files to be staged/authenticated before current semantic evaluation.",
+    "Nonliteral constructor input and actual caller provenance remain unqualified.",
+    "Native exception wrapper identity must remain distinct from equivalent BaseException initializer effects.",
+    "Source/native mixed MRO initializer precedence requires additional qualification.",
+    "No-op finalizer classification needs callable-signature and async qualification.",
+    "Constructor namespace closure must reject allocator mutation through class aliases.",
+    "Complete framework, consumer, ordinary-protection and release gates remain open."
+  ],
+  "source_ready": false
 }

@@ -6,7 +6,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from .semantic_python_value_origins import value_origins
 
@@ -99,7 +99,7 @@ def validate_operation_effects(
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
-    pending = [(entrypoint, ()), *((path + "::<module>", ()) for path in source_modules if path + "::<module>" in functions)]
+    pending: list[tuple[str, tuple[tuple[str, str], ...]]] = [(entrypoint, ()), *((path + "::<module>", ()) for path in source_modules if path + "::<module>" in functions)]
     visited: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
     # The function-name population is fixed for this one fresh validation.
     # Reuse only lookup answers, never source observations or acceptance results.
@@ -111,6 +111,21 @@ def validate_operation_effects(
         visited.add((symbol, arguments))
         function = functions[symbol]
         origins = value_origins(symbol, functions, arguments)
+        contextual_sites = {
+            (call.get('line'), call.get('called_symbol')) for call in function.get('calls', [])
+            if (call.get('line'), call.get('column')) in origins['contextual_calls']
+        }
+
+        def caller_arguments(call: dict[str, Any], context: dict[str, Any] = origins) -> tuple[tuple[str, str], ...]:
+            frame = call.get('constructor_frame_origin')
+            if frame:
+                return cast(tuple[tuple[str, str], ...], context['implicit_calls'].get((frame['line'], frame['column'], frame['target']), ()))
+            return cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
+
+        if origins.get('initializer_protocol_unknown'):
+            raise SemanticOperationEffectError(
+                f"operation {operation['id']} contains an unqualified initializer runtime protocol at {symbol}"
+            )
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
@@ -124,27 +139,34 @@ def validate_operation_effects(
                 authority.add(target)
             else:
                 raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
-        if function.get("implicit_effect_obligations"):
+        remaining_obligations = [item for item in function.get('implicit_effect_obligations', [])
+            if not (item.get('binding_source') == 'constructor_initializer_frame' and
+                    (item.get('line'), item.get('column'), item.get('class_symbol'))
+                    in origins['constructor_inputs'])]
+        if remaining_obligations:
             obligations = ", ".join(
                 f"{item.get('kind')}:{item.get('class_symbol', '')}:{item.get('line')}"
-                for item in function["implicit_effect_obligations"]
+                for item in remaining_obligations
             )
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains unqualified implicit execution at {symbol}: {obligations}"
             )
-        if function.get("unresolved"):
+        if any((item.get('line'), item.get('called_symbol')) not in contextual_sites
+               for item in function.get('unresolved', [])):
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"
             )
         if any(
             failure.get("port_eligible") is not True
+            and (failure.get('line'), failure.get('called_symbol')) not in contextual_sites
             for failure in function.get("effect_unresolved", [])
         ):
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
             )
         for call in function.get("calls", []):
-            raw = str(call.get("called_symbol", ""))
+            contextual = origins['contextual_calls'].get((call.get('line'), call.get('column')))
+            raw = str(contextual or call.get("called_symbol", ""))
             if raw not in resolved_calls:
                 resolved_calls[raw] = _resolve_function(raw, functions)
             callee = resolved_calls[raw]
@@ -152,6 +174,7 @@ def validate_operation_effects(
             hard_dispatch_failure = (
                 call.get("dispatch_resolution") == "unresolved"
                 and call.get("dispatch_port_eligible") is not True
+                and contextual is None
             )
             if hard_dispatch_failure:
                 raise SemanticOperationEffectError(
@@ -184,12 +207,12 @@ def validate_operation_effects(
                 # A read declaration never conceals a source-resolved body.
                 # Unsupported receiver aliases have already failed above.
                 if callee is not None:
-                    pending.append((callee, origins["calls"].get((call.get("line"), call.get("column")), ())))
+                    pending.append((callee, caller_arguments(call)))
                 continue
             if identity in declared_ports:
                 reached.add(identity)
                 continue
-            if call.get("dispatch_resolution") == "unresolved":
+            if call.get("dispatch_resolution") == "unresolved" and contextual is None:
                 raise SemanticOperationEffectError(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
@@ -209,7 +232,7 @@ def validate_operation_effects(
             # Module boundaries are organizational, not effect boundaries; a
             # query cannot conceal a write in an imported helper.
             if callee is not None:
-                pending.append((callee, origins["calls"].get((call.get("line"), call.get("column")), ())))
+                pending.append((callee, caller_arguments(call)))
     missing = declared_ports - reached
     if missing:
         rendered = ", ".join(sorted(value for _, value in missing))

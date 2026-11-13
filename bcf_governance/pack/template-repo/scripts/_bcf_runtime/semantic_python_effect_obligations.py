@@ -9,6 +9,8 @@ import ast
 import hashlib
 from typing import Any
 
+from .semantic_python_constructor_callbacks import constructor_callback_closures
+
 _MUTATORS = {
     "add", "append", "clear", "difference_update", "discard", "extend",
     "insert", "intersection_update", "pop", "popitem", "remove", "reverse",
@@ -28,6 +30,18 @@ def _scope_nodes(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.A
         result.append(node)
         pending.extend(ast.iter_child_nodes(node))
     return result
+
+
+def _trivial_finalizer(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Only a plain no-op closes the interpreter's unraisable-hook boundary."""
+    body = list(function.body)
+    if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
+        body = body[1:]
+    return function.name == "__del__" and not function.decorator_list and all(
+        isinstance(node, ast.Pass) or isinstance(node, ast.Return) and (
+            node.value is None or isinstance(node.value, ast.Constant) and node.value.value is None
+        ) for node in body
+    )
 
 
 def container_builtin_names(tree: ast.Module) -> list[str]:
@@ -54,7 +68,7 @@ def container_builtin_names(tree: ast.Module) -> list[str]:
         for node in ast.walk(tree)
     )
     return sorted(
-        {"len", "list", "tuple", "dict", "set", "bool"} - bindings
+        {"len", "list", "tuple", "dict", "set", "bool", "super"} - bindings
     ) if "*" not in bindings and not reflective else []
 
 
@@ -68,6 +82,7 @@ def extend_python_effect_facts(
     the constructed object is detached or that a third-party decorator is pure.
     """
     nodes = _scope_nodes(function)
+    fact["trivial_finalizer"] = _trivial_finalizer(function)
     fact["python_value_source"] = ast.unparse(function)
     fact["python_value_shape_sha256"] = hashlib.sha256(
         ast.dump(function, include_attributes=False).encode()
@@ -111,9 +126,16 @@ def extend_python_effect_facts(
                    and member.name == name]
         if not methods:
             return
-        fact["calls"].append({"caller": fact["symbol"],
+        edge = {"caller": fact["symbol"],
             "called_symbol": f"{path}::{owner}.{name}", "call_name": name,
-            "line": getattr(node, "lineno", 0), "implicit_callback": True})
+            "line": getattr(node, "lineno", 0), "column": getattr(node, "col_offset", 0),
+            "implicit_callback": True}
+        if name == "__del__":
+            edge["callback_phase"] = "possible_finalization"
+            if not _trivial_finalizer(methods[0]):
+                obligations.append({"kind": "unqualified_finalizer_exception_boundary",
+                    "line": getattr(node, "lineno", 0), "class_symbol": f"{path}::{owner}"})
+        fact["calls"].append(edge)
 
     for node in nodes:
         if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
@@ -136,6 +158,7 @@ def extend_python_effect_facts(
             if owner:
                 callback(node, owner, "__new__")
                 callback(node, owner, "__init__")
+                callback(node, owner, "__del__")
                 cls = classes[owner]
                 # A generated initializer can invoke __post_init__. Until its
                 # decorator/binding is qualified, this remains an obligation.
@@ -209,6 +232,7 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
     """
     classes = {str(row["symbol"]): row for row in inventory.get("classes", [])}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
+    constructor_closures = constructor_callback_closures(classes)
     for function in inventory.get("functions", []):
         for call in function.get("calls", []):
             reference = call.get("method_dispatch", {})
@@ -285,17 +309,31 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                 for binding in call.get("class_constructor_bindings", []))
             for subject in subjects & classes.keys():
                 cls = classes[subject]
+                closure = constructor_closures.get(subject)
+                if closure and call.get("called_symbol") == subject:
+                    initializer = closure.get("initializer")
+                    call["source_constructor_frame"] = {
+                        "subject": subject, "initializer": initializer["symbol"] if initializer else None,
+                        "initializer_owner": closure["initializer_owner"],
+                        "super_initializer": closure["super_initializer"],
+                        "native_exception_initializer": initializer is None and 'builtins::BaseException' in closure['mro'],
+                    }
                 if cls.get("library_model_binding"):
                     function.setdefault("implicit_effect_obligations", []).append({
                         "kind": "unqualified_library_model_effects", "line": call.get("line"),
                         "class_symbol": subject})
-                if not cls.get("closed_class_binding"):
+                if not cls.get("closed_class_binding") and not closure:
                     obligation = {"kind": "unqualified_constructor_callbacks",
                                   "line": call.get("line"), "class_symbol": subject}
                     if obligation not in function.setdefault("implicit_effect_obligations", []):
                         function["implicit_effect_obligations"].append(obligation)
-                names = {str(method["name"]): str(method["symbol"])
-                         for method in cls.get("methods", [])}
+                effective = closure["methods"].values() if closure else cls.get("methods", [])
+                names = {str(method["name"]): str(method["symbol"]) for method in effective}
+                if closure and not cls.get("closed_class_binding") and not call.get("literal_arguments"):
+                    function.setdefault("implicit_effect_obligations", []).append({
+                        "kind": "unqualified_constructor_input_binding", "line": call.get("line"),
+                        "column": call.get("column"), "class_symbol": subject,
+                        "binding_source": "constructor_initializer_frame"})
                 # An unrelated property does not execute during construction.
                 # Getter reads keep their independent callback edges above.
                 has_hooks = "__post_init__" in names and cls.get("standard_dataclass_declaration")
@@ -309,13 +347,33 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                             "called_symbol": factory, "call_name": factory.rsplit("::", 1)[-1],
                             "line": call.get("line"), "implicit_callback": True,
                             "dataclass_field": field})
-                for name in ("__new__", "__init__", "__post_init__"):
+                for name in ("__new__", "__init__", "__post_init__", "__del__"):
                     if name == "__post_init__" and not cls.get("standard_dataclass_declaration"):
                         continue
                     if name in names:
-                        callbacks.append({"caller": function["symbol"],
+                        edge = {"caller": function["symbol"],
                             "called_symbol": names[name], "call_name": name,
-                            "line": call.get("line"), "implicit_callback": True})
+                            "line": call.get("line"), "column": call.get("column"),
+                            "implicit_callback": True}
+                        if name == "__init__" and call.get("source_constructor_frame"):
+                            edge["constructor_frame_origin"] = {
+                                "line": call.get("line"), "column": call.get("column"),
+                                "subject": subject, "target": names[name]}
+                            for existing in function["calls"]:
+                                if (existing.get("implicit_callback") and existing.get("called_symbol") == names[name]
+                                        and existing.get("line") == call.get("line")
+                                        and existing.get("column") == call.get("column")):
+                                    existing.update(edge)
+                        if name == "__del__":
+                            # This is a lifetime obligation, not a claim that
+                            # finalization runs during the constructor itself.
+                            edge["callback_phase"] = "possible_finalization"
+                            if not functions.get(names[name], {}).get("trivial_finalizer"):
+                                obligation = {"kind": "unqualified_finalizer_exception_boundary",
+                                    "line": call.get("line"), "class_symbol": subject}
+                                if obligation not in function.setdefault("implicit_effect_obligations", []):
+                                    function["implicit_effect_obligations"].append(obligation)
+                        callbacks.append(edge)
         for callback in callbacks:
             if callback not in function["calls"]:
                 function["calls"].append(callback)

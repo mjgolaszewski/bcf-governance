@@ -23,25 +23,25 @@ execution_evidence:
   - bcf environment apply --repo-root .
   - bcf reconcile --repo-root . --apply
   notes:
-  - Supported-contract maintenance remains unqualified. Canonical scope is audits/maintained-consumer-contracts-plan-2026-11-13.json;
-    the current bounded checkpoint is audits/maintained-consumer-contracts-checkpoint-2026-11-13.json.
-  - 163 affected and pack tests pass without skips in a fresh framework-only development environment, including Pydantic witnesses
-    without SDK or live Identity dependencies; four touched modules pass strict typing and lint.
-  - Caller ownership distinguishes fresh container structure from borrowed children, carries qualified helper arguments and
-    returns, and joins bounded literal-container loops conservatively. Retained aliases, declared-port escapes, finalizers
-    and mixed loop ownership remain rejected.
-  - An unrelated dataclass property caused a real constructor refusal with no property read. The paired causal witness first
-    produced one false refusal and one correct effect rejection; after repair both pass and getter effects remain visible.
-  - Normal canonical environment setup and pip consistency checks pass in separate owned controller and project environments.
-    Existing product and historical release environments were preserved.
-  - MEMORY was reduced to current durable facts with superseded statements retained in reachable Git history; phase-ledger
-    YAML was compacted with identical decoded values to satisfy existing context budgets.
-  - Supported reconciliation remains red at semantic-lock on source constructor callbacks in GitHubAPI, CIGraphError, ProspectiveValidationError
-    and ReleaseQualificationError. No workflow or authority pins were hand-edited and no full qualification or install window
-    is claimed.
-  - Actual constructor identity diagnostics across frozen consumer sources do not establish returned identity, complete callback/input/effect
-    proof, full Standard3 acceptance or immutable release custody. Preserve deferred Identity/JIT source and independent 2.5
-    work.
+  - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
+  - 177 affected/pack tests pass without skips; strict typing passes for six touched modules and lint passes. Framework-only
+    environments have no live Identity or consumer SDK dependency.
+  - Four source initializer cases first failed despite successful runtime witnesses; nine initial constructor controls and
+    two added iterator/hash callback controls now pass. Requested class identity remains separate from callback frames and
+    returned identity.
+  - Actual retained finalizer writes and unraisable stderr output were silently accepted before repair; both are now refused
+    while a plain no-op finalizer is accepted.
+  - Current supported reconcile stopped before semantic evaluation because new helper/mirror/test files require staging or
+    runtime-lock authentication. Normal source finalization is required; no manual workflow pin repair was performed.
+  - Supported reconcile requires the new files to be staged/authenticated before current semantic evaluation.
+  - Nonliteral constructor input and actual caller provenance remain unqualified.
+  - Native exception wrapper identity must remain distinct from equivalent BaseException initializer effects.
+  - Source/native mixed MRO initializer precedence requires additional qualification.
+  - No-op finalizer classification needs callable-signature and async qualification.
+  - Constructor namespace closure must reject allocator mutation through class aliases.
+  - Complete framework, consumer, ordinary-protection and release gates remain open.
+  - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results
+    are recorded in audits/maintained-consumer-contracts-checkpoint-2026-11-13.json.
 closeout_requirements:
   claims:
     required_suites_green:
