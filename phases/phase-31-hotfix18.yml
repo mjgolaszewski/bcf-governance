@@ -24,6 +24,14 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
+  - 'Nine added native-container controls pass: actual get/view/destructuring values, escaped view and foreign append fixed-point
+    denials, mutable child invalidation, single-fstring/str/repr subclass-result boundaries and unrelated source-port reachability.
+    Native protocol proofs preserve neutral call identity and grant no source port reachability. Loop iterations reset optimistic
+    format/call/constructor facts; unknown/foreign insertions invalidate native views and record field facts. A nested child
+    alias and a single-FORMAT_VALUE subclass acceptance were actually reproduced before correction. Latest canonical on5306498
+    remains RED106observations,32reported/74omitted, terminal1/EOF/reap/FDclosed; current refinement has not been replayed.
+    Native parser/registered handlers/decoded trees and dataclasses.replace allocations remain OPEN; no parser behavior or
+    business constructor rewrites were made.'
   - 'Coherent producer batch: ordinary diagnostics retain all rejections and declared-port traversal while reporting up to32
     independent details; extra failures still reject. Actual generated-record fields bind source constructor arguments/defaults;
     annotations never provide value facts. The bounded CPython3.11-3.14 slice excludes inheritance, factories, post-init,
@@ -36,7 +44,7 @@ execution_evidence:
   - Generic dominating local scalar producers now survive unsupported surrounding try flow. The positive control first failed
     with three format obligations, then passed. Latest assignment, lexical scope and recursive cycle checks prevent stale
     name proofs; nested nonlocal replacement remains refused. Returned record fields are not qualified by this change.
-  - 405 affected/pack tests pass without skips; strict typing passes for 67 touched modules and lint passes. Framework-only
+  - 414 affected/pack tests pass without skips; strict typing passes for 67 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -62,8 +70,10 @@ execution_evidence:
     claim.
   - Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715
     exit1/EOF/reap/FDclosed. Current coherent record producer, guarded scalar boundary and bounded diagnostic batch has focused
-    evidence only; one new43374 replay is pending. Broader graph checks remain RED25/512, including stale generated policy
-    value digest and source subprocess import context; no manual pin update.
+    evidence only; the ONE43374 replay on5306498 returned RED with106failure observations; native2454124 exit1/EOF/reap/FDclosed.
+    Current native-container/alias/subclass refinements have focused evidence only, no replay allowance remains. Parser callback/decoded-tree
+    contract and dataclasses.replace allocation remain open. Broader graph checks remain RED25/512, including stale generated
+    policy value digest and source subprocess import context; no manual pin update.
   - Complete source callback closure and actual consumer constructor qualification remain unqualified.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results

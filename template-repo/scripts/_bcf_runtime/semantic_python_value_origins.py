@@ -7,6 +7,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import sys
 from typing import Any
 
 from .semantic_python_constructor_callbacks import (
@@ -47,7 +48,7 @@ def value_origins(
     unknown. No project code is imported or executed to obtain these facts.
     """
     empty: dict[str, Any] = {"writes": set(), "calls": {}, "return": UNKNOWN,
-                             "constructor_inputs": set(), "implicit_calls": {}, "contextual_calls": {}, "format_inputs": set()}
+                             "constructor_inputs": set(), "implicit_calls": {}, "contextual_calls": {}, "native_reads": {}, "format_inputs": set()}
     row = functions.get(symbol, {})
     source = row.get("python_value_source")
     if not source or symbol in active or len(active) >= 24:
@@ -84,6 +85,7 @@ def value_origins(
     unsupported_condition = False
     initializer_protocol_unknown = False
     contextual_calls: dict[tuple[Any, ...], str] = {}
+    native_reads: dict[tuple[Any, ...], str] = {}
     field_counts: dict[str, int] = {}
     for item in ast.walk(function):
         if isinstance(item, ast.Attribute) and isinstance(item.ctx, ast.Store):
@@ -93,7 +95,7 @@ def value_origins(
         nonlocal retained
         retained = True
         for name, origin in list(env.items()):
-            if origin in OWNED or origin.startswith('new-object:') or origin == 'native' or origin.startswith('record:'):
+            if origin in OWNED or origin.startswith('new-object:') or origin in {'native', 'native_view'} or origin.startswith('record:'):
                 env[name] = UNKNOWN
 
     def degrade() -> None:
@@ -102,6 +104,8 @@ def value_origins(
         for name, origin in list(env.items()):
             if origin in CONTAINERS:
                 env[name] = origin + "_owned"
+            elif origin in {'native', 'native_view'} or origin.startswith('record:'):
+                env[name] = UNKNOWN
 
     def expression(node: ast.AST | None) -> str:
         nonlocal initializer_protocol_unknown
@@ -121,9 +125,10 @@ def value_origins(
             invalidate()
             return UNKNOWN
         if isinstance(node, ast.JoinedStr):
-            for part in node.values:
-                expression(part)
-            return SCALAR
+            parts = [expression(part) for part in node.values]
+            # A lone FORMAT_VALUE can preserve a str subclass returned by a
+            # user formatter. Nominal string kind is not exact native purity.
+            return SCALAR if len(parts) != 1 or parts[0] == SCALAR else 'str-like'
         if isinstance(node, (ast.UnaryOp, ast.BinOp, ast.Compare, ast.BoolOp)):
             operands = [expression(child) for child in ast.iter_child_nodes(node)
                         if isinstance(child, ast.expr)]
@@ -134,7 +139,7 @@ def value_origins(
             return UNKNOWN
         if isinstance(node, ast.FormattedValue):
             value = expression(node.value)
-            if value in CONTAINERS | {SCALAR, 'native'}:
+            if value in CONTAINERS | {SCALAR, 'native', 'native_view'}:
                 format_inputs.add(tuple(positions[id(node.value)]))
                 if node.format_spec is not None:
                     expression(node.format_spec)
@@ -263,6 +268,14 @@ def value_origins(
             if isinstance(node.func, ast.Attribute):
                 receiver = expression(node.func.value)
                 name = node.func.attr
+                if (sys.implementation.name == 'cpython' and (3, 11) <= sys.version_info[:2] <= (3, 14)
+                        and receiver in CONTAINERS | {'native'} and not keywords):
+                    if name == 'get' and len(values) in {1, 2} and all(value in CONTAINERS | {SCALAR, 'native'} for value in values):
+                        native_reads[site] = 'get'
+                        return 'native'
+                    if name in {'items', 'keys', 'values'} and not values:
+                        native_reads[site] = name
+                        return 'native_view'
                 if receiver in {SCALAR, 'native'} and name in {
                     'startswith', 'endswith', 'strip', 'lstrip', 'rstrip',
                     'lower', 'upper', 'casefold', 'replace'
@@ -391,11 +404,14 @@ def value_origins(
                     return False
             elif isinstance(statement, ast.For):
                 iterator = expression(statement.iter)
-                if iterator not in OWNED or loop_depth >= 3:
+                if iterator not in OWNED | {'native', 'native_view'} or loop_depth >= 3:
                     unsupported_condition = True
                     continue
                 before = dict(env)
                 base_safe, base_calls, base_returns = set(safe), dict(calls), list(returns)
+                base_formats = set(format_inputs)
+                base_inputs, base_implicit, base_contextual = set(constructor_inputs), dict(implicit_calls), dict(contextual_calls)
+                base_native_reads = dict(native_reads)
                 # The ownership lattice loses precision at joins; three rounds
                 # cover owned -> shallow -> unknown. Publish only the final
                 # fixed-point observation, never optimistic first-iteration sites.
@@ -404,8 +420,16 @@ def value_origins(
                 for _ in range(4):
                     env.clear()
                     env.update(guess)
+                    current_iterator = expression(statement.iter)
+                    element = 'native' if current_iterator in CONTAINERS | {'native', 'native_view'} else UNKNOWN
+                    if current_iterator not in OWNED | {'native', 'native_view'}:
+                        unsupported_condition = True
                     if isinstance(statement.target, ast.Name):
-                        env[statement.target.id] = UNKNOWN
+                        env[statement.target.id] = element
+                    elif isinstance(statement.target, (ast.Tuple, ast.List)) and all(isinstance(target, ast.Name) for target in statement.target.elts):
+                        for target in statement.target.elts:
+                            assert isinstance(target, ast.Name)
+                            env[target.id] = element
                     else:
                         unsupported_condition = True
                     safe.clear()
@@ -413,6 +437,16 @@ def value_origins(
                     calls.clear()
                     calls.update(base_calls)
                     returns[:] = base_returns
+                    format_inputs.clear()
+                    format_inputs.update(base_formats)
+                    constructor_inputs.clear()
+                    constructor_inputs.update(base_inputs)
+                    implicit_calls.clear()
+                    implicit_calls.update(base_implicit)
+                    contextual_calls.clear()
+                    contextual_calls.update(base_contextual)
+                    native_reads.clear()
+                    native_reads.update(base_native_reads)
                     statements(statement.body, loop_depth + 1)
                     joined = {name: _join(before.get(name, UNKNOWN), env.get(name, UNKNOWN))
                               for name in before.keys() | env.keys()}
@@ -442,5 +476,5 @@ def value_origins(
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     return {"writes": safe, "calls": calls, "return": returned,
             "retained": retained, "degraded": degraded, 'constructor_inputs': constructor_inputs,
-            'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'format_inputs': format_inputs,
+            'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'native_reads': native_reads, 'format_inputs': format_inputs,
             'initializer_protocol_unknown': initializer_protocol_unknown}

@@ -1,6 +1,6 @@
 {
   "status": "unqualified",
-  "base_commit": "c1a4d05a27123bca36fab785aae489ca54bb9bcf",
+  "base_commit": "5306498177f4426139aaa6431dd0f5366f1aa0dc",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
     "bcf_governance/tooling/semantic_python_dataclass_contracts.py": "3438a3172bc29b573b13ca814e4dc664684fb3cc0f6da1b8d0a593961926a3a6",
@@ -9,8 +9,8 @@
     "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
     "bcf_governance/tooling/local_execution_admission.py": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366",
     "bcf_governance/tooling/ci_github_api.py": "2910fdc3d16bb616ff136259542a8d725f7810a19d354a85ef24358b629d90a6",
-    "bcf_governance/tooling/semantic_python_value_origins.py": "35114317bea894000c680abae4c05c78d6166f72492dab4c618bb32b6c79263c",
-    "bcf_governance/tooling/semantic_operation_effects.py": "a22bcd974a63426f7d321ddaff5ed39a7cd6821e9e8d1dc72815c58ce6631c26",
+    "bcf_governance/tooling/semantic_python_value_origins.py": "d055a85e698b2bc12136cfcbeaf7643cf2262f5179e4664e538a5f4eaeed5adf",
+    "bcf_governance/tooling/semantic_operation_effects.py": "0e7240bb2c8895fe77489a6b934e48a455d8b8c5aad46dcfaf7f2f18d624b6db",
     "bcf_governance/tooling/semantic_python_effect_obligations.py": "ac1fbb2d3b5bca937fa20a4bc8bc2e5eb46475610b87bf60bc750ef9e53f6cf6",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251",
     "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "8fa0489b32341782cabf786437fddf377b56bf11ed367b010bef5ef08c8f99f0",
@@ -75,10 +75,11 @@
     "tests/test_semantic_constructor_frames.py": "e156093f4dfb69ad0a3782ee0f8dd897222e013edea22af9b4cc35910e696463",
     "tests/test_native_projection_output.py": "d5578b80cdd822668c64bffa330c46ed298c958f0ee7ec405f83985cebf3e2b9",
     "tests/test_semantic_producer_origins.py": "f2b6b1b11c60ad410f5ac28270fe6436b458bba12798b932bca9b0e1561e9ecf",
+    "tests/test_semantic_native_containers.py": "4315b34159e613d6f9c697b2c4bd0a23f235a8f7a8f10a33ee87ecf1db243642",
     "tests/test_semantic_authority.py": "d5d75b62767572eb281c636dfc8a16143329fa59c6cc439965cde93b2a7d9c5f"
   },
   "affected_tests": {
-    "passed": 405,
+    "passed": 414,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
@@ -97,8 +98,15 @@
     }
   },
   "canonical_reconcile": {
-    "status": "pending_replay_after_provenance_change",
-    "previous_result": "_trusted_controller_unqualified_format_callback_713_724_725_726"
+    "status": "RED",
+    "tested_commit": "5306498177f4426139aaa6431dd0f5366f1aa0dc",
+    "failure_observations": 106,
+    "details_reported": 32,
+    "additional_observations": 74,
+    "native_owner_pid": 2454124,
+    "returncode": 1,
+    "terminal_eof_reap_fd_closed": true,
+    "current_refinement_replayed": false
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -116,7 +124,7 @@
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715 exit1/EOF/reap/FDclosed. Current coherent record producer, guarded scalar boundary and bounded diagnostic batch has focused evidence only; one new43374 replay is pending. Broader graph checks remain RED25/512, including stale generated policy value digest and source subprocess import context; no manual pin update.",
+    "Latest canonical replay on ef97b70 cleared action_pin but refused _trusted_controller at713/724/725/726; native2422715 exit1/EOF/reap/FDclosed. Current coherent record producer, guarded scalar boundary and bounded diagnostic batch has focused evidence only; the ONE43374 replay on5306498 returned RED with106failure observations; native2454124 exit1/EOF/reap/FDclosed. Current native-container/alias/subclass refinements have focused evidence only, no replay allowance remains. Parser callback/decoded-tree contract and dataclasses.replace allocation remain open. Broader graph checks remain RED25/512, including stale generated policy value digest and source subprocess import context; no manual pin update.",
     "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
     "Complete framework, consumer, ordinary-protection and release gates remain open."
   ],
@@ -142,5 +150,18 @@
       "source subprocess import path missing"
     ],
     "manual_pin_updates": false
-  }
+  },
+  "native_container_controls": {
+    "passed": 9,
+    "native_mapping_reads": "source-proven exact native receiver and arguments, separate read protocol facts preserving neutral callee identity",
+    "loop_fixed_point": "native views and targets re-evaluated; optimistic format/call/constructor facts reset each round",
+    "alias_invalidation": "native views, nested record children and retained mutable aliases invalidate field/value facts",
+    "exact_native_strings": "single-field fstring/str/repr protocol subclass results do not confer native formatter purity",
+    "runtime_envelope": "CPython3.11-3.14; current local qualification3.12 only"
+  },
+  "open_maintained_contracts": [
+    "native configuration parser and registered callback/loader identity with unchanged YAML behavior",
+    "decoded native tree/scalar/container result provenance independent of parsing effects",
+    "dataclasses.replace unchanged/changed-field allocation, real reader association, init/post-init/factory and retained alias effects"
+  ]
 }

@@ -125,6 +125,7 @@ def validate_operation_effects(
         contextual_sites = {
             (call.get('line'), call.get('called_symbol')) for call in function.get('calls', [])
             if (call.get('line'), call.get('column')) in origins['contextual_calls']
+            or (call.get('line'), call.get('column')) in origins.get('native_reads', {})
         }
 
         def caller_arguments(call: dict[str, Any], context: dict[str, Any] = origins) -> tuple[tuple[str, str], ...]:
@@ -178,6 +179,11 @@ def validate_operation_effects(
                 f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
             )
         for call in function.get("calls", []):
+            if (call.get('line'), call.get('column')) in origins.get('native_reads', {}):
+                # Proven exact native receiver/argument protocols are reads.
+                # Preserve the neutral call identity; this proof neither
+                # fabricates a callee nor reaches a declared source port.
+                continue
             contextual = origins['contextual_calls'].get((call.get('line'), call.get('column')))
             raw = str(contextual or call.get("called_symbol", ""))
             if raw not in resolved_calls:
