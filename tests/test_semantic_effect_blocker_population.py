@@ -49,3 +49,47 @@ def test_declared_effect_boundary_excludes_its_body_from_diagnostics(tmp_path):
 def test_closed_literal_operation_remains_accepted(tmp_path):
     facts = inventory(tmp_path, "def query():\n    return 1\n")
     assert validate_operation_effects(operation(), "service.py::query", facts) == (0, 0)
+
+def test_runtime_protocol_does_not_hide_unreachable_declared_port(tmp_path):
+    facts = inventory(tmp_path,
+        "def port():\n    return 1\n"
+        "def query(value):\n    return value[0]\n")
+    with pytest.raises(SemanticOperationEffectError) as caught:
+        validate_operation_effects(operation(("service.py::port",)), "service.py::query", facts)
+    kinds = {row[1] for row in getattr(caught.value, "effect_obligations", ())}
+    assert {"runtime_protocol", "unreachable_port"} <= kinds, "unreachable port hidden behind protocol blocker"
+
+def test_protocol_does_not_hide_separate_source_store_obligation(tmp_path):
+    facts = inventory(tmp_path,
+        "STATE = 0\n"
+        "def query(value):\n    global STATE\n    STATE = 1\n    return value[0]\n")
+    with pytest.raises(SemanticOperationEffectError) as caught:
+        validate_operation_effects(operation(), "service.py::query", facts)
+    kinds = {row[1] for row in getattr(caught.value, "effect_obligations", ())}
+    assert "runtime_protocol" in kinds and kinds & {"write", "unresolved_effect"}, "mixed source obligations hidden"
+
+def test_single_protocol_keeps_existing_error_string(tmp_path):
+    facts = inventory(tmp_path, "def query(value):\n    return value[0]\n")
+    with pytest.raises(SemanticOperationEffectError) as caught:
+        validate_operation_effects(operation(), "service.py::query", facts)
+    assert str(caught.value) == (
+        "operation population.query.v1 contains an unresolved effect runtime protocol at service.py::query")
+
+def test_ambiguous_inventory_aborts_before_diagnostic_credit(tmp_path):
+    facts = inventory(tmp_path, "def query():\n    return 1\n")
+    facts["functions"].append(dict(facts["functions"][0]))
+    with pytest.raises(SemanticOperationEffectError, match="function population is incompatible or ambiguous") as caught:
+        validate_operation_effects(operation(), "service.py::query", facts)
+    assert getattr(caught.value, "effect_obligations", ()) == ()
+
+def test_failure_note_is_machine_readable_without_runtime_credit(tmp_path):
+    import json
+    facts = inventory(tmp_path, "def query(value):\n    return value[0]\n")
+    with pytest.raises(SemanticOperationEffectError) as caught:
+        validate_operation_effects(operation(), "service.py::query", facts)
+    notes = getattr(caught.value, "__notes__", ())
+    assert len(notes) == 1, "structured failure note missing"
+    observation = json.loads(notes[0])
+    assert observation["scope"] == "existing_strict_validator_blockers"
+    assert observation["authority"] is observation["execution_qualified"] is observation["completeness_qualified"] is False
+    assert observation["effect_obligations"] == [list(row) for row in caught.value.effect_obligations]

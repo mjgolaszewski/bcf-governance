@@ -62,3 +62,162 @@ controls_execution:
     type: 394source
     statement: 9a25047a diagnostics controls only; runtimeOPEN.
   whole_requirement_advancement: false
+
+implementation_qualification_contract:
+  status: contract_before_production
+  authority: false
+  execution_qualified: false
+  completeness_qualified: false
+  bounded_context: ci_authority
+  architectural_layer: tooling
+  operation_side: query
+  owners:
+  - bcf_governance/tooling/semantic_operation_effects.py
+  scope: Add a detached sorted tuple of recognized source blockers to the existing
+    strict exception and a standard machine-readable non-authoritative exception note.
+    Preserve first error text for admitted source populations, strict failure, port
+    boundaries and constructor-only credit isolation. No new graph, receipt family,
+    registry, evaluator, runtime qualification or complete detector claim.
+  preexisting_controls:
+    subject: 9a25047a1d95f8bb31331364a2c565e012321cb3
+    tests: 4
+    failures: 3
+    positive: 1
+    junit_sha256: af88668ef263d50597a1920651dc4827d1e8eeb406818ac8ba59b82bc05c823c
+    reused_without_rerun_before_production: true
+    reason: Production owner and original four source controls unchanged; exact source
+      hashes are checked.
+  added_controls:
+    tests: 5
+    expected_failures: 3
+    expected_positive: 2
+  installed_profiles:
+    fresh: 39
+    upgrade: 39
+  verification:
+  - Independent source-discovered direct consumer matrix plus retained affected source
+    observers
+  - One standard automated causal/baseline/implementation/affected/architecture/installed/lint/package/governance
+    pipeline
+  - Required CI runtime-context failures remain blocking, never counted as passing
+    qualification
+  forbidden:
+  - main, workflows, policy, authority, provider release/adopter mutations
+  - source-only-green substitution, phase or whole acceptance credit
+  - golden fixtures or dependency environments altered
+  - new positive purity by names, annotations, counts or green examples
+  consumer_population:
+    method: Source search for direct strict-effect APIs and all existing operation/semantic
+      authority wrappers, union retained adjacent source observers; required architecture
+      and installed parity run separately.
+    direct_and_wrapper_test_files:
+    - tests/test_ci_graph_composition.py
+    - tests/test_construction_source_association.py
+    - tests/test_construction_source_effect_consumption.py
+    - tests/test_construction_source_lifetime_effects.py
+    - tests/test_construction_source_obligation_boundaries.py
+    - tests/test_construction_source_protocol_population.py
+    - tests/test_decorator_spelling_effect_authority.py
+    - tests/test_installed_source_continuity.py
+    - tests/test_local_import_reference_context.py
+    - tests/test_nested_runtime_scope_effect_population.py
+    - tests/test_non_call_state_mutation_effects.py
+    - tests/test_operation_function_admission.py
+    - tests/test_phase_input_temporary_effects.py
+    - tests/test_python_attribute_store_context.py
+    - tests/test_python_augmented_assignment.py
+    - tests/test_python_callback_target_origins.py
+    - tests/test_python_comprehension_guard_dispatch.py
+    - tests/test_python_global_name_store_effects.py
+    - tests/test_python_implicit_grammar_effects.py
+    - tests/test_python_implicit_grammar_metadata.py
+    - tests/test_python_implicit_protocol_effects.py
+    - tests/test_python_implicit_protocol_metadata.py
+    - tests/test_python_lexical_class_population.py
+    - tests/test_python_lexical_context_effects.py
+    - tests/test_python_object_store_context.py
+    - tests/test_python_pattern_dispatch.py
+    - tests/test_self_governance_contracts.py
+    - tests/test_semantic_authority.py
+    - tests/test_semantic_authority_typescript.py
+    - tests/test_semantic_effect_blocker_population.py
+    - tests/test_semantic_effect_observation_scope.py
+    - tests/test_semantic_function_population_identity.py
+    - tests/test_semantic_method_effects.py
+    - tests/test_semantic_operation_admission.py
+    - tests/test_semantic_operation_deconstruction.py
+    - tests/test_semantic_operation_inventory.py
+    - tests/test_semantic_ownership.py
+    - tests/test_semantic_protected_operations.py
+    - tests/test_semantic_shape_admission.py
+    - tests/test_semantic_structural_protocols.py
+    - tests/test_semantic_typescript_effects.py
+    - tests/test_semantic_typescript_implicit.py
+    - tests/test_semantic_typescript_review.py
+    - tests/test_unresolved_callback_effect_authority.py
+    affected_files:
+    - tests/test_construction_source_protocol_population.py
+    - tests/test_construction_source_effect_consumption.py
+    - tests/test_construction_source_obligation_boundaries.py
+    - tests/test_construction_source_association.py
+    - tests/test_construction_phase_runtime_consumers.py
+    - tests/test_construction_source_lifetime_effects.py
+    - tests/test_semantic_operation_inventory.py
+    - tests/test_semantic_operation_call_population.py
+    - tests/test_semantic_method_effects.py
+    - tests/test_semantic_python_inventory_characterization.py
+    - tests/test_semantic_import_roots.py
+    - tests/test_semantic_source_paths.py
+    - tests/test_semantic_python_call_contracts.py
+    - tests/test_semantic_python_initialization.py
+    - tests/test_semantic_typescript_effects.py
+    - tests/test_semantic_typescript_implicit.py
+    - tests/test_private_semantic_schema_ownership.py
+    - tests/test_semantic_protected_operations.py
+    - tests/test_semantic_base_registry_reads.py
+    - tests/test_decorator_spelling_effect_authority.py
+    - tests/test_non_call_state_mutation_effects.py
+    - tests/test_python_global_name_store_effects.py
+    - tests/test_python_object_store_context.py
+    - tests/test_python_attribute_store_context.py
+    - tests/test_unresolved_callback_effect_authority.py
+    - tests/test_python_callback_target_origins.py
+    - tests/test_nested_runtime_scope_effect_population.py
+    - tests/test_python_lexical_context_effects.py
+    - tests/test_python_lexical_class_population.py
+    - tests/test_python_implicit_protocol_effects.py
+    - tests/test_python_implicit_protocol_metadata.py
+    - tests/test_semantic_effect_observation_scope.py
+    - tests/test_semantic_function_population_identity.py
+    - tests/test_python_implicit_grammar_effects.py
+    - tests/test_python_implicit_grammar_metadata.py
+    - tests/test_local_import_reference_context.py
+    - tests/test_python_pattern_dispatch.py
+    - tests/test_python_augmented_assignment.py
+    - tests/test_python_protocol_owner_extraction.py
+    - tests/test_python_comprehension_guard_dispatch.py
+    - tests/test_ci_graph_composition.py
+    - tests/test_operation_function_admission.py
+    - tests/test_phase_input_temporary_effects.py
+    - tests/test_semantic_authority.py
+    - tests/test_semantic_operation_admission.py
+    - tests/test_semantic_operation_deconstruction.py
+    - tests/test_semantic_shape_admission.py
+    - tests/test_semantic_structural_protocols.py
+    - tests/test_semantic_typescript_review.py
+    - tests/test_semantic_authority_typescript.py
+    - tests/test_semantic_ownership.py
+    newly_observed_baseline_files:
+    - tests/test_ci_graph_composition.py
+    - tests/test_operation_function_admission.py
+    - tests/test_phase_input_temporary_effects.py
+    - tests/test_semantic_authority.py
+    - tests/test_semantic_authority_typescript.py
+    - tests/test_semantic_operation_admission.py
+    - tests/test_semantic_operation_deconstruction.py
+    - tests/test_semantic_ownership.py
+    - tests/test_semantic_shape_admission.py
+    - tests/test_semantic_structural_protocols.py
+    - tests/test_semantic_typescript_review.py
+    limit: This test population is not complete runtime/effect population authority;
+      independent lifecycle and detector completeness remain open.
