@@ -121,6 +121,9 @@ def private_container_write_roots(function: ast.FunctionDef | ast.AsyncFunctionD
                     continue
             if isinstance(parent, ast.Subscript) and parent.value is use:
                 continue
+            if (isinstance(parent, ast.Compare) and len(parent.ops) == 1
+                    and isinstance(parent.ops[0], (ast.In, ast.NotIn)) and parent.comparators == [use]):
+                continue
             if isinstance(parent, (ast.For, ast.comprehension)) and parent.iter is use:
                 continue
             if isinstance(parent, (ast.If, ast.While)) and parent.test is use:

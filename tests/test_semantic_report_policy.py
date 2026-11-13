@@ -143,3 +143,8 @@ def test_stable_callback_worklist_escape_still_rejects_after_declared_port(tmp_p
     command = {**OPERATION, 'allowed_mutation_ports':['consumer.py::retain']}
     with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
         validate_operation_effects(command, 'consumer.py::read', facts, experimental_protocols=False)
+
+
+def test_private_set_membership_does_not_escape_its_outer_container(tmp_path):
+    _, facts = inventory(tmp_path, "from dataclasses import dataclass\n@dataclass\nclass Probe:\n def __post_init__(self):\n  ordinals=set()\n  for ordinal in (1,2):\n   if ordinal in ordinals: raise ValueError('duplicate')\n   ordinals.add(ordinal)\ndef read(): return Probe()")
+    assert validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False) == (0, 0)

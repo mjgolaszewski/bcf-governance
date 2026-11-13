@@ -305,6 +305,12 @@ class _FunctionVisitor(ast.NodeVisitor):
                 {
                     **fact,
                     "receiver_root": root,
+                    "direct_receiver_field": node.func.value.attr
+                        if isinstance(node.func.value, ast.Attribute)
+                        and isinstance(node.func.value.value, ast.Name)
+                        and node.func.value.value.id in self.parameters
+                        and self.assignments[node.func.value.value.id] == {f"parameter:{node.func.value.value.id}"}
+                        else None,
                     "method_receiver_parameter": self.receiver,
                     "method_receiver_class": self.class_symbol,
                     'receiver_result_sources': sorted(self._result_sources(node.func.value)),

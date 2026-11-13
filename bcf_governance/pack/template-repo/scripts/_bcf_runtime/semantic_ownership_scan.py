@@ -180,6 +180,17 @@ def evaluate_discovery(
                     continue
                 if fact.get('source_receiver_subjects') and entry.canonical_symbol not in fact['source_receiver_subjects']:
                     continue
+                if fact.get('normalization_role') in {'path_suffix_format_predicate', 'source_verified_content_decode'}:
+                    continue
+                field = fact.get('direct_receiver_field')
+                canonical_fields = {row['field'] for row in entry.raw.get('field_invariants', [])}
+                if field and any(
+                    projection.get('source_semantic_id') == entry.semantic_id
+                    and projection.get('owner') == caller
+                    and field in canonical_fields - set(projection.get('lost_fields', []))
+                    for projection in entry.raw.get('intentional_projections', [])
+                ):
+                    continue
                 parameter_derived = bool(
                     [origin for origin in fact.get("parameter_origins", [])
                      if not (origin == 'parameter:' + str(fact.get('method_receiver_parameter'))

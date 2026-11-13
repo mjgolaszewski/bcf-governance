@@ -57,3 +57,69 @@ def test_canonical_receiver_method_and_parameter_alias_still_normalize(tmp_path)
     _, facts = inventory(tmp_path, dedent(BASE) + "\ndef read(record: Record):\n alias=record\n return alias.value.get('key', 'default')\n")
     result = evaluate_discovery(facts, registry())
     assert any(row['kind'] == 'downstream_normalization' for row in result['violations'])
+
+
+@pytest.mark.parametrize('owner,lost,field,accepted', [
+    ('consumer.py::display', [], 'value', True),
+    ('consumer.py::other', [], 'value', False),
+    ('consumer.py::display', ['value'], 'value', False),
+])
+def test_projection_permission_is_exact_owner_and_retained_field(tmp_path, owner, lost, field, accepted):
+    from dataclasses import replace
+    _, facts = inventory(tmp_path, BASE + '''
+    def display(record: Record): return record.FIELD.lower()
+    '''.replace('FIELD', field))
+    original = registry()
+    entry = original.entries[0]
+    entry = replace(entry, raw={'field_invariants': [{'field': 'value'}],
+        'intentional_projections': [{'source_semantic_id': entry.semantic_id,
+            'owner': owner, 'lost_fields': lost}]})
+    result = evaluate_discovery(facts, replace(original, entries=(entry,)))
+    failures = [row for row in result['violations'] if row['kind'] == 'downstream_normalization']
+    assert bool(failures) is not accepted
+
+
+@pytest.mark.parametrize('expression,shadow,accepted', [
+    ('Path(record.value).suffix.lower() == ".json"', '', True),
+    ('Path(record.value).suffix.lower()', '', False),
+    ('record.value.lower() == ".json"', '', False),
+    ('Path(record.value).suffix.lower() == ".json"', 'Path=lambda value: value', False),
+])
+def test_path_format_predicate_is_not_whole_identity_normalization(tmp_path, expression, shadow, accepted):
+    _, facts = inventory(tmp_path, BASE + '''
+    from pathlib import Path
+    def read(record: Record):
+        SHADOW
+        return EXPRESSION
+    '''.replace('SHADOW', shadow or 'pass').replace('EXPRESSION', expression))
+    failures = [row for row in evaluate_discovery(facts, registry())['violations']
+        if row['kind'] == 'downstream_normalization']
+    assert bool(failures) is not accepted
+
+
+@pytest.mark.parametrize('assignment,transport,accepted', [
+    ('content=transport(stored, identity=record.value)', 'return data', True),
+    ('content=record.value', 'return data', False),
+    ('content=opaque(stored, identity=record.value)', 'return data', False),
+    ('content=transport(stored, identity=record.value)\n        content=record.value', 'return data', False),
+    ('content=transport(stored, identity=record.value)', 'return identity', False),
+])
+def test_verified_content_role_is_not_annotation_or_field_alias_purity(tmp_path, assignment, transport, accepted):
+    _, facts = inventory(tmp_path, BASE + '''
+    import hashlib
+    def transport(data, *, identity): TRANSPORT
+    def verified(record: Record, stored):
+        ASSIGNMENT
+        if hashlib.sha256(content).hexdigest() != record.value:
+            raise ValueError('changed')
+        return content
+    def read(record: Record, stored):
+        content=verified(record,stored)
+        return content.decode('utf-8')
+    '''.replace('TRANSPORT', transport).replace('ASSIGNMENT', assignment))
+    failures = [row for row in evaluate_discovery(facts, registry())['violations']
+        if row['kind'] == 'downstream_normalization' and row['symbol'] == 'consumer.py::read']
+    assert bool(failures) is not accepted
+    if accepted:
+        read = next(row for row in facts['functions'] if row['symbol'] == 'consumer.py::read')
+        assert read['normalizations'][0]['receiver_role_execution_qualified'] is False

@@ -29,7 +29,7 @@ def class_constructor_bindings(
     function: dict[str, Any], classes: dict[str, dict[str, Any]],
     calls: list[tuple[dict[str, Any], int, dict[str, Any]]],
     all_calls: dict[str, list[tuple[dict[str, Any], int, dict[str, Any]]]],
-    active: frozenset[str] = frozenset(),
+    active: frozenset[str] = frozenset(), report_failures: bool = True,
 ) -> list[dict[str, Any]]:
     symbol = str(function['symbol'])
     if symbol in active:
@@ -45,11 +45,11 @@ def class_constructor_bindings(
             if (reference.get('kind') == 'class_or_static_receiver'
                     and reference.get('standard_classmethod') and not reference.get('receiver_rebound')):
                 outer = class_constructor_bindings(caller, classes,
-                    all_calls.get(str(caller['symbol']).rsplit('.', 1)[-1], []), all_calls, active | {symbol})
+                    all_calls.get(str(caller['symbol']).rsplit('.', 1)[-1], []), all_calls, active | {symbol}, False)
                 bounds = sorted({str(value['constructed_symbol']) for value in outer})
             else:
                 declared = str(reference.get('class_symbol', ''))
-                if _implementation(declared, called_method, classes) == symbol:
+                if report_failures and _implementation(declared, called_method, classes) == symbol:
                     failure = {'kind': 'unresolved_class_constructor', 'symbol': caller['symbol'],
                         'line': call.get('line'), 'called_symbol': call.get('called_symbol'),
                         'factory_implementation': symbol}
@@ -61,12 +61,22 @@ def class_constructor_bindings(
         if called_method != method:
             continue
         for actual in bounds:
+            ancestors, pending = set(), [actual]
+            while pending:
+                ancestor = pending.pop()
+                if ancestor in ancestors:
+                    continue
+                ancestors.add(ancestor)
+                pending.extend(str(base.get('called_symbol', ''))
+                    for base in classes.get(ancestor, {}).get('bases', []))
+            if str(function.get('class_symbol', '')) not in ancestors:
+                continue
             implementation = _implementation(actual, method, classes)
             if implementation == symbol:
                 result.append({'constructed_symbol': actual, 'binding_caller': caller['symbol'],
                     'binding_line': call.get('line'), 'binding_occurrence': occurrence,
                     'factory_implementation': symbol})
-            elif implementation is None and actual in classes:
+            elif report_failures and implementation is None and actual in classes:
                 failure = {'kind': 'unresolved_class_constructor', 'symbol': caller['symbol'],
                     'line': call.get('line'), 'called_symbol': call.get('called_symbol'),
                     'factory_implementation': symbol}
@@ -103,7 +113,7 @@ def resolve_class_receiver_forwarding(
                 continue
             targets = set()
             for candidate in by_method.get(str(reference.get('method', '')), []):
-                if class_constructor_bindings(candidate, classes, [(caller, occurrence, call)], all_calls):
+                if class_constructor_bindings(candidate, classes, [(caller, occurrence, call)], all_calls, report_failures=False):
                     targets.add(str(candidate['symbol']))
             if len(targets) == 1:
                 call['called_symbol'] = next(iter(targets))
