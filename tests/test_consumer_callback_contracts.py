@@ -140,6 +140,158 @@ def test_qualified_factory_body_is_still_checked_for_retained_writes(tmp_path):
         validate_operation_effects(OPERATION, "consumer.py::read", facts)
 
 
+def test_literal_constructor_preserves_validation_and_property_callback(tmp_path):
+    path, facts = inventory(tmp_path, """
+        from dataclasses import dataclass
+        @dataclass(frozen=True, slots=True)
+        class Record:
+            value: int
+            def __post_init__(self):
+                if type(self.value) is not int or self.value <= 0:
+                    raise ValueError('value')
+            @property
+            def encoded(self):
+                return self.value + 1
+            @classmethod
+            def new(cls):
+                return cls(7)
+        def read():
+            return Record.new().encoded
+    """)
+    assert witness(path) == [8, 8]
+    assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)
+    function = next(row for row in facts["functions"] if row["symbol"] == 'consumer.py::read')
+    assert any(call["called_symbol"] == 'consumer.py::Record.encoded' for call in function['calls'])
+
+
+def test_constructor_identity_does_not_qualify_unknown_mapping_callbacks(tmp_path):
+    path, facts = inventory(tmp_path, """
+        from dataclasses import dataclass
+        EVENTS=[]
+        class Payload(dict):
+            def get(self, key):
+                EVENTS.append(key)
+                return super().get(key)
+        @dataclass
+        class Record:
+            value: str
+            def __post_init__(self):
+                if not isinstance(self.value, str) or not self.value:
+                    raise ValueError('value')
+            @classmethod
+            def from_payload(cls, payload):
+                return cls(payload.get('value'))
+        def read():
+            Record.from_payload(Payload(value='seven'))
+            return len(EVENTS)
+    """)
+    assert witness(path) == [1, 2]
+    factory = next(row for row in facts['functions'] if row['symbol'] == 'consumer.py::Record.from_payload')
+    assert any(call.get('dispatch_resolution') == 'exact_bound_class_constructor' for call in factory['calls'])
+    assert any(row['kind'] == 'unqualified_constructor_input_binding' for row in factory['implicit_effect_obligations'])
+    with pytest.raises(SemanticOperationEffectError, match='implicit execution'):
+        validate_operation_effects(OPERATION, 'consumer.py::Record.from_payload', facts)
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
+def test_str_subclass_callbacks_do_not_become_pure_by_annotation(tmp_path):
+    path, facts = inventory(tmp_path, """
+        from dataclasses import dataclass
+        EVENTS=[]
+        class Text(str):
+            def strip(self):
+                EVENTS.append(7)
+                return super().strip()
+        @dataclass
+        class Record:
+            value: str
+            def __post_init__(self):
+                if not isinstance(self.value, str) or self.value != self.value.strip():
+                    raise ValueError('value')
+        def read():
+            Record(Text('seven'))
+            return len(EVENTS)
+    """)
+    assert witness(path) == [1, 2]
+    function = next(row for row in facts['functions'] if row['symbol'] == 'consumer.py::read')
+    assert any(row['kind'] == 'unqualified_constructor_input_binding' for row in function['implicit_effect_obligations'])
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
+def test_post_init_identity_keeps_its_write_obligation(tmp_path):
+    path, facts = inventory(tmp_path, """
+        from dataclasses import dataclass
+        EVENTS=[]
+        @dataclass
+        class Record:
+            def __post_init__(self):
+                EVENTS.append(7)
+            @classmethod
+            def new(cls):
+                return cls()
+        def read():
+            Record.new()
+            return len(EVENTS)
+    """)
+    assert witness(path) == [1, 2]
+    factory = next(row for row in facts['functions'] if row['symbol'] == 'consumer.py::Record.new')
+    assert any(call.get('dispatch_resolution') == 'exact_bound_class_constructor' for call in factory['calls'])
+    assert any(call['called_symbol'] == 'consumer.py::Record.__post_init__' for call in factory['calls'])
+    with pytest.raises(SemanticOperationEffectError, match='write effects'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
+def test_requested_constructor_is_not_proof_of_the_returned_property_owner(tmp_path):
+    path, facts = inventory(tmp_path, """
+        EVENTS=[]
+        class Other:
+            @property
+            def value(self):
+                EVENTS.append(7)
+                return len(EVENTS)
+        class Record:
+            @property
+            def value(self):
+                return 7
+            @classmethod
+            def new(cls, alternative):
+                if alternative:
+                    return Other()
+                return cls()
+        def read():
+            return Record.new(True).value
+    """)
+    assert witness(path) == [1, 2]
+    with pytest.raises(SemanticOperationEffectError, match='implicit execution'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
+def test_post_init_cannot_launder_a_different_returned_instance_class(tmp_path):
+    path, facts = inventory(tmp_path, """
+        from dataclasses import dataclass
+        EVENTS=[]
+        class Other:
+            @property
+            def value(self):
+                EVENTS.append(7)
+                return len(EVENTS)
+        @dataclass
+        class Record:
+            def __post_init__(self):
+                self.__class__ = Other
+            @classmethod
+            def new(cls):
+                return cls()
+        def read():
+            return Record.new().value
+    """)
+    assert witness(path) == [1, 2]
+    with pytest.raises(SemanticOperationEffectError, match='write effects'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)
+
+
 @pytest.mark.parametrize("producer", ["return self", "return self.record", "return Record() if self.flag else self.record"])
 def test_real_or_mixed_receiver_aliases_remain_unqualified(tmp_path, producer):
     _, facts = inventory(tmp_path, f"""

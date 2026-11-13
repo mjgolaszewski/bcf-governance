@@ -16,6 +16,10 @@ from .semantic_python_annotation_identity import (
     external_import_identity,
     resolve_annotation_identities,
 )
+from .semantic_python_effect_obligations import (
+    extend_python_effect_facts,
+    resolve_python_implicit_effects,
+)
 from .semantic_python_execution_inventory import (
     _annotation,
     _FunctionVisitor,
@@ -295,7 +299,9 @@ def discover_python_source(
                 )
                 for statement in member.body:
                     visitor.visit(statement)
-                functions.append(visitor.facts())
+                fact = visitor.facts()
+                extend_python_effect_facts(tree, member, fact, relative)
+                functions.append(fact)
     return {
         "language": "python",
         "files": file_rows,
@@ -673,6 +679,7 @@ def resolve_python_imports(
             if escaped is not None:
                 pending.extend(str(base.get("called_symbol", "")) for base in class_row.get("bases", []))
     resolve_method_dispatch(resolved)
+    resolve_python_implicit_effects(resolved)
     known_types = set(resolved.get("types", []))
     plain_generics = {row["symbol"] for row in resolved.get("classes", [])
                       if row.get("plain_generic")}

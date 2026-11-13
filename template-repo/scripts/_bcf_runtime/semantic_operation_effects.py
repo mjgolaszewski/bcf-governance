@@ -112,14 +112,18 @@ def validate_operation_effects(
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
                 pending.append(module)
-            for effect in function.get("effects", []):
-                target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
-                if effect.get("kind") == "write":
-                    writes.add(target)
-                elif effect.get("kind") == "authority":
-                    authority.add(target)
-                else:
-                    raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+        for effect in function.get("effects", []):
+            target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
+            if effect.get("kind") == "write":
+                writes.add(target)
+            elif effect.get("kind") == "authority":
+                authority.add(target)
+            else:
+                raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
+        if function.get("implicit_effect_obligations"):
+            raise SemanticOperationEffectError(
+                f"operation {operation['id']} contains unqualified implicit execution at {symbol}"
+            )
         if function.get("unresolved"):
             raise SemanticOperationEffectError(
                 f"operation {operation['id']} contains an unresolved dynamic call path at {symbol}"

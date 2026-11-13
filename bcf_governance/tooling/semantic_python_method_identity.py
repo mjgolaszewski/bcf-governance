@@ -152,14 +152,31 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
     if (node.bases and not allow_bases) or node.keywords:
         return False
     factories = dataclass_default_factories(node, tree, path, imports)
+    fields = {member.target.id for member in node.body
+              if isinstance(member, ast.AnnAssign) and isinstance(member.target, ast.Name)}
     for member in node.body:
         if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if member.name in {"__new__", "__init__", "__post_init__", "__setattr__",
+            if member.name in {"__new__", "__init__", "__setattr__",
                                "__getattr__", "__getattribute__"}:
+                return False
+            if member.name == "__post_init__" and member.decorator_list:
                 return False
             if any(isinstance(decorator, ast.Name) and decorator.id == "property"
                    for decorator in member.decorator_list):
-                return False
+                if len(member.decorator_list) != 1 or member.name in fields:
+                    return False
+            kind, receiver = method_binding(member)
+            if kind == "class" and receiver:
+                aliases = {receiver}
+                for _ in range(len(member.body) + 1):
+                    for value in ast.walk(member):
+                        if isinstance(value, ast.Assign) and isinstance(value.value, ast.Name) and value.value.id in aliases:
+                            aliases.update(target.id for target in value.targets if isinstance(target, ast.Name))
+                for value in ast.walk(member):
+                    if isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del)) and root_name(value) in aliases:
+                        return False
+                    if isinstance(value, ast.Call) and call_name(value) in {"setattr", "delattr"} and value.args and isinstance(value.args[0], ast.Name) and value.args[0].id in aliases:
+                        return False
         if isinstance(member, (ast.Assign, ast.AnnAssign)):
             default_value = member.value
             qualified_field = (
@@ -189,13 +206,13 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
         ):
             return False
     for value in ast.walk(tree):
-        if isinstance(value, ast.arg) and value.arg in {node.name, "classmethod"}:
+        if isinstance(value, ast.arg) and value.arg in {node.name, "classmethod", "property"}:
             return False
         if isinstance(value, ast.Name) and isinstance(value.ctx, (ast.Store, ast.Del)):
-            if value.id in {node.name, "classmethod", *imports}:
+            if value.id in {node.name, "classmethod", "property", *imports}:
                 return False
         if isinstance(value, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            if value is not node and value.name in {node.name, "classmethod"}:
+            if value is not node and value.name in {node.name, "classmethod", "property"}:
                 return False
         if (isinstance(value, ast.Attribute) and isinstance(value.ctx, (ast.Store, ast.Del))
                 and root_name(value) == node.name):
@@ -204,7 +221,7 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                 and value.args and isinstance(value.args[0], ast.Name)
                 and value.args[0].id == node.name):
             return False
-    return "classmethod" not in imports
+    return not ({"classmethod", "property"} & imports.keys())
 
 
 def discover_class_facts(
@@ -579,6 +596,10 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
             str(value).rsplit(".", 1)[-1]
             for value in function.get("decorators", [])
         } - {"classmethod", "staticmethod"}
+        if (custom_function_decorators == {"property"}
+                and function.get("decorators") == ["property"]
+                and classes.get(str(function.get("class_symbol", "")), {}).get("closed_class_binding")):
+            custom_function_decorators.clear()
         failures: list[dict[str, Any]] = []
         if custom_function_decorators:
             failures.append(

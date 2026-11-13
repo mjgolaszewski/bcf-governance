@@ -194,6 +194,13 @@ class _FunctionVisitor(ast.NodeVisitor):
             "called_symbol": symbol,
             "call_name": name,
             "line": node.lineno,
+            "column": node.col_offset,
+            "literal_arguments": all(
+                isinstance(value, (ast.Constant, ast.Tuple, ast.List, ast.Dict, ast.Set,
+                                   ast.UnaryOp, ast.UAdd, ast.USub, ast.Load))
+                for argument in [*node.args, *(keyword.value for keyword in node.keywords)]
+                for value in ast.walk(argument)
+            ) and all(keyword.arg is not None for keyword in node.keywords),
             "argument_origins": sorted(self._origins(node)),
         }
         reference = _call_reference(node.func, self.import_bindings)

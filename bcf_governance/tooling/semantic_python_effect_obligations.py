@@ -47,8 +47,6 @@ def extend_python_effect_facts(
     }
     retained = {name for node in nodes if isinstance(node, (ast.Global, ast.Nonlocal))
                 for name in node.names}
-    local_names = {node.id for node in nodes if isinstance(node, ast.Name)
-                   and isinstance(node.ctx, (ast.Store, ast.Del))} - retained
     stores: dict[str, int] = {}
     for node in nodes:
         if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
@@ -91,7 +89,7 @@ def extend_python_effect_facts(
             owner = class_of(node.value)
             if owner:
                 for target in targets:
-                    if isinstance(target, ast.Name):
+                    if isinstance(target, ast.Name) and stores.get(target.id) == 1:
                         instances[target.id] = owner
     for node in nodes:
         if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
@@ -99,7 +97,8 @@ def extend_python_effect_facts(
                 write(node, node.id)
         if isinstance(node, (ast.Attribute, ast.Subscript)) and isinstance(node.ctx, (ast.Store, ast.Del)):
             root = root_name(node)
-            if root in parameters or root in retained or root not in local_names:
+            if (isinstance(node, ast.Attribute) or root in parameters or root in retained
+                    or root not in fresh_containers or not isinstance(node.value, ast.Name)):
                 write(node, ast.unparse(node))
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Attribute) and node.func.attr in _MUTATORS:
@@ -138,6 +137,12 @@ def extend_python_effect_facts(
                     callback(condition, owner, "__bool__" if "__bool__" in names else "__len__")
     fact["effects"] = effects
     fact["implicit_effect_obligations"] = obligations
+    fact["call_result_attribute_reads"] = [
+        {"attribute": node.attr, "line": node.value.lineno,
+         "column": node.value.col_offset}
+        for node in nodes if isinstance(node, ast.Attribute) and isinstance(node.ctx, ast.Load)
+        and isinstance(node.value, ast.Call)
+    ]
     body = list(function.body)
     if body and isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant) and isinstance(body[0].value.value, str):
         body = body[1:]
@@ -145,6 +150,11 @@ def extend_python_effect_facts(
             and isinstance(body[0].value, ast.Call) and isinstance(body[0].value.func, ast.Name)
             and body[0].value.func.id in classes):
         fact["direct_fresh_return"] = f"{path}::{body[0].value.func.id}"
+    if (len(body) == 1 and isinstance(body[0], ast.Return)
+            and isinstance(body[0].value, ast.Call) and isinstance(body[0].value.func, ast.Name)
+            and function.args.args and body[0].value.func.id == function.args.args[0].arg
+            and fact.get("decorators") == ["classmethod"]):
+        fact["direct_class_receiver_return"] = True
     parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
     escaped = set()
     for node in nodes:
@@ -194,6 +204,9 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
             cls = classes.get(subject, {})
             if not cls.get("closed_class_binding") or producer.get("effect_unresolved") or producer.get("unresolved"):
                 continue
+            if any(method["name"] == "__post_init__" or method.get("decorators") == ["property"]
+                   for method in cls.get("methods", [])):
+                continue
             targets = [method for method in cls.get("methods", [])
                        if method["name"] == reference.get("method")
                        and method["binding"] == "instance" and not method.get("decorators")]
@@ -212,6 +225,32 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                         and failure.get("called_symbol") == previous_symbol
                         and failure.get("dispatch_kind") == "receiver_alias")]
         callbacks: list[dict[str, Any]] = []
+        for read in function.get("call_result_attribute_reads", []):
+            producers = [(index, call) for index, call in enumerate(function["calls"])
+                         if call.get("line") == read["line"] and call.get("column") == read["column"]]
+            if len(producers) != 1:
+                continue
+            occurrence, producer_call = producers[0]
+            subjects = {str(producer_call.get("called_symbol", ""))} & classes.keys()
+            producer = functions.get(str(producer_call.get("called_symbol", "")), {})
+            bound_subjects = {str(binding["constructed_symbol"])
+                for call in producer.get("calls", [])
+                for binding in call.get("class_constructor_bindings", [])
+                if binding.get("binding_caller") == function["symbol"]
+                and binding.get("binding_occurrence") == occurrence}
+            if bound_subjects and not producer.get("direct_class_receiver_return"):
+                function.setdefault("implicit_effect_obligations", []).append({
+                    "kind": "unqualified_constructor_return_binding", "line": read["line"]})
+                continue
+            subjects.update(bound_subjects)
+            if len(subjects) != 1:
+                continue
+            subject = next(iter(subjects))
+            for method in classes.get(subject, {}).get("methods", []):
+                if method["name"] == read["attribute"] and method.get("decorators") == ["property"]:
+                    callbacks.append({"caller": function["symbol"],
+                        "called_symbol": method["symbol"], "call_name": method["name"],
+                        "line": read["line"], "implicit_callback": True})
         for call in function.get("calls", []):
             subjects = {str(call.get("called_symbol", ""))}
             subjects.update(str(binding["constructed_symbol"])
@@ -225,6 +264,12 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                         function["implicit_effect_obligations"].append(obligation)
                 names = {str(method["name"]): str(method["symbol"])
                          for method in cls.get("methods", [])}
+                has_hooks = "__post_init__" in names or any(
+                    method.get("decorators") == ["property"] for method in cls.get("methods", []))
+                if has_hooks and (not call.get("literal_arguments") or cls.get("dataclass_default_factories")):
+                    function.setdefault("implicit_effect_obligations", []).append({
+                        "kind": "unqualified_constructor_input_binding", "line": call.get("line"),
+                        "class_symbol": subject})
                 if cls.get("closed_class_binding"):
                     for field, factory in (cls.get("dataclass_default_factories") or {}).items():
                         callbacks.append({"caller": function["symbol"],

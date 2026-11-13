@@ -1237,6 +1237,18 @@ dispatch and unsupported rebound constructor imports fail closed. This coverage
 extension may reveal previously unobserved product violations; it does not migrate
 or authorize them automatically.
 
+The maintained callback repair distinguishes the class requested by a source-bound
+classmethod from the identity of its returned object and from its effects.
+Standard dataclass factories and post-initializers retain explicit callback edges;
+properties are traversed when their source-bound getter is reached. Constructor
+annotations and the presence of validation do not prove purity. Unknown callback
+inputs and ambiguous factory returns remain effect obligations. The bounded
+positive cases use literal constructor inputs or a closed fresh-record return;
+they do not qualify arbitrary mappings, string subclasses, Pydantic callbacks,
+or a caller's borrowed object graph. Existing hook, alias and rebinding refusals
+remain required controls. This repair is an unqualified development candidate
+until its full acceptance pipeline and consolidated review pass.
+
 Source-proven plain PEP 695 and standard `typing.Generic` constructors retain the underlying constructor
 identity and exact-site authorization. Custom subscription hooks and opaque class
 decorators remain unresolved. Creating a lambda evaluates its defaults in the
