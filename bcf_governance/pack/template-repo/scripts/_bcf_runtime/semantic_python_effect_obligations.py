@@ -75,7 +75,7 @@ def container_builtin_names(tree: ast.Module) -> list[str]:
     )
     return sorted(
         {"len", "list", "tuple", "dict", "set", "bool", "super",
-         "BaseException", "Exception", "ValueError", "RuntimeError", "type", "str"} - bindings
+         "BaseException", "Exception", "ValueError", "RuntimeError", "type", "str", "int", "float", "complex", "bytes"} - bindings
     ) if "*" not in bindings and not reflective else []
 
 

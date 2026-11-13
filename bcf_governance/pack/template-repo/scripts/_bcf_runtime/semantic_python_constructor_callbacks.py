@@ -92,6 +92,8 @@ def constructor_declaration_shape(node: ast.ClassDef, tree: ast.Module) -> bool:
             } for value in member.decorator_list):
                 return False
             if member.name == '__init__':
+                if isinstance(member, ast.AsyncFunctionDef):
+                    return False
                 if member.decorator_list or not member.args.args:
                     return False
                 receiver = member.args.args[0].arg
@@ -200,7 +202,7 @@ def exact_scalar_guard(statement: ast.AST) -> str | None:
     test = statement.test
     if (isinstance(test, ast.Compare) and len(test.ops) == 1
             and isinstance(test.ops[0], ast.IsNot) and len(test.comparators) == 1
-            and isinstance(test.comparators[0], ast.Name) and test.comparators[0].id == 'str'
+            and isinstance(test.comparators[0], ast.Name) and test.comparators[0].id in {'str', 'int', 'float', 'complex', 'bool', 'bytes'}
             and isinstance(test.left, ast.Call) and isinstance(test.left.func, ast.Name)
             and test.left.func.id == 'type' and len(test.left.args) == 1
             and not test.left.keywords and isinstance(test.left.args[0], ast.Name)):
@@ -210,27 +212,32 @@ def exact_scalar_guard(statement: ast.AST) -> str | None:
 
 def initial_scalar_guards(function: ast.AST, builtin_names: list[str]) -> set[str]:
     """Exact runtime type admission before any user-value protocol is invoked."""
-    if not isinstance(function, ast.FunctionDef) or not {'type', 'str'} <= set(builtin_names):
+    if not isinstance(function, ast.FunctionDef) or 'type' not in builtin_names:
         return set()
     guarded = set()
+    parameters = {arg.arg for arg in [*function.args.posonlyargs, *function.args.args,
+                                      *function.args.kwonlyargs]}
     for statement in function.body:
         if isinstance(statement, ast.Expr) and isinstance(statement.value, ast.Constant) and isinstance(statement.value.value, str):
             continue
         name = exact_scalar_guard(statement)
-        if name is None:
+        if (name is None or name not in parameters or not isinstance(statement, ast.If)
+                or not isinstance(statement.test, ast.Compare)
+                or not isinstance(statement.test.comparators[0], ast.Name)
+                or statement.test.comparators[0].id not in builtin_names):
             break
         guarded.add(name)
     return guarded
 
 
-def static_scalar_expression(value: ast.AST, function: ast.AST) -> bool:
+def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: list[str] | None = None) -> bool:
     """Literal scalars and exact keys from a private, unaliased literal dict."""
     if isinstance(value, ast.Constant):
         return True
     if isinstance(value, ast.JoinedStr):
         return all(isinstance(part, ast.Constant) or isinstance(part, ast.FormattedValue)
-                   and static_scalar_expression(part.value, function)
-                   and (part.format_spec is None or static_scalar_expression(part.format_spec, function))
+                   and static_scalar_expression(part.value, function, builtin_names)
+                   and (part.format_spec is None or static_scalar_expression(part.format_spec, function, builtin_names))
                    for part in value.values)
     if not isinstance(value, ast.Name):
         return False
@@ -238,6 +245,32 @@ def static_scalar_expression(value: ast.AST, function: ast.AST) -> bool:
     if any(isinstance(node, (ast.Global, ast.Nonlocal)) or isinstance(node, ast.Name)
            and node.id in {'exec', 'eval', 'globals', 'locals', 'vars'} for node in nodes):
         return False
+    if isinstance(function, ast.FunctionDef) and 'type' in (builtin_names or []):
+        arguments = {arg.arg for arg in [*function.args.posonlyargs, *function.args.args,
+                                         *function.args.kwonlyargs]}
+        for index, statement in enumerate(function.body):
+            if not any(node is value for node in ast.walk(statement)):
+                continue
+            for guard_index in range(index - 1, -1, -1):
+                guard = function.body[guard_index]
+                if exact_scalar_guard(guard) != value.id:
+                    continue
+                assert isinstance(guard, ast.If) and isinstance(guard.test, ast.Compare)
+                admitted_type = guard.test.comparators[0]
+                if not isinstance(admitted_type, ast.Name) or admitted_type.id not in (builtin_names or []):
+                    continue
+                local = value.id in arguments or any(
+                    isinstance(binding, ast.Assign) and any(isinstance(target, ast.Name) and target.id == value.id
+                                                           for target in binding.targets)
+                    or isinstance(binding, ast.AnnAssign) and isinstance(binding.target, ast.Name)
+                       and binding.target.id == value.id and binding.value is not None
+                    for binding in function.body[:guard_index])
+                rebound = any(isinstance(node, ast.Name) and node.id == value.id
+                              and isinstance(node.ctx, (ast.Store, ast.Del))
+                              for body in function.body[guard_index + 1:index + 1] for node in ast.walk(body))
+                if local and not rebound:
+                    return True
+            break
     stores = [node for node in nodes if isinstance(node, ast.Name)
               and node.id == value.id and isinstance(node.ctx, (ast.Store, ast.Del))]
     if len(stores) != 1:
@@ -294,7 +327,7 @@ def literal_constructor_frames(
         if not parameters:
             continue
         def origin(value: ast.AST) -> str:
-            if isinstance(value, ast.JoinedStr) and static_scalar_expression(value, function):
+            if static_scalar_expression(value, function, row.get('unshadowed_container_builtins', [])):
                 return 'scalar'
             return (type(value).__name__.lower() if isinstance(value, (ast.List, ast.Tuple, ast.Set, ast.Dict))
                     else 'scalar') if all(isinstance(part, (ast.Constant, ast.List, ast.Tuple, ast.Set, ast.Dict, ast.Load, ast.UnaryOp, ast.USub, ast.UAdd)) for part in ast.walk(value)) else 'unknown'

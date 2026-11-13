@@ -1,16 +1,16 @@
 {
   "status": "unqualified",
-  "base_commit": "8f29cff55ddb35f7b91c6cafd5899af40da8e2a6",
+  "base_commit": "887ac82cea4af4f0cdc9fecf5d2aa64594bb391f",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
-    "bcf_governance/tooling/exception_messages.py": "c5850b1305644881dfe153e16ec805466483cd39294811fd326f8552653e979f",
+    "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
     "bcf_governance/tooling/local_execution_admission.py": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366",
     "bcf_governance/tooling/ci_github_api.py": "2910fdc3d16bb616ff136259542a8d725f7810a19d354a85ef24358b629d90a6",
-    "bcf_governance/tooling/semantic_python_value_origins.py": "0c70b20dba270f35542c4939a2d8cfdfe22f9ae96cfac36541fe1e92b3c18d8e",
+    "bcf_governance/tooling/semantic_python_value_origins.py": "01250828950d425112ef315db62fd01149d7b0698d8994dadf7593ba514feaac",
     "bcf_governance/tooling/semantic_operation_effects.py": "51aaba9c7fac1389a34a357967b3aed7ec6e22df4acd67c0c2e06146fc346820",
-    "bcf_governance/tooling/semantic_python_effect_obligations.py": "04e999735587c2f5376e644978b75314cd7f5538a5ff55e27ff38c7c8e1b41eb",
+    "bcf_governance/tooling/semantic_python_effect_obligations.py": "e45b46a145e2cea545ef47e5a0db918048b3a19b163abf1965e2672717848a05",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251",
-    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "17f477f5120bbd8568f5d2f4134dd9b40053ab12e6b3ba7b94cdb0f8ea710766",
+    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "65d19a9b134974396b7421b7020c538ec38c9182220d588d5f010b00ca76b25c",
     "bcf_governance/tooling/semantic_python_method_identity.py": "0fcbb058aa986638586adc6d4741218b993d5a0fbc768e600733a49742c67905",
     "bcf_governance/tooling/operational_observations.py": "18b067df865e19c8c1f20214bcea60c2bd164ce11c40b6214d2127b15c7d19a1",
     "bcf_governance/tooling/controller_custody_prospective.py": "353f8b7230bc8f9e1ce1384679b2967c0249ec87695b6f7a065e22bfac68661d",
@@ -63,18 +63,19 @@
     "bcf_governance/tooling/governance_validation/runtime_custody.py": "bae8921fbfb941933a19a9c45007165512b2975d7c85c72c9ea308961bde1895",
     "bcf_governance/tooling/governance_validation/self_authority_overlays.py": "a9f6387374d858ab9655bf066c9d3e20bb842d14692b3e62e9d3fd34eca7a5d5",
     "bcf_governance/tooling/governance_install/ci_graph.py": "caa92bc5c3a70a868d7271a09dee0e493a14b13464632e7007863c7350498ec9",
+    "bcf_governance/tooling/interpreter_dependency_sources.py": "4144ebcd8c42d2d1f74c56bf726fed573a3deb8c18dbee6e0253b23dc894a1e7",
     "tests/test_semantic_value_origins.py": "0e0262af154a5778475e5934fbce74103f6c5486c918c7e82eba6ab24ebc42ba",
     "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
-    "tests/test_semantic_constructor_frames.py": "eea0e6d420df537e8483dfa7233947a2f5cb2af95b6f2a54e4845593fd78cba9"
+    "tests/test_semantic_constructor_frames.py": "293d295b0cd7ff5dd22e1f270fe431552ee7b8ac4b3a618e58647510c683e867"
   },
   "affected_tests": {
-    "passed": 331,
+    "passed": 342,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
     "consumer_sdk_required": false
   },
-  "strict_typing_files_passed": 60,
+  "strict_typing_files_passed": 61,
   "lint": "pass",
   "runtime_pack_projection": "pass",
   "unused_property_causal_control": {
@@ -87,13 +88,8 @@
     }
   },
   "canonical_reconcile": {
-    "status": "red",
-    "tested_commit": "61facffea560481df67c2c76061e1ea9130e2341",
-    "stage": "semantic-lock",
-    "native_terminal_eof_reap": true,
-    "failures": [
-      "interpreter_dependency_sources.py::compile_governed_dependency_source:184 unqualified_format_callback, requires_python from python_minor"
-    ]
+    "status": "pending_replay_after_provenance_change",
+    "previous_result": "three_unqualified_constructor_input_bindings"
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -104,15 +100,16 @@
   "constructor_frames": {
     "initial_false_refusals": 4,
     "initial_correct_denials": 5,
-    "current_controls_passed": 42
+    "current_controls_passed": 53
   },
   "finalizer_controls": {
     "unsafe_acceptances_observed": 2,
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Validated scalar-container producer and exact runtime type refinement remain unqualified at the canonical Python-minor formatting site. Native platform-specific message storage fields also require completeness review.",
-    "Complete framework, frozen800 consumer, ordinary-protection and release gates remain open."
+    "Actual supported canonical replay remains pending after dominating native scalar proof and native storage completeness repair.",
+    "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
+    "Complete framework, consumer, ordinary-protection and release gates remain open."
   ],
   "source_ready": false
 }

@@ -1,6 +1,8 @@
 """Actual constructor writes require allocation and caller-context evidence."""
 from __future__ import annotations
 
+from types import MemberDescriptorType
+
 import pytest
 
 from bcf_governance.tooling.semantic_operation_effects import (
@@ -447,3 +449,75 @@ def test_actual_native_message_boundary_source_is_readonly(tmp_path):
     facts=resolve_python_imports(tmp_path,discover_python_source(tmp_path,[path,helper]),('.',))
     assert _module_witness(tmp_path)==['message','message']
     assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+@pytest.mark.parametrize('scalar,typename', [("'ok'",'str'),('7','int')])
+def test_dominating_native_admission_proves_a_later_formatted_value(tmp_path,scalar,typename):
+    path,facts=inventory(tmp_path,"""
+        def source(): return SCALAR
+        def read():
+            try: pass
+            except ValueError: pass
+            value=source()
+            if type(value) is not TYPE: raise ValueError('native value required')
+            return f'value {value}'
+    """.replace('SCALAR',scalar).replace('TYPE',typename))
+    assert witness(path)==(['value ok','value ok'] if typename=='str' else ['value 7','value 7'])
+    assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+@pytest.mark.parametrize('kind',['conditional','rebound','shadowed','global'])
+def test_scalar_admission_cannot_escape_its_binding_or_dominance(tmp_path,kind):
+    prefix="EVENTS=[]\nclass Probe:\n def __format__(self,spec):\n  EVENTS.append(7)\n  return 'message'\nPROBE=Probe()\n"
+    if kind=='conditional':
+        body=" value=PROBE\n if False:\n  if type(value) is not str: raise ValueError('native')\n return f'{value}'\n"
+    elif kind=='rebound':
+        body=" value='native'\n if type(value) is not str: raise ValueError('native')\n value=PROBE\n return f'{value}'\n"
+    elif kind=='shadowed':
+        prefix+="def type(value):return str\n"
+        body=" value=PROBE\n if type(value) is not str: raise ValueError('native')\n return f'{value}'\n"
+    else:
+        prefix+="value='native'\ndef replace():\n global value\n value=PROBE\ndef reset():\n global value\n value='native'\n"
+        body=" if type(value) is not str: raise ValueError('native')\n replace()\n return f'{value}'\n"
+    reader="def read():\n "+('reset()\n ' if kind=='global' else '')+"format_value()\n return len(EVENTS)\n"
+    path,facts=inventory(tmp_path,prefix+'def format_value():\n'+body+reader)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects({**OPERATION, 'allowed_mutation_ports': ['consumer.py::reset','consumer.py::replace'] if kind=='global' else []},'consumer.py::read',facts)
+
+
+@pytest.mark.parametrize('field',[name for name,value in vars(OSError).items() if type(value) is MemberDescriptorType])
+def test_native_os_message_rejects_protocol_objects_in_actual_storage(field):
+    from bcf_governance.tooling.exception_messages import native_exception_message
+    events=[]
+    class Probe:
+        def __str__(self):
+            events.append('str')
+            return 'message'
+        def __repr__(self):
+            events.append('repr')
+            return 'message'
+    error=OSError(2,'missing','file.txt')
+    setattr(error,field,Probe())
+    with pytest.raises(TypeError):
+        native_exception_message(error)
+    assert events==[]
+
+
+
+def test_async_initializer_does_not_get_a_synchronous_fresh_receiver_contract(tmp_path):
+    import subprocess
+    import sys
+    path,facts=inventory(tmp_path,"""
+        class Record:
+            async def __init__(self): pass
+        def read():
+            try: Record()
+            except TypeError: pass
+            return 7
+    """)
+    script="import runpy;n=runpy.run_path("+repr(str(path))+");print(n['read']())"
+    result=subprocess.run([sys.executable,'-I','-Walways::RuntimeWarning','-c',script],capture_output=True,text=True,check=True,timeout=10)
+    assert result.stdout.strip()=='7' and 'was never awaited' in result.stderr
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)

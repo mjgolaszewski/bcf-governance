@@ -60,7 +60,7 @@ def value_origins(
     positions = {id(node): next(sites, [0, 0]) for node in ast.walk(function)}
     constructor_inputs, implicit_calls = literal_constructor_frames(row, function, positions, functions)
     format_inputs = {tuple(positions[id(node.value)]) for node in ast.walk(function)
-                     if isinstance(node, ast.FormattedValue) and static_scalar_expression(node.value, function)}
+                     if isinstance(node, ast.FormattedValue) and static_scalar_expression(node.value, function, row.get('unshadowed_container_builtins', []))}
     empty.update(constructor_inputs=constructor_inputs, implicit_calls=implicit_calls, format_inputs=format_inputs)
     env = dict(arguments)
     initializer_frame = (function.name == '__init__' and

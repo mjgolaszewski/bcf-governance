@@ -29,7 +29,10 @@ def native_exception_message(error: BaseException) -> str:
         raise TypeError('exception message contains a non-native argument')
     if formatter is BaseException.__str__:
         return BaseException.__str__(error)
-    for descriptor in (OSError.errno, OSError.strerror, OSError.filename, OSError.filename2):
+    for descriptor in (OSError.errno, OSError.strerror, OSError.filename, OSError.filename2,
+                       getattr_static(OSError, 'winerror', None)):
+        if descriptor is None:
+            continue
         if not _native_scalar(cast(MemberDescriptorType, descriptor).__get__(error)):
             raise TypeError('OS exception message contains a non-native field')
     return OSError.__str__(error)

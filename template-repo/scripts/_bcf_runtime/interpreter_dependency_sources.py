@@ -179,6 +179,8 @@ def compile_governed_dependency_source(
             "interpreter graph must declare one Python minor"
         )
     python_minor = next(iter(python_minors))
+    if type(python_minor) is not str:
+        raise InterpreterDependencySourceError("interpreter graph Python minor must be a plain string")
     return GovernedDependencySource(
         requirements=tuple(requirements),
         requires_python=f"=={python_minor}.*",
