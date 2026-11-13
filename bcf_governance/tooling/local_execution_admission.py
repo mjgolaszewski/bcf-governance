@@ -22,6 +22,7 @@ from .bootstrap.environment import custody_settings as _default_custody_settings
 from .bootstrap.environment import (
     scoped_execution_environment as _default_scoped_execution_environment,
 )
+from .exception_messages import native_exception_message
 from .interpreter_environment import (
     InterpreterEnvironmentError,
     InterpreterEnvironmentPlan,
@@ -152,7 +153,7 @@ def ensure_local_project_python(
                 )
             return plan
         except InterpreterEnvironmentError as exc:
-            raise LocalExecutionAdmissionError(str(exc)) from exc
+            raise LocalExecutionAdmissionError(native_exception_message(exc)) from exc
 
     if requested is not None:
         project_python = resolve_local_project_python(
@@ -162,7 +163,7 @@ def ensure_local_project_python(
         try:
             probe_interpreter_environment(plan, project_python)
         except InterpreterEnvironmentError as exc:
-            raise LocalExecutionAdmissionError(str(exc)) from exc
+            raise LocalExecutionAdmissionError(native_exception_message(exc)) from exc
         return project_python
     local = repo_root.resolve() / ".venv/bin/python"
     if local.exists() or local.is_symlink() or local.parent.parent.exists():
@@ -180,7 +181,7 @@ def ensure_local_project_python(
         )
         probe_interpreter_environment(plan, project_python)
     except InterpreterEnvironmentError as exc:
-        raise LocalExecutionAdmissionError(str(exc)) from exc
+        raise LocalExecutionAdmissionError(native_exception_message(exc)) from exc
     return project_python
 
 
@@ -343,7 +344,7 @@ def local_gate_lease(
     try:
         namespace = authenticated_execution_state_namespace(custody_settings.execution_inputs())
     except RuntimeCapacityError as exc:
-        raise LocalExecutionAdmissionError(str(exc)) from exc
+        raise LocalExecutionAdmissionError(native_exception_message(exc)) from exc
     suffix = f"-{namespace}" if namespace is not None else ""
     # A fixed shared-host inode is the coordination contract, not a temporary
     # output file. O_EXCL/O_NOFOLLOW plus uid, nlink and inode checks below

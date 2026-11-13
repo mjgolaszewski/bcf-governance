@@ -1094,6 +1094,10 @@
       "operation": "copy",
       "sha256": "742157bcb396de1de993a4fec8fa5ac14f7abbd8dd9a7bbbb3187529df91d933"
     },
+    "scripts/_bcf_runtime/exception_messages.py": {
+      "operation": "copy",
+      "sha256": "c5850b1305644881dfe153e16ec805466483cd39294811fd326f8552653e979f"
+    },
     "scripts/_bcf_runtime/github_protection.py": {
       "operation": "copy",
       "sha256": "37073f3e127c0240adbb02e492a6620db544ec3b4bcf9d35c3429a5387baec87"
@@ -1380,7 +1384,7 @@
     },
     "scripts/_bcf_runtime/local_execution_admission.py": {
       "operation": "copy",
-      "sha256": "3d416d02bdd116f76bedcaf736db1a74d0f45f40bce8244c29e880c5f868f98c"
+      "sha256": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366"
     },
     "scripts/_bcf_runtime/local_pr.py": {
       "operation": "copy",
@@ -1665,7 +1669,7 @@
     },
     "scripts/_bcf_runtime/semantic_ownership_inventory.py": {
       "operation": "copy",
-      "sha256": "308cf0ff125486403a73588db7d8e7a61912273f7b36ea035282c20b3b6974de"
+      "sha256": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251"
     },
     "scripts/_bcf_runtime/semantic_ownership_layout.py": {
       "operation": "copy",
@@ -1697,7 +1701,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_constructor_callbacks.py": {
       "operation": "copy",
-      "sha256": "a84674f2433316678a30345ced7277566dfbf89ca0c35dfd4e1695c6cf96d6bd"
+      "sha256": "17f477f5120bbd8568f5d2f4134dd9b40053ab12e6b3ba7b94cdb0f8ea710766"
     },
     "scripts/_bcf_runtime/semantic_python_dataclass_contracts.py": {
       "operation": "copy",
@@ -1705,7 +1709,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_effect_obligations.py": {
       "operation": "copy",
-      "sha256": "f3ded51ec74bb10e0b4b87e64772b803fef1bdd97ee7be8a9db9a75e4bdf56ae"
+      "sha256": "04e999735587c2f5376e644978b75314cd7f5538a5ff55e27ff38c7c8e1b41eb"
     },
     "scripts/_bcf_runtime/semantic_python_execution_inventory.py": {
       "operation": "copy",

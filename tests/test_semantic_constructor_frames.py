@@ -339,3 +339,111 @@ def test_caught_custom_exception_string_callback_remains_an_effect(tmp_path):
     assert witness(path)==[1,2]
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+@pytest.mark.parametrize('kind',['subclass','argument'])
+def test_caught_exception_native_or_inherited_formatting_keeps_real_callbacks(tmp_path,kind):
+    source="""
+        EVENTS=[]
+        class Probe:
+            def __str__(self):
+                EVENTS.append(7)
+                return 'message'
+        class Error(ValueError):pass
+        class Derived(Error):
+            def __str__(self):
+                EVENTS.append(7)
+                return 'message'
+        class Wrapper(ValueError):pass
+        def read():
+            try: raise EXPRESSION
+            except Error as exc: Wrapper(str(exc))
+            return len(EVENTS)
+    """.replace('EXPRESSION', "Derived('bad')" if kind=='subclass' else 'Error(Probe())')
+    path,facts=inventory(tmp_path,source)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+def test_imported_caught_exception_string_callback_keeps_source_identity(tmp_path):
+    from bcf_governance.tooling.semantic_ownership_inventory import (
+        discover_python_source,
+        resolve_python_imports,
+    )
+    dependency=tmp_path/'errors.py'
+    dependency.write_text("EVENTS=[]\nclass Error(ValueError):\n def __str__(self):\n  EVENTS.append(7)\n  return 'message'\n")
+    path=tmp_path/'consumer.py'
+    path.write_text("from errors import Error,EVENTS\nclass Wrapper(ValueError):pass\ndef read():\n try: raise Error('bad')\n except Error as exc: Wrapper(str(exc))\n return len(EVENTS)\n")
+    facts=resolve_python_imports(tmp_path,discover_python_source(tmp_path,[path,dependency]),('.',))
+    assert _module_witness(tmp_path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+@pytest.mark.parametrize('error',[ValueError('message'),RuntimeError(7,'message'),OSError(2,'missing','file.txt')])
+def test_native_exception_message_preserves_native_diagnostics(error):
+    from bcf_governance.tooling.exception_messages import native_exception_message
+    assert native_exception_message(error)==str(error)
+
+
+@pytest.mark.parametrize('kind',['override','argument','property','metaclass'])
+def test_native_exception_message_never_executes_custom_protocols(kind):
+    from bcf_governance.tooling.exception_messages import native_exception_message
+    events=[]
+    class Probe:
+        def __str__(self):
+            events.append('str')
+            return 'message'
+        def __repr__(self):
+            events.append('repr')
+            return 'message'
+    class Error(ValueError):
+        def __str__(self):
+            events.append('override')
+            return 'message'
+    class PropertyError(ValueError):
+        @property
+        def args(self):
+            events.append('property')
+            return (Probe(),)
+    class Meta(type):
+        def __getattribute__(cls,name):
+            if name=='__str__':
+                events.append('metaclass')
+            return super().__getattribute__(name)
+    class MetaError(ValueError,metaclass=Meta):
+        pass
+    error={'override':Error('message'),'argument':ValueError(Probe()),
+           'property':PropertyError('message'),'metaclass':MetaError('message')}[kind]
+    if kind in {'override','argument'}:
+        with pytest.raises(TypeError):
+            native_exception_message(error)
+    else:
+        assert native_exception_message(error)=='message'
+    assert events==[]
+
+
+def _module_witness(root):
+    import json
+    import subprocess
+    import sys
+    script="import sys,json;sys.path.insert(0,"+repr(str(root))+");import consumer;print(json.dumps([consumer.read(),consumer.read()]))"
+    result=subprocess.run([sys.executable,'-I','-B','-c',script],capture_output=True,text=True,check=True,timeout=10)
+    return json.loads(result.stdout)
+
+
+def test_actual_native_message_boundary_source_is_readonly(tmp_path):
+    from pathlib import Path
+
+    from bcf_governance.tooling.semantic_ownership_inventory import (
+        discover_python_source,
+        resolve_python_imports,
+    )
+    helper=tmp_path/'helper.py'
+    helper.write_bytes((Path(__file__).parents[1]/'bcf_governance/tooling/exception_messages.py').read_bytes())
+    path=tmp_path/'consumer.py'
+    path.write_text("from helper import native_exception_message\ndef read():\n return native_exception_message(ValueError('message'))\n")
+    facts=resolve_python_imports(tmp_path,discover_python_source(tmp_path,[path,helper]),('.',))
+    assert _module_witness(tmp_path)==['message','message']
+    assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)

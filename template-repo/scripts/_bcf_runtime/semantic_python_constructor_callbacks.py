@@ -313,3 +313,75 @@ def literal_constructor_frames(
         inputs.add((*site, spec['subject']))
         frames[(*site, target)] = tuple(sorted(bound.items()))
     return inputs, frames
+
+
+def resolve_exception_callbacks(inventory: dict[str, Any], closures: dict[str, dict[str, Any]]) -> None:
+    """Keep caught receiver identity, possible subclasses and native arg hooks."""
+    classes = {str(row['symbol']): row for row in inventory.get('classes', [])}
+    functions = {str(row['symbol']): row for row in inventory.get('functions', [])}
+    constructors: dict[str, list[tuple[ast.Call, dict[tuple[int, int], dict[str, Any]]]]] = {}
+    for function in functions.values():
+        source = function.get('python_value_source')
+        if not source:
+            continue
+        parsed = ast.parse(source).body[0]
+        sites = iter(function.get('python_value_sites', []))
+        positions = {id(node): tuple(next(sites, [0, 0])) for node in ast.walk(parsed)}
+        calls = {(call.get('line'), call.get('column')): call
+                 for call in function.get('calls', []) if not call.get('implicit_callback')}
+        for node in ast.walk(parsed):
+            if isinstance(node, ast.Call):
+                call = calls.get(positions[id(node)], {})
+                target = str(call.get('called_symbol', ''))
+                if target in classes:
+                    constructors.setdefault(target, []).append((node, {
+                        (part.lineno, part.col_offset): calls.get(positions[id(part)], {})
+                        for part in ast.walk(node) if isinstance(part, ast.Call)
+                    }))
+
+    def descends(symbol: str, target: str, seen: frozenset[str] = frozenset()) -> bool:
+        if symbol == target:
+            return True
+        if symbol in seen:
+            return False
+        return any(descends(str(base.get('called_symbol', '')), target, seen | {symbol})
+                   for base in classes.get(symbol, {}).get('bases', []))
+
+    for function in functions.values():
+        for read in function.get('caught_protocol_reads', []):
+            targets = read.get('caught_type_symbols', [])
+            candidates = [symbol for symbol in classes if any(descends(symbol, target) for target in targets)]
+            name = '__str__' if read['call_name'] == 'str' else '__repr__'
+            def callback(symbol: str, method_name: str = name, caller: dict[str, Any] = function,
+                         site: dict[str, Any] = read) -> None:
+                method = closures.get(symbol, {}).get('methods', {}).get(method_name)
+                if method:
+                    caller.setdefault('calls', []).append({'caller': caller['symbol'],
+                        'called_symbol': method['symbol'], 'call_name': method_name,
+                        'line': site['line'], 'column': site['column'],
+                        'implicit_callback': True, 'callback_phase': 'caught_exception_formatting'})
+            for candidate in candidates:
+                closure = closures.get(candidate)
+                if closure is None:
+                    function.setdefault('implicit_effect_obligations', []).append({
+                        'kind': 'unqualified_caught_exception_binding', 'line': read['line'], 'class_symbol': candidate})
+                    continue
+                if name in closure.get('methods', {}):
+                    callback(candidate)
+                    continue
+                unresolved = not bool(constructors.get(candidate))
+                for node, calls in constructors.get(candidate, []):
+                    for value in node.args:
+                        if isinstance(value, (ast.Constant, ast.JoinedStr)):
+                            continue
+                        if isinstance(value, ast.Call):
+                            target = str(calls.get((value.lineno, value.col_offset), {}).get('called_symbol', ''))
+                            argument_method = '__str__' if name == '__str__' and len(node.args) == 1 else '__repr__'
+                            if target in closures and argument_method in closures[target].get('methods', {}):
+                                callback(target, argument_method)
+                                continue
+                        unresolved = True
+                if unresolved:
+                    function.setdefault('implicit_effect_obligations', []).append({
+                        'kind': 'unqualified_native_exception_argument_protocol',
+                        'line': read['line'], 'class_symbol': candidate})

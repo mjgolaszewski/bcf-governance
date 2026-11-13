@@ -9,7 +9,10 @@ import ast
 import hashlib
 from typing import Any
 
-from .semantic_python_constructor_callbacks import constructor_callback_closures
+from .semantic_python_constructor_callbacks import (
+    constructor_callback_closures,
+    resolve_exception_callbacks,
+)
 
 _MUTATORS = {
     "add", "append", "clear", "difference_update", "discard", "extend",
@@ -109,6 +112,21 @@ def extend_python_effect_facts(
     classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
     instances: dict[str, str] = {}
     scope_parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
+    fact['caught_protocol_reads'] = []
+    for call in nodes:
+        if not (isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
+                and call.func.id in {'str', 'repr'} and len(call.args) == 1
+                and isinstance(call.args[0], ast.Name)):
+            continue
+        current: ast.AST | None = call
+        while current is not None:
+            if isinstance(current, ast.ExceptHandler) and current.name == call.args[0].id and current.type is not None:
+                types = current.type.elts if isinstance(current.type, ast.Tuple) else [current.type]
+                fact['caught_protocol_reads'].append({'call_name': call.func.id,
+                    'line': call.lineno, 'column': call.col_offset,
+                    'caught_type_expressions': [ast.unparse(value) for value in types]})
+                break
+            current = scope_parents.get(id(current))
     effects: list[dict[str, Any]] = []
     obligations: list[dict[str, Any]] = []
     for node in nodes:
@@ -257,6 +275,7 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
     classes = {str(row["symbol"]): row for row in inventory.get("classes", [])}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     constructor_closures = constructor_callback_closures(classes)
+    resolve_exception_callbacks(inventory, constructor_closures)
     for function in inventory.get("functions", []):
         for call in function.get("calls", []):
             reference = call.get("method_dispatch", {})

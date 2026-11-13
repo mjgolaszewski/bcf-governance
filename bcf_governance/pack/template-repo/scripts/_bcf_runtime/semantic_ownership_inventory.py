@@ -623,6 +623,10 @@ def resolve_python_imports(
         function["return_annotation_symbols"] = annotation_identities(
             path, function.get("return_annotation")
         )
+        for read in function.get('caught_protocol_reads', []):
+            read['caught_type_symbols'] = sorted({symbol
+                for expression in read.get('caught_type_expressions', [])
+                for symbol in annotation_identities(path, expression)})
         for collection in ("calls", "constructors"):
             for fact in function.get(collection, []):
                 reference = fact.get("import_reference")
