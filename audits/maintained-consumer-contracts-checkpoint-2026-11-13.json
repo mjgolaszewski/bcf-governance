@@ -87,8 +87,13 @@
     }
   },
   "canonical_reconcile": {
-    "status": "pending_replay_after_provenance_change",
-    "previous_result": "three_unqualified_constructor_input_bindings"
+    "status": "red",
+    "tested_commit": "61facffea560481df67c2c76061e1ea9130e2341",
+    "stage": "semantic-lock",
+    "native_terminal_eof_reap": true,
+    "failures": [
+      "interpreter_dependency_sources.py::compile_governed_dependency_source:184 unqualified_format_callback, requires_python from python_minor"
+    ]
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -106,9 +111,8 @@
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Actual supported canonical replay remains pending after the material exception callback and native-message repair.",
-    "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
-    "Complete framework, consumer, ordinary-protection and release gates remain open."
+    "Validated scalar-container producer and exact runtime type refinement remain unqualified at the canonical Python-minor formatting site. Native platform-specific message storage fields also require completeness review.",
+    "Complete framework, frozen800 consumer, ordinary-protection and release gates remain open."
   ],
   "source_ready": false
 }
