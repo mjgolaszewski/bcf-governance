@@ -34,6 +34,32 @@ def witness(path: Path, interpreter: str = sys.executable):
     return json.loads(result.stdout)
 
 
+@pytest.mark.parametrize("read_property", [False, True])
+def test_unrelated_property_is_only_executed_when_read(tmp_path, read_property):
+    source = """
+        from dataclasses import dataclass
+        EVENTS=[]
+        @dataclass
+        class Record:
+            value: int
+            @property
+            def computed(self):
+                EVENTS.append(7)
+                return len(EVENTS)
+        def read():
+            value=7
+            row=Record(value)
+            RETURN
+    """.replace("RETURN", "return row.computed" if read_property else "return len(EVENTS)")
+    path, facts = inventory(tmp_path, source)
+    assert witness(path) == ([1, 2] if read_property else [0, 0])
+    if read_property:
+        with pytest.raises(SemanticOperationEffectError):
+            validate_operation_effects(OPERATION, "consumer.py::read", facts)
+    else:
+        assert validate_operation_effects(OPERATION, "consumer.py::read", facts) == (0, 0)
+
+
 @pytest.mark.parametrize("source,expected", [
     ("COUNTER=0\ndef read():\n global COUNTER\n COUNTER += 1\n return COUNTER\n", [1, 2]),
     ("STATE=[1,2]\ndef read():\n STATE.clear()\n return len(STATE)\n", [0, 0]),

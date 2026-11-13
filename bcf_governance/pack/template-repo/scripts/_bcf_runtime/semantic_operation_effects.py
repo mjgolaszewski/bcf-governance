@@ -125,8 +125,12 @@ def validate_operation_effects(
             else:
                 raise SemanticOperationEffectError(f"operation {operation['id']} contains an unresolved effect at {symbol}")
         if function.get("implicit_effect_obligations"):
+            obligations = ", ".join(
+                f"{item.get('kind')}:{item.get('class_symbol', '')}:{item.get('line')}"
+                for item in function["implicit_effect_obligations"]
+            )
             raise SemanticOperationEffectError(
-                f"operation {operation['id']} contains unqualified implicit execution at {symbol}"
+                f"operation {operation['id']} contains unqualified implicit execution at {symbol}: {obligations}"
             )
         if function.get("unresolved"):
             raise SemanticOperationEffectError(

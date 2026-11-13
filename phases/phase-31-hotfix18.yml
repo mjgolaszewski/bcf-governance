@@ -11,39 +11,37 @@ hotfix:
   mode: full
   related_phase_id: P31
   hotfix_number: 18
-  summary: Qualify supported constructor callbacks, model inputs and caller ownership
-    without weakening ordinary adopter gates
+  summary: Qualify supported constructor callbacks, model inputs and caller ownership without weakening ordinary adopter gates
 execution_evidence:
   planned_commands:
-  - .venv/bin/python -m pytest tests/test_consumer_callback_contracts.py tests/test_semantic_model_binding.py
-    tests/test_semantic_method_effects.py
+  - .venv/bin/python -m pytest tests/test_consumer_callback_contracts.py tests/test_semantic_model_binding.py tests/test_semantic_method_effects.py
   - .venv/bin/bcf ci submit --repo-root .
   executed_commands:
   - python -m pytest tests/test_semantic_value_origins.py tests/test_consumer_callback_contracts.py -q
-  - python -m mypy bcf_governance/tooling/semantic_python_value_origins.py bcf_governance/tooling/semantic_operation_effects.py bcf_governance/tooling/semantic_python_effect_obligations.py
+  - python -m mypy bcf_governance/tooling/semantic_python_value_origins.py bcf_governance/tooling/semantic_operation_effects.py
+    bcf_governance/tooling/semantic_python_effect_obligations.py
+  - bcf environment apply --repo-root .
+  - bcf reconcile --repo-root . --apply
   notes:
-  - The next bounded source packet adds shallow-container ownership, literal-container loop
-    fixed points and unshadowed builtin predicates. 161 affected/pack tests pass, including
-    retained aliases after declared effect ports, finalizer effects and loop alias changes;
-    four touched modules pass typing and lint. The framework semantic gate remains red.
-  - Supported reconciliation refused the immutable product interpreter because build metadata
-    is absent. A fresh isolated canonical framework environment is authorized and pending;
-    neither product nor historical framework environments were changed.
-  - First bounded caller-origin implementation qualifies exact literal containers through source
-    helper arguments and returns; borrowed, mixed, nested, escaped and filesystem controls
-    remain effectful. 43 causal/ownership controls and 148 affected/pack tests pass; three
-    touched modules pass typing and lint.
-  - Governance reached the authored CI graph and correctly refused the changed tooling-context
-    policy digest. Canonical reconciliation remains pending; no workflow or authority pins
-    were hand-edited.
-  - The actual framework semantic gate remains red on unsupported graph-building and
-    retained-write paths. This checkpoint is unqualified and not an installation boundary.
-  - Frozen acceptance reviewed once; implementation sequence and remaining blockers
-    are in audits/maintained-consumer-contracts-plan-2026-11-13.json.
-  - Constructor identity diagnostics and partial test results are not complete source/effect
-    qualification or release custody.
-  - Unknown inputs, validators, serializers, overrides and true aliases remain blocked;
-    preserve source and deferred identity work.
+  - Supported-contract maintenance remains unqualified. Canonical scope is audits/maintained-consumer-contracts-plan-2026-11-13.json;
+    the current bounded checkpoint is audits/maintained-consumer-contracts-checkpoint-2026-11-13.json.
+  - 163 affected and pack tests pass without skips in a fresh framework-only development environment, including Pydantic witnesses
+    without SDK or live Identity dependencies; four touched modules pass strict typing and lint.
+  - Caller ownership distinguishes fresh container structure from borrowed children, carries qualified helper arguments and
+    returns, and joins bounded literal-container loops conservatively. Retained aliases, declared-port escapes, finalizers
+    and mixed loop ownership remain rejected.
+  - An unrelated dataclass property caused a real constructor refusal with no property read. The paired causal witness first
+    produced one false refusal and one correct effect rejection; after repair both pass and getter effects remain visible.
+  - Normal canonical environment setup and pip consistency checks pass in separate owned controller and project environments.
+    Existing product and historical release environments were preserved.
+  - MEMORY was reduced to current durable facts with superseded statements retained in reachable Git history; phase-ledger
+    YAML was compacted with identical decoded values to satisfy existing context budgets.
+  - Supported reconciliation remains red at semantic-lock on source constructor callbacks in GitHubAPI, CIGraphError, ProspectiveValidationError
+    and ReleaseQualificationError. No workflow or authority pins were hand-edited and no full qualification or install window
+    is claimed.
+  - Actual constructor identity diagnostics across frozen consumer sources do not establish returned identity, complete callback/input/effect
+    proof, full Standard3 acceptance or immutable release custody. Preserve deferred Identity/JIT source and independent 2.5
+    work.
 closeout_requirements:
   claims:
     required_suites_green:

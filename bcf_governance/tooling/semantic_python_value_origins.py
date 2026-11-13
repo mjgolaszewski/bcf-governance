@@ -5,9 +5,11 @@ Copyright 2026 Michael Golaszewski. Licensed under the MIT License.
 from __future__ import annotations
 
 import ast
+import hashlib
 from typing import Any
 
-# Only exact literal-built containers and their literal-built children qualify.
+# Only exact source-allocated builtin containers qualify for structural writes.
+# Borrowed children never inherit the parent's ownership.
 # A value origin never qualifies a protocol callback or a filesystem effect.
 UNKNOWN = "unknown"
 SCALAR = "scalar"
@@ -43,9 +45,9 @@ def value_origins(
     function = ast.parse(source).body[0]
     if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return empty
-    if ast.dump(function, include_attributes=False) != row.get("python_value_shape"):
+    if hashlib.sha256(ast.dump(function, include_attributes=False).encode()).hexdigest() != row.get("python_value_shape_sha256"):
         return empty
-    # The first bounded implementation refuses branch/loop/protocol joins.
+    # Protocol-driven and unbounded control flow remains unsupported.
     if any(isinstance(node, (ast.AsyncFor, ast.While, ast.Try,
                             ast.TryStar, ast.With, ast.AsyncWith, ast.Match,
                             ast.Global, ast.Nonlocal, ast.Yield, ast.YieldFrom,

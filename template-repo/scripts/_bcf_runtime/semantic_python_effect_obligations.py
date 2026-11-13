@@ -6,6 +6,7 @@ Licensed under the MIT License.
 from __future__ import annotations
 
 import ast
+import hashlib
 from typing import Any
 
 _MUTATORS = {
@@ -68,7 +69,9 @@ def extend_python_effect_facts(
     """
     nodes = _scope_nodes(function)
     fact["python_value_source"] = ast.unparse(function)
-    fact["python_value_shape"] = ast.dump(function, include_attributes=False)
+    fact["python_value_shape_sha256"] = hashlib.sha256(
+        ast.dump(function, include_attributes=False).encode()
+    ).hexdigest()
     fact["unshadowed_container_builtins"] = list(builtin_names)
     fact["python_value_sites"] = [
         [getattr(node, "lineno", 0), getattr(node, "col_offset", 0)]
@@ -293,8 +296,9 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                         function["implicit_effect_obligations"].append(obligation)
                 names = {str(method["name"]): str(method["symbol"])
                          for method in cls.get("methods", [])}
-                has_hooks = ("__post_init__" in names and cls.get("standard_dataclass_declaration")) or any(
-                    method.get("decorators") == ["property"] for method in cls.get("methods", []))
+                # An unrelated property does not execute during construction.
+                # Getter reads keep their independent callback edges above.
+                has_hooks = "__post_init__" in names and cls.get("standard_dataclass_declaration")
                 if has_hooks and (not call.get("literal_arguments") or cls.get("dataclass_default_factories")):
                     function.setdefault("implicit_effect_obligations", []).append({
                         "kind": "unqualified_constructor_input_binding", "line": call.get("line"),
