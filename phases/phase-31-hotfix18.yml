@@ -26,7 +26,7 @@ execution_evidence:
   notes:
   - Scope is only what Recovery requires to publish BDMCP; broader experimental work remains reachable on repair/maintained-consumer-contracts
     at 7761979c601171651ab601849cbdec44d183ee8d.
-  - 415 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
+  - 417 focused controls pass without skips; lint, strict typing of 14 modules and mirrored pack projection pass. Complete
     native reconciliation, current consumer acceptance and standard release pipeline remain pending.
   - Unknown implicit callbacks remain explicitly unresolved under existing report policy and reject under fail_closed. Source-known
     reached writes reject in both modes; explicit effect and dynamic-call failures remain mandatory.

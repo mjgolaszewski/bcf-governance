@@ -116,6 +116,9 @@ def extend_python_effect_facts(
     for node in nodes:
         if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
             stores[node.id] = stores.get(node.id, 0) + 1
+    fact['external_write_roots'] = sorted(retained | {
+        node.id for node in nodes if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load)
+        and node.id not in parameters and node.id not in stores})
     classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
     instances: dict[str, str] = {}
     scope_parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}

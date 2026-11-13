@@ -33,3 +33,10 @@ def test_report_policy_does_not_relax_existing_authority_failures(tmp_path):
     _,facts=inventory(tmp_path,'def read():\n publish_receipt()\n return 7')
     with pytest.raises(SemanticOperationEffectError,match='undeclared authority effects'):
         validate_operation_effects(OPERATION,'consumer.py::read',facts,unresolved_dynamic_policy='report')
+
+
+@pytest.mark.parametrize('policy', ['report', 'fail_closed'])
+def test_known_retained_write_rejects_in_ordinary_body(tmp_path, policy):
+    _, facts = inventory(tmp_path, "EVENTS=[]\ndef read():\n EVENTS.append(7)\n return 7")
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts, unresolved_dynamic_policy=policy)

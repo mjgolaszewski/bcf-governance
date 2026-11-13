@@ -143,9 +143,12 @@ def validate_operation_effects(
             return cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
 
         if origins.get('initializer_protocol_unknown'):
-            reject(
-                f"operation {operation['id']} contains an unqualified initializer runtime protocol at {symbol}"
-            )
+            if unresolved_dynamic_policy == 'report':
+                report_observation('unqualified_initializer_runtime_protocol', 0)
+            else:
+                reject(
+                    f"operation {operation['id']} contains an unqualified initializer runtime protocol at {symbol}"
+                )
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
@@ -156,9 +159,11 @@ def validate_operation_effects(
                 if (effect.get("line"), effect.get("target")) not in origins["writes"]:
                     legacy = [effect.get('kind'), effect.get('line'), effect.get('target')]
                     root = str(effect.get('target', '')).split('.', 1)[0].split('[', 1)[0]
-                    if (report_new and 'legacy_effect_sites' in function
+                    if (unresolved_dynamic_policy == 'report' and 'legacy_effect_sites' in function
                             and legacy not in function['legacy_effect_sites']
-                            and root in function.get('lexically_allocated_containers', [])):
+                            and root not in function.get('external_write_roots', [])
+                            and (not callback_required or root in function.get('lexically_allocated_containers', [])
+                                 or root == 'self' and symbol.endswith('.__init__'))):
                         report_observation('unqualified_container_ownership', effect.get('line'), effect.get('target'))
                     else:
                         writes.add(target)
