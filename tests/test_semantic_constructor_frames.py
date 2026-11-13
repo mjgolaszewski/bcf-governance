@@ -560,3 +560,36 @@ def test_nullable_guard_requires_the_same_value_and_a_complete_native_admission(
     assert witness(path)==[1,2]
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION,'consumer.py::read',facts)
+
+
+def test_loop_local_scalar_guard_dominates_nested_format(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        def read():
+            for value in ('native',):
+                if type(value) is not str: raise ValueError('native')
+                try: result=f'value {value}'
+                except ValueError: raise
+            return result
+    """)
+    assert witness(path)==['value native','value native']
+    assert validate_operation_effects(OPERATION,'consumer.py::read',facts)==(0,0)
+
+
+def test_conditional_scalar_guard_does_not_dominate_sibling_format(tmp_path):
+    path,facts=inventory(tmp_path,"""
+        EVENTS=[]
+        class Probe:
+            def __format__(self,spec):
+                EVENTS.append(7)
+                return 'message'
+        PROBE=Probe()
+        def read():
+            for value in (PROBE,):
+                if False:
+                    if type(value) is not str: raise ValueError('native')
+                result=f'value {value}'
+            return len(EVENTS)
+    """)
+    assert witness(path)==[1,2]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts)

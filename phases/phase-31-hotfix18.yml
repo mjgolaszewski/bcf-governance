@@ -24,7 +24,7 @@ execution_evidence:
   - bcf reconcile --repo-root . --apply
   notes:
   - WIP source only; no source-ready, full qualification, safe installation or release custody claim.
-  - 361 affected/pack tests pass without skips; strict typing passes for 64 touched modules and lint passes. Framework-only
+  - 363 affected/pack tests pass without skips; strict typing passes for 65 touched modules and lint passes. Framework-only
     environments have no live Identity or consumer SDK dependency.
   - Four new causal failures (invalid and async finalizers, aliased allocator mutation, native-before-source initializer ordering)
     now pass. Exact native initializer labels preserve distinct wrapper identity.
@@ -48,8 +48,8 @@ execution_evidence:
     refused. Formatting result identity is separate from callback effects, including direct formatted outputs. A sole-use
     local literal dict can prove its exact loop keys; borrowed and escaped inputs stay unqualified. No current canonical pass
     claim.
-  - Actual supported canonical replay remains pending after sealed native stdout projection and watched output-effect migration
-    repair.
+  - Actual supported canonical replay remains pending after loop-local native scalar guard repair; previous replay refused
+    provider_workflow_ids formatting at lines 79 and 89.
   - Complete source callback closure and actual consumer constructor qualification remain unqualified.
   - Complete framework, consumer, ordinary-protection and release gates remain open.
   - Deferred Identity/JIT and independent 2.5 source remain preserved. The exact tested source hashes and bounded results

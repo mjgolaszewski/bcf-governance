@@ -257,35 +257,44 @@ def static_scalar_expression(value: ast.AST, function: ast.AST, builtin_names: l
                    for part in value.values)
     if not isinstance(value, ast.Name):
         return False
-    nodes = list(ast.walk(function))
+    def scoped_nodes(root: ast.AST) -> list[ast.AST]:
+        result = [root]
+        for child in ast.iter_child_nodes(root):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef,
+                                  ast.Lambda, ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)):
+                continue
+            result.extend(scoped_nodes(child))
+        return result
+
+    nodes = scoped_nodes(function)
+    if not any(node is value for node in nodes):
+        return False
     if any(isinstance(node, (ast.Global, ast.Nonlocal)) or isinstance(node, ast.Name)
            and node.id in {'exec', 'eval', 'globals', 'locals', 'vars'} for node in nodes):
         return False
     if isinstance(function, ast.FunctionDef) and 'type' in (builtin_names or []):
         arguments = {arg.arg for arg in [*function.args.posonlyargs, *function.args.args,
                                          *function.args.kwonlyargs]}
-        for index, statement in enumerate(function.body):
-            if not any(node is value for node in ast.walk(statement)):
-                continue
-            for guard_index in range(index - 1, -1, -1):
-                guard = function.body[guard_index]
-                if exact_scalar_guard(guard) != value.id:
+        local = value.id in arguments or any(
+            isinstance(node, ast.Name) and node.id == value.id
+            and isinstance(node.ctx, (ast.Store, ast.Del)) for node in nodes)
+        for parent in nodes:
+            for _, field in ast.iter_fields(parent):
+                if not isinstance(field, list) or not field or not all(isinstance(item, ast.stmt) for item in field):
                     continue
-                parts = scalar_guard_parts(guard)
-                if parts is None or not parts[1] <= set(builtin_names or []):
-                    continue
-                local = value.id in arguments or any(
-                    isinstance(binding, ast.Assign) and any(isinstance(target, ast.Name) and target.id == value.id
-                                                           for target in binding.targets)
-                    or isinstance(binding, ast.AnnAssign) and isinstance(binding.target, ast.Name)
-                       and binding.target.id == value.id and binding.value is not None
-                    for binding in function.body[:guard_index])
-                rebound = any(isinstance(node, ast.Name) and node.id == value.id
-                              and isinstance(node.ctx, (ast.Store, ast.Del))
-                              for body in function.body[guard_index + 1:index + 1] for node in ast.walk(body))
-                if local and not rebound:
-                    return True
-            break
+                for index, statement in enumerate(field):
+                    if not any(node is value for node in scoped_nodes(statement)):
+                        continue
+                    for guard_index in range(index - 1, -1, -1):
+                        parts = scalar_guard_parts(field[guard_index])
+                        if parts is None or parts[0] != value.id or not parts[1] <= set(builtin_names or []):
+                            continue
+                        rebound = any(isinstance(node, ast.Name) and node.id == value.id
+                                      and isinstance(node.ctx, (ast.Store, ast.Del))
+                                      for body in field[guard_index + 1:index + 1] for node in scoped_nodes(body))
+                        if local and not rebound:
+                            return True
+                    break
     stores = [node for node in nodes if isinstance(node, ast.Name)
               and node.id == value.id and isinstance(node.ctx, (ast.Store, ast.Del))]
     if len(stores) != 1:

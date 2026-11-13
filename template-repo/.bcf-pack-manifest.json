@@ -584,7 +584,7 @@
     },
     "scripts/_bcf_runtime/ci_authority_pins.py": {
       "operation": "copy",
-      "sha256": "951d85d2bab32fa0b84f1356acf351317bc0c02ef7be5ecadc27a4ada925c05a"
+      "sha256": "0903861b80fc0e1f0f073602c1304171fc775735b19ed37254a59b93981c0627"
     },
     "scripts/_bcf_runtime/ci_authority_preflight.py": {
       "operation": "copy",
@@ -1709,7 +1709,7 @@
     },
     "scripts/_bcf_runtime/semantic_python_constructor_callbacks.py": {
       "operation": "copy",
-      "sha256": "f9073514e9408994bc50633120865b55668ad051b6e26b0fc155823191fdfb3f"
+      "sha256": "89d72961fbc66f17f8767ec0bfe665716d0bc8e97e43725f9376702c26970184"
     },
     "scripts/_bcf_runtime/semantic_python_dataclass_contracts.py": {
       "operation": "copy",

@@ -1,8 +1,9 @@
 {
   "status": "unqualified",
-  "base_commit": "b40a369041361737e4dcd12f1d1293d1eedd4836",
+  "base_commit": "816a624ea0043355ba0895fdd72c495a9329533f",
   "branch": "repair/maintained-consumer-contracts",
   "tested_source_sha256": {
+    "bcf_governance/tooling/ci_authority_pins.py": "0903861b80fc0e1f0f073602c1304171fc775735b19ed37254a59b93981c0627",
     "bcf_governance/tooling/exception_messages.py": "1ef22b52cd096a63d2c956bc41c492fc07cb2a05611178f977fd92fd8578fc67",
     "bcf_governance/tooling/local_execution_admission.py": "81296e7371a1457766b13e498f54d4696444b58b3619da8ea26916b9ba18f366",
     "bcf_governance/tooling/ci_github_api.py": "2910fdc3d16bb616ff136259542a8d725f7810a19d354a85ef24358b629d90a6",
@@ -10,7 +11,7 @@
     "bcf_governance/tooling/semantic_operation_effects.py": "51aaba9c7fac1389a34a357967b3aed7ec6e22df4acd67c0c2e06146fc346820",
     "bcf_governance/tooling/semantic_python_effect_obligations.py": "e45b46a145e2cea545ef47e5a0db918048b3a19b163abf1965e2672717848a05",
     "bcf_governance/tooling/semantic_ownership_inventory.py": "3ca9d42ab4e4c60c80dd1ecb4a39d30f3b8c1182527042c9286a1b8ed09cc251",
-    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "f9073514e9408994bc50633120865b55668ad051b6e26b0fc155823191fdfb3f",
+    "bcf_governance/tooling/semantic_python_constructor_callbacks.py": "89d72961fbc66f17f8767ec0bfe665716d0bc8e97e43725f9376702c26970184",
     "bcf_governance/tooling/semantic_python_method_identity.py": "0fcbb058aa986638586adc6d4741218b993d5a0fbc768e600733a49742c67905",
     "bcf_governance/tooling/operational_observations.py": "18b067df865e19c8c1f20214bcea60c2bd164ce11c40b6214d2127b15c7d19a1",
     "bcf_governance/tooling/controller_custody_prospective.py": "353f8b7230bc8f9e1ce1384679b2967c0249ec87695b6f7a065e22bfac68661d",
@@ -69,18 +70,18 @@
     "bcf_governance/tooling/ci_graph_commands.py": "2668ad48d9cbc1c507c8198c589d585f6f174023598efd927d71c9f8400f0915",
     "tests/test_semantic_value_origins.py": "0e0262af154a5778475e5934fbce74103f6c5486c918c7e82eba6ab24ebc42ba",
     "tests/test_consumer_callback_contracts.py": "2f86994170efb2bfd977cb02da0d1a10bb5d6abdb81e20e304abc89bc39be7f6",
-    "tests/test_semantic_constructor_frames.py": "ecdd2578d0b5bebcd7d992054c3f1fc676c45f993f2661d7fde767ded92a4d43",
+    "tests/test_semantic_constructor_frames.py": "8e1e952d1a7fd3d4a6c4878699f2c5739ac65d529597fd62fc319e2bd88c5324",
     "tests/test_native_projection_output.py": "d5578b80cdd822668c64bffa330c46ed298c958f0ee7ec405f83985cebf3e2b9",
     "tests/test_semantic_authority.py": "d5d75b62767572eb281c636dfc8a16143329fa59c6cc439965cde93b2a7d9c5f"
   },
   "affected_tests": {
-    "passed": 361,
+    "passed": 363,
     "skipped": 0,
     "fresh_framework_only_environment": true,
     "live_identity_required": false,
     "consumer_sdk_required": false
   },
-  "strict_typing_files_passed": 64,
+  "strict_typing_files_passed": 65,
   "lint": "pass",
   "runtime_pack_projection": "pass",
   "unused_property_causal_control": {
@@ -94,7 +95,7 @@
   },
   "canonical_reconcile": {
     "status": "pending_replay_after_provenance_change",
-    "previous_result": "three_unqualified_constructor_input_bindings"
+    "previous_result": "provider_workflow_ids_unqualified_format_callback_79_89"
   },
   "phase_ledger_values_preserved": true,
   "memory_historical_source_commit": "94910222399aa155628a9120b6c2738d13e205cc",
@@ -105,14 +106,14 @@
   "constructor_frames": {
     "initial_false_refusals": 4,
     "initial_correct_denials": 5,
-    "current_controls_passed": 58
+    "current_controls_passed": 60
   },
   "finalizer_controls": {
     "unsafe_acceptances_observed": 2,
     "current_controls_passed": 3
   },
   "remaining_implementation": [
-    "Actual supported canonical replay remains pending after sealed native stdout projection and watched output-effect migration repair.",
+    "Actual supported canonical replay remains pending after loop-local native scalar guard repair; previous replay refused provider_workflow_ids formatting at lines 79 and 89.",
     "Complete source callback closure and actual consumer constructor qualification remain unqualified.",
     "Complete framework, consumer, ordinary-protection and release gates remain open."
   ],

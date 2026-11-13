@@ -68,8 +68,14 @@ def provider_workflow_ids(
 ) -> dict[str, str]:
     """Resolve exact provider IDs for canonical workflow paths or fail closed."""
 
+    if type(workflow_paths) is not dict:
+        raise CIAuthorityPinError("workflow authority paths must be a native dictionary")
     identities: dict[str, str] = {}
     for reference, path in workflow_paths.items():
+        if type(reference) is not str:
+            raise CIAuthorityPinError("workflow authority reference must be a native string")
+        if type(path) is not str:
+            raise CIAuthorityPinError("workflow authority path must be a native string")
         if not path.startswith(".github/workflows/") or ".." in Path(path).parts:
             raise CIAuthorityPinError("workflow authority path is unsafe")
         try:
