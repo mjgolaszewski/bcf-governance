@@ -17,6 +17,7 @@ from .semantic_python_annotation_identity import (
     resolve_annotation_identities,
 )
 from .semantic_python_effect_obligations import (
+    container_builtin_names,
     extend_python_effect_facts,
     resolve_python_implicit_effects,
 )
@@ -286,6 +287,7 @@ def discover_python_source(
                 "Python overload declarations require one runtime implementation: "
                 + ", ".join(missing)
             )
+        builtin_names = container_builtin_names(tree)
         for class_name, members in scopes:
             for member in members:
                 local_bindings = {
@@ -303,7 +305,7 @@ def discover_python_source(
                 for statement in member.body:
                     visitor.visit(statement)
                 fact = visitor.facts()
-                extend_python_effect_facts(tree, member, fact, relative)
+                extend_python_effect_facts(tree, member, fact, relative, builtin_names=builtin_names)
                 functions.append(fact)
     return {
         "language": "python",

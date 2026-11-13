@@ -29,9 +29,37 @@ def _scope_nodes(function: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.A
     return result
 
 
+def container_builtin_names(tree: ast.Module) -> list[str]:
+    """Derive stable builtin lexical identities once per source module."""
+    bindings = {
+        node.id for node in ast.walk(tree)
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))
+    }
+    bindings.update(node.name for node in ast.walk(tree)
+                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)))
+    bindings.update(node.arg for node in ast.walk(tree) if isinstance(node, ast.arg))
+    bindings.update(node.asname or node.name.split(".")[0]
+                    for node in ast.walk(tree) if isinstance(node, ast.alias))
+    bindings.update(node.name for node in ast.walk(tree)
+                    if isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar))
+                    and node.name)
+    reflective = any(
+        isinstance(node, ast.Name) and node.id in {
+            "globals", "locals", "vars", "setattr", "delattr", "exec",
+            "eval", "__import__", "__builtins__",
+        }
+        or isinstance(node, ast.Import) and any(alias.name == "builtins" for alias in node.names)
+        or isinstance(node, ast.ImportFrom) and node.module == "builtins"
+        for node in ast.walk(tree)
+    )
+    return sorted(
+        {"len", "list", "tuple", "dict", "set", "bool"} - bindings
+    ) if "*" not in bindings and not reflective else []
+
+
 def extend_python_effect_facts(
     tree: ast.Module, function: ast.FunctionDef | ast.AsyncFunctionDef,
-    fact: dict[str, Any], path: str,
+    fact: dict[str, Any], path: str, *, builtin_names: list[str],
 ) -> None:
     """Record effects and callback obligations without granting runtime authority.
 
@@ -41,6 +69,7 @@ def extend_python_effect_facts(
     nodes = _scope_nodes(function)
     fact["python_value_source"] = ast.unparse(function)
     fact["python_value_shape"] = ast.dump(function, include_attributes=False)
+    fact["unshadowed_container_builtins"] = list(builtin_names)
     fact["python_value_sites"] = [
         [getattr(node, "lineno", 0), getattr(node, "col_offset", 0)]
         for node in ast.walk(function)

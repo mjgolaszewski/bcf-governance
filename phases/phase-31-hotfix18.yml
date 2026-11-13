@@ -22,6 +22,13 @@ execution_evidence:
   - python -m pytest tests/test_semantic_value_origins.py tests/test_consumer_callback_contracts.py -q
   - python -m mypy bcf_governance/tooling/semantic_python_value_origins.py bcf_governance/tooling/semantic_operation_effects.py bcf_governance/tooling/semantic_python_effect_obligations.py
   notes:
+  - The next bounded source packet adds shallow-container ownership, literal-container loop
+    fixed points and unshadowed builtin predicates. 161 affected/pack tests pass, including
+    retained aliases after declared effect ports, finalizer effects and loop alias changes;
+    four touched modules pass typing and lint. The framework semantic gate remains red.
+  - Supported reconciliation refused the immutable product interpreter because build metadata
+    is absent. A fresh isolated canonical framework environment is authorized and pending;
+    neither product nor historical framework environments were changed.
   - First bounded caller-origin implementation qualifies exact literal containers through source
     helper arguments and returns; borrowed, mixed, nested, escaped and filesystem controls
     remain effectful. 43 causal/ownership controls and 148 affected/pack tests pass; three
