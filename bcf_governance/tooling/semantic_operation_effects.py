@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .semantic_python_value_origins import value_origins
+
 WRITE_CALLS = {
     "chmod", "mkdir", "rename", "rmdir", "symlink_to", "touch", "unlink",
     "write_bytes", "write_text",
@@ -97,25 +99,27 @@ def validate_operation_effects(
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
-    pending = [entrypoint, *(path + "::<module>" for path in source_modules if path + "::<module>" in functions)]
-    visited: set[str] = set()
+    pending = [(entrypoint, ()), *((path + "::<module>", ()) for path in source_modules if path + "::<module>" in functions)]
+    visited: set[tuple[str, tuple[tuple[str, str], ...]]] = set()
     # The function-name population is fixed for this one fresh validation.
     # Reuse only lookup answers, never source observations or acceptance results.
     resolved_calls: dict[str, str | None] = {}
     while pending:
-        symbol = pending.pop()
-        if symbol in visited:
+        symbol, arguments = pending.pop()
+        if (symbol, arguments) in visited:
             continue
-        visited.add(symbol)
+        visited.add((symbol, arguments))
         function = functions[symbol]
+        origins = value_origins(symbol, functions, arguments)
         if function.get("language") == "typescript":
             module = symbol.split("::", 1)[0] + "::<module>"
             if module in functions and module != symbol:
-                pending.append(module)
+                pending.append((module, ()))
         for effect in function.get("effects", []):
             target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
             if effect.get("kind") == "write":
-                writes.add(target)
+                if (effect.get("line"), effect.get("target")) not in origins["writes"]:
+                    writes.add(target)
             elif effect.get("kind") == "authority":
                 authority.add(target)
             else:
@@ -176,7 +180,7 @@ def validate_operation_effects(
                 # A read declaration never conceals a source-resolved body.
                 # Unsupported receiver aliases have already failed above.
                 if callee is not None:
-                    pending.append(callee)
+                    pending.append((callee, origins["calls"].get((call.get("line"), call.get("column")), ())))
                 continue
             if identity in declared_ports:
                 reached.add(identity)
@@ -191,7 +195,7 @@ def validate_operation_effects(
                 if call.get("authority_effect") is True:
                     authority.add(raw)
                 if callee is not None:
-                    pending.append(callee)
+                    pending.append((callee, ()))
                 continue
             if known_write:
                 writes.add(raw)
@@ -201,7 +205,7 @@ def validate_operation_effects(
             # Module boundaries are organizational, not effect boundaries; a
             # query cannot conceal a write in an imported helper.
             if callee is not None:
-                pending.append(callee)
+                pending.append((callee, origins["calls"].get((call.get("line"), call.get("column")), ())))
     missing = declared_ports - reached
     if missing:
         rendered = ", ".join(sorted(value for _, value in missing))

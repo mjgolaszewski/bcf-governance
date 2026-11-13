@@ -8,8 +8,6 @@ from __future__ import annotations
 import ast
 from typing import Any
 
-from .semantic_python_method_identity import root_name
-
 _MUTATORS = {
     "add", "append", "clear", "difference_update", "discard", "extend",
     "insert", "intersection_update", "pop", "popitem", "remove", "reverse",
@@ -41,6 +39,12 @@ def extend_python_effect_facts(
     the constructed object is detached or that a third-party decorator is pure.
     """
     nodes = _scope_nodes(function)
+    fact["python_value_source"] = ast.unparse(function)
+    fact["python_value_shape"] = ast.dump(function, include_attributes=False)
+    fact["python_value_sites"] = [
+        [getattr(node, "lineno", 0), getattr(node, "col_offset", 0)]
+        for node in ast.walk(function)
+    ]
     parameters = {
         argument.arg for argument in [*function.args.posonlyargs, *function.args.args,
                                      *function.args.kwonlyargs]
@@ -53,7 +57,6 @@ def extend_python_effect_facts(
             stores[node.id] = stores.get(node.id, 0) + 1
     classes = {node.name: node for node in tree.body if isinstance(node, ast.ClassDef)}
     instances: dict[str, str] = {}
-    fresh_containers: set[str] = set()
     effects: list[dict[str, Any]] = []
     obligations: list[dict[str, Any]] = []
 
@@ -83,9 +86,6 @@ def extend_python_effect_facts(
     for node in nodes:
         if isinstance(node, (ast.Assign, ast.AnnAssign)) and node.value is not None:
             targets = node.targets if isinstance(node, ast.Assign) else [node.target]
-            if isinstance(node.value, (ast.List, ast.Dict, ast.Set)):
-                fresh_containers.update(target.id for target in targets
-                    if isinstance(target, ast.Name) and stores.get(target.id) == 1)
             owner = class_of(node.value)
             if owner:
                 for target in targets:
@@ -96,16 +96,10 @@ def extend_python_effect_facts(
             if node.id in retained:
                 write(node, node.id)
         if isinstance(node, (ast.Attribute, ast.Subscript)) and isinstance(node.ctx, (ast.Store, ast.Del)):
-            root = root_name(node)
-            if (isinstance(node, ast.Attribute) or root in parameters or root in retained
-                    or root not in fresh_containers or not isinstance(node.value, ast.Name)):
-                write(node, ast.unparse(node))
+            write(node, ast.unparse(node))
         if isinstance(node, ast.Call):
             if isinstance(node.func, ast.Attribute) and node.func.attr in _MUTATORS:
-                root = root_name(node.func.value)
-                if (not isinstance(node.func.value, ast.Name)
-                        or root not in fresh_containers or root in parameters or root in retained):
-                    write(node, ast.unparse(node.func))
+                write(node, ast.unparse(node.func))
             owner = class_of(node)
             if owner:
                 callback(node, owner, "__new__")

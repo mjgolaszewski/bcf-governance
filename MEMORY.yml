@@ -36,10 +36,6 @@ stable_decisions:
     artifact_ownership: canonical_owner_map_recorded_in_AGENTS
     phase_rollover: phase_ledger_memory_and_history_move_together
     build_artifact_convention: follow_local_template_pack_shapes_and_naming
-  maintained_callback_and_ownership_repair: 'P31-HF18 owns the frozen supported-contract
-    maintenance repair. Current checkpoints are unqualified; complete effect/input/callback/ownership,
-    ordinary protection and full Standard3 acceptance remain required. No live Identity
-    dependency or controller/App activation in ordinary CI. Canonical plan: audits/maintained-consumer-contracts-plan-2026-11-13.json.'
 memory_retention_policy:
   stable_decisions:
     review_frequency: per_phase_rollover
@@ -161,6 +157,9 @@ environment_facts:
     active_workitem_ledger: plans/phase-31-workitems.yml
     active_phase_log: phases/phase-31-log.yml
 known_constraints:
+- 'P31-HF18 maintained-contract repair remains unqualified; effect/input/callback/ownership,
+  ordinary protection and full Standard3 acceptance are required. Canonical plan:
+  audits/maintained-consumer-contracts-plan-2026-11-13.json.'
 - P31-HF16 qualification and immutable publication remain pending; focused proof is
   not full BDMCP SOIP acceptance. Preserve deferred Identity/JIT work.
 - P31-HF15 is the 2.3.12 actual-consumer architecture/security repair; qualification
