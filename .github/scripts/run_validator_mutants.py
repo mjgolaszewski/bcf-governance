@@ -79,8 +79,8 @@ MUTANTS = (
     Mutant(
         mutant_id="application-operation-transitive-effects",
         description="imported helpers must not conceal operation effects",
-        search="            if callee is not None:\n                pending.append(callee)\n",
-        replace="            if False and callee is not None:\n                pending.append(callee)\n",
+        search='            if callee is not None:\n                pending.append((callee, caller_arguments(call), callback_required or bool(call.get("implicit_callback"))))\n',
+        replace='            if False and callee is not None:\n                pending.append((callee, caller_arguments(call), callback_required or bool(call.get("implicit_callback"))))\n',
         profiles=("high-value", "full"),
         target_path="scripts/semantic_operation_effects.py",
     ),
