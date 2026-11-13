@@ -41,6 +41,7 @@ def value_origins(
     symbol: str, functions: dict[str, dict[str, Any]],
     arguments: tuple[tuple[str, str], ...] = (),
     active: frozenset[str] = frozenset(),
+    _work_budget: list[int] | None = None,
 ) -> dict[str, Any]:
     """Return conservative write sites and caller bindings for one invocation.
 
@@ -53,6 +54,12 @@ def value_origins(
     source = row.get("python_value_source")
     if not source or symbol in active or len(active) >= 24:
         return empty
+    budget = [64, 0] if _work_budget is None else _work_budget
+    if budget[0] <= 0:
+        budget[1] = 1
+        return {**empty, 'analysis_budget_exhausted': True, 'retained': True,
+                'initializer_protocol_unknown': symbol.endswith('.__init__') and dict(arguments).get('$constructor_owner') == row.get('class_symbol')}
+    budget[0] -= 1
     function = ast.parse(source).body[0]
     if not isinstance(function, (ast.FunctionDef, ast.AsyncFunctionDef)):
         return empty
@@ -277,7 +284,7 @@ def value_origins(
                     bound.update(keywords)
                     context = tuple(sorted(bound.items()))
                     calls[site] = context
-                    result = value_origins(callee, functions, context, active | {symbol})
+                    result = value_origins(callee, functions, context, active | {symbol}, budget)
                     if result.get("retained", True):
                         invalidate()
                     elif result.get("degraded"):
@@ -487,6 +494,9 @@ def value_origins(
         return True
     admitted = initial_scalar_guards(function, row.get('unshadowed_container_builtins', []))
     statements(function.body)
+    if budget[1]:
+        return {**empty, 'analysis_budget_exhausted': True, 'retained': True,
+                'initializer_protocol_unknown': symbol.endswith('.__init__') and dict(arguments).get('$constructor_owner') == row.get('class_symbol')}
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     if unsupported_condition:
         # An exact generated-record result does not purify a condition, call or

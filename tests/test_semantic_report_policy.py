@@ -161,3 +161,26 @@ def test_observation_index_preserves_existing_rows_and_operation_identity(tmp_pa
     assert all(row['qualified'] is False for row in observations)
     validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False)
     assert facts['effect_proof_observations'] == observations
+
+
+@pytest.mark.parametrize('effect', ['none', 'source_write', 'field_alias'])
+def test_branching_producer_budget_is_unknown_and_preserves_mandatory_writes(tmp_path, effect):
+    leaf = "EVENTS.append(7); return value" if effect == 'source_write' else "return value"
+    source = "from dataclasses import dataclass\nEVENTS=[]\nBORROWED=[]\ndef f0(value): " + leaf + "\n"
+    source += ''.join(f"def f{index}(value):\n f{index-1}(value)\n return f{index-1}(value)\n" for index in range(1, 10))
+    if effect == 'field_alias':
+        source += "@dataclass\nclass Probe:\n value:object\n def __post_init__(self):\n  alias=f9(self.value)\n  alias.append(7)\ndef read():\n Probe(BORROWED)\n return len(BORROWED)\n"
+    else:
+        source += "def read():\n f9('value')\n return len(EVENTS)\n"
+    path, facts = inventory(tmp_path, source)
+    from tests.test_consumer_callback_contracts import witness
+    assert witness(path) == ([0, 0] if effect == 'none' else [512, 1024] if effect == 'source_write' else [1, 2])
+    if effect == 'none':
+        assert validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False) == (0, 0)
+    else:
+        with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+            validate_operation_effects(OPERATION, 'consumer.py::read', facts, experimental_protocols=False)
+    assert any(row['kind'] == 'unqualified_producer_analysis_budget' and row['qualified'] is False
+        for row in facts['effect_proof_observations'])
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, 'consumer.py::read', facts)

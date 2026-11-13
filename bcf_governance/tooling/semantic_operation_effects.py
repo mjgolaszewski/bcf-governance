@@ -149,6 +149,11 @@ def validate_operation_effects(
             origins = value_origins(symbol, functions, arguments)
             if len(origin_cache) < 8192:
                 origin_cache[origin_key] = origins
+        if origins.get('analysis_budget_exhausted'):
+            if report_new:
+                report_observation('unqualified_producer_analysis_budget', 0)
+            else:
+                reject(f"operation {operation['id']} contains unqualified producer analysis budget at {symbol}")
         contextual_sites = {
             (call.get('line'), call.get('called_symbol')) for call in function.get('calls', [])
             if (call.get('line'), call.get('column')) in origins['contextual_calls']
