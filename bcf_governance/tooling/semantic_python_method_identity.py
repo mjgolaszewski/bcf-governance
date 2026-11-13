@@ -10,6 +10,7 @@ import ast
 from typing import Any
 
 from .semantic_python_dataclass_contracts import dataclass_default_factories
+from .semantic_python_model_binding import literal_enum_shape, model_declaration_shape, model_default_shape
 
 _OVERLOAD_DECORATORS = {
     "typing::module.overload",
@@ -147,9 +148,12 @@ def method_binding(
 
 
 def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
-                          imports: dict[str, str], *, allow_bases: bool = False) -> bool:
+                          imports: dict[str, str], *, allow_bases: bool = False,
+                          model_defaults: bool = False) -> bool:
     """Prove the local class binding; subclass closure is checked after imports."""
     if (node.bases and not allow_bases) or node.keywords:
+        return False
+    if model_defaults and not model_declaration_shape(node, imports, tree):
         return False
     factories = dataclass_default_factories(node, tree, path, imports)
     fields = {member.target.id for member in node.body
@@ -183,6 +187,8 @@ def _closed_class_binding(node: ast.ClassDef, tree: ast.Module, path: str,
                 isinstance(member, ast.AnnAssign) and isinstance(default_value, ast.Call)
                 and factories is not None and bool(node.decorator_list)
             )
+            qualified_field = qualified_field or bool(model_defaults and default_value is not None
+                and model_default_shape(default_value, imports))
             if default_value is not None and not qualified_field and not all(
                 isinstance(value, (ast.Constant, ast.Tuple, ast.Load, ast.UnaryOp, ast.UAdd, ast.USub))
                 for value in ast.walk(default_value)
@@ -320,6 +326,14 @@ def discover_class_facts(
                 "bases": bases,
                 "closed_class_binding": _closed_class_binding(node, tree, path, imports),
                 "local_class_binding": _closed_class_binding(node, tree, path, imports, allow_bases=True),
+                "model_local_binding": _closed_class_binding(node, tree, path, imports,
+                    allow_bases=True, model_defaults=True),
+                "literal_enum_shape": literal_enum_shape(node, imports),
+                "standard_dataclass_declaration": any(source_symbol(
+                    decorator.func if isinstance(decorator, ast.Call) else decorator, path, imports)
+                    in {"dataclasses::dataclass", "dataclasses::module.dataclass"}
+                    for decorator in node.decorator_list),
+                "model_schema_references": _model_schema_references(node, tree, path, imports, import_bindings),
                 "methods": methods,
                 "dataclass_default_factories": dataclass_default_factories(node, tree, path, imports),
                 "class_decorators": sorted(
@@ -332,6 +346,31 @@ def discover_class_facts(
             }
         )
     return rows
+
+
+def _model_schema_references(node: ast.ClassDef, tree: ast.Module, path: str,
+                             imports: dict[str, str], bindings: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+    result = []
+    builtin_names = {"str", "int", "float", "bool", "bytes", "list", "dict", "tuple", "set", "frozenset", "object"}
+    shadowed = {value.id for value in ast.walk(tree) if isinstance(value, ast.Name)
+                and isinstance(value.ctx, (ast.Store, ast.Del))} | {
+        value.name for value in tree.body if isinstance(value, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef))}
+    for member in node.body:
+        if not isinstance(member, ast.AnnAssign):
+            continue
+        parents = {id(child): parent for parent in ast.walk(member.annotation)
+                   for child in ast.iter_child_nodes(parent)}
+        for value in ast.walk(member.annotation):
+            if not isinstance(value, (ast.Name, ast.Attribute)) or isinstance(parents.get(id(value)), ast.Attribute):
+                continue
+            builtin = isinstance(value, ast.Name) and value.id in builtin_names and value.id not in imports and value.id not in shadowed
+            fact: dict[str, Any] = {"called_symbol": "builtin:" + value.id if builtin and isinstance(value, ast.Name) else source_symbol(value, path, imports)}
+            reference = call_reference(value, bindings)
+            if reference is not None:
+                fact["import_reference"] = reference
+            if fact not in result:
+                result.append(fact)
+    return result
 
 
 def bound_method_origins(

@@ -1,0 +1,27 @@
+{
+  "status": "unqualified checkpoint; source body ended,cleanup only",
+  "focused_tests": 127,
+  "actual_frozen_source_files": 800,
+  "actual_constructor_refusals": 0,
+  "execution_qualified": false,
+  "typing_failures": [
+    "Path(SimplePath) annotation",
+    "dynamic Pydantic metaclass typing",
+    "callbacks list annotation"
+  ],
+  "remaining": [
+    "typing fixes",
+    "canonical hotfix/phase metadata reconciliation",
+    "new runtime dependency/ABI review and immutable fresh-install qualification",
+    "template runtime/pack projection synchronization",
+    "existing broader16diagnostic failures",
+    "model input/validator/serializer/effective-config/alias and general ownership proof",
+    "Lite roundtrip,full Standard3/noApp and protected-base bridge qualification"
+  ],
+  "no_environment_mutation": true,
+  "no_publication": true,
+  "kernel_owner": "unmodified owned_tree.py2b8d1fd",
+  "max_observed_owned_rss_bytes": 280850432,
+  "cleanup_retired_entries": 3,
+  "cleanup_retired_allocated_bytes": 20480
+}
