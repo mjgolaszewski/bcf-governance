@@ -178,8 +178,44 @@ def evaluate_discovery(
                 caller = str(fact.get("caller", ""))
                 if caller not in relevant or caller in declared:
                     continue
+                if fact.get('source_receiver_subjects') and entry.canonical_symbol not in fact['source_receiver_subjects']:
+                    continue
+                if fact.get('normalization_role') == 'path_suffix_format_predicate':
+                    continue
+                if fact.get('normalization_role') == 'source_verified_content_decode':
+                    sources = fact.get('source_content_input_parameters')
+                    separate = isinstance(sources, list)
+                    for source_parameter in sources if isinstance(sources, list) else []:
+                        row = functions.get(str(source_parameter.get('symbol', '')), {})
+                        name = str(source_parameter.get('parameter', ''))
+                        parameters = row.get('parameters', {})
+                        if name not in parameters:
+                            separate = False
+                            break
+                        parameter_view: dict[str, Any] = {'parameters': {name: parameters[name]}, 'return_annotation': 'None'}
+                        symbols = row.get('parameter_annotation_symbols')
+                        if isinstance(symbols, dict):
+                            parameter_view.update(parameter_annotation_symbols={name: symbols.get(name, [])},
+                                                  return_annotation_symbols=[])
+                        if _function_mentions(parameter_view, entry):
+                            separate = False
+                            break
+                    if separate:
+                        continue
+                field = fact.get('direct_receiver_field')
+                canonical_fields = {row['field'] for row in entry.raw.get('field_invariants', [])}
+                if field and any(
+                    projection.get('source_semantic_id') == entry.semantic_id
+                    and projection.get('owner') == caller
+                    and field in canonical_fields - set(projection.get('lost_fields', []))
+                    for projection in entry.raw.get('intentional_projections', [])
+                ):
+                    continue
                 parameter_derived = bool(
-                    fact.get("parameter_origins")
+                    [origin for origin in fact.get("parameter_origins", [])
+                     if not (origin == 'parameter:' + str(fact.get('method_receiver_parameter'))
+                             and fact.get('method_receiver_class')
+                             and fact['method_receiver_class'] != entry.canonical_symbol)]
                     or fact.get("downstream_of_parameter") is True
                 )
                 if parameter_derived:

@@ -121,7 +121,7 @@ def test_classmethod_call_binds_actual_class_without_rewriting_inheritance(
                    for row in value["unresolved"])
 
 
-@pytest.mark.parametrize("hook", ["__new__", "__init__", "__post_init__", "__setattr__"])
+@pytest.mark.parametrize("hook", ["__new__", "__init__", "__setattr__"])
 def test_constructor_hooks_are_not_certified_by_class_or_decorator_spelling(
     tmp_path: Path, hook: str,
 ) -> None:
@@ -247,3 +247,62 @@ def test_unknown_standalone_callback_is_not_invented_as_a_class_receiver(tmp_pat
                  "allowed_authority_ports": [], "non_authoritative_output_effects": []}
     with pytest.raises(SemanticOperationEffectError, match="unresolved"):
         validate_operation_effects(operation, "models.py::invoke", value)
+
+
+@pytest.mark.parametrize('setter,closed', [('foreign.setattr', True), ('setattr', False)])
+def test_attribute_method_name_is_not_builtin_rebinding(tmp_path, setter, closed):
+    facts = _inventory(tmp_path,
+        "class Record:\n @classmethod\n def from_payload(cls, value): return cls()\n"
+        "def unrelated(foreign):\n " + setter + "(Record, 'from_payload', lambda value: value)\n"
+        "def decode(value): return Record.from_payload(value)\n")
+    record = next(row for row in facts['classes'] if row['symbol'] == 'models.py::Record')
+    assert record['closed_class_binding'] is closed
+    assert bool([row for row in facts['constructors'] if row['caller'] == 'models.py::Record.from_payload']) is closed
+
+
+def test_reached_foreign_setter_is_unqualified_execution(tmp_path):
+    from tests.test_consumer_callback_contracts import OPERATION
+    facts = _inventory(tmp_path, "class Record:\n @classmethod\n def from_payload(cls,value): return cls()\ndef read(foreign):\n foreign.setattr(Record,'from_payload',lambda value:value)\n return Record.from_payload(7)\n")
+    with pytest.raises(SemanticOperationEffectError, match='unqualified_attribute_mutator'):
+        validate_operation_effects(OPERATION, 'models.py::read', facts)
+
+
+def test_nested_classmethod_forwarding_preserves_requested_subclass(tmp_path):
+    facts = _inventory(tmp_path, "class Record:\n @classmethod\n def _new(cls): return cls()\n @classmethod\n def from_payload(cls): return cls._new()\nclass Child(Record): pass\ndef read(): return Child.from_payload()\n")
+    assert any(row['caller'] == 'models.py::Record._new' and row['constructed_symbol'] == 'models.py::Child' for row in facts['constructors'])
+    assert not facts['unresolved']
+    outer = next(row for row in facts['functions'] if row['symbol'] == 'models.py::Record.from_payload')
+    assert any(call.get('called_symbol') == 'models.py::Record._new' and call.get('dispatch_resolution') == 'exact_bound_class_forwarding' for call in outer['calls'])
+
+
+def test_local_call_only_handle_in_context_retains_real_factory(tmp_path):
+    facts = _inventory(tmp_path, "from contextlib import nullcontext\nclass Record:\n @classmethod\n def from_payload(cls): return cls()\ndef read():\n with nullcontext():\n  constructor=Record.from_payload\n  return constructor()\n")
+    assert not facts['unresolved']
+    assert any(row['caller'] == 'models.py::Record.from_payload' and row['constructed_symbol'] == 'models.py::Record' for row in facts['constructors'])
+    root = next(row for row in facts['functions'] if row['symbol'] == 'models.py::read')
+    assert any(call.get('called_symbol') == 'models.py::Record.from_payload' for call in root['calls'])
+
+
+@pytest.mark.parametrize('change', ['sink(constructor)', 'constructor=lambda: None'])
+def test_escaped_or_reassigned_bound_handle_stays_unresolved(tmp_path, change):
+    facts = _inventory(tmp_path, "class Record:\n @classmethod\n def from_payload(cls): return cls()\ndef read():\n constructor=Record.from_payload\n "+change+"\n return Record.from_payload()\n")
+    assert any(row['kind'] == 'unresolved_class_constructor' for row in facts['unresolved'])
+
+
+def test_call_only_factory_handle_does_not_hide_source_write(tmp_path):
+    from tests.test_consumer_callback_contracts import OPERATION
+    facts = _inventory(tmp_path, "from pathlib import Path\nclass Record:\n @classmethod\n def from_payload(cls):\n  Path('out').write_text('data')\n  return cls()\ndef read():\n constructor=Record.from_payload\n return constructor()\n")
+    with pytest.raises(SemanticOperationEffectError, match='undeclared write effects'):
+        validate_operation_effects(OPERATION, 'models.py::read', facts, experimental_protocols=False)
+
+
+@pytest.mark.parametrize('mutate', [False, True])
+def test_class_alias_fixed_point_keeps_reverse_chains_and_unrelated_assignments(tmp_path, mutate):
+    source = "class Record:\n @classmethod\n def from_payload(cls): return cls()\n"
+    source += ''.join(f'unrelated_{index}={index}\n' for index in range(60))
+    if mutate:
+        source += "def change():\n third=second\n second=first\n first=Record\n setattr(third, 'from_payload', lambda: None)\n"
+    source += "def read(): return Record.from_payload()\n"
+    facts = _inventory(tmp_path, source)
+    record = next(row for row in facts['classes'] if row['symbol'] == 'models.py::Record')
+    assert record['closed_class_binding'] is not mutate

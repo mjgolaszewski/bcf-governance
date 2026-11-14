@@ -64,6 +64,8 @@ MUTATING_KINDS = {"command", "execution", "event_handler"}
 class SemanticAuthorityError(ValueError):
     """Raised when a blocking semantic-authority contract is incomplete."""
 
+    operation_failures: tuple[str, ...] = ()
+
 
 @dataclass(frozen=True)
 class SemanticAuthorityEvaluation:
@@ -495,7 +497,8 @@ def _validate_operation_structure(
 
 
 def _validate_operations(
-    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any]
+    repo_root: Path, payload: dict[str, Any], inventory: dict[str, Any],
+    *, unresolved_dynamic_policy: str = "fail_closed",
 ) -> list[dict[str, Any]]:
     _schema(repo_root, "application-operations.schema.json", payload)
     populations = payload["populations"]
@@ -520,9 +523,12 @@ def _validate_operations(
                 if row["adapter"] == "typescript_exports"
                 else _discover_population(repo_root, row)
             )
+    origin_cache: dict[tuple[int, str, tuple[tuple[str, str], ...]], dict[str, Any]] = {}
     classified: dict[tuple[str, str], str] = {}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
+    operation_failures: list[str] = []
+    observation_keys: dict[str, set[str]] = {}
     for operation in payload["operations"]:
         population_id = str(operation["population"])
         key = str(operation["population_key"])
@@ -571,13 +577,16 @@ def _validate_operations(
         try:
             write_count, authority_count = validate_operation_effects(
                 operation, str(function["symbol"]), inventory,
+                unresolved_dynamic_policy=unresolved_dynamic_policy, _origin_cache=origin_cache, experimental_protocols=False, _observation_keys=observation_keys,
                 source_modules=tuple(str(row["source"]) for row in populations if row["id"] == population_id),
             )
         except SemanticOperationEffectError as exc:
-            raise SemanticAuthorityError(str(exc)) from exc
+            operation_failures.append(str(exc))
+            continue
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
             "write_effect_count": write_count, "authority_effect_count": authority_count,
+            "execution_qualified": False, "effect_contract": "published-explicit-effects-v1",
         })
     missing = sorted(
         f"{population_id}:{key}"
@@ -587,6 +596,12 @@ def _validate_operations(
     )
     if missing:
         raise SemanticAuthorityError("unclassified public application operations: " + ", ".join(missing))
+    if operation_failures:
+        omitted = max(0, len(operation_failures) - 32)
+        suffix = f"; {omitted} additional failing operations omitted" if omitted else ""
+        error = SemanticAuthorityError("; ".join(operation_failures[:32]) + suffix)
+        error.operation_failures = tuple(operation_failures)
+        raise error
     return observations
 
 
@@ -736,7 +751,7 @@ def validate_semantic_authority(
         else []
     )
     operation_observations = (
-        _validate_operations(repo_root, operations, inventory)
+        _validate_operations(repo_root, operations, inventory, unresolved_dynamic_policy=registry.unresolved_dynamic_policy)
         if validate_operations and "application_operation_inventory" in enabled
         else []
     )
@@ -773,5 +788,6 @@ def validate_application_operations(
     if states["application_operation_inventory"] not in {"advisory", "blocking"}:
         return []
     return _validate_operations(
-        repo_root, load_application_operations(repo_root).raw, inventory
+        repo_root, load_application_operations(repo_root).raw, inventory,
+        unresolved_dynamic_policy=load_registry(repo_root).unresolved_dynamic_policy,
     )

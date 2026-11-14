@@ -1,0 +1,71 @@
+document:
+  kind: hotfix_execution_log
+  name: P31-HF18 Hotfix Log
+  id: bcf-governance-phase-31-hotfix18
+  version: 1.0.0
+  generated_at_utc: '2026-11-13T00:00:00Z'
+  status: completed
+  path: phases/phase-31-hotfix18.yml
+hotfix:
+  id: P31-HF18
+  mode: full
+  related_phase_id: P31
+  hotfix_number: 18
+  summary: Repair current BDMCP constructor, callback and receiver provenance while preserving existing report and fail-closed
+    policies
+execution_evidence:
+  planned_commands:
+  - .venv/bin/python -m pytest tests/test_consumer_callback_contracts.py tests/test_semantic_model_binding.py tests/test_semantic_method_effects.py
+  - .venv/bin/bcf ci submit --repo-root .
+  executed_commands:
+  - python -m pytest tests/test_semantic_value_origins.py tests/test_consumer_callback_contracts.py -q
+  - python -m mypy bcf_governance/tooling/semantic_python_value_origins.py bcf_governance/tooling/semantic_operation_effects.py
+    bcf_governance/tooling/semantic_python_effect_obligations.py
+  - bcf environment apply --repo-root .
+  - bcf reconcile --repo-root . --apply
+  notes:
+  - P31-HF18 implementation is authored completed for SDK/BDMCP publication compatibility only. Completed means implementation
+    ready for validation; verified, closed and release custody remain computed by required native evidence. Deferred general
+    protocol/format/retained-write experiments remain preserved on repair/maintained-consumer-contracts at 7761979c601171651ab601849cbdec44d183ee8d.
+    No ordinary-protection repair is claimed.
+  - 456 focused tests passed without skips; strict typing of 15 source modules, lint and mirrored pack projection passed.
+    Native self reconciliation passed. Fresh wheel build/install, ordinary installed runtime Ruff/strict typing passed without
+    requiring optional Pydantic.
+  - Installed candidate wheel SHA256 5b84179374d9b6fe21eab249ef4ec58c0984f356244991e355b6c5e44c42f947 from b76b2955e0de39c5ec244ab04786e5c7b00d7b14
+    qualified BDMCP b1f85c1376f45d4745f7969247f35834edc6a741 in an isolated native upgrade clone. Current-profile native preflight
+    passed all 24 phases; ownership had zero violations; all 138 operation contracts and 115-family structure passed; 398
+    consumer controls passed without skips. Standard-v3 activation is deferred to Recovery, not waived.
+  - Publication boundary43480 preserves published explicit effects and mandatory known callback/global writes, legacy dynamic/receiver
+    failures and real effect ports. New diagnostic uncertainty and producer-work exhaustion remain unqualified; strict experimental
+    fail_closed rejects exhausted inference. Executed branching DAG, hidden global-write and borrowed-field alias-write negatives
+    pass. Initializer obligations still fail closed.
+  - Neutral frame facts are scoped to one fixed inventory and exact arguments, capped8192 entries; operation permissions and
+    decisions are recalculated. Producer exploration is bounded64 expansions per frame and returns explicit unknown on exhaustion.
+    Diagnostic duplicate indexing and immutable AST reuse preserve observations and operation identity.
+  - Full required native CI, consolidated review, normal merge/controller custody and release publication remain pending.
+    The earlier native submission stopped before tests because this hotfix was still authored planned; this status correction
+    adds no passing full-CI or publication claim. Deferred Identity/JIT source remains preserved.
+  - Review R1 identified an unguarded Python 3.12 ast.TypeAlias access in the declared Python 3.11 runtime. Normal Python 3.11 source discovery reproduced
+    AttributeError before repair and passed after a capability-presence guard; PEP 695 aliases remain observed on supported AST versions. All 42 focused
+    model/construction controls pass on actual Python 3.11 and 3.12; 336 canonical runtime modules parse on 3.11. Strict typing, lint and native pack sync pass.
+    Prior full native 3493-test and causal-control success belongs to d64083a1; the material R1 delta still requires exact-subject qualification and review.
+  - Consolidated review R2 binds actual caller payloads and closed source return lineage; unknown transforms retain ordinary normalization accounting. R3 moves unused experimental protocol helpers to preserved test fixtures. Scoped release heading now follows MAINTAINING.
+  - Review R4 ordinary validator and Field default-factory witnesses changed global state on each call while stable mode accepted both policies. Source-known constructor callback edges now reject these writes; module-level Path rebinding no longer earns a native suffix exemption. Lint, strict typing of four production modules, pack projection and 177 focused tests pass. Final installed consumer, full CI and protected custody remain pending on the repaired subject.
+  - Same-review R5 ordinary callable witnesses confirmed local definitions, pattern and exception captures, executable definition headers and qualified library-member replacements could masquerade as native Path. Shared neutral binding extraction now covers string-backed AST binders; enclosing-scope headers and known member replacement invalidate the exemption. All 14 ordinary controls retain genuine Path and reject known replacements; noncallable captures remain explicitly TypeError-only witnesses. Lint, strict typing, native pack and 191 focused tests pass. Earlier d36 proof has 3508 green tests and all 671 payload hashes verified; native submission stopped after exact push on provider PR binding, not a test failure. New guard subject still needs native reconciliation, exact artifact qualification and full gates.
+closeout_requirements:
+  claims:
+    required_suites_green:
+      required_evidence:
+      - test
+      - contract-test
+    security_review_complete:
+      required_evidence:
+      - governance-validate
+    health_checks_green:
+      required_evidence:
+      - runtime-smoke
+  reconciliation:
+    required_evidence:
+    - governance-validate
+    - governance-exposure-scan
+  finding_registry: governance/findings.yml
