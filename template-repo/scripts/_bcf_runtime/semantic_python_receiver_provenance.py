@@ -4,6 +4,8 @@ from __future__ import annotations
 import ast
 from typing import Any
 
+from .semantic_python_effect_obligations import python_binding_names
+
 
 def resolve_normalization_receivers(inventory: dict[str, Any]) -> None:
     functions={str(row['symbol']):row for row in inventory.get('functions',[])}
@@ -76,8 +78,7 @@ def resolve_format_predicates(function: dict[str, Any]) -> None:
     calls = {(row.get('line'), row.get('column')): row for row in function.get('calls', [])
              if not row.get('implicit_callback')}
     normalizations = {(row.get('line'), row.get('column')): row for row in function.get('normalizations', [])}
-    rebound = {node.id for node in nodes if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))}
-    rebound.update(node.arg for node in nodes if isinstance(node, ast.arg))
+    rebound = python_binding_names(nodes)
     for node in nodes:
         if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
             continue

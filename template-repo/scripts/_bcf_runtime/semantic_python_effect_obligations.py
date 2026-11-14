@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+from collections.abc import Iterable
 from typing import Any
 
 from .semantic_python_constructor_callbacks import (
@@ -50,21 +51,52 @@ def _trivial_finalizer(function: ast.FunctionDef | ast.AsyncFunctionDef) -> bool
     ))
 
 
+def python_binding_names(nodes: Iterable[ast.AST]) -> set[str]:
+    """Include lexical binders whose target names are strings in Python's AST."""
+    result: set[str] = set()
+    for node in nodes:
+        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)):
+            result.add(node.id)
+        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            result.add(node.name)
+        elif isinstance(node, ast.arg):
+            result.add(node.arg)
+        elif isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar)) and node.name:
+            result.add(node.name)
+        elif isinstance(node, ast.MatchMapping) and node.rest:
+            result.add(node.rest)
+    return result
+
+
+def _module_binding_nodes(tree: ast.Module) -> list[ast.AST]:
+    """Definition headers execute in the enclosing scope; their bodies do not."""
+    result: list[ast.AST] = []
+    pending: list[ast.AST] = list(tree.body)
+    while pending:
+        node = pending.pop()
+        result.append(node)
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            pending.extend(value for value in [*node.args.defaults, *node.args.kw_defaults] if value is not None)
+            if not isinstance(node, ast.Lambda):
+                pending.extend(node.decorator_list)
+                if node.returns is not None:
+                    pending.append(node.returns)
+                pending.extend(argument.annotation for argument in [*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs]
+                               if argument.annotation is not None)
+            continue
+        if isinstance(node, ast.ClassDef):
+            pending.extend([*node.decorator_list, *node.bases, *(keyword.value for keyword in node.keywords)])
+            continue
+        pending.extend(ast.iter_child_nodes(node))
+    return result
+
+
 def container_builtin_names(tree: ast.Module) -> list[str]:
     """Derive stable builtin lexical identities once per source module."""
     nodes = tuple(ast.walk(tree))
-    bindings = {
-        node.id for node in nodes
-        if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del))
-    }
-    bindings.update(node.name for node in nodes
-                    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)))
-    bindings.update(node.arg for node in nodes if isinstance(node, ast.arg))
+    bindings = python_binding_names(nodes)
     bindings.update(node.asname or node.name.split(".")[0]
                     for node in nodes if isinstance(node, ast.alias))
-    bindings.update(node.name for node in nodes
-                    if isinstance(node, (ast.ExceptHandler, ast.MatchAs, ast.MatchStar))
-                    and node.name)
     reflective = any(
         isinstance(node, ast.Name) and node.id in {
             "globals", "locals", "vars", "setattr", "delattr", "exec",
@@ -161,21 +193,27 @@ def extend_python_effect_facts(
         if isinstance(target, ast.Name)})
     fact["private_container_roots"] = sorted(private_container_write_roots(function, builtin_names))
     fact["trivial_finalizer"] = _trivial_finalizer(function)
-    # Module assignments and definitions can replace an imported constructor.
-    module_nodes: list[ast.AST] = list(tree.body)
-    rebound_imports: set[str] = set()
-    while module_nodes:
-        module_node = module_nodes.pop()
-        if isinstance(module_node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            rebound_imports.add(module_node.name)
+    module_nodes = _module_binding_nodes(tree)
+    rebound_imports = python_binding_names(module_nodes)
+    # A known member replacement also invalidates a qualified library identity.
+    mutated_members: set[tuple[str, str]] = set()
+    for member in module_nodes:
+        if not isinstance(member, ast.Attribute) or not isinstance(member.ctx, (ast.Store, ast.Del)):
             continue
-        if isinstance(module_node, ast.Lambda):
-            continue
-        if isinstance(module_node, ast.Name) and isinstance(module_node.ctx, (ast.Store, ast.Del)):
-            rebound_imports.add(module_node.id)
-        module_nodes.extend(ast.iter_child_nodes(module_node))
+        chain: list[str] = []
+        root: ast.expr = member
+        while isinstance(root, ast.Attribute):
+            chain.append(root.attr)
+            root = root.value
+        if isinstance(root, ast.Name):
+            mutated_members.add((root.id, chain[-1]))
     for source_call in fact.get("calls", []):
-        if source_call.get("import_reference", {}).get("local") in rebound_imports:
+        reference = source_call.get("import_reference", {})
+        local = str(reference.get("local", ""))
+        attributes = reference.get("attributes", [])
+        if (local in rebound_imports
+                or attributes and (local, str(attributes[0])) in mutated_members
+                or not attributes and any(owner == local for owner, _ in mutated_members)):
             source_call["known_rebound_import"] = True
     fact["python_value_source"] = ast.unparse(function)
     fact["python_value_shape_sha256"] = hashlib.sha256(
