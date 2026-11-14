@@ -51,6 +51,8 @@ environment_facts:
     assets. This does not establish full consumer acceptance.
   - P31-HF18 is the active supported-contract repair. Current maintenance source is unqualified; constructor identity diagnostics and affected tests do not replace
     effect, ownership, complete consumer gates or release custody.
+  - Review R1 restores declared Python 3.11 source discovery with an AST capability guard; actual 3.11 and 3.12 focused controls pass. Prior full CI at d64083a1
+    does not qualify this new delta; exact-subject full gates and consolidated review remain pending.
   - Preserve deferred Identity/JIT source on archive/deferred-identity-jit-20261029; keep independent 2.5 development separate until governed integration. Ordinary
     BCF CI has no live Identity dependency.
   - Deprecated historical pending-release statements in the previous memory are superseded by the verified current release. Exact historical source is retained in

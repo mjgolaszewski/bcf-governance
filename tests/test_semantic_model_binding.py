@@ -1,6 +1,7 @@
 """Dependency-bound model selection never authorizes model callback effects."""
 from __future__ import annotations
 
+import ast
 import json
 import os
 import subprocess
@@ -88,3 +89,14 @@ def test_model_validator_retains_a_callback_obligation(tmp_path):
     ''')
     assert not result['unresolved']
     assert result['effect_verdict'] != 'ACCEPTED'
+
+
+def test_literal_aliases_preserve_supported_ast_versions(monkeypatch):
+    from bcf_governance.tooling.semantic_python_model_binding import literal_type_aliases
+
+    legacy = ast.parse("class Example: pass")
+    if hasattr(ast, "TypeAlias"):
+        tree = ast.parse("type State = Literal['ready', 'done']")
+        assert literal_type_aliases(tree, "models.py", {"Literal": "typing::Literal"}) == ["models.py::State"]
+    monkeypatch.delattr(ast, "TypeAlias", raising=False)
+    assert literal_type_aliases(legacy, "models.py", {}) == []

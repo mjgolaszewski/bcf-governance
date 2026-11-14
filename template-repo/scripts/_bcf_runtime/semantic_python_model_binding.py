@@ -25,6 +25,8 @@ _ROOTS = {"pydantic::BaseModel", "pydantic::module.BaseModel", "pydantic.main::B
 
 def literal_type_aliases(tree: ast.Module, path: str, imports: dict[str, str]) -> list[str]:
     """Retain closed PEP 695 literal aliases without evaluating arbitrary aliases."""
+    if not hasattr(ast, "TypeAlias"):
+        return []
     result = []
     for node in tree.body:
         if not isinstance(node, ast.TypeAlias) or not isinstance(node.name, ast.Name) or node.type_params:

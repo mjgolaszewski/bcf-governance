@@ -45,6 +45,10 @@ execution_evidence:
   - Full required native CI, consolidated review, normal merge/controller custody and release publication remain pending.
     The earlier native submission stopped before tests because this hotfix was still authored planned; this status correction
     adds no passing full-CI or publication claim. Deferred Identity/JIT source remains preserved.
+  - Review R1 identified an unguarded Python 3.12 ast.TypeAlias access in the declared Python 3.11 runtime. Normal Python 3.11 source discovery reproduced
+    AttributeError before repair and passed after a capability-presence guard; PEP 695 aliases remain observed on supported AST versions. All 42 focused
+    model/construction controls pass on actual Python 3.11 and 3.12; 336 canonical runtime modules parse on 3.11. Strict typing, lint and native pack sync pass.
+    Prior full native 3493-test and causal-control success belongs to d64083a1; the material R1 delta still requires exact-subject qualification and review.
 closeout_requirements:
   claims:
     required_suites_green:
