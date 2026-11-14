@@ -8,9 +8,10 @@ from typing import Any
 def resolve_normalization_receivers(inventory: dict[str, Any]) -> None:
     functions={str(row['symbol']):row for row in inventory.get('functions',[])}
     classes={str(row['symbol']):row for row in inventory.get('classes',[])}
+    source_trees: dict[str, _SourceTree | None] = {}
     for function in functions.values():
         resolve_format_predicates(function)
-        resolve_verified_content_receivers(function, functions)
+        resolve_verified_content_receivers(function, functions, source_trees)
         by_site: dict[str,list[tuple[int,dict[str,Any]]]]={}
         for index,call in enumerate(function.get('calls',[])):
             if not call.get('implicit_callback'):
@@ -98,41 +99,184 @@ def resolve_format_predicates(function: dict[str, Any]) -> None:
             fact['normalization_role'] = 'path_suffix_format_predicate'
 
 
-def _source_tree(row: dict[str, Any]) -> tuple[ast.AST, dict[int, Any], dict[tuple[Any, ...], Any]] | None:
-    if not row.get('python_value_source'):
+_SourceTree = tuple[ast.AST, dict[int, Any], dict[tuple[Any, ...], Any]]
+
+
+def _source_tree(row: dict[str, Any], cache: dict[str, _SourceTree | None] | None = None) -> _SourceTree | None:
+    symbol = str(row.get('symbol', ''))
+    if cache is not None and symbol in cache:
+        return cache[symbol]
+    result: _SourceTree | None = None
+    if row.get('python_value_source'):
+        tree = ast.parse(row['python_value_source']).body[0]
+        sites = {id(node): site for node, site in zip(ast.walk(tree), row.get('python_value_sites', []), strict=False)}
+        calls = {(call.get('line'), call.get('column')): call for call in row.get('calls', []) if not call.get('implicit_callback')}
+        result = tree, sites, calls
+    if cache is not None:
+        cache[symbol] = result
+    return result
+
+
+def _source_actuals(callee: dict[str, Any], invocation: ast.Call, caller: dict[str, Any], trees: dict[str, _SourceTree | None]) -> dict[str, ast.expr] | None:
+    parsed = _source_tree(callee, trees)
+    if parsed is None or not isinstance(parsed[0], (ast.FunctionDef, ast.AsyncFunctionDef)):
         return None
-    tree = ast.parse(row['python_value_source']).body[0]
-    sites = {id(node): site for node, site in zip(ast.walk(tree), row.get('python_value_sites', []), strict=False)}
-    calls = {(call.get('line'), call.get('column')): call for call in row.get('calls', []) if not call.get('implicit_callback')}
-    return tree, sites, calls
+    tree = parsed[0]
+    positional = [argument.arg for argument in [*tree.args.posonlyargs, *tree.args.args]]
+    if callee.get('class_symbol') and callee.get('method_binding_kind') != 'static':
+        receiver = next(iter(caller.get('parameters', {})), '')
+        if (not positional or caller.get('class_symbol') != callee['class_symbol']
+                or not isinstance(invocation.func, ast.Attribute)
+                or not isinstance(invocation.func.value, ast.Name)
+                or invocation.func.value.id != receiver):
+            return None
+        positional = positional[1:]
+    if len(invocation.args) > len(positional) or any(isinstance(value, ast.Starred) for value in invocation.args):
+        return None
+    actuals = dict(zip(positional, invocation.args, strict=False))
+    declared = {*positional, *(argument.arg for argument in tree.args.kwonlyargs)}
+    positional_only = {argument.arg for argument in tree.args.posonlyargs}
+    for keyword in invocation.keywords:
+        if keyword.arg is None or keyword.arg not in declared or keyword.arg in actuals or keyword.arg in positional_only:
+            return None
+        actuals[keyword.arg] = keyword.value
+    return actuals
 
 
-def _content_transport(row: dict[str, Any]) -> bool:
-    """Associate the first data argument, without claiming callback or output purity."""
-    parsed = _source_tree(row)
+def _single_local_value(tree: ast.AST, name: str) -> ast.expr | None:
+    stores = [node for node in ast.walk(tree) if isinstance(node, ast.Name)
+              and node.id == name and isinstance(node.ctx, (ast.Store, ast.Del))]
+    values = [node.value for node in ast.walk(tree)
+              if isinstance(node, ast.Assign) and len(node.targets) == 1
+              and isinstance(node.targets[0], ast.Name) and node.targets[0].id == name]
+    values.extend(node.value for node in ast.walk(tree) if isinstance(node, ast.AnnAssign)
+                  and isinstance(node.target, ast.Name) and node.target.id == name and node.value is not None)
+    return values[0] if len(stores) == len(values) == 1 else None
+
+
+def _returned_parameters(row: dict[str, Any], functions: dict[str, dict[str, Any]], trees: dict[str, _SourceTree | None], active: frozenset[str], budget: list[int]) -> set[str] | None:
+    symbol = str(row.get('symbol', ''))
+    parsed = _source_tree(row, trees)
+    if not symbol or symbol in active or budget[0] <= 0 or parsed is None:
+        return None
+    budget[0] -= 1
+    tree, sites, calls = parsed
+    active = active | {symbol}
+
+    def origins(value: ast.AST, aliases: frozenset[str] = frozenset()) -> set[str] | None:
+        if isinstance(value, ast.Await):
+            return origins(value.value, aliases)
+        if isinstance(value, ast.Name) and value.id not in aliases:
+            stores = any(isinstance(node, ast.Name) and node.id == value.id
+                         and isinstance(node.ctx, (ast.Store, ast.Del)) for node in ast.walk(tree))
+            if value.id in row.get('parameters', {}) and not stores:
+                return {value.id}
+            assigned = _single_local_value(tree, value.id)
+            return origins(assigned, aliases | {value.id}) if assigned is not None else None
+        if isinstance(value, ast.Call):
+            call = calls.get(tuple(sites.get(id(value), [])), {})
+            callee = functions.get(str(call.get('called_symbol', '')), {})
+            returned = _returned_parameters(callee, functions, trees, active, budget)
+            actuals = _source_actuals(callee, value, row, trees)
+            if returned is None or actuals is None or any(name not in actuals for name in returned):
+                return None
+            result: set[str] = set()
+            for name in returned:
+                source = origins(actuals[name], aliases)
+                if source is None:
+                    return None
+                result.update(source)
+            return result
+        return None
+
+    returns = [node.value for node in ast.walk(tree) if isinstance(node, ast.Return)]
+    if not returns or any(value is None for value in returns):
+        return None
+    result: set[str] = set()
+    for value in returns:
+        if value is None:
+            return None
+        source = origins(value)
+        if source is None:
+            return None
+        result.update(source)
+    return result
+
+
+def _payload_parameters(row: dict[str, Any], value: ast.AST, functions: dict[str, dict[str, Any]], trees: dict[str, _SourceTree | None], active: frozenset[tuple[str, str]], budget: list[int]) -> set[tuple[str, str]] | None:
+    parsed = _source_tree(row, trees)
+    if parsed is None or budget[0] <= 0:
+        return None
+    budget[0] -= 1
+    tree, sites, calls = parsed
+    symbol = str(row.get('symbol', ''))
+    result: set[tuple[str, str]] = set()
+    if isinstance(value, ast.Await):
+        return _payload_parameters(row, value.value, functions, trees, active, budget)
+    if isinstance(value, ast.Constant) and type(value.value) in {bytes, str}:
+        return set()
+    if isinstance(value, ast.Name):
+        key = symbol, value.id
+        if key in active:
+            return None
+        stores = any(isinstance(node, ast.Name) and node.id == value.id
+                     and isinstance(node.ctx, (ast.Store, ast.Del)) for node in ast.walk(tree))
+        if value.id not in row.get('parameters', {}) or stores:
+            assigned = _single_local_value(tree, value.id)
+            if value.id in row.get('parameters', {}) or assigned is None:
+                return None
+            return _payload_parameters(row, assigned, functions, trees, active | {key}, budget)
+        incoming = [(caller, call) for caller in functions.values() for call in caller.get('calls', [])
+                    if not call.get('implicit_callback') and call.get('called_symbol') == symbol]
+        if not incoming:
+            return {key}
+        for caller, call in incoming:
+            source = _source_tree(caller, trees)
+            if source is None:
+                return None
+            invocation = next((node for node in ast.walk(source[0]) if isinstance(node, ast.Call)
+                               and tuple(source[1].get(id(node), [])) == (call.get('line'), call.get('column'))), None)
+            actuals = _source_actuals(row, invocation, caller, trees) if invocation is not None else None
+            if actuals is None or value.id not in actuals:
+                return None
+            roots = _payload_parameters(caller, actuals[value.id], functions, trees, active | {key}, budget)
+            if roots is None:
+                return None
+            result.update(roots)
+        return result
+    if isinstance(value, ast.Call):
+        call = calls.get(tuple(sites.get(id(value), [])), {})
+        callee = functions.get(str(call.get('called_symbol', '')), {})
+        returned = _returned_parameters(callee, functions, trees, frozenset(), budget)
+        actuals = _source_actuals(callee, value, row, trees)
+        if returned is None or actuals is None or any(name not in actuals for name in returned):
+            return None
+        for name in returned:
+            roots = _payload_parameters(row, actuals[name], functions, trees, active, budget)
+            if roots is None:
+                return None
+            result.update(roots)
+        return result
+    return None
+
+
+def _content_transport(row: dict[str, Any], functions: dict[str, dict[str, Any]], trees: dict[str, _SourceTree | None]) -> bool:
+    """Follow closed source returns; argument position alone is no output proof."""
+    parsed = _source_tree(row, trees)
     if parsed is None or not isinstance(parsed[0], (ast.FunctionDef, ast.AsyncFunctionDef)):
         return False
-    tree = parsed[0]
-    args = [*tree.args.posonlyargs, *tree.args.args]
-    names = [arg.arg for arg in args if arg.arg != next(iter(row.get('parameters', {})), '') or not row.get('class_symbol')]
-    if not names:
-        return False
-    data = names[0]
-    if any(isinstance(node, ast.Name) and node.id == data and isinstance(node.ctx, (ast.Store, ast.Del)) for node in ast.walk(tree)):
-        return False
-    returns = [node.value for node in ast.walk(tree) if isinstance(node, ast.Return)]
-    return bool(returns) and all(
-        isinstance(value, ast.Name) and value.id == data
-        or isinstance(value, ast.Call) and bool(value.args)
-        and isinstance(value.args[0], ast.Name) and value.args[0].id == data
-        for value in returns)
+    args = [argument.arg for argument in [*parsed[0].args.posonlyargs, *parsed[0].args.args]]
+    if row.get('class_symbol') and row.get('method_binding_kind') != 'static':
+        args = args[1:]
+    return bool(args) and _returned_parameters(row, functions, trees, frozenset(), [64]) == {args[0]}
 
 
-def resolve_verified_content_receivers(function: dict[str, Any], functions: dict[str, dict[str, Any]]) -> None:
-    parsed = _source_tree(function)
+def resolve_verified_content_receivers(function: dict[str, Any], functions: dict[str, dict[str, Any]], trees: dict[str, _SourceTree | None] | None = None) -> None:
+    trees = {} if trees is None else trees
+    parsed = _source_tree(function, trees)
     if parsed is None:
         return
-    _, sites, calls = parsed
+    caller_tree, sites, calls = parsed
     for fact in function.get('normalizations', []):
         if fact.get('call_name') != 'decode':
             continue
@@ -144,7 +288,7 @@ def resolve_verified_content_receivers(function: dict[str, Any], functions: dict
             continue
         call = calls.get((int(source[1]), int(source[2])), {})
         producer = functions.get(str(call.get('called_symbol', '')), {})
-        produced = _source_tree(producer)
+        produced = _source_tree(producer, trees)
         if produced is None:
             continue
         tree, producer_sites, producer_calls = produced
@@ -160,16 +304,30 @@ def resolve_verified_content_receivers(function: dict[str, Any], functions: dict
         load = assignments[0].value
         load_call = producer_calls.get(tuple(producer_sites.get(id(load), [])), {})
         transport = functions.get(str(load_call.get('called_symbol', '')), {})
-        if not _content_transport(transport) or not load.args or not isinstance(load.args[0], ast.Name):
+        if not _content_transport(transport, functions, trees) or not load.args or not isinstance(load.args[0], ast.Name):
             continue
         # The data input must be its own formal; record fields used as custody
         # keywords are not the returned representation. Alias/field data stays unknown.
-        if load.args[0].id not in producer.get('parameters', {}):
+        data_parameter = load.args[0].id
+        if data_parameter not in producer.get('parameters', {}) or any(
+            isinstance(node, ast.Name) and node.id == data_parameter and isinstance(node.ctx, (ast.Store, ast.Del))
+            for node in ast.walk(tree)
+        ):
+            continue
+        invocation = next((node for node in ast.walk(caller_tree) if isinstance(node, ast.Call)
+                           and tuple(sites.get(id(node), [])) == (int(source[1]), int(source[2]))), None)
+        actuals = _source_actuals(producer, invocation, function, trees) if invocation is not None else None
+        if actuals is None or data_parameter not in actuals:
+            continue
+        data_sources = _payload_parameters(function, actuals[data_parameter], functions, trees, frozenset(), [64])
+        if data_sources is None:
             continue
         digests = [node for node in ast.walk(tree) if isinstance(node, ast.Call)
             and len(node.args) == 1 and isinstance(node.args[0], ast.Name) and node.args[0].id == name
             and _standard_call(producer_calls.get(tuple(producer_sites.get(id(node), [])), {}), 'hashlib', 'sha256')]
         if not digests:
             continue
+        fact['source_content_input_parameters'] = [{'symbol': symbol, 'parameter': parameter}
+                                                   for symbol, parameter in sorted(data_sources)]
         fact['normalization_role'] = 'source_verified_content_decode'
         fact['receiver_role_execution_qualified'] = False

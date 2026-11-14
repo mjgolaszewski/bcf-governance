@@ -366,13 +366,13 @@ def test_imported_caught_exception_string_callback_keeps_source_identity(tmp_pat
 
 @pytest.mark.parametrize('error',[ValueError('message'),RuntimeError(7,'message'),OSError(2,'missing','file.txt')])
 def test_native_exception_message_preserves_native_diagnostics(error):
-    from bcf_governance.tooling.exception_messages import native_exception_message
+    from tests.fixtures.experimental_protocols.exception_messages import native_exception_message
     assert native_exception_message(error)==str(error)
 
 
 @pytest.mark.parametrize('kind',['override','argument','property','metaclass'])
 def test_native_exception_message_never_executes_custom_protocols(kind):
-    from bcf_governance.tooling.exception_messages import native_exception_message
+    from tests.fixtures.experimental_protocols.exception_messages import native_exception_message
     events=[]
     class Probe:
         def __str__(self):
@@ -424,7 +424,7 @@ def test_actual_native_message_boundary_source_is_readonly(tmp_path):
         resolve_python_imports,
     )
     helper=tmp_path/'helper.py'
-    helper.write_bytes((Path(__file__).parents[1]/'bcf_governance/tooling/exception_messages.py').read_bytes())
+    helper.write_bytes((Path(__file__).parents[1]/'tests/fixtures/experimental_protocols/exception_messages.py').read_bytes())
     path=tmp_path/'consumer.py'
     path.write_text("from helper import native_exception_message\ndef read():\n return native_exception_message(ValueError('message'))\n")
     facts=resolve_python_imports(tmp_path,discover_python_source(tmp_path,[path,helper]),('.',))
@@ -469,7 +469,7 @@ def test_scalar_admission_cannot_escape_its_binding_or_dominance(tmp_path,kind):
 
 @pytest.mark.parametrize('field',[name for name,value in vars(OSError).items() if type(value) is MemberDescriptorType])
 def test_native_os_message_rejects_protocol_objects_in_actual_storage(field):
-    from bcf_governance.tooling.exception_messages import native_exception_message
+    from tests.fixtures.experimental_protocols.exception_messages import native_exception_message
     events=[]
     class Probe:
         def __str__(self):

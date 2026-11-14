@@ -6,7 +6,7 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
-Release target: `2.3.15`
+## [2.3.15] - 2026-11-14
 
 ### Fixed
 

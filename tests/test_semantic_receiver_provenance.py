@@ -123,3 +123,49 @@ def test_verified_content_role_is_not_annotation_or_field_alias_purity(tmp_path,
     if accepted:
         read = next(row for row in facts['functions'] if row['symbol'] == 'consumer.py::read')
         assert read['normalizations'][0]['receiver_role_execution_qualified'] is False
+
+
+@pytest.mark.parametrize('payload,setup,transport,helper,accepted', [
+    ('stored', 'pass', 'return data', '', True),
+    ('record.value', 'pass', 'return data', '', False),
+    ('alias', 'alias=record.value', 'return data', '', False),
+    ('record.value', 'pass', 'return choose(data, identity=identity)', 'def choose(data, *, identity): return data', False),
+    ('stored', 'pass', 'return choose(data, identity=identity)', 'def choose(data, *, identity): return identity', False),
+    ('stored', 'pass', 'return opaque(data, identity=identity)', '', False),
+    ('stored', 'pass', 'return choose(data, identity=identity)', 'def choose(data, *, identity): return data', True),
+])
+def test_verified_content_binds_actual_payload_and_source_return(tmp_path, payload, setup, transport, helper, accepted):
+    _, facts = inventory(tmp_path, BASE.replace('value: str', 'value: bytes') + '''
+    import hashlib
+    HELPER
+    def transport(data, *, identity): TRANSPORT
+    def verified(record: Record, stored):
+        content=transport(stored, identity=record.value)
+        if hashlib.sha256(content).hexdigest() != hashlib.sha256(record.value).hexdigest():
+            raise ValueError('changed')
+        return content
+    def read(record: Record, stored):
+        SETUP
+        content=verified(record=record, stored=PAYLOAD)
+        return content.decode()
+    '''.replace('HELPER', helper).replace('TRANSPORT', transport).replace('SETUP', setup).replace('PAYLOAD', payload))
+    failures = [row for row in evaluate_discovery(facts, registry())['violations']
+                if row['kind'] == 'downstream_normalization' and row['symbol'] == 'consumer.py::read']
+    assert bool(failures) is not accepted
+
+
+def test_verified_payload_caller_forwarding_does_not_hide_field(tmp_path):
+    _, facts = inventory(tmp_path, BASE + '''
+    import hashlib
+    def transport(data, *, identity): return data
+    def verified(record: Record, stored):
+        content=transport(stored, identity=record.value)
+        hashlib.sha256(content)
+        return content
+    def read(record: Record, stored):
+        content=verified(record, stored)
+        return content.decode()
+    def outer(record: Record): return read(record, record.value)
+    ''')
+    assert any(row['kind'] == 'downstream_normalization' and row['symbol'] == 'consumer.py::read'
+               for row in evaluate_discovery(facts, registry())['violations'])

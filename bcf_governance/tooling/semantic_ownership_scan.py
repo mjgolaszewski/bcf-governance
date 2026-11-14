@@ -180,8 +180,28 @@ def evaluate_discovery(
                     continue
                 if fact.get('source_receiver_subjects') and entry.canonical_symbol not in fact['source_receiver_subjects']:
                     continue
-                if fact.get('normalization_role') in {'path_suffix_format_predicate', 'source_verified_content_decode'}:
+                if fact.get('normalization_role') == 'path_suffix_format_predicate':
                     continue
+                if fact.get('normalization_role') == 'source_verified_content_decode':
+                    sources = fact.get('source_content_input_parameters')
+                    separate = isinstance(sources, list)
+                    for source_parameter in sources if isinstance(sources, list) else []:
+                        row = functions.get(str(source_parameter.get('symbol', '')), {})
+                        name = str(source_parameter.get('parameter', ''))
+                        parameters = row.get('parameters', {})
+                        if name not in parameters:
+                            separate = False
+                            break
+                        parameter_view: dict[str, Any] = {'parameters': {name: parameters[name]}, 'return_annotation': 'None'}
+                        symbols = row.get('parameter_annotation_symbols')
+                        if isinstance(symbols, dict):
+                            parameter_view.update(parameter_annotation_symbols={name: symbols.get(name, [])},
+                                                  return_annotation_symbols=[])
+                        if _function_mentions(parameter_view, entry):
+                            separate = False
+                            break
+                    if separate:
+                        continue
                 field = fact.get('direct_receiver_field')
                 canonical_fields = {row['field'] for row in entry.raw.get('field_invariants', [])}
                 if field and any(
