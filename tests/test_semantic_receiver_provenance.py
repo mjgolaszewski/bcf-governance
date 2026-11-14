@@ -169,3 +169,13 @@ def test_verified_payload_caller_forwarding_does_not_hide_field(tmp_path):
     ''')
     assert any(row['kind'] == 'downstream_normalization' and row['symbol'] == 'consumer.py::read'
                for row in evaluate_discovery(facts, registry())['violations'])
+
+
+@pytest.mark.parametrize('rebound', [False, True])
+def test_module_path_rebinding_retains_ordinary_normalization(tmp_path, rebound):
+    _, facts = inventory(tmp_path, BASE + '\n    from pathlib import Path\n' + (
+        '    class Fake:\n        def __init__(self, value): self.suffix=value\n    Path=Fake\n'
+        if rebound else '') + '    def read(record: Record):\n        return Path(record.value).suffix.lower()==".json"\n')
+    failures = [row for row in evaluate_discovery(facts, registry())['violations']
+                if row['kind'] == 'downstream_normalization']
+    assert bool(failures) is rebound

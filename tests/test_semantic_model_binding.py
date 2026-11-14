@@ -100,3 +100,24 @@ def test_literal_aliases_preserve_supported_ast_versions(monkeypatch):
         assert literal_type_aliases(tree, "models.py", {"Literal": "typing::Literal"}) == ["models.py::State"]
     monkeypatch.delattr(ast, "TypeAlias", raising=False)
     assert literal_type_aliases(legacy, "models.py", {}) == []
+
+
+@pytest.mark.parametrize('kind', ['validator', 'factory'])
+@pytest.mark.parametrize('policy', ['report', 'fail_closed'])
+def test_stable_model_source_callback_writes_are_rejected(tmp_path, kind, policy):
+    from bcf_governance.tooling.semantic_operation_effects import (
+        SemanticOperationEffectError,
+        validate_operation_effects,
+    )
+    from tests.test_consumer_callback_contracts import OPERATION, inventory, witness
+    (tmp_path/'pyproject.toml').write_text('[project]\nname="callback-fixture"\nversion="1"\nrequires-python=">=3.11"\ndependencies=["pydantic==2.13.4"]\n')
+    source='from pydantic import BaseModel,model_validator,Field\nEVENTS=[]\ndef source_writer():\n EVENTS.append(7)\n return 7\nclass Record(BaseModel):\n value:int'+('=Field(default_factory=source_writer)' if kind=='factory' else '')+'\n'
+    if kind=='validator':
+        source+=' @model_validator(mode="after")\n def callback(self):\n  EVENTS.append(7)\n  return self\n'
+    source+=' @classmethod\n def new(cls):return cls('+('' if kind=='factory' else 'value=7')+')\ndef read():\n Record.new()\n return len(EVENTS)\n'
+    path,facts=inventory(tmp_path,source)
+    assert witness(path)==[1,2]
+    assert any(row.get('library_model_binding') for row in facts['classes'])
+    with pytest.raises(SemanticOperationEffectError, match='write effects'):
+        validate_operation_effects(OPERATION,'consumer.py::read',facts,
+            experimental_protocols=False,unresolved_dynamic_policy=policy)

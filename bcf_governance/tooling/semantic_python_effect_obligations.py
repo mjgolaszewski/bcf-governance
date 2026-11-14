@@ -161,6 +161,22 @@ def extend_python_effect_facts(
         if isinstance(target, ast.Name)})
     fact["private_container_roots"] = sorted(private_container_write_roots(function, builtin_names))
     fact["trivial_finalizer"] = _trivial_finalizer(function)
+    # Module assignments and definitions can replace an imported constructor.
+    module_nodes: list[ast.AST] = list(tree.body)
+    rebound_imports: set[str] = set()
+    while module_nodes:
+        module_node = module_nodes.pop()
+        if isinstance(module_node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            rebound_imports.add(module_node.name)
+            continue
+        if isinstance(module_node, ast.Lambda):
+            continue
+        if isinstance(module_node, ast.Name) and isinstance(module_node.ctx, (ast.Store, ast.Del)):
+            rebound_imports.add(module_node.id)
+        module_nodes.extend(ast.iter_child_nodes(module_node))
+    for source_call in fact.get("calls", []):
+        if source_call.get("import_reference", {}).get("local") in rebound_imports:
+            source_call["known_rebound_import"] = True
     fact["python_value_source"] = ast.unparse(function)
     fact["python_value_shape_sha256"] = hashlib.sha256(
         ast.dump(function, include_attributes=False).encode()
@@ -455,6 +471,11 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                     call["source_record_fields"] = {"subject": subject,
                                                     "fields": cls["generated_record_fields"]}
                 if cls.get("library_model_binding"):
+                    for target in cls.get("model_effect_obligations", {}).get("constructor_callbacks", []):
+                        if target in functions:
+                            callbacks.append({"caller": function["symbol"], "called_symbol": target,
+                                "call_name": target.rsplit("::", 1)[-1], "line": call.get("line"),
+                                "column": call.get("column"), "implicit_callback": True})
                     function.setdefault("implicit_effect_obligations", []).append({
                         "kind": "unqualified_library_model_effects", "line": call.get("line"),
                         "class_symbol": subject})

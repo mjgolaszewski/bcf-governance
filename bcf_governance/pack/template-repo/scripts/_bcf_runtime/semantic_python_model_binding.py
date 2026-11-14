@@ -268,11 +268,13 @@ def qualify_model_bindings(root: Path, inventory: dict[str, Any]) -> None:
             row["local_class_binding"] = True
             row["library_model_binding"] = json.loads(json.dumps(binding))
             callbacks: list[dict[str, Any]] = []
+            constructor_callbacks: set[str] = set()
             current = symbol
             visited = set()
             while current in classes and current not in visited:
                 visited.add(current)
                 parent = classes[current]
+                constructor_callbacks.update(parent.get("model_constructor_callbacks", []))
                 callbacks.extend({"declaring_class": current, "symbol": method["symbol"],
                                   "decorators": method.get("decorators", [])}
                     for method in parent.get("methods", [])
@@ -281,5 +283,6 @@ def qualify_model_bindings(root: Path, inventory: dict[str, Any]) -> None:
                 bases = parent.get("bases", [])
                 current = str(bases[0]["called_symbol"]) if len(bases) == 1 else ""
             row["model_effect_obligations"] = {"declared_callbacks": callbacks,
+                "constructor_callbacks": sorted(constructor_callbacks),
                 "effective_configuration": "unqualified", "input_binding": "unqualified",
                 "returned_aliases": "unqualified"}

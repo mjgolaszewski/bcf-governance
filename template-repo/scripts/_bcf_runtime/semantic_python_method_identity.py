@@ -373,6 +373,23 @@ def discover_class_facts(
                     in {"dataclasses::dataclass", "dataclasses::module.dataclass"}
                     for decorator in node.decorator_list),
                 "model_schema_references": _model_schema_references(node, tree, path, imports, import_bindings),
+                "model_constructor_callbacks": sorted({
+                    f"{path}::{node.name}.{member.name}"
+                    for member in node.body if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    if member.name == "model_post_init" or any(
+                        source_symbol(decorator.func if isinstance(decorator, ast.Call) else decorator, path, imports)
+                        .replace("::module.", "::") in {"pydantic::model_validator", "pydantic::field_validator"}
+                        for decorator in member.decorator_list)
+                } | {
+                    f"{path}::{keyword.value.id}"
+                    for member in node.body if isinstance(member, ast.AnnAssign)
+                    and isinstance(member.value, ast.Call)
+                    and source_symbol(member.value.func, path, imports).replace("::module.", "::") == "pydantic::Field"
+                    for keyword in member.value.keywords if keyword.arg == "default_factory"
+                    and isinstance(keyword.value, ast.Name)
+                    and any(isinstance(candidate, ast.FunctionDef) and candidate.name == keyword.value.id
+                            for candidate in tree.body)
+                }),
                 "methods": methods,
                 "dataclass_default_factories": dataclass_default_factories(node, tree, path, imports),
                 "generated_record_fields": generated_record_fields(node, tree, imports),

@@ -53,6 +53,8 @@ def resolve_normalization_receivers(inventory: dict[str, Any]) -> None:
 
 
 def _standard_call(call: dict[str, Any], module: str, member: str) -> bool:
+    if call.get('known_rebound_import'):
+        return False
     reference = call.get('import_reference', {})
     binding = reference.get('binding', {})
     attributes = reference.get('attributes', [])
