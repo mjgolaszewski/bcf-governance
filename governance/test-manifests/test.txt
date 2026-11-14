@@ -2966,12 +2966,17 @@ tests.test_semantic_method_effects::test_unsupported_same_instance_dispatch_fail
 tests.test_semantic_method_effects::test_unsupported_same_instance_dispatch_fails_closed[missing-method]
 tests.test_semantic_method_effects::test_unsupported_same_instance_dispatch_fails_closed[receiver-alias]
 tests.test_semantic_method_effects::test_unsupported_same_instance_dispatch_fails_closed[receiver-rebinding]
+tests.test_semantic_model_binding::test_literal_aliases_preserve_supported_ast_versions
 tests.test_semantic_model_binding::test_model_and_inherited_envelope_bind_without_claiming_effects
 tests.test_semantic_model_binding::test_model_validator_retains_a_callback_obligation
 tests.test_semantic_model_binding::test_opaque_model_selection_stays_unresolved[custom_meta]
 tests.test_semantic_model_binding::test_opaque_model_selection_stays_unresolved[fake_package]
 tests.test_semantic_model_binding::test_opaque_model_selection_stays_unresolved[rebound]
 tests.test_semantic_model_binding::test_opaque_model_selection_stays_unresolved[schema_hook]
+tests.test_semantic_model_binding::test_stable_model_source_callback_writes_are_rejected[fail_closed-factory]
+tests.test_semantic_model_binding::test_stable_model_source_callback_writes_are_rejected[fail_closed-validator]
+tests.test_semantic_model_binding::test_stable_model_source_callback_writes_are_rejected[report-factory]
+tests.test_semantic_model_binding::test_stable_model_source_callback_writes_are_rejected[report-validator]
 tests.test_semantic_native_containers::test_deep_native_mapping_views_and_nested_get_preserve_values[data={'first':'one','second':'two'}\nresult=''\nfor key,value in data.items():\n result=f'{key}:{value}'\nreturn result-second:two]
 tests.test_semantic_native_containers::test_deep_native_mapping_views_and_nested_get_preserve_values[data={'rows':[{'name':'actual'}]}\nresult=''\nfor row in data.get('rows',[]):\n result=f"value {row.get('name','missing')}"\nreturn result-value actual]
 tests.test_semantic_native_containers::test_escaped_view_loses_native_element_facts_at_the_loop_fixed_point
@@ -3072,6 +3077,8 @@ tests.test_semantic_receiver_provenance::test_annotations_aliases_and_nonconstru
 tests.test_semantic_receiver_provenance::test_annotations_aliases_and_nonconstructing_factories_do_not_hide_request_normalization[snapshot=Snapshot.from_vendor(record)]
 tests.test_semantic_receiver_provenance::test_canonical_receiver_method_and_parameter_alias_still_normalize
 tests.test_semantic_receiver_provenance::test_injected_dispatch_map_get_does_not_normalize_lookup_key
+tests.test_semantic_receiver_provenance::test_module_path_rebinding_retains_ordinary_normalization[False]
+tests.test_semantic_receiver_provenance::test_module_path_rebinding_retains_ordinary_normalization[True]
 tests.test_semantic_receiver_provenance::test_path_format_predicate_is_not_whole_identity_normalization[Path(record.value).suffix.lower() == ".json"--True]
 tests.test_semantic_receiver_provenance::test_path_format_predicate_is_not_whole_identity_normalization[Path(record.value).suffix.lower() == ".json"-Path=lambda value: value-False]
 tests.test_semantic_receiver_provenance::test_path_format_predicate_is_not_whole_identity_normalization[Path(record.value).suffix.lower()--False]
@@ -3080,11 +3087,19 @@ tests.test_semantic_receiver_provenance::test_projection_permission_is_exact_own
 tests.test_semantic_receiver_provenance::test_projection_permission_is_exact_owner_and_retained_field[consumer.py::display-lost2-value-False]
 tests.test_semantic_receiver_provenance::test_projection_permission_is_exact_owner_and_retained_field[consumer.py::other-lost1-value-False]
 tests.test_semantic_receiver_provenance::test_source_constructed_vendor_record_is_distinct_from_request_field
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[alias-alias=record.value-return data--False]
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[record.value-pass-return choose(data, identity=identity)-def choose(data, *, identity): return data-False]
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[record.value-pass-return data--False]
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[stored-pass-return choose(data, identity=identity)-def choose(data, *, identity): return data-True]
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[stored-pass-return choose(data, identity=identity)-def choose(data, *, identity): return identity-False]
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[stored-pass-return data--True]
+tests.test_semantic_receiver_provenance::test_verified_content_binds_actual_payload_and_source_return[stored-pass-return opaque(data, identity=identity)--False]
 tests.test_semantic_receiver_provenance::test_verified_content_role_is_not_annotation_or_field_alias_purity[content=opaque(stored, identity=record.value)-return data-False]
 tests.test_semantic_receiver_provenance::test_verified_content_role_is_not_annotation_or_field_alias_purity[content=record.value-return data-False]
 tests.test_semantic_receiver_provenance::test_verified_content_role_is_not_annotation_or_field_alias_purity[content=transport(stored, identity=record.value)-return data-True]
 tests.test_semantic_receiver_provenance::test_verified_content_role_is_not_annotation_or_field_alias_purity[content=transport(stored, identity=record.value)-return identity-False]
 tests.test_semantic_receiver_provenance::test_verified_content_role_is_not_annotation_or_field_alias_purity[content=transport(stored, identity=record.value)\n        content=record.value-return data-False]
+tests.test_semantic_receiver_provenance::test_verified_payload_caller_forwarding_does_not_hide_field
 tests.test_semantic_receiver_target_completeness::test_destructured_method_write_refuses_exact_same_instance_dispatch[[self._read, self.other] = value]
 tests.test_semantic_receiver_target_completeness::test_destructured_method_write_refuses_exact_same_instance_dispatch[del (self._read, self.other)]
 tests.test_semantic_receiver_target_completeness::test_destructured_method_write_refuses_exact_same_instance_dispatch[self._read, self.other = value]

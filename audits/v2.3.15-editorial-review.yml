@@ -33,9 +33,9 @@ documents:
   canonical_topic_owner: CHANGELOG.md
   topic_role: historical
   before_sha256: 2fc48e70c65a03d9d08a50f0856147558c5f9e842a31b9da6161a9cd748696ce
-  after_sha256: 2fc48e70c65a03d9d08a50f0856147558c5f9e842a31b9da6161a9cd748696ce
+  after_sha256: 93f2d2655127b963ea28f205ec3c1e92d4a055eababc18ffaf3a113fcb0fe882
   findings:
-  - reviewed; no currency, consolidation, or pruning change required
+  - collapsed the unpublished 2.0 candidate and 2.1 repair chronology into the released 2.1 product contract
   disposition: historical
 - path: CLAUDE.md
   audience: repository agents
