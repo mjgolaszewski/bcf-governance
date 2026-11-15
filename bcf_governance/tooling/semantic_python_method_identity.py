@@ -690,8 +690,21 @@ def resolve_method_dispatch(inventory: dict[str, Any]) -> None:
                 or method in instance_rebindings.get(class_symbol, set())
                 or "*" in instance_rebindings.get(class_symbol, set())
             )
+            capture = function.get("lexical_parent_instance_capture", {})
+            parent = functions.get(str(capture.get("parent_symbol", "")), {})
+            captured_binding = (function.get("scope_kind") != "source_callable_frame" or (
+                capture.get("class_symbol") == class_symbol
+                and capture.get("receiver") == reference.get("receiver")
+                and parent.get("class_symbol") == class_symbol
+                and parent.get("scope_kind") != "source_callable_frame"
+                and (classes.get(class_symbol, {}).get("closed_class_binding")
+                     or classes.get(class_symbol, {}).get("constructor_local_binding"))
+                and not any(row.get("called_symbol") == class_symbol
+                    for row in inventory.get("class_binding_mutations", []))
+            ))
             if (
                 kind == "same_instance"
+                and captured_binding
                 and class_symbol not in sensitive
                 and target in functions
                 and not custom_decorators

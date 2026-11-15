@@ -23,6 +23,36 @@ def scoped_nodes(root: ast.AST) -> list[ast.AST]:
     return result
 
 
+
+def lexical_parent_receiver(
+    node: ast.FunctionDef | ast.AsyncFunctionDef, fact: dict[str, Any],
+    captures: set[str], stable: bool,
+) -> str | None:
+    """Describe one unchanged lexical instance cell, never its dynamic type."""
+    args = [*node.args.posonlyargs, *node.args.args]
+    if (not stable or not args or not fact.get("class_symbol")
+            or fact.get("scope_kind") == "source_callable_frame" or node.decorator_list):
+        return None
+    receiver = args[0].arg
+    if receiver not in captures:
+        return None
+    nodes = scoped_nodes(node)
+    parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
+    for value in nodes:
+        if isinstance(value, (ast.Nonlocal, ast.Global)) or (
+            isinstance(value, ast.Name) and value.id in {
+                "globals", "locals", "vars", "eval", "exec", "getattr", "setattr", "delattr"
+            }
+        ):
+            return None
+        if isinstance(value, ast.Name) and value.id == receiver:
+            parent = parents.get(id(value))
+            if (not isinstance(value.ctx, ast.Load) or not isinstance(parent, ast.Attribute)
+                    or parent.value is not value):
+                return None
+    return receiver
+
+
 def discover_source_callable_frames(
     tree: ast.Module, roots: list[dict[str, Any]], *, path: str,
     imports: dict[str, str], import_bindings: dict[str, dict[str, Any]],
@@ -80,9 +110,20 @@ def discover_source_callable_frames(
                 local_types=local_types, class_name=None, function=declaration, initializer_symbol=symbol)
             for capture in captures:
                 visitor.assignments[capture] = {"parameter:" + capture}
+            parent_receiver = lexical_parent_receiver(node, fact, captures, bool(stable))
+            if parent_receiver is not None:
+                visitor.class_symbol = str(fact["class_symbol"])
+                visitor.receiver = parent_receiver
+                visitor.method_binding_kind = "instance"
+                visitor.receiver_rebound = False
             for statement in declaration.body:
                 visitor.visit(statement)
             child_fact = visitor.facts()
+            if parent_receiver is not None:
+                child_fact["lexical_parent_instance_capture"] = {
+                    "parent_symbol": fact["symbol"], "receiver": parent_receiver,
+                    "class_symbol": fact["class_symbol"],
+                }
             extend_python_effect_facts(tree, declaration, child_fact, path, builtin_names=builtin_names)
             child_fact["scope_kind"] = "source_callable_frame"
             definitions.append({"kind": "lambda" if lambda_node else "function", "name": name,
