@@ -8,7 +8,12 @@ import ast
 import hashlib
 from typing import Any
 
+from bcf_governance.tooling.semantic_operation_effects import (
+    SemanticOperationEffectError,
+    validate_operation_effects,
+)
 from bcf_governance.tooling.semantic_ownership_inventory import _imports
+from bcf_governance.tooling.semantic_python_value_origins import value_origins
 
 from .inventory import native_builtin_names as container_builtin_names
 from .semantic_python_exact_control import ExactFlow
@@ -257,6 +262,11 @@ class ExactSourceBodies:
             target = binding.subject
         if receiver is not None:
             receiver = frame.state.resolve(receiver)
+            if receiver.kind == "legacy-instance" and isinstance(node.func, ast.Attribute):
+                import json
+                payload = json.loads(receiver.subject.removeprefix("source-instance:"))
+                target = payload.get("methods", {}).get(node.func.attr, "")
+                return self._legacy_call(str(target), [receiver, *arguments], keywords, frame.state)
             if receiver.kind == "record" and isinstance(node.func, ast.Attribute):
                 self.record_fields(receiver.subject)
                 method = next((row for row in self.classes[receiver.subject].get("methods", [])
@@ -282,6 +292,8 @@ class ExactSourceBodies:
         if target not in self.functions:
             raise frame.refusal(node, "unqualified source or library invocation: " + target)
         values = [source_receiver, *arguments] if source_receiver is not None else arguments
+        if any(call.get("source_constructor_frame", {}).get("instance_methods") for call in self.functions[target].get("calls", [])):
+            return self._legacy_call(target, values, keywords, frame.state)
         result, after, names = self.call(target, values, keywords, frame.state)
         if source_receiver is not None and isinstance(node.func, ast.Attribute) and (path := value_path(node.func.value)):
             set_path(frame.state, path, after.env[names[0]])
@@ -294,6 +306,35 @@ class ExactSourceBodies:
                 set_path(frame.state, path, after.env.get(keyword.arg, UNKNOWN))
         declaration = ast.parse(self.functions[target]["python_value_source"]).body[0]
         return ExactValue("awaitable", (result,)) if isinstance(declaration, ast.AsyncFunctionDef) else result
+
+    def _legacy_call(self, symbol: str, arguments: list[ExactValue], keywords: dict[str, ExactValue], state: ExactState) -> ExactValue:
+        row = self.functions.get(symbol, {})
+        if not row.get("python_value_source"):
+            raise ExactProtocolRefusal("legacy source invocation is absent")
+        declaration = ast.parse(row["python_value_source"]).body[0]
+        if not isinstance(declaration, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise ExactProtocolRefusal("legacy source invocation is not callable")
+        names = [arg.arg for arg in [*declaration.args.posonlyargs, *declaration.args.args]]
+        if len(arguments) > len(names) or set(names[:len(arguments)]) & keywords.keys():
+            raise ExactProtocolRefusal("legacy invocation does not bind")
+        def origin(value: ExactValue) -> str:
+            resolved = state.resolve(value)
+            if resolved.kind == "legacy-instance":
+                return resolved.subject
+            return "scalar" if resolved.kind in {"none", "bool", "int", "str", "float", "complex", "bytes"} else "unknown"
+        bound = dict(zip(names, (origin(value) for value in arguments), strict=False))
+        bound.update({name: origin(value) for name, value in keywords.items()})
+        bound["$source_callable_proof"] = "true"
+        context = tuple(sorted(bound.items()))
+        operation = {"id": "native-source-composition", "authoritative_read": False,
+                     "allowed_mutation_ports": [], "allowed_authority_ports": [], "non_authoritative_output_effects": []}
+        try:
+            validate_operation_effects(operation, symbol, self.inventory, experimental_protocols=False, _entry_arguments=context)
+        except SemanticOperationEffectError as error:
+            raise ExactProtocolRefusal(str(error)) from error
+        result = value_origins(symbol, self.functions, context).get("return", "unknown")
+        self.checked.add(symbol)
+        return ExactValue("legacy-instance", subject=result) if str(result).startswith("source-instance:") else UNKNOWN
 
     def call(self, symbol: str, arguments: list[ExactValue], keywords: dict[str, ExactValue],
              caller: ExactState | None = None) -> tuple[ExactValue, ExactState, list[str]]:

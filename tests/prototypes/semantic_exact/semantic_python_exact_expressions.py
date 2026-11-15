@@ -98,9 +98,10 @@ class ExactExpressions:
         if clause.is_async:
             raise self.refusal(node, "foreign async iterator")
         source = self.resolved(clause.iter)
-        if source.kind not in SEQUENCES | {"dict"}:
+        if source.kind not in SEQUENCES | {"dict", "str", "bytes"}:
             raise self.refusal(node, "foreign comprehension iterator")
         original = self.state
+        before_heap = original.copy()
         inner = original.copy()
         self.state = inner
         try:
@@ -126,7 +127,7 @@ class ExactExpressions:
             # Comprehension mutations of a captured owned allocation are real.
             # Join them into the outer heap instead of discarding their effects.
             if states:
-                original.heap.update(ExactState.join(states).heap)
+                original.heap.update(ExactState.join([before_heap, *states]).heap)
             if isinstance(node, ast.DictComp):
                 shape = ExactValue("dict", (union(*keys), union(*values)))
             else:
@@ -159,7 +160,9 @@ class ExactExpressions:
             if value.kind != "awaitable" or len(value.children) != 1:
                 raise self.refusal(node, "foreign await protocol")
             return value.children[0]
-        if isinstance(node, (ast.GeneratorExp, ast.ListComp, ast.SetComp, ast.DictComp)):
+        if isinstance(node, ast.GeneratorExp):
+            raise self.refusal(node, "deferred generator requires an immediate native consumer")
+        if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp)):
             return self._generator(node)
         if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
             if any(isinstance(item, ast.Starred) for item in node.elts):
@@ -218,6 +221,16 @@ class ExactExpressions:
         if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
             self.condition(node.operand)
             return BOOL
+        if isinstance(node, ast.BoolOp):
+            def boolean_result(value: ast.AST) -> bool:
+                return (isinstance(value, ast.Compare)
+                        or isinstance(value, ast.UnaryOp) and isinstance(value.op, ast.Not)
+                        or isinstance(value, ast.Constant) and type(value.value) is bool
+                        or isinstance(value, ast.BoolOp) and all(boolean_result(item) for item in value.values))
+            if not boolean_result(node):
+                raise self.refusal(node, "unqualified value-producing boolean operator")
+            self.condition(node)
+            return BOOL
         if isinstance(node, ast.UnaryOp):
             value = self.resolved(node.operand)
             if value.kind not in {"int", "float", "complex", "bool"}:
@@ -238,7 +251,8 @@ class ExactExpressions:
                 right = self.resolved(comparator)
                 if not isinstance(operator, (ast.Is, ast.IsNot)):
                     compared = native_element(right) if isinstance(operator, (ast.In, ast.NotIn)) else right
-                    if not (callback_free(left) and callback_free(compared) or self.driver.comparable(left, compared)):
+                    if not (callback_free(left) and callback_free(compared)
+                            or isinstance(operator, (ast.Eq, ast.NotEq)) and self.driver.comparable(left, compared)):
                         raise self.refusal(node, "foreign comparison protocol")
                 left = right
             return BOOL
@@ -264,7 +278,12 @@ class ExactExpressions:
             if any(isinstance(item, ast.Starred) for item in node.args) or any(item.arg is None for item in node.keywords):
                 raise self.refusal(node, "starred invocation")
             receiver_arg = self.expression(node.func.value) if isinstance(node.func, ast.Attribute) else None
-            values = [self.expression(item) for item in node.args]
+            native_consumer = (isinstance(node.func, ast.Name) and node.func.id not in self.state.env
+                               and node.func.id in self.row.get("unshadowed_container_builtins", [])
+                               and node.func.id in {"any", "all", "set", "frozenset", "tuple", "list"}
+                               and len(node.args) == 1 and not node.keywords)
+            values = [self._generator(item) if native_consumer and isinstance(item, ast.GeneratorExp)
+                      else self.expression(item) for item in node.args]
             keywords = {str(item.arg): self.expression(item.value) for item in node.keywords}
             if (isinstance(node.func, ast.Name) and node.func.id not in self.state.env
                     and node.func.id in self.row.get("unshadowed_container_builtins", [])):

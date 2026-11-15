@@ -60,6 +60,8 @@ environment_facts:
   - Follow-up guarded native data/control and cancellation-custody construction is retained under tests/prototypes/semantic_exact. These components are
     unqualified and are not wired into the shipped operation validator. Required input obligations and remaining end-to-end work are recorded in its status.yml;
     focused component tests do not confer consumer acceptance, effect permissions, controller custody or release credit.
+  - Follow-up callable identity now distinguishes a native empty-tuple default and a stable recursive own cell from body purity.
+    Changed-body controls do not establish the remaining native input/capture protocols or close the two broader ownership gates.
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml

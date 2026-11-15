@@ -221,3 +221,46 @@ def test_classvar_alias_descriptor_is_not_a_native_storage_slot(tmp_path):
                 return record.value.casefold()
         ''', [UNKNOWN])
 
+
+def test_unconsumed_generator_cannot_apply_a_future_heap_overwrite(tmp_path):
+    with pytest.raises(ExactProtocolRefusal, match='deferred generator'):
+        check(tmp_path, '''
+            def replace(data):
+                data['value']='native'
+                return 0
+            def read(value):
+                data={'value':value}
+                deferred=(replace(data) for unused in (0,))
+                return f"{data['value']}"
+        ''', [UNKNOWN])
+
+
+def test_frozen_record_ordering_does_not_use_generated_equality_proof(tmp_path):
+    with pytest.raises(ExactProtocolRefusal):
+        check(tmp_path, '''
+            from dataclasses import dataclass
+            @dataclass(frozen=True, slots=True)
+            class Record:
+                value: str
+                def __lt__(self, other):
+                    emit_effect()
+                    return True
+            def read(left, right):
+                if type(left) is not Record or type(right) is not Record: raise ValueError('record')
+                if type(left.value) is not str or type(right.value) is not str: raise ValueError('value')
+                return left < right
+        ''', [UNKNOWN, UNKNOWN])
+
+
+def test_actual_owned_ledger_uses_existing_body_proof_with_unknown_identity(tmp_path):
+    from tests.test_semantic_key_admission import SOURCE
+    result, proof = check(tmp_path, SOURCE + '''
+def read(value):
+    ledger=make_batch_export_identity_ledger(max_identities=7)
+    ledger.observe_account(value)
+    ledger.require_nonempty()
+    return 7
+''', [UNKNOWN])
+    assert result.kind == 'int'
+    assert 'consumer.py::BatchExportIdentityLedger.observe_account' in proof.checked
+

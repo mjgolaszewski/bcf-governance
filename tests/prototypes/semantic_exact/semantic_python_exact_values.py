@@ -84,7 +84,11 @@ def native_truth(value: ExactValue) -> bool:
 def native_element(value: ExactValue) -> ExactValue:
     elements = []
     for item in alternatives(value):
-        if item.kind in SEQUENCES and item.children:
+        if item.kind == "str":
+            elements.append(STR)
+        elif item.kind == "bytes":
+            elements.append(INT)
+        elif item.kind in SEQUENCES and item.children:
             elements.append(item.children[0])
         elif item.kind == "dict" and item.children:
             elements.append(item.children[0])

@@ -2,7 +2,7 @@ status: unqualified_development_checkpoint
 shipped_runtime_integration: false
 public_operation_validator_changed: false
 purpose: Connect genuine local rejecting admission and resource lifetime proofs for current BDMCP publication.
-source_input: e09b92e4a78831904ff4a85ac3163523564e408a
+source_input: 093093ead0700965e27f7526dae83d5531b90ede
 component_boundaries:
   data: Exact native kinds, borrowed children, owned allocation identities, real source-body guards and complete immutable tuple admission.
   custody: Complete structural drain, thread-work and acquisition/release algorithms, with explicit native input obligations.
@@ -17,3 +17,11 @@ remaining_before_product_delivery:
 - Demonstrate strict actual Build four-write zero-authority positive, then every required causal omission and hostile protocol control.
 - Keep Submit independent; complete standard CI, consolidated review and ordinary protected custody before official adoption.
 source_retention: Preserve every prototype byte and the production metadata draft in reachable Git history; no source is discarded.
+changed_body_checkpoint:
+  recursive_identity: Stable own lexical cells bind without recursive payload serialization; bodies remain checked.
+  defaults: Only literal constants and the empty immutable tuple qualify, not mutable or executable defaults.
+  native_invocations: Existing type/exception invocation invariants survive successful rejecting-guard paths.
+  composition: Owned-ledger calls delegate through the original strict effect walker with actual abstract arguments.
+  prototype_hardening: Deferred unconsumed generators refuse; record ordering cannot borrow generated equality proof.
+  actual_data_components: Source inventory, binding validator, selection validator, logical records and projection bodies traversed on the pinned source.
+  acceptance: Not integrated end-to-end. Actual Build/Submit and the two broader self gates remain unqualified.

@@ -77,7 +77,12 @@ def _value_origins(
     format_inputs = {tuple(positions[id(node.value)]) for node in ast.walk(function)
                      if isinstance(node, ast.FormattedValue) and static_scalar_expression(node.value, function, row.get('unshadowed_container_builtins', []))}
     empty.update(constructor_inputs=constructor_inputs, implicit_calls=implicit_calls, format_inputs=format_inputs)
-    from .semantic_python_callable_frames import lexical_callable_contexts
+    from .semantic_python_callable_frames import (
+        callable_default_origin,
+        lexical_callable_contexts,
+        source_callable_captures,
+        source_callable_origin,
+    )
     empty.update(lexical_callable_contexts(row, function, functions, arguments, positions))
     # These invocation facts depend only on exact lexical/native binding, never
     # a loop's transient argument origins. Retain them when control loses value
@@ -102,7 +107,7 @@ def _value_origins(
     inactive_calls: set[tuple[int, int]] = set(empty.get("inactive_calls", set()))
     inactive_lines: set[int] = set(empty.get("inactive_lines", set()))
     unresolved_source_callables: set[tuple[int, int]] = set(empty.get("unresolved_source_callables", set()))
-    native_calls: set[tuple[int, int]] = set()
+    native_calls: set[tuple[int, int]] = set(empty.get("native_calls", set()))
     unqualified_protocol_sites: set[tuple[int, int]] = set()
     unqualified_source_awaits: set[tuple[int, int]] = set()
     def inactive(nodes: list[ast.stmt]) -> None:
@@ -112,10 +117,7 @@ def _value_origins(
                 if isinstance(child, ast.Call):
                     inactive_calls.add(tuple(positions[id(child)]))
     def callable_origin(definition: dict[str, Any]) -> str:
-        if not definition.get("stable"):
-            return UNKNOWN
-        return "callable:" + json.dumps({"symbol": definition["symbol"],
-            "captures": {name: env.get(name, UNKNOWN) for name in definition.get("captures", [])}}, sort_keys=True)
+        return source_callable_origin(definition, env)
     def known_condition(node: ast.AST) -> bool | None:
         if isinstance(node, ast.Constant) and isinstance(node.value, bool):
             return node.value
@@ -272,9 +274,7 @@ def _value_origins(
             if isinstance(node.func, ast.Name):
                 origin = env.get(node.func.id, UNKNOWN)
                 if origin.startswith("callable:"):
-                    binding = json.loads(origin.removeprefix("callable:"))
-                    callee = str(binding["symbol"])
-                    captured = dict(binding["captures"])
+                    callee, captured = source_callable_captures(origin)
                     if functions.get(callee, {}).get("scope_kind") == "source_callable_frame":
                         contextual_calls[site] = callee
                     else:
@@ -455,7 +455,7 @@ def _value_origins(
                     callable_defaults.extend((argument.arg, default) for argument, default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True) if default is not None)
                     for name, default in callable_defaults:
                         if name not in bound:
-                            bound[name] = SCALAR if isinstance(default, ast.Constant) else UNKNOWN
+                            bound[name] = callable_default_origin(default)
                             if isinstance(default, ast.Constant) and default.value is None:
                                 bound["$none:" + name] = "true"
                     for name, argument in [*zip(argument_names, node.args, strict=False), *((keyword.arg, keyword.value) for keyword in node.keywords if keyword.arg is not None)]:

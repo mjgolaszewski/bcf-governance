@@ -5,10 +5,39 @@ Copyright 2026 Michael Golaszewski. Licensed under the MIT License.
 from __future__ import annotations
 
 import ast
+import json
 from typing import Any
 
 from .semantic_python_effect_obligations import extend_python_effect_facts
 from .semantic_python_execution_inventory import _FunctionVisitor
+
+
+def callable_default_origin(node: ast.AST) -> str:
+    """Recognize a literal value, without qualifying a callable's body."""
+    if isinstance(node, ast.Constant):
+        return "scalar"
+    if isinstance(node, ast.Tuple) and not node.elts:
+        return "tuple"
+    return "unknown"
+
+
+def source_callable_origin(definition: dict[str, Any], env: dict[str, str]) -> str:
+    """Bind a stable recursive cell after definition, without recursive JSON."""
+    if not definition.get("stable"):
+        return "unknown"
+    recursive = ([definition["name"]] if definition.get("kind") == "function"
+                 and definition["name"] in definition.get("captures", []) else [])
+    return "callable:" + json.dumps({"symbol": definition["symbol"],
+        "captures": {name: env.get(name, "unknown") for name in definition.get("captures", []) if name not in recursive},
+        "recursive_cells": recursive}, sort_keys=True)
+
+
+def source_callable_captures(origin: str) -> tuple[str, dict[str, str]]:
+    payload = json.loads(origin.removeprefix("callable:"))
+    captured = dict(payload["captures"])
+    for name in payload.get("recursive_cells", []):
+        captured[name] = origin
+    return str(payload["symbol"]), captured
 
 
 def scoped_nodes(root: ast.AST) -> list[ast.AST]:
@@ -100,7 +129,7 @@ def discover_source_callable_frames(
             free = {value.id for value in child_nodes if isinstance(value, ast.Name) and isinstance(value.ctx, ast.Load)} - bound
             captures = free & lexical
             stable = not declaration.decorator_list and not declaration.args.vararg and not declaration.args.kwarg
-            stable &= all(isinstance(value, ast.Constant) for value in [*declaration.args.defaults, *declaration.args.kw_defaults] if value is not None)
+            stable &= all(callable_default_origin(value) != "unknown" for value in [*declaration.args.defaults, *declaration.args.kw_defaults] if value is not None)
             stable &= not any(isinstance(value, (ast.Nonlocal, ast.Global)) for value in child_nodes)
             if not lambda_node:
                 stable &= sum(isinstance(value, (ast.FunctionDef, ast.AsyncFunctionDef)) and value.name == name for value in nodes) == 1
@@ -154,7 +183,6 @@ def lexical_callable_contexts(
     Captured values stay unknown in this fallback; it never grants native or
     receiver ownership from an annotation or a surrounding opaque call.
     """
-    import json
     nodes = scoped_nodes(function)
     parents = {id(child): parent for parent in nodes for child in ast.iter_child_nodes(parent)}
     env = dict(arguments)
@@ -214,8 +242,7 @@ def lexical_callable_contexts(
                 return "unknown"
             if any(isinstance(value, ast.Call) and definition["line"] < value.lineno < node.lineno for value in nodes):
                 return "unknown"
-        return "callable:" + json.dumps({"symbol": definition["symbol"],
-            "captures": {name: "unknown" for name in definition.get("captures", [])}}, sort_keys=True)
+        return source_callable_origin(definition, {})
 
     for node in nodes:
         if not isinstance(node, ast.Call):
@@ -229,7 +256,7 @@ def lexical_callable_contexts(
         ):
             unresolved_bindings.add(site)
         target = str(facts.get(site, {}).get("called_symbol", ""))
-        captured = {}
+        captured: dict[str, str] = {}
         if isinstance(node.func, ast.Name) and env.get(node.func.id, "").startswith("callable:") and node.func.id not in bound_names:
             uses = [value for value in nodes if isinstance(value, ast.Name) and value.id == node.func.id and isinstance(value.ctx, ast.Load)]
             safe = True
@@ -240,9 +267,7 @@ def lexical_callable_contexts(
                     safe = False
             if not safe:
                 continue
-            payload = json.loads(env[node.func.id].removeprefix("callable:"))
-            target = str(payload["symbol"])
-            captured = payload["captures"]
+            target, captured = source_callable_captures(env[node.func.id])
             if functions.get(target, {}).get("scope_kind") != "source_callable_frame":
                 continue
             contextual[site] = target
@@ -264,7 +289,7 @@ def lexical_callable_contexts(
         defaults.extend((value.arg, default) for value, default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True) if default is not None)
         for name, default in defaults:
             if name not in bound:
-                bound[name] = "scalar" if isinstance(default, ast.Constant) else "unknown"
+                bound[name] = callable_default_origin(default)
                 if isinstance(default, ast.Constant) and default.value is None:
                     bound["$none:" + name] = "true"
         if any(value.startswith("callable:") for value in bound.values()) or captured:

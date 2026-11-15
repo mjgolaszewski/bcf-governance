@@ -70,6 +70,7 @@ def validate_operation_effects(
     _origin_cache: dict[tuple[int, str, tuple[tuple[str, str], ...]], dict[str, Any]] | None = None,
     experimental_protocols: bool = True,
     _observation_keys: dict[str, set[str]] | None = None,
+    _entry_arguments: tuple[tuple[str, str], ...] = (),
 ) -> tuple[int, int]:
     """Trace one entrypoint and require all effects to cross declared ports."""
     if unresolved_dynamic_policy not in {'report', 'fail_closed'}:
@@ -110,7 +111,7 @@ def validate_operation_effects(
     reached: set[tuple[str, str]] = set()
     writes: set[str] = set()
     authority: set[str] = set()
-    pending: list[tuple[str, tuple[tuple[str, str], ...], bool]] = [(entrypoint, (), False), *((path + "::<module>", (), False) for path in source_modules if path + "::<module>" in functions)]
+    pending: list[tuple[str, tuple[tuple[str, str], ...], bool]] = [(entrypoint, _entry_arguments, False), *((path + "::<module>", (), False) for path in source_modules if path + "::<module>" in functions)]
     visited: set[tuple[str, tuple[tuple[str, str], ...], bool]] = set()
     # The function-name population is fixed for this one fresh validation.
     # Reuse only lookup answers, never source observations or acceptance results.
