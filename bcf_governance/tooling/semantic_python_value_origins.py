@@ -329,8 +329,16 @@ def value_origins(
                     and not any(isinstance(value, ast.Starred) for value in node.args)
                     and all(keyword.arg is not None for keyword in node.keywords)):
                 name = node.func.id
-                if (native_exception_binding(name) and not keywords
-                        and all(value in CONTAINERS | {SCALAR} for value in values)):
+                if name == "type" and len(values) == 1 and not keywords:
+                    # Exact one-argument type reads Py_TYPE, without invoking
+                    # the argument's __class__. The returned class may have an
+                    # effectful metaclass: retain UNKNOWN for every later use.
+                    native_calls.add(site)
+                    return UNKNOWN
+                if native_exception_binding(name) and not keywords:
+                    # The separately verified native BaseException slots retain
+                    # positional references; they do not stringify or index
+                    # borrowed arguments. Formatting the result stays unknown.
                     native_calls.add(site)
                     return UNKNOWN
                 if name in {"len", "bool"} and len(values) == 1 and not keywords:
