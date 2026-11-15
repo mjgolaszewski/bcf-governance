@@ -140,11 +140,27 @@ def value_origins(
             # A lone FORMAT_VALUE can preserve a str subclass returned by a
             # user formatter. Nominal string kind is not exact native purity.
             return SCALAR if len(parts) != 1 or parts[0] == SCALAR else 'str-like'
+        if (isinstance(node, ast.Compare) and len(node.ops) == 1
+                and isinstance(node.ops[0], (ast.Is, ast.IsNot))
+                and len(node.comparators) == 1
+                and isinstance(node.left, ast.Call)
+                and isinstance(node.left.func, ast.Name) and node.left.func.id == "type"
+                and len(node.left.args) == 1 and not node.left.keywords
+                and isinstance(node.comparators[0], ast.Name)
+                and node.comparators[0].id in {"str", "int", "float", "complex", "bool", "bytes"}
+                and {"type", node.comparators[0].id} <= set(row.get("unshadowed_container_builtins", []))):
+            # Native type identity is callback-free even in a compound guard;
+            # evaluate the operand, but do not infer its value type from this test.
+            expression(node.left.args[0])
+            return SCALAR
         if isinstance(node, (ast.UnaryOp, ast.BinOp, ast.Compare, ast.BoolOp)):
             operands = [expression(child) for child in ast.iter_child_nodes(node)
                         if isinstance(child, ast.expr)]
             if operands and all(value in CONTAINERS | {SCALAR, 'native'} for value in operands):
-                return SCALAR if isinstance(node, (ast.UnaryOp, ast.Compare, ast.JoinedStr)) else 'native'
+                return SCALAR if (
+                    isinstance(node, (ast.UnaryOp, ast.Compare, ast.JoinedStr))
+                    or isinstance(node, ast.BoolOp) and all(value == SCALAR for value in operands)
+                ) else 'native'
             initializer_protocol_unknown |= initializer_frame
             invalidate()
             return UNKNOWN
@@ -279,12 +295,19 @@ def value_origins(
                 # Receiver binding is deliberately left to a later qualified
                 # slice; never bind a positional argument as an implicit self.
                 if not names or names[0] not in {"self", "cls"}:
-                    initializer_protocol_unknown |= initializer_frame
                     bound = dict(zip(names, values, strict=False))
                     bound.update(keywords)
                     context = tuple(sorted(bound.items()))
                     calls[site] = context
                     result = value_origins(callee, functions, context, active | {symbol}, budget)
+                    # A closed scalar-only helper cannot observe or retain the
+                    # new receiver. Its body still participates in effect proof.
+                    initializer_protocol_unknown |= initializer_frame and (
+                        any(value != SCALAR for value in [*values, *keywords.values()])
+                        or result.get("retained", True)
+                        or result.get("degraded", False)
+                        or result.get("analysis_budget_exhausted", False)
+                    )
                     if result.get("retained", True):
                         invalidate()
                     elif result.get("degraded"):
