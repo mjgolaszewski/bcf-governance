@@ -175,6 +175,9 @@ def validate_operation_effects(
                 return tuple(sorted({**dict(bound), "$source_callable_proof": "true"}.items()))
             return bound
 
+        if origins.get("instance_control_obligations"):
+            reject(f"operation {operation['id']} contains unqualified source instance control at {symbol}: "
+                   + ", ".join(f"{kind}:{line}" for line, kind in sorted(origins["instance_control_obligations"])))
         if origins.get("unqualified_source_awaits"):
             reject(f"operation {operation['id']} contains an unqualified source callback awaitable at {symbol}")
         if strict_source_callable and (origins.get("unqualified_protocol_sites")

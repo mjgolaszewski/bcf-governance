@@ -313,6 +313,15 @@ def discover_python_source(
                 for statement in member.body:
                     visitor.visit(statement)
                 fact = visitor.facts()
+                fact["source_binding_stable"] = bool(class_name) or (
+                    not member.decorator_list
+                    and not any(isinstance(value, ast.Name) and (
+                        value.id == member.name and isinstance(value.ctx, (ast.Store, ast.Del))
+                        or value.id in {"globals", "locals", "vars", "eval", "exec", "__import__"}
+                    ) for value in ast.walk(tree))
+                    and sum(isinstance(value, (ast.FunctionDef, ast.AsyncFunctionDef))
+                        and value.name == member.name for value in ast.walk(tree)) == 1
+                )
                 extend_python_effect_facts(tree, member, fact, relative, builtin_names=builtin_names)
                 functions.append(fact)
                 module_functions.append(fact)
@@ -703,6 +712,13 @@ def _resolve_python_imports(
                 class_row["local_class_binding"] = False
             if escaped is not None:
                 pending.extend(str(base.get("called_symbol", "")) for base in class_row.get("bases", []))
+    for function in resolved.get("functions", []):
+        cls = classes_by_symbol.get(str(function.get("class_symbol")))
+        if cls is not None:
+            function["source_binding_stable"] = bool(
+                cls.get("closed_class_binding") or cls.get("constructor_local_binding")
+            ) and not any(row.get("called_symbol") == cls["symbol"]
+                          for row in resolved.get("class_binding_mutations", []))
     qualify_model_bindings(repo_root, resolved)
     resolve_method_dispatch(resolved)
     from .semantic_python_dataclass_contracts import discover_generated_copies

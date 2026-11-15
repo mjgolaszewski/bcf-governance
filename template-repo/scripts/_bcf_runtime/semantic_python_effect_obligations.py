@@ -502,6 +502,8 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                     call["source_constructor_frame"] = {
                         "subject": subject, "initializer": initializer["symbol"] if initializer else None,
                         "instance_methods": instance_methods.get(subject, {}),
+                        "instance_fields": sorted(set(functions.get(str(initializer["symbol"]), {}).get("receiver_attribute_mutations", []))
+                            - {method["name"] for method in cls.get("methods", [])}) if initializer else [],
                         "initializer_owner": closure["initializer_owner"],
                         "super_initializer": closure["super_initializer"],
                         "native_exception_initializer": initializer is None and 'builtins::BaseException' in closure['mro'],

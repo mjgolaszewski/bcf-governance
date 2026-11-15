@@ -85,6 +85,11 @@ def value_origins(
         and (node.func.id == "type" and len(node.args) == 1
              or native_exception_binding(node.func.id))
     }
+    from .semantic_python_instance_control import instance_control_contexts
+    instance_context = instance_control_contexts(row, function, functions, arguments, positions)
+    empty["calls"].update(instance_context.get("instance_calls", {}))
+    empty["contextual_calls"].update(instance_context.get("instance_contextual_calls", {}))
+    empty["instance_control_obligations"] = instance_context.get("instance_control_obligations", set())
     env = dict(arguments)
     callable_definitions = row.get("source_callable_definitions", [])
     inactive_calls: set[tuple[int, int]] = set(empty.get("inactive_calls", set()))
@@ -353,10 +358,22 @@ def value_origins(
                             and not any(proof.get(key, False) for key in (
                                 "degraded", "source_control_unknown", "analysis_budget_exhausted"
                             ))):
-                        return "source-instance:" + json.dumps({
-                            "subject": spec["subject"], "site": [symbol, *site],
-                            "methods": spec["instance_methods"],
-                        }, sort_keys=True)
+                        init_ast = ast.parse(functions[initializer]["python_value_source"]).body[0]
+                        parents = {id(child): parent for parent in ast.walk(init_ast) for child in ast.iter_child_nodes(parent)}
+                        init_receiver = next(iter(functions[initializer].get("parameters", {})), None)
+                        aliases_self = any(isinstance(part, ast.Name) and isinstance(part.ctx, ast.Load)
+                            and part.id == init_receiver
+                            and not (isinstance(parent_node := parents.get(id(part)), ast.Attribute)
+                                     and parent_node.value is part)
+                            for part in ast.walk(init_ast))
+                        captures_self = any(isinstance(part, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda))
+                            and part is not init_ast and any(isinstance(item, ast.Name) and item.id == init_receiver
+                                for item in ast.walk(part)) for part in ast.walk(init_ast))
+                        if not aliases_self and not captures_self:
+                            return "source-instance:" + json.dumps({
+                                "subject": spec["subject"], "site": [symbol, *site],
+                                "methods": spec["instance_methods"], "fields": spec.get("instance_fields", []),
+                            }, sort_keys=True)
             if (spec.get('native_exception_initializer') and (*site, spec.get('subject')) in constructor_inputs):
                 return UNKNOWN
             if (isinstance(node.func, ast.Name)
@@ -704,4 +721,5 @@ def value_origins(
             'inactive_calls': inactive_calls, 'inactive_lines': inactive_lines,
             'unresolved_source_callables': unresolved_source_callables,
             'native_calls': native_calls, 'unqualified_protocol_sites': unqualified_protocol_sites,
-            'unqualified_source_awaits': unqualified_source_awaits}
+            'unqualified_source_awaits': unqualified_source_awaits,
+            'instance_control_obligations': empty.get('instance_control_obligations', set())}
