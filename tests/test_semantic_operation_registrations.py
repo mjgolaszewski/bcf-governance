@@ -6,13 +6,14 @@ from pathlib import Path
 import pytest
 
 from bcf_governance.tooling.semantic_operation_effects import (
-    SemanticOperationEffectError, validate_operation_effects,
+    SemanticOperationEffectError,
+    validate_operation_effects,
+)
+from bcf_governance.tooling.semantic_operation_registrations import (
+    TypedRegistrationError,
+    discover_typed_registrations,
 )
 from bcf_governance.tooling.semantic_ownership_inventory import discover_python_source
-from bcf_governance.tooling.semantic_operation_registrations import (
-    TypedRegistrationError, discover_typed_registrations,
-)
-
 
 PATTERNS = '''from dataclasses import dataclass
 
@@ -147,7 +148,11 @@ def payload(registered):
 @pytest.mark.parametrize("mutation", [None, "legacy-opt-in", "false-direction", "omitted-operation"])
 def test_owner_integrates_actual_handler_effects_and_explicit_opt_in(registered, mutation):
     import shutil
-    from bcf_governance.tooling.semantic_authority_contracts import SemanticAuthorityError, _validate_operations
+
+    from bcf_governance.tooling.semantic_authority_contracts import (
+        SemanticAuthorityError,
+        _validate_operations,
+    )
 
     root, _ = registered
     (root / "schemas").mkdir()
@@ -178,3 +183,31 @@ def test_local_dataclasses_shadow_cannot_claim_frozen_contract(registered):
     (root / "dataclasses.py").write_text("def dataclass(**kwargs):\n    return lambda cls: cls\n")
     with pytest.raises(TypedRegistrationError, match="dataclasses shadow"):
         discover(registered)
+
+
+def test_consolidated_error_retains_complete_native_failures(registered):
+    import shutil
+
+    from bcf_governance.tooling.semantic_authority_contracts import (
+        SemanticAuthorityError,
+        _validate_operations,
+    )
+
+    root, _ = registered
+    (root / "schemas").mkdir()
+    shutil.copyfile(Path(__file__).resolve().parents[1] / "schemas/application-operations.schema.json",
+                    root / "schemas/application-operations.schema.json")
+    (root / "factories.py").write_text("\n".join(
+        f"def {name}(value):\n" + "".join(f"    value.method_{index}()\n" for index in range(40))
+        + "    return value\n" for name in ("first", "second")
+    ))
+    inventory = discover_python_source(root, sorted(root.glob("*.py")))
+    with pytest.raises(SemanticAuthorityError) as error:
+        _validate_operations(root, payload(registered), inventory)
+    assert len(error.value.operation_failures) == 2
+    assert str(error.value).count('additional failure observations omitted') == 2
+    assert error.value.diagnostics_complete is True
+    assert len(error.value.diagnostics) >= 80
+    assert sum('undeclared opaque receiver call' in row['message'] for row in error.value.diagnostics) == 80
+    assert {row['operation'] for row in error.value.diagnostics} == {'first.get.v1', 'second.get.v1'}
+    assert {row['symbol'] for row in error.value.diagnostics} == {'factories.py::first', 'factories.py::second'}

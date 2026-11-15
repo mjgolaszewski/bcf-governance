@@ -27,7 +27,12 @@ MUTATION_CALL_PREFIXES = (
 
 
 class SemanticOperationEffectError(ValueError):
-    """Raised when an operation bypasses its declared effect boundary."""
+    """Concise failure text with a complete native diagnostic sidecar."""
+
+    def __init__(self, message: str, *, diagnostics: tuple[dict[str, Any], ...] | None = None) -> None:
+        super().__init__(message)
+        self.diagnostics = diagnostics if diagnostics is not None else ({"message": message},)
+        self.diagnostics_complete = True
 
 
 def _resolve_function(
@@ -111,11 +116,14 @@ def validate_operation_effects(
     # Reuse only lookup answers, never source observations or acceptance results.
     resolved_calls: dict[str, str | None] = {}
     diagnostics: list[str] = []
+    complete_diagnostics: list[dict[str, Any]] = []
     diagnostic_count = 0
 
     def reject(message: str) -> None:
         nonlocal diagnostic_count
         diagnostic_count += 1
+        complete_diagnostics.append({"operation": operation["id"], "entrypoint": entrypoint,
+                                     "symbol": symbol, "message": message})
         # Keep ordinary validation output bounded even for a large source graph.
         # Every failure still prevents acceptance, including omitted details.
         if len(diagnostics) < 32:
@@ -409,5 +417,6 @@ def validate_operation_effects(
     if diagnostics:
         omitted = diagnostic_count - len(diagnostics)
         suffix = f"; {omitted} additional failure observations omitted" if omitted else ""
-        raise SemanticOperationEffectError("; ".join(diagnostics) + suffix)
+        raise SemanticOperationEffectError("; ".join(diagnostics) + suffix,
+                                           diagnostics=tuple(complete_diagnostics))
     return len(mutation_ports & reached), len(authority_ports & reached)

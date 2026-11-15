@@ -243,6 +243,15 @@ def test_ordinary_diagnostic_output_is_bounded_and_still_rejects(tmp_path):
         validate_operation_effects(OPERATION,'consumer.py::read',facts)
     assert '8 additional failure observations omitted' in str(error.value)
     assert str(error.value).count('unqualified_format_callback')==32
+    assert error.value.diagnostics_complete is True
+    assert len(error.value.diagnostics) == 40
+    assert all(row['operation'] == OPERATION['id'] for row in error.value.diagnostics)
+    assert all(row['entrypoint'] == 'consumer.py::read' for row in error.value.diagnostics)
+    assert {row['symbol'] for row in error.value.diagnostics} == {
+        f'consumer.py::helper_{index}' for index in range(40)
+    }
+    assert all('unqualified_format_callback' in row['message']
+               for row in error.value.diagnostics)
 
 
 

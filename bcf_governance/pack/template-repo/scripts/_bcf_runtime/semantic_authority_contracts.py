@@ -65,6 +65,8 @@ class SemanticAuthorityError(ValueError):
     """Raised when a blocking semantic-authority contract is incomplete."""
 
     operation_failures: tuple[str, ...] = ()
+    diagnostics: tuple[dict[str, Any], ...] = ()
+    diagnostics_complete: bool = False
 
 
 @dataclass(frozen=True)
@@ -528,6 +530,7 @@ def _validate_operations(
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     observations: list[dict[str, Any]] = []
     operation_failures: list[str] = []
+    complete_diagnostics: list[dict[str, Any]] = []
     observation_keys: dict[str, set[str]] = {}
     for operation in payload["operations"]:
         population_id = str(operation["population"])
@@ -582,6 +585,7 @@ def _validate_operations(
             )
         except SemanticOperationEffectError as exc:
             operation_failures.append(str(exc))
+            complete_diagnostics.extend(exc.diagnostics)
             continue
         observations.append({
             "operation": operation["id"], "kind": kind, "entrypoint": actual_symbol,
@@ -601,6 +605,8 @@ def _validate_operations(
         suffix = f"; {omitted} additional failing operations omitted" if omitted else ""
         error = SemanticAuthorityError("; ".join(operation_failures[:32]) + suffix)
         error.operation_failures = tuple(operation_failures)
+        error.diagnostics = tuple(complete_diagnostics)
+        error.diagnostics_complete = True
         raise error
     return observations
 
