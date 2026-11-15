@@ -412,6 +412,8 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
     classes = {str(row["symbol"]): row for row in inventory.get("classes", [])}
     functions = {str(row["symbol"]): row for row in inventory.get("functions", [])}
     constructor_closures = constructor_callback_closures(classes)
+    from .semantic_python_instance_frames import source_instance_method_maps
+    instance_methods = source_instance_method_maps(inventory)
     resolve_exception_callbacks(inventory, constructor_closures)
     for function in inventory.get("functions", []):
         for call in function.get("calls", []):
@@ -499,6 +501,7 @@ def resolve_python_implicit_effects(inventory: dict[str, Any]) -> None:
                     initializer = closure.get("initializer")
                     call["source_constructor_frame"] = {
                         "subject": subject, "initializer": initializer["symbol"] if initializer else None,
+                        "instance_methods": instance_methods.get(subject, {}),
                         "initializer_owner": closure["initializer_owner"],
                         "super_initializer": closure["super_initializer"],
                         "native_exception_initializer": initializer is None and 'builtins::BaseException' in closure['mro'],

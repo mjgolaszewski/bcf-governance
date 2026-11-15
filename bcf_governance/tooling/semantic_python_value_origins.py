@@ -73,6 +73,18 @@ def value_origins(
     empty.update(constructor_inputs=constructor_inputs, implicit_calls=implicit_calls, format_inputs=format_inputs)
     from .semantic_python_callable_frames import lexical_callable_contexts
     empty.update(lexical_callable_contexts(row, function, functions, arguments, positions))
+    # These invocation facts depend only on exact lexical/native binding, never
+    # a loop's transient argument origins. Retain them when control loses value
+    # precision, without retaining len/container reads or result protocol facts.
+    from .semantic_python_callable_frames import scoped_nodes
+    empty["native_calls"] = {
+        tuple(positions[id(node)]) for node in scoped_nodes(function)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+        and node.func.id in row.get("unshadowed_container_builtins", [])
+        and not node.keywords and not any(isinstance(arg, ast.Starred) for arg in node.args)
+        and (node.func.id == "type" and len(node.args) == 1
+             or native_exception_binding(node.func.id))
+    }
     env = dict(arguments)
     callable_definitions = row.get("source_callable_definitions", [])
     inactive_calls: set[tuple[int, int]] = set(empty.get("inactive_calls", set()))
@@ -136,7 +148,7 @@ def value_origins(
         mutation_epoch += 1
         retained = True
         for name, origin in list(env.items()):
-            if origin in OWNED or origin.startswith('new-object:') or origin in {'native', 'native_view'} or origin.startswith(('record:', 'callable:')):
+            if origin in OWNED or origin.startswith('new-object:') or origin in {'native', 'native_view'} or origin.startswith(('record:', 'callable:', 'source-instance:')):
                 env[name] = UNKNOWN
 
     def degrade() -> None:
@@ -146,7 +158,7 @@ def value_origins(
         for name, origin in list(env.items()):
             if origin in CONTAINERS:
                 env[name] = origin + "_owned"
-            elif origin in {'native', 'native_view'} or origin.startswith('record:'):
+            elif origin in {'native', 'native_view'} or origin.startswith(('record:', 'source-instance:')):
                 env[name] = UNKNOWN
 
     def expression(node: ast.AST | None) -> str:
@@ -253,6 +265,15 @@ def value_origins(
             positional_epoch = mutation_epoch
             keywords = {keyword.arg: expression(keyword.value)
                         for keyword in node.keywords if keyword.arg is not None}
+            receiver_origin = UNKNOWN
+            if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name):
+                receiver_origin = expression(node.func.value)
+                if receiver_origin.startswith("source-instance:"):
+                    instance = json.loads(receiver_origin.removeprefix("source-instance:"))
+                    method = instance.get("methods", {}).get(node.func.attr)
+                    if method in functions:
+                        callee = str(method)
+                        contextual_calls[site] = callee
             target = functions.get(callee, {})
             if (fact.get('generated_copy_profiles') and len(values) == 1 and values[0].startswith('record:')
                     and positional_epoch == mutation_epoch and not any(isinstance(value, ast.Starred) for value in node.args)
@@ -322,6 +343,20 @@ def value_origins(
                             constructor_inputs.add((*site, spec['subject']))
                 elif spec.get('native_exception_initializer'):
                     constructor_inputs.add((*site, spec['subject']))
+            if (spec.get("instance_methods") and (*site, spec.get("subject")) in constructor_inputs):
+                initializer = str(spec.get("initializer"))
+                bound_initializer = implicit_calls.get((*site, initializer))
+                if bound_initializer is not None and initializer in functions:
+                    proof = value_origins(initializer, functions, bound_initializer, active | {symbol}, budget)
+                    if (proof.get("retained") is False
+                            and proof.get("initializer_protocol_unknown") is False
+                            and not any(proof.get(key, False) for key in (
+                                "degraded", "source_control_unknown", "analysis_budget_exhausted"
+                            ))):
+                        return "source-instance:" + json.dumps({
+                            "subject": spec["subject"], "site": [symbol, *site],
+                            "methods": spec["instance_methods"],
+                        }, sort_keys=True)
             if (spec.get('native_exception_initializer') and (*site, spec.get('subject')) in constructor_inputs):
                 return UNKNOWN
             if (isinstance(node.func, ast.Name)
@@ -366,11 +401,21 @@ def value_origins(
                          [*declaration.args.posonlyargs, *declaration.args.args]]
                 # Receiver binding is deliberately left to a later qualified
                 # slice; never bind a positional argument as an implicit self.
-                if not names or names[0] not in {"self", "cls"}:
-                    bound = dict(zip(names, values, strict=False))
+                bound_receiver = (bool(names) and names[0] == "self"
+                    and isinstance(node.func, ast.Attribute)
+                    and (receiver_origin.startswith("source-instance:")
+                         or fact.get("dispatch_resolution") == "exact_same_instance"))
+                if bound_receiver or not names or names[0] not in {"self", "cls"}:
+                    receiver_name = names[0] if bound_receiver else None
+                    argument_names = names[1:] if bound_receiver else names
+                    bound = dict(zip(argument_names, values, strict=False))
+                    if receiver_name is not None:
+                        bound[receiver_name] = receiver_origin
                     bound.update(keywords)
                     bound.update(captured)
-                    if target.get("scope_kind") == "source_callable_frame" or env.get("$source_callable_proof") == "true":
+                    if (target.get("scope_kind") == "source_callable_frame"
+                            or env.get("$source_callable_proof") == "true"
+                            or any(value.startswith("source-instance:") for value in bound.values())):
                         bound["$source_callable_proof"] = "true"
                     callable_defaults = list(zip(names[-len(declaration.args.defaults):], declaration.args.defaults, strict=True)) if declaration.args.defaults else []
                     callable_defaults.extend((argument.arg, default) for argument, default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True) if default is not None)
@@ -379,7 +424,7 @@ def value_origins(
                             bound[name] = SCALAR if isinstance(default, ast.Constant) else UNKNOWN
                             if isinstance(default, ast.Constant) and default.value is None:
                                 bound["$none:" + name] = "true"
-                    for name, argument in [*zip(names, node.args, strict=False), *((keyword.arg, keyword.value) for keyword in node.keywords if keyword.arg is not None)]:
+                    for name, argument in [*zip(argument_names, node.args, strict=False), *((keyword.arg, keyword.value) for keyword in node.keywords if keyword.arg is not None)]:
                         if (isinstance(argument, ast.Constant) and argument.value is None
                                 or isinstance(argument, ast.Name) and env.get("$none:" + argument.id) == "true"):
                             bound["$none:" + name] = "true"

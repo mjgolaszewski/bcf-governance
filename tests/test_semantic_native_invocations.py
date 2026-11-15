@@ -78,3 +78,14 @@ def test_type_result_metaclass_getter_remains_effectful(tmp_path):
     assert observe(path) == [["getter"], ["getter", "getter"]]
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION, "consumer.py::read", facts, experimental_protocols=False)
+
+
+def test_native_invocations_survive_unknown_regex_control_without_purifying_it(tmp_path):
+    _, facts = inventory(tmp_path, "import re\ndef require_export_id(value):\n if type(value) is not str or re.fullmatch(r'export-[a-f0-9]{32}', value) is None:\n  raise ValueError('export_index_facts')\ndef invoke(callback): return callback()\ndef read(value):\n def callback(): return require_export_id(value)\n return invoke(callback)\n")
+    with pytest.raises(SemanticOperationEffectError) as error:
+        validate_operation_effects(OPERATION, "consumer.py::read", facts, experimental_protocols=False)
+    message = str(error.value)
+    assert "unqualified source callable protocol" in message
+    assert "unqualified source callable target: re::module.fullmatch" in message
+    assert "unqualified source callable target: consumer.py::type" not in message
+    assert "unqualified source callable target: consumer.py::ValueError" not in message
