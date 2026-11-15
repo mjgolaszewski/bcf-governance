@@ -70,7 +70,7 @@ def validate_operation_effects(
     if unresolved_dynamic_policy not in {'report', 'fail_closed'}:
         raise SemanticOperationEffectError('unsupported unresolved dynamic policy')
     functions = {
-        str(row["symbol"]): row for row in inventory.get("functions", [])
+        str(row["symbol"]): row for row in [*inventory.get("functions", []), *inventory.get("source_callable_frames", [])]
     }
     entrypoint = _resolve_function(entrypoint_symbol, functions)
     if entrypoint is None:
@@ -168,6 +168,10 @@ def validate_operation_effects(
                 return cast(tuple[tuple[str, str], ...], context['implicit_calls'].get((frame['line'], frame['column'], frame['target']), ()))
             return cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
 
+        if origins.get("unqualified_source_awaits"):
+            reject(f"operation {operation['id']} contains an unqualified source callback awaitable at {symbol}")
+        if function.get("scope_kind") == "source_callable_frame" and origins.get("unqualified_protocol_sites"):
+            reject(f"operation {operation['id']} contains an unqualified source callable protocol at {symbol}")
         if origins.get('initializer_protocol_unknown'):
             if unresolved_dynamic_policy == 'report':
                 report_observation('unqualified_initializer_runtime_protocol', 0)
@@ -180,6 +184,8 @@ def validate_operation_effects(
             if module in functions and module != symbol:
                 pending.append((module, (), callback_required))
         for effect in function.get("effects", []):
+            if effect.get("line") in origins.get("inactive_lines", set()):
+                continue
             target = f"{symbol}:{effect.get('line')}:{effect.get('target')}"
             if effect.get("kind") == "write":
                 if (effect.get("line"), effect.get("target")) not in origins["writes"]:
@@ -255,10 +261,16 @@ def validate_operation_effects(
                     f"operation {operation['id']} contains an unresolved effect call path at {symbol}"
                 )
         for call in function.get("calls", []):
+            if (call.get("line"), call.get("column")) in origins.get("inactive_calls", set()):
+                continue
+            if (call.get("line"), call.get("column")) in origins.get("unresolved_source_callables", set()):
+                reject(f"operation {operation['id']} contains an unqualified source callable binding at {symbol}")
             if (call.get('line'), call.get('column')) in origins.get('native_reads', {}):
                 # Proven exact native receiver/argument protocols are reads.
                 # Preserve the neutral call identity; this proof neither
                 # fabricates a callee nor reaches a declared source port.
+                continue
+            if (call.get("line"), call.get("column")) in origins.get("native_calls", set()):
                 continue
             contextual = origins['contextual_calls'].get((call.get('line'), call.get('column')))
             raw = str(contextual or call.get("called_symbol", ""))
@@ -310,6 +322,9 @@ def validate_operation_effects(
             if identity in declared_ports:
                 reached.add(identity)
                 continue
+            if (function.get("scope_kind") == "source_callable_frame" and callee is None and contextual is None
+                    and (call.get("line"), call.get("receiver_call_expression")) not in origins["writes"]):
+                reject(f"operation {operation['id']} contains an unqualified source callable target: {raw}")
             if (callee is None and contextual is None
                     and not (call.get("dispatch_resolution") == "exact_bound_class_constructor"
                              and call.get("class_constructor_bindings"))

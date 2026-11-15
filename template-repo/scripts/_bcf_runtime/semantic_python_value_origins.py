@@ -71,7 +71,38 @@ def value_origins(
     format_inputs = {tuple(positions[id(node.value)]) for node in ast.walk(function)
                      if isinstance(node, ast.FormattedValue) and static_scalar_expression(node.value, function, row.get('unshadowed_container_builtins', []))}
     empty.update(constructor_inputs=constructor_inputs, implicit_calls=implicit_calls, format_inputs=format_inputs)
+    from .semantic_python_callable_frames import lexical_callable_contexts
+    empty.update(lexical_callable_contexts(row, function, functions, arguments, positions))
     env = dict(arguments)
+    callable_definitions = row.get("source_callable_definitions", [])
+    inactive_calls: set[tuple[int, int]] = set(empty.get("inactive_calls", set()))
+    inactive_lines: set[int] = set(empty.get("inactive_lines", set()))
+    unresolved_source_callables: set[tuple[int, int]] = set()
+    native_calls: set[tuple[int, int]] = set()
+    unqualified_protocol_sites: set[tuple[int, int]] = set()
+    unqualified_source_awaits: set[tuple[int, int]] = set()
+    def inactive(nodes: list[ast.stmt]) -> None:
+        for statement in nodes:
+            for child in ast.walk(statement):
+                inactive_lines.add(positions[id(child)][0])
+                if isinstance(child, ast.Call):
+                    inactive_calls.add(tuple(positions[id(child)]))
+    def callable_origin(definition: dict[str, Any]) -> str:
+        if not definition.get("stable"):
+            return UNKNOWN
+        return "callable:" + json.dumps({"symbol": definition["symbol"],
+            "captures": {name: env.get(name, UNKNOWN) for name in definition.get("captures", [])}}, sort_keys=True)
+    def known_condition(node: ast.AST) -> bool | None:
+        if isinstance(node, ast.Constant) and isinstance(node.value, bool):
+            return node.value
+        if isinstance(node, ast.Compare) and len(node.ops) == 1 and isinstance(node.ops[0], (ast.Is, ast.IsNot)) and len(node.comparators) == 1:
+            left, right = node.left, node.comparators[0]
+            if isinstance(left, ast.Name) and isinstance(right, ast.Constant) and right.value is None:
+                absent = env.get("$none:" + left.id) == "true"
+                present = env.get(left.id, UNKNOWN).startswith("callable:")
+                if absent or present:
+                    return absent if isinstance(node.ops[0], ast.Is) else present
+        return None
     initializer_frame = (function.name == '__init__' and
                          env.get('$constructor_owner') == row.get('class_symbol'))
     # Protocol-driven and unbounded control flow remains unsupported.
@@ -82,7 +113,7 @@ def value_origins(
            for node in ast.walk(function)):
         return {**empty, 'initializer_protocol_unknown': initializer_frame}
     safe: set[tuple[int, str]] = set()
-    calls: dict[tuple[int, int], tuple[tuple[str, str], ...]] = {}
+    calls: dict[tuple[int, int], tuple[tuple[str, str], ...]] = dict(empty["calls"])
     # ast.unparse changes positions. Original call/effect positions are carried
     # in a parallel preorder inventory, never inferred from reconstructed lines.
     facts = {(call.get("line"), call.get("column")): call
@@ -93,7 +124,7 @@ def value_origins(
     degraded = False
     unsupported_condition = False
     initializer_protocol_unknown = False
-    contextual_calls: dict[tuple[Any, ...], str] = {}
+    contextual_calls: dict[tuple[Any, ...], str] = dict(empty["contextual_calls"])
     native_reads: dict[tuple[Any, ...], str] = {}
     field_counts: dict[str, int] = {}
     for item in ast.walk(function):
@@ -105,7 +136,7 @@ def value_origins(
         mutation_epoch += 1
         retained = True
         for name, origin in list(env.items()):
-            if origin in OWNED or origin.startswith('new-object:') or origin in {'native', 'native_view'} or origin.startswith('record:'):
+            if origin in OWNED or origin.startswith('new-object:') or origin in {'native', 'native_view'} or origin.startswith(('record:', 'callable:')):
                 env[name] = UNKNOWN
 
     def degrade() -> None:
@@ -124,6 +155,20 @@ def value_origins(
             return SCALAR
         if isinstance(node, ast.Name):
             return env.get(node.id, UNKNOWN)
+        if isinstance(node, ast.Await) and isinstance(node.value, ast.Call):
+            value = expression(node.value)
+            target = functions.get(contextual_calls.get(tuple(positions[id(node.value)]), ""), {})
+            if target.get("scope_kind") == "source_callable_frame":
+                declaration = ast.parse(target["python_value_source"]).body[0]
+                if not isinstance(declaration, ast.AsyncFunctionDef):
+                    unqualified_source_awaits.add(tuple(positions[id(node)]))
+            return value
+        if isinstance(node, ast.Lambda):
+            for default in [*node.args.defaults, *node.args.kw_defaults]:
+                if default is not None:
+                    expression(default)
+            definition = next((value for value in callable_definitions if value["kind"] == "lambda" and (value["line"], value["column"]) == tuple(positions[id(node)])), None)
+            return callable_origin(definition) if definition is not None else UNKNOWN
         if isinstance(node, (ast.Attribute, ast.Subscript)):
             receiver = expression(node.value)
             key = expression(node.slice) if isinstance(node, ast.Subscript) else SCALAR
@@ -132,6 +177,7 @@ def value_origins(
                 return str(record['fields'].get(node.attr, UNKNOWN))
             if receiver in CONTAINERS | {SCALAR, 'native'} and key in CONTAINERS | {SCALAR, 'native'}:
                 return 'native'
+            unqualified_protocol_sites.add(tuple(positions[id(node)]))
             initializer_protocol_unknown |= initializer_frame
             invalidate()
             return UNKNOWN
@@ -161,6 +207,7 @@ def value_origins(
                     isinstance(node, (ast.UnaryOp, ast.Compare, ast.JoinedStr))
                     or isinstance(node, ast.BoolOp) and all(value == SCALAR for value in operands)
                 ) else 'native'
+            unqualified_protocol_sites.add(tuple(positions[id(node)]))
             initializer_protocol_unknown |= initializer_frame
             invalidate()
             return UNKNOWN
@@ -189,6 +236,16 @@ def value_origins(
             site = tuple(positions[id(node)])
             fact = facts.get(site, {})
             callee = str(fact.get("called_symbol", ""))
+            captured: dict[str, str] = {}
+            if isinstance(node.func, ast.Name):
+                origin = env.get(node.func.id, UNKNOWN)
+                if origin.startswith("callable:"):
+                    binding = json.loads(origin.removeprefix("callable:"))
+                    callee = str(binding["symbol"])
+                    captured = dict(binding["captures"])
+                    contextual_calls[site] = callee
+                elif any(value["name"] == node.func.id for value in callable_definitions):
+                    unresolved_source_callables.add(site)
             values = [expression(value) for value in node.args]
             positional_epoch = mutation_epoch
             keywords = {keyword.arg: expression(keyword.value)
@@ -271,14 +328,18 @@ def value_origins(
                 name = node.func.id
                 if (native_exception_binding(name) and not keywords
                         and all(value in CONTAINERS | {SCALAR} for value in values)):
+                    native_calls.add(site)
                     return UNKNOWN
                 if name in {"len", "bool"} and len(values) == 1 and not keywords:
                     if values[0] in OWNED | {SCALAR}:
+                        native_calls.add(site)
                         return SCALAR
                 if name in CONTAINERS and not values and not keywords:
+                    native_calls.add(site)
                     return name
                 if name in {"list", "tuple"} and len(values) == 1 and not keywords:
                     if values[0] in OWNED:
+                        native_calls.add(site)
                         return name if values[0] in CONTAINERS else name + "_owned"
                 if name == "dict" and not values and keywords:
                     return "dict" if all(value in CONTAINERS | {SCALAR}
@@ -297,6 +358,18 @@ def value_origins(
                 if not names or names[0] not in {"self", "cls"}:
                     bound = dict(zip(names, values, strict=False))
                     bound.update(keywords)
+                    bound.update(captured)
+                    callable_defaults = list(zip(names[-len(declaration.args.defaults):], declaration.args.defaults, strict=True)) if declaration.args.defaults else []
+                    callable_defaults.extend((argument.arg, default) for argument, default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True) if default is not None)
+                    for name, default in callable_defaults:
+                        if name not in bound:
+                            bound[name] = SCALAR if isinstance(default, ast.Constant) else UNKNOWN
+                            if isinstance(default, ast.Constant) and default.value is None:
+                                bound["$none:" + name] = "true"
+                    for name, argument in [*zip(names, node.args, strict=False), *((keyword.arg, keyword.value) for keyword in node.keywords if keyword.arg is not None)]:
+                        if (isinstance(argument, ast.Constant) and argument.value is None
+                                or isinstance(argument, ast.Name) and env.get("$none:" + argument.id) == "true"):
+                            bound["$none:" + name] = "true"
                     context = tuple(sorted(bound.items()))
                     calls[site] = context
                     result = value_origins(callee, functions, context, active | {symbol}, budget)
@@ -365,13 +438,25 @@ def value_origins(
 
     def statements(body: list[ast.stmt], loop_depth: int = 0) -> bool:
         nonlocal unsupported_condition
-        for statement in body:
-            if isinstance(statement, (ast.Assign, ast.AnnAssign)):
+        for index, statement in enumerate(body):
+            if isinstance(statement, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                for default in [*statement.args.defaults, *statement.args.kw_defaults]:
+                    if default is not None:
+                        expression(default)
+                for decorator in statement.decorator_list:
+                    expression(decorator)
+                definition = next((value for value in callable_definitions if value["kind"] == "function" and value["name"] == statement.name and value["line"] == positions[id(statement)][0]), None)
+                env.pop("$none:" + statement.name, None)
+                env[statement.name] = callable_origin(definition) if definition is not None else UNKNOWN
+            elif isinstance(statement, (ast.Assign, ast.AnnAssign)):
                 value = expression(statement.value)
                 targets = statement.targets if isinstance(statement, ast.Assign) else [statement.target]
                 for target in targets:
                     if isinstance(target, ast.Name):
                         env[target.id] = value
+                        env.pop("$none:" + target.id, None)
+                        if isinstance(statement.value, ast.Constant) and statement.value.value is None:
+                            env["$none:" + target.id] = "true"
                     elif (initializer_frame and isinstance(target, ast.Attribute)
                           and expression(target.value).startswith('new-object:')
                           and field_counts.get(target.attr) == 1
@@ -394,6 +479,14 @@ def value_origins(
                 expression(statement.cause)
                 return False
             elif isinstance(statement, ast.If):
+                condition = known_condition(statement.test)
+                if condition is not None:
+                    selected, omitted = (statement.body, statement.orelse) if condition else (statement.orelse, statement.body)
+                    inactive(omitted)
+                    if not statements(selected, loop_depth):
+                        inactive(body[index + 1:])
+                        return False
+                    continue
                 guard = exact_scalar_guard(statement)
                 guarded_name = guard if guard in admitted else None
                 if guarded_name is not None:
@@ -531,4 +624,8 @@ def value_origins(
     return {"writes": safe, "calls": calls, "return": returned,
             "retained": retained, "degraded": degraded, 'constructor_inputs': constructor_inputs,
             'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'native_reads': native_reads, 'generated_copies': generated_copies, 'format_inputs': format_inputs,
-            'initializer_protocol_unknown': initializer_protocol_unknown}
+            'initializer_protocol_unknown': initializer_protocol_unknown,
+            'inactive_calls': inactive_calls, 'inactive_lines': inactive_lines,
+            'unresolved_source_callables': unresolved_source_callables,
+            'native_calls': native_calls, 'unqualified_protocol_sites': unqualified_protocol_sites,
+            'unqualified_source_awaits': unqualified_source_awaits}

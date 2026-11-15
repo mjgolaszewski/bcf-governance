@@ -213,6 +213,7 @@ def discover_python_source(
     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
     file_rows: list[dict[str, str]] = []
     functions: list[dict[str, Any]] = []
+    callable_frames: list[dict[str, Any]] = []
     initializers: list[dict[str, Any]] = []
     types: list[str] = []
     endpoints: list[dict[str, Any]] = []
@@ -294,6 +295,7 @@ def discover_python_source(
                 + ", ".join(missing)
             )
         builtin_names = container_builtin_names(tree)
+        module_functions: list[dict[str, Any]] = []
         for class_name, members in scopes:
             for member in members:
                 local_bindings = {
@@ -313,6 +315,12 @@ def discover_python_source(
                 fact = visitor.facts()
                 extend_python_effect_facts(tree, member, fact, relative, builtin_names=builtin_names)
                 functions.append(fact)
+                module_functions.append(fact)
+        from .semantic_python_callable_frames import discover_source_callable_frames
+        callable_frames.extend(discover_source_callable_frames(
+            tree, module_functions, path=relative, imports=imports,
+            import_bindings=bindings_by_local, local_types=local_types, builtin_names=builtin_names,
+        ))
     return {
         "language": "python",
         "files": file_rows,
@@ -322,6 +330,7 @@ def discover_python_source(
         "class_binding_mutations": class_mutations,
         "types": sorted(types),
         "functions": functions,
+        "source_callable_frames": callable_frames,
         "initializers": initializers,
         "constructors": [
             fact for function in [*functions, *initializers] for fact in function["constructors"]
