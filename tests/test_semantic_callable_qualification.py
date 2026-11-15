@@ -106,3 +106,32 @@ def test_public_discovery_path_preserves_qualified_frames(tmp_path):
     frame = next(row for row in combined["source_callable_frames"] if row["symbol"].endswith("read.callback"))
     call = next(row for row in frame["calls"] if row.get("source_constructor_frame"))
     assert call["source_constructor_frame"]["initializer"] == "consumer.py::Record.__init__"
+
+
+def test_branch_local_same_name_definitions_preserve_distinct_sites(tmp_path):
+    from bcf_governance.tooling.semantic_operation_effects import (
+        SemanticOperationEffectError,
+        validate_operation_effects,
+    )
+    from tests.test_consumer_callback_contracts import OPERATION
+    path = tmp_path / "consumer.py"
+    path.write_text("def choose(selector):\n if selector == 0:\n  def perform(): return 1\n elif selector == 1:\n  def perform(): return 2\n elif selector == 2:\n  def perform(): return 3\n else:\n  def perform(): return 4\n return perform()\ndef invoke(callback): return callback()\ndef read():\n def callback(): return 7\n return invoke(callback)\n")
+    raw = discover_python_source(tmp_path, [path])
+    ordinary = deepcopy(raw)
+    ordinary.pop("source_callable_frames")
+    baseline = resolve_python_imports(tmp_path, ordinary)
+    actual = resolve_python_imports(tmp_path, raw)
+    for key in baseline:
+        assert actual[key] == baseline[key], key
+    frames = [row for row in actual["source_callable_frames"] if ".choose.perform" in row["symbol"] or "::choose.perform" in row["symbol"]]
+    assert len(frames) == len({row["symbol"] for row in frames}) == 4
+    assert len({row["python_value_source"] for row in frames}) == 4
+    parent = next(row for row in actual["functions"] if row["symbol"] == "consumer.py::choose")
+    declarations = [row for row in parent["source_callable_definitions"] if row["name"] == "perform"]
+    assert len(declarations) == 4
+    assert all(row["stable"] is False for row in declarations)
+    assert {row["symbol"] for row in declarations} == {row["symbol"] for row in frames}
+    assert validate_operation_effects(OPERATION, "consumer.py::read", actual, experimental_protocols=False) == (0, 0)
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION, "consumer.py::choose", actual, experimental_protocols=False)
+    assert merge_inventories([actual, {"functions": [{"symbol": "api.ts::read"}]}])["source_callable_frames"]

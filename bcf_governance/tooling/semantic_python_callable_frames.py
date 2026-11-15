@@ -46,6 +46,14 @@ def discover_source_callable_frames(
             lambda_node = isinstance(child, ast.Lambda)
             name = f"<lambda@{child.lineno}.{child.col_offset}>" if isinstance(child, ast.Lambda) else child.name
             symbol = str(fact["symbol"]) + "." + name
+            if not lambda_node and sum(
+                isinstance(value, (ast.FunctionDef, ast.AsyncFunctionDef))
+                and value.name == name for value in nodes
+            ) > 1:
+                # Distinct branch-local declarations are separate source facts.
+                # Their lexical binding remains unstable below; a unique site
+                # identity never selects which body a dynamic call will invoke.
+                symbol += f"@{child.lineno}.{child.col_offset}"
             if isinstance(child, ast.Lambda):
                 body = ast.copy_location(ast.Return(value=child.body), child)
                 declaration = ast.parse("def source_lambda(): pass").body[0]
@@ -116,6 +124,7 @@ def lexical_callable_contexts(
     calls: dict[tuple[int, int], tuple[tuple[str, str], ...]] = {}
     contextual: dict[tuple[int, int], str] = {}
     inactive_calls: set[tuple[int, int]] = set()
+    unresolved_bindings: set[tuple[int, int]] = set()
     inactive_lines: set[int] = set()
 
     def known(node: ast.AST) -> bool | None:
@@ -173,6 +182,11 @@ def lexical_callable_contexts(
         site = (positions[id(node)][0], positions[id(node)][1])
         if site in inactive_calls:
             continue
+        if isinstance(node.func, ast.Name) and any(
+            value["name"] == node.func.id and not value.get("stable")
+            for value in definitions
+        ):
+            unresolved_bindings.add(site)
         target = str(facts.get(site, {}).get("called_symbol", ""))
         captured = {}
         if isinstance(node.func, ast.Name) and env.get(node.func.id, "").startswith("callable:") and node.func.id not in bound_names:
@@ -224,4 +238,5 @@ def lexical_callable_contexts(
             unqualified_awaits.add((positions[id(node)][0], positions[id(node)][1]))
     return {"calls": calls, "contextual_calls": contextual,
             "inactive_calls": inactive_calls, "inactive_lines": inactive_lines,
-            "unqualified_source_awaits": unqualified_awaits}
+            "unqualified_source_awaits": unqualified_awaits,
+            "unresolved_source_callables": unresolved_bindings}

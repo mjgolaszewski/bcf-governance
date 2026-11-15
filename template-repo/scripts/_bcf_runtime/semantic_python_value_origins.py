@@ -77,7 +77,7 @@ def value_origins(
     callable_definitions = row.get("source_callable_definitions", [])
     inactive_calls: set[tuple[int, int]] = set(empty.get("inactive_calls", set()))
     inactive_lines: set[int] = set(empty.get("inactive_lines", set()))
-    unresolved_source_callables: set[tuple[int, int]] = set()
+    unresolved_source_callables: set[tuple[int, int]] = set(empty.get("unresolved_source_callables", set()))
     native_calls: set[tuple[int, int]] = set()
     unqualified_protocol_sites: set[tuple[int, int]] = set()
     unqualified_source_awaits: set[tuple[int, int]] = set()
