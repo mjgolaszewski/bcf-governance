@@ -111,7 +111,7 @@ def value_origins(
                             ast.Global, ast.Nonlocal, ast.Yield, ast.YieldFrom,
                             ast.Break, ast.Continue))
            for node in ast.walk(function)):
-        return {**empty, 'initializer_protocol_unknown': initializer_frame}
+        return {**empty, 'initializer_protocol_unknown': initializer_frame, 'source_control_unknown': True}
     safe: set[tuple[int, str]] = set()
     calls: dict[tuple[int, int], tuple[tuple[str, str], ...]] = dict(empty["calls"])
     # ast.unparse changes positions. Original call/effect positions are carried
@@ -359,6 +359,8 @@ def value_origins(
                     bound = dict(zip(names, values, strict=False))
                     bound.update(keywords)
                     bound.update(captured)
+                    if target.get("scope_kind") == "source_callable_frame" or env.get("$source_callable_proof") == "true":
+                        bound["$source_callable_proof"] = "true"
                     callable_defaults = list(zip(names[-len(declaration.args.defaults):], declaration.args.defaults, strict=True)) if declaration.args.defaults else []
                     callable_defaults.extend((argument.arg, default) for argument, default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True) if default is not None)
                     for name, default in callable_defaults:
@@ -554,6 +556,12 @@ def value_origins(
                 base_inputs, base_implicit, base_contextual = set(constructor_inputs), dict(implicit_calls), dict(contextual_calls)
                 base_native_reads = dict(native_reads)
                 base_generated_copies = set(generated_copies)
+                base_inactive_calls = set(inactive_calls)
+                base_inactive_lines = set(inactive_lines)
+                base_unresolved_source_callables = set(unresolved_source_callables)
+                base_native_calls = set(native_calls)
+                base_unqualified_protocol_sites = set(unqualified_protocol_sites)
+                base_unqualified_source_awaits = set(unqualified_source_awaits)
                 # The ownership lattice loses precision at joins; three rounds
                 # cover owned -> shallow -> unknown. Publish only the final
                 # fixed-point observation, never optimistic first-iteration sites.
@@ -591,6 +599,18 @@ def value_origins(
                     native_reads.update(base_native_reads)
                     generated_copies.clear()
                     generated_copies.update(base_generated_copies)
+                    inactive_calls.clear()
+                    inactive_calls.update(base_inactive_calls)
+                    inactive_lines.clear()
+                    inactive_lines.update(base_inactive_lines)
+                    unresolved_source_callables.clear()
+                    unresolved_source_callables.update(base_unresolved_source_callables)
+                    native_calls.clear()
+                    native_calls.update(base_native_calls)
+                    unqualified_protocol_sites.clear()
+                    unqualified_protocol_sites.update(base_unqualified_protocol_sites)
+                    unqualified_source_awaits.clear()
+                    unqualified_source_awaits.update(base_unqualified_source_awaits)
                     statements(statement.body, loop_depth + 1)
                     joined = {name: _join(before.get(name, UNKNOWN), env.get(name, UNKNOWN))
                               for name in before.keys() | env.keys()}
@@ -618,7 +638,7 @@ def value_origins(
         # An exact generated-record result does not purify a condition, call or
         # getter. Its field values remain borrowed unless separately proven.
         return {**empty, "return": returned if returned.startswith('record:') else UNKNOWN,
-                "retained": True, 'initializer_protocol_unknown': initializer_frame}
+                "retained": True, 'initializer_protocol_unknown': initializer_frame, 'source_control_unknown': True}
     # Falling through or returning different origins cannot prove fresh output.
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
     return {"writes": safe, "calls": calls, "return": returned,

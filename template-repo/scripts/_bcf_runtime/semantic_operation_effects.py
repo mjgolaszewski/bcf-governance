@@ -129,7 +129,10 @@ def validate_operation_effects(
             continue
         visited.add((symbol, arguments, callback_required))
         function = functions[symbol]
-        report_new = unresolved_dynamic_policy == 'report' or not experimental_protocols
+        strict_source_callable = (function.get("scope_kind") == "source_callable_frame"
+                                  or dict(arguments).get("$source_callable_proof") == "true")
+        callback_required = callback_required or strict_source_callable
+        report_new = unresolved_dynamic_policy == 'report' or not experimental_protocols and not strict_source_callable
         def report_observation(kind: str, line: object, target: object = '', symbol: str = symbol) -> None:
             observation = {'kind': kind, 'symbol': symbol, 'line': line,
                            'target': target, 'operation': operation['id'], 'qualified': False}
@@ -162,15 +165,21 @@ def validate_operation_effects(
 
         frame_context: dict[str, Any] = origins
 
-        def caller_arguments(call: dict[str, Any], context: dict[str, Any] = frame_context) -> tuple[tuple[str, str], ...]:
+        def caller_arguments(call: dict[str, Any], context: dict[str, Any] = frame_context, strict: bool = strict_source_callable) -> tuple[tuple[str, str], ...]:
             frame = call.get('constructor_frame_origin')
             if frame:
-                return cast(tuple[tuple[str, str], ...], context['implicit_calls'].get((frame['line'], frame['column'], frame['target']), ()))
-            return cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
+                bound = cast(tuple[tuple[str, str], ...], context['implicit_calls'].get((frame['line'], frame['column'], frame['target']), ()))
+            else:
+                bound = cast(tuple[tuple[str, str], ...], context['calls'].get((call.get('line'), call.get('column')), ()))
+            if strict:
+                return tuple(sorted({**dict(bound), "$source_callable_proof": "true"}.items()))
+            return bound
 
         if origins.get("unqualified_source_awaits"):
             reject(f"operation {operation['id']} contains an unqualified source callback awaitable at {symbol}")
-        if function.get("scope_kind") == "source_callable_frame" and origins.get("unqualified_protocol_sites"):
+        if strict_source_callable and (origins.get("unqualified_protocol_sites")
+                                       or origins.get("source_control_unknown")
+                                       or origins.get("analysis_budget_exhausted")):
             reject(f"operation {operation['id']} contains an unqualified source callable protocol at {symbol}")
         if origins.get('initializer_protocol_unknown'):
             if unresolved_dynamic_policy == 'report':
@@ -322,7 +331,7 @@ def validate_operation_effects(
             if identity in declared_ports:
                 reached.add(identity)
                 continue
-            if (function.get("scope_kind") == "source_callable_frame" and callee is None and contextual is None
+            if (strict_source_callable and callee is None and contextual is None
                     and (call.get("line"), call.get("receiver_call_expression")) not in origins["writes"]):
                 reject(f"operation {operation['id']} contains an unqualified source callable target: {raw}")
             if (callee is None and contextual is None

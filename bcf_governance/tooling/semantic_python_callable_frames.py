@@ -201,6 +201,8 @@ def lexical_callable_contexts(
         bound = {name: origin(value) for name, value in zip(names, node.args, strict=False)}
         bound.update({keyword.arg: origin(keyword.value) for keyword in node.keywords if keyword.arg is not None})
         bound.update(captured)
+        if functions.get(target, {}).get("scope_kind") == "source_callable_frame" or env.get("$source_callable_proof") == "true":
+            bound["$source_callable_proof"] = "true"
         defaults = list(zip(names[-len(declaration.args.defaults):], declaration.args.defaults, strict=True)) if declaration.args.defaults else []
         defaults.extend((value.arg, default) for value, default in zip(declaration.args.kwonlyargs, declaration.args.kw_defaults, strict=True) if default is not None)
         for name, default in defaults:
@@ -210,5 +212,14 @@ def lexical_callable_contexts(
                     bound["$none:" + name] = "true"
         if any(value.startswith("callable:") for value in bound.values()) or captured:
             calls[site] = tuple(sorted(bound.items()))
+    unqualified_awaits = set()
+    for node in nodes:
+        if not isinstance(node, ast.Await) or not isinstance(node.value, ast.Call):
+            continue
+        site = (positions[id(node.value)][0], positions[id(node.value)][1])
+        await_target = functions.get(contextual.get(site, ""), {})
+        if await_target.get("scope_kind") == "source_callable_frame" and not isinstance(ast.parse(await_target["python_value_source"]).body[0], ast.AsyncFunctionDef):
+            unqualified_awaits.add((positions[id(node)][0], positions[id(node)][1]))
     return {"calls": calls, "contextual_calls": contextual,
-            "inactive_calls": inactive_calls, "inactive_lines": inactive_lines}
+            "inactive_calls": inactive_calls, "inactive_lines": inactive_lines,
+            "unqualified_source_awaits": unqualified_awaits}
