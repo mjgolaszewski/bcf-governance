@@ -23,7 +23,7 @@ from .semantic_ownership_typescript import (
 from .semantic_yaml import SemanticYAMLError, load_unique_mapping
 
 FACT_LISTS = (
-    "files", "types", "functions", "initializers", "constructors", "codecs", "translations",
+    "files", "types", "functions", "source_callable_frames", "initializers", "constructors", "codecs", "translations",
     "normalizations", "sinks", "unresolved", "fetches", "endpoint_calls",
     "decoder_calls", "endpoint_contracts", "public_exports", "typescript_inputs",
 )
@@ -85,7 +85,7 @@ def merge_inventories(inventories: list[dict[str, Any]]) -> dict[str, Any]:
                 identity = json.dumps(row, sort_keys=True)
                 if key in {"files", "typescript_inputs"}:
                     identity = str(row["path"])
-                elif key == "functions":
+                elif key in {"functions", "source_callable_frames"}:
                     identity = str(row["symbol"])
                 if identity in rows and rows[identity] != row:
                     raise TypeScriptDiscoveryError(f"compiler projects disagree on {key}: {identity}")

@@ -469,7 +469,7 @@ def _binding_map(
     return result
 
 
-def resolve_python_imports(
+def _resolve_python_imports(
     repo_root: Path,
     inventory: dict[str, Any],
     import_roots: tuple[str, ...] = (".",),
@@ -733,4 +733,33 @@ def resolve_python_imports(
     resolved["unresolved"] = [fact
         for scope in [*resolved.get("functions", []), *resolved.get("initializers", [])]
         for fact in scope.get("unresolved", [])]
+    return resolved
+
+
+def resolve_python_imports(
+    repo_root: Path, inventory: dict[str, Any],
+    import_roots: tuple[str, ...] = (".",),
+) -> dict[str, Any]:
+    """Qualify deferred effects without expanding ownership declarations.
+
+    The ordinary inventory remains authoritative for ownership. A separate view
+    runs the identical qualification pipeline over real deferred bodies; only
+    those bodies are transferred back, never its global constructor population.
+    """
+    resolved = _resolve_python_imports(repo_root, inventory, import_roots)
+    frames = inventory.get("source_callable_frames", [])
+    if not frames:
+        return resolved
+    symbols = [str(row["symbol"]) for row in frames]
+    ordinary = {str(row["symbol"]) for row in inventory.get("functions", [])}
+    if len(set(symbols)) != len(symbols) or ordinary.intersection(symbols):
+        raise SemanticInventoryError("conflicting source callable frame symbols")
+    effect_view = copy.deepcopy(inventory)
+    effect_view["functions"] = [*effect_view.get("functions", []),
+                                *effect_view["source_callable_frames"]]
+    qualified = _resolve_python_imports(repo_root, effect_view, import_roots)
+    frame_symbols = set(symbols)
+    resolved["source_callable_frames"] = [
+        row for row in qualified["functions"] if row["symbol"] in frame_symbols
+    ]
     return resolved

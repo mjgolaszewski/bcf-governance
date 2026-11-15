@@ -331,7 +331,18 @@ def validate_operation_effects(
             if identity in declared_ports:
                 reached.add(identity)
                 continue
+            constructor = call.get("source_constructor_frame", {})
+            constructor_target = constructor.get("initializer")
+            qualified_constructor = (constructor.get("subject") == raw
+                and constructor_target in functions
+                and any(edge.get("implicit_callback") is True
+                    and edge.get("called_symbol") == constructor_target
+                    and edge.get("constructor_frame_origin") == {
+                        "line": call.get("line"), "column": call.get("column"),
+                        "subject": raw, "target": constructor_target}
+                    for edge in function.get("calls", [])))
             if (strict_source_callable and callee is None and contextual is None
+                    and not qualified_constructor
                     and (call.get("line"), call.get("receiver_call_expression")) not in origins["writes"]):
                 reject(f"operation {operation['id']} contains an unqualified source callable target: {raw}")
             if (callee is None and contextual is None
