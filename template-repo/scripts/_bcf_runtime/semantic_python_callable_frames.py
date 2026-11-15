@@ -188,6 +188,8 @@ def lexical_callable_contexts(
             payload = json.loads(env[node.func.id].removeprefix("callable:"))
             target = str(payload["symbol"])
             captured = payload["captures"]
+            if functions.get(target, {}).get("scope_kind") != "source_callable_frame":
+                continue
             contextual[site] = target
         source = functions.get(target, {}).get("python_value_source")
         if not source or any(isinstance(value, ast.Starred) for value in node.args) or any(value.arg is None for value in node.keywords):

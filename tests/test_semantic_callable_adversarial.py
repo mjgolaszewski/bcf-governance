@@ -28,3 +28,13 @@ def test_bare_source_coroutine_callback_retains_positive_contract(tmp_path):
     path,facts=inventory(tmp_path,source)
     assert witness(path)==[7,7]
     assert validate_operation_effects(OPERATION,"consumer.py::read",facts,experimental_protocols=False)==(0,0)
+
+
+
+def test_missing_deferred_body_never_becomes_a_pure_contextual_target(tmp_path):
+    source="EVENTS=[]\ndef invoke(callback): return callback()\ndef read():\n def callback(): EVENTS.append(7)\n invoke(callback)\n return len(EVENTS)\n"
+    path,facts=inventory(tmp_path,source)
+    assert witness(path)==[1,2]
+    facts["source_callable_frames"]=[]
+    with pytest.raises(SemanticOperationEffectError):
+        validate_operation_effects(OPERATION,"consumer.py::read",facts,experimental_protocols=False)

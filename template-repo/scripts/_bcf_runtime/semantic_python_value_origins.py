@@ -243,7 +243,10 @@ def value_origins(
                     binding = json.loads(origin.removeprefix("callable:"))
                     callee = str(binding["symbol"])
                     captured = dict(binding["captures"])
-                    contextual_calls[site] = callee
+                    if functions.get(callee, {}).get("scope_kind") == "source_callable_frame":
+                        contextual_calls[site] = callee
+                    else:
+                        unresolved_source_callables.add(site)
                 elif any(value["name"] == node.func.id for value in callable_definitions):
                     unresolved_source_callables.add(site)
             values = [expression(value) for value in node.args]
