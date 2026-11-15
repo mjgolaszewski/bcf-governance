@@ -300,10 +300,10 @@ def value_origins(
                     context = tuple(sorted(bound.items()))
                     calls[site] = context
                     result = value_origins(callee, functions, context, active | {symbol}, budget)
-                    # A closed scalar-only helper cannot observe or retain the
+                    # A closed helper over scalar or borrowed inputs cannot retain the
                     # new receiver. Its body still participates in effect proof.
                     initializer_protocol_unknown |= initializer_frame and (
-                        any(value != SCALAR for value in [*values, *keywords.values()])
+                        any(value not in {SCALAR, UNKNOWN} for value in [*values, *keywords.values()])
                         or result.get("retained", True)
                         or result.get("degraded", False)
                         or result.get("analysis_budget_exhausted", False)

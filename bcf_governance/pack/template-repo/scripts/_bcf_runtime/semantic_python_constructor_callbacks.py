@@ -200,6 +200,12 @@ def scalar_guard_parts(statement: ast.AST) -> tuple[str, set[str]] | None:
     if not isinstance(statement, ast.If) or statement.orelse or not statement.body or not isinstance(statement.body[-1], ast.Raise):
         return None
     test = statement.test
+    tail: list[ast.expr] = []
+    if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.Or):
+        # Later predicates execute only after the negative type test is false.
+        # Admit only primitive expressions over that exact guarded value.
+        tail = test.values[1:]
+        test = test.values[0]
     parts = test.values if isinstance(test, ast.BoolOp) and isinstance(test.op, ast.And) else [test]
     name: str | None = None
     native_types: set[str] = set()
@@ -221,6 +227,14 @@ def scalar_guard_parts(statement: ast.AST) -> tuple[str, set[str]] | None:
         if name is not None and name != current:
             return None
         name = current
+    if tail and (len(parts) != 1 or len(native_types) != 1 or any(
+        not isinstance(node, (ast.Constant, ast.Name, ast.Load, ast.UnaryOp,
+                              ast.BinOp, ast.BoolOp, ast.Compare,
+                              ast.unaryop, ast.operator, ast.boolop, ast.cmpop))
+        or isinstance(node, ast.Name) and node.id != name
+        for predicate in tail for node in ast.walk(predicate)
+    )):
+        return None
     return (name, native_types) if name is not None and native_types else None
 
 
