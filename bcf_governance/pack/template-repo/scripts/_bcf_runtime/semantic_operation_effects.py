@@ -310,6 +310,20 @@ def validate_operation_effects(
             if identity in declared_ports:
                 reached.add(identity)
                 continue
+            if (callee is None and contextual is None
+                    and not (call.get("dispatch_resolution") == "exact_bound_class_constructor"
+                             and call.get("class_constructor_bindings"))
+                    and (call.get("line"), call.get("receiver_call_expression")) not in origins["writes"]
+                    and any(
+                str(origin).startswith(("parameter:", "context-result:"))
+                for origin in call.get("receiver_origins", [])
+            )):
+                if unresolved_dynamic_policy == "report":
+                    report_observation("unqualified_opaque_receiver_call", call.get("line"), raw)
+                else:
+                    reject(
+                        f"operation {operation['id']} contains an undeclared opaque receiver call: {raw}"
+                    )
             if call.get("dispatch_resolution") == "unresolved" and contextual is None:
                 if unresolved_dynamic_policy == 'report' and callback_required:
                     report_observation('unresolved_callback_dispatch', call.get('line'), raw)

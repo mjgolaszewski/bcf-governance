@@ -190,6 +190,19 @@ class _FunctionVisitor(ast.NodeVisitor):
             return set(self.result_sources.get(node.id, {'unknown:' + node.id}))
         return {'unknown:expression'}
 
+    def visit_With(self, node: ast.With | ast.AsyncWith) -> None:  # noqa: N802
+        for item in node.items:
+            self.visit(item.context_expr)
+            if item.optional_vars is not None:
+                for target in ast.walk(item.optional_vars):
+                    if isinstance(target, ast.Name):
+                        self.assignments.setdefault(target.id, set()).add("context-result:" + target.id)
+        for statement in node.body:
+            self.visit(statement)
+
+    def visit_AsyncWith(self, node: ast.AsyncWith) -> None:  # noqa: N802
+        self.visit_With(node)
+
     def visit_Assign(self, node: ast.Assign) -> None:  # noqa: N802
         origins = bound_method_origins(
             node.value,
@@ -266,6 +279,12 @@ class _FunctionVisitor(ast.NodeVisitor):
             "argument_origins": sorted(self._origins(node)),
         }
         selector = self.attribute_call_aliases.get(node.func.id) if isinstance(node.func, ast.Name) else None
+        receiver_call = selector if selector is not None else node.func
+        if isinstance(receiver_call, ast.Attribute):
+            fact["receiver_origins"] = sorted(self._origins(receiver_call.value))
+            fact["receiver_call_expression"] = ast.unparse(receiver_call)
+        elif isinstance(receiver_call, ast.Name) and receiver_call.id in self.assignments:
+            fact["receiver_origins"] = sorted(self.assignments[receiver_call.id])
         reference = _call_reference(selector if selector is not None else node.func, self.import_bindings)
         if reference is not None:
             fact["import_reference"] = reference
