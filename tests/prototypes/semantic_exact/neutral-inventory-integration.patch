@@ -1,0 +1,67 @@
+diff --git a/bcf_governance/tooling/semantic_ownership_inventory.py b/bcf_governance/tooling/semantic_ownership_inventory.py
+index 97b3ac3d..53b913e1 100644
+--- a/bcf_governance/tooling/semantic_ownership_inventory.py
++++ b/bcf_governance/tooling/semantic_ownership_inventory.py
+@@ -212,6 +212,7 @@ def discover_python_source(
+     paths = files if files is not None else tracked_python_files(repo_root)
+     module_index = {_module_name(repo_root, path): _relative(repo_root, path) for path in paths}
+     file_rows: list[dict[str, str]] = []
++    module_sources: list[dict[str, str]] = []
+     functions: list[dict[str, Any]] = []
+     callable_frames: list[dict[str, Any]] = []
+     initializers: list[dict[str, Any]] = []
+@@ -231,6 +232,8 @@ def discover_python_source(
+                 f"tracked Python source cannot be parsed: {relative}: {exc}"
+             ) from exc
+         file_rows.append({"path": relative, "sha256": hashlib.sha256(raw).hexdigest()})
++        module_sources.append({"path": relative, "source": ast.unparse(tree),
++                               "shape_sha256": hashlib.sha256(ast.dump(tree, include_attributes=False).encode()).hexdigest()})
+         local_types = {node.name for node in tree.body if isinstance(node, ast.ClassDef)}
+         types.extend(f"{relative}::{name}" for name in sorted(local_types))
+         endpoints.extend(_endpoint_facts(tree, relative))
+@@ -333,6 +336,7 @@ def discover_python_source(
+     return {
+         "language": "python",
+         "files": file_rows,
++        "python_modules": module_sources,
+         "imports": import_rows,
+         "classes": class_rows,
+         "literal_type_aliases": sorted(literal_aliases),
+diff --git a/bcf_governance/tooling/semantic_python_effect_obligations.py b/bcf_governance/tooling/semantic_python_effect_obligations.py
+index 96476c28..c7ef3186 100644
+--- a/bcf_governance/tooling/semantic_python_effect_obligations.py
++++ b/bcf_governance/tooling/semantic_python_effect_obligations.py
+@@ -107,7 +107,7 @@ def container_builtin_names(tree: ast.Module) -> list[str]:
+         for node in nodes
+     )
+     return sorted(
+-        {"len", "list", "tuple", "dict", "set", "bool", "super",
++        {"len", "list", "tuple", "dict", "set", "bool", "super", "any", "all", "ord", "frozenset", "object",
+          "BaseException", "Exception", "ValueError", "RuntimeError", "UnicodeError", "isinstance", "type", "str", "int", "float", "complex", "bytes"} - bindings
+     ) if "*" not in bindings and not reflective else []
+ 
+diff --git a/bcf_governance/tooling/semantic_source_discovery.py b/bcf_governance/tooling/semantic_source_discovery.py
+index c9e8cd4e..fe9982cc 100644
+--- a/bcf_governance/tooling/semantic_source_discovery.py
++++ b/bcf_governance/tooling/semantic_source_discovery.py
+@@ -23,7 +23,7 @@ from .semantic_ownership_typescript import (
+ from .semantic_yaml import SemanticYAMLError, load_unique_mapping
+ 
+ FACT_LISTS = (
+-    "files", "types", "functions", "source_callable_frames", "initializers", "constructors", "codecs", "translations",
++    "files", "python_modules", "imports", "classes", "class_binding_mutations", "types", "functions", "source_callable_frames", "initializers", "constructors", "codecs", "translations",
+     "normalizations", "sinks", "unresolved", "fetches", "endpoint_calls",
+     "decoder_calls", "endpoint_contracts", "public_exports", "typescript_inputs",
+ )
+@@ -83,9 +83,9 @@ def merge_inventories(inventories: list[dict[str, Any]]) -> dict[str, Any]:
+         for inventory in inventories:
+             for row in inventory.get(key, []):
+                 identity = json.dumps(row, sort_keys=True)
+-                if key in {"files", "typescript_inputs"}:
++                if key in {"files", "python_modules", "imports", "typescript_inputs"}:
+                     identity = str(row["path"])
+-                elif key in {"functions", "source_callable_frames"}:
++                elif key in {"functions", "source_callable_frames", "classes"}:
+                     identity = str(row["symbol"])
+                 if identity in rows and rows[identity] != row:
+                     raise TypeScriptDiscoveryError(f"compiler projects disagree on {key}: {identity}")

@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+## 20261016 (Sprint 126) Codex rev 0 Path: ./scripts/contexts/runtime_storage/infrastructure/persistence/async_io.py
+## Purpose: Drain sync file operations before propagating cancellation to their resource owner.
+##
+
+"""Async-safe file work whose lifetime stays inside the awaiting operation."""
+
+from __future__ import annotations
+
+import asyncio
+from collections.abc import Callable
+
+from scripts.shared.task_custody import await_custody_task as await_file_task
+
+__all__ = ["await_file_task", "run_file_io"]
+
+
+async def run_file_io[T, **P](operation: Callable[P, T], *args: P.args, **kwargs: P.kwargs) -> T:
+    """Keep a cancelled writer from racing the caller's file close or cleanup."""
+    task = asyncio.create_task(asyncio.to_thread(operation, *args, **kwargs))
+    return await await_file_task(task)

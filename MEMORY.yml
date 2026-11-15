@@ -57,6 +57,9 @@ environment_facts:
     BCF CI has no live Identity dependency.
   - Deprecated historical pending-release statements in the previous memory are superseded by the verified current release. Exact historical source is retained in
     Git 94910222399aa155628a9120b6c2738d13e205cc; phase logs, phase history and release custody records own those facts.
+  - Follow-up guarded native data/control and cancellation-custody construction is retained under tests/prototypes/semantic_exact. These components are
+    unqualified and are not wired into the shipped operation validator. Required input obligations and remaining end-to-end work are recorded in its status.yml;
+    focused component tests do not confer consumer acceptance, effect permissions, controller custody or release credit.
   active_artifacts:
     spec: plans/product-spec.yml
     build_plan: plans/build-plan.yml
@@ -66,7 +69,7 @@ environment_facts:
     active_workitem_ledger: plans/phase-31-workitems.yml
     active_phase_log: phases/phase-31-log.yml
 known_constraints:
-- P31-HF18 is limited to current BDMCP publication compatibility. Active branch repair/bdmcp-publication-compatibility-20261113 derives from immutable 2.3.14. Broader
+- P31-HF18 is limited to current BDMCP publication compatibility. Current active follow-up branch is repair/initializer-validator-20261115, continuing the immutable 2.3.14 repair lineage; its prototype construction is not delivered product behavior. Broader
   experimental source is preserved on repair/maintained-consumer-contracts at 7761979c601171651ab601849cbdec44d183ee8d; no complete CI or custody credit.
 - routine controller rotation becomes active only after its dormant provider compiler is installed through the one-time ordinary N/N+1 migration; provider evidence
   never grants release authority

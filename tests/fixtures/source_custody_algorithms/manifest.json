@@ -1,0 +1,18 @@
+{
+  "project_head": "e09b92e4a78831904ff4a85ac3163523564e408a",
+  "purpose": "actual cancellation algorithm source fixtures; no effect permission or live resource qualification",
+  "files": {
+    "scripts/shared/task_custody.py": {
+      "fixture": "task_custody.py.txt",
+      "sha256": "cd4def41d99ed9024144afd08530e30e7b12d9225b5986cce366c86f02143e92"
+    },
+    "scripts/contexts/runtime_storage/infrastructure/persistence/async_io.py": {
+      "fixture": "async_io.py.txt",
+      "sha256": "68754eedff10497e409bc85865457b61a564ed5f9ad2066c6793ab7b9127729f"
+    },
+    "scripts/contexts/runtime_storage/infrastructure/persistence/async_file_custody.py": {
+      "fixture": "async_file_custody.py.txt",
+      "sha256": "3bb0a64242c61f7b2f0db7789e4f9dd8b06aa50b6120706e127a4ea0bcc8640f"
+    }
+  }
+}

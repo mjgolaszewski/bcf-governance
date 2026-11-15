@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+## 20261016 (Sprint 151) Codex rev 0 Path: ./scripts/shared/task_custody.py
+## Purpose: Drain custody-bearing async work before propagating caller cancellation.
+##
+
+"""Cancellation cannot abandon received credential successors or receipt durability work."""
+
+import asyncio
+from threading import Event
+
+
+async def await_custody_task[T](task: asyncio.Task[T], cancelled: Event | None = None) -> T:
+    """Signal cooperative cancellation and drain even when cancellation repeats."""
+    try:
+        return await asyncio.shield(task)
+    except asyncio.CancelledError:
+        if cancelled is not None:
+            cancelled.set()
+        while not task.done():
+            try:
+                await asyncio.shield(task)
+            except asyncio.CancelledError:
+                continue
+            except Exception:
+                break
+        if task.done() and not task.cancelled():
+            task.exception()
+        raise
