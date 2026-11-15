@@ -17,6 +17,11 @@ from .semantic_python_constructor_callbacks import (
     native_exception_binding,
     static_scalar_expression,
 )
+from .semantic_python_private_fields import (
+    field_origin,
+    initial_private_fields,
+    without_private_ownership,
+)
 
 # Only exact source-allocated builtin containers qualify for structural writes.
 # Borrowed children never inherit the parent's ownership.
@@ -90,6 +95,7 @@ def value_origins(
     empty["calls"].update(instance_context.get("instance_calls", {}))
     empty["contextual_calls"].update(instance_context.get("instance_contextual_calls", {}))
     empty["instance_control_obligations"] = instance_context.get("instance_control_obligations", set())
+    empty["writes"].update(instance_context.get("instance_private_writes", set()))
     env = dict(arguments)
     callable_definitions = row.get("source_callable_definitions", [])
     inactive_calls: set[tuple[int, int]] = set(empty.get("inactive_calls", set()))
@@ -189,6 +195,10 @@ def value_origins(
         if isinstance(node, (ast.Attribute, ast.Subscript)):
             receiver = expression(node.value)
             key = expression(node.slice) if isinstance(node, ast.Subscript) else SCALAR
+            if isinstance(node, ast.Attribute):
+                private_value = field_origin(receiver, node.attr)
+                if private_value != UNKNOWN:
+                    return private_value
             if isinstance(node, ast.Attribute) and receiver.startswith('record:'):
                 record = json.loads(receiver.removeprefix('record:'))
                 return str(record['fields'].get(node.attr, UNKNOWN))
@@ -373,6 +383,7 @@ def value_origins(
                             return "source-instance:" + json.dumps({
                                 "subject": spec["subject"], "site": [symbol, *site],
                                 "methods": spec["instance_methods"], "fields": spec.get("instance_fields", []),
+                                "private_fields": initial_private_fields(functions[initializer], set(spec.get("instance_fields", []))),
                             }, sort_keys=True)
             if (spec.get('native_exception_initializer') and (*site, spec.get('subject')) in constructor_inputs):
                 return UNKNOWN
@@ -536,6 +547,8 @@ def value_origins(
                           and expression(target.value).startswith('new-object:')
                           and field_counts.get(target.attr) == 1
                           and not target.attr.startswith('__') and target.attr != 'args'):
+                        safe.add((positions[id(target)][0], ast.unparse(target)))
+                    elif isinstance(target, ast.Attribute) and (positions[id(target)][0], ast.unparse(target)) in empty["writes"]:
                         safe.add((positions[id(target)][0], ast.unparse(target)))
                     elif isinstance(target, ast.Subscript) and expression(target.value) in {"list", "dict"}:
                         if expression(target.slice) == SCALAR:
@@ -714,8 +727,10 @@ def value_origins(
                 "retained": True, 'initializer_protocol_unknown': initializer_frame, 'source_control_unknown': True}
     # Falling through or returning different origins cannot prove fresh output.
     returned = returns[0] if returns and all(value == returns[0] for value in returns) else UNKNOWN
+    if instance_context.get("instance_private_loss"):
+        returned = without_private_ownership(returned)
     return {"writes": safe, "calls": calls, "return": returned,
-            "retained": retained, "degraded": degraded, 'constructor_inputs': constructor_inputs,
+            "retained": retained, "degraded": degraded or bool(instance_context.get("instance_private_loss")), 'constructor_inputs': constructor_inputs,
             'implicit_calls': implicit_calls, 'contextual_calls': contextual_calls, 'native_reads': native_reads, 'generated_copies': generated_copies, 'format_inputs': format_inputs,
             'initializer_protocol_unknown': initializer_protocol_unknown,
             'inactive_calls': inactive_calls, 'inactive_lines': inactive_lines,

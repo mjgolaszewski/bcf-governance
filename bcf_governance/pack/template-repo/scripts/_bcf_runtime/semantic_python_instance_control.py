@@ -5,6 +5,19 @@ import ast
 import json
 from typing import Any
 
+from .semantic_python_private_fields import (
+    FIELD,
+    SCALAR,
+    apply_owner_states,
+    field_origin,
+    instance_key,
+    join_instances,
+    lose_field_ownership,
+    merge_field_alternatives,
+    owner_states,
+    update_private_field,
+)
+
 PREFIX = "source-instance:"
 UNKNOWN = "unknown"
 
@@ -37,6 +50,8 @@ def instance_control_contexts(
     obligations: set[tuple[int, str]] = set()
     escaped: set[str] = set()
     returned: list[str] = []
+    private_writes: dict[tuple[int, str], bool] = {}
+    private_loss = [False]
     facts = {(call.get("line"), call.get("column")): call for call in row.get("calls", []) if not call.get("implicit_callback")}
     globals_ = {name for node in nodes if isinstance(node, (ast.Global, ast.Nonlocal)) for name in node.names}
     work = [5000]
@@ -44,20 +59,34 @@ def instance_control_contexts(
     def site(node: ast.AST) -> tuple[int, int]:
         return tuple(positions.get(id(node), [0, 0]))  # type: ignore[return-value]
 
+    def is_escaped(value: str) -> bool:
+        return value.startswith(PREFIX) and any(instance_key(value) == instance_key(old) for old in escaped)
+
+    def lose_private(value: str) -> None:
+        private_loss[0] = True
+        lose_field_ownership(env, value)
+
     def kill(value: str | None = None) -> None:
         victims = {value} if value and value.startswith(PREFIX) else {v for v in env.values() if v.startswith(PREFIX)}
         escaped.update(victims)
         for name, origin in list(env.items()):
-            if origin in victims:
+            if any(instance_key(origin) and instance_key(origin) == instance_key(victim) for victim in victims):
                 env[name] = UNKNOWN
 
     def join(paths: list[dict[str, str]]) -> dict[str, str]:
         if not paths:
             return {}
         names = set().union(*(path.keys() for path in paths))
-        return {name: paths[0].get(name, UNKNOWN) if paths[0].get(name, UNKNOWN) not in escaped
-                and all(path.get(name, UNKNOWN) == paths[0].get(name, UNKNOWN) for path in paths)
-                else UNKNOWN for name in names}
+        joined = {}
+        for name in names:
+            values = [path.get(name, UNKNOWN) for path in paths]
+            if any(is_escaped(value) for value in values):
+                joined[name] = UNKNOWN
+            elif len(set(values)) == 1:
+                joined[name] = values[0]
+            else:
+                joined[name] = join_instances(values)
+        return joined
 
     def assign(target: ast.AST, value: str) -> None:
         if isinstance(target, ast.Name):
@@ -65,18 +94,27 @@ def instance_control_contexts(
                 kill(value)
                 env[target.id] = UNKNOWN
             else:
-                env[target.id] = value if value not in escaped else UNKNOWN
+                env[target.id] = value if not is_escaped(value) else UNKNOWN
         elif isinstance(target, ast.Attribute):
             owner = expression(target.value)
             if value.startswith(PREFIX):
                 kill(value)
+            elif value.startswith(FIELD):
+                lose_private(value)
             if owner.startswith(PREFIX):
                 spec = json.loads(owner.removeprefix(PREFIX))
                 if target.attr not in spec.get("fields", []) or target.attr in spec["methods"]:
                     kill(owner)
+                else:
+                    safe = update_private_field(env, owner, target.attr, value)
+                    key = (site(target)[0], ast.unparse(target))
+                    private_writes[key] = private_writes.get(key, True) and safe
+                    private_loss[0] |= not safe
         else:
             if value.startswith(PREFIX):
                 kill(value)
+            elif value.startswith(FIELD):
+                lose_private(value)
             for child in ast.iter_child_nodes(target):
                 expression(child)
 
@@ -90,11 +128,25 @@ def instance_control_contexts(
             return UNKNOWN
         if isinstance(node, ast.Name):
             origin = env.get(node.id, UNKNOWN)
-            return origin if origin not in escaped else UNKNOWN
+            if is_escaped(origin):
+                return UNKNOWN
+            if origin.startswith(FIELD):
+                field = json.loads(origin.removeprefix(FIELD))
+                state = owner_states(env).get(field["owner"], {})
+                return origin if all(state.get(name) == "native-set" for name in field["fields"]) else UNKNOWN
+            return origin
+        if isinstance(node, ast.Constant):
+            return SCALAR if type(node.value) in {str, bytes, int, float, complex, bool, type(None)} else UNKNOWN
+        if isinstance(node, ast.IfExp):
+            expression(node.test)
+            return merge_field_alternatives(expression(node.body), expression(node.orelse))
         if isinstance(node, ast.Attribute):
             origin = expression(node.value)
             if origin.startswith(PREFIX):
                 payload = json.loads(origin.removeprefix(PREFIX))
+                known = field_origin(origin, node.attr)
+                if known != UNKNOWN:
+                    return known
                 if node.attr not in payload.get("fields", []):
                     # Bound handles, properties and reflective attributes can
                     # carry or expose the receiver; only direct calls bind it.
@@ -108,7 +160,7 @@ def instance_control_contexts(
         if isinstance(node, ast.Call):
             point = site(node)
             call = facts.get(point, {})
-            receiver = expression(node.func.value) if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, ast.Name) else UNKNOWN
+            receiver = expression(node.func.value) if isinstance(node.func, ast.Attribute) and isinstance(node.func.value, (ast.Name, ast.Attribute)) else UNKNOWN
             target = str(call.get("called_symbol", ""))
             if receiver.startswith(PREFIX) and isinstance(node.func, ast.Attribute):
                 target = str(json.loads(receiver.removeprefix(PREFIX))["methods"].get(node.func.attr, ""))
@@ -118,6 +170,9 @@ def instance_control_contexts(
                     kill(receiver)
             values = [expression(arg) for arg in node.args]
             keywords = {arg.arg: expression(arg.value) for arg in node.keywords if arg.arg is not None}
+            for argument in [*values, *keywords.values()]:
+                if argument.startswith(FIELD):
+                    lose_private(argument)
             reflective = isinstance(node.func, ast.Name) and node.func.id in {"globals", "locals", "vars", "eval", "exec", "getattr", "setattr", "delattr", "__import__"}
             if reflective or any(isinstance(arg, ast.Starred) for arg in node.args) or any(arg.arg is None for arg in node.keywords):
                 kill()
@@ -143,6 +198,8 @@ def instance_control_contexts(
                         child_result = instance_control_contexts(functions[target], declaration, functions, tuple(sorted(bound.items())), child_positions, active)
                         for lost in child_result.get("instance_escaped", set()):
                             kill(lost)
+                        apply_owner_states(env, child_result.get("instance_owner_states", {}))
+                        private_loss[0] |= bool(child_result.get("instance_private_loss"))
                         return str(child_result.get("instance_return", UNKNOWN))
                     # Existing constructor/factory analysis remains the only
                     # producer. This analysis cannot mint an instance identity.
@@ -155,6 +212,9 @@ def instance_control_contexts(
             for value in [receiver, *values, *keywords.values()]:
                 if value.startswith(PREFIX):
                     kill(value)
+                elif value.startswith(FIELD):
+                    lose_private(value)
+                    obligations.add((point[0], "private_set_protocol"))
             if not isinstance(node.func, (ast.Name, ast.Attribute)):
                 expression(node.func)
             elif isinstance(node.func, ast.Attribute) and not isinstance(node.func.value, ast.Name):
@@ -168,6 +228,8 @@ def instance_control_contexts(
                     origin = env.get(child.id, UNKNOWN)
                     if origin.startswith(PREFIX):
                         kill(origin)
+                    elif origin.startswith(FIELD):
+                        lose_private(origin)
             return UNKNOWN
         for child in ast.iter_child_nodes(node):
             origin = expression(child)
@@ -175,6 +237,9 @@ def instance_control_contexts(
                 # Containers, operators, f-strings and unpacking cannot conceal
                 # an identity alias from a subsequent external call.
                 kill(origin)
+            elif origin.startswith(FIELD):
+                lose_private(origin)
+                obligations.add((site(node)[0], "private_set_protocol"))
         return UNKNOWN
 
     def block(body: list[ast.stmt], prefixes: list[dict[str, str]] | None = None) -> str:
@@ -244,9 +309,12 @@ def instance_control_contexts(
                 entry = dict(env)
                 guess = dict(entry)
                 base_calls, base_contextual = dict(calls), dict(contextual)
+                base_private_writes = dict(private_writes)
                 for _ in range(3):
                     calls.clear()
                     calls.update(base_calls)
+                    private_writes.clear()
+                    private_writes.update(base_private_writes)
                     contextual.clear()
                     contextual.update(base_contextual)
                     env.clear()
@@ -262,6 +330,8 @@ def instance_control_contexts(
                     kill()
                     calls.clear()
                     calls.update(base_calls)
+                    private_writes.clear()
+                    private_writes.update(base_private_writes)
                     contextual.clear()
                     contextual.update(base_contextual)
                     obligations.add((site(node)[0], "identity_fixed_point"))
@@ -285,7 +355,11 @@ def instance_control_contexts(
                 block(node.orelse, prefixes)
                 block(node.finalbody, prefixes)
             elif isinstance(node, ast.Return):
-                returned.append(expression(node.value))
+                value = expression(node.value)
+                if value.startswith((PREFIX, FIELD)):
+                    lose_private(value)
+                    value = UNKNOWN if value.startswith(FIELD) else next((origin for origin in env.values() if origin.startswith(PREFIX) and instance_key(origin) == instance_key(value)), UNKNOWN)
+                returned.append(value)
                 return "return"
             elif isinstance(node, ast.Raise):
                 value = expression(node.exc)
@@ -310,4 +384,6 @@ def instance_control_contexts(
     block(function.body)
     return {"instance_calls": calls, "instance_contextual_calls": contextual,
             "instance_control_obligations": obligations, "instance_escaped": escaped,
-            "instance_return": returned[0] if returned and len(set(returned)) == 1 else UNKNOWN}
+            "instance_return": returned[0] if returned and len(set(returned)) == 1 else UNKNOWN,
+            "instance_owner_states": owner_states(env), "instance_private_loss": private_loss[0],
+            "instance_private_writes": {key for key, safe in private_writes.items() if safe}}

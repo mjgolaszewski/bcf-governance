@@ -206,7 +206,10 @@ def validate_operation_effects(
                     if not experimental_protocols and root in function.get('private_container_roots', []):
                         report_observation('unqualified_container_element_protocols', effect.get('line'), effect.get('target'))
                         continue
-                    mandatory = (strict_source_callable or callback_required or symbol.endswith('.__init__')
+                    receiver_write = (bool(function.get("class_symbol"))
+                        and root == next(iter(function.get("parameters", {})), None)
+                        and str(effect.get("target", "")).startswith(root + "."))
+                    mandatory = (receiver_write or strict_source_callable or callback_required or symbol.endswith('.__init__')
                         or root in function.get('external_write_roots', [])
                         or 'legacy_effect_sites' not in function or legacy in function['legacy_effect_sites'])
                     if not experimental_protocols and not mandatory:
