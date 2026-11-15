@@ -18,7 +18,7 @@ def instance_key(origin: str) -> str:
     return json.dumps([row["subject"], row["site"]], sort_keys=True)
 
 
-def initial_private_fields(initializer: dict[str, Any], allowed_fields: set[str]) -> dict[str, str]:
+def initial_private_fields(initializer: dict[str, Any], allowed_fields: set[str], functions: dict[str, dict[str, Any]]) -> dict[str, str]:
     """Only unconditional single assignments establish initial field facts."""
     source = initializer.get("python_value_source")
     if not source:
@@ -37,7 +37,26 @@ def initial_private_fields(initializer: dict[str, Any], allowed_fields: set[str]
                 if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name) and target.value.id == receiver:
                     writes.setdefault(target.attr, []).append(node.value)
     result = {}
+    refined: dict[str, str] = {}
+    points = {id(node): point for node, point in zip(ast.walk(function), initializer.get("python_value_sites", []), strict=False)}
+    call_facts = {(row.get("line"), row.get("column")): row for row in initializer.get("calls", [])}
+    from .semantic_python_key_admission import normal_guard_refinements
     for node in function.body:
+        if isinstance(node, ast.Expr) and isinstance(node.value, ast.Call):
+            call = node.value
+            fact = call_facts.get(tuple(points.get(id(call), [0, 0])), {})
+            helper_row = functions.get(str(fact.get("called_symbol", "")), {})
+            refinements = normal_guard_refinements(helper_row)
+            names = list(helper_row.get("parameters", {}))
+            bindings = dict(zip(names, call.args, strict=False))
+            bindings.update({arg.arg: arg.value for arg in call.keywords if arg.arg is not None})
+            for name, kind in refinements.items():
+                value = bindings.get(name)
+                if isinstance(value, ast.Name):
+                    refined[value.id] = kind
+        for part in ast.walk(node):
+            if isinstance(part, ast.Name) and isinstance(part.ctx, (ast.Store, ast.Del)):
+                refined.pop(part.id, None)
         if not isinstance(node, (ast.Assign, ast.AnnAssign)):
             continue
         if isinstance(node, ast.Assign) and len(node.targets) != 1:
@@ -48,7 +67,9 @@ def initial_private_fields(initializer: dict[str, Any], allowed_fields: set[str]
                 continue
             value = node.value
             state = UNKNOWN
-            if isinstance(value, ast.Constant) and type(value.value) in {str, bytes, int, float, complex, bool, type(None)}:
+            if isinstance(value, ast.Name) and value.id in refined:
+                state = SCALAR
+            elif isinstance(value, ast.Constant) and type(value.value) in {str, bytes, int, float, complex, bool, type(None)}:
                 state = SCALAR
             elif (isinstance(value, ast.Call) and isinstance(value.func, ast.Name)
                   and value.func.id == "set" and not value.args and not value.keywords

@@ -1,0 +1,95 @@
+"""Bounded attempt-local duplicate admission; never source coverage or publication authority."""
+
+from __future__ import annotations
+
+DEFAULT_SAVED_EXPORT_MAX_IDENTITIES = 100_000
+
+
+def require_export_identity_capacity(max_identities: int) -> None:
+    """Apply the shared bounded budget to an actual attempt and durable queued intent."""
+    if type(max_identities) is not int or not 1 <= max_identities <= 1_000_000:
+        raise ValueError("export_identity_capacity")
+
+
+class BatchExportIdentityLedger:
+    """Keep exact selected identities until the owning export attempt ends."""
+
+    def __init__(self, max_identities: int) -> None:
+        require_export_identity_capacity(max_identities)
+        self._capacity = max_identities
+        self._accounts: set[str | int] = set()
+        self._transactions: set[str | int] = set()
+        self._account_type: type[str] | type[int] | None = None
+        self._transaction_type: type[str] | type[int] | None = None
+        self._failed = False
+
+    @property
+    def account_count(self) -> int:
+        """Return identities observed, never a claim about unobserved source records."""
+        return len(self._accounts)
+
+    @property
+    def transaction_count(self) -> int:
+        """Return admitted transaction identities within this one attempt."""
+        return len(self._transactions)
+
+    def observe_account(self, identity: object) -> None:
+        """Reject duplicate account identity across every selected source member."""
+        self._observe(identity, transaction=False)
+
+    def observe_transaction(self, identity: object) -> None:
+        """Reject duplicate TransactionID across selected accounts and source members."""
+        self._observe(identity, transaction=True)
+
+    def require_nonempty(self) -> None:
+        """Reject failed attempts and empty selected-account populations before publication."""
+        if self._failed:
+            raise ValueError("export_identity_failed")
+        if not self._accounts:
+            raise ValueError("export_selection_empty")
+
+    def _observe(self, identity: object, *, transaction: bool) -> None:
+        """Apply one exact identity rule to the two real entity admission paths.
+
+        owning_context_or_shared_kernel: batch_exports
+        owning_layer: domain
+        rationale: Both account and transaction admission require the same bounded
+            exact-value rule, combined capacity and permanent attempt failure.
+        tests: test_batch_export_identity_ledger.py
+        """
+        if self._failed:
+            raise ValueError("export_identity_failed")
+        if type(identity) is int:
+            valid = -(1 << 63) <= identity < (1 << 63)
+        elif type(identity) is str:
+            try:
+                valid = 0 < len(identity.encode("utf-8")) <= 256
+            except UnicodeError:
+                valid = False
+        else:
+            valid = False
+        if not valid:
+            self._failed = True
+            raise ValueError("export_identity_value")
+        assert isinstance(identity, str | int)
+        observed = self._transactions if transaction else self._accounts
+        identity_type = self._transaction_type if transaction else self._account_type
+        if identity_type is not None and type(identity) is not identity_type:
+            self._failed = True
+            raise ValueError("export_identity_mixed_type")
+        if identity in observed:
+            self._failed = True
+            raise ValueError("export_identity_duplicate")
+        if len(self._accounts) + len(self._transactions) >= self._capacity:
+            self._failed = True
+            raise ValueError("export_identity_capacity")
+        observed.add(identity)
+        if transaction:
+            self._transaction_type = type(identity)
+        else:
+            self._account_type = type(identity)
+
+
+def make_batch_export_identity_ledger(*, max_identities: int) -> BatchExportIdentityLedger:
+    """Sole construction site; caller must explicitly select the bounded attempt budget."""
+    return BatchExportIdentityLedger(max_identities)

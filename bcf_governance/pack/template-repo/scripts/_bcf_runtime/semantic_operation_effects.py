@@ -161,6 +161,7 @@ def validate_operation_effects(
             (call.get('line'), call.get('called_symbol')) for call in function.get('calls', [])
             if (call.get('line'), call.get('column')) in origins['contextual_calls']
             or (call.get('line'), call.get('column')) in origins.get('native_reads', {})
+            or (call.get('line'), call.get('column')) in origins.get('native_calls', set())
         }
 
         frame_context: dict[str, Any] = origins

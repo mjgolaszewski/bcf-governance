@@ -44,6 +44,13 @@ def instance_control_contexts(
         return {"instance_control_obligations": {(0, "recursive_identity")},
                 "instance_escaped": {value for _, value in arguments if value.startswith(PREFIX)}}
     active = active | {str(row["symbol"])}
+    from .semantic_python_key_admission import owned_key_body_proof
+    key_proof = owned_key_body_proof(row, arguments)
+    if key_proof is not None:
+        return {"instance_calls": {}, "instance_contextual_calls": {},
+                "instance_control_obligations": set(), "instance_escaped": set(),
+                "instance_return": UNKNOWN, "instance_owner_states": owner_states(dict(arguments)),
+                "instance_private_loss": False, "instance_private_writes": key_proof["writes"]}
     env = dict(arguments)
     calls: dict[tuple[int, int], tuple[tuple[str, str], ...]] = {}
     contextual: dict[tuple[int, int], str] = {}
@@ -137,6 +144,13 @@ def instance_control_contexts(
             return origin
         if isinstance(node, ast.Constant):
             return SCALAR if type(node.value) in {str, bytes, int, float, complex, bool, type(None)} else UNKNOWN
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            value = expression(node.operand)
+            if value.startswith(FIELD):
+                return SCALAR
+            if value.startswith(PREFIX):
+                kill(value)
+            return SCALAR if value == SCALAR else UNKNOWN
         if isinstance(node, ast.IfExp):
             expression(node.test)
             return merge_field_alternatives(expression(node.body), expression(node.orelse))
@@ -170,6 +184,10 @@ def instance_control_contexts(
                     kill(receiver)
             values = [expression(arg) for arg in node.args]
             keywords = {arg.arg: expression(arg.value) for arg in node.keywords if arg.arg is not None}
+            if (isinstance(node.func, ast.Name) and node.func.id in {"len", "bool"}
+                    and node.func.id in row.get("unshadowed_container_builtins", [])
+                    and len(values) == 1 and not node.keywords and values[0].startswith(FIELD)):
+                return SCALAR
             for argument in [*values, *keywords.values()]:
                 if argument.startswith(FIELD):
                     lose_private(argument)

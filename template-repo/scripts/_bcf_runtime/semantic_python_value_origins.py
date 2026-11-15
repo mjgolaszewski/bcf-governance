@@ -17,6 +17,7 @@ from .semantic_python_constructor_callbacks import (
     native_exception_binding,
     static_scalar_expression,
 )
+from .semantic_python_key_admission import class_key_fields, owned_key_body_proof
 from .semantic_python_private_fields import (
     field_origin,
     initial_private_fields,
@@ -42,7 +43,7 @@ def _join(left: str, right: str) -> str:
     return UNKNOWN
 
 
-def value_origins(
+def _value_origins(
     symbol: str, functions: dict[str, dict[str, Any]],
     arguments: tuple[tuple[str, str], ...] = (),
     active: frozenset[str] = frozenset(),
@@ -226,6 +227,10 @@ def value_origins(
             # evaluate the operand, but do not infer its value type from this test.
             expression(node.left.args[0])
             return SCALAR
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            value = expression(node.operand)
+            if value.startswith("private-set:"):
+                return SCALAR
         if isinstance(node, (ast.UnaryOp, ast.BinOp, ast.Compare, ast.BoolOp)):
             operands = [expression(child) for child in ast.iter_child_nodes(node)
                         if isinstance(child, ast.expr)]
@@ -383,7 +388,8 @@ def value_origins(
                             return "source-instance:" + json.dumps({
                                 "subject": spec["subject"], "site": [symbol, *site],
                                 "methods": spec["instance_methods"], "fields": spec.get("instance_fields", []),
-                                "private_fields": initial_private_fields(functions[initializer], set(spec.get("instance_fields", []))),
+                                "private_fields": (private_fields := initial_private_fields(functions[initializer], set(spec.get("instance_fields", [])), functions)),
+                                "private_key_fields": class_key_fields(functions, spec["subject"], private_fields),
                             }, sort_keys=True)
             if (spec.get('native_exception_initializer') and (*site, spec.get('subject')) in constructor_inputs):
                 return UNKNOWN
@@ -405,7 +411,7 @@ def value_origins(
                     native_calls.add(site)
                     return UNKNOWN
                 if name in {"len", "bool"} and len(values) == 1 and not keywords:
-                    if values[0] in OWNED | {SCALAR}:
+                    if values[0] in OWNED | {SCALAR} or values[0].startswith("private-set:"):
                         native_calls.add(site)
                         return SCALAR
                 if name in CONTAINERS and not values and not keywords:
@@ -738,3 +744,20 @@ def value_origins(
             'native_calls': native_calls, 'unqualified_protocol_sites': unqualified_protocol_sites,
             'unqualified_source_awaits': unqualified_source_awaits,
             'instance_control_obligations': empty.get('instance_control_obligations', set())}
+
+
+def value_origins(
+    symbol: str, functions: dict[str, dict[str, Any]],
+    arguments: tuple[tuple[str, str], ...] = (),
+    active: frozenset[str] = frozenset(), _work_budget: list[int] | None = None,
+) -> dict[str, Any]:
+    """Apply a complete closed native-body proof after conservative analysis."""
+    result = _value_origins(symbol, functions, arguments, active, _work_budget)
+    proof = owned_key_body_proof(functions.get(symbol, {}), arguments)
+    if proof is not None and not result.get("analysis_budget_exhausted"):
+        result["writes"].update(proof["writes"])
+        result.setdefault("native_calls", set()).update(proof["native_calls"])
+        result.update(source_control_unknown=False, initializer_protocol_unknown=False,
+                      unqualified_protocol_sites=set(), instance_control_obligations=set(),
+                      retained=False, degraded=False)
+    return result

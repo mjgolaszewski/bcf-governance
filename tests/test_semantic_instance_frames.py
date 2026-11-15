@@ -45,7 +45,7 @@ def test_real_factory_and_process_source_argument_positions(tmp_path):
 def test_factory_identity_never_proves_private_mutation_ownership(tmp_path, method):
     source = SOURCE.replace("return ledger.require_nonempty()", "return ledger." + method + "(7)")
     if method == "observe_account":
-        source = source.replace("self._failed=False", "self._failed=max_identities")
+        source = source.replace("self._failed=False", "self._failed=external_value")
     _, facts = inventory(tmp_path, source)
     with pytest.raises(SemanticOperationEffectError):
         validate_operation_effects(OPERATION, "consumer.py::BuildSavedBatchExport.execute", facts, experimental_protocols=False)

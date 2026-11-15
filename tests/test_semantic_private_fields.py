@@ -21,7 +21,7 @@ def test_actual_failed_bool_write_is_private_only_under_qualified_owner(tmp_path
     assert validate_operation_effects(OPERATION, "consumer.py::BuildSavedBatchExport.execute", facts, experimental_protocols=False) == (0, 0)
 
 
-@pytest.mark.parametrize("old,new", [("max_identities", "True"), ("False", "external()"), ("False", "identity"), ("False", "type(identity)")])
+@pytest.mark.parametrize("old,new", [("external_value", "True"), ("False", "external()"), ("False", "identity"), ("False", "type(identity)")])
 def test_unknown_old_or_replacement_never_gets_scalar_write_proof(tmp_path, old, new):
     source = source_for("self._failed=" + new).replace("self._failed=False", "self._failed=" + old)
     if new == "identity":
