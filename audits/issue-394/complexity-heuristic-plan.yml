@@ -41,6 +41,8 @@ required_controls:
     - Advisory findings preserve existing required execution and stable status identities
     - Approved policy and exceptions project consistently across source and installed profiles
   cause_specific_negative:
+    - A real function exceeding a test-only configured threshold produces its named advisory finding; after separately approved enforcement the same function fails the named gate while a below-threshold control passes
+    - Disabling only the hotspot comparison restores acceptance of that exceeding function and must fail its cause-specific rejection control
     - Omitted files functions or exclusions and stale wrong-subject baseline or tool versions cannot yield a clean report
     - Syntax failures missing tooling unsupported syntax and partial scans produce typed incomplete results
     - Forged lower scores and averages concealing a hotspot cannot satisfy the review policy
