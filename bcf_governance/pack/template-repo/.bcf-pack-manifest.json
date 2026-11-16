@@ -1436,7 +1436,7 @@
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
-      "sha256": "73d71a3171c59e50a9e44fbc06b8068e80881abd6f1de023b9cb5504576c6fba"
+      "sha256": "a401f2027c8e0ded214aa4713e036b2a3da6cea582c58342e77a6f6ef08322ea"
     },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",

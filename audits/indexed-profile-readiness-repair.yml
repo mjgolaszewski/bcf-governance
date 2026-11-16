@@ -1,0 +1,40 @@
+document:
+  kind: audit
+  id: bcf-indexed-profile-readiness-repair
+  version: 1.0.0
+  status: active
+  path: audits/indexed-profile-readiness-repair.yml
+invariant: Profile readiness and native ownership must admit the same nonempty closed semantic registry.
+domain: semantic representation ownership
+layer: tooling query
+canonical_primitive: semantic_ownership_registry.load_registry
+operation: validate_profile_v2_readiness
+producer: flat root or authenticated closed representation_sources inventory
+consumer: profile promotion readiness and its semantic_representations count
+repair:
+  - Load the canonical registry once and validate that same registry.
+  - Count loaded entries rather than raw inline rows.
+  - Retain schema, source closure, context budget, duplicate identity and semantic authority checks.
+forbidden_scope:
+  - constructor and operation/effect semantics
+  - capability applicability or certification policy
+  - mixed inline/indexed layout
+  - installed consumer mutations or provider authority changes
+controls:
+  - Actual committed flat-to-indexed deconstruction preserves logical entries and readiness report.
+  - Missing, orphan, duplicate-key and empty source populations fail readiness.
+  - Existing profile and indexed-registry controls remain required.
+status: implemented_focused_controls_passed_full_qualification_pending
+custody: No merge, full CI, release or consumer activation is claimed.
+validation:
+  interpreter: Python 3.12.14
+  profile_and_layout_tests: 32 passed
+  updated_independent_runtime_and_invalid_source_tests: 5 passed
+  pack_projection_tests: 7 passed
+  existing_adoption_promotion_tests: 2 passed
+  source_lint: PASS
+  source_strict_typing: PASS
+  governance_validation: PASS
+  limitations:
+    - Counts are separate executions, not a unique full-suite total.
+    - No full native CI, cold install, upgrade or credential confinement acceptance is claimed.
