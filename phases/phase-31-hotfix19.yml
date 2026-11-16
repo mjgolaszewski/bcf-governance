@@ -17,8 +17,10 @@ execution_evidence:
   planned_commands:
   - python -m pytest -q tests/test_profile_readiness_indexed_registry.py tests/test_profile_contract_v2.py
     tests/test_semantic_registry_layout.py
+  - python -m pytest -q tests/test_promotion_render_budgets.py tests/test_profile_yaml.py
   - bcf ci submit --repo-root .
   executed_commands:
+  - python -m pytest -q tests/test_promotion_render_budgets.py tests/test_profile_yaml.py tests/test_semantic_adoption_promotion.py tests/test_profile_readiness_indexed_registry.py tests/test_semantic_registry_layout.py
   - python -m pytest -q tests/test_profile_readiness_indexed_registry.py tests/test_profile_contract_v2.py tests/test_semantic_registry_layout.py
   - python -m pytest -q tests/test_pack_sync.py
   - python -m pytest -q tests/test_semantic_adoption_promotion.py
@@ -26,6 +28,9 @@ execution_evidence:
   - python -m ruff check bcf_governance/tooling/profile_contract_v2.py tests/test_profile_readiness_indexed_registry.py
   - python -m mypy bcf_governance/tooling/profile_contract_v2.py
   notes:
+  - Recovery public CLI diagnostic passed the indexed reader, then reproduced generated root 1157 lines and full gate contract 2085 lines, with unchanged parsed values and byte caps.
+  - Existing indexed semantic renderer now emits the bounded root metadata as a lossless flow mapping; historical flat bytes stay unchanged. Existing profile scalar renderer quotes multiline shared strings with escaped newlines, preserving exact executable command values.
+  - Updated renderer, readiness, indexed-layout and existing adoption controls passed 26 tests; existing profile and pack controls passed 21 tests. Three touched source modules pass Ruff and strict typing. No declaration, gate, control, capability or context limit was removed or raised.
   - Recovery reproduced official 2.3.15 promotion rejection on a valid 578-entry indexed registry. Raw inline readiness disagreed with the canonical closed-source loader.
   - The readiness query now loads and validates one canonical registry and counts its entries. No schema, ownership, effect, capability or authority policy changes.
   - Python 3.12 focused profile/layout controls passed 32 tests; pack parity passed 7 tests. Source Ruff and strict typing passed. Independent standalone runtime and four invalid-source controls passed 5 tests. Existing adoption/promotion controls passed 2 tests. Governance validation passed.

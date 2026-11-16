@@ -38,3 +38,14 @@ validation:
   limitations:
     - Counts are separate executions, not a unique full-suite total.
     - No full native CI, cold install, upgrade or credential confinement acceptance is claimed.
+renderer_followup:
+  demonstrated_failures: indexed root 1157 lines; full gate contract 2085 lines
+  unchanged_limits: registry 200 lines and 64 KiB; gates 800 lines and 96 KiB
+  canonical_owners: semantic_locking.render_compact_semantic_yaml and profile_yaml shared scalar representation
+  changes:
+    - Compact indexed metadata as one mapping; preserve historical flat rendering.
+    - Quote shared multiline strings with escaped newlines; preserve exact decoded commands and YAML types.
+  focused_controls: 26 passed, including 295 source references, 578 identities, 20 gates and 21 catalog records
+  actual_consumer_observation_after_repair:
+    indexed_registry: {bytes: 46421, lines: 1, parsed_value_parity: true}
+    full_gate_contract: {bytes: 29677, lines: 462, parsed_value_parity: true}

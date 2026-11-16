@@ -32,8 +32,16 @@ def _represent_flow_mapping(
     return node
 
 
+def _represent_shared_scalar(
+    dumper: yaml.SafeDumper, value: _SharedScalar
+) -> yaml.nodes.ScalarNode:
+    return dumper.represent_scalar(
+        "tag:yaml.org,2002:str", value, style='"' if "\n" in value else None
+    )
+
+
 _ProfileSurfaceDumper.add_representer(_FlowMapping, _represent_flow_mapping)
-_ProfileSurfaceDumper.add_representer(_SharedScalar, yaml.SafeDumper.represent_str)
+_ProfileSurfaceDumper.add_representer(_SharedScalar, _represent_shared_scalar)
 
 
 def _compact_control_mappings(
