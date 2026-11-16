@@ -1,0 +1,60 @@
+schema_version: '1.0'
+kind: issue_394_bounded_implementation_plan
+status: planned_not_executed
+authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitems: [foundation.baseline, dormant.early-checks, dormant.projection, certification.distribution]
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: query
+purpose: Standardize reproducible Python complexity observations and review heuristics before considering enforcement
+scope:
+  - Use pinned Radon as the Python cyclomatic-complexity calculator; do not introduce a second calculator or parallel registry
+  - Integrate through existing structural-check, policy, observation and installation owners after their bounded contract is committed
+  - Preserve ordinary CLI grammar and provider status identities
+sequence:
+  - Freeze tool and interpreter versions, options, source inventory, exclusions and per-function identity before collecting a baseline
+  - Bind deterministic per-function scores and hotspot deltas to exact source and policy subjects; retain additions deletions renames and unchanged hotspots without averages hiding regressions
+  - Measure scan cost and qualify repeatability and supported Python syntax before admitting the scan ahead of expensive proof allocation
+  - Introduce advisory review findings for new or worsening hotspots with explicit ownership and rationale; numeric enforcement thresholds remain unapproved
+  - Propose thresholds from the baseline and review experience, with explicit versioned policy approval and migration before any blocking behavior
+  - Qualify source wheel sdist templates and applicable installed consumers through canonical projection before enabling approved policy
+policy:
+  tool_version: requires_qualification_and_pin
+  numeric_thresholds: null
+  initial_mode: advisory
+  unsupported_or_failed_analysis: typed_incomplete_observation_never_a_clean_result
+  unsupported_language: explicit_applicability_no_inferred_cross_language_coverage
+  exceptions: Explicitly scoped owned justified and reviewable; policy approval must define expiry and renewal
+  maintainability_index: supplementary_only_not_an_aggregate_acceptance_gate
+  no_score_based_proof_reduction: true
+  no_candidate_self_activation: true
+  existing_architecture_and_size_rules_preserved: true
+limitations:
+  - Cyclomatic complexity is a structural review and test-planning signal, not correctness security authority or runtime-effect proof
+  - Function splitting can improve scores without reducing system complexity; review composition and actual behavior
+  - A low score cannot justify skipping required tests or granting lifecycle or release progress
+required_controls:
+  positive:
+    - Known Python branch fixtures produce pinned expected per-function scores and deterministic ordering
+    - Exact-subject baselines and deltas retain all applicable functions and qualified explicit exclusions
+    - Advisory findings preserve existing required execution and stable status identities
+    - Approved policy and exceptions project consistently across source and installed profiles
+  cause_specific_negative:
+    - Omitted files functions or exclusions and stale wrong-subject baseline or tool versions cannot yield a clean report
+    - Syntax failures missing tooling unsupported syntax and partial scans produce typed incomplete results
+    - Forged lower scores and averages concealing a hotspot cannot satisfy the review policy
+    - Candidate policy edits cannot authorize their own thresholds exemptions or activation
+    - Missing expired or out-of-scope exceptions cannot suppress an enforced approved finding
+    - Removing the analysis consumer and its own test together is detected by independent composition conformance
+forbidden_surfaces:
+  - Maintenance branches main CI machinery and maintained adopter repositories
+  - New graph claim registry evaluator broker or receipt family
+  - Unapproved numeric gates automatic refactoring or proof suppression
+acceptance:
+  - Commit the bounded executable contract and cause-specific controls before implementation
+  - Obtain baseline review and explicit policy approval before blocking enforcement
+  - Prove exact-source deterministic population completeness measured overhead and installed parity
+  - Retain all 82 existing whole requirements open pending independent applicable evidence
+  - Preserve P32 active and P33-P35 dormant until canonical lifecycle derivation permits advancement
+implementation_evidence: []

@@ -485,6 +485,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized baseline inputs before dependent effects
     acceptance:
+    - Baseline pinned Radon per-function complexity and scan cost under audits/issue-394/complexity-heuristic-plan.yml; thresholds remain unapproved and observations grant no assurance
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
@@ -527,6 +528,7 @@ workitems:
     - kind: cause_specific_negative
       scenario: Reject missing wrong-subject stale incomplete or unauthorized early-checks inputs before dependent effects
     acceptance:
+    - Implement the approved complexity observation and review heuristic through existing early structural-check owners; advisory first, with no proof suppression or candidate self-activation
     - Commit complete affected-surface contract and executable bindings before production changes
     - Preserve invariant to owner to primitive to operation to producer to consumer to evidence to terminal trace
     - Prove source package template and applicable profile parity
