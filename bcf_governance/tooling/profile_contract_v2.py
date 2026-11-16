@@ -231,11 +231,11 @@ def validate_profile_v2_readiness(
         raise ProfileV2Error("profile-v2 readiness applies to standard or regulated")
     registry = _load_mapping(repo_root / "governance/canonical-representations.yml")
     _validate_schema(repo_root, "canonical-representations.schema.json", registry)
-    representations = registry.get("representations")
-    if not isinstance(representations, list) or not representations:
-        raise ProfileV2Error("profile v2 requires at least one declared semantic representation")
     try:
-        validate_semantic_contract_structure(repo_root, load_semantic_registry(repo_root))
+        semantic_registry = load_semantic_registry(repo_root)
+        if not semantic_registry.entries:
+            raise ProfileV2Error("profile v2 requires at least one declared semantic representation")
+        validate_semantic_contract_structure(repo_root, semantic_registry)
     except (SemanticAuthorityError, SemanticOwnershipRegistryError) as exc:
         raise ProfileV2Error(f"semantic authority: {exc}") from exc
     head = _head(repo_root)
@@ -372,7 +372,7 @@ def validate_profile_v2_readiness(
         status="ready",
         profile=profile,
         profile_contract_version=current_contract_version(repo_root),
-        semantic_representations=len(representations),
+        semantic_representations=len(semantic_registry.entries),
         capability_na_records=len(na_paths),
         ci_authority=authority_state,
         github_topology=topology_state,

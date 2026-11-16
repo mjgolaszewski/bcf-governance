@@ -442,7 +442,7 @@
     },
     "scripts/_bcf_runtime/_version.py": {
       "operation": "copy",
-      "sha256": "a7b22bb10cf7675bbefaea6d2a8e0490a9e936b26d8e5180068235477130aa95"
+      "sha256": "678ebf4a2809821b89e82327ef3fe4da16b146cfb891f478c88cbd8c774e6860"
     },
     "scripts/_bcf_runtime/affected_proof_closure.py": {
       "operation": "copy",
@@ -1436,7 +1436,7 @@
     },
     "scripts/_bcf_runtime/profile_contract_v2.py": {
       "operation": "copy",
-      "sha256": "73d71a3171c59e50a9e44fbc06b8068e80881abd6f1de023b9cb5504576c6fba"
+      "sha256": "a401f2027c8e0ded214aa4713e036b2a3da6cea582c58342e77a6f6ef08322ea"
     },
     "scripts/_bcf_runtime/profile_governance.py": {
       "operation": "copy",
@@ -1452,7 +1452,7 @@
     },
     "scripts/_bcf_runtime/profile_yaml.py": {
       "operation": "copy",
-      "sha256": "a98ac7dd4103b1712814cb33309276a96530267eb78f3afd98366497e160ea5a"
+      "sha256": "d9d03466b99494ad4d937440c497c34395fff5e1d6804d0700b490ab5f11a49a"
     },
     "scripts/_bcf_runtime/prospective_candidate_identity.py": {
       "operation": "copy",
@@ -1633,7 +1633,7 @@
     },
     "scripts/_bcf_runtime/semantic_locking.py": {
       "operation": "copy",
-      "sha256": "6987b0b77f5fcb559b0da915ff818c75a066d7d47d5b76bd8b694d5315e54226"
+      "sha256": "b01dece0b63a616f29446c5dbb9960ffb8325851207dd4be6d16eca6a60ae001"
     },
     "scripts/_bcf_runtime/semantic_operation_effects.py": {
       "operation": "copy",

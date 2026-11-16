@@ -66,6 +66,8 @@ environment_facts:
     active_workitem_ledger: plans/phase-31-workitems.yml
     active_phase_log: phases/phase-31-log.yml
 known_constraints:
+- P31-HF19 repairs indexed profile readiness and lossless promotion rendering through existing owners.
+  Scope and controls are in audits/indexed-profile-readiness-repair.yml; full CI, review and custody remain pending.
 - P31-HF18 is limited to current BDMCP publication compatibility. Active branch repair/bdmcp-publication-compatibility-20261113 derives from immutable 2.3.14. Broader
   experimental source is preserved on repair/maintained-consumer-contracts at 7761979c601171651ab601849cbdec44d183ee8d; no complete CI or custody credit.
 - routine controller rotation becomes active only after its dormant provider compiler is installed through the one-time ordinary N/N+1 migration; provider evidence

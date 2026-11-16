@@ -46,6 +46,13 @@ def sha256_bytes(value: bytes) -> str:
 def render_compact_semantic_yaml(payload: dict[str, Any]) -> bytes:
     """Render top-level semantic inventories with one lossless row per list item."""
 
+    # Indexed roots are bounded metadata, not one declaration per list row.
+    # Their explicit source index and ownership metadata must stay compact too.
+    if "representation_sources" in payload:
+        candidate = _compact_dump(payload, flow=True).encode("utf-8")
+        if yaml.safe_load(candidate) != payload:
+            raise SemanticLockError("compact indexed registry does not preserve its input value")
+        return candidate
     segments: list[str] = []
     for key, value in payload.items():
         if not isinstance(value, list):
