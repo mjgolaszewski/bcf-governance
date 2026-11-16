@@ -276,7 +276,7 @@ Initialize Git at the target root and install dependencies:
 
 ```bash
 git init /path/to/repo
-python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.15/bcf_governance-2.3.15-py3-none-any.whl
+python3 -m pip install https://github.com/mjgolaszewski/bcf-governance/releases/download/v2.3.16/bcf_governance-2.3.16-py3-none-any.whl
 ```
 
 GitHub Releases is the supported distribution channel for BCF 2.1. Verify the
@@ -669,9 +669,9 @@ Normal upgrade refreshes pack-owned runtime and schemas and creates required roo
 artifacts only when absent:
 
 ```bash
-gh release download v2.3.15 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.15
+gh release download v2.3.16 --repo mjgolaszewski/bcf-governance --dir /tmp/bcf-v2.3.16
 GITHUB_TOKEN="$GITHUB_TOKEN" bcf install --target . --upgrade \
-  --release-assets /tmp/bcf-v2.3.15 --require-strict-validation
+  --release-assets /tmp/bcf-v2.3.16 --require-strict-validation
 ```
 
 The exact release assets and GET-only provider inspection bind the executing BCF
@@ -1263,3 +1263,13 @@ Conditional registration helpers may return a source-proven SDK registration dec
 Frozen typed registration tables reuse the native source-bound handler/factory profile. This is delegation evidence only; operation classification, source ownership and exact effect-port checks remain independently required.
 
 Repeated initializer bindings receive `@line.column` site suffixes (Python AST zero-based columns), so authorizing one assignment never authorizes a second assignment to the same name. Nested class identities retain every enclosing class.
+
+For an indexed registry, an explicit profile configuration may provide the
+`semantic-ownership` gate with its existing invocation, evidence and diagnostic
+oracle, binding the owner-authorization negative control to the actual declared
+source file and representation index. Select exactly one stable semantic ID and
+verify its current leaf/index before applying the mutation. The positive gate
+must pass; replacing its `authorized_constructors_and_factories` with an
+unauthorized owner must fail with `owner must be an authorized constructor`.
+The default root-row control assumes a flat registry. Keep every required gate
+and control; do not suppress a stale selector or edit generated gate contracts.

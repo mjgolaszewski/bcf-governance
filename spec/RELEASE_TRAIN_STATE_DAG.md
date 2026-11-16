@@ -2735,3 +2735,27 @@ added by this maintenance release.
 Deferred Identity/JIT and general protocol inference remain preserved experimental
 work. Recovery receipts, if ever needed for a broken controller, remain
 noncertifying and cannot authorize their own successor or this release.
+
+### P31-HF19 indexed profile promotion compatibility
+
+The invariant is one closed semantic declaration population across ownership and
+profile readiness. The semantic registry domain owns loading and source closure;
+`load_registry` is the existing primitive. The readiness query consumes that
+same validated registry and reports its entry count. Existing semantic/profile
+renderers own lossless byte projections, preserving the decoded declarations,
+commands, gates, controls and existing context limits.
+
+| Input state | Required transition or refusal | Evidence and downstream boundary |
+| --- | --- | --- |
+| Committed flat or indexed registry with the same declarations | Load once, require a nonempty population, validate that population and report its exact count | Flat/indexed parity and isolated standalone-runtime controls; no invented inline declaration |
+| Missing, orphan, duplicate, malformed or empty indexed input | Refuse through existing closed-source and semantic authority rules | Named negative controls; no promotion or evidence credit |
+| Indexed root with 295 source references and 578 identities | Compact the existing metadata mapping without changing its decoded value or flat-registry historical bytes | Exact-scale line/byte and deterministic parity controls; source closure remains mandatory |
+| Full gate contract with multiline commands | Escape newlines in shared YAML string scalars while preserving exact decoded executable values and YAML types | Full gate/catalog and existing profile controls; no gate removal, cap increase or command change |
+| Indexed owner negative control | Explicit project profile configuration binds the unchanged authorization mutation/oracle to the actual declared leaf and entry | Positive native wrapper and causal unauthorized-owner rejection; stale or ambiguous selectors fail |
+| Version advances to 2.3.16 | Native reconciliation projects version-owned digests, generated workflows and paired authority | No graph topology, controller, merge, certification or release authority change; ordinary exact-subject CI and custody remain required |
+
+The executable controls are `test_profile_readiness_indexed_registry`,
+`test_promotion_render_budgets`, existing profile/layout/adoption controls and
+pack parity. Optional default-control retargeting and issue 449 maintenance are
+outside this release. Frozen consumer observations remain non-authoritative;
+Recovery's live source and interpreter are not qualification inputs.
