@@ -1,5 +1,4 @@
 """Explicit global bindings are source effects, never query-local writes."""
-from pathlib import Path
 import os
 import subprocess
 import sys
