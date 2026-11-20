@@ -1,0 +1,70 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "implementation_complete": true,
+  "scope": "Optional schema1.0 read declarations, strict independent read-body effects, lifecycle fact projection and exact-base boundary migrations",
+  "contract_commit": "a2cc0a0116119c9c5e5d429dddac1ca0c257cf66",
+  "installed_control_commit": "748113ed5f91735901d59b542ec572963c15ddf0",
+  "implementation_subject": "d8be7a250b66f931ce8fbf328e2def8a4da67d9f",
+  "test_subject": "ae2348e9397ccce8912b0d642ac777ccd681088d",
+  "test_tree": "59ca3549d2d20832dd498e5c6d9b3f25a9d1e5a5",
+  "before": {
+    "tests": 20,
+    "failures": 18,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "retained_source_matrix": {
+    "subject": "d8be7a250b66f931ce8fbf328e2def8a4da67d9f",
+    "tests": 471,
+    "passed": 470,
+    "failed": 1,
+    "disposition": "Original migration fixture used check-only mode; not a completed current-source whole matrix"
+  },
+  "corrected_migration_fixture_mode": "apply=True authoring, current focused matrix below",
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "28dc6ecc717e84177d50f4f9a31e41b8fab0404fa397ddde0b9b214caf80cfc1",
+    "source": "2d3ef908ad127296572d98332fd91af2343d2bbf97280a732cb9c402d06735f1",
+    "installed": "beebf77afbde1e793abbfd56a31068fd6a17f5879bd97be0c575b28e0f19c9e0",
+    "architecture": "606ce15b0c1df94371cda32c16b6356ed9afdf494a5915d67ff33fe806a4b48e"
+  },
+  "source_sha256": {
+    "semantic_operation_effects.py": "f67971708798637593eb2d2c22268cd4068361894bc4c35f893e108f34c9aff6",
+    "semantic_authority_operations.py": "813e1315ae2eff05dea362f7abba3a9517229924f87fe4df7c7d06f09aa1c1ac",
+    "semantic_authority_migrations.py": "6ce93bc8e8454d38d5f4bff3adc2ab35c4aca5fa7f8efe31c3d3f3ef90f923d6",
+    "ci_graph_composition_populations.py": "f91d6d08a9b3335df4b81212e6f4cbe040805c96c4d49fc210d07bf22e2d154e",
+    "ci_graph_composition_operations.py": "c60c57eba33c72c4328d229a9bd660c589cab9077e6cf864a90f2fa5030f684c"
+  },
+  "schema_sha256": "420583c1ea82698c4bb71bcf42802c3948143834bb1ae5ec34f930d41ffe9c74",
+  "limits": "Read declarations never stop ordinary source traversal or confer opaque/native/dynamic/runtime authority. Complete adopter and release distribution qualification still required. No activation.",
+  "progress_disposition": "read-port-compatibility-progress.json remains the historical WIP capture; this report records the subsequent focused qualification without erasing it",
+  "runtime_context_qualified": false,
+  "remaining": "Actual runtime context foundation and full lifecycle/distribution/shadow/custody, approved targets and canonical Node workflow projection; all82whole open",
+  "governance_returncode": 1,
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  },
+  "orchestration_disposition": "Repeated evidence reference was omitted because the WIP checkpoint already registered the contract. A system-Python attempt lacked jsonschema and did not validate governance; this stage uses the qualified existing interpreter. All completed source/installed/architecture/lint/parity results are retained unchanged."
+}
