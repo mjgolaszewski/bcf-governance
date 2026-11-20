@@ -263,6 +263,17 @@ substitute for reviewing clarity or technical accuracy.
 
 ## Verification
 
+Wheelhouse manifest `1.0` and runtime reports `1.0`/`1.1` retain their original
+Python 3.12.14 contract. Manifest `1.1` explicitly declares a stable patch version
+in CPython 3.11–3.14 with its matching ABI and compatible wheel tags; it produces
+runtime report `1.2`. Reading `1.2` requires an independently verified dependency
+closure, including the exact Python version and platform, and retains strict
+command and archive checks. Existing release roles requiring report `1.1` reject
+`1.2` until their trusted compatibility is separately migrated. This extension
+selects no runtime and supplies no security qualification: current interpreter,
+stdlib, native-library and dependency bytes still require applicable security
+verification before release.
+
 Use one selected environment for the complete candidate. Install its declared
 requirements once, then run every check with `$(PYTHON) -m ...` or the selected
 interpreter path. Do not borrow a global `pytest`, `ruff`, or `mypy` executable.

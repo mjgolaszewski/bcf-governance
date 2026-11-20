@@ -16,7 +16,7 @@ from typing import Any, Iterable
 
 from .ci_github_bundle import write_exclusive
 from .ci_github_identity import GitHubControllerError
-from .release_closure import ReleaseClosureError, verify_archive, verify_wheelhouse
+from .release_closure import ReleaseClosureError, verify_archive, verify_wheelhouse, release_runtime_subject
 
 
 EXPECTED_PYTHON = "3.12.14"
@@ -237,7 +237,7 @@ def _validate_runtime_commands(report: dict[str, Any]) -> None:
     # A retained development producer added this command before the version bump.
     # Read those bytes with their recorded scope; strict provider consumers still
     # require1.1 rather than deriving stronger authority from optional old rows.
-    if report["schema_version"] == "1.1" or (isinstance(rows, list) and any(
+    if report["schema_version"] in {"1.1", "1.2"} or (isinstance(rows, list) and any(
         isinstance(row, dict) and row.get("label") == "sdist-installed-consumer"
         for row in rows
     )):
@@ -283,7 +283,7 @@ def _validate_runtime_commands(report: dict[str, Any]) -> None:
     ]
     if "sdist-installed-consumer" in positions:
         dependencies.append(("sdist-install", "sdist-installed-consumer"))
-    if report["schema_version"] == "1.1":
+    if report["schema_version"] in {"1.1", "1.2"}:
         dependencies.extend([
             ("twine-check", "wheel-install"), ("twine-check", "sdist-install"),
             ("sdist-smoke", "wheel-installed-consumer"),
@@ -291,7 +291,7 @@ def _validate_runtime_commands(report: dict[str, Any]) -> None:
         ])
     if any(positions[before] >= positions[after] for before, after in dependencies):
         raise GitHubControllerError("release runtime command dependency order is invalid")
-    if report["schema_version"] == "1.1":
+    if report["schema_version"] in {"1.1", "1.2"}:
         _validate_runtime_command_arguments(report)
 
 
@@ -361,14 +361,20 @@ def _require_runtime_dependency_binding(report, expected) -> None:
     if (
         not isinstance(expected, dict)
         or set(expected) != {"status", "python", "platform", "lock_sha256", "wheels"}
-        or expected["status"] != "verified" or expected["python"] != EXPECTED_PYTHON
-        or expected["platform"] != EXPECTED_PLATFORM or not digest(expected["lock_sha256"])
+        or expected["status"] != "verified" or not digest(expected["lock_sha256"])
         or not isinstance(expected["wheels"], dict) or not expected["wheels"]
         or any(not isinstance(name, str) or "\0" in name or Path(name).name != name
                or not name.endswith(".whl") or not digest(value)
                for name, value in expected["wheels"].items())
         or report.get("dependency_closure") != expected
     ):
+        raise GitHubControllerError("release runtime dependency closure differs from required inputs")
+    if report["schema_version"] == "1.2":
+        try:
+            release_runtime_subject(expected["python"], expected["platform"])
+        except ReleaseClosureError as exc:
+            raise GitHubControllerError("release runtime dependency closure identity is invalid") from exc
+    elif expected["python"] != EXPECTED_PYTHON or expected["platform"] != EXPECTED_PLATFORM:
         raise GitHubControllerError("release runtime dependency closure differs from required inputs")
 
 
@@ -392,17 +398,28 @@ def run_release_runtime_verification(
     verify_archive(exact_wheel)
     verify_archive(exact_sdist)
     closure = verify_wheelhouse(manifest, lock, wheelhouse.resolve())
-    identity = subprocess.run(
-        [str(selected), "-c", "import platform;print(platform.python_version())"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-    machine = platform.machine().lower()
-    observed_platform = "linux_x86_64" if machine in {"x86_64", "amd64"} else machine
-    if identity.returncode or identity.stdout.strip() != EXPECTED_PYTHON or (
-        observed_platform != EXPECTED_PLATFORM
-    ):
+    if closure.manifest_schema_version == "1.1":
+        probe = ("import json,platform;print(json.dumps({'python':platform.python_version(),"
+                 "'implementation':platform.python_implementation(),'system':platform.system(),"
+                 "'machine':platform.machine().lower()}))")
+        identity = subprocess.run([str(selected), "-I", "-B", "-c", probe],
+                                  capture_output=True, text=True, check=False)
+        try:
+            native = json.loads(identity.stdout)
+        except (ValueError, TypeError):
+            native = None
+        qualified_identity = (not identity.returncode and native == {
+            "python": closure.python, "implementation": "CPython", "system": "Linux", "machine": "x86_64"})
+    else:
+        identity = subprocess.run(
+            [str(selected), "-c", "import platform;print(platform.python_version())"],
+            capture_output=True, text=True, check=False,
+        )
+        machine = platform.machine().lower()
+        observed_platform = "linux_x86_64" if machine in {"x86_64", "amd64"} else machine
+        qualified_identity = (not identity.returncode and identity.stdout.strip() == closure.python
+                              and observed_platform == closure.platform)
+    if not qualified_identity:
         raise GitHubControllerError("release runtime interpreter or platform is not exact")
     if output_dir.exists() or output_dir.is_symlink():
         raise GitHubControllerError("release runtime output directory must be fresh")
@@ -474,12 +491,12 @@ def run_release_runtime_verification(
             )
     report_path = output_dir / "runtime-verification.json"
     payload = {
-        "schema_version": "1.1",
+        "schema_version": "1.2" if closure.manifest_schema_version == "1.1" else "1.1",
         "status": "passed",
         "environment": {
             "python_executable": str(selected),
-            "python_version": EXPECTED_PYTHON,
-            "platform": EXPECTED_PLATFORM,
+            "python_version": closure.python,
+            "platform": closure.platform,
         },
         "dependency_closure": closure.as_dict(),
         "release_artifacts": {
@@ -509,20 +526,24 @@ def verify_runtime_evidence(
         report = json.loads(_regular(report_path, "runtime report").read_text())
     except (OSError, json.JSONDecodeError) as exc:
         raise GitHubControllerError("release runtime report is invalid") from exc
-    if not isinstance(report, dict) or report.get("schema_version") not in ("1.0", "1.1") or (
+    if not isinstance(report, dict) or report.get("schema_version") not in ("1.0", "1.1", "1.2") or (
         report.get("status") != "passed"
     ):
         raise GitHubControllerError("release runtime report did not pass")
-    if required_version not in (None, "1.0", "1.1") or (
+    if required_version not in (None, "1.0", "1.1", "1.2") or (
         required_version is not None and report["schema_version"] != required_version
     ):
         raise GitHubControllerError("release runtime report version differs from required contract")
-    if required_version == "1.1" or expected_dependency_closure is not None:
+    if required_version in {"1.1", "1.2"} or report["schema_version"] == "1.2" or expected_dependency_closure is not None:
         _require_runtime_dependency_binding(report, expected_dependency_closure)
     environment = report.get("environment")
+    expected_python, expected_platform = EXPECTED_PYTHON, EXPECTED_PLATFORM
+    if report["schema_version"] == "1.2":
+        expected_python = expected_dependency_closure["python"]
+        expected_platform = expected_dependency_closure["platform"]
     if not isinstance(environment, dict) or (
-        environment.get("python_version") != EXPECTED_PYTHON
-        or environment.get("platform") != EXPECTED_PLATFORM
+        environment.get("python_version") != expected_python
+        or environment.get("platform") != expected_platform
     ):
         raise GitHubControllerError("release runtime report environment is not exact")
     _validate_runtime_commands(report)

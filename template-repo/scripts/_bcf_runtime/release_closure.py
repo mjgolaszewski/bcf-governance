@@ -12,6 +12,9 @@ import zipfile
 
 import yaml
 
+from packaging.tags import compatible_tags, cpython_tags
+from packaging.utils import InvalidWheelFilename, parse_wheel_filename
+
 
 class ReleaseClosureError(ValueError):
     """Raised when release inputs are open, unsafe, or not exact."""
@@ -23,6 +26,7 @@ class WheelhouseVerification:
     platform: str
     lock_sha256: str
     wheels: tuple[tuple[str, str], ...]
+    manifest_schema_version: str = "1.0"
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -42,6 +46,14 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def release_runtime_subject(python: object, platform: object) -> tuple[str, str]:
+    """Validate representable stable CPython identities, not their security status."""
+    if (not isinstance(python, str) or re.fullmatch(r"3\.(11|12|13|14)\.(0|[1-9][0-9]*)", python) is None
+            or platform != "linux_x86_64"):
+        raise ReleaseClosureError("release interpreter and platform identity are not exact")
+    return python, platform
+
+
 def _load_manifest(path: Path) -> dict[str, Any]:
     if path.is_symlink() or not path.is_file():
         raise ReleaseClosureError("wheelhouse manifest must be a regular file")
@@ -53,21 +65,23 @@ def _load_manifest(path: Path) -> dict[str, Any]:
         "schema_version", "subject", "resolution", "wheels",
     }:
         raise ReleaseClosureError("wheelhouse manifest top-level inventory is not exact")
-    if payload["schema_version"] != "1.0":
+    if payload["schema_version"] not in ("1.0", "1.1"):
         raise ReleaseClosureError("wheelhouse manifest schema version is unsupported")
     subject = payload["subject"]
     resolution = payload["resolution"]
     wheels = payload["wheels"]
     if not all(isinstance(value, dict) for value in (subject, resolution, wheels)):
         raise ReleaseClosureError("wheelhouse manifest sections must be mappings")
-    if subject != {
-        "python": "3.12.14",
-        "implementation": "CPython",
-        "operating_system": "ubuntu-24.04",
-        "platform": "linux_x86_64",
-        "wheel_platform": "manylinux_2_17_x86_64",
-        "abi": "cp312",
-    }:
+    if payload["schema_version"] == "1.0":
+        expected_subject = {"python": "3.12.14", "implementation": "CPython",
+            "operating_system": "ubuntu-24.04", "platform": "linux_x86_64",
+            "wheel_platform": "manylinux_2_17_x86_64", "abi": "cp312"}
+    else:
+        python, platform = release_runtime_subject(subject.get("python"), subject.get("platform"))
+        expected_subject = {"python": python, "implementation": "CPython",
+            "operating_system": "ubuntu-24.04", "platform": platform,
+            "wheel_platform": "manylinux_2_17_x86_64", "abi": "cp" + "".join(python.split(".")[:2])}
+    if subject != expected_subject:
         raise ReleaseClosureError("release interpreter and platform identity are not exact")
     for filename, digest in wheels.items():
         if (
@@ -80,6 +94,18 @@ def _load_manifest(path: Path) -> dict[str, Any]:
             raise ReleaseClosureError("wheelhouse filename or digest is unsafe")
     if not wheels:
         raise ReleaseClosureError("wheelhouse manifest is empty")
+    if payload["schema_version"] == "1.1":
+        version = tuple(int(value) for value in subject["python"].split(".")[:2])
+        platforms = [subject["wheel_platform"], "manylinux2014_x86_64", subject["platform"]]
+        supported = set(cpython_tags(version, [subject["abi"]], platforms))
+        supported.update(compatible_tags(version, subject["abi"], platforms))
+        for filename in wheels:
+            try:
+                tags = parse_wheel_filename(filename)[3]
+            except InvalidWheelFilename as exc:
+                raise ReleaseClosureError("release wheel filename is invalid") from exc
+            if not tags & supported:
+                raise ReleaseClosureError("release wheel is incompatible with declared runtime")
     return payload
 
 
@@ -117,6 +143,7 @@ def verify_release_lock(manifest_path: Path, lock_path: Path) -> WheelhouseVerif
         platform=str(payload["subject"]["platform"]),
         lock_sha256=lock_digest,
         wheels=tuple(sorted((str(key), str(value)) for key, value in wheels.items())),
+        manifest_schema_version=payload["schema_version"],
     )
 
 

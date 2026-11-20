@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Add explicit wheelhouse manifest 1.1 and runtime report 1.2 contracts for independently bound stable Python patch subjects; preserve legacy evidence and current release-role admission.
+
 - Reject unsupported or malformed mandatory workitem predicates instead of silently dropping their dependency obligations.
 
 - Bind source-distribution admission to the loaded runtime checker so candidate scripts cannot approve their own coverage; preserve the release-source CLI.
