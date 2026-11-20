@@ -244,14 +244,17 @@ def compile_test_splinter_plan(
 
     if (
         not nodes
-        or any(not key or not value for key, value in nodes.items())
+        or any(not isinstance(key, str) or not key or not isinstance(value, str) or not value
+               for key, value in nodes.items())
         or len(set(nodes.values())) != len(nodes)
     ):
         raise ValueError("test splinter inventory must be non-empty and exact")
-    if max_splinters < 1:
+    if type(max_splinters) is not int or max_splinters < 1:
         raise ValueError("test splinter count must be positive")
     required_identity = {"subject_commit", "subject_tree", "session", "policy_sha256", "producer"}
-    if set(identity) != required_identity or any(not identity[key] for key in required_identity):
+    if set(identity) != required_identity or any(
+        not isinstance(identity[key], str) or not identity[key] for key in required_identity
+    ):
         raise ValueError("test splinter identity is incomplete")
     ordered_nodes = sorted(nodes)
     fallback_reason: str | None = None
@@ -324,24 +327,31 @@ def validate_test_splinter_results(
 ) -> None:
     """Require every planned node exactly once and no unplanned result."""
 
-    splinters = plan.get("splinters")
-    inventory = plan.get("node_inventory")
-    if not isinstance(splinters, list) or not isinstance(inventory, list):
-        raise ValueError("test splinter plan is incomplete")
-    expected_ids = [
-        str(item.get("id")) for item in splinters if isinstance(item, Mapping)
-    ]
-    if len(expected_ids) != len(splinters) or set(observed_nodes) != set(expected_ids):
+    validate_test_splinter_plan(plan)
+    splinters = plan["splinters"]
+    expected_ids = [item["id"] for item in splinters]
+    if not isinstance(observed_nodes, Mapping) or set(observed_nodes) != set(expected_ids):
         raise ValueError("test splinter result inventory differs from its plan")
-    flattened = [
-        node
-        for splinter_id in expected_ids
-        for node in observed_nodes[splinter_id]
-    ]
+    captured: dict[str, list[str]] = {}
+    for splinter_id in expected_ids:
+        raw = observed_nodes[splinter_id]
+        if isinstance(raw, (str, bytes, Mapping)):
+            raise ValueError("test splinter result node inventory is invalid")
+        try:
+            values = list(raw)
+        except TypeError as exc:
+            raise ValueError("test splinter result node inventory is invalid") from exc
+        if any(not isinstance(node, str) or not node for node in values):
+            raise ValueError("test splinter result node inventory is invalid")
+        captured[splinter_id] = values
+    flattened = [node for values in captured.values() for node in values]
     if len(flattened) != len(set(flattened)):
         raise ValueError("test splinter results overlap")
-    if sorted(flattened) != sorted(str(node) for node in inventory):
+    if sorted(flattened) != plan["node_inventory"]:
         raise ValueError("test splinter results do not cover the exact node inventory")
+    for splinter in splinters:
+        if sorted(captured[splinter["id"]]) != splinter["nodes"]:
+            raise ValueError("test splinter results differ from their assignment")
 
 
 def validate_test_splinter_plan(plan: Mapping[str, Any]) -> None:
@@ -375,7 +385,22 @@ def validate_test_splinter_plan(plan: Mapping[str, Any]) -> None:
     ).hexdigest()
     if digest != plan["partition_sha256"]:
         raise ValueError("test splinter plan digest is invalid")
-    assignments: dict[str, list[str]] = {}
+    identity = plan.get("identity")
+    required_identity = {"subject_commit", "subject_tree", "session", "policy_sha256", "producer"}
+    inventory = plan.get("node_inventory")
+    duration_digest = plan.get("duration_input_sha256")
+    if (not isinstance(identity, Mapping) or set(identity) != required_identity
+            or any(not isinstance(value, str) or not value for value in identity.values())
+            or not isinstance(inventory, list) or not inventory
+            or any(not isinstance(node, str) or not node for node in inventory)
+            or inventory != sorted(set(inventory))
+            or not isinstance(duration_digest, str) or len(duration_digest) != 64
+            or any(value not in "0123456789abcdef" for value in duration_digest)
+            or plan.get("fallback_reason") not in (None, "duration_observations_invalid", "resources_incompatible")
+            or (plan.get("fallback_reason") is not None and len(plan["splinters"]) != 1)):
+        raise ValueError("test splinter plan population is invalid")
+    assignments: list[str] = []
+    selectors: list[str] = []
     for index, raw in enumerate(plan["splinters"]):
         if (
             not isinstance(raw, Mapping)
@@ -383,11 +408,18 @@ def validate_test_splinter_plan(plan: Mapping[str, Any]) -> None:
             or raw.get("id") != f"splinter-{index}"
             or not isinstance(raw.get("nodes"), list)
             or not isinstance(raw.get("selectors"), list)
+            or not raw["nodes"]
+            or any(not isinstance(node, str) or not node for node in raw["nodes"])
+            or raw["nodes"] != sorted(set(raw["nodes"]))
+            or any(not isinstance(selector, str) or not selector for selector in raw["selectors"])
             or len(raw["nodes"]) != len(raw["selectors"])
             or isinstance(raw.get("estimated_duration_ms"), bool)
             or not isinstance(raw.get("estimated_duration_ms"), int)
             or raw["estimated_duration_ms"] < 1
         ):
             raise ValueError("test splinter assignment is invalid")
-        assignments[str(raw["id"])] = [str(value) for value in raw["nodes"]]
-    validate_test_splinter_results(plan, assignments)
+        assignments.extend(raw["nodes"])
+        selectors.extend(raw["selectors"])
+    if (len(assignments) != len(set(assignments)) or sorted(assignments) != inventory
+            or len(selectors) != len(set(selectors))):
+        raise ValueError("test splinter plan does not cover the exact node and selector inventory")
