@@ -1,0 +1,47 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/cli-argument-context-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: operations
+architectural_layer: tooling
+operation_side: query_then_entrypoint_admission
+canonical_owner: bcf_governance/tooling/nested_cli_runtime.py
+shared_kernel_decision: Operations owns mechanical CLI argument snapshots used by existing public entrypoints; policy interpretation effects and authority remain with their current owners. This extends an existing cross-context CLI helper with multiple real consumers and adds no registry or evaluator.
+population:
+  catalog: governance/application-operations.yml
+  catalog_source: bcf_governance/cli.py::COMMANDS
+  catalog_entries: 21
+  alias: bcf_governance/tooling/validate_governance_yaml.py::main reexports governance_validation/runner.py::main
+  additional_consumers:
+    - bcf_governance/cli.py::main
+    - bcf_governance/tooling/ci_controller_builder.py::main
+    - bcf_governance/tooling/ci_controller_builder.py::_materialize_installed_source generated dispatcher
+    - bcf_governance/tooling/nested_cli_runtime.py::exact_nested_cli_command
+contract:
+  - Snapshot only exact native list or tuple containers and accept only exact native string members; None snapshots the actual process argv and excludes its program token after validation
+  - Use type identity checks without user equality repr coercion iteration or indexing before rejecting custom sequences and values
+  - Copy mutable lists before validation and retain an owned exact string list; later caller mutation cannot change the admitted arguments
+  - Preserve ordinary CLI grammar default argv help version empty-input error behavior valid tuple callers and dispatch arguments
+  - Run normalization before parser construction at every declared entrypoint and both package/controller dispatchers
+  - Reuse the same primitive in the nested-command builder before source-path or child-command construction
+  - Project changes through canonical private runtime and package generation; no wrapper-specific replacement helper
+  - Consolidate governance_evidence duplicate imports from evidence_sessions without changing its imports or effect owner; keep every production module at or below800lines
+qualification:
+  - Commit contract and independent callback witnesses plus causal controls before production
+  - Compare declared catalog keys with runtime dispatcher population; retain validator alias and generated-controller consumer explicitly
+  - Prove custom iterators sequence subclasses string subclasses and metaclass hooks cannot be consumed before rejection
+  - Exercise all declared entrypoints with parser construction as an independent admission oracle and normal help routes as positive controls
+  - Qualify fresh/repaired SDK-absent consumers and disabled container/member predicates that must fail named rejection controls
+  - Execute the actual generated controller dispatcher from a real synthetic committed installed-source fixture without building or publishing a controller
+limits:
+  - Callback witnesses retain receivers outside the invocation; whole input lifetime initialization global binding native provenance and side-effect closure remain unqualified
+  - Arbitrary custom Python iterables were not part of the documented list/None CLI API and now receive TypeError; exact string tuples remain supported
+  - This enforces an ingress shape only; candidate annotations and this helper cannot confer operation context authority
+  - The positive runtime-context factory and complete lifecycle source/runtime conformance remain open; strict required consumers and all82whole statuses remain unchanged
+forbidden:
+  - A second argument broker registry effect evaluator or receipt family
+  - Source-only mode in required gates or native purity inferred from a callee name
+  - Main maintenance workflows authority pins release publication or maintained adopter changes
