@@ -1,0 +1,48 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "scope": "Installed Python metadata identity admission only",
+  "contract_commit": "58dc858c111f22fa4b4c30b96cc68792cff522b4",
+  "test_subject": "a6b863cf2c0d1bb7e0ab3c903a6ed9c104cac373",
+  "before": {
+    "tests": 9,
+    "failures": 8,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 34,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "08c1e09923b0ba0666c347430ae33a5b1f90b0c64ccb40401ddf26c620d7d8d9",
+    "source": "931e54fd25f986cb18e21c7afee9793b038b588dd3f45c6f2e7164bda21a54d4",
+    "installed": "16cd3c85172ebd43e52a5fe79301e9db8347e6b37085b38b6c73111c34362e2c"
+  },
+  "source_sha256": "83269e3105113f5968c9eaf6974e46cb7c60dbbb82957ba5ccbc6d56b3d3271e",
+  "current_runtime_security_qualified": false,
+  "remaining": "Complete runtime/vendor/dependency/image security and canonical semantic-lock/projection; exact current distribution matrix and all82whole remain open",
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture_junit_sha256": "bb6fbaf8980cb9808c5f9021a94f10a34ab5c44b734baa9512b07c90b5a85ede",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  },
+  "orchestration_disposition": "Prior sealing assertion read stdout but validator diagnostic is on stderr; exact retained expected failure authenticated without rerun. All affected tests and prior lint/pack evidence reused unchanged."
+}
