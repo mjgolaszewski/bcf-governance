@@ -593,6 +593,7 @@ def validate_reconstructed_lifecycle_bindings(
     required_schema_bindings: Mapping[Relationship, Mapping[str, str]] | None = None,
     required_schema_catalog: Mapping[str, Mapping[str, str]] | None = None,
     operation_policy_subject: Mapping[str, str] | None = None,
+    operation_policy_repo_root: Path | None = None,
     required_public_operation_relationships: Mapping[str, frozenset[Relationship]] | None = None,
     required_effect_bindings: Mapping[tuple[str, str, str, str], frozenset[Relationship]] | None = None,
 ) -> dict[str, Any]:
@@ -637,9 +638,10 @@ def validate_reconstructed_lifecycle_bindings(
         )
     subject = {key: expected_source[key] for key in ("commit_sha", "tree_sha")}
     capture = None
-    if operation_policy_subject is not None or required_public_operation_relationships is not None:
+    if operation_policy_subject is not None or required_public_operation_relationships is not None or operation_policy_repo_root is not None:
         capture = capture_public_operation_bindings(
             repo_root, policy_subject=operation_policy_subject, runtime_subject=subject,
+            policy_repo_root=operation_policy_repo_root,
             required_relationships=required_public_operation_relationships,
             relationship_roots={pair: _binding_operation_roots(contract) for pair, contract in reachable.items()},
         )

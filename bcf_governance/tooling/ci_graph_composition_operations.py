@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 from .ci_graph_errors import CIGraphError
 from .semantic_authority_contracts import (
@@ -15,14 +15,78 @@ from .semantic_authority_contracts import (
 )
 
 
+class _PublicOperationCapture(NamedTuple):
+    """Local source binding; caller authenticates the protected actor and roots."""
+    registry: Any
+    metadata: dict[str, Any]
+    relationship_roots: dict
+    policy_root: Path
+    runtime_root: Path
+    policy_subject: tuple[str, str]
+    runtime_subject: tuple[str, str]
+    registry_sha256: str
+    bindings: tuple
+    roots: tuple
+    runtime_policy_sha256: str | None
+
+
+def _reauthenticate_public_operation_capture(capture, *, repo_root=None, inventory=None):
+    """Recheck concrete source bindings, never a candidate authority assertion."""
+    from .semantic_operation_python import _inventory_source_subject
+    from .semantic_source_paths import committed_application_registry_identity
+
+    if type(capture) is not _PublicOperationCapture:
+        raise CIGraphError("public operation capture is incompatible")
+    policy_subject = dict(zip(("commit_sha", "tree_sha"), capture.policy_subject))
+    runtime_subject = dict(zip(("commit_sha", "tree_sha"), capture.runtime_subject))
+    try:
+        registry, identity = load_committed_application_operations(capture.policy_root,
+            policy_commit_sha=policy_subject["commit_sha"], policy_tree_sha=policy_subject["tree_sha"])
+    except (SemanticAuthorityError, OSError, ValueError) as exc:
+        raise CIGraphError(f"public operation protected policy moved after capture: {exc}") from exc
+    if identity["registry_sha256"] != capture.registry_sha256 or registry != capture.registry:
+        raise CIGraphError("public operation protected policy capture was modified")
+    expected = dict(operations_checked=len(registry.operations), policy_subject=identity["subject"],
+        policy_blob_oid=identity["blob_oid"], registry_sha256=identity["registry_sha256"],
+        bindings=capture.bindings, runtime_subject=runtime_subject)
+    if capture.runtime_policy_sha256 is not None:
+        try:
+            runtime_policy = committed_application_registry_identity(capture.runtime_root, **runtime_subject)
+        except (OSError, ValueError) as exc:
+            raise CIGraphError(f"public operation runtime policy source is unavailable: {exc}") from exc
+        if runtime_policy["registry_sha256"] != capture.runtime_policy_sha256:
+            raise CIGraphError("public operation runtime policy source differs from capture")
+        expected.update(runtime_policy_sha256=capture.runtime_policy_sha256,
+            policy_changed=capture.runtime_policy_sha256 != capture.registry_sha256)
+    if capture.metadata != expected:
+        raise CIGraphError("public operation capture metadata contradicts source binding")
+    roots = {pair: frozenset(values) for pair, values in capture.roots}
+    if capture.relationship_roots != roots:
+        raise CIGraphError("public operation lifecycle roots differ from capture")
+    if inventory is not None:
+        try:
+            subject = _inventory_source_subject(inventory)
+        except ValueError as exc:
+            raise CIGraphError("public operation runtime subject differs from capture") from exc
+        if repo_root.resolve() != capture.runtime_root or subject != runtime_subject:
+            raise CIGraphError("public operation runtime subject differs from capture")
+    return registry
+
+
 def capture_public_operation_bindings(
     repo_root: Path, *, policy_subject, runtime_subject, required_relationships, relationship_roots,
+    policy_repo_root: Path | None = None,
 ):
-    """Reject policy/crosswalk contradictions before expensive source discovery."""
+    """Capture protected policy separately; caller authenticates actor/source custody."""
     if not isinstance(policy_subject, Mapping) or set(policy_subject) != {"commit_sha", "tree_sha"}:
         raise CIGraphError("public operation binding requires exact consumer policy subject")
     if not isinstance(runtime_subject, Mapping) or set(runtime_subject) != {"commit_sha", "tree_sha"}:
         raise CIGraphError("public operation binding requires exact runtime source subject")
+    policy_subject = dict(policy_subject)
+    runtime_subject = dict(runtime_subject)
+    if policy_repo_root is not None and not isinstance(policy_repo_root, Path):
+        raise CIGraphError("public operation policy root must be a repository Path")
+    policy_root = (repo_root if policy_repo_root is None else policy_repo_root).resolve()
     if not isinstance(required_relationships, Mapping):
         raise CIGraphError("public operation binding requires independent relationships")
     bindings = dict(required_relationships)
@@ -32,7 +96,7 @@ def capture_public_operation_bindings(
         raise CIGraphError("public operation binding relationship population is empty or unknown")
     try:
         registry, identity = load_committed_application_operations(
-            repo_root, policy_commit_sha=policy_subject["commit_sha"], policy_tree_sha=policy_subject["tree_sha"],
+            policy_root, policy_commit_sha=policy_subject["commit_sha"], policy_tree_sha=policy_subject["tree_sha"],
         )
     except (SemanticAuthorityError, OSError, ValueError) as exc:
         raise CIGraphError(f"public operation policy capture failed: {exc}") from exc
@@ -54,17 +118,33 @@ def capture_public_operation_bindings(
         missing = sorted(f"{population}:{key}" for population, entries in populations.items()
                          for key in entries if (population, key) not in classified)
         raise CIGraphError("unclassified public application operations: " + ", ".join(missing))
+    roots = {pair: frozenset(values) for pair, values in relationship_roots.items()}
     metadata = dict(
-        operations_checked=len(registry.operations), policy_subject=identity["subject"],
+        operations_checked=len(registry.operations), policy_subject=identity["subject"], runtime_subject=runtime_subject,
         policy_blob_oid=identity["blob_oid"], registry_sha256=identity["registry_sha256"],
         bindings=tuple(sorted((key, tuple(sorted(pairs))) for key, pairs in bindings.items())),
     )
-    return registry, metadata, {pair: frozenset(roots) for pair, roots in relationship_roots.items()}
+    runtime_policy_sha256 = None
+    if policy_repo_root is not None:
+        from .semantic_source_paths import committed_application_registry_identity
+        try:
+            runtime_policy = committed_application_registry_identity(repo_root, **runtime_subject)
+        except (OSError, ValueError) as exc:
+            raise CIGraphError(f"public operation runtime policy observation failed: {exc}") from exc
+        runtime_policy_sha256 = runtime_policy["registry_sha256"]
+        metadata.update(runtime_policy_sha256=runtime_policy_sha256,
+            policy_changed=runtime_policy_sha256 != identity["registry_sha256"])
+    return _PublicOperationCapture(registry, metadata, roots, policy_root, repo_root.resolve(),
+        tuple(policy_subject[key] for key in ("commit_sha", "tree_sha")),
+        tuple(runtime_subject[key] for key in ("commit_sha", "tree_sha")),
+        identity["registry_sha256"], metadata["bindings"],
+        tuple(sorted((pair, tuple(sorted(values))) for pair, values in roots.items())), runtime_policy_sha256)
 
 
 def validate_public_operation_capture(repo_root: Path, inventory: dict[str, Any], capture) -> dict[str, Any]:
     """Reuse one local factory capture; no caller-supplied capture ingress."""
-    registry, metadata, relationship_roots = capture
+    registry = _reauthenticate_public_operation_capture(capture, repo_root=repo_root, inventory=inventory)
+    metadata, relationship_roots = capture.metadata, capture.relationship_roots
     try:
         population = _required_operation_population(repo_root, registry.raw, inventory, metadata["registry_sha256"])
     except SemanticAuthorityError as exc:
@@ -82,6 +162,7 @@ def validate_effect_binding_contexts(bindings, capture, compiled):
         raise CIGraphError("effect binding requires protected public operations")
     if not isinstance(bindings, Mapping):
         raise CIGraphError("source effect bindings require a protected mapping")
+    _reauthenticate_public_operation_capture(capture)
     relationships = dict(capture[1]["bindings"])
     for port, pairs in bindings.items():
         if (not isinstance(port, tuple) or len(port) != 4
