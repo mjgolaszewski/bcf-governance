@@ -1,0 +1,45 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  path: audits/issue-394/native-scan-capture-contract.yml
+  authority: false
+owner: home:bcf-governance:bcf-394-ironwatch
+workitem: P32-P0-04
+bounded_context: ci_authority
+architectural_layer: tooling
+operation_side: command
+owners: [bcf_governance/tooling/dependency_assurance.py, bcf_governance/tooling/evidence_process_supervisor.py]
+scope: Opt-in exact-input native advisory capture through existing assurance and command-custody owners
+contract:
+  - Require an existing native execution-owner binding; do not introduce a second process supervisor broker or claim authority from a caller boolean
+  - Before allocating output authenticate provided SBOM bytes to an independently supplied digest exact platform-manifest/config/OS/architecture identity and complete independently selected package tuples
+  - Keep manifest and image-config identities distinct; preserve exact native names PURLs and versions without PEP440 ordering or Python name normalization
+  - Bind pinned scanner executable and complete selected database file bytes before and after execution; missing changed extra linked or nonregular database members reject
+  - Require explicit current database status freshness bound and positive command budget; charge input hashing against the command budget and leave cleanup to the existing native owner
+  - Execute the owned finite SBOM bytes as stdin through run_admitted_command; no caller-supplied scan report or executor enters this command
+  - Use owned configuration and closed environment; disable automatic database/app updates and external lookup, retain matcher suppressions and kernel-header matching, prohibit fixed-only/VEX/path exclusions
+  - Capture raw stdout stderr input and configuration digests; preserve all regular and ignored findings with no severity or no-fix exemption
+  - Reauthenticate report source scanner/database facts finding artifact identities and filter metadata before classifying an advisory observation; native1.1 uses no_findings/findings_present rather than an approval status
+  - Unknown child custody propagates without deleting the output namespace; execution failure malformed output or substituted inputs cannot yield clean
+  - Extend the existing dependency_advisory_observation family explicitly as1.1 native observations; keep Python1.0 producer and ordinary CLI unchanged
+qualification:
+  - Contract and causal controls precede production
+  - Use real child fixture processes and existing sealed-stdin custody for positive exact-input and vulnerable/suppressed/error cases
+  - Reject missing owner contradictory image IDs omitted/duplicate inventory wrong SBOM/scanner/database hashes stale/future status and malformed output
+  - Remove only inventory equality and suppression retention predicates to demonstrate named controls fail
+  - Qualify source private/template and SDK-absent consumers; execute the pinned real scanner on an exact retained candidate SBOM under the new input-binding profile
+  - Retain all actual findings and any unsupported profile result; do not select or approve a runtime
+limits:
+  - The protected caller must authenticate independent image inventory scanner and database pins; their presence is not self-authenticating policy
+  - Before/after file binding assumes approved immutable tool/database custody; it does not prove absence of privileged host ABA mutation
+  - A complete package advisory scan is not complete native file provenance application applicability or a positive whole-operation runtime context
+  - authority execution_qualified security_qualified and whole_requirement_advancement remain false
+  - No default gate or capability activation; current secure runtime approved targets installed full profiles and all82whole requirements remain open
+references:
+  - audits/issue-394/security-baseline-contract.yml
+  - https://oss.anchore.com/docs/guides/vulnerability/filter-results/
+  - https://oss.anchore.com/docs/reference/grype/configuration/
+forbidden:
+  - New registry evaluator broker or receipt family
+  - Main generated workflows authority predecessor or maintained-adopter mutation
+  - Native security approval from a zero-length matches array or unreviewed vendor exception
