@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+from io import BytesIO
 import json
 import re
 import shutil
@@ -12,7 +13,8 @@ from pathlib import Path
 from typing import Any
 
 from .evidence_scheduling import validate_test_splinter_plan
-from .test_splinter_proofs import load_test_splinter_proof
+from .test_splinter_proofs import (applicability_identity, decode_test_splinter_proof,
+                                   validate_test_splinter_junit)
 
 
 def captured_receipt_succeeded(path: Path) -> bool:
@@ -42,11 +44,29 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _partition_plan(report: object) -> dict[str, Any] | None:
+    """Capture the existing canonical plan projection from an execution report."""
+    fields = ("schema_version", "algorithm", "identity", "node_inventory",
+              "duration_source", "duration_input_sha256", "fallback_reason",
+              "splinters", "partition_sha256")
+    if not isinstance(report, dict) or any(key not in report for key in fields):
+        return None
+    plan = {key: report[key] for key in fields}
+    try:
+        validate_test_splinter_plan(plan)
+    except (TypeError, ValueError):
+        return None
+    return plan
+
+
 def _capture_splinter_proofs(
     repo_root: Path,
     output_dir: Path,
     report: dict[str, Any],
 ) -> tuple[bool, list[dict[str, str]]]:
+    plan = _partition_plan(report)
+    if plan is None:
+        return False, []
     proofs = report.get("proofs")
     results = report.get("results")
     splinters = report.get("splinters")
@@ -55,7 +75,8 @@ def _capture_splinter_proofs(
     expected = [
         str(value.get("id")) for value in splinters if isinstance(value, dict)
     ]
-    if len(expected) != len(splinters) or len(proofs) != len(expected):
+    if (len(expected) != len(splinters) or len(proofs) != len(expected)
+            or len(results) != len(expected)):
         return False, []
     result_by_id = {
         str(value.get("id")): value for value in results if isinstance(value, dict)
@@ -66,11 +87,13 @@ def _capture_splinter_proofs(
     if set(result_by_id) != set(expected) or set(proof_by_id) != set(expected):
         return False, []
     captured: list[dict[str, str]] = []
+    inputs: list[tuple[str, bytes, bytes]] = []
     try:
         for splinter_id in expected:
             result = result_by_id[splinter_id]
             entry = proof_by_id[splinter_id]
-            if result.get("proof_status") != entry.get("status"):
+            if (type(result.get("returncode")) is not int
+                    or result.get("proof_status") != entry.get("status")):
                 return False, []
             if result.get("returncode") != 0:
                 if any(entry.get(key) is not None for key in ("manifest", "junit", "proof_sha256")):
@@ -93,28 +116,26 @@ def _capture_splinter_proofs(
                     return False, []
                 paths.append(source)
             manifest, junit = paths
-            decoded = load_test_splinter_proof(manifest)
-            if (
-                decoded["proof_sha256"] != entry.get("proof_sha256")
-                or decoded["applicability"]["splinter_id"] != splinter_id
-                or decoded["result"]["junit_sha256"] != _sha256(junit)
-            ):
+            raw_manifest, raw_junit = manifest.read_bytes(), junit.read_bytes()
+            decoded = decode_test_splinter_proof(raw_manifest)
+            splinter = next(row for row in plan["splinters"] if row["id"] == splinter_id)
+            if (decoded["proof_sha256"] != entry.get("proof_sha256")
+                    or decoded["applicability"] != applicability_identity(
+                        plan, splinter, toolchain_sha256=decoded["applicability"]["toolchain_sha256"])):
                 return False, []
-            for source, suffix, media_type in (
-                (manifest, "proof.json", "application/json"),
-                (junit, "junit.xml", "application/junit+xml"),
-            ):
-                destination = output_dir / f"{splinter_id}.{suffix}"
-                shutil.copy2(source, destination)
-                captured.append(
-                    {
-                        "path": destination.name,
-                        "media_type": media_type,
-                        "sha256": _sha256(destination),
-                    }
-                )
+            validate_test_splinter_junit(decoded, raw_junit)
+            inputs.append((splinter_id, raw_manifest, raw_junit))
     except (KeyError, OSError, TypeError, ValueError):
         return False, []
+    for splinter_id, raw_manifest, raw_junit in inputs:
+        for raw, suffix, media_type in (
+            (raw_manifest, "proof.json", "application/json"),
+            (raw_junit, "junit.xml", "application/junit+xml"),
+        ):
+            destination = output_dir / f"{splinter_id}.{suffix}"
+            destination.write_bytes(raw)
+            captured.append({"path": destination.name, "media_type": media_type,
+                             "sha256": hashlib.sha256(raw).hexdigest()})
     return True, captured
 
 
@@ -148,7 +169,7 @@ def _pytest_counts(text: str) -> dict[str, int]:
     return counts
 
 
-def _junit_observations(path: Path) -> tuple[dict[str, int], list[str]]:
+def _junit_observations(path: Path | BytesIO) -> tuple[dict[str, int], list[str]]:
     root = ET.parse(path).getroot()
     cases = list(root.iter("testcase"))
     node_ids: list[str] = []
@@ -265,33 +286,8 @@ def test_observations(
                 report = json.loads(report_source.read_text(encoding="utf-8"))
             except (OSError, UnicodeError, json.JSONDecodeError):
                 report = None
-            plan = (
-                {
-                    key: report[key]
-                    for key in (
-                        "schema_version", "algorithm", "identity", "node_inventory",
-                        "duration_source", "duration_input_sha256", "fallback_reason",
-                        "splinters", "partition_sha256",
-                    )
-                }
-                if isinstance(report, dict)
-                and all(
-                    key in report
-                    for key in (
-                        "schema_version", "algorithm", "identity", "node_inventory",
-                        "duration_source", "duration_input_sha256", "fallback_reason",
-                        "splinters", "partition_sha256",
-                    )
-                )
-                else None
-            )
-            try:
-                if plan is None:
-                    raise ValueError("partition plan missing")
-                validate_test_splinter_plan(plan)
-                plan_valid = True
-            except ValueError:
-                plan_valid = False
+            plan = _partition_plan(report)
+            plan_valid = plan is not None
             proofs_valid, proof_artifacts = (
                 _capture_splinter_proofs(repo_root, output_dir, report)
                 if isinstance(report, dict) else (False, [])

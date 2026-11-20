@@ -9,7 +9,6 @@ import json
 import os
 from pathlib import Path
 import re
-import shutil
 from typing import Any, Mapping
 import zipfile
 
@@ -94,8 +93,16 @@ def applicability_identity(
 
 def load_test_splinter_proof(path: Path) -> dict[str, Any]:
     try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        return decode_test_splinter_proof(path.read_bytes())
+    except OSError as exc:
+        raise ValueError("test splinter proof is unreadable") from exc
+
+
+def decode_test_splinter_proof(raw: bytes) -> dict[str, Any]:
+    """Decode exactly the manifest bytes retained by the independent consumer."""
+    try:
+        value = json.loads(raw.decode("utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
         raise ValueError("test splinter proof is unreadable") from exc
     if not isinstance(value, dict) or set(value) != {
         "schema_version", "kind", "applicability", "source", "result", "proof_sha256"
@@ -130,6 +137,7 @@ def load_test_splinter_proof(path: Path) -> dict[str, Any]:
             not _SHA256.fullmatch(str(applicability.get(key, "")))
             for key in ("partition_sha256", "toolchain_sha256")
         )
+        or type(result.get("returncode")) is not int
         or result.get("returncode") != 0
         or result.get("worktree_removed") is not True
         or not isinstance(result.get("node_ids"), list)
@@ -146,6 +154,26 @@ def load_test_splinter_proof(path: Path) -> dict[str, Any]:
     ):
         raise ValueError("test splinter proof state was not retired")
     return value
+
+
+def validate_test_splinter_junit(proof: Mapping[str, Any], raw: bytes) -> None:
+    """Recompute exact successful cases from the same bytes whose hash is bound."""
+    from .evidence_test_adapters import _junit_observations
+
+    expected = proof["applicability"]["nodes"]
+    if (not isinstance(expected, list) or not expected
+            or any(not isinstance(node, str) or not node for node in expected)
+            or len(expected) != len(set(expected))
+            or hashlib.sha256(raw).hexdigest() != proof["result"]["junit_sha256"]):
+        raise ValueError("test splinter JUnit identity is invalid")
+    try:
+        counts, nodes = _junit_observations(BytesIO(raw))
+    except (OSError, SyntaxError, ValueError) as exc:
+        raise ValueError("test splinter JUnit is unreadable") from exc
+    if (nodes != sorted(expected) or nodes != proof["result"]["node_ids"]
+            or any(counts[key] != len(expected) for key in ("collected", "executed", "passed"))
+            or any(counts[key] != 0 for key in ("failed", "errors", "skipped"))):
+        raise ValueError("test splinter JUnit does not prove exact successful execution")
 
 
 def write_successful_proof(
@@ -174,16 +202,21 @@ def write_successful_proof(
         or not worktree_removed
     ):
         raise ValueError("successful test splinter proof inputs are incomplete")
+    raw_junit = junit.read_bytes()
+    applicability = applicability_identity(plan, splinter, toolchain_sha256=toolchain_sha256)
+    validate_test_splinter_junit(
+        {"applicability": applicability, "result": {
+            "node_ids": sorted(observed_nodes), "junit_sha256": hashlib.sha256(raw_junit).hexdigest(),
+        }}, raw_junit,
+    )
     destination.mkdir(parents=True, exist_ok=True)
     splinter_id = str(splinter["id"])
     junit_target = destination / f"{splinter_id}.junit.xml"
-    shutil.copyfile(junit, junit_target)
+    junit_target.write_bytes(raw_junit)
     unsigned = {
         "schema_version": "1.0",
         "kind": KIND,
-        "applicability": applicability_identity(
-            plan, splinter, toolchain_sha256=toolchain_sha256
-        ),
+        "applicability": applicability,
         "source": dict(source),
         "result": {
             "returncode": 0,
@@ -236,6 +269,7 @@ def select_applicable_proof(
                     and junit.is_file()
                     and _file_sha256(junit) == proof["result"]["junit_sha256"]
                 ):
+                    validate_test_splinter_junit(proof, junit.read_bytes())
                     candidates.append((attempt, proof, junit))
             except (OSError, TypeError, ValueError):
                 malformed = True
