@@ -1,0 +1,55 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "a4ebb96105526ab6c0bba4eaf89e0b92143a7eb6",
+  "contract_subject": "0f88d4395bfd98fb7f752a70e8da1f0511dfdf0a",
+  "implementation_subject": "54c9d60a86092d4141ceda531f95a6149c531287",
+  "before": {
+    "tests": 10,
+    "failures": 4,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_disposition": "Four forged binding/spelling defects were accepted; native mutation witness retained in two callee cases.",
+  "source": {
+    "tests": 190,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "c7c173765a11b5db622f2d239a0a50a974704e533deca620c902e87c577aeda7",
+    "source": "6e103788de4e04785b002f43b7eb5c2b6c2ab5ad1f9961837065f5fef18030fe",
+    "installed": "4b75f5419dcce7d496acbd21f5eef4ae13bed44ba43cc81e63d8315e2c779845",
+    "architecture": "50524eb118d2b2781b45fcb558034a3124cb94de46868721474e5a8a6f2fcfc8"
+  },
+  "source_sha256": "25ee4aecf6d351a0b6e6ac489dcf7c1f4322e58cf70a1bc56c905b49c5113afb",
+  "actual_source_coverage": {
+    "authority": false,
+    "execution_qualified": false,
+    "runtime_context_qualified": false,
+    "source_commit": "54c9d60a86092d4141ceda531f95a6149c531287",
+    "source_tree": "7d61c00549ebc0a8faa7baa2ec77d4afa9a7af39",
+    "files": 1319,
+    "functions": 12194,
+    "explicit_calls": 139812,
+    "store_observations": 4979,
+    "elapsed_seconds": 104.45723468499637
+  },
+  "scope": "Independent call spelling and conservative unambiguous direct module-function source binding; imported, duplicate, assigned and lexical-shadow names excluded from direct binding conclusions. Existing strict dynamic/native obligations remain.",
+  "limits": "Neutral source binding does not authenticate mutable runtime globals, constructor/receiver/parser/native execution. Full ci_commands.main context, secure runtime, approved targets, all82whole and terminal custody remain open; P32 active/P33-P35 dormant. SDK-absent fresh/upgrade Lite installed scope only.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
