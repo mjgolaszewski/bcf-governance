@@ -559,14 +559,12 @@ def _sbom(gate: str, policy: dict[str, object]) -> None:
         _fail(gate, "unsupported SBOM format")
     try:
         inventory = collect_installed_inventory(REPO_ROOT)
-    except DependencyAssuranceError as exc:
+        rendered = json.dumps(cyclonedx_sbom(inventory), indent=2, sort_keys=True, allow_nan=False) + "\n"
+    except (DependencyAssuranceError, TypeError, ValueError) as exc:
         _fail(gate, str(exc))
     output = REPO_ROOT / ".artifacts/sbom.json"
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(
-        json.dumps(cyclonedx_sbom(inventory), indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    output.write_text(rendered, encoding="utf-8")
 
 
 def _vulnerability_scan(gate: str, policy: dict[str, object]) -> None:
