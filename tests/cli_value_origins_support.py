@@ -86,12 +86,19 @@ def exercise(owner, mode):
             second = entries[-1]['adopter_pythons']
             assert first is not second and 'fixture/foreign' not in second
             assert events == []
+        elif mode == 'parser':
+            try:
+                owner.main(tuple(argv))
+            except SystemExit as error:
+                assert '--adopter-python requires ordinary parsed strings' in str(error)
+            else:
+                raise AssertionError('parser-converted subclass reached qualification')
+            assert entries == [] and events == []
         else:
             owner.main(tuple(argv))
             assert len(entries) == 1
             value = entries[0]['adopter_pythons']['fixture/adopter']
             assert str(value) == expected
-            assert events == ({'constructor': ['requested-constructor', 'returned-object-fspath'],
-                'parser': ['parser-converter-partition']}.get(mode, []))
+            assert events == (['requested-constructor', 'returned-object-fspath'] if mode == 'constructor' else [])
     return {'mode': mode, 'qualification_port_calls': len(entries), 'events': events,
         'authority': False, 'runtime_context_qualified': False}

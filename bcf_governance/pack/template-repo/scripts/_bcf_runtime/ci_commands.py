@@ -431,8 +431,14 @@ def main(argv: list[str] | None = None) -> None:
             _print(result, args.format)
             return
         if args.operation == "qualify-release":
+            try:
+                adopter_python = cli_arguments(args.adopter_python)
+            except TypeError as exc:
+                raise ReleaseQualificationError(
+                    "--adopter-python requires ordinary parsed strings"
+                ) from exc
             interpreters: dict[str, Path] = {}
-            for raw in args.adopter_python:
+            for raw in adopter_python:
                 repository, separator, path = raw.partition("=")
                 if not separator or not repository or not path or repository in interpreters:
                     raise ReleaseQualificationError(

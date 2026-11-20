@@ -560,7 +560,7 @@
     },
     "scripts/_bcf_runtime/ci_commands.py": {
       "operation": "copy",
-      "sha256": "ad609f50d5315461775c851d92e75f9228e95a8ce3ef9fef9b7efdfd511b79d7"
+      "sha256": "5cc6db0f89be1fab645cd9db830a9d31b0166be14d2204e686615a429f30b9fc"
     },
     "scripts/_bcf_runtime/ci_controller_adoption.py": {
       "operation": "copy",
