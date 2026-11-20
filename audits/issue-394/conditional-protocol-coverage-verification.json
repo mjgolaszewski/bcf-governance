@@ -1,0 +1,81 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "whole_requirement_advancement": false,
+  "baseline_subject": "966aeb181bae60a4b435a2b39b326fe5c1337c15",
+  "provisional_subject": "3c090770f88eed3e441a4fa508ca8242385145bf",
+  "contract_subject": "37dda3db4b9f7ad521fe7686567f5c2ed61e9752",
+  "implementation_subject": "43883d9670d4f798b2bfcd12566fcaae65dde723",
+  "original_before": {
+    "tests": 56,
+    "failures": 48,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_before_dispositions": {
+    "erased_conditional_obligations_accepted": 24,
+    "removed_classifier_obligations_accepted": 12,
+    "emitter_fixture_target_error_not_executed": 12,
+    "native_scope_membership_positive_cases": 8
+  },
+  "original_source": {
+    "tests": 365,
+    "failures": 14,
+    "errors": 0,
+    "skipped": 0
+  },
+  "original_source_failures": {
+    "wrong_fixture_class_target": 12,
+    "root_definition_explicit_occurrence_boundary": 2
+  },
+  "boundary_before": {
+    "tests": 2,
+    "failures": 2,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source": {
+    "tests": 367,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 38,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "actual_source_coverage": {
+    "authority": false,
+    "execution_qualified": false,
+    "runtime_context_qualified": false,
+    "source_commit": "43883d9670d4f798b2bfcd12566fcaae65dde723",
+    "source_tree": "9f2736598907469b2f4169fdd924c0369a4fc44f",
+    "files": 1330,
+    "functions": 12279,
+    "explicit_calls": 140564,
+    "store_observations": 5052,
+    "elapsed_seconds": 125.64355915700435
+  },
+  "junit_sha256": {
+    "boundary-before": "f38ad0ab7b69df751aab56534a615bc3846cd8a707f5ffb706135a64c65084c5",
+    "source": "7a4379a06e636b2d49a7e6b24f3d7647fcf047c5891ac6d02da49cb56c3b945b",
+    "installed": "8e13bd45fd96defb3ca7c56c1a58ec20fc6cabf62b61e342f6f33a979ef22683",
+    "architecture": "f1e73ac95d806e10e5be4a2887b50a372384fac3598298037e8bdc9048e3c989"
+  },
+  "prior_junit_sha256": {
+    "before": "dad69a0e06d13c2bb5a29187567be4fa502f88e9bc5e8fc4e6ed714468e04847",
+    "source": "89970914424cb491c2194e7800a153f58fdab8482d2fc5855a41eed11fadb083"
+  },
+  "source_sha256": "4c6b29712bdd29e42805b851938f0b83cbdd885667c8a062fc0bb42d7da79d66",
+  "scope": "Cold syntax grammar reconstructs all11 currently supported protocol kinds and comprehension guards independently of producer/classifier emission. Existing canonical native literal/Boolean eligibility is recomputed from source. Kind/caller/span/digest/model-version/occurrence and overlapping explicit-call occurrences are reconciled before effect credit. Root default/decorator calls retain their explicit source identities while implicit operation protocols remain scoped to the eager operation frame.",
+  "limits": "Source completeness is relative to supported grammar and canonical eligibility models, not the whole Python/native language. Native/model/profile/evaluator authority, dynamic invocation/frame/value origins, full installed profiles, approved targets/custody and82whole remain open. SDK-absent fresh/upgrade Lite only; P32 active/P33-P35 dormant.",
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}
