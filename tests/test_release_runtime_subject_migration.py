@@ -92,9 +92,12 @@ def test_candidate_report_cannot_select_its_own_expected_runtime(tmp_path, requi
 def test_self_consistent_new_report_cannot_change_required_subject_or_commands(tmp_path, defect):
     path, evidence, wheel, sdist, expected = report(tmp_path)
     value = json.loads(path.read_text())
-    if defect == "environment": value["environment"]["python_version"] = "3.12.98"
-    elif defect == "expected": expected = dict(expected, python="3.12.98")
-    else: next(row for row in value["commands"] if row["label"]=="wheel-install")["argv"].remove("--no-index")
+    if defect == "environment":
+        value["environment"]["python_version"] = "3.12.98"
+    elif defect == "expected":
+        expected = dict(expected, python="3.12.98")
+    else:
+        next(row for row in value["commands"] if row["label"]=="wheel-install")["argv"].remove("--no-index")
     path.write_text(json.dumps(value))
     with pytest.raises(GitHubControllerError):
         verify_runtime_evidence(path,evidence,wheel=wheel,sdist=sdist,
