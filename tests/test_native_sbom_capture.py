@@ -23,6 +23,7 @@ class Case:
         self.mode.write_text("normal")
         self.tool = root / "cataloger"
         self.tool.write_text("#!" + sys.executable + "\n" + '''import json,os,sys
+from pathlib import Path
 raw=sys.stdin.buffer.read()
 Path("seen-input").write_bytes(raw)
 assert sys.argv[3:] == ["scan","docker-archive:/proc/self/fd/0","--output","syft-json"]
