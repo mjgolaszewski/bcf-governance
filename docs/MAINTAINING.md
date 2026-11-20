@@ -266,7 +266,12 @@ substitute for reviewing clarity or technical accuracy.
 Wheelhouse manifest `1.0` and runtime reports `1.0`/`1.1` retain their original
 Python 3.12.14 contract. Manifest `1.1` explicitly declares a stable patch version
 in CPython 3.11–3.14 with its matching ABI and compatible wheel tags; it produces
-runtime report `1.2`. Reading `1.2` requires an independently verified dependency
+runtime report `1.2`. Before allocating verification output, the selected
+executable must report the declared standard GNU x86_64 ABI: matching SOABI,
+extension suffix, cache tag and multiarch, 64-bit pointers, and a nondebug build
+without free threading. Alternate builds require a separately qualified profile;
+a matching version string alone is insufficient. This admission check does not
+authenticate executable or native-library custody. Reading `1.2` requires an independently verified dependency
 closure, including the exact Python version and platform, and retains strict
 command and archive checks. Existing release roles requiring report `1.1` reject
 `1.2` until their trusted compatibility is separately migrated. This extension

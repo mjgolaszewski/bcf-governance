@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Check selected executable ABI before new-profile release verification allocates outputs; refuse free-threaded, debug, foreign and ambiguous identities under the standard GNU x86_64 subject.
+
 - Reject incompatible or malformed installed dependency versions before constructing security inventory; retain every root and transitive constraint through duplicate and cyclic traversal.
 
 - Reject unbound Python invocation contexts in strict effect validation, including opaque native ports and basename-only guesses; retain unresolved source observations and existing diagnostics.

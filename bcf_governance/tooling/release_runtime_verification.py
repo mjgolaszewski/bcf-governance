@@ -399,17 +399,39 @@ def run_release_runtime_verification(
     verify_archive(exact_sdist)
     closure = verify_wheelhouse(manifest, lock, wheelhouse.resolve())
     if closure.manifest_schema_version == "1.1":
-        probe = ("import json,platform;print(json.dumps({'python':platform.python_version(),"
+        probe = ("import json,platform,struct,sys,sysconfig;print(json.dumps({'python':platform.python_version(),"
                  "'implementation':platform.python_implementation(),'system':platform.system(),"
-                 "'machine':platform.machine().lower()}))")
+                 "'machine':platform.machine().lower(),'abi_flags':sys.abiflags,"
+                 "'cache_tag':sys.implementation.cache_tag,'pointer_bits':struct.calcsize('P')*8,"
+                 "'soabi':sysconfig.get_config_var('SOABI'),'extension_suffix':sysconfig.get_config_var('EXT_SUFFIX'),"
+                 "'multiarch':sysconfig.get_config_var('MULTIARCH'),'debug':sysconfig.get_config_var('Py_DEBUG'),"
+                 "'gil_disabled':sysconfig.get_config_var('Py_GIL_DISABLED')}))")
         identity = subprocess.run([str(selected), "-I", "-B", "-c", probe],
                                   capture_output=True, text=True, check=False)
         try:
-            native = json.loads(identity.stdout)
+            pairs = json.loads(identity.stdout, object_pairs_hook=lambda rows: rows)
+            native = (dict(pairs) if isinstance(pairs, list)
+                      and all(isinstance(row, tuple) and len(row) == 2 for row in pairs)
+                      and len({row[0] for row in pairs}) == len(pairs) else None)
         except (ValueError, TypeError):
             native = None
-        qualified_identity = (not identity.returncode and native == {
-            "python": closure.python, "implementation": "CPython", "system": "Linux", "machine": "x86_64"})
+        required_identity = {"python": closure.python, "implementation": "CPython",
+                             "system": "Linux", "machine": "x86_64"}
+        minor = "".join(closure.python.split(".")[:2])
+        soabi = "cpython-" + minor + "-x86_64-linux-gnu"
+        required_abi = {"abi_flags": "", "cache_tag": "cpython-" + minor,
+                        "pointer_bits": 64, "soabi": soabi,
+                        "extension_suffix": "." + soabi + ".so", "multiarch": "x86_64-linux-gnu", "debug": 0}
+        native_abi_matches = (isinstance(native, dict)
+            and set(native) == {*required_identity, *required_abi, "gil_disabled"}
+            and all(native[key] == value for key, value in required_abi.items())
+            and type(native["pointer_bits"]) is int and type(native["debug"]) is int
+            and (native["gil_disabled"] is None
+                 or (type(native["gil_disabled"]) is int and native["gil_disabled"] == 0)))
+        qualified_identity = (not identity.returncode and isinstance(native, dict)
+                              and all(native.get(key) == value for key, value in required_identity.items()))
+        if not native_abi_matches:
+            qualified_identity = False
     else:
         identity = subprocess.run(
             [str(selected), "-c", "import platform;print(platform.python_version())"],
