@@ -489,6 +489,8 @@ v234_captures:
     disposition: Retain raw facts without clamping; no valid elapsed or percentile claim.
   limits: Separate workflow windows are not dispatch-to-custody or merge-to-custody certification; CPU and external waits remain unmeasured.
 
+  step_attribution: {"report": "audits/issue-394/v234-step-timing-observations.json", "workflows": 3, "jobs": 7, "steps": 72, "status": "unmatched_step_observations_only", "authority": false, "percentile_certification": false}
+
 successor_main100dc_captures:
   authority: false
   status: unmatched_observations_with_retained_timestamp_rejections

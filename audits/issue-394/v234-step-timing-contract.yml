@@ -1,0 +1,25 @@
+schema_version: '1.0'
+document:
+  kind: affected_surface_contract
+  status: planned
+  authority: false
+  path: audits/issue-394/v234-step-timing-contract.yml
+workitem: P32-P0-06
+bounded_context: operations
+architectural_layer: tooling
+operation_side: observation_only
+canonical_owner: bcf_governance/tooling/operational_observations.py
+scope:
+- Attribute the three already-retained v2.3.4 build/verifier/publisher workflow windows to their complete seven-job and72-step populations.
+- Use exact attempt endpoints and repeated complete job inventories plus independent individual-job readbacks; retain source subject and original capture identities.
+- Project separate job-envelope and step-only interval views through existing provider_attempt_timing_observation and pipeline_timing_observation, and validate both with the existing schema.
+- Preserve setup/post steps, conclusions, uncovered intervals and unknown CPU/external waits. Never add overlapping job envelopes to their contained steps.
+- Keep higher-resolution decoded log timestamps outside the qualified millisecond projection; no silent rounding or claim that quiet output identifies waiting.
+- Retain unmatched/ineligible classification, existing failed/rejected observations, unfrozen targets and all whole requirements.
+- Keep raw machine-local logs outside distributable artifacts; publish only necessary provider facts, identities and decoded-content hashes.
+validation: Check exact source membership/clock consistency, reconstruct and schema-validate six timing observations, retain known governance result and push source-only checkpoint. No production change or redundant behavioral test run.
+forbidden:
+- Statistical percentile or savings certification from these observations
+- Treating three selected workflow windows as every release attempt or a complete custody clock
+- Reclassifying observation as provider/phase/release authority
+- Main, release, adopter, workflow or policy mutation

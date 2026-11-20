@@ -1,0 +1,2449 @@
+{
+  "schema_version": "1.0",
+  "authority": false,
+  "execution_qualified": false,
+  "status": "unmatched_provider_step_observations_only",
+  "capture_date": "2026-11-20",
+  "provider_metadata_readbacks": 27,
+  "commit_response_sha256": "aca62a826b9ff4d8d3a6048b3b262ec8ebbb47a8748d462c467f37174b086d72",
+  "pipeline_api_request_count": "unknown",
+  "subject": {
+    "repository": "mjgolaszewski/bcf-governance",
+    "repository_id": 1207503211,
+    "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+    "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+  },
+  "producer": {
+    "source_commit": "02b143ad8b1ef4c29221661d0da8fb7968f9312c",
+    "owner": "bcf_governance/tooling/operational_observations.py",
+    "source_sha256": "28f20da83f56bd3958b8c1c2ed4736d8cba2984a7f100c269727ba43f91dc67a",
+    "functions": [
+      "provider_attempt_timing_observation",
+      "pipeline_timing_observation",
+      "validate_operational_observation"
+    ]
+  },
+  "population_scope": "All seven jobs and72 steps of three already-retained maintenance attempt-1 workflow windows; not every release attempt or pipeline context.",
+  "matched_cohort": false,
+  "percentile_certification": false,
+  "targets_frozen": false,
+  "eligible_optimization_baseline": false,
+  "whole_requirement_advancement": false,
+  "workflows": [
+    {
+      "original_capture": "audits/issue-394/observations/release-build-v234-attempt-1.json",
+      "original_capture_sha256": "f6ce5066c3c12d7d11fc1c61e63cb2a263b5d5b8b88dc4b086f2c86c1f1a6fda",
+      "workflow_path": ".github/workflows/release.yml",
+      "run_id": 38865931369,
+      "run_attempt": 1,
+      "complete_job_population_reread_equal": true,
+      "step_population_source": "Complete steps arrays from exact-attempt provider job inventory, checked against independent job GET readbacks.",
+      "source_snapshot": {
+        "repository": {
+          "id": 1207503211,
+          "full_name": "mjgolaszewski/bcf-governance"
+        },
+        "run": {
+          "id": 38865931369,
+          "run_attempt": 1,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "event": "workflow_dispatch",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-16T07:14:14Z",
+          "run_started_at": "2026-10-16T07:14:14Z",
+          "updated_at": "2026-10-16T07:27:30Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865931369"
+        },
+        "commit": {
+          "sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "jobs": {
+          "total_count": 3,
+          "jobs": [
+            {
+              "id": 116858641412,
+              "run_id": 38865931369,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Observe provider-effective controller for non-authoritative release routing",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:14:17Z",
+              "completed_at": "2026-10-16T07:18:49Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865931369/job/116858641412",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:14:18Z",
+                  "completed_at": "2026-10-16T07:14:18Z"
+                },
+                {
+                  "name": "Check out the exact candidate commit",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:14:18Z",
+                  "completed_at": "2026-10-16T07:14:21Z"
+                },
+                {
+                  "name": "Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:14:21Z",
+                  "completed_at": "2026-10-16T07:14:21Z"
+                },
+                {
+                  "name": "Install the declared governance environment",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:14:21Z",
+                  "completed_at": "2026-10-16T07:14:28Z"
+                },
+                {
+                  "name": "Observe provider-effective controller for non-authoritative routing",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:14:28Z",
+                  "completed_at": "2026-10-16T07:18:47Z"
+                },
+                {
+                  "name": "Post Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 9,
+                  "started_at": "2026-10-16T07:18:47Z",
+                  "completed_at": "2026-10-16T07:18:47Z"
+                },
+                {
+                  "name": "Post Check out the exact candidate commit",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 10,
+                  "started_at": "2026-10-16T07:18:47Z",
+                  "completed_at": "2026-10-16T07:18:47Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 11,
+                  "started_at": "2026-10-16T07:18:47Z",
+                  "completed_at": "2026-10-16T07:18:47Z"
+                }
+              ]
+            },
+            {
+              "id": 116860174687,
+              "run_id": 38865931369,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Authorize newest certified exact main without candidate checkout",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:18:50Z",
+              "completed_at": "2026-10-16T07:26:45Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865931369/job/116860174687",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:18:51Z",
+                  "completed_at": "2026-10-16T07:18:57Z"
+                },
+                {
+                  "name": "Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:18:57Z",
+                  "completed_at": "2026-10-16T07:18:57Z"
+                },
+                {
+                  "name": "Allocate private release authorization directories",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:18:57Z",
+                  "completed_at": "2026-10-16T07:18:57Z"
+                },
+                {
+                  "name": "Resolve provider-authenticated release inputs",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:18:57Z",
+                  "completed_at": "2026-10-16T07:26:26Z"
+                },
+                {
+                  "name": "Download only the mechanically resolved certification artifact",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:26:26Z",
+                  "completed_at": "2026-10-16T07:26:27Z"
+                },
+                {
+                  "name": "Download only the mechanically resolved controller artifact",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 6,
+                  "started_at": "2026-10-16T07:26:27Z",
+                  "completed_at": "2026-10-16T07:26:29Z"
+                },
+                {
+                  "name": "Authorize exact provider and Git custody",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 7,
+                  "started_at": "2026-10-16T07:26:29Z",
+                  "completed_at": "2026-10-16T07:26:39Z"
+                },
+                {
+                  "name": "Upload immutable release authorization inputs",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 8,
+                  "started_at": "2026-10-16T07:26:39Z",
+                  "completed_at": "2026-10-16T07:26:42Z"
+                },
+                {
+                  "name": "Post Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 16,
+                  "started_at": "2026-10-16T07:26:42Z",
+                  "completed_at": "2026-10-16T07:26:42Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 17,
+                  "started_at": "2026-10-16T07:26:42Z",
+                  "completed_at": "2026-10-16T07:26:42Z"
+                }
+              ]
+            },
+            {
+              "id": 116862820485,
+              "run_id": 38865931369,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Build exact certified release bytes on a fresh hosted runner",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:26:47Z",
+              "completed_at": "2026-10-16T07:27:30Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38865931369/job/116862820485",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:26:47Z",
+                  "completed_at": "2026-10-16T07:26:49Z"
+                },
+                {
+                  "name": "Check out only the authorized exact commit",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:26:49Z",
+                  "completed_at": "2026-10-16T07:26:52Z"
+                },
+                {
+                  "name": "Select the closed release interpreter",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:26:52Z",
+                  "completed_at": "2026-10-16T07:27:04Z"
+                },
+                {
+                  "name": "Select the exact real-compiler test Node runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:27:04Z",
+                  "completed_at": "2026-10-16T07:27:11Z"
+                },
+                {
+                  "name": "Download this attempt's authorization only",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:27:11Z",
+                  "completed_at": "2026-10-16T07:27:12Z"
+                },
+                {
+                  "name": "Test and build the exact authorized release bundle",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 6,
+                  "started_at": "2026-10-16T07:27:12Z",
+                  "completed_at": "2026-10-16T07:27:25Z"
+                },
+                {
+                  "name": "Upload the exact untrusted build bundle",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 7,
+                  "started_at": "2026-10-16T07:27:25Z",
+                  "completed_at": "2026-10-16T07:27:27Z"
+                },
+                {
+                  "name": "Post Select the exact real-compiler test Node runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 12,
+                  "started_at": "2026-10-16T07:27:27Z",
+                  "completed_at": "2026-10-16T07:27:27Z"
+                },
+                {
+                  "name": "Post Select the closed release interpreter",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 13,
+                  "started_at": "2026-10-16T07:27:27Z",
+                  "completed_at": "2026-10-16T07:27:27Z"
+                },
+                {
+                  "name": "Post Check out only the authorized exact commit",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 14,
+                  "started_at": "2026-10-16T07:27:27Z",
+                  "completed_at": "2026-10-16T07:27:27Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 15,
+                  "started_at": "2026-10-16T07:27:27Z",
+                  "completed_at": "2026-10-16T07:27:27Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "job_envelope_observation": {
+        "schema_version": "1.0",
+        "kind": "pipeline_timing",
+        "authority": false,
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": 1207503211,
+        "source_snapshot_sha256": "b5da4b235f607b6e0aa61fa1f887182b97d6c489f08959dccd0b60ed5837148e",
+        "pipeline": "release",
+        "clock_id": "github:1207503211:run:38865931369:attempt:1",
+        "clock_basis": "provider_utc_ms",
+        "start_ms": 1792134854000,
+        "end_ms": 1792135650000,
+        "elapsed_ms": 796000,
+        "execution_union_ms": 790000,
+        "execution_sum_ms": 790000,
+        "external_wait_union_ms": 0,
+        "uncovered_ms": 6000,
+        "cpu_ms": "unknown",
+        "intervals": [
+          {
+            "id": "116858641412",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792134857000,
+            "end_ms": 1792135129000
+          },
+          {
+            "id": "116860174687",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135130000,
+            "end_ms": 1792135605000
+          },
+          {
+            "id": "116862820485",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135607000,
+            "end_ms": 1792135650000
+          }
+        ]
+      },
+      "step_interval_observation": {
+        "schema_version": "1.0",
+        "kind": "pipeline_timing",
+        "authority": false,
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": 1207503211,
+        "source_snapshot_sha256": "b5da4b235f607b6e0aa61fa1f887182b97d6c489f08959dccd0b60ed5837148e",
+        "pipeline": "release",
+        "clock_id": "github:1207503211:run:38865931369:attempt:1",
+        "clock_basis": "provider_utc_ms",
+        "start_ms": 1792134854000,
+        "end_ms": 1792135650000,
+        "elapsed_ms": 796000,
+        "execution_union_ms": 780000,
+        "execution_sum_ms": 780000,
+        "external_wait_union_ms": 0,
+        "uncovered_ms": 16000,
+        "cpu_ms": "unknown",
+        "intervals": [
+          {
+            "id": "job:116858641412:step:1",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792134858000,
+            "end_ms": 1792134858000
+          },
+          {
+            "id": "job:116858641412:step:10",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135127000,
+            "end_ms": 1792135127000
+          },
+          {
+            "id": "job:116858641412:step:11",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135127000,
+            "end_ms": 1792135127000
+          },
+          {
+            "id": "job:116858641412:step:2",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792134858000,
+            "end_ms": 1792134861000
+          },
+          {
+            "id": "job:116858641412:step:3",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792134861000,
+            "end_ms": 1792134861000
+          },
+          {
+            "id": "job:116858641412:step:4",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792134861000,
+            "end_ms": 1792134868000
+          },
+          {
+            "id": "job:116858641412:step:5",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792134868000,
+            "end_ms": 1792135127000
+          },
+          {
+            "id": "job:116858641412:step:9",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135127000,
+            "end_ms": 1792135127000
+          },
+          {
+            "id": "job:116860174687:step:1",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135131000,
+            "end_ms": 1792135137000
+          },
+          {
+            "id": "job:116860174687:step:16",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135602000,
+            "end_ms": 1792135602000
+          },
+          {
+            "id": "job:116860174687:step:17",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135602000,
+            "end_ms": 1792135602000
+          },
+          {
+            "id": "job:116860174687:step:2",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135137000,
+            "end_ms": 1792135137000
+          },
+          {
+            "id": "job:116860174687:step:3",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135137000,
+            "end_ms": 1792135137000
+          },
+          {
+            "id": "job:116860174687:step:4",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135137000,
+            "end_ms": 1792135586000
+          },
+          {
+            "id": "job:116860174687:step:5",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135586000,
+            "end_ms": 1792135587000
+          },
+          {
+            "id": "job:116860174687:step:6",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135587000,
+            "end_ms": 1792135589000
+          },
+          {
+            "id": "job:116860174687:step:7",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135589000,
+            "end_ms": 1792135599000
+          },
+          {
+            "id": "job:116860174687:step:8",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135599000,
+            "end_ms": 1792135602000
+          },
+          {
+            "id": "job:116862820485:step:1",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135607000,
+            "end_ms": 1792135609000
+          },
+          {
+            "id": "job:116862820485:step:12",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135647000,
+            "end_ms": 1792135647000
+          },
+          {
+            "id": "job:116862820485:step:13",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135647000,
+            "end_ms": 1792135647000
+          },
+          {
+            "id": "job:116862820485:step:14",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135647000,
+            "end_ms": 1792135647000
+          },
+          {
+            "id": "job:116862820485:step:15",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135647000,
+            "end_ms": 1792135647000
+          },
+          {
+            "id": "job:116862820485:step:2",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135609000,
+            "end_ms": 1792135612000
+          },
+          {
+            "id": "job:116862820485:step:3",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135612000,
+            "end_ms": 1792135624000
+          },
+          {
+            "id": "job:116862820485:step:4",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135624000,
+            "end_ms": 1792135631000
+          },
+          {
+            "id": "job:116862820485:step:5",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135631000,
+            "end_ms": 1792135632000
+          },
+          {
+            "id": "job:116862820485:step:6",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135632000,
+            "end_ms": 1792135645000
+          },
+          {
+            "id": "job:116862820485:step:7",
+            "clock_id": "github:1207503211:run:38865931369:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135645000,
+            "end_ms": 1792135647000
+          }
+        ]
+      },
+      "step_facts": [
+        {
+          "id": "job:116860174687:step:4",
+          "job_id": 116860174687,
+          "number": 4,
+          "name": "Resolve provider-authenticated release inputs",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:57Z",
+          "completed_at": "2026-10-16T07:26:26Z",
+          "elapsed_ms": 449000
+        },
+        {
+          "id": "job:116858641412:step:5",
+          "job_id": 116858641412,
+          "number": 5,
+          "name": "Observe provider-effective controller for non-authoritative routing",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:14:28Z",
+          "completed_at": "2026-10-16T07:18:47Z",
+          "elapsed_ms": 259000
+        },
+        {
+          "id": "job:116862820485:step:6",
+          "job_id": 116862820485,
+          "number": 6,
+          "name": "Test and build the exact authorized release bundle",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:12Z",
+          "completed_at": "2026-10-16T07:27:25Z",
+          "elapsed_ms": 13000
+        },
+        {
+          "id": "job:116862820485:step:3",
+          "job_id": 116862820485,
+          "number": 3,
+          "name": "Select the closed release interpreter",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:52Z",
+          "completed_at": "2026-10-16T07:27:04Z",
+          "elapsed_ms": 12000
+        },
+        {
+          "id": "job:116860174687:step:7",
+          "job_id": 116860174687,
+          "number": 7,
+          "name": "Authorize exact provider and Git custody",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:29Z",
+          "completed_at": "2026-10-16T07:26:39Z",
+          "elapsed_ms": 10000
+        },
+        {
+          "id": "job:116858641412:step:4",
+          "job_id": 116858641412,
+          "number": 4,
+          "name": "Install the declared governance environment",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:14:21Z",
+          "completed_at": "2026-10-16T07:14:28Z",
+          "elapsed_ms": 7000
+        },
+        {
+          "id": "job:116862820485:step:4",
+          "job_id": 116862820485,
+          "number": 4,
+          "name": "Select the exact real-compiler test Node runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:04Z",
+          "completed_at": "2026-10-16T07:27:11Z",
+          "elapsed_ms": 7000
+        },
+        {
+          "id": "job:116860174687:step:1",
+          "job_id": 116860174687,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:51Z",
+          "completed_at": "2026-10-16T07:18:57Z",
+          "elapsed_ms": 6000
+        },
+        {
+          "id": "job:116858641412:step:2",
+          "job_id": 116858641412,
+          "number": 2,
+          "name": "Check out the exact candidate commit",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:14:18Z",
+          "completed_at": "2026-10-16T07:14:21Z",
+          "elapsed_ms": 3000
+        },
+        {
+          "id": "job:116860174687:step:8",
+          "job_id": 116860174687,
+          "number": 8,
+          "name": "Upload immutable release authorization inputs",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:39Z",
+          "completed_at": "2026-10-16T07:26:42Z",
+          "elapsed_ms": 3000
+        },
+        {
+          "id": "job:116862820485:step:2",
+          "job_id": 116862820485,
+          "number": 2,
+          "name": "Check out only the authorized exact commit",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:49Z",
+          "completed_at": "2026-10-16T07:26:52Z",
+          "elapsed_ms": 3000
+        },
+        {
+          "id": "job:116860174687:step:6",
+          "job_id": 116860174687,
+          "number": 6,
+          "name": "Download only the mechanically resolved controller artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:27Z",
+          "completed_at": "2026-10-16T07:26:29Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116862820485:step:1",
+          "job_id": 116862820485,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:47Z",
+          "completed_at": "2026-10-16T07:26:49Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116862820485:step:7",
+          "job_id": 116862820485,
+          "number": 7,
+          "name": "Upload the exact untrusted build bundle",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:25Z",
+          "completed_at": "2026-10-16T07:27:27Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116860174687:step:5",
+          "job_id": 116860174687,
+          "number": 5,
+          "name": "Download only the mechanically resolved certification artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:26Z",
+          "completed_at": "2026-10-16T07:26:27Z",
+          "elapsed_ms": 1000
+        },
+        {
+          "id": "job:116862820485:step:5",
+          "job_id": 116862820485,
+          "number": 5,
+          "name": "Download this attempt's authorization only",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:11Z",
+          "completed_at": "2026-10-16T07:27:12Z",
+          "elapsed_ms": 1000
+        },
+        {
+          "id": "job:116858641412:step:1",
+          "job_id": 116858641412,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:14:18Z",
+          "completed_at": "2026-10-16T07:14:18Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116858641412:step:3",
+          "job_id": 116858641412,
+          "number": 3,
+          "name": "Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:14:21Z",
+          "completed_at": "2026-10-16T07:14:21Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116858641412:step:9",
+          "job_id": 116858641412,
+          "number": 9,
+          "name": "Post Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:47Z",
+          "completed_at": "2026-10-16T07:18:47Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116858641412:step:10",
+          "job_id": 116858641412,
+          "number": 10,
+          "name": "Post Check out the exact candidate commit",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:47Z",
+          "completed_at": "2026-10-16T07:18:47Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116858641412:step:11",
+          "job_id": 116858641412,
+          "number": 11,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:47Z",
+          "completed_at": "2026-10-16T07:18:47Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116860174687:step:2",
+          "job_id": 116860174687,
+          "number": 2,
+          "name": "Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:57Z",
+          "completed_at": "2026-10-16T07:18:57Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116860174687:step:3",
+          "job_id": 116860174687,
+          "number": 3,
+          "name": "Allocate private release authorization directories",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:18:57Z",
+          "completed_at": "2026-10-16T07:18:57Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116860174687:step:16",
+          "job_id": 116860174687,
+          "number": 16,
+          "name": "Post Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:42Z",
+          "completed_at": "2026-10-16T07:26:42Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116860174687:step:17",
+          "job_id": 116860174687,
+          "number": 17,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:26:42Z",
+          "completed_at": "2026-10-16T07:26:42Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116862820485:step:12",
+          "job_id": 116862820485,
+          "number": 12,
+          "name": "Post Select the exact real-compiler test Node runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:27Z",
+          "completed_at": "2026-10-16T07:27:27Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116862820485:step:13",
+          "job_id": 116862820485,
+          "number": 13,
+          "name": "Post Select the closed release interpreter",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:27Z",
+          "completed_at": "2026-10-16T07:27:27Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116862820485:step:14",
+          "job_id": 116862820485,
+          "number": 14,
+          "name": "Post Check out only the authorized exact commit",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:27Z",
+          "completed_at": "2026-10-16T07:27:27Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116862820485:step:15",
+          "job_id": 116862820485,
+          "number": 15,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:27Z",
+          "completed_at": "2026-10-16T07:27:27Z",
+          "elapsed_ms": 0
+        }
+      ],
+      "raw_provider_sha256": {
+        "run-38865931369-read-1.json": "f28a14ba3dce46b3eb4c2095108ea5daf4edffc1968dc1665193663ae5da0821",
+        "run-38865931369-read-2.json": "f28a14ba3dce46b3eb4c2095108ea5daf4edffc1968dc1665193663ae5da0821",
+        "jobs-38865931369-read-1.json": "e08b903404608e5eff2bbc8b1b7cf6dd7b15c8d39a0340eb451db1cccb2fdd98",
+        "jobs-38865931369-read-2.json": "e08b903404608e5eff2bbc8b1b7cf6dd7b15c8d39a0340eb451db1cccb2fdd98",
+        "job-116858641412-read-1.json": "d931e3a1946fbb9571f930fb3292031229498bd411c85aad15f8b3ce29bfb964",
+        "job-116858641412-read-2.json": "d931e3a1946fbb9571f930fb3292031229498bd411c85aad15f8b3ce29bfb964",
+        "job-116860174687-read-1.json": "acc1c0e2eb31f094f42a99b7cc242eaeb530c5b2c76c69c3e8745e46c288ec6d",
+        "job-116860174687-read-2.json": "acc1c0e2eb31f094f42a99b7cc242eaeb530c5b2c76c69c3e8745e46c288ec6d",
+        "job-116862820485-read-1.json": "c3d1e195eb1dcc72a03f89ebb28737c680a3084f1120d8514ee1f8fcc2442973",
+        "job-116862820485-read-2.json": "c3d1e195eb1dcc72a03f89ebb28737c680a3084f1120d8514ee1f8fcc2442973"
+      }
+    },
+    {
+      "original_capture": "audits/issue-394/observations/release-verifier-v234-attempt-1.json",
+      "original_capture_sha256": "2646c88fa2623252540c4649df66673b91fb5841df36963b61ebfc0e19584f81",
+      "workflow_path": ".github/workflows/bcf-release-verifier.yml",
+      "run_id": 38867337948,
+      "run_attempt": 1,
+      "complete_job_population_reread_equal": true,
+      "step_population_source": "Complete steps arrays from exact-attempt provider job inventory, checked against independent job GET readbacks.",
+      "source_snapshot": {
+        "repository": {
+          "id": 1207503211,
+          "full_name": "mjgolaszewski/bcf-governance"
+        },
+        "run": {
+          "id": 38867337948,
+          "run_attempt": 1,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "event": "workflow_run",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-16T07:27:32Z",
+          "run_started_at": "2026-10-16T07:27:32Z",
+          "updated_at": "2026-10-16T07:30:26Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948"
+        },
+        "commit": {
+          "sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "jobs": {
+          "total_count": 2,
+          "jobs": [
+            {
+              "id": 116863087831,
+              "run_id": 38867337948,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Execute token-free offline wheel and sdist verification",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:27:35Z",
+              "completed_at": "2026-10-16T07:29:21Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948/job/116863087831",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:27:36Z",
+                  "completed_at": "2026-10-16T07:27:37Z"
+                },
+                {
+                  "name": "Select the closed release interpreter",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:27:37Z",
+                  "completed_at": "2026-10-16T07:27:45Z"
+                },
+                {
+                  "name": "Select the exact real-compiler test Node runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:27:45Z",
+                  "completed_at": "2026-10-16T07:27:51Z"
+                },
+                {
+                  "name": "Download the triggering run's trusted authorization and controller",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:27:51Z",
+                  "completed_at": "2026-10-16T07:27:53Z"
+                },
+                {
+                  "name": "Install the triggering run's checksum-admitted controller",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:27:53Z",
+                  "completed_at": "2026-10-16T07:27:59Z"
+                },
+                {
+                  "name": "Download only the triggering build artifact",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 6,
+                  "started_at": "2026-10-16T07:27:59Z",
+                  "completed_at": "2026-10-16T07:28:02Z"
+                },
+                {
+                  "name": "Execute package verification without provider credentials",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 7,
+                  "started_at": "2026-10-16T07:28:02Z",
+                  "completed_at": "2026-10-16T07:29:16Z"
+                },
+                {
+                  "name": "Upload raw runtime evidence from this attempt",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 8,
+                  "started_at": "2026-10-16T07:29:16Z",
+                  "completed_at": "2026-10-16T07:29:18Z"
+                },
+                {
+                  "name": "Post Select the exact real-compiler test Node runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 15,
+                  "started_at": "2026-10-16T07:29:18Z",
+                  "completed_at": "2026-10-16T07:29:18Z"
+                },
+                {
+                  "name": "Post Select the closed release interpreter",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 16,
+                  "started_at": "2026-10-16T07:29:18Z",
+                  "completed_at": "2026-10-16T07:29:18Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 17,
+                  "started_at": "2026-10-16T07:29:18Z",
+                  "completed_at": "2026-10-16T07:29:18Z"
+                }
+              ]
+            },
+            {
+              "id": 116863701379,
+              "run_id": 38867337948,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Authenticate runtime and exact assets then emit the sole trusted receipt",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:29:24Z",
+              "completed_at": "2026-10-16T07:30:25Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867337948/job/116863701379",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:29:25Z",
+                  "completed_at": "2026-10-16T07:29:31Z"
+                },
+                {
+                  "name": "Select the closed release interpreter",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:29:31Z",
+                  "completed_at": "2026-10-16T07:29:31Z"
+                },
+                {
+                  "name": "Download the triggering run's trusted authorization and controller",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:29:31Z",
+                  "completed_at": "2026-10-16T07:29:34Z"
+                },
+                {
+                  "name": "Install the triggering run's checksum-admitted controller",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:29:34Z",
+                  "completed_at": "2026-10-16T07:29:48Z"
+                },
+                {
+                  "name": "Download only the triggering build artifact",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:29:48Z",
+                  "completed_at": "2026-10-16T07:29:52Z"
+                },
+                {
+                  "name": "Download only this verifier attempt's runtime evidence",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 6,
+                  "started_at": "2026-10-16T07:29:52Z",
+                  "completed_at": "2026-10-16T07:29:54Z"
+                },
+                {
+                  "name": "Allocate private release verification directories",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 7,
+                  "started_at": "2026-10-16T07:29:54Z",
+                  "completed_at": "2026-10-16T07:29:54Z"
+                },
+                {
+                  "name": "Authenticate provider state and recompute evidence hashes only",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 8,
+                  "started_at": "2026-10-16T07:29:54Z",
+                  "completed_at": "2026-10-16T07:30:03Z"
+                },
+                {
+                  "name": "Recompute provider, Git, dependency, runtime, and exact-asset custody",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 9,
+                  "started_at": "2026-10-16T07:30:03Z",
+                  "completed_at": "2026-10-16T07:30:16Z"
+                },
+                {
+                  "name": "Upload the sole authoritative release receipt and exact assets",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 10,
+                  "started_at": "2026-10-16T07:30:16Z",
+                  "completed_at": "2026-10-16T07:30:21Z"
+                },
+                {
+                  "name": "Post Select the closed release interpreter",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 20,
+                  "started_at": "2026-10-16T07:30:21Z",
+                  "completed_at": "2026-10-16T07:30:21Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 21,
+                  "started_at": "2026-10-16T07:30:21Z",
+                  "completed_at": "2026-10-16T07:30:21Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "job_envelope_observation": {
+        "schema_version": "1.0",
+        "kind": "pipeline_timing",
+        "authority": false,
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": 1207503211,
+        "source_snapshot_sha256": "e091c8c993964579b77effdf29213722b7d5f228f52695910618d5e948aeb0ac",
+        "pipeline": "release",
+        "clock_id": "github:1207503211:run:38867337948:attempt:1",
+        "clock_basis": "provider_utc_ms",
+        "start_ms": 1792135652000,
+        "end_ms": 1792135826000,
+        "elapsed_ms": 174000,
+        "execution_union_ms": 167000,
+        "execution_sum_ms": 167000,
+        "external_wait_union_ms": 0,
+        "uncovered_ms": 7000,
+        "cpu_ms": "unknown",
+        "intervals": [
+          {
+            "id": "116863087831",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135655000,
+            "end_ms": 1792135761000
+          },
+          {
+            "id": "116863701379",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135764000,
+            "end_ms": 1792135825000
+          }
+        ]
+      },
+      "step_interval_observation": {
+        "schema_version": "1.0",
+        "kind": "pipeline_timing",
+        "authority": false,
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": 1207503211,
+        "source_snapshot_sha256": "e091c8c993964579b77effdf29213722b7d5f228f52695910618d5e948aeb0ac",
+        "pipeline": "release",
+        "clock_id": "github:1207503211:run:38867337948:attempt:1",
+        "clock_basis": "provider_utc_ms",
+        "start_ms": 1792135652000,
+        "end_ms": 1792135826000,
+        "elapsed_ms": 174000,
+        "execution_union_ms": 158000,
+        "execution_sum_ms": 158000,
+        "external_wait_union_ms": 0,
+        "uncovered_ms": 16000,
+        "cpu_ms": "unknown",
+        "intervals": [
+          {
+            "id": "job:116863087831:step:1",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135656000,
+            "end_ms": 1792135657000
+          },
+          {
+            "id": "job:116863087831:step:15",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135758000,
+            "end_ms": 1792135758000
+          },
+          {
+            "id": "job:116863087831:step:16",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135758000,
+            "end_ms": 1792135758000
+          },
+          {
+            "id": "job:116863087831:step:17",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135758000,
+            "end_ms": 1792135758000
+          },
+          {
+            "id": "job:116863087831:step:2",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135657000,
+            "end_ms": 1792135665000
+          },
+          {
+            "id": "job:116863087831:step:3",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135665000,
+            "end_ms": 1792135671000
+          },
+          {
+            "id": "job:116863087831:step:4",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135671000,
+            "end_ms": 1792135673000
+          },
+          {
+            "id": "job:116863087831:step:5",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135673000,
+            "end_ms": 1792135679000
+          },
+          {
+            "id": "job:116863087831:step:6",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135679000,
+            "end_ms": 1792135682000
+          },
+          {
+            "id": "job:116863087831:step:7",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135682000,
+            "end_ms": 1792135756000
+          },
+          {
+            "id": "job:116863087831:step:8",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135756000,
+            "end_ms": 1792135758000
+          },
+          {
+            "id": "job:116863701379:step:1",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135765000,
+            "end_ms": 1792135771000
+          },
+          {
+            "id": "job:116863701379:step:10",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135816000,
+            "end_ms": 1792135821000
+          },
+          {
+            "id": "job:116863701379:step:2",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135771000,
+            "end_ms": 1792135771000
+          },
+          {
+            "id": "job:116863701379:step:20",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135821000,
+            "end_ms": 1792135821000
+          },
+          {
+            "id": "job:116863701379:step:21",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135821000,
+            "end_ms": 1792135821000
+          },
+          {
+            "id": "job:116863701379:step:3",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135771000,
+            "end_ms": 1792135774000
+          },
+          {
+            "id": "job:116863701379:step:4",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135774000,
+            "end_ms": 1792135788000
+          },
+          {
+            "id": "job:116863701379:step:5",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135788000,
+            "end_ms": 1792135792000
+          },
+          {
+            "id": "job:116863701379:step:6",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135792000,
+            "end_ms": 1792135794000
+          },
+          {
+            "id": "job:116863701379:step:7",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135794000,
+            "end_ms": 1792135794000
+          },
+          {
+            "id": "job:116863701379:step:8",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135794000,
+            "end_ms": 1792135803000
+          },
+          {
+            "id": "job:116863701379:step:9",
+            "clock_id": "github:1207503211:run:38867337948:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135803000,
+            "end_ms": 1792135816000
+          }
+        ]
+      },
+      "step_facts": [
+        {
+          "id": "job:116863087831:step:7",
+          "job_id": 116863087831,
+          "number": 7,
+          "name": "Execute package verification without provider credentials",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:28:02Z",
+          "completed_at": "2026-10-16T07:29:16Z",
+          "elapsed_ms": 74000
+        },
+        {
+          "id": "job:116863701379:step:4",
+          "job_id": 116863701379,
+          "number": 4,
+          "name": "Install the triggering run's checksum-admitted controller",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:34Z",
+          "completed_at": "2026-10-16T07:29:48Z",
+          "elapsed_ms": 14000
+        },
+        {
+          "id": "job:116863701379:step:9",
+          "job_id": 116863701379,
+          "number": 9,
+          "name": "Recompute provider, Git, dependency, runtime, and exact-asset custody",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:03Z",
+          "completed_at": "2026-10-16T07:30:16Z",
+          "elapsed_ms": 13000
+        },
+        {
+          "id": "job:116863701379:step:8",
+          "job_id": 116863701379,
+          "number": 8,
+          "name": "Authenticate provider state and recompute evidence hashes only",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:54Z",
+          "completed_at": "2026-10-16T07:30:03Z",
+          "elapsed_ms": 9000
+        },
+        {
+          "id": "job:116863087831:step:2",
+          "job_id": 116863087831,
+          "number": 2,
+          "name": "Select the closed release interpreter",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:37Z",
+          "completed_at": "2026-10-16T07:27:45Z",
+          "elapsed_ms": 8000
+        },
+        {
+          "id": "job:116863087831:step:3",
+          "job_id": 116863087831,
+          "number": 3,
+          "name": "Select the exact real-compiler test Node runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:45Z",
+          "completed_at": "2026-10-16T07:27:51Z",
+          "elapsed_ms": 6000
+        },
+        {
+          "id": "job:116863087831:step:5",
+          "job_id": 116863087831,
+          "number": 5,
+          "name": "Install the triggering run's checksum-admitted controller",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:53Z",
+          "completed_at": "2026-10-16T07:27:59Z",
+          "elapsed_ms": 6000
+        },
+        {
+          "id": "job:116863701379:step:1",
+          "job_id": 116863701379,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:25Z",
+          "completed_at": "2026-10-16T07:29:31Z",
+          "elapsed_ms": 6000
+        },
+        {
+          "id": "job:116863701379:step:10",
+          "job_id": 116863701379,
+          "number": 10,
+          "name": "Upload the sole authoritative release receipt and exact assets",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:16Z",
+          "completed_at": "2026-10-16T07:30:21Z",
+          "elapsed_ms": 5000
+        },
+        {
+          "id": "job:116863701379:step:5",
+          "job_id": 116863701379,
+          "number": 5,
+          "name": "Download only the triggering build artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:48Z",
+          "completed_at": "2026-10-16T07:29:52Z",
+          "elapsed_ms": 4000
+        },
+        {
+          "id": "job:116863087831:step:6",
+          "job_id": 116863087831,
+          "number": 6,
+          "name": "Download only the triggering build artifact",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:59Z",
+          "completed_at": "2026-10-16T07:28:02Z",
+          "elapsed_ms": 3000
+        },
+        {
+          "id": "job:116863701379:step:3",
+          "job_id": 116863701379,
+          "number": 3,
+          "name": "Download the triggering run's trusted authorization and controller",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:31Z",
+          "completed_at": "2026-10-16T07:29:34Z",
+          "elapsed_ms": 3000
+        },
+        {
+          "id": "job:116863087831:step:4",
+          "job_id": 116863087831,
+          "number": 4,
+          "name": "Download the triggering run's trusted authorization and controller",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:51Z",
+          "completed_at": "2026-10-16T07:27:53Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116863087831:step:8",
+          "job_id": 116863087831,
+          "number": 8,
+          "name": "Upload raw runtime evidence from this attempt",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:16Z",
+          "completed_at": "2026-10-16T07:29:18Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116863701379:step:6",
+          "job_id": 116863701379,
+          "number": 6,
+          "name": "Download only this verifier attempt's runtime evidence",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:52Z",
+          "completed_at": "2026-10-16T07:29:54Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116863087831:step:1",
+          "job_id": 116863087831,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:27:36Z",
+          "completed_at": "2026-10-16T07:27:37Z",
+          "elapsed_ms": 1000
+        },
+        {
+          "id": "job:116863087831:step:15",
+          "job_id": 116863087831,
+          "number": 15,
+          "name": "Post Select the exact real-compiler test Node runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:18Z",
+          "completed_at": "2026-10-16T07:29:18Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116863087831:step:16",
+          "job_id": 116863087831,
+          "number": 16,
+          "name": "Post Select the closed release interpreter",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:18Z",
+          "completed_at": "2026-10-16T07:29:18Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116863087831:step:17",
+          "job_id": 116863087831,
+          "number": 17,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:18Z",
+          "completed_at": "2026-10-16T07:29:18Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116863701379:step:2",
+          "job_id": 116863701379,
+          "number": 2,
+          "name": "Select the closed release interpreter",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:31Z",
+          "completed_at": "2026-10-16T07:29:31Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116863701379:step:7",
+          "job_id": 116863701379,
+          "number": 7,
+          "name": "Allocate private release verification directories",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:29:54Z",
+          "completed_at": "2026-10-16T07:29:54Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116863701379:step:20",
+          "job_id": 116863701379,
+          "number": 20,
+          "name": "Post Select the closed release interpreter",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:21Z",
+          "completed_at": "2026-10-16T07:30:21Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116863701379:step:21",
+          "job_id": 116863701379,
+          "number": 21,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:21Z",
+          "completed_at": "2026-10-16T07:30:21Z",
+          "elapsed_ms": 0
+        }
+      ],
+      "raw_provider_sha256": {
+        "run-38867337948-read-1.json": "02d36b035dfdb3fde05e704f9f58d268966fd764c36834636ead82d8628376ca",
+        "run-38867337948-read-2.json": "02d36b035dfdb3fde05e704f9f58d268966fd764c36834636ead82d8628376ca",
+        "jobs-38867337948-read-1.json": "0f04abde4c536d218d781e1c8ad29d5bf4fa011c03a2973d54ddd12d77b1328c",
+        "jobs-38867337948-read-2.json": "0f04abde4c536d218d781e1c8ad29d5bf4fa011c03a2973d54ddd12d77b1328c",
+        "job-116863087831-read-1.json": "977df6ca1b3787c840853732fb37571f665b69b38bd5bf27d10c0b8845114d8c",
+        "job-116863087831-read-2.json": "977df6ca1b3787c840853732fb37571f665b69b38bd5bf27d10c0b8845114d8c",
+        "job-116863701379-read-1.json": "08e170c296823701391ec03ad959305ccf84d809a623c2649b3ce8bb1bc021cc",
+        "job-116863701379-read-2.json": "08e170c296823701391ec03ad959305ccf84d809a623c2649b3ce8bb1bc021cc"
+      }
+    },
+    {
+      "original_capture": "audits/issue-394/observations/release-publisher-v234-attempt-1.json",
+      "original_capture_sha256": "d6f754f7274993fe626dbed64254dd63974367f1735d0ca312fcd78180e9c47d",
+      "workflow_path": ".github/workflows/bcf-release-publisher.yml",
+      "run_id": 38867648790,
+      "run_attempt": 1,
+      "complete_job_population_reread_equal": true,
+      "step_population_source": "Complete steps arrays from exact-attempt provider job inventory, checked against independent job GET readbacks.",
+      "source_snapshot": {
+        "repository": {
+          "id": 1207503211,
+          "full_name": "mjgolaszewski/bcf-governance"
+        },
+        "run": {
+          "id": 38867648790,
+          "run_attempt": 1,
+          "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "event": "workflow_run",
+          "status": "completed",
+          "conclusion": "success",
+          "created_at": "2026-10-16T07:30:27Z",
+          "run_started_at": "2026-10-16T07:30:27Z",
+          "updated_at": "2026-10-16T07:45:16Z",
+          "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867648790"
+        },
+        "commit": {
+          "sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "jobs": {
+          "total_count": 2,
+          "jobs": [
+            {
+              "id": 116864072085,
+              "run_id": 38867648790,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Observe provider-effective controller for non-authoritative publication routing",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:30:30Z",
+              "completed_at": "2026-10-16T07:37:01Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867648790/job/116864072085",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:30:30Z",
+                  "completed_at": "2026-10-16T07:30:31Z"
+                },
+                {
+                  "name": "Check out only the triggering authorized release subject",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:30:31Z",
+                  "completed_at": "2026-10-16T07:30:33Z"
+                },
+                {
+                  "name": "Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:30:33Z",
+                  "completed_at": "2026-10-16T07:30:33Z"
+                },
+                {
+                  "name": "Install the declared governance environment",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:30:33Z",
+                  "completed_at": "2026-10-16T07:30:40Z"
+                },
+                {
+                  "name": "Observe provider-effective controller for non-authoritative routing",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:30:40Z",
+                  "completed_at": "2026-10-16T07:36:58Z"
+                },
+                {
+                  "name": "Post Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 9,
+                  "started_at": "2026-10-16T07:36:58Z",
+                  "completed_at": "2026-10-16T07:36:58Z"
+                },
+                {
+                  "name": "Post Check out only the triggering authorized release subject",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 10,
+                  "started_at": "2026-10-16T07:36:58Z",
+                  "completed_at": "2026-10-16T07:36:58Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 11,
+                  "started_at": "2026-10-16T07:36:58Z",
+                  "completed_at": "2026-10-16T07:36:58Z"
+                }
+              ]
+            },
+            {
+              "id": 116866291608,
+              "run_id": 38867648790,
+              "head_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+              "name": "Publish one exact idempotent transaction after governed qualification",
+              "status": "completed",
+              "conclusion": "success",
+              "started_at": "2026-10-16T07:37:04Z",
+              "completed_at": "2026-10-16T07:45:15Z",
+              "html_url": "https://github.com/mjgolaszewski/bcf-governance/actions/runs/38867648790/job/116866291608",
+              "run_attempt": 1,
+              "steps": [
+                {
+                  "name": "Set up job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 1,
+                  "started_at": "2026-10-16T07:37:05Z",
+                  "completed_at": "2026-10-16T07:37:13Z"
+                },
+                {
+                  "name": "Validate all required environment inputs before work",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 2,
+                  "started_at": "2026-10-16T07:37:13Z",
+                  "completed_at": "2026-10-16T07:37:13Z"
+                },
+                {
+                  "name": "Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 3,
+                  "started_at": "2026-10-16T07:37:13Z",
+                  "completed_at": "2026-10-16T07:37:13Z"
+                },
+                {
+                  "name": "Allocate private release publication directories",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 4,
+                  "started_at": "2026-10-16T07:37:13Z",
+                  "completed_at": "2026-10-16T07:37:13Z"
+                },
+                {
+                  "name": "Resolve the newest exact-main release receipt mechanically",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 5,
+                  "started_at": "2026-10-16T07:37:13Z",
+                  "completed_at": "2026-10-16T07:44:35Z"
+                },
+                {
+                  "name": "Download only the resolver-selected receipt and certified assets",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 6,
+                  "started_at": "2026-10-16T07:44:35Z",
+                  "completed_at": "2026-10-16T07:44:39Z"
+                },
+                {
+                  "name": "Attest the exact closed release asset inventory",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 7,
+                  "started_at": "2026-10-16T07:44:39Z",
+                  "completed_at": "2026-10-16T07:44:42Z"
+                },
+                {
+                  "name": "Mint one repository-scoped release publication token",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 8,
+                  "started_at": "2026-10-16T07:44:42Z",
+                  "completed_at": "2026-10-16T07:44:43Z"
+                },
+                {
+                  "name": "Publish only the authenticated pre-certified bytes",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 9,
+                  "started_at": "2026-10-16T07:44:43Z",
+                  "completed_at": "2026-10-16T07:45:11Z"
+                },
+                {
+                  "name": "Post Mint one repository-scoped release publication token",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 17,
+                  "started_at": "2026-10-16T07:45:11Z",
+                  "completed_at": "2026-10-16T07:45:12Z"
+                },
+                {
+                  "name": "Post Provision the declared Python runtime",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 18,
+                  "started_at": "2026-10-16T07:45:12Z",
+                  "completed_at": "2026-10-16T07:45:12Z"
+                },
+                {
+                  "name": "Complete job",
+                  "status": "completed",
+                  "conclusion": "success",
+                  "number": 19,
+                  "started_at": "2026-10-16T07:45:12Z",
+                  "completed_at": "2026-10-16T07:45:12Z"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "job_envelope_observation": {
+        "schema_version": "1.0",
+        "kind": "pipeline_timing",
+        "authority": false,
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": 1207503211,
+        "source_snapshot_sha256": "e9701810be4e18f1dcf02478f67756bc6d9ecb39acaa1043ee1dc5ad80993873",
+        "pipeline": "release",
+        "clock_id": "github:1207503211:run:38867648790:attempt:1",
+        "clock_basis": "provider_utc_ms",
+        "start_ms": 1792135827000,
+        "end_ms": 1792136716000,
+        "elapsed_ms": 889000,
+        "execution_union_ms": 882000,
+        "execution_sum_ms": 882000,
+        "external_wait_union_ms": 0,
+        "uncovered_ms": 7000,
+        "cpu_ms": "unknown",
+        "intervals": [
+          {
+            "id": "116864072085",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135830000,
+            "end_ms": 1792136221000
+          },
+          {
+            "id": "116866291608",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136224000,
+            "end_ms": 1792136715000
+          }
+        ]
+      },
+      "step_interval_observation": {
+        "schema_version": "1.0",
+        "kind": "pipeline_timing",
+        "authority": false,
+        "subject": {
+          "commit_sha": "d02f11ef3eafd99e451c1482c5d3403c2feefd03",
+          "tree_sha": "2b62137827a0bc73633ba0778d45887be3aa9be6"
+        },
+        "repository": "mjgolaszewski/bcf-governance",
+        "repository_id": 1207503211,
+        "source_snapshot_sha256": "e9701810be4e18f1dcf02478f67756bc6d9ecb39acaa1043ee1dc5ad80993873",
+        "pipeline": "release",
+        "clock_id": "github:1207503211:run:38867648790:attempt:1",
+        "clock_basis": "provider_utc_ms",
+        "start_ms": 1792135827000,
+        "end_ms": 1792136716000,
+        "elapsed_ms": 889000,
+        "execution_union_ms": 875000,
+        "execution_sum_ms": 875000,
+        "external_wait_union_ms": 0,
+        "uncovered_ms": 14000,
+        "cpu_ms": "unknown",
+        "intervals": [
+          {
+            "id": "job:116864072085:step:1",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135830000,
+            "end_ms": 1792135831000
+          },
+          {
+            "id": "job:116864072085:step:10",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136218000,
+            "end_ms": 1792136218000
+          },
+          {
+            "id": "job:116864072085:step:11",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136218000,
+            "end_ms": 1792136218000
+          },
+          {
+            "id": "job:116864072085:step:2",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135831000,
+            "end_ms": 1792135833000
+          },
+          {
+            "id": "job:116864072085:step:3",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135833000,
+            "end_ms": 1792135833000
+          },
+          {
+            "id": "job:116864072085:step:4",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135833000,
+            "end_ms": 1792135840000
+          },
+          {
+            "id": "job:116864072085:step:5",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792135840000,
+            "end_ms": 1792136218000
+          },
+          {
+            "id": "job:116864072085:step:9",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136218000,
+            "end_ms": 1792136218000
+          },
+          {
+            "id": "job:116866291608:step:1",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136225000,
+            "end_ms": 1792136233000
+          },
+          {
+            "id": "job:116866291608:step:17",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136711000,
+            "end_ms": 1792136712000
+          },
+          {
+            "id": "job:116866291608:step:18",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136712000,
+            "end_ms": 1792136712000
+          },
+          {
+            "id": "job:116866291608:step:19",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136712000,
+            "end_ms": 1792136712000
+          },
+          {
+            "id": "job:116866291608:step:2",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136233000,
+            "end_ms": 1792136233000
+          },
+          {
+            "id": "job:116866291608:step:3",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136233000,
+            "end_ms": 1792136233000
+          },
+          {
+            "id": "job:116866291608:step:4",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136233000,
+            "end_ms": 1792136233000
+          },
+          {
+            "id": "job:116866291608:step:5",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136233000,
+            "end_ms": 1792136675000
+          },
+          {
+            "id": "job:116866291608:step:6",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136675000,
+            "end_ms": 1792136679000
+          },
+          {
+            "id": "job:116866291608:step:7",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136679000,
+            "end_ms": 1792136682000
+          },
+          {
+            "id": "job:116866291608:step:8",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136682000,
+            "end_ms": 1792136683000
+          },
+          {
+            "id": "job:116866291608:step:9",
+            "clock_id": "github:1207503211:run:38867648790:attempt:1",
+            "kind": "execution",
+            "status": "passed",
+            "start_ms": 1792136683000,
+            "end_ms": 1792136711000
+          }
+        ]
+      },
+      "step_facts": [
+        {
+          "id": "job:116866291608:step:5",
+          "job_id": 116866291608,
+          "number": 5,
+          "name": "Resolve the newest exact-main release receipt mechanically",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:37:13Z",
+          "completed_at": "2026-10-16T07:44:35Z",
+          "elapsed_ms": 442000
+        },
+        {
+          "id": "job:116864072085:step:5",
+          "job_id": 116864072085,
+          "number": 5,
+          "name": "Observe provider-effective controller for non-authoritative routing",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:40Z",
+          "completed_at": "2026-10-16T07:36:58Z",
+          "elapsed_ms": 378000
+        },
+        {
+          "id": "job:116866291608:step:9",
+          "job_id": 116866291608,
+          "number": 9,
+          "name": "Publish only the authenticated pre-certified bytes",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:44:43Z",
+          "completed_at": "2026-10-16T07:45:11Z",
+          "elapsed_ms": 28000
+        },
+        {
+          "id": "job:116866291608:step:1",
+          "job_id": 116866291608,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:37:05Z",
+          "completed_at": "2026-10-16T07:37:13Z",
+          "elapsed_ms": 8000
+        },
+        {
+          "id": "job:116864072085:step:4",
+          "job_id": 116864072085,
+          "number": 4,
+          "name": "Install the declared governance environment",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:33Z",
+          "completed_at": "2026-10-16T07:30:40Z",
+          "elapsed_ms": 7000
+        },
+        {
+          "id": "job:116866291608:step:6",
+          "job_id": 116866291608,
+          "number": 6,
+          "name": "Download only the resolver-selected receipt and certified assets",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:44:35Z",
+          "completed_at": "2026-10-16T07:44:39Z",
+          "elapsed_ms": 4000
+        },
+        {
+          "id": "job:116866291608:step:7",
+          "job_id": 116866291608,
+          "number": 7,
+          "name": "Attest the exact closed release asset inventory",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:44:39Z",
+          "completed_at": "2026-10-16T07:44:42Z",
+          "elapsed_ms": 3000
+        },
+        {
+          "id": "job:116864072085:step:2",
+          "job_id": 116864072085,
+          "number": 2,
+          "name": "Check out only the triggering authorized release subject",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:31Z",
+          "completed_at": "2026-10-16T07:30:33Z",
+          "elapsed_ms": 2000
+        },
+        {
+          "id": "job:116864072085:step:1",
+          "job_id": 116864072085,
+          "number": 1,
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:30Z",
+          "completed_at": "2026-10-16T07:30:31Z",
+          "elapsed_ms": 1000
+        },
+        {
+          "id": "job:116866291608:step:8",
+          "job_id": 116866291608,
+          "number": 8,
+          "name": "Mint one repository-scoped release publication token",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:44:42Z",
+          "completed_at": "2026-10-16T07:44:43Z",
+          "elapsed_ms": 1000
+        },
+        {
+          "id": "job:116866291608:step:17",
+          "job_id": 116866291608,
+          "number": 17,
+          "name": "Post Mint one repository-scoped release publication token",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:45:11Z",
+          "completed_at": "2026-10-16T07:45:12Z",
+          "elapsed_ms": 1000
+        },
+        {
+          "id": "job:116864072085:step:3",
+          "job_id": 116864072085,
+          "number": 3,
+          "name": "Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:30:33Z",
+          "completed_at": "2026-10-16T07:30:33Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116864072085:step:9",
+          "job_id": 116864072085,
+          "number": 9,
+          "name": "Post Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:36:58Z",
+          "completed_at": "2026-10-16T07:36:58Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116864072085:step:10",
+          "job_id": 116864072085,
+          "number": 10,
+          "name": "Post Check out only the triggering authorized release subject",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:36:58Z",
+          "completed_at": "2026-10-16T07:36:58Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116864072085:step:11",
+          "job_id": 116864072085,
+          "number": 11,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:36:58Z",
+          "completed_at": "2026-10-16T07:36:58Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116866291608:step:2",
+          "job_id": 116866291608,
+          "number": 2,
+          "name": "Validate all required environment inputs before work",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:37:13Z",
+          "completed_at": "2026-10-16T07:37:13Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116866291608:step:3",
+          "job_id": 116866291608,
+          "number": 3,
+          "name": "Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:37:13Z",
+          "completed_at": "2026-10-16T07:37:13Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116866291608:step:4",
+          "job_id": 116866291608,
+          "number": 4,
+          "name": "Allocate private release publication directories",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:37:13Z",
+          "completed_at": "2026-10-16T07:37:13Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116866291608:step:18",
+          "job_id": 116866291608,
+          "number": 18,
+          "name": "Post Provision the declared Python runtime",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:45:12Z",
+          "completed_at": "2026-10-16T07:45:12Z",
+          "elapsed_ms": 0
+        },
+        {
+          "id": "job:116866291608:step:19",
+          "job_id": 116866291608,
+          "number": 19,
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "started_at": "2026-10-16T07:45:12Z",
+          "completed_at": "2026-10-16T07:45:12Z",
+          "elapsed_ms": 0
+        }
+      ],
+      "raw_provider_sha256": {
+        "run-38867648790-read-1.json": "148577d3b0290b6fdf951e8255028c3d18d7ee5a1b69a615b94fda891dc1c055",
+        "run-38867648790-read-2.json": "148577d3b0290b6fdf951e8255028c3d18d7ee5a1b69a615b94fda891dc1c055",
+        "jobs-38867648790-read-1.json": "5ae80d1fbbdd564752e4101a50fdb15a75118ad2b45754ee14d2d8907bcd3377",
+        "jobs-38867648790-read-2.json": "5ae80d1fbbdd564752e4101a50fdb15a75118ad2b45754ee14d2d8907bcd3377",
+        "job-116864072085-read-1.json": "ddb001c18090edb661aa420c1af09929651a6090b499311b3659eab3cbc861f3",
+        "job-116864072085-read-2.json": "ddb001c18090edb661aa420c1af09929651a6090b499311b3659eab3cbc861f3",
+        "job-116866291608-read-1.json": "84d805caefa7365d746c7d0f3bc2d776e85734ddd97925220a2d561dd4f3661e",
+        "job-116866291608-read-2.json": "84d805caefa7365d746c7d0f3bc2d776e85734ddd97925220a2d561dd4f3661e"
+      }
+    }
+  ],
+  "decoded_log_sources": [
+    {
+      "job_id": 116864072085,
+      "source": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/jobs/116864072085/logs",
+      "decoded_utf8_sha256": "710efaf8f3b00557d69f169471000426925d59d97e9d17eafedc18fdf81a2a84",
+      "note": "Decoded UTF-8 content identity, not archive bytes. High-resolution runner log timestamps are not projected into the qualified millisecond clock, and silent output does not classify network wait or CPU work."
+    },
+    {
+      "job_id": 116866291608,
+      "source": "https://api.github.com/repos/mjgolaszewski/bcf-governance/actions/jobs/116866291608/logs",
+      "decoded_utf8_sha256": "1278e8e6f609b8a155506370105eda1ec9b169ac4872e2df8fef5e3cb63310eb",
+      "note": "Decoded UTF-8 content identity, not archive bytes. High-resolution runner log timestamps are not projected into the qualified millisecond clock, and silent output does not classify network wait or CPU work."
+    }
+  ],
+  "interpretation": [
+    "Job envelopes and step intervals are alternative views, never additive.",
+    "Execution interval wall time is not CPU time; unrecorded external waits and internal request/parse/verification costs remain unknown.",
+    "Separate workflow windows do not establish dispatch-to-custody, merge-to-custody or developer interruption endpoints.",
+    "Role labels and large intervals identify measurement regions, not redundant assurance, root cause or achievable savings.",
+    "Existing failed/cancelled/rejected baseline observations remain retained; these successful maintenance windows are not a matched statistical population."
+  ]
+}
