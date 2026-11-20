@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Reject unbound Python invocation contexts in strict effect validation, including opaque native ports and basename-only guesses; retain unresolved source observations and existing diagnostics.
+
 - Distinguish guaranteed boolean result consumption from operand effects in supported Python frames; retain strict unknown callbacks and unchanged store ownership.
 
 - Add explicit wheelhouse manifest 1.1 and runtime report 1.2 contracts for independently bound stable Python patch subjects; preserve legacy evidence and current release-role admission.

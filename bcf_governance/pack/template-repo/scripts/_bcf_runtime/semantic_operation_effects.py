@@ -529,6 +529,7 @@ def validated_operation_effect_inventory(
     reached: set[tuple[str, str]] = set()
     unresolved: set[tuple[str, str, str]] = set()
     blockers: set[tuple[str, str, str, str]] = set()
+    unbound_calls: set[tuple[str, str]] = set()
     first_failure: str | None = None
     def reject(caller: str, kind: str, identity: str, reason: str) -> None:
         nonlocal first_failure
@@ -593,7 +594,7 @@ def validated_operation_effect_inventory(
                 if failure.get("port_eligible") is not True:
                     reject(symbol, "unresolved_effect", f"{symbol}:{index}:{json.dumps(failure, sort_keys=True)}",
                            f"operation {operation['id']} contains an unresolved effect call path at {symbol}")
-        for call in function.get("calls", []):
+        for call_index, call in enumerate(function.get("calls", [])):
             if _implicit_protocol(call, symbol):
                 if require_runtime_context:
                     marker = call["implicit_protocol"]
@@ -613,6 +614,12 @@ def validated_operation_effect_inventory(
             raw = str(call.get("called_symbol", ""))
             callee = _resolve_function(raw, functions)
             identity = ("function", callee) if callee is not None else ("call", raw)
+            python_caller = (symbol.partition("::")[0].endswith(".py")
+                             or function.get("language", "python") != "typescript")
+            if python_caller and raw not in functions:
+                # A potential basename match may expand source obligations, but
+                # neither it nor a declared opaque port authenticates binding.
+                unbound_calls.add((symbol, f"{raw}:{call.get('line')}:{call.get('column')}:{call_index}"))
             hard_dispatch_failure = (
                 call.get("dispatch_resolution") == "unresolved"
                 and call.get("dispatch_port_eligible") is not True
@@ -679,6 +686,12 @@ def validated_operation_effect_inventory(
     if authority:
         for caller, target in sorted(authority_sources):
             reject(caller, "authority", target, f"operation {operation['id']} has undeclared authority effects: " + ", ".join(sorted(authority)))
+    for caller, site in sorted(unbound_calls):
+        if require_runtime_context:
+            reject(caller, "runtime_call", site,
+                   f"operation {operation['id']} contains an unresolved effect runtime call context at {caller}")
+        else:
+            unresolved.add(("unresolved", "runtime_call", caller + ":" + site))
     if first_failure is not None:
         error = SemanticOperationEffectError(first_failure)
         error.effect_obligations = tuple(sorted(blockers))
