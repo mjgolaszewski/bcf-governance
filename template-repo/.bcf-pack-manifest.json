@@ -1911,7 +1911,7 @@
     },
     "scripts/_bcf_runtime/truth_receipts.py": {
       "operation": "copy",
-      "sha256": "905fb9cf33d1d55c2353d68fd41650d245a29bee2d3c6a16d2e3954714b016c4"
+      "sha256": "7bf75b60e52646cad8ca96ab488deea5f25274f49304d9c8838fb786d209f4b7"
     },
     "scripts/_bcf_runtime/truth_reporting.py": {
       "operation": "copy",

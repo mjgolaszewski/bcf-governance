@@ -5,7 +5,6 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-import subprocess
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -71,15 +70,6 @@ class ReceiptAdmission:
         )
 
 
-def _git(repo_root: Path, *args: str, check: bool = True) -> str:
-    result = subprocess.run(
-        ["git", *args], cwd=repo_root, capture_output=True, text=True
-    )
-    if check and result.returncode != 0:
-        raise ReceiptError(result.stderr.strip() or f"git {' '.join(args)} failed")
-    return result.stdout.strip()
-
-
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -88,19 +78,21 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _changed_paths(repo_root: Path, commit_sha: object) -> list[str]:
+def _changed_paths(repo_root: Path, commit_sha: object) -> list[str] | None:
     if not isinstance(commit_sha, str) or not commit_sha:
         return []
-    comparisons = (
-        ("diff", "--name-only", commit_sha, "HEAD"),
-        ("diff", "--name-only"),
-        ("diff", "--cached", "--name-only"),
-    )
-    paths: set[str] = set()
-    for args in comparisons:
-        result = _git(repo_root, *args, check=False)
-        paths.update(line for line in result.splitlines() if line)
-    return sorted(paths)
+    from .affected_proof_closure import changed_paths
+    from .ci_graph_audit import _inert_worktree_status
+
+    try:
+        paths = changed_paths(repo_root, commit_sha)
+        state = _inert_worktree_status(repo_root)
+    except (OSError, ValueError):
+        return None
+    if paths is None:
+        return None
+    return sorted(set(paths) | state["working_versions"].keys()
+                  | state["index_versions"].keys() | set(state["untracked_paths"]))
 
 
 def _change_categories(paths: list[str]) -> list[str]:
@@ -155,6 +147,9 @@ def _subject_issues(
             if not applicable:
                 reasons.update(claim_reasons)
         paths = _changed_paths(repo_root, subject.get("commit_sha"))
+        if paths is None:
+            reasons.add("source_change_population_unavailable")
+            paths = []
         return sorted(reasons), {
             "paths": paths,
             "categories": _change_categories(paths),
@@ -187,6 +182,9 @@ def _subject_issues(
     elif binding != "tree_independent":
         issues.append("subject_binding_invalid")
     paths = _changed_paths(repo_root, subject.get("commit_sha"))
+    if paths is None:
+        issues.append("source_change_population_unavailable")
+        paths = []
     return issues, {"paths": paths, "categories": _change_categories(paths)}
 
 
