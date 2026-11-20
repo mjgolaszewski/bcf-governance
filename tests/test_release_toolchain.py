@@ -164,7 +164,7 @@ def test_closed_runtime_binds_installed_consumer_stdout_and_preserves_bootstrap_
     monkeypatch.setenv("PATH", os.environ["PATH"])
     for key in ("PYTHONPATH", "GITHUB_TOKEN", "ACTIONS_RUNTIME_TOKEN", "NODE_OPTIONS"):
         monkeypatch.setenv(key, "must-not-enter-closed-runtime")
-    monkeypatch.setattr(runtime, "verify_wheelhouse", lambda *_: SimpleNamespace(as_dict=lambda: {"status": "fixture-only"}))
+    monkeypatch.setattr(runtime, "verify_wheelhouse", lambda *_: SimpleNamespace(manifest_schema_version="1.0", python=runtime.EXPECTED_PYTHON, platform=runtime.EXPECTED_PLATFORM, as_dict=lambda: {"status": "fixture-only"}))
     monkeypatch.setattr(runtime.platform, "machine", lambda: "x86_64")
     monkeypatch.setattr(runtime.subprocess, "run", lambda argv, **kwargs: subprocess.CompletedProcess(argv, 0, runtime.EXPECTED_PYTHON + "\n", ""))
     extracted = []
@@ -228,7 +228,7 @@ def test_graph_installs_test_node_only_in_existing_candidate_execution_jobs() ->
     graph = yaml.safe_load((ROOT / "governance/ci-graph.yml").read_text())
     release = yaml.safe_load((ROOT / "governance/ci-extensions/bcf-release.yml").read_text())
     setup = graph["step_components"]["setup-test-node"]
-    assert setup["action"] == "setup-node" and setup["with"] == {"node-version": "22.23.2", "package-manager-cache": False}
+    assert setup["action"] == "setup-node" and setup["with"] == {"node-version": "22.23.5", "package-manager-cache": False}
     execution_components = set(setup["precedes_exactly_one_of"])
     jobs = [job for owner in (graph, release) for workflow in owner["workflows"] for job in workflow["jobs"]]
     admitted = []
