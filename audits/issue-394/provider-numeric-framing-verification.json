@@ -1,0 +1,179 @@
+{
+  "authority": false,
+  "runtime_context_qualified": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "contract_commit": "0ba9c902b8c229e5ec85c0d3063597bc0857fc0f",
+  "implementation_subject": "685cc7489bc9efc03aefa110427c70a3d2c94c15",
+  "test_tree": "5db372c2b39f74d2f5b2350822c160210f037227",
+  "before": {
+    "tests": 32,
+    "failures": 20,
+    "errors": 0,
+    "skipped": 0
+  },
+  "before_dispositions": [
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[+5]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[-5]",
+      "outcome": "native_refusal_before_new_guard"
+    },
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[0x5]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[5_0]",
+      "outcome": "native_refusal_before_new_guard"
+    },
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[ 5]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[5 ]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_chunk_integer_cannot_be_consumed[\\xb2]",
+      "outcome": "native_refusal_before_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[+5]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[-5]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[0x5]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[5_0]",
+      "outcome": "native_refusal_before_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[5 0]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_malformed_content_length_rejects_before_body_read[\\xb2]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_duplicate_or_unsupported_transfer_framing_cannot_be_consumed[Content-Length: 5\\r\\nContent-Length: 5\\r\\n]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_duplicate_or_unsupported_transfer_framing_cannot_be_consumed[Content-Length: 5\\r\\nTransfer-Encoding: chunked\\r\\n]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_duplicate_or_unsupported_transfer_framing_cannot_be_consumed[Transfer-Encoding: gzip, chunked\\r\\n]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_duplicate_or_unsupported_transfer_framing_cannot_be_consumed[Transfer-Encoding: chunked\\r\\nTransfer-Encoding: chunked\\r\\n]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nContent-Length: 5\\r\\n\\r\\nhello-None]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nContent-Length: 5\\r\\n\\r\\nhello-1]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nContent-Length: 5\\r\\n\\r\\nhello-3]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nContent-Length: 5 \\t\\r\\n\\r\\nhello-None]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nContent-Length: 5 \\t\\r\\n\\r\\nhello-1]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nContent-Length: 5 \\t\\r\\n\\r\\nhello-3]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nTransfer-Encoding: Chunked\\r\\n\\r\\n2;x=y\\r\\nhe\\r\\n3\\r\\nllo\\r\\n000\\r\\nTrailer: retained-semantics\\r\\n\\r\\n-None]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nTransfer-Encoding: Chunked\\r\\n\\r\\n2;x=y\\r\\nhe\\r\\n3\\r\\nllo\\r\\n000\\r\\nTrailer: retained-semantics\\r\\n\\r\\n-1]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\nTransfer-Encoding: Chunked\\r\\n\\r\\n2;x=y\\r\\nhe\\r\\n3\\r\\nllo\\r\\n000\\r\\nTrailer: retained-semantics\\r\\n\\r\\n-3]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\n\\r\\nhello-None]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\n\\r\\nhello-1]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_valid_body_ows_extensions_trailers_and_partial_reads_preserve_behavior[HTTP/1.1 200 OK\\r\\n\\r\\nhello-3]",
+      "outcome": "valid_behavior_preserved"
+    },
+    {
+      "case": "test_invalid_body_framing_is_not_retried_even_after_possible_mutation[GET]",
+      "outcome": "accepted_without_new_guard"
+    },
+    {
+      "case": "test_invalid_body_framing_is_not_retried_even_after_possible_mutation[POST]",
+      "outcome": "accepted_without_new_guard"
+    }
+  ],
+  "source": {
+    "tests": 147,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "b4b56055ddd0c8dfbb07d01728fbb551af0366ccf27b7962d3c410444e0c9fa8",
+    "source": "68a2ae792d4078d92cc148f5ea0c03f52f3ecfef19c27a5842eb77db1b19273b",
+    "installed": "9a0a7ba4d69732c4b8ebff6d02d23c4c2d407a2b56c02e013ef908fcc693e075",
+    "architecture": "65944068de08cd2f9112b7908eb640f01776fe3af94dc83bd74dae5ffc1276a1"
+  },
+  "source_sha256": "f40d7c1885c8931262539b869e190ad3a91bed8ccfac2ef7d4ec9127323d3fae",
+  "required_semantic": {
+    "executed_for_this_slice": false,
+    "retained_prior": "Required CLI runtime-context qualifier absent; no current semantic-green claim",
+    "reference": "audits/issue-394/runtime-effect-context-foundation-contract.yml"
+  },
+  "scope": "Existing response owner validates numeric headers and chunk sizes on actual SocketIO/HTTPResponse before body data, preserving valid OWS/extensions/trailers/partial reads, finite BytesIO and original absolute/inactivity deadlines. GET/POST malformed-body control permits exactly one opener call. No stdlib class patch or version waiver.",
+  "limits": "Application-level framing hardening only. No Python/vendor runtime-security or complete HTTP, header-setup, cleanup, memory/resource, runtime-context or provider authority claim. Original native/vendor vulnerabilities remain open; P32 active, P33-P35 dormant and82whole open.",
+  "governance_returncode": 1,
+  "governance_stderr_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+}

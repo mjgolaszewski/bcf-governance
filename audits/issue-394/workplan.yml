@@ -304,6 +304,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/provider-numeric-framing-verification.json
     - audits/issue-394/native-sbom-capture-verification.json
     - audits/issue-394/native-archive-subject-verification.json
     - audits/issue-394/native-scan-stdin-verification.json
@@ -481,6 +482,7 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/provider-numeric-framing-verification.json
     - tests/test_installed_provider_error_retirement_siblings.py
     - audits/issue-394/provider-response-error-retirement-siblings-contract.json
     - audits/issue-394/preflight-repository-context-custody-verification.json
