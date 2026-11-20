@@ -1,0 +1,60 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "implementation_complete": true,
+  "scope": "Existing splinter proof producer and independently reparsed JUnit reuse/aggregate consumers",
+  "contract_commit": "99d6a3a22b64ed0b7d0d177f74887e16ad9766a9",
+  "installed_control_commit": "aa07e2b852be18b9bd8a492ee019e55c52c7805a",
+  "test_subject": "f66f2919b9a68cff1596a72d3cf4c7657004d74e",
+  "test_tree": "12a6957f04cf7dbbc89edb130771865bffb9ca2e",
+  "before": {
+    "tests": 27,
+    "failures": 26,
+    "errors": 0,
+    "skipped": 0
+  },
+  "source_after": {
+    "tests": 201,
+    "failures": 1,
+    "errors": 0,
+    "skipped": 0
+  },
+  "installed": {
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "architecture": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "77268e45e69be7e29cc5e753aa5bd0022558d3715321d2e671d2191734e69020",
+    "source": "95c703584794be66637275481edf0fe1c5545a0f22fbde203fe46ba400427b3c",
+    "installed": "75ce7891ec06992222da8636a3b87ccb67d43e69aa26cb56442a9565287c702b",
+    "architecture": "823e5b7cbef449eb92eb8851313f4e6af38637301af8d0d1109ec1067548d1aa"
+  },
+  "source_sha256": {
+    "test_splinter_proofs.py": "8db892827ffe3d2f1d64dff5e779429baef6a2cf2dcb28b708bcd5806ddd49fe",
+    "evidence_test_adapters.py": "c01e642c77ab1c6f53272566e883ac94fd36881de3fd4b16a06d8076af4cc2ed"
+  },
+  "limits": "Self-consistency and raw successful cases do not authenticate provider subject/toolchain/policy authority. Existing protected inventory provenance and immutable context custody remain required. No dormant capability activated.",
+  "governance_control_residual": {
+    "node_id": "tests.test_governance_evidence::test_governance_validation_controls_preserve_their_declared_failure_causes",
+    "diagnostic_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f",
+    "prior_diagnostic_sha256": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f",
+    "scope": "Raw required gate failure byte-identical to prior Node workflow drift; this test remains failed"
+  },
+  "runtime_context_qualified": false,
+  "remaining": "Whole runtime contexts and complete lifecycle/distribution/shadow/custody qualification, approved performance targets and canonical Node workflow projection; all82whole open",
+  "governance_status": "blocked_by_pending_Node_graph_workflow_projection",
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}
