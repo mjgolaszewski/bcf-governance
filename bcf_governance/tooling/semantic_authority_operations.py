@@ -108,6 +108,59 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
             self.nodes.append(node)
             self.generic_visit(node)
 
+    class Stores(Calls):
+        def visit_FunctionDef(self, node):  # noqa: N802
+            if node is self.root:
+                for statement in node.body:
+                    self.visit(statement)
+            else:
+                super().visit_FunctionDef(node)
+
+        visit_AsyncFunctionDef = visit_FunctionDef
+
+        def visit_Subscript(self, node):  # noqa: N802
+            if isinstance(node.ctx, (ast.Store, ast.Del)):
+                self.nodes.append(node)
+            self.generic_visit(node)
+
+        visit_Attribute = visit_Subscript
+
+        def visit_Call(self, node):  # noqa: N802
+            self.generic_visit(node)
+
+    def reconcile_stores(context, symbol, postponed):
+        def store_reject():
+            raise SemanticAuthorityError("Python source store coverage contradicts exact source")
+
+        visitor = Stores(context["function"], postponed)
+        visitor.visit(context["function"])
+        expected = []
+        occurrences = Counter()
+        for node in visitor.nodes:
+            digest = hashlib.sha256(ast.dump(node, include_attributes=False).encode()).hexdigest()
+            occurrence = occurrences[digest]
+            occurrences[digest] += 1
+            kind = ("subscript" if isinstance(node, ast.Subscript) else "attribute")
+            kind += "_delete" if isinstance(node.ctx, ast.Del) else "_store"
+            expected.append((symbol, kind, digest, occurrence,
+                node.lineno, node.col_offset, node.end_lineno, node.end_col_offset))
+        actual = []
+        rows = functions[symbol].get("source_store_observations", [])
+        if not isinstance(rows, list):
+            store_reject()
+        for row in rows:
+            if not isinstance(row, dict):
+                store_reject()
+            span = tuple(row.get(field) for field in fields)
+            if any(type(value) is not int for value in (*span, row.get("occurrence"))):
+                store_reject()
+            values = tuple(row.get(key) for key in ("caller", "kind", "expression_sha256"))
+            if any(type(value) is not str for value in values):
+                store_reject()
+            actual.append((*values, row["occurrence"], *span))
+        if Counter(actual) != Counter(expected):
+            store_reject()
+
     fields = ("line", "column", "end_line", "end_column")
     for relative, sha in files.items():
         path = repo_root / relative
@@ -132,6 +185,7 @@ def _validate_python_call_source_coverage(repo_root, inventory, functions, sourc
             if symbol in expected_functions or symbol not in functions:
                 reject()
             expected_functions.add(symbol)
+            reconcile_stores(context, symbol, postponed)
             visitor = Calls(context["function"], postponed)
             visitor.visit(context["function"])
             expected = {(node.lineno, node.col_offset, node.end_lineno, node.end_col_offset): node
