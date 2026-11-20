@@ -23,7 +23,8 @@ from .semantic_python_method_identity import (
 
 
 from .semantic_ownership_protocols import (
-    _native_literal_value, IMPLICIT_PROTOCOL_KIND_VERSIONS, implicit_runtime_protocols,
+    _native_literal_value, _native_protocol_value, boolean_result_sites,
+    IMPLICIT_PROTOCOL_KIND_VERSIONS, implicit_runtime_protocols,
 )
 
 
@@ -189,6 +190,7 @@ class _FunctionVisitor(ast.NodeVisitor):
         self._track_global_stores = False
         self._track_operation_stores = False
         self._native_region = _closed_native_region(function)
+        self._boolean_results = boolean_result_sites(function)
         self._parent_scalar_cells = set(_closed_owned_scalar_cells(lexical_parent_function) or ()) if (
             lexical_parent_function is not None and any(child is function for child in lexical_parent_function.body)
         ) else set()
@@ -270,7 +272,7 @@ class _FunctionVisitor(ast.NodeVisitor):
             native = self._native_region or set()
             if isinstance(node, ast.AugAssign):
                 native = native | self._parent_scalar_cells
-            for kind in implicit_runtime_protocols(node, native, self._call_target_attributes):
+            for kind in implicit_runtime_protocols(node, native, self._call_target_attributes, self._boolean_results):
                 self._record_implicit_protocol(node.iter if isinstance(node, ast.comprehension) else node, kind)
             if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp)):
                 bound = set(native)
@@ -281,7 +283,7 @@ class _FunctionVisitor(ast.NodeVisitor):
                     if closed:
                         bound.update(targets)
                     for guard in generator.ifs:
-                        if not _native_literal_value(guard, bound):
+                        if not _native_protocol_value(guard, bound, self._boolean_results):
                             self._record_implicit_protocol(guard, "truth")
         return super().visit(node)
 

@@ -33,15 +33,62 @@ def _native_literal_value(node: ast.AST, names: set[str]) -> bool:
     return False
 
 
+def boolean_result_sites(function: ast.FunctionDef | ast.AsyncFunctionDef) -> frozenset[int]:
+    """Bind result facts to a closed supported frame, never expression purity."""
+    expressions = {ast.Constant, ast.UnaryOp, ast.Compare, ast.BoolOp, ast.Dict,
+        ast.List, ast.Set, ast.Tuple, ast.IfExp, ast.Subscript, ast.Slice,
+        ast.Attribute, ast.BinOp, ast.Load, ast.Return, ast.If, ast.Expr, ast.Pass,
+        ast.And, ast.Or, ast.Not, ast.UAdd, ast.USub, ast.Invert, ast.Is, ast.IsNot,
+        ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.In, ast.NotIn,
+        ast.Add, ast.Sub, ast.Mult, ast.MatMult, ast.Div, ast.FloorDiv, ast.Mod,
+        ast.Pow, ast.LShift, ast.RShift, ast.BitOr, ast.BitXor, ast.BitAnd}
+    args = function.args
+    parameters = {arg.arg for arg in [*args.posonlyargs, *args.args, *args.kwonlyargs,
+        *([args.vararg] if args.vararg else []), *([args.kwarg] if args.kwarg else [])]}
+
+    def supported(node: ast.AST, bound: set[str]) -> bool:
+        if isinstance(node, ast.Name):
+            return isinstance(node.ctx, ast.Load) and node.id in bound
+        if isinstance(node, (ast.ListComp, ast.SetComp, ast.DictComp)):
+            local = set(bound)
+            for generator in node.generators:
+                if (generator.is_async or not supported(generator.iter, local)
+                        or not isinstance(generator.target, ast.Name)):
+                    return False
+                local.add(generator.target.id)
+                if not all(supported(guard, local) for guard in generator.ifs):
+                    return False
+            values = [node.key, node.value] if isinstance(node, ast.DictComp) else [node.elt]
+            return all(supported(value, local) for value in values)
+        return type(node) in expressions and all(supported(child, bound) for child in ast.iter_child_nodes(node))
+
+    if not isinstance(function, ast.FunctionDef) or not all(supported(node, parameters) for node in function.body):
+        return frozenset()
+    return frozenset(id(node) for statement in function.body for node in ast.walk(statement)
+        if (isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not))
+        or (isinstance(node, ast.Compare) and node.ops
+            and all(isinstance(operator, (ast.Is, ast.IsNot)) for operator in node.ops)))
+
+
+def _native_protocol_value(node: ast.AST, names: set[str], boolean_results: frozenset[int]) -> bool:
+    """Result consumption may be native while evaluating its operands is not."""
+    if id(node) in boolean_results:
+        return True
+    if isinstance(node, ast.BoolOp):
+        return all(_native_protocol_value(value, names, boolean_results) for value in node.values)
+    return _native_literal_value(node, names)
+
+
 # Version 1.1 adds explicit suspension/exception observations; legacy kinds stay 1.0.
 IMPLICIT_PROTOCOL_KIND_VERSIONS = {"await": "1.1", "exception": "1.1", "pattern_match": "1.1"}
 
 
 def implicit_runtime_protocols(
     node: ast.AST, native: set[str], call_targets: set[int],
+    boolean_results: frozenset[int] = frozenset(),
 ) -> tuple[str, ...]:
     """Retain unknown runtime dispatch in the existing source call population."""
-    known = lambda value: _native_literal_value(value, native)
+    known = lambda value: _native_protocol_value(value, native, boolean_results)
     if isinstance(node, ast.Match):
         patterns = (ast.MatchValue, ast.MatchSequence, ast.MatchMapping, ast.MatchClass)
         active = any(any(isinstance(value, patterns) for value in ast.walk(case.pattern))
@@ -64,7 +111,7 @@ def implicit_runtime_protocols(
                 return ("collection",)
             bound.update(value.id for value in ast.walk(generator.target) if isinstance(value, ast.Name))
         key = node.key if isinstance(node, ast.DictComp) else node.elt
-        return () if _native_literal_value(key, bound) else ("collection",)
+        return () if _native_protocol_value(key, bound, boolean_results) else ("collection",)
     if isinstance(node, ast.comprehension):
         return ("iteration",) if node.is_async or not known(node.iter) else ()
     if isinstance(node, (ast.For, ast.AsyncFor)):

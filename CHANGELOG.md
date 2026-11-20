@@ -6,6 +6,8 @@ All notable changes to BCF Governance are recorded here. This file follows
 
 ## [Unreleased]
 
+- Distinguish guaranteed boolean result consumption from operand effects in supported Python frames; retain strict unknown callbacks and unchanged store ownership.
+
 - Add explicit wheelhouse manifest 1.1 and runtime report 1.2 contracts for independently bound stable Python patch subjects; preserve legacy evidence and current release-role admission.
 
 - Reject unsupported or malformed mandatory workitem predicates instead of silently dropping their dependency obligations.
