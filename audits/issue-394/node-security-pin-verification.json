@@ -1,0 +1,40 @@
+{
+  "authority": false,
+  "execution_qualified": false,
+  "completeness_qualified": false,
+  "whole_requirement_advancement": false,
+  "scope": "Isolated Node pin and exact offline test-toolchain behavior",
+  "contract_commit": "2d34e30d3c56ca12b351e9a96372c2f2b9e1d8e9",
+  "test_subject": "faac66dc3715b6aa2f726375b059c221193eb3cd",
+  "before": {
+    "tests": 3,
+    "failures": 3,
+    "errors": 0,
+    "skipped": 0
+  },
+  "after": {
+    "tests": 42,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "junit_sha256": {
+    "before": "216eafa8ee4fe599ddc9a670dc8193a8b574b3f1a2a0f2ac75595c150c5461d6",
+    "after": "48ac04926972ccefc93e4c9b22329635270d9bff31c945ad5e7e675b55e96327"
+  },
+  "canonical_reconciliation_returncode": 1,
+  "canonical_projection_complete": false,
+  "known_preexisting_toolchain_lint_findings": 21,
+  "current_runtime_security_qualified": false,
+  "remaining": "Canonical projection must converge before submission; complete runtime/dependency/image security and existing17runtime-context residuals/all82whole remain open",
+  "canonical_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "dfd3f717682f2d91b7ee666953b9dadc8233a07af74a4020c48084a3a5e8ea56"
+  },
+  "orchestration_history": "Initial controller lacked jsonschema; retried through qualified test controller with canonical project-environment derivation. Existing21lint findings unchanged from8042. Exact42PASS reused.",
+  "governance_returncode": 1,
+  "governance_log_sha256": {
+    "stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr": "d59f818a42cdf08ae490dbb2e62e2bc9e6116fcae67c14393067e09e64d2df3f"
+  }
+}

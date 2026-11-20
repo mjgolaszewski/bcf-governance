@@ -1,0 +1,547 @@
+{
+  "authority": false,
+  "security_qualified": false,
+  "whole_requirement_advancement": false,
+  "release_runtime_selected": null,
+  "scope": "Preliminary exact candidate observations; findings unresolved pending authenticated applicability review",
+  "candidates": [
+    {
+      "capture_sha256": "623699cc8fc5c9c283eccc9778ad11389c6fb361c7a5ce037a20074dcddf2daf",
+      "observation": {
+        "authority": false,
+        "security_qualified": false,
+        "release_runtime_selected": false,
+        "image_id": "sha256:bb1b750b8616cf54158db2174e39ac43f32b88b3649633f930fa6de470252a38",
+        "archive_sha256": "376dd553e419836a443aa61cab48f3419092ddbc506b05ae6d5ba1fbe30555ef",
+        "runtime": {
+          "python": "3.14.10 (heads/3.14-dirty:20cd67d6c16, Nov 18 2026, 02:51:34) [GCC 16.2.0]",
+          "openssl": "OpenSSL 4.0.3 29 Sep 2026",
+          "socket": {
+            "host": {
+              "rejected": true,
+              "error": "ValueError"
+            },
+            "port": {
+              "rejected": true,
+              "error": "ValueError"
+            }
+          },
+          "http_framing": {
+            "-1": {
+              "rejected": true,
+              "error": "IncompleteRead"
+            },
+            "+1": {
+              "rejected": false
+            },
+            "0x1": {
+              "rejected": false
+            }
+          },
+          "http_source_sha256": "20f48d754327e291577c962b9d530ae1a640aac5192b4aec5dbfe4d3a079e305",
+          "security_qualified": false
+        },
+        "apk_inventory_count": 36,
+        "exact_apk_inventory_in_sbom": true,
+        "syft_version": "1.57.2",
+        "sbom_sha256": "5091c66dd621433edd56b6c770ca13555208a3a9cb190d5bfe4df66ac06fda6e",
+        "grype_version": "0.122.1",
+        "scan_sha256": "c66e8f10f23f882105fd77f1f20a183c6203cbdb0928cd03102e9208873cc5ca",
+        "scan_returncode": 0,
+        "database": {
+          "status": {
+            "schemaVersion": "v6.1.10",
+            "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-11-19T00:22:15Z_1795113665.tar.zst?checksum=sha256%3A757eb920ea050a3b9d145ced71649be659539140a173d159f88eb8afa900e2e4",
+            "built": "2026-11-19T18:41:05Z",
+            "valid": true
+          },
+          "providers": {
+            "alma": {
+              "captured": "2026-11-19T00:23:03Z",
+              "input": "xxh64:58205bb7325e4114"
+            },
+            "alpine": {
+              "captured": "2026-11-19T00:22:28Z",
+              "input": "xxh64:f9eb69d68a001f97"
+            },
+            "amazon": {
+              "captured": "2026-11-19T16:10:30Z",
+              "input": "xxh64:a9dab4d8f3875e40"
+            },
+            "arch": {
+              "captured": "2026-11-19T00:22:20Z",
+              "input": "xxh64:255dc187389c2bb2"
+            },
+            "bitnami": {
+              "captured": "2026-11-19T00:22:26Z",
+              "input": "xxh64:1305139372f929b6"
+            },
+            "chainguard": {
+              "captured": "2026-11-19T00:22:33Z",
+              "input": "xxh64:2d22224b0f92469d"
+            },
+            "chainguard-libraries": {
+              "captured": "2026-11-19T00:22:25Z",
+              "input": "xxh64:4a9f2aaa56a7ac56"
+            },
+            "debian": {
+              "captured": "2026-11-19T00:23:02Z",
+              "input": "xxh64:45146319e2f95668"
+            },
+            "dhi": {
+              "captured": "2026-11-19T00:22:36Z",
+              "input": "xxh64:a0c84c1a534c37c0"
+            },
+            "echo": {
+              "captured": "2026-11-19T00:22:53Z",
+              "input": "xxh64:c1d1e42c78f5d25b"
+            },
+            "eol": {
+              "captured": "2026-11-19T00:22:15Z",
+              "input": "xxh64:9613814a73238359"
+            },
+            "epss": {
+              "captured": "2026-11-19T00:22:28Z",
+              "input": "xxh64:4815df72e1521107"
+            },
+            "fedora": {
+              "captured": "2026-11-19T16:10:30Z",
+              "input": "xxh64:4bead1e57d644817"
+            },
+            "github": {
+              "captured": "2026-11-19T18:33:58Z",
+              "input": "xxh64:9dca5f51188df5e3"
+            },
+            "govulndb": {
+              "captured": "2026-11-19T00:22:26Z",
+              "input": "xxh64:3dc2e250f0f86d91"
+            },
+            "hummingbird": {
+              "captured": "2026-11-19T00:24:15Z",
+              "input": "xxh64:a0e26b96324ff59a"
+            },
+            "kev": {
+              "captured": "2026-11-19T00:22:22Z",
+              "input": "xxh64:feef86bafdd41ea9"
+            },
+            "mariner": {
+              "captured": "2026-11-19T00:22:22Z",
+              "input": "xxh64:120d1736c778f0ea"
+            },
+            "minimos": {
+              "captured": "2026-11-19T00:22:19Z",
+              "input": "xxh64:168559a20c73a41d"
+            },
+            "nvd": {
+              "captured": "2026-11-19T16:12:27Z",
+              "input": "xxh64:cfc04a1076805ed5"
+            },
+            "oracle": {
+              "captured": "2026-11-19T00:22:33Z",
+              "input": "xxh64:7cdd6136b09b5739"
+            },
+            "photon": {
+              "captured": "2026-11-19T00:22:29Z",
+              "input": "xxh64:233509a28d61ef2d"
+            },
+            "rhel": {
+              "captured": "2026-11-19T16:12:32Z",
+              "input": "xxh64:98769e7e64bc924a"
+            },
+            "secureos": {
+              "captured": "2026-11-19T00:22:19Z",
+              "input": "xxh64:55f548623ad82a0f"
+            },
+            "sles": {
+              "captured": "2026-11-19T00:23:46Z",
+              "input": "xxh64:a9d5879a0b0df33a"
+            },
+            "ubuntu": {
+              "captured": "2026-11-19T00:22:54Z",
+              "input": "xxh64:a0a00a209a0a8694"
+            },
+            "wolfi": {
+              "captured": "2026-11-19T00:22:21Z",
+              "input": "xxh64:621b2803808064ee"
+            }
+          }
+        },
+        "matches": [
+          {
+            "id": "CVE-2026-84243",
+            "severity": "High",
+            "name": "glibc-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "CVE-2026-84243",
+            "severity": "High",
+            "name": "glibc-2.44-locale-posix",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "CVE-2026-84243",
+            "severity": "High",
+            "name": "ld-linux-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "CVE-2026-84243",
+            "severity": "High",
+            "name": "libcrypt1-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "CVE-2026-124249",
+            "severity": "Medium",
+            "name": "python-3.14",
+            "version": "3.14.10_git20261118-r0"
+          },
+          {
+            "id": "CVE-2026-115819",
+            "severity": "Medium",
+            "name": "glibc-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "CVE-2026-100290",
+            "severity": "Low",
+            "name": "glibc-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "CVE-2026-115559",
+            "severity": "Medium",
+            "name": "python-3.14",
+            "version": "3.14.10_git20261118-r0"
+          },
+          {
+            "id": "CVE-2026-103995",
+            "severity": "Low",
+            "name": "python-3.14",
+            "version": "3.14.10_git20261118-r0"
+          },
+          {
+            "id": "CVE-2026-115791",
+            "severity": "Medium",
+            "name": "python-3.14",
+            "version": "3.14.10_git20261118-r0"
+          },
+          {
+            "id": "CVE-2026-16052",
+            "severity": "Low",
+            "name": "python-3.14",
+            "version": "3.14.10_git20261118-r0"
+          },
+          {
+            "id": "CVE-2026-19552",
+            "severity": "Negligible",
+            "name": "python-3.14",
+            "version": "3.14.10_git20261118-r0"
+          },
+          {
+            "id": "GHSA-8rvm-662m-jvqv",
+            "severity": "Unknown",
+            "name": "glibc-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "GHSA-8rvm-662m-jvqv",
+            "severity": "Unknown",
+            "name": "glibc-2.44-locale-posix",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "GHSA-8rvm-662m-jvqv",
+            "severity": "Unknown",
+            "name": "ld-linux-2.44",
+            "version": "2.44-r14"
+          },
+          {
+            "id": "GHSA-8rvm-662m-jvqv",
+            "severity": "Unknown",
+            "name": "libcrypt1-2.44",
+            "version": "2.44-r14"
+          }
+        ],
+        "ignored_matches": [],
+        "known_negative_control": "Actual HTTP +1/0x1 framing remains accepted contrary to upstream CVE-2026-103995 regression tests",
+        "remaining": "Resolve every advisory against exact vendor bytes and qualify a genuinely patched runtime; no clean claim from scanner count alone"
+      }
+    },
+    {
+      "capture_sha256": "c487a7d1a2eda6fa1bf129f9b670391a5b38b552b66900c3ece6a3701320bf48",
+      "observation": {
+        "authority": false,
+        "security_qualified": false,
+        "release_runtime_selected": false,
+        "scope": "preliminary vendor candidate screen",
+        "reference": "registry.access.redhat.com/hi/python:3.14",
+        "image_metadata": {
+          "userInput": "registry.access.redhat.com/hi/python:3.14",
+          "id": null,
+          "manifestDigest": "sha256:525cc0c2e1f921abd3712f99cd86b03bbaf3d353b152945f1a69283817231a71",
+          "repoDigests": [
+            "registry.access.redhat.com/hi/python@sha256:1ac4921724237d985a35cc23bbcd779fd5b984089e039182bf8e22cd108490d6"
+          ],
+          "architecture": "amd64",
+          "os": "linux"
+        },
+        "component_count": 50,
+        "python_components": [
+          {
+            "name": "python-pip-wheel",
+            "version": "26.2-0.2.hum1",
+            "type": "rpm",
+            "purl": "pkg:rpm/redhat/python-pip-wheel@26.2-0.2.hum1?arch=noarch&distro=hummingbird-20251124&upstream=python-pip-26.2-0.2.hum1.src.rpm"
+          },
+          {
+            "name": "python-unversioned-command",
+            "version": "3.14.10-1.5.hum1",
+            "type": "rpm",
+            "purl": "pkg:rpm/redhat/python-unversioned-command@3.14.10-1.5.hum1?arch=noarch&distro=hummingbird-20251124&upstream=python3.14-3.14.10-1.5.hum1.src.rpm"
+          },
+          {
+            "name": "python3",
+            "version": "3.14.10-1.5.hum1",
+            "type": "rpm",
+            "purl": "pkg:rpm/redhat/python3@3.14.10-1.5.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=python3.14-3.14.10-1.5.hum1.src.rpm"
+          },
+          {
+            "name": "python3-libs",
+            "version": "3.14.10-1.5.hum1",
+            "type": "rpm",
+            "purl": "pkg:rpm/redhat/python3-libs@3.14.10-1.5.hum1?arch=x86_64&distro=hummingbird-20251124&upstream=python3.14-3.14.10-1.5.hum1.src.rpm"
+          },
+          {
+            "name": "python3-pip",
+            "version": "26.2-0.2.hum1",
+            "type": "rpm",
+            "purl": "pkg:rpm/redhat/python3-pip@26.2-0.2.hum1?arch=noarch&distro=hummingbird-20251124&upstream=python-pip-26.2-0.2.hum1.src.rpm"
+          }
+        ],
+        "sbom_sha256": "6e4fd7c87f333f6bd2c1147bc5541e1f7684efe89e1e78592d9a8807aab3d2ff",
+        "scan_sha256": "2f05f43a3b94d172b62d34815ea0d6c82091ddabf33c94ee5fc977ad3162b3a7",
+        "database": {
+          "status": {
+            "schemaVersion": "v6.1.10",
+            "from": "https://grype.anchore.io/databases/v6/vulnerability-db_v6.1.10_2026-11-19T00:22:15Z_1795113665.tar.zst?checksum=sha256%3A757eb920ea050a3b9d145ced71649be659539140a173d159f88eb8afa900e2e4",
+            "built": "2026-11-19T18:41:05Z",
+            "valid": true
+          },
+          "providers": {
+            "alma": {
+              "captured": "2026-11-19T00:23:03Z",
+              "input": "xxh64:58205bb7325e4114"
+            },
+            "alpine": {
+              "captured": "2026-11-19T00:22:28Z",
+              "input": "xxh64:f9eb69d68a001f97"
+            },
+            "amazon": {
+              "captured": "2026-11-19T16:10:30Z",
+              "input": "xxh64:a9dab4d8f3875e40"
+            },
+            "arch": {
+              "captured": "2026-11-19T00:22:20Z",
+              "input": "xxh64:255dc187389c2bb2"
+            },
+            "bitnami": {
+              "captured": "2026-11-19T00:22:26Z",
+              "input": "xxh64:1305139372f929b6"
+            },
+            "chainguard": {
+              "captured": "2026-11-19T00:22:33Z",
+              "input": "xxh64:2d22224b0f92469d"
+            },
+            "chainguard-libraries": {
+              "captured": "2026-11-19T00:22:25Z",
+              "input": "xxh64:4a9f2aaa56a7ac56"
+            },
+            "debian": {
+              "captured": "2026-11-19T00:23:02Z",
+              "input": "xxh64:45146319e2f95668"
+            },
+            "dhi": {
+              "captured": "2026-11-19T00:22:36Z",
+              "input": "xxh64:a0c84c1a534c37c0"
+            },
+            "echo": {
+              "captured": "2026-11-19T00:22:53Z",
+              "input": "xxh64:c1d1e42c78f5d25b"
+            },
+            "eol": {
+              "captured": "2026-11-19T00:22:15Z",
+              "input": "xxh64:9613814a73238359"
+            },
+            "epss": {
+              "captured": "2026-11-19T00:22:28Z",
+              "input": "xxh64:4815df72e1521107"
+            },
+            "fedora": {
+              "captured": "2026-11-19T16:10:30Z",
+              "input": "xxh64:4bead1e57d644817"
+            },
+            "github": {
+              "captured": "2026-11-19T18:33:58Z",
+              "input": "xxh64:9dca5f51188df5e3"
+            },
+            "govulndb": {
+              "captured": "2026-11-19T00:22:26Z",
+              "input": "xxh64:3dc2e250f0f86d91"
+            },
+            "hummingbird": {
+              "captured": "2026-11-19T00:24:15Z",
+              "input": "xxh64:a0e26b96324ff59a"
+            },
+            "kev": {
+              "captured": "2026-11-19T00:22:22Z",
+              "input": "xxh64:feef86bafdd41ea9"
+            },
+            "mariner": {
+              "captured": "2026-11-19T00:22:22Z",
+              "input": "xxh64:120d1736c778f0ea"
+            },
+            "minimos": {
+              "captured": "2026-11-19T00:22:19Z",
+              "input": "xxh64:168559a20c73a41d"
+            },
+            "nvd": {
+              "captured": "2026-11-19T16:12:27Z",
+              "input": "xxh64:cfc04a1076805ed5"
+            },
+            "oracle": {
+              "captured": "2026-11-19T00:22:33Z",
+              "input": "xxh64:7cdd6136b09b5739"
+            },
+            "photon": {
+              "captured": "2026-11-19T00:22:29Z",
+              "input": "xxh64:233509a28d61ef2d"
+            },
+            "rhel": {
+              "captured": "2026-11-19T16:12:32Z",
+              "input": "xxh64:98769e7e64bc924a"
+            },
+            "secureos": {
+              "captured": "2026-11-19T00:22:19Z",
+              "input": "xxh64:55f548623ad82a0f"
+            },
+            "sles": {
+              "captured": "2026-11-19T00:23:46Z",
+              "input": "xxh64:a9d5879a0b0df33a"
+            },
+            "ubuntu": {
+              "captured": "2026-11-19T00:22:54Z",
+              "input": "xxh64:a0a00a209a0a8694"
+            },
+            "wolfi": {
+              "captured": "2026-11-19T00:22:21Z",
+              "input": "xxh64:621b2803808064ee"
+            }
+          }
+        },
+        "matches": [
+          {
+            "id": "CVE-2026-119586",
+            "severity": "High",
+            "name": "sqlite-libs",
+            "version": "3.54.1-1.hum1"
+          },
+          {
+            "id": "CVE-2025-12781",
+            "severity": "Medium",
+            "name": "python-unversioned-command",
+            "version": "3.14.10-1.5.hum1"
+          },
+          {
+            "id": "CVE-2025-12781",
+            "severity": "Medium",
+            "name": "python3",
+            "version": "3.14.10-1.5.hum1"
+          },
+          {
+            "id": "CVE-2025-12781",
+            "severity": "Medium",
+            "name": "python3-libs",
+            "version": "3.14.10-1.5.hum1"
+          },
+          {
+            "id": "CVE-2026-107496",
+            "severity": "Medium",
+            "name": "openssl-fips-provider-upstream",
+            "version": "1:3.5.9-0.4.hum1"
+          },
+          {
+            "id": "CVE-2026-107496",
+            "severity": "Medium",
+            "name": "openssl-libs",
+            "version": "1:3.5.9-0.4.hum1"
+          },
+          {
+            "id": "CVE-2026-95691",
+            "severity": "Medium",
+            "name": "openssl-fips-provider-upstream",
+            "version": "1:3.5.9-0.4.hum1"
+          },
+          {
+            "id": "CVE-2026-95691",
+            "severity": "Medium",
+            "name": "openssl-libs",
+            "version": "1:3.5.9-0.4.hum1"
+          },
+          {
+            "id": "CVE-2026-53615",
+            "severity": "High",
+            "name": "libuuid",
+            "version": "2.42.4-2.1.hum1"
+          },
+          {
+            "id": "CVE-2026-115819",
+            "severity": "Medium",
+            "name": "glibc",
+            "version": "2.43-9.3.hum1"
+          },
+          {
+            "id": "CVE-2026-115819",
+            "severity": "Medium",
+            "name": "glibc-common",
+            "version": "2.43-9.3.hum1"
+          },
+          {
+            "id": "CVE-2026-115819",
+            "severity": "Medium",
+            "name": "glibc-minimal-langpack",
+            "version": "2.43-9.3.hum1"
+          },
+          {
+            "id": "CVE-2026-100290",
+            "severity": "Low",
+            "name": "glibc",
+            "version": "2.43-9.3.hum1"
+          },
+          {
+            "id": "CVE-2026-100290",
+            "severity": "Low",
+            "name": "glibc-common",
+            "version": "2.43-9.3.hum1"
+          },
+          {
+            "id": "CVE-2026-100290",
+            "severity": "Low",
+            "name": "glibc-minimal-langpack",
+            "version": "2.43-9.3.hum1"
+          },
+          {
+            "id": "CVE-2026-128241",
+            "severity": "Medium",
+            "name": "expat",
+            "version": "2.10.0-0.2.hum1"
+          }
+        ],
+        "ignored_matches": [],
+        "remaining": "Independent installed inventory and source provenance, actual security regression witnesses, fresh final data and complete SDK qualification"
+      }
+    }
+  ],
+  "remaining": "Independent inventory and exact vendor provenance; no exclusions or clean-runtime acceptance; all82whole requirements open"
+}

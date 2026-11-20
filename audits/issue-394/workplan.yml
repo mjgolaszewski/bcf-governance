@@ -304,6 +304,9 @@ workitems:
     - Prove source package template and applicable profile parity
     - Require independent scoped BCF closure rather than authored DONE
     evidence:
+    - audits/issue-394/runtime-security-candidate-observations.json
+    - audits/issue-394/node-security-pin-verification.json
+    - audits/issue-394/node-security-pin-contract.yml
     - audits/issue-394/dependency-audit-population-verification.json
     - audits/issue-394/dependency-audit-population-contract.yml
     - audits/issue-394/security-baseline-contract.yml
